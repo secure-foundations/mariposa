@@ -1,0 +1,14 @@
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/obj/Debug/.NETFramework,Version=v4.5.2.AssemblyAttribute.fs
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/SMTLint.exe.config
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/SMTLint.exe.mdb
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/SMTLint.pdb
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/SMTLint.exe
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/obj/Debug/SMTLint.exe
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/obj/Debug/SMTLint.exe.mdb
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/obj/Debug/SMTLint.pdb
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/FSharp.Core.dll
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/SMTLib.dll
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/SMTLib.pdb
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/SMTLib.xml
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/FsLexYacc.Runtime.dll
+/Users/doug/Dropbox/notes/Mariposa/SMTLint/bin/Debug/FsLexYacc.Runtime.xml

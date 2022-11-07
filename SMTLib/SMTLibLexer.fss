@@ -1,0 +1,86 @@
+{
+
+module SMTLib.SMTLibLexer
+
+open Microsoft.FSharp.Text.Lexing
+open System
+open System.Numerics
+open SMTLib.SMTLibParser
+
+let keywords =   
+    [ "!", ANNOT;
+      "not", NOT;
+      "and", AND;
+      "or", OR;
+      "=>", IMPLIES;
+      "=", EQ;
+      "forall", FORALL;
+      "exists", EXISTS;
+      "let", LET;
+      "true", TRUE;
+      "false", FALSE;
+      "set-option", SETOPTION;
+      "set-info", SETINFO;
+      "get-info", GETINFO;
+      "declare-sort", DECLARESORT;
+      "declare-fun", DECLAREFUN;
+      "define-fun", DEFINEFUN;
+      "declare-datatypes", DECLAREDATATYPES;
+      "assert", ASSERT;
+      "push", PUSH;
+      "pop", POP;
+      "check-sat", CHECKSAT;
+      "reset", RESET;
+      "labels", LABELS;
+      "echo", ECHO;
+      "eval", EVAL;
+      ":qid", QID;
+      ":skolemid", SKOLEMID;
+      ":weight", WEIGHT;
+      ":pattern", PATTERN;
+      ":no-pattern", NOPATTERN;
+      ":lblpos", LBLPOS;
+      ":lblneg", LBLNEG;
+      ":named", NAMED;
+      ] |> Map.ofList
+
+let lexeme (lexbuf : LexBuffer<char>) = new System.String(lexbuf.Lexeme)
+
+let make_ident (id : string) =
+    if id.StartsWith("|") && id.EndsWith("|") then
+       (id.Substring(1, id.Length-2), id)
+    else
+       (id, id)
+
+}
+
+let digit = ['0'-'9']
+let int = '-'?digit+
+let float = int?'.'digit+
+let char = ['a'-'z' 'A'-'Z' '@' '|' '%' '_' '.' '>' '=' '<' '!' '$' '#' '+' '-' '*' '\'' '/']
+let weird = [':']
+let ident = char(char|digit|weird)*
+let symbol = ':'ident
+let string = '"'[^'"' '\n' '\r']*'"'
+let whitespace = [' ' '\t']
+let comment = ';'[^'\n' '\r']*
+let newline = ('\n' | '\r' '\n')
+
+rule tokenize = parse
+| newline { lexbuf.EndPos <- lexbuf.EndPos.NextLine; tokenize lexbuf }
+| whitespace { tokenize lexbuf }
+| comment { tokenize lexbuf }
+| string { STRING((lexeme lexbuf).[1..(lexeme lexbuf).Length-2]) }
+| int { INT(BigInteger.Parse(lexeme lexbuf)) }
+| float { FLOAT(Double.Parse(lexeme lexbuf)) }
+| symbol { match keywords.TryFind(lexeme lexbuf) with   
+               | Some(token) -> token   
+               | None -> SYMBOL((lexeme lexbuf).Substring(1)) 
+               }
+| '(' { LPAREN }
+| ')' { RPAREN }
+| ident { match keywords.TryFind(lexeme lexbuf) with   
+               | Some(token) -> token   
+               | None -> ID(make_ident (lexeme lexbuf))
+               }
+| eof { EOF }
