@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "smt2parser",
+    "smt2proxy",
+    "z3tracer",
+    "smt2patch",
+]
+
+[profile.release]
+debug = true
+lto = 'thin'
+
+[profile.bench]
+debug = true
