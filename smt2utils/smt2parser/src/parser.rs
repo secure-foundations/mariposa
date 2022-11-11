@@ -290,9 +290,9 @@ pomelo! {
         extra.0.visit_declare_fun(x, xs.unwrap_or_else(Vec::new), r)?
     }
     //   ( declare-sort ⟨symbol⟩ ⟨numeral⟩ )
-    command ::= LeftParen DeclareSort fresh_symbol(x) Numeral(num) RightParen
+    command ::= LeftParen DeclareSort fresh_symbol(x) Numeral?(num) RightParen
     {
-        extra.0.visit_declare_sort(x, num)?
+        extra.0.visit_declare_sort(x, num.unwrap_or(num::BigUint::from(0u8)))?
     }
     //   ( define-fun ⟨function_dec⟩ ⟨term⟩ )
     command ::= LeftParen DefineFun function_dec(d) term(x) RightParen
@@ -342,9 +342,9 @@ pomelo! {
     //   ( get-value )
     command ::= LeftParen GetValue terms(xs) RightParen { extra.0.visit_get_value(xs)? }
     //   ( pop ⟨numeral⟩ )
-    command ::= LeftParen Pop Numeral(x) RightParen { extra.0.visit_pop(x)? }
+    command ::= LeftParen Pop Numeral?(x) RightParen { extra.0.visit_pop(x.unwrap_or(num::BigUint::from(1u8)))? }
     //   ( push ⟨numeral⟩ )
-    command ::= LeftParen Push Numeral(x) RightParen { extra.0.visit_push(x)? }
+    command ::= LeftParen Push Numeral?(x) RightParen { extra.0.visit_push(x.unwrap_or(num::BigUint::from(1u8)))? }
     //   ( reset )
     command ::= LeftParen Reset RightParen { extra.0.visit_reset()? }
     //   ( reset-assertions )
