@@ -1,0 +1,126 @@
+%{
+open SMTLib
+%}
+
+%token <(string * string)> ID
+%token <bigint> INT
+%token <float> FLOAT
+%token <string> SYMBOL
+%token <string> STRING
+
+%token TRUE FALSE
+%token LPAREN RPAREN
+%token ANNOT NOT AND OR IMPLIES EQ
+%token FORALL EXISTS LET
+%token SETOPTION SETINFO GETINFO
+%token DECLARESORT DECLAREFUN DEFINEFUN DECLAREDATATYPES
+%token ASSERT PUSH POP CHECKSAT RESET LABELS ECHO EVAL
+%token QID SKOLEMID PATTERN NOPATTERN WEIGHT LBLPOS LBLNEG NAMED
+%token EOF
+
+%start start
+%type <stmt list> start
+
+%%
+
+start:
+  | EOF { [] }
+  | stmt { [$1] }
+  | stmt start { $1 :: $2 }
+
+stmt:
+  | LPAREN SETOPTION SYMBOL expr RPAREN
+    { SetOption($3, $4) }
+  | LPAREN SETINFO SYMBOL expr RPAREN
+    { SetInfo($3, $4) }
+  | LPAREN GETINFO SYMBOL RPAREN
+    { GetInfo($3) }
+  | LPAREN DECLARESORT ID RPAREN
+    { DeclareSort($3, System.Numerics.BigInteger.Parse("0")) }
+  | LPAREN DECLARESORT ID INT RPAREN
+    { DeclareSort($3, $4) }
+  | LPAREN DECLAREFUN ID LPAREN exprList RPAREN expr RPAREN
+    { DeclareFun($3, $5, $7) }
+  | LPAREN DEFINEFUN ID LPAREN argList RPAREN expr expr RPAREN
+    { DefineFun($3, $5, $7, $8) }
+  | LPAREN DECLAREDATATYPES LPAREN exprList RPAREN LPAREN datatypeList RPAREN RPAREN
+    { DeclareDatatypes($4, $7) }
+  | LPAREN ASSERT expr RPAREN { Assert($3) }
+  | LPAREN PUSH INT RPAREN { Push(Some($3)) }
+  | LPAREN PUSH RPAREN { Push(None) }
+  | LPAREN POP INT RPAREN { Pop(Some($3)) }
+  | LPAREN POP RPAREN { Pop(None) }
+  | LPAREN CHECKSAT RPAREN  { CheckSat }
+  | LPAREN RESET RPAREN  { Reset }
+  | LPAREN LABELS RPAREN  { Labels }
+  | LPAREN ECHO value RPAREN { Echo($3) }
+  | LPAREN EVAL expr RPAREN { Eval($3) }
+
+datatypeList:
+  | { [] }
+  | datatype { [$1] }
+  | datatype datatypeList { $1 :: $2 }
+
+datatype:
+  | LPAREN ID constructorList RPAREN {($2, $3)}
+
+constructorList:
+  | { [] }
+  | constructor_ { [$1] }
+  | constructor_ constructorList { $1 :: $2 }
+
+constructor_:
+  | LPAREN ID argList RPAREN {($2, $3)}
+
+exprList:
+  | { [] }
+  | expr { [$1] }
+  | expr exprList { $1 :: $2 }
+
+expr:
+  | value { Val($1) }
+  | ID { Id($1) }
+  | LPAREN exprList RPAREN { Lst $2 }
+  | LPAREN NOT expr RPAREN { Not($3) }
+  | LPAREN AND exprList RPAREN { And($3) }
+  | LPAREN OR exprList RPAREN { Or($3) }
+  | LPAREN IMPLIES expr expr RPAREN { Implies($3,$4) }
+  | LPAREN EQ expr expr RPAREN { Eq($3,$4) }
+  | LPAREN ANNOT expr annotList RPAREN
+    { Annot($4, $3) }
+  | LPAREN FORALL LPAREN argList RPAREN expr RPAREN
+    { Forall($4, $6) }
+  | LPAREN EXISTS LPAREN argList RPAREN expr RPAREN
+    { Exists($4, $6) }
+  | LPAREN LET LPAREN argList RPAREN expr RPAREN
+    { Let($4, $6) }
+
+argList:
+  | { [] }
+  | arg { [$1] }
+  | arg argList { $1 :: $2 }
+
+arg:
+  | LPAREN ID expr RPAREN { ($2, $3) }
+
+annotList:
+  | { [] }
+  | annot { [$1] }
+  | annot annotList { $1 :: $2 }
+
+annot:
+  | QID ID { QId($2) }
+  | SKOLEMID ID { SkolemId($2) }
+  | WEIGHT INT { Weight($2) }
+  | LBLPOS ID { LblPos($2) }
+  | LBLNEG ID { LblNeg($2) }
+  | NAMED ID { Named($2) }
+  | NOPATTERN expr { NoPattern($2) }
+  | PATTERN LPAREN exprList RPAREN { Pattern($3) }
+
+value:
+  | STRING { String($1) }
+  | INT { Int($1) }
+  | FLOAT { Float ($1) }
+  | TRUE { Bool(true) }
+  | FALSE { Bool(false) }
