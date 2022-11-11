@@ -1,9 +1,0 @@
-/Users/doug/Dropbox/notes/Mariposa/SMTLib/obj/Debug/.NETFramework,Version=v4.5.2.AssemblyAttribute.fs
-/Users/doug/Dropbox/notes/Mariposa/SMTLib/SMTLibLexer.fs
-/Users/doug/Dropbox/notes/Mariposa/SMTLib/SMTLibParser.fs
-/Users/doug/Dropbox/notes/Mariposa/SMTLib/bin/Debug/SMTLib.pdb
-/Users/doug/Dropbox/notes/Mariposa/SMTLib/bin/Debug/SMTLib.dll
-/Users/doug/Dropbox/notes/Mariposa/SMTLib/obj/Debug/SMTLib.dll
-/Users/doug/Dropbox/notes/Mariposa/SMTLib/obj/Debug/SMTLib.pdb
-/Users/doug/Dropbox/notes/Mariposa/SMTLib/bin/Debug/FsLexYacc.Runtime.dll
-/Users/doug/Dropbox/notes/Mariposa/SMTLib/bin/Debug/FSharp.Core.dll
