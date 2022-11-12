@@ -107,8 +107,10 @@ pomelo! {
     attribute_value ::= LeftParen s_exprs?(xs) RightParen { visitors::AttributeValue::SExpr(xs.unwrap_or_else(Vec::new)) }
     attribute_value ::= { visitors::AttributeValue::None }
 
+    attributes ::= Pattern LeftParen terms(ys) RightParen { vec![] }
     attributes ::= keyword(k) attribute_value(v) { vec![(k, v)] }
     attributes ::= attributes(mut xs) keyword(k) attribute_value(v) { xs.push((k, v)); xs }
+    attributes ::= attributes(mut xs) Pattern LeftParen terms(ys) RightParen { xs }
 
     // s_expr ::= ⟨spec_constant⟩ | ⟨symbol⟩ | ⟨keyword⟩ | ( ⟨s_expr⟩∗ )
     s_expr ::= constant(x) { extra.0.visit_constant_s_expr(x)? }

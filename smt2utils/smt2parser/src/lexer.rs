@@ -350,7 +350,14 @@ where
                     self.consume_byte();
                 }
                 match String::from_utf8(content) {
-                    Ok(s) => Some(Token::Keyword(s)),
+                    Ok(s) => {
+                        // println!("{}", s)
+                        if s == "pattern" {
+                            Some(Token::Pattern)
+                        } else {
+                            Some(Token::Keyword(s))
+                        }
+                    }
                     Err(_) => None,
                 }
             }

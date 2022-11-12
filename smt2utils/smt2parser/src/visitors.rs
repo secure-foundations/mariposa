@@ -158,6 +158,7 @@ pub enum AttributeValue<
     Constant(Constant),
     Symbol(Symbol),
     SExpr(Vec<SExpr>),
+    // Terms(Vec<Term>),
 }
 
 impl<T1, T2, T3> AttributeValue<T1, T2, T3> {
