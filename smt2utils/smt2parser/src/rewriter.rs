@@ -296,6 +296,7 @@ pub trait Rewriter {
                 <Self::V as Smt2Visitor>::Constant,
                 <Self::V as Smt2Visitor>::Symbol,
                 <Self::V as Smt2Visitor>::SExpr,
+                <Self::V as Smt2Visitor>::Term,
             >,
         )>,
     ) -> Result<<Self::V as Smt2Visitor>::Term, Self::Error> {
@@ -488,6 +489,7 @@ pub trait Rewriter {
             <Self::V as Smt2Visitor>::Constant,
             <Self::V as Smt2Visitor>::Symbol,
             <Self::V as Smt2Visitor>::SExpr,
+            <Self::V as Smt2Visitor>::Term,
         >,
     ) -> Result<<Self::V as Smt2Visitor>::Command, Self::Error> {
         let value = self.visitor().visit_set_info(keyword, value)?;
@@ -507,6 +509,7 @@ pub trait Rewriter {
             <Self::V as Smt2Visitor>::Constant,
             <Self::V as Smt2Visitor>::Symbol,
             <Self::V as Smt2Visitor>::SExpr,
+            <Self::V as Smt2Visitor>::Term,
         >,
     ) -> Result<<Self::V as Smt2Visitor>::Command, Self::Error> {
         let value = self.visitor().visit_set_option(keyword, value)?;
@@ -656,6 +659,7 @@ impl<R, V> TermVisitor<V::Constant, V::QualIdentifier, V::Keyword, V::SExpr, V::
 where
     R: Rewriter<V = V>,
     V: Smt2Visitor,
+    <V as Smt2Visitor>::Keyword: Default,
 {
     type T = V::Term;
     type E = R::Error;
@@ -714,9 +718,16 @@ where
     fn visit_attributes(
         &mut self,
         term: Self::T,
-        attributes: Vec<(V::Keyword, AttributeValue<V::Constant, V::Symbol, V::SExpr>)>,
+        attributes: Vec<(V::Keyword, AttributeValue<V::Constant, V::Symbol, V::SExpr, V::Term>)>,
     ) -> Result<Self::T, Self::E> {
         self.visit_attributes(term, attributes)
+    }
+
+    fn visit_pattern(
+        &mut self,
+        patterns: Vec<Self::T>) -> Result<(V::Keyword, AttributeValue<V::Constant, V::Symbol, V::SExpr, V::Term>), Self::E>
+    {
+        todo!()
     }
 }
 
@@ -878,7 +889,7 @@ where
     fn visit_set_info(
         &mut self,
         keyword: V::Keyword,
-        value: AttributeValue<V::Constant, V::Symbol, V::SExpr>,
+        value: AttributeValue<V::Constant, V::Symbol, V::SExpr, V::Term>,
     ) -> Result<Self::T, Self::E> {
         self.visit_set_info(keyword, value)
     }
@@ -890,7 +901,7 @@ where
     fn visit_set_option(
         &mut self,
         keyword: V::Keyword,
-        value: AttributeValue<V::Constant, V::Symbol, V::SExpr>,
+        value: AttributeValue<V::Constant, V::Symbol, V::SExpr, V::Term>,
     ) -> Result<Self::T, Self::E> {
         self.visit_set_option(keyword, value)
     }
@@ -900,6 +911,7 @@ impl<R, V> Smt2Visitor for R
 where
     R: Rewriter<V = V>,
     V: Smt2Visitor,
+    <V as Smt2Visitor>::Keyword: Default,
 {
     type Error = R::Error;
     type Constant = V::Constant;

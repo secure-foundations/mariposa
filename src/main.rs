@@ -6,12 +6,7 @@ use smt2parser::{CommandStream, concrete, renaming, visitors};
 
 use rand::thread_rng;
 use rand::seq::SliceRandom;
-
-// fn main() {
-//     let mut vec: Vec<u32> = (0..10).collect();
-//     (&mut vec[0..3]).shuffle(&mut thread_rng());
-//     println!("{:?}", vec);
-// }
+use smt2parser::concrete::Command;
 
 fn print_non_info_command(commands: &Vec<concrete::Command>) {
     for command in commands {
@@ -57,7 +52,7 @@ fn get_assert_intervals(commands: &Vec<concrete::Command>) -> Vec<usize>
     intervals
 }
 
-fn shuffle_asserts(mut commands: Vec<concrete::Command>) {
+fn shuffle_asserts(commands: &mut Vec<Command>) {
     let intervals = get_assert_intervals(&commands);
     let mut i = 0;
     while i < intervals.len()
@@ -68,28 +63,12 @@ fn shuffle_asserts(mut commands: Vec<concrete::Command>) {
         for j in start..end {
             assert!(matches!(commands[j], concrete::Command::Assert{..}));
         }
-        (&mut commands[start..end]).shuffle(&mut thread_rng());
+        (&mut (*commands)[start..end]).shuffle(&mut thread_rng());
         i += 2;
     }
-    print_non_info_command(&commands);
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let file_path = &args[1];
-
-    let file = File::open(file_path).unwrap();
-    let reader = BufReader::new(file);
-
-    let stream = CommandStream::new(
-        reader,
-        concrete::SyntaxBuilder,
-        None,
-    );
-    let mut commands :Vec<concrete::Command> =
-        stream.collect::<Result<Vec<_>, _>>().unwrap();
-    // print_non_info_command(&commands);
-    shuffle_asserts(commands);
+// fn normalize_commands(mut commands :Vec<concrete::Command>) {
 //     let randomization_seed = 121210;
 //     let randomization_space = BTreeMap::from([
 //         (visitors::SymbolKind::Variable, 100000),
@@ -106,22 +85,29 @@ fn main() {
 //         randomization_seed,
 //     };
 //     let mut normalizer = renaming::SymbolNormalizer::new(concrete::SyntaxBuilder, config);
-//         // 1. Parse input commands while rewriting `is-Foo` into `(_ is Foo)` on the fly with TesterModernizer.
-//             // 2. Re-visit the syntax for name resolution and normalization.
 //     for command in commands {
-//         let command = command.accept(&mut normalizer).unwrap();
-//         if let concrete::Command::SetInfo {..} = command {
-//         } else {
-//             println!("{}", command);
-//         }
+//         let mut command = command.accept(&mut normalizer).unwrap();
+//         println!("{}", command);
 //     }
-//
-//
-//     let mut rng = StepRng::new(2, 13);
-//     let mut irs = Irs::default();
-//
-//     let mut input = vec![1, 2, 3, 4, 5];
-//
-//     irs.shuffle(&mut input, &mut rng);
-//     println!("{:?}", input);
+// }
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    let file_path = &args[1];
+
+    let file = File::open(file_path).unwrap();
+    let reader = BufReader::new(file);
+
+    let stream = CommandStream::new(
+        reader,
+        concrete::SyntaxBuilder,
+        None,
+    );
+
+    let mut commands :Vec<concrete::Command> =
+        stream.collect::<Result<Vec<_>, _>>().unwrap();
+
+    // shuffle_asserts(&mut commands);
+    print_non_info_command(&commands);
 }
+

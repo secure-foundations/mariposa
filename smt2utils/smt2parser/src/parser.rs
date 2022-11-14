@@ -11,7 +11,6 @@ pub use internal::{Parser, Token};
 pomelo! {
     %module internal;
     %include { use crate::visitors; }
-
     %stack_size 0;
 
     %parser pub struct Parser<'a, T: visitors::Smt2Visitor> {};
@@ -53,8 +52,8 @@ pomelo! {
     %type sort T::Sort;
     %type sorts Vec<T::Sort>;
 
-    %type attribute_value visitors::AttributeValue<T::Constant, T::Symbol, T::SExpr>;
-    %type attributes Vec<(T::Keyword, visitors::AttributeValue<T::Constant, T::Symbol, T::SExpr>)>;
+    %type attribute_value visitors::AttributeValue<T::Constant, T::Symbol, T::SExpr, T::Term>;
+    %type attributes Vec<(T::Keyword, visitors::AttributeValue<T::Constant, T::Symbol, T::SExpr, T::Term>)>;
 
     %type s_expr T::SExpr;
     %type s_exprs Vec<T::SExpr>;
@@ -107,10 +106,20 @@ pomelo! {
     attribute_value ::= LeftParen s_exprs?(xs) RightParen { visitors::AttributeValue::SExpr(xs.unwrap_or_else(Vec::new)) }
     attribute_value ::= { visitors::AttributeValue::None }
 
-    attributes ::= Pattern LeftParen terms(ys) RightParen { vec![] }
+    attributes ::= Pattern LeftParen terms(ts) RightParen
+    {
+        println!("woot");
+        let v = extra.0.visit_pattern(ts)?;
+        vec![v]
+    }
     attributes ::= keyword(k) attribute_value(v) { vec![(k, v)] }
     attributes ::= attributes(mut xs) keyword(k) attribute_value(v) { xs.push((k, v)); xs }
-    attributes ::= attributes(mut xs) Pattern LeftParen terms(ys) RightParen { xs }
+    attributes ::= attributes(mut xs) Pattern LeftParen terms(ts) RightParen {
+        println!("wooot");
+        let v = extra.0.visit_pattern(ts)?;
+        xs.push(v);
+        xs
+    }
 
     // s_expr ::= ⟨spec_constant⟩ | ⟨symbol⟩ | ⟨keyword⟩ | ( ⟨s_expr⟩∗ )
     s_expr ::= constant(x) { extra.0.visit_constant_s_expr(x)? }

@@ -205,7 +205,7 @@ type QualIdentifier = ();
 type SExpr = ();
 
 type Identifier = crate::visitors::Identifier<Symbol>;
-type AttributeValue = crate::visitors::AttributeValue<Constant, Symbol, SExpr>;
+type AttributeValue = crate::visitors::AttributeValue<Constant, Symbol, SExpr, Term>;
 type DatatypeDec = crate::visitors::DatatypeDec<Symbol, Sort>;
 type FunctionDec = crate::visitors::FunctionDec<Symbol, Sort>;
 
@@ -341,10 +341,17 @@ impl TermVisitor<Constant, QualIdentifier, Keyword, SExpr, Symbol, Sort> for Smt
     fn visit_attributes(
         &mut self,
         term: Self::T,
-        _attributes: Vec<(Keyword, AttributeValue)>,
+        _attributes: Vec<(Keyword, crate::visitors::AttributeValue<Constant, Symbol, SExpr, Term>)>,
     ) -> Result<Self::T, Self::E> {
         self.attributes_count += 1;
         Ok(Term::node(std::iter::once(term)))
+    }
+
+    fn visit_pattern(
+        &mut self,
+        patterns: Vec<Self::T>) -> Result<(Keyword, AttributeValue), Self::E>
+    {
+        todo!()
     }
 }
 

@@ -30,7 +30,7 @@ pub enum Constant {
 pub struct Symbol(pub String);
 
 /// Concrete keyword.
-#[derive(Debug, PartialEq, Eq, Clone, Hash, Ord, PartialOrd, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash, Ord, PartialOrd, Serialize, Deserialize, Default)]
 pub struct Keyword(pub String);
 
 pub use crate::visitors::Identifier;
@@ -99,7 +99,7 @@ pub enum Term<
     },
     Attributes {
         term: Box<Self>,
-        attributes: Vec<(Keyword, AttributeValue<Constant, Symbol, SExpr>)>,
+        attributes: Vec<(Keyword, AttributeValue<Constant, Symbol, SExpr, Self>)>,
     },
 }
 
@@ -185,14 +185,14 @@ pub enum Command<
     ResetAssertions,
     SetInfo {
         keyword: Keyword,
-        value: AttributeValue<Constant, Symbol, SExpr>,
+        value: AttributeValue<Constant, Symbol, SExpr, Term>,
     },
     SetLogic {
         symbol: Symbol,
     },
     SetOption {
         keyword: Keyword,
-        value: AttributeValue<Constant, Symbol, SExpr>,
+        value: AttributeValue<Constant, Symbol, SExpr, Term>,
     },
 }
 
@@ -416,7 +416,7 @@ impl QualIdentifier {
     }
 }
 
-impl<Constant, QualIdentifier, Keyword, SExpr, Symbol, Sort>
+impl<Constant, QualIdentifier, Keyword: Default, SExpr, Symbol, Sort>
     TermVisitor<Constant, QualIdentifier, Keyword, SExpr, Symbol, Sort> for SyntaxBuilder
 {
     type T = Term<Constant, QualIdentifier, Keyword, SExpr, Symbol, Sort>;
@@ -483,16 +483,23 @@ impl<Constant, QualIdentifier, Keyword, SExpr, Symbol, Sort>
     fn visit_attributes(
         &mut self,
         term: Self::T,
-        attributes: Vec<(Keyword, AttributeValue<Constant, Symbol, SExpr>)>,
+        attributes: Vec<(Keyword, AttributeValue<Constant, Symbol, SExpr, Self::T>)>,
     ) -> Result<Self::T, Self::E> {
         let term = Box::new(term);
         Ok(Term::Attributes { term, attributes })
+    }
+
+    fn visit_pattern(
+        &mut self,
+        patterns: Vec<Self::T>) -> Result<(Keyword, AttributeValue<Constant, Symbol, SExpr, Self::T>), Self::E>
+    {
+        Ok((Keyword::default(), AttributeValue::Terms { 0: patterns }))
     }
 }
 
 impl Term {
     /// Visit a concrete term.
-    pub fn accept<V, T, E, S1, S2, S3, S4, S5, S6>(self, visitor: &mut V) -> Result<T, E>
+    pub fn accept<V, T, E, S1, S2, S3, S4, S5: Default, S6>(self, visitor: &mut V) -> Result<T, E>
     where
         V: SortVisitor<S1, T = S2, E = E>
             + SymbolVisitor<T = S1, E = E>
@@ -610,8 +617,8 @@ impl Term {
             }
             Attributes { term, attributes } => {
                 let t = term.accept(visitor)?;
-                let xs = attributes
-                    .into_iter()
+                let it = attributes.into_iter();
+                let xs = it
                     .map(|(k, x)| {
                         Ok((
                             k.accept(visitor)?,
@@ -620,6 +627,7 @@ impl Term {
                                 |v, c: self::Constant| c.accept(v),
                                 |v, s: Symbol| v.visit_bound_symbol(s.0),
                                 |v, e: SExpr| e.accept(v),
+                                |v, e: Term| e.accept(v),
                             )?,
                         ))
                     })
@@ -786,7 +794,7 @@ impl<Term, Symbol, Sort, Keyword, Constant, SExpr>
     fn visit_set_info(
         &mut self,
         keyword: Keyword,
-        value: AttributeValue<Constant, Symbol, SExpr>,
+        value: AttributeValue<Constant, Symbol, SExpr, Term>,
     ) -> Result<Self::T, Self::E> {
         Ok(Command::SetInfo { keyword, value })
     }
@@ -798,7 +806,7 @@ impl<Term, Symbol, Sort, Keyword, Constant, SExpr>
     fn visit_set_option(
         &mut self,
         keyword: Keyword,
-        value: AttributeValue<Constant, Symbol, SExpr>,
+        value: AttributeValue<Constant, Symbol, SExpr, Term>,
     ) -> Result<Self::T, Self::E> {
         Ok(Command::SetOption { keyword, value })
     }
@@ -806,7 +814,7 @@ impl<Term, Symbol, Sort, Keyword, Constant, SExpr>
 
 impl Command {
     /// Visit a concrete command.
-    pub fn accept<V, T, E, S1, S2, S3, S4, S5, S6, S7>(self, visitor: &mut V) -> Result<T, E>
+    pub fn accept<V, T, E, S1, S2, S3, S4, S5: Default, S6, S7>(self, visitor: &mut V) -> Result<T, E>
     where
         V: SortVisitor<S1, T = S2, E = E>
             + SymbolVisitor<T = S1, E = E>
@@ -1024,6 +1032,7 @@ impl Command {
                     |v, c: self::Constant| c.accept(v),
                     |v, s: Symbol| v.visit_bound_symbol(s.0),
                     |v, e: SExpr| e.accept(v),
+                    |v, e: Term| e.accept(v),
                 )?;
                 visitor.visit_set_info(k, v)
             }
@@ -1038,6 +1047,7 @@ impl Command {
                     |v, c: self::Constant| c.accept(v),
                     |v, s: Symbol| v.visit_bound_symbol(s.0),
                     |v, e: SExpr| e.accept(v),
+                    |v, e: Term| e.accept(v),
                 )?;
                 visitor.visit_set_option(k, v)
             }

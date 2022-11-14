@@ -153,27 +153,30 @@ pub enum AttributeValue<
     Constant = crate::concrete::Constant,
     Symbol = crate::concrete::Symbol,
     SExpr = crate::concrete::SExpr,
+    Term = crate::concrete::Term,
 > {
     None,
     Constant(Constant),
     Symbol(Symbol),
     SExpr(Vec<SExpr>),
-    // Terms(Vec<Term>),
+    Terms(Vec<Term>),
 }
 
-impl<T1, T2, T3> AttributeValue<T1, T2, T3> {
+impl<T1, T2, T3, T4> AttributeValue<T1, T2, T3, T4> {
     /// Remap the generically-typed values of an AttributeValue.
-    pub(crate) fn remap<V, F1, F2, F3, R1, R2, R3, E>(
+    pub(crate) fn remap<V, F1, F2, F3, F4, R1, R2, R3, R4, E>(
         self,
         v: &mut V,
         fcst: F1,
         fsym: F2,
         fsexp: F3,
-    ) -> Result<AttributeValue<R1, R2, R3>, E>
+        fterm: F4,
+    ) -> Result<AttributeValue<R1, R2, R3, R4>, E>
     where
         F1: Fn(&mut V, T1) -> Result<R1, E>,
         F2: Fn(&mut V, T2) -> Result<R2, E>,
         F3: Fn(&mut V, T3) -> Result<R3, E>,
+        F4: Fn(&mut V, T4) -> Result<R4, E>,
     {
         use AttributeValue::*;
         let value = match self {
@@ -186,12 +189,13 @@ impl<T1, T2, T3> AttributeValue<T1, T2, T3> {
                     .map(|x| fsexp(v, x))
                     .collect::<Result<_, E>>()?,
             ),
+            Terms(_) => todo!(),
         };
         Ok(value)
     }
 }
 
-pub trait TermVisitor<Constant, QualIdentifier, Keyword, SExpr, Symbol, Sort> {
+pub trait TermVisitor<Constant, QualIdentifier, Keyword: Default, SExpr, Symbol, Sort> {
     type T;
     type E;
 
@@ -235,8 +239,12 @@ pub trait TermVisitor<Constant, QualIdentifier, Keyword, SExpr, Symbol, Sort> {
     fn visit_attributes(
         &mut self,
         term: Self::T,
-        attributes: Vec<(Keyword, AttributeValue<Constant, Symbol, SExpr>)>,
+        attributes: Vec<(Keyword, AttributeValue<Constant, Symbol, SExpr, Self::T>)>,
     ) -> Result<Self::T, Self::E>;
+
+    fn visit_pattern(
+        &mut self,
+        patterns: Vec<Self::T>) -> Result<(Keyword, AttributeValue<Constant, Symbol, SExpr, Self::T>), Self::E>;
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Serialize, Deserialize)]
@@ -433,7 +441,7 @@ pub trait CommandVisitor<Term, Symbol, Sort, Keyword, Constant, SExpr> {
     fn visit_set_info(
         &mut self,
         keyword: Keyword,
-        value: AttributeValue<Constant, Symbol, SExpr>,
+        value: AttributeValue<Constant, Symbol, SExpr, Term>,
     ) -> Result<Self::T, Self::E>;
 
     fn visit_set_logic(&mut self, symbol: Symbol) -> Result<Self::T, Self::E>;
@@ -441,7 +449,7 @@ pub trait CommandVisitor<Term, Symbol, Sort, Keyword, Constant, SExpr> {
     fn visit_set_option(
         &mut self,
         keyword: Keyword,
-        value: AttributeValue<Constant, Symbol, SExpr>,
+        value: AttributeValue<Constant, Symbol, SExpr, Term>,
     ) -> Result<Self::T, Self::E>;
 }
 
@@ -484,6 +492,7 @@ pub trait Smt2Visitor:
         T = <Self as Smt2Visitor>::Command,
         E = <Self as Smt2Visitor>::Error,
     >
+    where <Self as Smt2Visitor>::Keyword: Default
 {
     type Error;
     type Constant;
@@ -527,11 +536,12 @@ where
     }
 }
 
-impl<Constant, Symbol, SExpr> std::fmt::Display for AttributeValue<Constant, Symbol, SExpr>
+impl<Constant, Symbol, SExpr, Term> std::fmt::Display for AttributeValue<Constant, Symbol, SExpr, Term>
 where
     Constant: std::fmt::Display,
     Symbol: std::fmt::Display,
     SExpr: std::fmt::Display,
+    Term: std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // ⟨spec_constant⟩ | ⟨symbol⟩ | ( ⟨s_expr⟩∗ ) |
@@ -541,6 +551,7 @@ where
             Constant(c) => write!(f, "{}", c),
             Symbol(s) => write!(f, "{}", s),
             SExpr(values) => write!(f, "({})", values.iter().format(" ")),
+            Terms(ts) => write!(f, "pattern {}", ts.iter().format(" ")),
         }
     }
 }
