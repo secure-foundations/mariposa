@@ -53,6 +53,7 @@ pomelo! {
     %type sorts Vec<T::Sort>;
 
     %type attribute_value visitors::AttributeValue<T::Constant, T::Symbol, T::SExpr, T::Term>;
+    %type attribute (T::Keyword, visitors::AttributeValue<T::Constant, T::Symbol, T::SExpr, T::Term>);
     %type attributes Vec<(T::Keyword, visitors::AttributeValue<T::Constant, T::Symbol, T::SExpr, T::Term>)>;
 
     %type s_expr T::SExpr;
@@ -106,17 +107,14 @@ pomelo! {
     attribute_value ::= LeftParen s_exprs?(xs) RightParen { visitors::AttributeValue::SExpr(xs.unwrap_or_else(Vec::new)) }
     attribute_value ::= { visitors::AttributeValue::None }
 
-    attributes ::= Pattern LeftParen terms(ts) RightParen
+    attribute ::= Pattern LeftParen terms(ts) RightParen
     {
-        vec![(T::Keyword::default(), visitors::AttributeValue::Terms { 0: ts })]
+        (T::Keyword::default(), visitors::AttributeValue::Terms { 0: ts })
     }
-    attributes ::= keyword(k) attribute_value(v) { vec![(k, v)] }
-    attributes ::= attributes(mut xs) keyword(k) attribute_value(v) { xs.push((k, v)); xs }
-    attributes ::= attributes(mut xs) Pattern LeftParen terms(ts) RightParen {
-        let v = (T::Keyword::default(), visitors::AttributeValue::Terms { 0: ts });
-        xs.push(v);
-        xs
-    }
+    attribute ::= keyword(k) attribute_value(v) { (k, v) }
+
+    attributes ::= attribute(p) { vec![p] }
+    attributes ::= attributes(mut xs) attribute(p) { xs.push(p); xs }
 
     // s_expr ::= ⟨spec_constant⟩ | ⟨symbol⟩ | ⟨keyword⟩ | ( ⟨s_expr⟩∗ )
     s_expr ::= constant(x) { extra.0.visit_constant_s_expr(x)? }
