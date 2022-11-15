@@ -346,13 +346,6 @@ impl TermVisitor<Constant, QualIdentifier, Keyword, SExpr, Symbol, Sort> for Smt
         self.attributes_count += 1;
         Ok(Term::node(std::iter::once(term)))
     }
-
-    fn visit_pattern(
-        &mut self,
-        patterns: Vec<Self::T>) -> Result<(Keyword, AttributeValue), Self::E>
-    {
-        todo!()
-    }
 }
 
 impl Smt2Counters {

@@ -189,7 +189,12 @@ impl<T1, T2, T3, T4> AttributeValue<T1, T2, T3, T4> {
                     .map(|x| fsexp(v, x))
                     .collect::<Result<_, E>>()?,
             ),
-            Terms(_) => todo!(),
+            Terms(values) => Terms(
+                values
+                    .into_iter()
+                    .map(|x| fterm(v, x))
+                    .collect::<Result<_, E>>()?,
+            )
         };
         Ok(value)
     }
@@ -241,10 +246,6 @@ pub trait TermVisitor<Constant, QualIdentifier, Keyword: Default, SExpr, Symbol,
         term: Self::T,
         attributes: Vec<(Keyword, AttributeValue<Constant, Symbol, SExpr, Self::T>)>,
     ) -> Result<Self::T, Self::E>;
-
-    fn visit_pattern(
-        &mut self,
-        patterns: Vec<Self::T>) -> Result<(Keyword, AttributeValue<Constant, Symbol, SExpr, Self::T>), Self::E>;
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Serialize, Deserialize)]
@@ -551,7 +552,7 @@ where
             Constant(c) => write!(f, "{}", c),
             Symbol(s) => write!(f, "{}", s),
             SExpr(values) => write!(f, "({})", values.iter().format(" ")),
-            Terms(ts) => write!(f, "pattern {}", ts.iter().format(" ")),
+            Terms(ts) => write!(f, "({})", ts.iter().format(" ")),
         }
     }
 }

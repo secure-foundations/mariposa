@@ -30,8 +30,12 @@ pub enum Constant {
 pub struct Symbol(pub String);
 
 /// Concrete keyword.
-#[derive(Debug, PartialEq, Eq, Clone, Hash, Ord, PartialOrd, Serialize, Deserialize, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Keyword(pub String);
+
+impl Default for Keyword {
+    fn default() -> Self { Keyword(String::from("pattern")) }
+}
 
 pub use crate::visitors::Identifier;
 
@@ -487,13 +491,6 @@ impl<Constant, QualIdentifier, Keyword: Default, SExpr, Symbol, Sort>
     ) -> Result<Self::T, Self::E> {
         let term = Box::new(term);
         Ok(Term::Attributes { term, attributes })
-    }
-
-    fn visit_pattern(
-        &mut self,
-        patterns: Vec<Self::T>) -> Result<(Keyword, AttributeValue<Constant, Symbol, SExpr, Self::T>), Self::E>
-    {
-        Ok((Keyword::default(), AttributeValue::Terms { 0: patterns }))
     }
 }
 

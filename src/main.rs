@@ -68,32 +68,33 @@ fn shuffle_asserts(commands: &mut Vec<Command>) {
     }
 }
 
-// fn normalize_commands(mut commands :Vec<concrete::Command>) {
-//     let randomization_seed = 121210;
-//     let randomization_space = BTreeMap::from([
-//         (visitors::SymbolKind::Variable, 100000),
-//         (visitors::SymbolKind::Constant, 100000),
-//         (visitors::SymbolKind::Function, 100000),
-//         (visitors::SymbolKind::Sort, 100000),
-//         (visitors::SymbolKind::Datatype, 100000),
-//         (visitors::SymbolKind::TypeVar, 100000),
-//         (visitors::SymbolKind::Constructor, 100000),
-//         (visitors::SymbolKind::Selector, 100000),
-//     ]);;
-//     let config = renaming::SymbolNormalizerConfig {
-//         randomization_space,
-//         randomization_seed,
-//     };
-//     let mut normalizer = renaming::SymbolNormalizer::new(concrete::SyntaxBuilder, config);
-//     for command in commands {
-//         let mut command = command.accept(&mut normalizer).unwrap();
-//         println!("{}", command);
-//     }
-// }
+fn normalize_commands(commands: Vec<concrete::Command>) {
+    let randomization_seed = 121210;
+    let randomization_space = BTreeMap::from([
+        (visitors::SymbolKind::Variable, 100000),
+        (visitors::SymbolKind::Constant, 100000),
+        (visitors::SymbolKind::Function, 100000),
+        (visitors::SymbolKind::Sort, 100000),
+        (visitors::SymbolKind::Datatype, 100000),
+        (visitors::SymbolKind::TypeVar, 100000),
+        (visitors::SymbolKind::Constructor, 100000),
+        (visitors::SymbolKind::Selector, 100000),
+    ]);
+    let config = renaming::SymbolNormalizerConfig {
+        randomization_space,
+        randomization_seed,
+    };
+    let mut normalizer = renaming::SymbolNormalizer::new(concrete::SyntaxBuilder, config);
+    for command in commands {
+        let command = command.accept(&mut normalizer).unwrap();
+        println!("{}", command);
+    }
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let file_path = &args[1];
+    let operation = &args[2];
 
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
@@ -107,7 +108,13 @@ fn main() {
     let mut commands :Vec<concrete::Command> =
         stream.collect::<Result<Vec<_>, _>>().unwrap();
 
-    // shuffle_asserts(&mut commands);
-    print_non_info_command(&commands);
+    if operation == "parse" {
+        print_non_info_command(&commands);
+    } else if operation == "shuffle" {
+        shuffle_asserts(&mut commands);
+        print_non_info_command(&commands);
+    } else if operation == "normalize" {
+        normalize_commands(commands);
+    }
 }
 

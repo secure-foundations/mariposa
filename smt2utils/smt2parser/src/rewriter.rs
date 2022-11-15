@@ -722,13 +722,6 @@ where
     ) -> Result<Self::T, Self::E> {
         self.visit_attributes(term, attributes)
     }
-
-    fn visit_pattern(
-        &mut self,
-        patterns: Vec<Self::T>) -> Result<(V::Keyword, AttributeValue<V::Constant, V::Symbol, V::SExpr, V::Term>), Self::E>
-    {
-        todo!()
-    }
 }
 
 impl<R, V> CommandVisitor<V::Term, V::Symbol, V::Sort, V::Keyword, V::Constant, V::SExpr> for R

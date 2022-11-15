@@ -108,15 +108,12 @@ pomelo! {
 
     attributes ::= Pattern LeftParen terms(ts) RightParen
     {
-        println!("woot");
-        let v = extra.0.visit_pattern(ts)?;
-        vec![v]
+        vec![(T::Keyword::default(), visitors::AttributeValue::Terms { 0: ts })]
     }
     attributes ::= keyword(k) attribute_value(v) { vec![(k, v)] }
     attributes ::= attributes(mut xs) keyword(k) attribute_value(v) { xs.push((k, v)); xs }
     attributes ::= attributes(mut xs) Pattern LeftParen terms(ts) RightParen {
-        println!("wooot");
-        let v = extra.0.visit_pattern(ts)?;
+        let v = (T::Keyword::default(), visitors::AttributeValue::Terms { 0: ts });
         xs.push(v);
         xs
     }
