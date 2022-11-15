@@ -158,6 +158,7 @@ name = "mariposa"
 version = "0.1.0"
 dependencies = [
  "rand 0.8.5",
+ "rustop",
  "smt2parser",
 ]
 
@@ -394,6 +395,12 @@ checksum = "ca3129af7b92a17112d59ad498c6f81eaf463253766b90396d39ea7a39d6613c"
 dependencies = [
  "rand_core 0.5.1",
 ]
+
+[[package]]
+name = "rustop"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cac77bea4e5c89acb455a2fe072bc19334cb130691af6e1bed4625d3f5396e89"
 
 [[package]]
 name = "serde"
