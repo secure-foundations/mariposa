@@ -1,2 +1,4 @@
-/data
+/data/dafny
+/data/smtlib
 /target
+/gen
