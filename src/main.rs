@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
-use std::io::{BufReader, BufWriter};
+use std::io::{BufReader, BufWriter, Write, stdout};
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use smt2parser::{CommandStream, concrete, renaming, visitors};
@@ -104,12 +104,10 @@ fn parse_commands_from_file(file_path: String) -> Vec<concrete::Command> {
     stream.collect::<Result<Vec<_>, _>>().unwrap()
 }
 
-fn parse_model_file(file_path: String, query: &Vec<concrete::Command>) {
-    let commands = parse_commands_from_file(file_path);
-    
+fn dump_model_test(model: &Vec<concrete::Command>, query: &Vec<concrete::Command>, mut writer: BufWriter<Box<dyn std::io::Write>>) {    
     let mut defined:HashMap<String, &concrete::Command> = HashMap::new();
 
-    for command in &commands {
+    for command in model {
         if let concrete::Command::DefineFun { sig,..} = command {
             defined.insert(sig.name.0.clone(), command);
         } else {
@@ -122,12 +120,12 @@ fn parse_model_file(file_path: String, query: &Vec<concrete::Command>) {
             let name = &symbol.0;
             if defined.contains_key(name) {
                 let command = defined.get(name).unwrap();
-                println!("{}", command);
+                let _ = writeln!(writer, "{}", command);
             }
         } else if let concrete::Command::SetInfo {..} = command {
 
         } else {
-            println!("{}", command);
+            let _ =  writeln!(writer, "{}", command);
         }
     }
 }
@@ -136,16 +134,26 @@ fn main() {
     let (args, _rest) = opts! {
         synopsis "mariposa is a smtlib2 query mutator";
         opt in_file_path:String,
-            desc: "the input file path";
+            desc: "input file path";
         opt model_file_path:Option<String>,
             desc: "model file with the query";
         opt process:String=String::from("none"),
-            desc: "the mutation";
+            desc: "mutation to perform";
         opt silent:bool=false,
             desc: "process without printing";
         opt out_file_path:Option<String>,
-            desc: "the output file path";
+            desc: "output file path";
     }.parse_or_exit();
+
+    let writer: BufWriter<Box<dyn std::io::Write>> = match args.out_file_path {
+        Some(path) => {
+            let file = File::create(path).unwrap();
+            BufWriter::new(Box::new(file))
+        },
+        None => {
+            BufWriter::new(Box::new(stdout().lock()))
+        }
+    };
 
     let mut commands :Vec<concrete::Command> = 
     parse_commands_from_file(args.in_file_path);
@@ -159,8 +167,8 @@ fn main() {
     }
 
     if let Some(file_path) = args.model_file_path {
-        println!("parse model file {}", file_path);
-        parse_model_file(file_path, &commands);
+        let model = parse_commands_from_file(file_path);
+        dump_model_test(&model, &commands, writer);
     }
 
     if !args.silent {
