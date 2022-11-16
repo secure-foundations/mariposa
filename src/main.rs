@@ -1,6 +1,6 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, BufWriter};
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use smt2parser::{CommandStream, concrete, renaming, visitors};
@@ -91,18 +91,8 @@ fn normalize_commands(commands: Vec<concrete::Command>) -> Vec<concrete::Command
     ncommand
 }
 
-fn main() {
-    let (args, rest) = opts! {
-        synopsis "mariposa is a smtlib2 query mutator";
-        opt in_file_path:String,
-            desc: "the input file path";
-        opt mutation:String=String::from("none"),
-            desc: "the mutation";
-        opt silent:bool=false,
-            desc: "process without printing";
-    }.parse_or_exit();
-
-    let file = File::open(args.in_file_path).unwrap();
+fn parse_commands_from_file(file_path: String) -> Vec<concrete::Command> {
+    let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
 
     let stream = CommandStream::new(
@@ -111,15 +101,66 @@ fn main() {
         None,
     );
 
-    let mut commands :Vec<concrete::Command> =
-        stream.collect::<Result<Vec<_>, _>>().unwrap();
+    stream.collect::<Result<Vec<_>, _>>().unwrap()
+}
 
-    if args.mutation == "none" {
+fn parse_model_file(file_path: String, query: &Vec<concrete::Command>) {
+    let commands = parse_commands_from_file(file_path);
+    
+    let mut defined:HashMap<String, &concrete::Command> = HashMap::new();
+
+    for command in &commands {
+        if let concrete::Command::DefineFun { sig,..} = command {
+            defined.insert(sig.name.0.clone(), command);
+        } else {
+            panic!("unhandled command in model");
+        }
+    }
+
+    for command in query {
+        if let concrete::Command::DeclareFun { symbol,..} = command {
+            let name = &symbol.0;
+            if defined.contains_key(name) {
+                let command = defined.get(name).unwrap();
+                println!("{}", command);
+            }
+        } else if let concrete::Command::SetInfo {..} = command {
+
+        } else {
+            println!("{}", command);
+        }
+    }
+}
+
+fn main() {
+    let (args, _rest) = opts! {
+        synopsis "mariposa is a smtlib2 query mutator";
+        opt in_file_path:String,
+            desc: "the input file path";
+        opt model_file_path:Option<String>,
+            desc: "model file with the query";
+        opt process:String=String::from("none"),
+            desc: "the mutation";
+        opt silent:bool=false,
+            desc: "process without printing";
+        opt out_file_path:Option<String>,
+            desc: "the output file path";
+    }.parse_or_exit();
+
+    let mut commands :Vec<concrete::Command> = 
+    parse_commands_from_file(args.in_file_path);
+
+    if args.process == "none" {
         println!("{}", commands.len());
-    } else if args.mutation == "shuffle" {
+    } else if args.process  == "shuffle" {
         shuffle_asserts(&mut commands);
-    } else if args.mutation == "normalize" {
+    } else if args.process == "normalize" {
         commands = normalize_commands(commands);
+    }
+
+    if let Some(file_path) = args.model_file_path {
+        println!("parse model file {}", file_path);
+        parse_model_file(file_path, &commands);
     }
 
     if !args.silent {
