@@ -18,11 +18,12 @@ rule build_src
     command = cargo build --release
 
 rule parse_check
-    command = {MARIPOSA_BIN_PATH} -i $in -s > $out
+    command = {MARIPOSA_BIN_PATH} -i $in -o $out
 
 rule z3_get_model
     command = time z3 $in -model -T:20 > $out
 """
+
 ## one time file renaming
 # def replace_file_name_colons():
 #     file_paths = list_smt2_files(SMT_ALL_DIR)
@@ -91,6 +92,13 @@ def parse_check_smtlib_solved():
         chk_path = smt2_to_chk(file_path)
         print(f'build {chk_path}: parse_check {file_path}')
 
+def parse_check_dafny_tests():
+    print(rules())
+    file_paths = list_smt2_files(DFY_ALL_DIR)
+    for file_path in file_paths:
+        chk_path = smt2_to_chk(file_path)
+        print(f'build {chk_path}: parse_check {file_path}')
+
 def get_models_smtlib_solved():
     print(rules())
     with open("data/qlists/smtlib_rand100_sat") as f:
@@ -124,12 +132,11 @@ def get_models_smtlib_solved():
 
 
 def main():
-    # process = subprocess.Popen("cargo build --release --quiet", shell=True)
-    # process.wait()
-    # assert(process.returncode == 0)
-    # parse_check_smtlib_solved()
+    process = subprocess.Popen("cargo build --release --quiet", shell=True)
+    process.wait()
+    assert(process.returncode == 0)
+    parse_check_dafny_tests()
     # get_models_smtlib_solved()
-    # merge_model("data/smtlib/QF_BV/spear/samba_v3.0.24/bin_libsmbsharemodes_vc4844.smt2")
 
 if __name__ == "__main__":
     main()

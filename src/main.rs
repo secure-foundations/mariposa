@@ -74,14 +74,14 @@ fn shuffle_asserts(commands: &mut Vec<concrete::Command>, seed: u64) {
 
 fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concrete::Command> {
     let randomization_space = BTreeMap::from([
-        (visitors::SymbolKind::Variable, 100000),
-        (visitors::SymbolKind::Constant, 100000),
-        (visitors::SymbolKind::Function, 100000),
-        (visitors::SymbolKind::Sort, 100000),
-        (visitors::SymbolKind::Datatype, 100000),
-        (visitors::SymbolKind::TypeVar, 100000),
-        (visitors::SymbolKind::Constructor, 100000),
-        (visitors::SymbolKind::Selector, 100000),
+        (visitors::SymbolKind::Variable, usize::MAX),
+        (visitors::SymbolKind::Constant, usize::MAX),
+        (visitors::SymbolKind::Function, usize::MAX),
+        (visitors::SymbolKind::Sort, usize::MAX),
+        (visitors::SymbolKind::Datatype, usize::MAX),
+        (visitors::SymbolKind::TypeVar, usize::MAX),
+        (visitors::SymbolKind::Constructor, usize::MAX),
+        (visitors::SymbolKind::Selector, usize::MAX),
     ]);
     let config = renaming::SymbolNormalizerConfig {
         randomization_space,
@@ -108,6 +108,10 @@ impl Manager {
             }
         };
         Manager {writer, seed}
+    }
+
+    fn dump(&mut self, s: &String) {
+        write!(self.writer, "{}", s).unwrap();
     }
 
     fn dump_non_info_commands(&mut self, commands: &Vec<concrete::Command>) {
@@ -159,7 +163,7 @@ fn main() {
             desc: "process without printing";
         opt out_file_path:Option<String>,
             desc: "output file path";
-        opt seed:u64=12345,
+        opt seed:u64=1234567890,
         desc: "seed for randomness";
     }.parse_or_exit();
 
@@ -173,6 +177,8 @@ fn main() {
         manager.dump_model_test(&model, &commands);
     } else {
         if args.process == "none" {
+            manager.dump(&format!("{}\n", commands.len()));
+        } else if args.process == "print" {
             manager.dump_non_info_commands(&commands);
         } else if args.process  == "shuffle" {
             shuffle_asserts(&mut commands, manager.seed);

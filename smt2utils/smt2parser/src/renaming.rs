@@ -63,7 +63,7 @@ pub struct SymbolNormalizer<V> {
     /// The underlying syntax visitor.
     visitor: V,
     /// Configuration.
-    config: SymbolNormalizerConfig,
+    _config: SymbolNormalizerConfig,
     /// Original names of current local symbols, indexed by kind.
     current_local_symbols: BTreeMap<SymbolKind, Vec<String>>,
     /// Currently bound symbols.
@@ -164,7 +164,7 @@ impl<V> SymbolNormalizer<V> {
         }
         Self {
             visitor,
-            config,
+            _config: config,
             current_local_symbols: BTreeMap::new(),
             current_bound_symbols: BTreeMap::new(),
             encoding_tables,
