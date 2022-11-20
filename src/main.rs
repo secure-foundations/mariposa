@@ -130,7 +130,7 @@ impl Manager {
             if let concrete::Command::DefineFun { sig,..} = command {
                 defined.insert(sig.name.0.clone(), command);
             } else {
-                panic!("unhandled command in model");
+                // panic!("unhandled command in model {}", command);
             }
         }
 
@@ -169,8 +169,7 @@ fn main() {
 
     let mut manager = Manager::new(args.out_file_path, args.seed);
 
-    let mut commands :Vec<concrete::Command> = 
-    parse_commands_from_file(args.in_file_path);
+    let mut commands :Vec<concrete::Command> = parse_commands_from_file(args.in_file_path);
 
     if let Some(file_path) = args.model_file_path {
         let model = parse_commands_from_file(file_path);
