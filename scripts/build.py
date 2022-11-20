@@ -2,7 +2,6 @@ import subprocess
 import random
 import re
 import sys
-from tqdm import tqdm
 from analyze import load_smtlib_qlist
 from path_utils import *
 
@@ -44,7 +43,8 @@ def emit_gen_model_test(file_paths):
         mdl_path = to_model_path(file_path)
         if not os.path.exists(mdl_path):
             continue
-        if "unknown" in open(mdl_path).read():
+        model = open(mdl_path).read()
+        if "unknown" in model or "timeout" in model:
             continue
         mdlt_path = to_model_test_path(file_path)
         print(f'build {mdlt_path}: mariposa_gen_model_test {file_path} {mdl_path} | {MARIPOSA_BIN_PATH}')

@@ -10,6 +10,26 @@ def subprocess_run(command, cwd=None):
     output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, cwd=cwd).stdout
     return output.decode("utf-8").strip()
 
+
+CARD_START = ";; cardinality constraint:"
+CARD_END = ";; -----------"
+
+def z3_parse_model(model):
+    # will (and should) fail when unsat
+    start = model.index("(") + 1
+    model = model[start:-1]
+    lines = model.split("\n")
+    results = []
+    skip = False
+    for line in lines:
+        if CARD_START in line:
+            skip = True
+        elif CARD_END in line:
+            skip = False
+        if not skip:
+            results.append(line)
+    return "\n".join(results)
+
 # dumps the model into output_file
 def z3_get_model(query_file, output_file):
     command = f"{Z3_BIN_PATH} {query_file} -model rlimit={GLOBAL_RLIMIT} -T:{GLOBAL_TIMOUT}"
@@ -17,10 +37,10 @@ def z3_get_model(query_file, output_file):
     with open(output_file, "w+") as f:
         if "unknown" in model:
             f.write("unknown")
+        elif "timeout" in model:
+            f.write("timeout")
         else:
-            # will (and should) fail when unsat
-            start = model.index("(") + 1
-            f.write(model[start:-1])
+            f.write(z3_parse_model(model))
 
 def z3_run_model_test(model_test_file, output_file):
     command = f"{Z3_BIN_PATH} {model_test_file} rlimit={GLOBAL_RLIMIT} -T:{GLOBAL_TIMOUT}"

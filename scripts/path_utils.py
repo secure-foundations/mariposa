@@ -12,12 +12,13 @@ MODEL_TEST_EXT = ".mdlt"
 MODEL_TEST_RESULT_EXT = ".mdltr"
 
 ## one time file renaming
-# def replace_path_colons():
-#     file_paths = list_smt2_files(SMT_ALL_DIR)
-#     for file_path in file_paths:
-#         if ":" in file_path:
-#             new_path = file_path.replace(":", "_")
-#             os.system(f"mv {file_path} {new_path}")
+def replace_path_colons():
+    file_paths = list_smt2_files(SMT_ALL_DIR)
+    for file_path in file_paths:
+        if ":" in file_path or "=" in file_path:
+            new_path = file_path.replace(":", "_")
+            new_path = file_path.replace("=", "_")
+            os.system(f"mv {file_path} {new_path}")
 
 def to_gen_path(query_path, ext):
     assert(query_path.startswith("data/"))
@@ -43,3 +44,5 @@ def list_smt2_files(sub_root):
             if file.endswith(SMT2_EXT):
                 file_paths.append(os.path.join(root, file))
     return file_paths
+
+# replace_path_colons()

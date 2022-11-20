@@ -1,21 +1,23 @@
 from path_utils import *
 import random
+from tqdm import tqdm
 
 SMT_PLAIN_QLIST_PATH = "data/qlists/smtlib_all_plain_status.csv"
 SMT_EXLUDE_QLIST_PATH = "data/qlists/smtlib_exclude"
 
 def dump_smtlib_plain_status():
     file_paths = list_smt2_files(SMT_ALL_DIR)
-    with open(SMT_PLAIN_QLIST_PATH) as out:
-        for file_path in file_paths:
+    with open(SMT_PLAIN_QLIST_PATH, "w+") as out:
+        for file_path in tqdm(file_paths):
             with open(file_path) as f:
                 query = f.read()
                 if "(set-info :status unsat)" in query:
-                    out.write(file_path + ",unsat")
+                    out.write(file_path + ",unsat\n")
                 elif "(set-info :status sat)" in query:
-                    out.write(file_path + ",sat")
+                    out.write(file_path + ",sat\n")
                 else:
-                    out.write(file_path + ",unknown")
+                    assert("(set-info :status unknown)" in query)
+                    out.write(file_path + ",unknown\n")
 
 def load_smlib_exclude_qlist():
     excludes = set()
@@ -57,7 +59,6 @@ def analyze_model_test():
             if not os.path.exists(mdlt_path):
                 continue
             if open(mdlt_path).read() == "":
-                print(mdlt_path)
                 continue
 
             mdlt_count += 1
@@ -69,18 +70,17 @@ def analyze_model_test():
             if open(mdltr_path).read() == "sat":
                 mdltr_count += 1
             else:
+                print(mdltr_path)
                 failing += 1
     print(f"tests generated: {mdlt_count}")
     print(f" passing: {mdltr_count}")
     print(f" missing: {missing} (timeout)")
     print(f" failing: {failing}")
 
-# analyze_model_test()
-# load_random_smtlib_sat_qlist(1000)
-# for f in load_random_smtlib_sat_qlist(1000):
-#     print(f)
-# def main():
-#     # dump_smtlib_plain_status()
 
 if __name__ == "__main__":
     analyze_model_test()
+    # dump_smtlib_plain_status()
+    # load_random_smtlib_sat_qlist(1000)
+    # for f in load_random_smtlib_sat_qlist(1000):
+    #     print(f)
