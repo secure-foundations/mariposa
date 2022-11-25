@@ -1,6 +1,7 @@
-from path_utils import *
 import random
 from tqdm import tqdm
+from path_utils import *
+from wrap_utils import MODEL_TEST_GEN_ERROR
 
 SMT_PLAIN_QLIST_PATH = "data/qlists/smtlib_all_plain_status.csv"
 SMT_EXLUDE_QLIST_PATH = "data/qlists/smtlib_exclude"
@@ -51,14 +52,25 @@ def analyze_model_test():
     missing = 0
     failing = 0
 
+    model_gen = {"unknown": 0, "timeout": 0, "ok": 0}
+    test_gen = {MODEL_TEST_GEN_ERROR: 0}
+
     with open("data/qlists/smtlib_rand1K_sat") as f:
         for file_path in f.readlines():
             file_path = file_path.strip()
+            mdl_path = to_model_path(file_path)
             mdlt_path = to_model_test_path(file_path)
 
             if not os.path.exists(mdlt_path):
+                result = open(mdl_path).read().strip()
+                model_gen[result] += 1
                 continue
-            if open(mdlt_path).read() == "":
+
+            if os.path.exists(mdl_path):
+                model_gen["ok"] += 1
+
+            if open(mdlt_path).read().strip() == MODEL_TEST_GEN_ERROR:
+                test_gen[MODEL_TEST_GEN_ERROR] += 1
                 continue
 
             mdlt_count += 1
@@ -72,10 +84,18 @@ def analyze_model_test():
             else:
                 print(mdltr_path)
                 failing += 1
-    print(f"tests generated: {mdlt_count}")
-    print(f" passing: {mdltr_count}")
-    print(f" missing: {missing} (timeout)")
-    print(f" failing: {failing}")
+
+
+    print(f"inital queries: {model_gen['ok'] + model_gen['unknown'] + model_gen['timeout']}")
+    print(f"|model gen ok: {model_gen['ok']}")
+    print(f"||tests gen ok: {mdlt_count}")
+    print(f"| |passing: {mdltr_count}")
+    print(f"| |missing: {missing}")
+    print(f"| |failing: {failing}")
+    print(f"||tests gen fail: {model_gen['ok'] - mdlt_count}")
+    print(f"|model gen unknown: {model_gen['unknown']}")
+    print(f"|model gen timeout: {model_gen['timeout']}")
+
 
 
 if __name__ == "__main__":

@@ -167,14 +167,15 @@ fn main() {
         desc: "seed for randomness";
     }.parse_or_exit();
 
-    let mut manager = Manager::new(args.out_file_path, args.seed);
-
     let mut commands :Vec<concrete::Command> = parse_commands_from_file(args.in_file_path);
+
 
     if let Some(file_path) = args.model_file_path {
         let model = parse_commands_from_file(file_path);
+        let mut manager = Manager::new(args.out_file_path, args.seed);
         manager.dump_model_test(&model, &commands);
     } else {
+        let mut manager = Manager::new(args.out_file_path, args.seed);
         if args.process == "none" {
             manager.dump(&format!("{}\n", commands.len()));
         } else if args.process == "print" {

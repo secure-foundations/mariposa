@@ -4,8 +4,7 @@ import re
 import sys
 from analyze import load_smtlib_qlist
 from path_utils import *
-
-MARIPOSA_BIN_PATH = "./target/release/mariposa"
+from wrap_utils import *
 
 def rules():
     return f"""
@@ -16,13 +15,13 @@ rule mariposa_parse_check
     command = {MARIPOSA_BIN_PATH} -i $in -o $out  
 
 rule mariposa_gen_model_test
-    command = {MARIPOSA_BIN_PATH} -i $query -m $model -o $out 
+    command = python3 scripts/wrap_utils.py mariposa_gen_model_test $query $model $out 
 
 rule z3_get_model
-    command = python3 scripts/solver_utils.py z3_get_model $in $out
+    command = python3 scripts/wrap_utils.py z3_get_model $in $out
 
 rule z3_run_model_test
-    command = python3 scripts/solver_utils.py z3_run_model_test $in $out
+    command = python3 scripts/wrap_utils.py z3_run_model_test $in $out
 """
 
 def emit_parse_check_build(file_paths):
