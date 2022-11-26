@@ -21,9 +21,12 @@ def replace_path_colons():
             os.system(f"mv {file_path} {new_path}")
 
 def to_gen_path(query_path, ext):
-    assert(query_path.startswith("data/"))
-    assert(query_path.endswith(SMT2_EXT))
-    return GEN_DIR + query_path[5::] + ext
+    if query_path.startswith("data/"):
+        assert(query_path.endswith(SMT2_EXT))
+        return GEN_DIR + query_path[5::] + ext
+    else:
+        assert(query_path.startswith("gen/"))
+        return query_path + ext
 
 def to_parse_check_path(query_path):
     return to_gen_path(query_path, PARSE_CHECK_EXT)
@@ -36,6 +39,12 @@ def to_model_test_path(query_path):
 
 def to_model_test_res_path(query_path):
     return to_gen_path(query_path, MODEL_TEST_RESULT_EXT)
+
+def to_shuffle_model_test_path(query_path):
+    return to_gen_path(query_path, ".smdlt")
+
+def to_normalize_model_test_path(query_path):
+    return to_gen_path(query_path, ".nmdlt")
 
 def list_smt2_files(sub_root):
     file_paths = []

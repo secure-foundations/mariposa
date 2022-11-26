@@ -1,7 +1,7 @@
 import random
 from tqdm import tqdm
 from path_utils import *
-from wrap_utils import MODEL_TEST_GEN_ERROR
+from wrap_utils import RCodes, RCode
 
 SMT_PLAIN_QLIST_PATH = "data/qlists/smtlib_all_plain_status.csv"
 SMT_EXLUDE_QLIST_PATH = "data/qlists/smtlib_exclude"
@@ -45,58 +45,42 @@ def load_random_smtlib_sat_qlist(count):
     randlist = random.sample(file_paths, k=count)
     return randlist
 
+def print_results(results):
+    total = sum([results[k] for k in RCodes])
+    print(total)
+    for k in RCodes:
+        count = results[k]
+        if count != 0:
+            print(f"{RCode(k).get_description()}: {count}")
+
 def analyze_model_test():
-    mdlt_count = 0
-    mdltr_count = 0
-
-    missing = 0
-    failing = 0
-
-    model_gen = {"unknown": 0, "timeout": 0, "ok": 0}
-    test_gen = {MODEL_TEST_GEN_ERROR: 0}
+    plain_tests = {k:0 for k in RCodes}
+    shuffle_tests = {k:0 for k in RCodes}
+    normalize_tests = {k:0 for k in RCodes}
 
     with open("data/qlists/smtlib_rand1K_sat") as f:
+    # with open("data/qlists/smtlib_rand100_sat") as f:
         for file_path in f.readlines():
             file_path = file_path.strip()
-            mdl_path = to_model_path(file_path)
-            mdlt_path = to_model_test_path(file_path)
-
-            if not os.path.exists(mdlt_path):
-                result = open(mdl_path).read().strip()
-                model_gen[result] += 1
-                continue
-
-            if os.path.exists(mdl_path):
-                model_gen["ok"] += 1
-
-            if open(mdlt_path).read().strip() == MODEL_TEST_GEN_ERROR:
-                test_gen[MODEL_TEST_GEN_ERROR] += 1
-                continue
-
-            mdlt_count += 1
             mdltr_path = to_model_test_res_path(file_path)
+            plain_tests[RCode(open(mdltr_path).read())] += 1
 
-            if not os.path.exists(mdltr_path):
-                missing += 1
-                continue
-            if open(mdltr_path).read() == "sat":
-                mdltr_count += 1
-            else:
-                print(mdltr_path)
-                failing += 1
+            smdl_path = to_shuffle_model_test_path(file_path)
+            mdltr_path = to_model_test_res_path(smdl_path)
+            shuffle_tests[RCode(open(mdltr_path).read())] += 1
 
+            nmdl_path = to_normalize_model_test_path(file_path)
+            mdltr_path = to_model_test_res_path(nmdl_path)
+            normalize_tests[RCode(open(mdltr_path).read())] += 1
 
-    print(f"inital queries: {model_gen['ok'] + model_gen['unknown'] + model_gen['timeout']}")
-    print(f"|model gen ok: {model_gen['ok']}")
-    print(f"||tests gen ok: {mdlt_count}")
-    print(f"| |passing: {mdltr_count}")
-    print(f"| |missing: {missing}")
-    print(f"| |failing: {failing}")
-    print(f"||tests gen fail: {model_gen['ok'] - mdlt_count}")
-    print(f"|model gen unknown: {model_gen['unknown']}")
-    print(f"|model gen timeout: {model_gen['timeout']}")
+        print("plain test count: ", end="")
+        print_results(plain_tests)
 
+        print("\nshuffle test count: ", end="")
+        print_results(shuffle_tests)
 
+        print("\nnormalize test count: ", end="")
+        print_results(normalize_tests)
 
 if __name__ == "__main__":
     analyze_model_test()
