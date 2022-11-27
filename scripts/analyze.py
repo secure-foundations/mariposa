@@ -1,7 +1,7 @@
 import random
 from tqdm import tqdm
 from path_utils import *
-from wrap_utils import RCodes, RCode
+from wrap_utils import RCodes, RCode, code_des
 
 SMT_PLAIN_QLIST_PATH = "data/qlists/smtlib_all_plain_status.csv"
 SMT_EXLUDE_QLIST_PATH = "data/qlists/smtlib_exclude"
@@ -45,46 +45,37 @@ def load_random_smtlib_sat_qlist(count):
     randlist = random.sample(file_paths, k=count)
     return randlist
 
-def print_results(results):
+def print_results(des, results):
     total = sum([results[k] for k in RCodes])
-    print(total)
+    print(des)
+    print(f"total count: {total}")
     for k in RCodes:
         count = results[k]
         if count != 0:
-            print(f"{RCode(k).get_description()}: {count}")
+            print(f"{code_des[k]}: {count}")
+    print("")
+
+def load_res_file(path):
+    return RCode(open(path).read())
 
 def analyze_model_test():
     plain_tests = {k:0 for k in RCodes}
     shuffle_tests = {k:0 for k in RCodes}
     normalize_tests = {k:0 for k in RCodes}
+    normalize_exps = {k:0 for k in RCodes}
 
-    with open("data/qlists/smtlib_rand1K_sat") as f:
-    # with open("data/qlists/smtlib_rand100_sat") as f:
-        for file_path in f.readlines():
-            file_path = file_path.strip()
-            mdltr_path = to_model_test_res_path(file_path)
-            plain_tests[RCode(open(mdltr_path).read())] += 1
-
-            smdl_path = to_shuffle_model_test_path(file_path)
-            mdltr_path = to_model_test_res_path(smdl_path)
-            shuffle_tests[RCode(open(mdltr_path).read())] += 1
-
-            nmdl_path = to_normalize_model_test_path(file_path)
-            mdltr_path = to_model_test_res_path(nmdl_path)
-            normalize_tests[RCode(open(mdltr_path).read())] += 1
-
-        print("plain test count: ", end="")
-        print_results(plain_tests)
-
-        print("\nshuffle test count: ", end="")
-        print_results(shuffle_tests)
-
-        print("\nnormalize test count: ", end="")
-        print_results(normalize_tests)
+    query_paths = load_qlist("data/qlists/smtlib_rand1K_sat")
+    # query_paths = load_qlist("data/qlists/smtlib_rand100_sat")
+    for qp in query_paths:
+        plain_tests[load_res_file(qp.plain_test_res)] += 1
+        shuffle_tests[load_res_file(qp.shuffle_test_res)] += 1
+        normalize_tests[load_res_file(qp.normalize_test_res)] += 1
+        normalize_exps[load_res_file(qp.normalize_exp_res)] += 1
+      
+    print_results("plain test", plain_tests)
+    print_results("shuffle test", shuffle_tests)
+    print_results("normalize test", normalize_tests)
+    print_results("normalize experiment", normalize_exps)
 
 if __name__ == "__main__":
     analyze_model_test()
-    # dump_smtlib_plain_status()
-    # load_random_smtlib_sat_qlist(1000)
-    # for f in load_random_smtlib_sat_qlist(1000):
-    #     print(f)

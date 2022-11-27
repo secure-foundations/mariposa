@@ -10,57 +10,37 @@ Z3_BIN_PATH = "z3"
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
 class RCode(StrEnum):
-    Z3_MG_ETO = auto() # z3 model gen timeout
-    Z3_MG_EUK = auto() # z3 model gen unknown
-    Z3_MG_EUS = auto() # z3 model gen unsat
+    Z3_GM_ETO = auto() # z3 model gen timeout (error)
+    Z3_GM_EU = auto() # z3 model gen unknown (error)
+    # Z3_GM_EUS = auto() # z3 model gen unsat (error)
 
-    MP_P_EP = auto() # mariposa parse panic
-    # MP_MTG_PS = auto() # mariposa model test gen pass
-    MP_MTG_EP = auto() # mariposa model test gen panic
+    Z3_R_TO = auto() # z3 run timeout
+    Z3_R_S = auto() # z3 run sat
+    Z3_R_US = auto() # z3 run unsat
+    Z3_R_U = auto() # z3 run unknown
 
-    MP_MSTG_EP = auto() # mariposa model shuffle test gen panic
-    MP_MNTG_EP = auto() # mariposa model normalize test gen panic
+    MP_P_EP = auto() # mariposa parse panic (error)
+    MP_GPT_EP = auto() # mariposa (model) plain test gen panic (error)
+    MP_GST_EP = auto() # mariposa (model) shuffle test gen panic (error)
+    MP_GNT_EP = auto() # mariposa (model) normalize test gen panic (error)
 
-    Z3_MT_ETO = auto() # z3 model test timeout
-    Z3_MT_EUS = auto() # z3 model test unsat
-    Z3_MT_EUK = auto() # z3 model test unknown
+    MP_GSE_EP = auto() # mariposa shuffle experiment gen panic (error)
+    MP_GNE_EP = auto() # mariposa normalize experiment gen panic (error)
 
-    Z3_MT_PS = auto() # z3 model test pass (sat)
-
-    def get_description(self):
-        if self == RCode.Z3_MG_ETO:
-            return "z3 model gen timeout"
-        elif self == RCode.Z3_MG_EUK:
-            return "z3 model gen unknown"
-        elif self == RCode.Z3_MG_EUS:
-            return "z3 model gen unsat"
-        elif self == RCode.MP_P_EP:
-            return "mariposa parse panic"
-        elif self == RCode.MP_MTG_EP:
-            return "mariposa model test gen panic"
-        elif self == RCode.MP_MSTG_EP:
-            return "mariposa model shuffle test gen panic"
-        elif self == RCode.MP_MNTG_EP:
-            return "mariposa model normalize test gen panic"
-        elif self == RCode.Z3_MT_ETO:
-            return "z3 model test timeout"
-        elif self == RCode.Z3_MT_EUS:
-            return "z3 model test unsat"
-        elif self == RCode.Z3_MT_EUK:
-            return "z3 model test unknown"
-        elif self == RCode.Z3_MT_PS:
-            return "z3 model test pass (sat)"
-        else:
-            assert(False)
+code_des = {RCode.Z3_GM_ETO: "z3 model gen timeout (error)",
+    RCode.Z3_GM_EU: "z3 model gen unknown (error)",
+    RCode.Z3_R_TO: "z3 run timeout",
+    RCode.Z3_R_S: "z3 run sat",
+    RCode.Z3_R_US: "z3 run unsat",
+    RCode.Z3_R_U: "z3 run unknown",
+    RCode.MP_P_EP: "mariposa parse panic (error)",
+    RCode.MP_GPT_EP: "mariposa (model) plain test gen panic (error)",
+    RCode.MP_GST_EP: "mariposa (model) shuffle test gen panic (error)",
+    RCode.MP_GNT_EP: "mariposa (model) normalize test gen panic (error)",
+    RCode.MP_GSE_EP: "mariposa shuffle experiment gen panic (error)",
+    RCode.MP_GNE_EP: "mariposa normalize experiment gen panic (error)"}
 
 RCodes = [e.value for e in RCode]
-
-def check_input_error(file_path):
-    content = open(file_path).read()
-    if content in RCodes:
-        return content
-    else:
-        return None 
 
 def subprocess_run(command, cwd=None):
     print(command)
@@ -71,7 +51,8 @@ CARD_START = ";; cardinality constraint:"
 CARD_END = ";; -----------"
 
 def parse_z3_model(model):
-    # will (and should) fail when unsat
+    # will fail when unsat
+    # maybe emit Z3_GM_EUS 
     start = model.index("(") + 1
     model = model[start:-1]
     lines = model.split("\n")
@@ -88,91 +69,95 @@ def parse_z3_model(model):
     return "\n".join(results)
 
 # dumps the model into output_file
-def z3_get_model(query_file, output_file):
+def z3_gen_model(query_file, output_file):
     command = f"{Z3_BIN_PATH} {query_file} -model rlimit={GLOBAL_RLIMIT} -T:{GLOBAL_TIMOUT}"
     model = subprocess_run(command)
     with open(output_file, "w+") as f:
         if "unknown" in model:
-            f.write(RCode.Z3_MG_EUK)
+            f.write(RCode.Z3_GM_EU)
         elif "timeout" in model:
-            f.write(RCode.Z3_MG_ETO)
+            f.write(RCode.Z3_GM_ETO)
         else:
             f.write(parse_z3_model(model))
 
-def z3_run_model_test(model_test_file, output_file):
-    error = check_input_error(model_test_file)
-    if error != None:
+def check_input_error(file_path, output_file):
+    content = open(file_path).read()
+    if content in RCodes:
         with open(output_file, "w+") as f:
-            f.write(error)
-        return
-    command = f"{Z3_BIN_PATH} {model_test_file} rlimit={GLOBAL_RLIMIT} -T:{GLOBAL_TIMOUT}"
+            f.write(content)
+        # propagate error then exit
+        exit(0)
+
+def z3_run(query_path, output_file):
+    check_input_error(query_path, output_file)
+    command = f"{Z3_BIN_PATH} {query_path} rlimit={GLOBAL_RLIMIT} -T:{GLOBAL_TIMOUT}"
     result = subprocess_run(command)
     if result.endswith("unsat"):
-        print(f"model gen unsat: {output_file}, emiting file with error code")
-        f.write(RCode.Z3_MT_EUS)
+        open(output_file, "w+").write(RCode.Z3_R_US)
     if result.endswith("sat"):
-        open(output_file, "w+").write(RCode.Z3_MT_PS)
+        open(output_file, "w+").write(RCode.Z3_R_S)
     elif "unknown" in result:
-        open(output_file, "w+").write(RCode.Z3_MT_EUK)
+        open(output_file, "w+").write(RCode.Z3_R_U)
     elif "timeout" in result:
-        open(output_file, "w+").write(RCode.Z3_MT_ETO)
+        open(output_file, "w+").write(RCode.Z3_R_TO)
     else:
+        # unparsed z3 result
+        print(result)
         assert(False)
 
-def mariposa_gen_model_test(query_file, model_file, output_file):
-    error = check_input_error(model_file)
-    if error != None:
-        with open(output_file, "w+") as f:
-            f.write(error)
-        return
+# generate a test from the original query and a model
+def mp_gen_plain_test(query_file, model_file, output_file):
+    check_input_error(model_file, output_file)
     command = f"{MARIPOSA_BIN_PATH} -i {query_file} -m {model_file} -o {output_file}"
     print(command)
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
-        with open(output_file, "w+") as f:
-            f.write(RCode.MP_MTG_EP)
-        print(f"model test gen failed: {output_file}, emiting file with error code")
+        open(output_file, "w+").write(RCode.MP_GPT_EP)
+        print(f"plain test gen failed: {output_file}, emiting file with error code")
 
-def mariposa_gen_shuffle_model_test(model_test_file, output_file):
-    error = check_input_error(model_test_file)
-    if error != None:
-        with open(output_file, "w+") as f:
-            f.write(error)
-        return
+# shuffle the file generated by mp_gen_plain_test
+def mp_gen_shuffle_test(model_test_file, output_file):
+    check_input_error(model_test_file, output_file)
     command = f"{MARIPOSA_BIN_PATH} -i {model_test_file} -p shuffle -o {output_file}"
     print(command)
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
-        with open(output_file, "w+") as f:
-            f.write(RCode.MP_MSTG_EP)
-        print(f"model shuffle test gen failed: {output_file}, emiting file with error code")
+        open(output_file, "w+").write(RCode.MP_GST_EP)
+        print(f"shuffle test gen failed: {output_file}, emiting file with error code")
 
-def mariposa_gen_normalize_model_test(model_test_file, output_file):
-    error = check_input_error(model_test_file)
-    if error != None:
-        with open(output_file, "w+") as f:
-            f.write(error)
-        return
+# normalize the file generated by mp_gen_plain_test
+def mp_gen_normalize_test(model_test_file, output_file):
+    check_input_error(model_test_file, output_file)
     command = f"{MARIPOSA_BIN_PATH} -i {model_test_file} -p normalize -o {output_file}"
     print(command)
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
-        with open(output_file, "w+") as f:
-            f.write(RCode.MP_MSTG_EP)
-        print(f"model normalize test gen failed: {output_file}, emiting file with error code")
+        open(output_file, "w+").write(RCode.MP_GNT_EP)
+        print(f"normalize test gen failed: {output_file}, emiting file with error code")
+
+# this is based on the original query, no model needed
+def mp_gen_normalize_exp(query_file, output_file):
+    command = f"{MARIPOSA_BIN_PATH} -i {query_file} -p normalize -o {output_file}"
+    print(command)
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+    if result.returncode != 0:
+        open(output_file, "w+").write(RCode.MP_GNE_EP)
+        print(f"normalize exp gen failed: {output_file}, emiting file with error code")
 
 def main():
     option = sys.argv[1]
-    if option  == "z3_get_model":
-        z3_get_model(sys.argv[2], sys.argv[3])
-    elif option == "z3_run_model_test":
-        z3_run_model_test(sys.argv[2], sys.argv[3])
-    elif option == "mariposa_gen_model_test":
-        mariposa_gen_model_test(sys.argv[2], sys.argv[3], sys.argv[4])
-    elif option == "mariposa_gen_shuffle_model_test":
-        mariposa_gen_shuffle_model_test(sys.argv[2], sys.argv[3])
-    elif option == "mariposa_gen_normalize_model_test":
-        mariposa_gen_normalize_model_test(sys.argv[2], sys.argv[3])
+    if option  == "z3_gen_model":
+        z3_gen_model(sys.argv[2], sys.argv[3])
+    elif option == "z3_run":
+        z3_run(sys.argv[2], sys.argv[3])
+    elif option == "mp_gen_plain_test":
+        mp_gen_plain_test(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif option == "mp_gen_shuffle_test":
+        mp_gen_shuffle_test(sys.argv[2], sys.argv[3])
+    elif option == "mp_gen_normalize_test":
+        mp_gen_normalize_test(sys.argv[2], sys.argv[3])
+    elif option == "mp_gen_normalize_exp":
+        mp_gen_normalize_exp(sys.argv[2], sys.argv[3])
     else:
         print("unknown wrap_util option " + option)
         assert(False)
