@@ -1,7 +1,7 @@
 import random
 from tqdm import tqdm
 from path_utils import *
-from wrap_utils import RCodes, RCode, code_des
+from wrap_utils import *
 
 SMT_PLAIN_QLIST_PATH = "data/qlists/smtlib_all_plain_status.csv"
 SMT_EXLUDE_QLIST_PATH = "data/qlists/smtlib_exclude"
@@ -20,15 +20,15 @@ def dump_smtlib_plain_status():
                     assert("(set-info :status unknown)" in query)
                     out.write(file_path + ",unknown\n")
 
-def load_smlib_exclude_qlist():
-    excludes = set()
-    with open(SMT_EXLUDE_QLIST_PATH) as f:
-        for line in f.readlines():
-            line = line.strip()
-            excludes.add(line)
-    return excludes
+# def load_smlib_exclude_qlist():
+#     excludes = set()
+#     with open(SMT_EXLUDE_QLIST_PATH) as f:
+#         for line in f.readlines():
+#             line = line.strip()
+#             excludes.add(line)
+#     return excludes
 
-excludes = load_smlib_exclude_qlist()
+# excludes = load_smlib_exclude_qlist()
 
 def load_smtlib_qlist(status):
     filtered = []
@@ -36,7 +36,7 @@ def load_smtlib_qlist(status):
         for line in f.readlines():
             line = line.strip().split(",")
             assert(len(line) == 2)
-            if line[1] == status and line[0] not in excludes:
+            if line[1] == status:
                 filtered.append(line[0])
     return filtered
 
@@ -56,26 +56,82 @@ def print_results(des, results):
     print("")
 
 def load_res_file(path):
-    return RCode(open(path).read())
+    stats = dict()
+    for line in open(path).readlines():
+        line = line.strip().split(",")
+        key = line[0]
+        if key == "rlimit-count":
+            stats[key] = int(line[1])
+        else:
+            stats[key] = line[1]
+    if "rlimit-count" not in stats:
+        stats["rlimit-count"] = GLOBAL_RLIMIT * 2
+    return stats
 
-def analyze_model_test():
+def precent_change(curr, orig):
+    return (round((curr - orig) * 100 / orig, 2))
+
+def analyze_test_res():
     plain_tests = {k:0 for k in RCodes}
     shuffle_tests = {k:0 for k in RCodes}
     normalize_tests = {k:0 for k in RCodes}
-    normalize_exps = {k:0 for k in RCodes}
 
-    query_paths = load_qlist("data/qlists/smtlib_rand1K_sat")
-    # query_paths = load_qlist("data/qlists/smtlib_rand100_sat")
+    ratios = []
+
     for qp in query_paths:
-        plain_tests[load_res_file(qp.plain_test_res)] += 1
-        shuffle_tests[load_res_file(qp.shuffle_test_res)] += 1
-        normalize_tests[load_res_file(qp.normalize_test_res)] += 1
-        normalize_exps[load_res_file(qp.normalize_exp_res)] += 1
-      
+        ptrs = load_res_file(qp.plain_test_res)
+        strs = load_res_file(qp.shuffle_test_res)
+        ntrs = load_res_file(qp.normalize_test_res)
+
+        plain_tests[ptrs["rcode"]] += 1
+        shuffle_tests[strs["rcode"]] += 1
+        normalize_tests[ntrs["rcode"]] += 1
+
+        o = pers["rlimit-count"]
+
+        a = ptrs["rlimit-count"]
+        b = strs["rlimit-count"]
+        c = ntrs["rlimit-count"]
+
+        # ratios.append(a / b)
+        # ratios.append(a / c)
+        ratios.append(o / a)
+
+    print(len(ratios), sum(ratios) / len(ratios))
+
     print_results("plain test", plain_tests)
     print_results("shuffle test", shuffle_tests)
     print_results("normalize test", normalize_tests)
-    print_results("normalize experiment", normalize_exps)
+
+def analyze_exp_res(query_paths):
+    plain_exps = {k:0 for k in RCodes}
+    normalize_exps = {k:0 for k in RCodes}
+    shuffle_exps = {k:0 for k in RCodes}
+
+    for qp in query_paths:
+        pers = load_res_file(qp.plain_exp_res)
+        ners = load_res_file(qp.normalize_exp_res)
+        sers = load_res_file(qp.shuffle_exp_res)
+
+        plain_exps[pers["rcode"]] += 1
+        normalize_exps[ners["rcode"]] += 1
+        shuffle_exps[sers["rcode"]] += 1
+
+        a = pers["rlimit-count"]
+        b = ners["rlimit-count"]
+        c = sers["rlimit-count"]
+
+        pb = precent_change(b, a)
+        pc = precent_change(c, a)
+        if pb > 100 or pb < -100:
+            print(qp.orig)
+        if pc > 100 or pc < -100:
+            print(qp.orig)
+    # print_results("plain experiment", plain_exps)
+    # print_results("normalize experiment", normalize_exps)
+    # print_results("shuffle experiment", shuffle_exps)
 
 if __name__ == "__main__":
-    analyze_model_test()
+    # query_paths = load_qlist("data/qlists/smtlib_rand100_sat")
+    query_paths = load_qlist("data/qlists/smtlib_rand1K_sat")
+    analyze_exp_res(query_paths)

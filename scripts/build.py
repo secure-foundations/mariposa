@@ -31,6 +31,9 @@ rule z3_run
 
 rule mp_gen_normalize_exp
     command = python3 scripts/wrap_utils.py mp_gen_normalize_exp $in $out
+
+rule mp_gen_shuffle_exp
+    command = python3 scripts/wrap_utils.py mp_gen_shuffle_exp $in $out
 """
 
 # def emit_parse_check_build(file_paths):
@@ -39,7 +42,7 @@ rule mp_gen_normalize_exp
 #         chk_path = to_parse_check_path(file_path)
 #         print(f'build {chk_path}: mariposa_parse_check {file_path} | {MARIPOSA_BIN_PATH}')
 
-def emit_z3_model_test_rules(file_paths):
+def emit_z3_model_test_rules(query_paths):
     print(rules())
     for qp in query_paths:
         # get models from z3
@@ -57,9 +60,20 @@ def emit_z3_model_test_rules(file_paths):
         print(f'build {qp.normalize_test}: mp_gen_normalize_test {qp.shuffle_test} | {MARIPOSA_BIN_PATH}')
         print(f'build {qp.normalize_test_res}: z3_run {qp.normalize_test}')
 
+
+def emit_z3_exp_rules(query_paths):
+    print(rules())
+    for qp in query_paths:
+        # plain experiment
+        print(f'build {qp.plain_exp_res}: z3_run {qp.orig}')
+
         # normalize experiment
         print(f'build {qp.normalize_exp}: mp_gen_normalize_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
         print(f'build {qp.normalize_exp_res}: z3_run {qp.normalize_exp}')
+
+        # normalize experiment
+        print(f'build {qp.shuffle_exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+        print(f'build {qp.shuffle_exp_res}: z3_run {qp.shuffle_exp}')
 
 # def parse_check_smtlib_suites():
 #     file_paths = load_smtlib_qlist("sat") + load_smtlib_qlist("unsat")
@@ -75,4 +89,4 @@ if __name__ == "__main__":
     assert(process.returncode == 0)
 
     query_paths = load_qlist(sys.argv[1])
-    emit_z3_model_test_rules(query_paths)
+    emit_z3_exp_rules(query_paths)

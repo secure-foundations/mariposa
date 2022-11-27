@@ -44,8 +44,14 @@ class QPath:
         self.normalize_test_res = self.normalize_test + ".r"
 
         # actual experiment paths
+
+        self.plain_exp_res = gen_path_pre + ".pe.r"
+
         self.normalize_exp = gen_path_pre + ".ne"
         self.normalize_exp_res = self.normalize_exp + ".r"
+
+        self.shuffle_exp = gen_path_pre + ".se"
+        self.shuffle_exp_res = self.shuffle_exp + ".r"
 
 def load_qlist(qlist_path):
     f = open(qlist_path)
