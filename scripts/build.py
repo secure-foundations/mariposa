@@ -75,6 +75,10 @@ def emit_z3_exp_rules(query_paths):
         print(f'build {qp.shuffle_exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
         print(f'build {qp.shuffle_exp_res}: z3_run {qp.shuffle_exp}')
 
+        # normalize experiment
+        print(f'build {qp.mix_exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+        print(f'build {qp.mix_exp_res}: z3_run {qp.mix_exp}')
+
 # def parse_check_smtlib_suites():
 #     file_paths = load_smtlib_qlist("sat") + load_smtlib_qlist("unsat")
 #     emit_parse_check_build(file_paths)

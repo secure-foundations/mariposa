@@ -186,6 +186,10 @@ fn main() {
         } else if args.process == "normalize" {
             commands = normalize_commands(commands, manager.seed);
             manager.dump_non_info_commands(&commands);
+        } else if args.process  == "mix" {
+            shuffle_asserts(&mut commands, manager.seed);
+            commands = normalize_commands(commands, manager.seed);
+            manager.dump_non_info_commands(&commands);
         }
     }
 }

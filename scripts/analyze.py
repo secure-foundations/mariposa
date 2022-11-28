@@ -1,10 +1,7 @@
-import random
 from tqdm import tqdm
 from path_utils import *
 from wrap_utils import *
 
-SMT_PLAIN_QLIST_PATH = "data/qlists/smtlib_all_plain_status.csv"
-SMT_EXLUDE_QLIST_PATH = "data/qlists/smtlib_exclude"
 
 def dump_smtlib_plain_status():
     file_paths = list_smt2_files(SMT_ALL_DIR)
@@ -19,31 +16,6 @@ def dump_smtlib_plain_status():
                 else:
                     assert("(set-info :status unknown)" in query)
                     out.write(file_path + ",unknown\n")
-
-# def load_smlib_exclude_qlist():
-#     excludes = set()
-#     with open(SMT_EXLUDE_QLIST_PATH) as f:
-#         for line in f.readlines():
-#             line = line.strip()
-#             excludes.add(line)
-#     return excludes
-
-# excludes = load_smlib_exclude_qlist()
-
-def load_smtlib_qlist(status):
-    filtered = []
-    with open(SMT_PLAIN_QLIST_PATH) as f:
-        for line in f.readlines():
-            line = line.strip().split(",")
-            assert(len(line) == 2)
-            if line[1] == status:
-                filtered.append(line[0])
-    return filtered
-
-def load_random_smtlib_sat_qlist(count):
-    file_paths = load_smtlib_qlist("sat")
-    randlist = random.sample(file_paths, k=count)
-    return randlist
 
 def print_results(des, results):
     total = sum([results[k] for k in RCodes])
@@ -112,6 +84,7 @@ def analyze_exp_res(query_paths):
         pers = load_res_file(qp.plain_exp_res)
         ners = load_res_file(qp.normalize_exp_res)
         sers = load_res_file(qp.shuffle_exp_res)
+        mers = load_res_file(qp.mix_exp_res)
 
         plain_exps[pers["rcode"]] += 1
         normalize_exps[ners["rcode"]] += 1
@@ -120,18 +93,30 @@ def analyze_exp_res(query_paths):
         a = pers["rlimit-count"]
         b = ners["rlimit-count"]
         c = sers["rlimit-count"]
+        d = mers["rlimit-count"]
 
         pb = precent_change(b, a)
         pc = precent_change(c, a)
-        if pb > 100 or pb < -100:
-            print(qp.orig)
-        if pc > 100 or pc < -100:
-            print(qp.orig)
-    # print_results("plain experiment", plain_exps)
-    # print_results("normalize experiment", normalize_exps)
-    # print_results("shuffle experiment", shuffle_exps)
+        pd = precent_change(d, a)
+        # if a == b and b == c:
+        #     print(qp.orig)
+        # if pb > 100 or pb < -100:
+            # print(qp.orig)
+        # if pd > 100 or pd < -100:
+        #     print(qp.orig)
+        #     print(pers["rcode"])
+        #     print(ners["rcode"], pb)
+        #     print(sers["rcode"], pc)
+        #     print(mers["rcode"], pd)
+
+        # if pc > 100 or pc < -100:
+        #     print(qp.orig)
+    print_results("plain experiment", plain_exps)
+    print_results("normalize experiment", normalize_exps)
+    print_results("shuffle experiment", shuffle_exps)
 
 if __name__ == "__main__":
     # query_paths = load_qlist("data/qlists/smtlib_rand100_sat")
+    # query_paths = load_qlist("data/qlists/dafny_rand1K")
     query_paths = load_qlist("data/qlists/smtlib_rand1K_sat")
     analyze_exp_res(query_paths)

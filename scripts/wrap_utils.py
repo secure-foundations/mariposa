@@ -26,6 +26,7 @@ class RCode(StrEnum):
 
     MP_GSE_EP = auto() # mariposa shuffle experiment gen panic (error)
     MP_GNE_EP = auto() # mariposa normalize experiment gen panic (error)
+    MP_GME_EP = auto() # mariposa mix experiment gen panic (error)
 
 code_des = {RCode.Z3_GM_ETO: "z3 model gen timeout (error)",
     RCode.Z3_GM_EU: "z3 model gen unknown (error)",
@@ -38,7 +39,8 @@ code_des = {RCode.Z3_GM_ETO: "z3 model gen timeout (error)",
     RCode.MP_GST_EP: "mariposa (model) shuffle test gen panic (error)",
     RCode.MP_GNT_EP: "mariposa (model) normalize test gen panic (error)",
     RCode.MP_GSE_EP: "mariposa shuffle experiment gen panic (error)",
-    RCode.MP_GNE_EP: "mariposa normalize experiment gen panic (error)"}
+    RCode.MP_GNE_EP: "mariposa normalize experiment gen panic (error)",
+    RCode.MP_GME_EP: "mariposa mix experiment gen panic (error)"}
 
 RCodes = [e.value for e in RCode]
 
@@ -179,6 +181,15 @@ def mp_gen_normalize_exp(query_file, output_file):
     if result.returncode != 0:
         write_rcode(output_file, RCode.MP_GNE_EP)
         print(f"normalize exp gen failed: {output_file}, emiting file with error code")
+
+# this is based on the original query, no model needed
+def mp_gen_normalize_exp(query_file, output_file):
+    command = f"{MARIPOSA_BIN_PATH} -i {query_file} -p mix -o {output_file}"
+    print(command)
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+    if result.returncode != 0:
+        write_rcode(output_file, RCode.MP_GNE_EP)
+        print(f"mix exp gen failed: {output_file}, emiting file with error code")
 
 def main():
     option = sys.argv[1]
