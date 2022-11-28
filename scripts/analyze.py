@@ -36,8 +36,6 @@ def load_res_file(path):
             stats[key] = int(line[1])
         else:
             stats[key] = line[1]
-    if "rlimit-count" not in stats:
-        stats["rlimit-count"] = GLOBAL_RLIMIT * 2
     return stats
 
 def precent_change(curr, orig):
@@ -59,21 +57,52 @@ def analyze_test_res():
         shuffle_tests[strs["rcode"]] += 1
         normalize_tests[ntrs["rcode"]] += 1
 
-        o = pers["rlimit-count"]
+        # o = pers["rlimit-count"]
 
-        a = ptrs["rlimit-count"]
-        b = strs["rlimit-count"]
-        c = ntrs["rlimit-count"]
+        # a = ptrs["rlimit-count"]
+        # b = strs["rlimit-count"]
+        # c = ntrs["rlimit-count"]
 
         # ratios.append(a / b)
         # ratios.append(a / c)
-        ratios.append(o / a)
+        # ratios.append(o / a)
 
-    print(len(ratios), sum(ratios) / len(ratios))
+    # print(len(ratios), sum(ratios) / len(ratios))
 
     print_results("plain test", plain_tests)
     print_results("shuffle test", shuffle_tests)
     print_results("normalize test", normalize_tests)
+
+def compute_raw_score(org_res, cur_res):
+    if org_res["rcode"] != RCode.Z3_R_US:
+        # print("cannot compute rscore: " + org_res["rcode"])
+        return None
+
+    org_rl = org_res["rlimit-count"]
+
+    if cur_res["rcode"] == RCode.Z3_R_TO:
+        return 5 * org_rl
+
+    if cur_res["rcode"] == RCode.Z3_R_US:
+        cur_rl = cur_res["rlimit-count"]
+        if (cur_rl > 2 * org_rl):
+            return 5 * org_rl
+        return cur_rl
+    elif cur_res["rcode"] == RCode.Z3_R_U:
+        cur_rl = cur_res["rlimit-count"]
+        if (cur_rl > 2 * org_rl):
+            return 5 * org_rl
+        return cur_rl + 2 * org_rl
+    else:
+        return None
+
+def compute_rscore(org_res, cur_res):
+    rrs = compute_raw_score(org_res, cur_res)
+    if rrs == None:
+        return None
+    else:
+        rl_5x = 5 * org_res["rlimit-count"]
+        return  (rl_5x -  rrs) / rl_5x
 
 def analyze_exp_res(query_paths):
     plain_exps = {k:0 for k in RCodes}
@@ -90,33 +119,22 @@ def analyze_exp_res(query_paths):
         normalize_exps[ners["rcode"]] += 1
         shuffle_exps[sers["rcode"]] += 1
 
-        a = pers["rlimit-count"]
-        b = ners["rlimit-count"]
-        c = sers["rlimit-count"]
-        d = mers["rlimit-count"]
+        rs1 = compute_rscore(pers, ners)
+        rs2 = compute_rscore(pers, sers)
+        rs3 = compute_rscore(pers, mers)
+        if rs1 != None and rs2 != None and rs3 != None:
+            avg = round((rs1 + rs2 + rs3) / 3, 2)
+            if avg >= 0.85 or avg <= 0.75:
+                print(qp.orig)
+                print(avg)
 
-        pb = precent_change(b, a)
-        pc = precent_change(c, a)
-        pd = precent_change(d, a)
-        # if a == b and b == c:
-        #     print(qp.orig)
-        # if pb > 100 or pb < -100:
-            # print(qp.orig)
-        # if pd > 100 or pd < -100:
-        #     print(qp.orig)
-        #     print(pers["rcode"])
-        #     print(ners["rcode"], pb)
-        #     print(sers["rcode"], pc)
-        #     print(mers["rcode"], pd)
-
-        # if pc > 100 or pc < -100:
-        #     print(qp.orig)
-    print_results("plain experiment", plain_exps)
-    print_results("normalize experiment", normalize_exps)
-    print_results("shuffle experiment", shuffle_exps)
+    # print_results("plain experiment", plain_exps)
+    # print_results("normalize experiment", normalize_exps)
+    # print_results("shuffle experiment", shuffle_exps)
 
 if __name__ == "__main__":
     # query_paths = load_qlist("data/qlists/smtlib_rand100_sat")
     # query_paths = load_qlist("data/qlists/dafny_rand1K")
-    query_paths = load_qlist("data/qlists/smtlib_rand1K_sat")
+    query_paths = load_qlist("data/qlists/smtlib_rand1K_unsat")
+    # query_paths = load_qlist("data/qlists/smtlib_rand1K_sat")
     analyze_exp_res(query_paths)
