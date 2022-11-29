@@ -1,5 +1,6 @@
 /data/dafny
 /data/smtlib
+/data/cdafny/
 /target
 /gen
 .ninja*

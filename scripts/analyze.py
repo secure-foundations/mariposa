@@ -1,7 +1,8 @@
 from tqdm import tqdm
 from path_utils import *
 from wrap_utils import *
-
+import math
+import hashlib
 
 def dump_smtlib_plain_status():
     file_paths = list_smt2_files(SMT_ALL_DIR)
@@ -73,9 +74,14 @@ def analyze_test_res():
     print_results("shuffle test", shuffle_tests)
     print_results("normalize test", normalize_tests)
 
-def compute_raw_score(org_res, cur_res):
+def compute_raw_score(qp, org_res, cur_res):
     if org_res["rcode"] != RCode.Z3_R_US:
         # print("cannot compute rscore: " + org_res["rcode"])
+        if cur_res["rcode"] != org_res["rcode"]:
+            print(org_res["rcode"], cur_res["rcode"])
+            print(org_res["rlimit-count"])
+            print(cur_res["rlimit-count"])
+            print(qp.orig)
         return None
 
     org_rl = org_res["rlimit-count"]
@@ -96,45 +102,75 @@ def compute_raw_score(org_res, cur_res):
     else:
         return None
 
-def compute_rscore(org_res, cur_res):
-    rrs = compute_raw_score(org_res, cur_res)
+def compute_rscore(qp, org_res, cur_res):
+    rrs = compute_raw_score(qp, org_res, cur_res)
     if rrs == None:
         return None
     else:
         rl_5x = 5 * org_res["rlimit-count"]
         return  (rl_5x -  rrs) / rl_5x
 
-def analyze_exp_res(query_paths):
-    plain_exps = {k:0 for k in RCodes}
-    normalize_exps = {k:0 for k in RCodes}
-    shuffle_exps = {k:0 for k in RCodes}
+# BUF_SIZE = 65536
 
+# def file_hash(file_path):
+#     md5 = hashlib.md5()
+#     with open(file_path, 'rb') as f:
+#         while True:
+#             data = f.read(BUF_SIZE)
+#             if not data:
+#                 break
+#             md5.update(data)
+#     return md5.hexdigest()
+
+def compute_deviation(r_scores):
+    vs = []
+    for r_score in r_scores:
+        v = abs(r_score - 0.8)
+        vs.append(v * v)
+    s = sum(vs) / len(r_scores)
+    return math.sqrt(s)
+
+def analyze_exp_res(query_paths):
+    # plain_exps = {k:0 for k in RCodes}
+    # normalize_exps = {k:0 for k in RCodes}
+    # shuffle_exps = {k:0 for k in RCodes}
+
+    skipped = 0
+    bad = 0
     for qp in query_paths:
         pers = load_res_file(qp.plain_exp_res)
-        ners = load_res_file(qp.normalize_exp_res)
-        sers = load_res_file(qp.shuffle_exp_res)
-        mers = load_res_file(qp.mix_exp_res)
+        exps = qp.normalize_exps() + qp.mix_exps() + qp.shuffle_exps()
+        skip = False
 
-        plain_exps[pers["rcode"]] += 1
-        normalize_exps[ners["rcode"]] += 1
-        shuffle_exps[sers["rcode"]] += 1
+        rss = []
+        # hashes = set()
+        for e in exps:
+            # h = file_hash(e.exp)
+            # hashes.add(h)
+            res = load_res_file(e.res)
+            rss.append(compute_rscore(qp, pers, res))
 
-        rs1 = compute_rscore(pers, ners)
-        rs2 = compute_rscore(pers, sers)
-        rs3 = compute_rscore(pers, mers)
-        if rs1 != None and rs2 != None and rs3 != None:
-            avg = round((rs1 + rs2 + rs3) / 3, 2)
-            if avg >= 0.85 or avg <= 0.75:
-                print(qp.orig)
-                print(avg)
+        if None in rss:
+            # print(qp.orig)
+            skipped += 1
+        else:
+            dv = compute_deviation(rss)
+            pass
+
+    print(f"total: {len(query_paths)}")
+    print(f"skipped: {skipped}")
+    print(f"bad: {bad}")
 
     # print_results("plain experiment", plain_exps)
     # print_results("normalize experiment", normalize_exps)
     # print_results("shuffle experiment", shuffle_exps)
 
 if __name__ == "__main__":
+    seeds = [10615679144982909142, 16335111916646947812, 9748429691088265249]
+    # seeds = [15015368442047288680, 5939703375613848744, 13399430324673592423];
     # query_paths = load_qlist("data/qlists/smtlib_rand100_sat")
     # query_paths = load_qlist("data/qlists/dafny_rand1K")
-    query_paths = load_qlist("data/qlists/smtlib_rand1K_unsat")
+    # query_paths = load_qlist("data/qlists/dafny_rand100", seeds)
+    query_paths = load_qlist("data/qlists/smtlib_rand1K_unsat", seeds)
     # query_paths = load_qlist("data/qlists/smtlib_rand1K_sat")
     analyze_exp_res(query_paths)

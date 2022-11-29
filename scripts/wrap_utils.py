@@ -165,8 +165,8 @@ def mp_gen_normalize_test(model_test_file, output_file):
         print(f"normalize test gen failed: {output_file}, emiting file with error code")
 
 # this is based on the original query, no model needed
-def mp_gen_shuffle_exp(query_file, output_file):
-    command = f"{MARIPOSA_BIN_PATH} -i {query_file} -p shuffle -o {output_file}"
+def mp_gen_shuffle_exp(query_file, output_file, seed):
+    command = f"{MARIPOSA_BIN_PATH} -i {query_file} -p shuffle -o {output_file} -s {seed}"
     print(command)
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
@@ -174,8 +174,8 @@ def mp_gen_shuffle_exp(query_file, output_file):
         print(f"shuffle exp gen failed: {output_file}, emiting file with error code")
 
 # this is based on the original query, no model needed
-def mp_gen_normalize_exp(query_file, output_file):
-    command = f"{MARIPOSA_BIN_PATH} -i {query_file} -p normalize -o {output_file}"
+def mp_gen_normalize_exp(query_file, output_file, seed):
+    command = f"{MARIPOSA_BIN_PATH} -i {query_file} -p normalize -o {output_file} -s {seed}"
     print(command)
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
@@ -183,33 +183,20 @@ def mp_gen_normalize_exp(query_file, output_file):
         print(f"normalize exp gen failed: {output_file}, emiting file with error code")
 
 # this is based on the original query, no model needed
-def mp_gen_normalize_exp(query_file, output_file):
-    command = f"{MARIPOSA_BIN_PATH} -i {query_file} -p mix -o {output_file}"
+def mp_gen_mix_exp(query_file, output_file, seed):
+    command = f"{MARIPOSA_BIN_PATH} -i {query_file} -p mix -o {output_file} -s {seed}"
     print(command)
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
         write_rcode(output_file, RCode.MP_GNE_EP)
         print(f"mix exp gen failed: {output_file}, emiting file with error code")
 
-def main():
-    option = sys.argv[1]
-    if option  == "z3_gen_model":
-        z3_gen_model(sys.argv[2], sys.argv[3])
-    elif option == "z3_run":
-        z3_run(sys.argv[2], sys.argv[3])
-    elif option == "mp_gen_plain_test":
-        mp_gen_plain_test(sys.argv[2], sys.argv[3], sys.argv[4])
-    elif option == "mp_gen_shuffle_test":
-        mp_gen_shuffle_test(sys.argv[2], sys.argv[3])
-    elif option == "mp_gen_normalize_test":
-        mp_gen_normalize_test(sys.argv[2], sys.argv[3])
-    elif option == "mp_gen_normalize_exp":
-        mp_gen_normalize_exp(sys.argv[2], sys.argv[3])
-    elif option == "mp_gen_shuffle_exp":
-        mp_gen_shuffle_exp(sys.argv[2], sys.argv[3])
-    else:
-        print("unknown wrap_util option " + option)
-        assert(False)
-
 if __name__ == "__main__":
-    main()
+    if sys.argv[1] in {"mp_gen_mix_exp", "mp_gen_normalize_exp", "mp_gen_shuffle_exp"}:
+        args = "\",\"".join(sys.argv[2:-1])
+        args = "\"" + args + "\"," + sys.argv[-1]
+    else:
+        args = "\",\"".join(sys.argv[2::])
+        args = "\"" + args + "\"," 
+    call = f'{sys.argv[1]} ({args})'
+    eval(call)

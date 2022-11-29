@@ -51,16 +51,22 @@ def clean_dafny_queries():
             content = content[:index+7] + "\n; Valid\n";
             out_file.write(content)
 
+class EPath:
+    def __init__(self, exp_path, seed):
+        self.seed = seed
+        self.exp = exp_path
+        self.res = exp_path + ".r"
+
 class QPath:
-    def __init__(self, query_path):
+    def __init__(self, query_path, seeds):
         assert(os.path.exists(query_path))
         assert(query_path.startswith("data/"))
         assert(query_path.endswith(".smt2"))
         self.orig = query_path
-        gen_path_pre = GEN_DIR + query_path[5::]
+        self.gen_path_pre = GEN_DIR + query_path[5::]
 
         # model path
-        self.model = gen_path_pre + ".mdl"
+        self.model = self.gen_path_pre + ".mdl"
 
         # test paths
         self.plain_test = self.model + ".tp"
@@ -74,20 +80,28 @@ class QPath:
 
         # actual experiment paths
 
-        self.plain_exp_res = gen_path_pre + ".pe.r"
+        self.plain_exp_res = self.gen_path_pre + ".pe.r"
+        self.seeds = seeds
 
-        self.normalize_exp = gen_path_pre + ".ne"
-        self.normalize_exp_res = self.normalize_exp + ".r"
+    def list_exp_paths(self, suffix):
+        exps = []
+        for seed in self.seeds:
+            path = self.gen_path_pre + "." + str(seed) + suffix
+            exps.append(EPath(path, seed))
+        return exps
 
-        self.shuffle_exp = gen_path_pre + ".se"
-        self.shuffle_exp_res = self.shuffle_exp + ".r"
+    def normalize_exps(self):
+        return self.list_exp_paths(".ne")
 
-        self.mix_exp = gen_path_pre + ".me"
-        self.mix_exp_res = self.mix_exp + ".r"
+    def shuffle_exps(self):
+        return self.list_exp_paths(".se")
 
-def load_qlist(qlist_path):
+    def mix_exps(self):
+        return self.list_exp_paths(".me")
+
+def load_qlist(qlist_path, seeds):
     f = open(qlist_path)
-    return [QPath(l.strip()) for l in f.readlines()]
+    return [QPath(l.strip(), seeds) for l in f.readlines()]
 
 def load_smtlib_qlist(status):
     filtered = []

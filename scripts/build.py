@@ -30,10 +30,13 @@ rule z3_run
     command = python3 scripts/wrap_utils.py z3_run $in $out
 
 rule mp_gen_normalize_exp
-    command = python3 scripts/wrap_utils.py mp_gen_normalize_exp $in $out
+    command = python3 scripts/wrap_utils.py mp_gen_normalize_exp $in $out $seed
 
 rule mp_gen_shuffle_exp
-    command = python3 scripts/wrap_utils.py mp_gen_shuffle_exp $in $out
+    command = python3 scripts/wrap_utils.py mp_gen_shuffle_exp $in $out $seed
+
+rule mp_gen_mix_exp
+    command = python3 scripts/wrap_utils.py mp_gen_mix_exp $in $out $seed
 """
 
 # def emit_parse_check_build(file_paths):
@@ -65,19 +68,26 @@ def emit_z3_exp_rules(query_paths):
     print(rules())
     for qp in query_paths:
         # plain experiment
+        print("# emit plain experiment")
         print(f'build {qp.plain_exp_res}: z3_run {qp.orig}')
 
-        # normalize experiment
-        print(f'build {qp.normalize_exp}: mp_gen_normalize_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
-        print(f'build {qp.normalize_exp_res}: z3_run {qp.normalize_exp}')
+        print("# emit normalize experiment")
+        for e in qp.normalize_exps():
+            print(f'build {e.exp}: mp_gen_normalize_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+            print(f"    seed = {e.seed}")
+            print(f'build {e.res}: z3_run {e.exp}')
 
-        # normalize experiment
-        print(f'build {qp.shuffle_exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
-        print(f'build {qp.shuffle_exp_res}: z3_run {qp.shuffle_exp}')
+        print("# emit shuffle experiment")
+        for e in qp.shuffle_exps():
+            print(f'build {e.exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+            print(f"    seed = {e.seed}")
+            print(f'build {e.res}: z3_run {e.exp}')
 
-        # normalize experiment
-        print(f'build {qp.mix_exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
-        print(f'build {qp.mix_exp_res}: z3_run {qp.mix_exp}')
+        print("# emit mix experiment")
+        for e in qp.mix_exps():
+            print(f'build {e.exp}: mp_gen_mix_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+            print(f"    seed = {e.seed}")
+            print(f'build {e.res}: z3_run {e.exp}')
 
 # def parse_check_smtlib_suites():
 #     file_paths = load_smtlib_qlist("sat") + load_smtlib_qlist("unsat")
@@ -91,6 +101,7 @@ if __name__ == "__main__":
     process = subprocess.Popen("cargo build --release --quiet", shell=True)
     process.wait()
     assert(process.returncode == 0)
-
-    query_paths = load_qlist(sys.argv[1])
+    seeds = [random.randint(0, 0xffffffffffffffff) for _ in range(3)]
+    print("#seeds used: " + str(seeds))
+    query_paths = load_qlist(sys.argv[1], seeds)
     emit_z3_exp_rules(query_paths)
