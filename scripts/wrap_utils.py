@@ -4,8 +4,8 @@ import subprocess
 from enum import auto
 from strenum import StrEnum
 
-GLOBAL_RLIMIT = 30000000
-GLOBAL_TIMOUT = 120
+GLOBAL_RLIMIT = 0
+GLOBAL_TIMOUT = 30
 Z3_BIN_PATH = "z3"
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
