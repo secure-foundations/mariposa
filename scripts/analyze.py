@@ -5,6 +5,7 @@ import math
 import hashlib
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.pyplot import figure
 # import seaborn as sns
 
 def dump_smtlib_plain_status():
@@ -144,17 +145,17 @@ def count_above(l, th):
             count += 1
     return count
 
-def analyze_pexp_thread_res(query_paths):
+def analyze_pexp_thread_res_raw(query_paths):
     rc_skipped = 0
     tt_skipped = 0
 
     rpcs_8_4 = list()
     rpcs_16_4 = list()
-    rpcs_4_4 =  list()
 
     tpcs_8_4 = list()
     tpcs_16_4 = list()
-    tpcs_4_4 =  list()
+
+    t4s = list()
 
     for qp in query_paths:
         pers4 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/smtlib4/"))
@@ -177,7 +178,6 @@ def analyze_pexp_thread_res(query_paths):
             rpc_16_4 = percent_change(r16, r4)
             rpcs_16_4.append(rpc_16_4)
 
-            # rpcs_4_4.append(percent_change(r4, r4))
         else:
             rc_skipped += 1
 
@@ -194,14 +194,11 @@ def analyze_pexp_thread_res(query_paths):
 
             tpc_16_4 = percent_change(t16, t4)
             tpcs_16_4.append(tpc_16_4)
-
-            # tpcs_4_4.append(percent_change(t4, t4))
+  
         else:
             tt_skipped += 1
 
     tpcs_16_4 = [400 if i >= 400 else i for i in tpcs_16_4]
-    # tpcs_8_4 = [400 if i >= 400 else i for i in tpcs_8_4]
-
     x1 = np.sort(rpcs_8_4)
     x2 = np.sort(rpcs_16_4)
     x3 = np.sort(tpcs_8_4)
@@ -212,16 +209,111 @@ def analyze_pexp_thread_res(query_paths):
     y = np.arange(n) / float(n)
 
     plt.title('thread count impact on time/rlimit')
-    plt.xlabel('percent change over 4 threads baseline')
+    plt.xlabel('raw percent change over 4 threads baseline')
     plt.ylabel('cumulative probability')
     
     plt.plot(x1, y, marker=',', label='8 threads rlimit')
     plt.plot(x2, y, marker=',', label='16 threads rlimit')
     plt.plot(x3, y, marker=',', label='8 threads time')
     plt.plot(x4, y, marker=',', label='16 threads time', color='blue')
-    # plt.plot(x5, y, marker=',', label='4 threads time')
-    # plt.plot(x6, y, marker=',', label='4 threads rlimit')
     plt.legend()
+    print(rc_skipped, tt_skipped)
+
+    plt.savefig("fig/percent_change_raw")
+
+def analyze_pexp_thread_res_smoothed(query_paths):
+    rc_skipped = 0
+    tt_skipped = 0
+
+    rpcs_8_4 = list()
+    rpcs_16_4 = list()
+
+    tpcs_8_4 = list()
+    raw_tpcs_8_4 = list()
+    tpcs_16_4 = list()
+    raw_tpcs_16_4 = list()
+
+    for qp in query_paths:
+        pers4 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/smtlib4/"))
+        pers8 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/smtlib8/"))
+        pers16 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/smtlib16/"))
+
+        if pers4['rcode'] == RCode.Z3_R_TO:
+            rc_skipped += 1
+            tt_skipped += 1
+            continue
+
+        if RC_KEY in pers16 and RC_KEY in pers8 and RC_KEY in pers4:
+            r4 = int(pers4[RC_KEY])
+            r8 = int(pers8[RC_KEY])
+            r16 = int(pers16[RC_KEY])
+
+            rpc_8_4 = percent_change(r8, r4)
+            rpcs_8_4.append(rpc_8_4)
+
+            rpc_16_4 = percent_change(r16, r4)
+            rpcs_16_4.append(rpc_16_4)
+        else:
+            rc_skipped += 1
+
+        if TT_KEY in pers16 and TT_KEY in pers8 and TT_KEY in pers4:
+            t4 = float(pers4[TT_KEY])
+            t8 = float(pers8[TT_KEY])
+            t16 = float(pers16[TT_KEY])
+
+            if t4 < 1:
+                tpcs_8_4.append(abs(t8 - t4) * 100 / 24)
+                tpcs_16_4.append(abs(t16 - t4) * 100 / 24)
+
+                raw_tpcs_8_4.append(percent_change(t8, max(t4, 0.1)))
+                raw_tpcs_16_4.append(percent_change(t16, max(t4, 0.1)))
+            else:
+                tpc_8_4 = percent_change(t8, t4)
+                tpcs_8_4.append(tpc_8_4)
+                raw_tpcs_8_4.append(tpc_8_4)
+
+                tpc_16_4 = percent_change(t16, t4)
+                tpcs_16_4.append(tpc_16_4)
+                raw_tpcs_16_4.append(tpc_16_4)
+        else:
+            tt_skipped += 1
+
+    tpcs_16_4 = [400 if i >= 400 else i for i in tpcs_16_4]
+    raw_tpcs_16_4 = [400 if i >= 400 else i for i in raw_tpcs_16_4]
+
+    figure, axis = plt.subplots(3, 1)
+    figure.set_figheight(15)
+    figure.set_figwidth(10)
+
+    assert len(rpcs_8_4) == len(rpcs_16_4) == len(raw_tpcs_8_4)
+    n = len(rpcs_8_4)
+    y = np.arange(n) / float(n)
+
+    sp = axis[0]
+
+    sp.set_title('thread count impact on rlimit')
+    sp.plot(np.sort(rpcs_8_4), y, marker=',', label='8 threads rlimit')
+    sp.plot(np.sort(rpcs_16_4), y, marker=',', label='16 threads rlimit')
+    sp.set_ylabel("cumulative probability")
+    sp.set_xlabel("percent change vs 4 threads baseline")
+    sp.legend()
+
+    sp = axis[1]
+    sp.set_title('thread count impact on time (raw)')
+    sp.plot(np.sort(raw_tpcs_8_4), y, marker=',', label='8 threads time')
+    sp.plot(np.sort(raw_tpcs_16_4), y, marker=',', label='16 threads time')
+    sp.set_ylabel("cumulative probability")
+    sp.set_xlabel("percent change vs 4 threads baseline")
+    sp.legend()
+
+    sp = axis[2]
+    sp.set_title('thread count impact on time (smoothed)')
+    sp.plot(np.sort(tpcs_8_4), y, marker=',', label='8 threads time')
+    sp.plot(np.sort(tpcs_16_4), y, marker=',', label='16 threads time')
+    sp.set_ylabel("cumulative probability")
+    sp.set_xlabel("percent change vs 4 threads baseline")
+    sp.legend()
+
     print(rc_skipped, tt_skipped)
 
     plt.savefig("fig/percent_change")
@@ -264,4 +356,4 @@ if __name__ == "__main__":
     # query_paths = load_qlist("data/qlists/dafny_rand100", seeds)
     query_paths = load_qlist("data/qlists/smtlib_rand1K_known", seeds)
     # query_paths = load_qlist("data/qlists/smtlib_rand1K_sat")
-    analyze_pexp_thread_res(query_paths)
+    analyze_pexp_thread_res_smoothed(query_paths)
