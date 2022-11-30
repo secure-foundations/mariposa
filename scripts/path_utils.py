@@ -116,13 +116,17 @@ def load_smtlib_qlist(status):
 def load_random_smtlib_sat_qlist(count):
     file_paths = load_smtlib_qlist("sat")
     randlist = random.sample(file_paths, k=count)
-    randlist = [QPath(f) for f in randlist]
     return randlist
 
 def load_random_smtlib_unsat_qlist(count):
     file_paths = load_smtlib_qlist("unsat")
     randlist = random.sample(file_paths, k=count)
-    randlist = [QPath(f) for f in randlist]
+    return randlist
+
+def load_random_smtlib_known_qlist(count):
+    file_paths = load_smtlib_qlist("unsat") +  load_smtlib_qlist("sat") 
+    randlist = random.sample(file_paths, k=count)
+    # randlist = [QPath(f) for f in randlist]
     return randlist
 
 def load_dafny_qlist(count):
@@ -132,9 +136,21 @@ def load_dafny_qlist(count):
         print(file_path)
     # return [QPath(l.strip()) for l in file_paths]
 
+def load_seeds_file(path):
+    seeds = open(path).read()
+    assert(seeds[0] == "[")
+    assert(seeds[-1] == "]")
+    seeds = eval(seeds)
+    assert(isinstance(seeds, list))
+    for s in seeds:
+        assert(isinstance(s, int))
+        assert(s >= 0)
+    return seeds
+
 if __name__ == "__main__":
     # clean_dafny_queries()
     # replace_path_colons()
     # load_dafny_qlist(1000)
-    for file_path in load_random_smtlib_unsat_qlist(1000):
-        print(file_path.orig)
+    for file_path in load_random_smtlib_known_qlist(10000):
+        print(file_path)
+    # load_seeds_file(sys.argv[1])
