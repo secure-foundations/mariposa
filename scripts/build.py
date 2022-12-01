@@ -27,7 +27,7 @@ rule z3_gen_model
     command = python3 scripts/wrap_utils.py z3_gen_model $in $out
 
 rule z3_run
-    command = python3 scripts/wrap_utils.py z3_run $in $out
+    command = python3 scripts/wrap_utils.py z3_run $in $out $timeout
 
 rule mp_gen_normalize_exp
     command = python3 scripts/wrap_utils.py mp_gen_normalize_exp $in $out $seed
@@ -63,31 +63,34 @@ def emit_z3_model_test_rules(query_paths):
         print(f'build {qp.normalize_test}: mp_gen_normalize_test {qp.shuffle_test} | {MARIPOSA_BIN_PATH}')
         print(f'build {qp.normalize_test_res}: z3_run {qp.normalize_test}')
 
-
-def emit_z3_exp_rules(query_paths):
+def emit_z3_exp_rules(query_paths, timeout):
     print(rules())
     for qp in query_paths:
         # plain experiment
         print("# emit plain experiment")
         print(f'build {qp.plain_exp_res}: z3_run {qp.orig}')
+        print(f"    timeout = {timeout}")
 
         # print("# emit normalize experiment")
         # for e in qp.normalize_exps():
         #     print(f'build {e.exp}: mp_gen_normalize_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
         #     print(f"    seed = {e.seed}")
         #     print(f'build {e.res}: z3_run {e.exp}')
+        #     print(f"    timeout = {timeout}")
 
         # print("# emit shuffle experiment")
         # for e in qp.shuffle_exps():
         #     print(f'build {e.exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
         #     print(f"    seed = {e.seed}")
         #     print(f'build {e.res}: z3_run {e.exp}')
+        #     print(f"    timeout = {timeout}")
 
         # print("# emit mix experiment")
         # for e in qp.mix_exps():
         #     print(f'build {e.exp}: mp_gen_mix_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
         #     print(f"    seed = {e.seed}")
         #     print(f'build {e.res}: z3_run {e.exp}')
+        #     print(f"    timeout = {timeout}")
 
 # def parse_check_smtlib_suites():
 #     file_paths = load_smtlib_qlist("sat") + load_smtlib_qlist("unsat")
@@ -102,7 +105,8 @@ if __name__ == "__main__":
     process.wait()
     assert(process.returncode == 0)
     seeds = load_seeds_file(sys.argv[2])
+    print("#qlist used: " + sys.argv[1])
     print("#seeds used: " + str(seeds))
-    print("#qlist used: " + str(sys.argv[1]))
+    print("#timeout used: " + sys.argv[3])
     query_paths = load_qlist(sys.argv[1], seeds)
-    emit_z3_exp_rules(query_paths)
+    emit_z3_exp_rules(query_paths, int(sys.argv[3]))

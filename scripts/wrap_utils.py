@@ -4,8 +4,6 @@ import subprocess
 from enum import auto
 from strenum import StrEnum
 
-GLOBAL_RLIMIT = 0
-GLOBAL_TIMOUT = 60
 Z3_BIN_PATH = "z3"
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
@@ -82,8 +80,8 @@ def parse_z3_model(model):
     return "\n".join(results)
 
 # dumps the model into output_file
-def z3_gen_model(query_file, output_file):
-    command = f"{Z3_BIN_PATH} {query_file} -model rlimit={GLOBAL_RLIMIT} -T:{GLOBAL_TIMOUT}"
+def z3_gen_model(query_file, output_file, timeout):
+    command = f"{Z3_BIN_PATH} {query_file} -model -T:{timeout}"
     model = subprocess_run(command)
     if "unknown" in model:
         write_rcode(output_file, RCode.Z3_GM_EU)
@@ -127,9 +125,9 @@ def parse_z3_output(result):
         assert(i == len(lines))
     return "\n".join(output_lines)
 
-def z3_run(query_path, output_file):
+def z3_run(query_path, output_file, timeout):
     check_input_rcode(query_path, output_file)
-    command = f"{Z3_BIN_PATH} {query_path} rlimit={GLOBAL_RLIMIT} -T:{GLOBAL_TIMOUT} -st"
+    command = f"{Z3_BIN_PATH} {query_path} -T:{timeout} -st"
     result = subprocess_run(command)
     result = parse_z3_output(result)
     open(output_file, "w+").write(result)
@@ -192,7 +190,7 @@ def mp_gen_mix_exp(query_file, output_file, seed):
         print(f"mix exp gen failed: {output_file}, emiting file with error code")
 
 if __name__ == "__main__":
-    if sys.argv[1] in {"mp_gen_mix_exp", "mp_gen_normalize_exp", "mp_gen_shuffle_exp"}:
+    if sys.argv[1] in {"mp_gen_mix_exp", "mp_gen_normalize_exp", "mp_gen_shuffle_exp", "z3_run"}:
         args = "\",\"".join(sys.argv[2:-1])
         args = "\"" + args + "\"," + sys.argv[-1]
     else:
