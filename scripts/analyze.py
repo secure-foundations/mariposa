@@ -6,6 +6,8 @@ import hashlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.pyplot import figure
+from scipy.stats import gaussian_kde
+import statistics
 
 def dump_smtlib_plain_status():
     file_paths = list_smt2_files(SMT_ALL_DIR)
@@ -31,13 +33,19 @@ def print_results(des, results):
             print(f"{code_des[k]}: {count}")
     print("")
 
+RC_KEY = "rlimit-count"
+TT_KEY = "total-time"
+
 def load_res_file(path):
     stats = dict()
     for line in open(path).readlines():
         line = line.strip().split(",")
         key = line[0]
-        if key == "rlimit-count":
+        if key == RC_KEY:
             stats[key] = int(line[1])
+        elif key == TT_KEY:
+            # assume at least take 0.01 second
+            stats[TT_KEY] = max(float(line[1]), 0.01)
         else:
             stats[key] = line[1]
     return stats
@@ -61,58 +69,48 @@ def analyze_test_res():
         shuffle_tests[strs["rcode"]] += 1
         normalize_tests[ntrs["rcode"]] += 1
 
-        # o = pers["rlimit-count"]
-
-        # a = ptrs["rlimit-count"]
-        # b = strs["rlimit-count"]
-        # c = ntrs["rlimit-count"]
-
-        # ratios.append(a / b)
-        # ratios.append(a / c)
-        # ratios.append(o / a)
-
     # print(len(ratios), sum(ratios) / len(ratios))
 
     print_results("plain test", plain_tests)
     print_results("shuffle test", shuffle_tests)
     print_results("normalize test", normalize_tests)
 
-def compute_raw_score(qp, org_res, cur_res):
-    if org_res["rcode"] != RCode.Z3_R_US:
-        # print("cannot compute rscore: " + org_res["rcode"])
-        if cur_res["rcode"] != org_res["rcode"]:
-            print(org_res["rcode"], cur_res["rcode"])
-            print(org_res["rlimit-count"])
-            print(cur_res["rlimit-count"])
-            print(org_res)
-            print(qp.orig)
-        return None
+# def compute_raw_score(qp, org_res, cur_res):
+#     if org_res["rcode"] != RCode.Z3_R_US:
+#         # print("cannot compute rscore: " + org_res["rcode"])
+#         if cur_res["rcode"] != org_res["rcode"]:
+#             print(org_res["rcode"], cur_res["rcode"])
+#             print(org_res["rlimit-count"])
+#             print(cur_res["rlimit-count"])
+#             print(org_res)
+#             print(qp.orig)
+#         return None
 
-    org_rl = org_res["rlimit-count"]
+#     org_rl = org_res["rlimit-count"]
 
-    if cur_res["rcode"] == RCode.Z3_R_TO:
-        return 5 * org_rl
+#     if cur_res["rcode"] == RCode.Z3_R_TO:
+#         return 5 * org_rl
 
-    if cur_res["rcode"] == RCode.Z3_R_US:
-        cur_rl = cur_res["rlimit-count"]
-        if (cur_rl > 2 * org_rl):
-            return 5 * org_rl
-        return cur_rl
-    elif cur_res["rcode"] == RCode.Z3_R_U:
-        cur_rl = cur_res["rlimit-count"]
-        if (cur_rl > 2 * org_rl):
-            return 5 * org_rl
-        return cur_rl + 2 * org_rl
-    else:
-        return None
+#     if cur_res["rcode"] == RCode.Z3_R_US:
+#         cur_rl = cur_res["rlimit-count"]
+#         if (cur_rl > 2 * org_rl):
+#             return 5 * org_rl
+#         return cur_rl
+#     elif cur_res["rcode"] == RCode.Z3_R_U:
+#         cur_rl = cur_res["rlimit-count"]
+#         if (cur_rl > 2 * org_rl):
+#             return 5 * org_rl
+#         return cur_rl + 2 * org_rl
+#     else:
+#         return None
 
-def compute_rscore(qp, org_res, cur_res):
-    rrs = compute_raw_score(qp, org_res, cur_res)
-    if rrs == None:
-        return None
-    else:
-        rl_5x = 5 * org_res["rlimit-count"]
-        return  (rl_5x -  rrs) / rl_5x
+# def compute_rscore(qp, org_res, cur_res):
+#     rrs = compute_raw_score(qp, org_res, cur_res)
+#     if rrs == None:
+#         return None
+#     else:
+#         rl_5x = 5 * org_res["rlimit-count"]
+#         return  (rl_5x -  rrs) / rl_5x
 
 # BUF_SIZE = 65536
 
@@ -126,6 +124,145 @@ def compute_rscore(qp, org_res, cur_res):
 #             md5.update(data)
 #     return md5.hexdigest()
 
+
+def res_percent_change(curr, orig, key):
+    if key not in curr or key not in orig:
+        return None
+    return percent_change(curr[key], orig[key])
+
+def res_raw_change(curr, orig, key):
+    if key not in curr or key not in orig:
+        return None
+    return (curr[key] - orig[key])
+
+def plot_cdf(sp, data, label):
+    n = len(data)
+    y = np.arange(n) / float(n)
+    label = label + f" ({len(data)})"
+    sp.plot(np.sort(data), y, marker=',', label=label)
+
+def append_if_some(l, v):
+    if v is not None:
+        l.append(v)
+
+def load_changes(query_paths, alt):
+    rpcs = list()
+    racs = list()
+    tpcs = list()
+    tacs = list()
+
+    for qp in query_paths:
+        pers4 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/smtlib_4t_60s/"))
+        pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", alt))
+        append_if_some(rpcs, res_percent_change(pers, pers4, RC_KEY))
+        append_if_some(racs, res_raw_change(pers, pers4, RC_KEY))
+        append_if_some(tpcs, res_percent_change(pers, pers4, TT_KEY))
+        append_if_some(tacs, res_raw_change(pers, pers4, TT_KEY))
+
+    return rpcs, racs, tpcs, tacs
+
+def analyze_percent_change_thread():
+    rc_skipped = 0
+    tt_skipped = 0
+    qlist = "data/qlists/smtlib_rand1K_known"
+    query_paths = load_qlist(qlist, [])
+
+    rpcs_7_4, racs_7_4, tpcs_7_4, tacs_7_4 = load_changes(query_paths, "gen/smtlib_7t_60s/")
+    rpcs_8_4, racs_8_4, tpcs_8_4, tacs_8_4 = load_changes(query_paths, "gen/smtlib_8t_60s/")
+    rpcs_16_4, racs_16_4, tpcs_16_4, tacs_16_4 = load_changes(query_paths, "gen/smtlib_16t_60s/")
+
+    figure, axis = plt.subplots(4, 1)
+    figure.set_figheight(20)
+    figure.set_figwidth(10)
+
+    sp = axis[0]
+    sp.set_title('thread count impact on rlimit (percent change)')
+    plot_cdf(sp, rpcs_7_4, '7 threads rlimit')
+    plot_cdf(sp, rpcs_8_4, '8 threads rlimit')
+    plot_cdf(sp, rpcs_16_4, '16 threads rlimit')
+    sp.set_ylabel("cumulative probability")
+    sp.set_xlabel("percent change vs 4 threads baseline")
+    sp.legend()
+
+    sp = axis[1]
+    sp.set_title('thread count impact on rlimit (raw change)')
+    plot_cdf(sp, racs_7_4, '7 threads rlimit')
+    plot_cdf(sp, racs_8_4, '8 threads rlimit')
+    plot_cdf(sp, racs_16_4, '16 threads rlimit')
+    sp.set_ylabel("cumulative probability")
+    sp.set_xlabel("raw change vs 4 threads baseline")
+    sp.legend()
+
+    sp = axis[2]
+    sp.set_title('thread count impact on time (percent change)')
+    plot_cdf(sp, tpcs_7_4, '7 threads time')
+    plot_cdf(sp, tpcs_8_4, '8 threads time')
+    plot_cdf(sp, tpcs_16_4, '16 threads time')
+    sp.set_ylabel("cumulative probability")
+    sp.set_xlabel("percent change vs 4 threads baseline")
+    sp.legend()
+
+    sp = axis[3]
+    sp.set_title('thread count impact on time (raw change)')
+    plot_cdf(sp, tacs_7_4, '7 threads time')
+    plot_cdf(sp, tacs_8_4, '8 threads time')
+    plot_cdf(sp, tacs_16_4, '16 threads time')
+    sp.set_ylabel("cumulative probability")
+    # sp.set_xscale("log")
+    sp.set_xlabel("raw seconds change vs 4 threads baseline")
+    sp.legend()
+    text = f"""
+data set:
+        {qlist}
+total queries count:
+    {len(query_paths)}
+"""
+    figure.text(0.1, 0.05, text, wrap=False)
+    plt.savefig("fig/thread_count_perf_change")
+
+def analyze_time_rlimit():
+    qlist = "data/qlists/smtlib_rand10K_known"
+    query_paths = load_qlist(qlist, [])
+    tskipped = 0
+    rskipped = 0
+
+    xs = []
+    ys = []
+    for qp in query_paths:
+        pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_tbound"))
+
+        if pers['rcode'] == RCode.Z3_R_TO:
+            tskipped += 1
+            continue
+        if int(pers[RC_KEY]) > 200000000:
+            rskipped += 1
+            continue
+        xs.append(pers[TT_KEY])
+        ys.append(pers[RC_KEY])
+    
+    xy = np.vstack([xs,ys])
+
+    fig, ax = plt.subplots()
+    z = gaussian_kde(xy)(xy)
+    ax.scatter(xs, ys, c=z, marker=".")
+    ax.set_title(f'rlimit and time (30s timeout)\n over {qlist}')
+    ax.set_ylabel("rlimit")
+    text = f"""
+data set:
+    {qlist}
+total queries count:
+    {len(query_paths)}
+thread count:
+    8
+
+skipped queries(30s timeout):
+    {tskipped}
+skipped queries (200000000 rlimit):
+    {rskipped}
+"""
+    ax.set_xlabel(text, x=0, horizontalalignment='left')
+    plt.savefig("fig/time_rlimit", bbox_inches='tight')
+
 def compute_deviation(r_scores):
     vs = []
     for r_score in r_scores:
@@ -134,144 +271,52 @@ def compute_deviation(r_scores):
     s = sum(vs) / len(r_scores)
     return math.sqrt(s)
 
-RC_KEY = "rlimit-count"
-TT_KEY = "total-time"
+def analyze_time_consistency():
+    qlist = "data/qlists/smtlib_rand1K_known"
+    query_paths = load_qlist(qlist, [])
 
-def analyze_percent_change_thread(query_paths):
-    rc_skipped = 0
-    tt_skipped = 0
-
-    rpcs_8_4 = list()
-    rpcs_16_4 = list()
-
-    tpcs_8_4 = list()
-    raw_tpcs_8_4 = list()
-    tpcs_16_4 = list()
-    raw_tpcs_16_4 = list()
-
-    for qp in query_paths:
-        pers4 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/old/smtlib4/"))
-        pers8 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/old/smtlib8/"))
-        pers16 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/old/smtlib16/"))
-
-        if pers4['rcode'] == RCode.Z3_R_TO:
-            rc_skipped += 1
-            tt_skipped += 1
-            continue
-
-        if RC_KEY in pers16 and RC_KEY in pers8 and RC_KEY in pers4:
-            r4 = int(pers4[RC_KEY])
-            r8 = int(pers8[RC_KEY])
-            r16 = int(pers16[RC_KEY])
-
-            rpc_8_4 = percent_change(r8, r4)
-            rpcs_8_4.append(rpc_8_4)
-
-            rpc_16_4 = percent_change(r16, r4)
-            rpcs_16_4.append(rpc_16_4)
-        else:
-            rc_skipped += 1
-
-        if TT_KEY in pers16 and TT_KEY in pers8 and TT_KEY in pers4:
-            t4 = max(float(pers4[TT_KEY]), 0.01)
-            t8 = max(float(pers8[TT_KEY]), 0.01)
-            t16 = max(float(pers16[TT_KEY]), 0.01)
-
-            pc_8_4 = percent_change(t8, t4)
-            pc_16_4 = percent_change(t16, t4)
-
-            if abs(t8 - t4) < 1:
-                tpcs_8_4.append(0)
-            else:
-                tpcs_8_4.append(pc_8_4)
-
-            if abs(t16 - t4) < 1:
-                tpcs_16_4.append(0)
-            else:
-                tpcs_16_4.append(pc_16_4)
-                if pc_16_4 > 100:
-                    print(qp.orig)
-
-
-            raw_tpcs_8_4.append(pc_8_4)
-            raw_tpcs_16_4.append(pc_16_4)
-        else:
-            tt_skipped += 1
-
-    print(rc_skipped, len(rpcs_8_4))
-    print(tt_skipped, len(raw_tpcs_8_4))
-
-    tpcs_16_4 = [400 if i >= 400 else i for i in tpcs_16_4]
-    raw_tpcs_16_4 = [400 if i >= 400 else i for i in raw_tpcs_16_4]
-
-    figure, axis = plt.subplots(3, 1)
-    figure.set_figheight(15)
-    figure.set_figwidth(10)
-
-    assert len(rpcs_8_4) == len(rpcs_16_4)
-    n = len(rpcs_8_4)
-    y = np.arange(n) / float(n)
-
-    sp = axis[0]
-    sp.set_title('thread count impact on rlimit')
-    sp.plot(np.sort(rpcs_8_4), y, marker=',', label='8 threads rlimit')
-    sp.plot(np.sort(rpcs_16_4), y, marker=',', label='16 threads rlimit')
-    sp.set_ylabel("cumulative probability")
-    sp.set_xlabel("percent change vs 4 threads baseline")
-    sp.legend()
-
-    assert len(raw_tpcs_8_4) == len(tpcs_16_4)
-    n = len(raw_tpcs_8_4)
-    y = np.arange(n) / float(n)
-
-    sp = axis[1]
-    sp.set_title('thread count impact on time (raw)')
-    sp.plot(np.sort(raw_tpcs_8_4), y, marker=',', label='8 threads time')
-    sp.plot(np.sort(raw_tpcs_16_4), y, marker=',', label='16 threads time')
-    sp.set_ylabel("cumulative probability")
-    sp.set_xlabel("percent change vs 4 threads baseline")
-    sp.legend()
-
-    sp = axis[2]
-    sp.set_title('thread count impact on time (smoothed)')
-    sp.plot(np.sort(tpcs_8_4), y, marker=',', label='8 threads time')
-    sp.plot(np.sort(tpcs_16_4), y, marker=',', label='16 threads time')
-    sp.set_ylabel("cumulative probability")
-    sp.set_xlabel("percent change vs 4 threads baseline")
-    sp.legend()
-
-    plt.savefig("fig/percent_change")
-
-from scipy.stats import gaussian_kde
-
-def analyze_time_rlimit(query_paths):
+    t_count = 0
+    r_count = 0
     skipped = 0
-    # np.array()
-    xs = []
-    ys = []
+
     for qp in query_paths:
-        # pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/old/smtlib10K_rbound/"))
-        pers = load_res_file(qp.plain_exp_res)
+        pers0 = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_4t_0"))
+        pers1 = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_4t_1"))
+        pers2 = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_4t_2"))
+        pers3 = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_4t_3"))
 
-        if pers['rcode'] == RCode.Z3_R_TO:
+        if pers0['rcode'] == RCode.Z3_R_TO:
+            assert pers1['rcode'] == RCode.Z3_R_TO
+            assert pers2['rcode'] == RCode.Z3_R_TO
+            assert pers3['rcode'] == RCode.Z3_R_TO
             skipped += 1
             continue
-        if int(pers[RC_KEY]) > 200000000:
-            skipped += 1
-            continue
-        xs.append(float(pers[TT_KEY]))
-        ys.append(int(pers[RC_KEY]))
-    print(skipped, len(xs))
-    
-    xy = np.vstack([xs,ys])
+        t0 = float(pers0[TT_KEY])
+        t1 = float(pers1[TT_KEY])
+        t2 = float(pers2[TT_KEY])
+        t3 = float(pers3[TT_KEY])
+        sd = statistics.stdev([t0, t1, t2, t3])
+        if sd > 0.1:
+            t_count += 1
+        
+        r0 = int(pers0[RC_KEY])
+        r1 = int(pers1[RC_KEY])
+        r2 = int(pers2[RC_KEY])
+        r3 = int(pers3[RC_KEY])
+        sd = statistics.stdev([r0, r1, r2, r3])
+        if sd > 300000:
+            r_count += 1
 
-    fig, ax = plt.subplots()
-    z = gaussian_kde(xy)(xy)
-    ax.scatter(xs, ys, c=z, marker=".")
-    ax.set_title('rlimit and time (30s timeout)')
-    ax.set_ylabel("rlimit")
-    ax.set_xlabel("seconds")
-    plt.savefig("fig/time_rlimit")
+    print("summary on time variance experiments\n")
+    print("data set:\n\t" + qlist)
+    print(f"total queries count:\n\t{len(query_paths)}")
+    print("thread count:\n\t4")
+    print("trials per query:\n\t4")
+
+    print(f"\nskipped queries(30s timeout):\n\t{skipped}")
+    print(f"standard deviation in time > 0.1 second:\n\t{t_count}")
+    print(f"standard deviation in rlimit-count > 300000:\n\t{r_count}")
+    print("")
 
 # def analyze_exp_res(query_paths):
 #     # plain_exps = {k:0 for k in RCodes}
@@ -295,7 +340,6 @@ def analyze_time_rlimit(query_paths):
 #         else:
 #             skipped += 1
 
-
 #     print(f"total: {len(query_paths)}")
 #     print(f"skipped: {skipped}")
 #     print(f"bad: {bad}")
@@ -306,12 +350,10 @@ def analyze_time_rlimit(query_paths):
 
 if __name__ == "__main__":
     seeds = load_seeds_file("data/seeds/3_seeds")
-    # query_paths = load_qlist("data/qlists/smtlib_rand100_sat", "seeds")
+    # query_paths = load_qlist("data/qlists/smtlib_rand100_sat", seeds)
     # query_paths = load_qlist("data/qlists/dafny_rand1K", seeds)
     # query_paths = load_qlist("data/qlists/dafny_rand100", seeds)
     # query_paths = load_qlist("data/qlists/smtlib_rand1K_known", seeds)
-    # analyze_percent_change_thread(query_paths)
-
-    query_paths = load_qlist("data/qlists/smtlib_rand10K_known", seeds)
-    analyze_time_rlimit(query_paths)
-    # query_paths = load_qlist("data/qlists/smtlib_rand1K_sat")
+    analyze_percent_change_thread()
+    # analyze_time_rlimit()
+    # analyze_time_consistency()

@@ -103,5 +103,6 @@ if __name__ == "__main__":
     assert(process.returncode == 0)
     seeds = load_seeds_file(sys.argv[2])
     print("#seeds used: " + str(seeds))
+    print("#qlist used: " + str(sys.argv[1]))
     query_paths = load_qlist(sys.argv[1], seeds)
     emit_z3_exp_rules(query_paths)

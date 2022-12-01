@@ -5,7 +5,7 @@ from enum import auto
 from strenum import StrEnum
 
 GLOBAL_RLIMIT = 0
-GLOBAL_TIMOUT = 30
+GLOBAL_TIMOUT = 60
 Z3_BIN_PATH = "z3"
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
