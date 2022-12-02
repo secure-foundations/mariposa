@@ -4,7 +4,7 @@ import subprocess
 from enum import auto
 from strenum import StrEnum
 
-Z3_BIN_PATH = "z3"
+Z3_BIN_PATH = "/home/yizhou7/z3/build/z3"
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
 class RCode(StrEnum):
@@ -109,20 +109,20 @@ def parse_z3_output(result):
     output_lines = []
     assert(code != None)
     output_lines.append(f"rcode,{code}")
-    if code != RCode.Z3_R_TO:
-        assert(lines[i].startswith("(:"))
-        while i < len(lines):
-            line = lines[i]
-            assert(line.startswith(" :") or line.startswith("(:"))
-            if line.endswith(")"):
-                line = line[2:-1]
-            else:
-                line = line[2::]
-            line = line.split()
-            output_lines.append(f"{line[0]},{line[1]}")
-            i += 1
-    else:
-        assert(i == len(lines))
+
+    assert(i < len(lines) and lines[i].startswith("(:"))
+
+    while i < len(lines):
+        line = lines[i]
+        assert(line.startswith(" :") or line.startswith("(:"))
+        if line.endswith(")"):
+            line = line[2:-1]
+        else:
+            line = line[2::]
+        line = line.split()
+        output_lines.append(f"{line[0]},{line[1]}")
+        i += 1
+    assert(i == len(lines))
     return "\n".join(output_lines)
 
 def z3_run(query_path, output_file, timeout):
@@ -186,7 +186,7 @@ def mp_gen_mix_exp(query_file, output_file, seed):
     print(command)
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
-        write_rcode(output_file, RCode.MP_GNE_EP)
+        write_rcode(output_file, RCode.MP_GME_EP)
         print(f"mix exp gen failed: {output_file}, emiting file with error code")
 
 if __name__ == "__main__":

@@ -66,31 +66,30 @@ def emit_z3_model_test_rules(query_paths):
 def emit_z3_exp_rules(query_paths, timeout):
     print(rules())
     for qp in query_paths:
-        # plain experiment
         print("# emit plain experiment")
         print(f'build {qp.plain_exp_res}: z3_run {qp.orig}')
         print(f"    timeout = {timeout}")
 
-        # print("# emit normalize experiment")
-        # for e in qp.normalize_exps():
-        #     print(f'build {e.exp}: mp_gen_normalize_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
-        #     print(f"    seed = {e.seed}")
-        #     print(f'build {e.res}: z3_run {e.exp}')
-        #     print(f"    timeout = {timeout}")
+        print("# emit normalize experiment")
+        for e in qp.normalize_exps():
+            print(f'build {e.exp}: mp_gen_normalize_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+            print(f"    seed = {e.seed}")
+            print(f'build {e.res}: z3_run {e.exp}')
+            print(f"    timeout = {timeout}")
 
-        # print("# emit shuffle experiment")
-        # for e in qp.shuffle_exps():
-        #     print(f'build {e.exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
-        #     print(f"    seed = {e.seed}")
-        #     print(f'build {e.res}: z3_run {e.exp}')
-        #     print(f"    timeout = {timeout}")
+        print("# emit shuffle experiment")
+        for e in qp.shuffle_exps():
+            print(f'build {e.exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+            print(f"    seed = {e.seed}")
+            print(f'build {e.res}: z3_run {e.exp}')
+            print(f"    timeout = {timeout}")
 
-        # print("# emit mix experiment")
-        # for e in qp.mix_exps():
-        #     print(f'build {e.exp}: mp_gen_mix_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
-        #     print(f"    seed = {e.seed}")
-        #     print(f'build {e.res}: z3_run {e.exp}')
-        #     print(f"    timeout = {timeout}")
+        print("# emit mix experiment")
+        for e in qp.mix_exps():
+            print(f'build {e.exp}: mp_gen_mix_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+            print(f"    seed = {e.seed}")
+            print(f'build {e.res}: z3_run {e.exp}')
+            print(f"    timeout = {timeout}")
 
 # def parse_check_smtlib_suites():
 #     file_paths = load_smtlib_qlist("sat") + load_smtlib_qlist("unsat")

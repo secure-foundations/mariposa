@@ -351,52 +351,51 @@ def analyze_time_consistency():
     print(f"standard deviation in rlimit-count > 300000:\n\t{r_count}")
     print("")
 
-# def analyze_exp_res(query_paths):
-#     # plain_exps = {k:0 for k in RCodes}
-#     # normalize_exps = {k:0 for k in RCodes}
-#     # shuffle_exps = {k:0 for k in RCodes}
+def analyze_exp_res(query_paths):
+    for qp in query_paths:
+        pers = load_res_file(qp.plain_exp_res)
+        exps = qp.normalize_exps() + qp.shuffle_exps() + qp.mix_exps()
+        flip_count = 0
+        print(ers[RC_KEY])
 
-#     skipped = 0
-#     bad = 0
-#     for qp in query_paths:
-#         pers = load_res_file(qp.plain_exp_res)
-#         # exps = qp.normalize_exps() + qp.mix_exps() + qp.shuffle_exps()
-#         pers8 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/smtlib8/"))
-#         pers16 = load_res_file(qp.plain_exp_res.replace("gen/smtlib/", "gen/smtlib16/"))
-
-#         if "rlimit-count" in pers16 and "rlimit-count" in pers:
-#             o = int(pers["rlimit-count"]) 
-#             a = int(pers16["rlimit-count"])
-#             pc = percent_change(a, o)
-#             if pc > 50:
-#                 print(pc)
-#         else:
-#             skipped += 1
-
-#     print(f"total: {len(query_paths)}")
-#     print(f"skipped: {skipped}")
-#     print(f"bad: {bad}")
+        for exp in exps:
+            ers = load_res_file(exp.res)
+            print(ers[RC_KEY])
+            # if ers[RC_KEY] in {RCode.MP_GSE_EP, RCode.MP_GNE_EP, RCode.MP_GME_EP}:
+            #     print("oh no")
+            #     continue
+            # if ers[RC_KEY] != pers[RC_KEY]:
+            #     print(qp.orig)
+            #     print(exp.exp)
+            #     print(pers)
+            #     print(ers)
+            #     flip_count += 1
+            #     print("")
+        # if flip_count != 0:
+        #     print(flip_count)
 
     # print_results("plain experiment", plain_exps)
     # print_results("normalize experiment", normalize_exps)
     # print_results("shuffle experiment", shuffle_exps)
 
-def get_timeout_qlist():
-    qlist = "data/qlists/smtlib_rand10K_known"
-    query_paths = load_qlist(qlist, [])
-    timeouts = []
+# def get_timeout_qlist():
+#     qlist = "data/qlists/smtlib_rand10K_known"
+#     query_paths = load_qlist(qlist, [])
+#     timeouts = []
 
-    for qp in query_paths:
-        pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_tbound"))
-        if pers[RC_KEY] == RCode.Z3_R_TO:
-            print(qp.orig)
-            # timeouts.append(qp.orig)
-    # return timeouts
+#     for qp in query_paths:
+#         pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_tbound"))
+#         if pers[RC_KEY] == RCode.Z3_R_TO:
+#             print(qp.orig)
 
 if __name__ == "__main__":
-    seeds = load_seeds_file("data/seeds/3_seeds")
     # analyze_perf_change_thread()
     # analyze_time_rlimit_correlation()
-    analyze_time_distribution()
+    # analyze_time_distribution()
     # get_timeout_qlist()
     # analyze_time_consistency()
+    seeds = load_seeds_file("data/seeds/3_seeds")
+    # query_paths = load_qlist("data/qlists/smtlib_rand1K_known", seeds)
+    query_paths = load_qlist("data/qlists/dafny_rand1K", seeds)
+    analyze_exp_res(query_paths)
+
