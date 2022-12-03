@@ -1,6 +1,7 @@
 import sys
 import os
 import random
+from config_utils import *
 
 DFY_RAW_DIR = "data/dafny/"
 DFY_CLEAN_DIR = "data/cdafny/"
@@ -51,106 +52,113 @@ def clean_dafny_queries():
             content = content[:index+7] + "\n; Valid\n";
             out_file.write(content)
 
-class EPath:
-    def __init__(self, exp_path, seed):
-        self.seed = seed
-        self.exp = exp_path
-        self.res = exp_path + ".r"
+# same query (mutation), same seed, different runs are in the same TrailGroup
+class TrailGroup:
+    def __init__(self, exp_path, trials):
+        # number of trials
+        self.trials = trials
+        # path of the experiment file
+        self.exp_path = exp_path
+        # path of the result files
+        self.ress = list()
+
+        if trials == 1:
+            self.ress.append(exp_path + f".r")
+        else:
+            for i in range(trials):
+                self.ress.append(exp_path + f".{i}.r")
+
+# same mutation, different seeds are in the the same MutationGroup
+class MutationGroup:
+    def __init__(self, exp_prefix, suffix, config):
+        self.tgroups = []
+        # path of all result files
+        self.ress = []
+
+        for seed in config.seeds:
+            exp_path = exp_prefix + "." + str(seed) + "." + suffix
+            tg = TrailGroup(exp_path, config.trials)
+            self.tgroups.append(tg)
+            self.ress += tg.ress
 
 class QPath:
-    def __init__(self, query_path, seeds):
+    def __init__(self, query_path, config):
         assert(os.path.exists(query_path))
         assert(query_path.startswith("data/"))
         assert(query_path.endswith(".smt2"))
         self.orig = query_path
-        self.gen_path_pre = GEN_DIR + query_path[5::]
+        gen_path_pre = config.prefix + query_path[5::]
 
+        # there is only one trail group for plain
+        self.plain_tg = TrailGroup(gen_path_pre + ".pe", config.trials)
+
+        if config.seeds != []:
+            # each mutation group contains several trail groups
+            self.normalize_mg = MutationGroup(gen_path_pre, "ne", config)
+            self.shuffle_mg = MutationGroup(gen_path_pre, "se", config)
+            self.mixed_mg = MutationGroup(gen_path_pre, "me", config)
+        
         # model path
-        self.model = self.gen_path_pre + ".mdl"
+        # self.model = self.gen_path_pre + ".mdl"
 
-        # test paths
-        self.plain_test = self.model + ".tp"
-        self.plain_test_res = self.plain_test + ".r"
+        # # test paths
+        # self.plain_test = self.model + ".tp"
+        # self.plain_test_res = self.plain_test + ".r"
 
-        self.shuffle_test = self.model + ".ts"
-        self.shuffle_test_res = self.shuffle_test + ".r"
+        # self.shuffle_test = self.model + ".ts"
+        # self.shuffle_test_res = self.shuffle_test + ".r"
 
-        self.normalize_test = self.model + ".tn"
-        self.normalize_test_res = self.normalize_test + ".r"
+        # self.normalize_test = self.model + ".tn"
+        # self.normalize_test_res = self.normalize_test + ".r"
 
-        # actual experiment paths
-
-        self.plain_exp_res = self.gen_path_pre + ".pe.r"
-        self.seeds = seeds
-
-    def list_exp_paths(self, suffix):
-        exps = []
-        for seed in self.seeds:
-            path = self.gen_path_pre + "." + str(seed) + suffix
-            exps.append(EPath(path, seed))
-        return exps
-
-    def normalize_exps(self):
-        return self.list_exp_paths(".ne")
-
-    def shuffle_exps(self):
-        return self.list_exp_paths(".se")
-
-    def mix_exps(self):
-        return self.list_exp_paths(".me")
-
-def load_qlist(qlist_path, seeds):
-    f = open(qlist_path)
-    return [QPath(l.strip(), seeds) for l in f.readlines()]
-
-def load_smtlib_qlist(status):
+def load_smtlib_qlist(status=None):
     filtered = []
     with open(SMT_PLAIN_QLIST_PATH) as f:
         for line in f.readlines():
             line = line.strip().split(",")
             assert(len(line) == 2)
-            if line[1] == status:
+            if status == None or line[1] == status:
                 filtered.append(line[0])
     return filtered
 
-def load_random_smtlib_sat_qlist(count):
-    file_paths = load_smtlib_qlist("sat")
-    randlist = random.sample(file_paths, k=count)
-    return randlist
+# def load_random_smtlib_sat_qlist(count):
+#     file_paths = load_smtlib_qlist("sat")
+#     randlist = random.sample(file_paths, k=count)
+#     return randlist
 
-def load_random_smtlib_unsat_qlist(count):
-    file_paths = load_smtlib_qlist("unsat")
-    randlist = random.sample(file_paths, k=count)
-    return randlist
+# def load_random_smtlib_unsat_qlist(count):
+#     file_paths = load_smtlib_qlist("unsat")
+#     randlist = random.sample(file_paths, k=count)
+#     return randlist
 
-def load_random_smtlib_known_qlist(count):
-    file_paths = load_smtlib_qlist("unsat") +  load_smtlib_qlist("sat") 
-    randlist = random.sample(file_paths, k=count)
-    # randlist = [QPath(f) for f in randlist]
-    return randlist
+# def load_random_smtlib_known_qlist(count):
+#     file_paths = load_smtlib_qlist("unsat") +  load_smtlib_qlist("sat") 
+#     randlist = random.sample(file_paths, k=count)
+#     return randlist
 
-def load_dafny_qlist(count):
-    file_paths = list_smt2_files(DFY_CLEAN_DIR)
-    file_paths = random.sample(file_paths, k=count)
-    for file_path in file_paths:
-        print(file_path)
-    # return [QPath(l.strip()) for l in file_paths]
+# def load_dafny_qlist(count):
+#     file_paths = list_smt2_files(DFY_CLEAN_DIR)
+#     file_paths = random.sample(file_paths, k=count)
+#     for file_path in file_paths:
+#         print(file_path)
 
-def load_seeds_file(path):
-    seeds = open(path).read()
-    assert(seeds[0] == "[")
-    assert(seeds[-1] == "]")
-    seeds = eval(seeds)
-    assert(isinstance(seeds, list))
-    for s in seeds:
-        assert(isinstance(s, int))
-        assert(s >= 0)
-    return seeds
+def load_qlist(config):
+    f = open(config.qlist_path)
+    return [QPath(l.strip(), config) for l in f.readlines()]
 
 if __name__ == "__main__":
     # clean_dafny_queries()
     # replace_path_colons()
     # load_dafny_qlist(1000)
-    for file_path in load_random_smtlib_known_qlist(10000):
-        print(file_path)
-    # load_seeds_file(sys.argv[1])
+    # qpaths = load_qlist(DFY100_STABLE_EXP_CONFIG)
+    # for qp in qpaths:
+    #     ptg = qp.plain_tg
+    #     assert(len(ptg.ress) == 1)
+    #     assert(len(set(qp.normalize_mg.ress)) == 3)
+    #     assert(len(set(qp.shuffle_mg.ress)) == 3)
+    #     assert(len(set(qp.mixed_mg.ress)) == 3)
+
+    file_paths = load_smtlib_qlist(None)
+    randlist = random.sample(file_paths, k=10000)
+    for f in randlist:
+        print(f)

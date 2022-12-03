@@ -1,11 +1,13 @@
 # from tqdm import tqdm
 from path_utils import *
 from wrap_utils import *
+from config_utils import *
 import math
 import hashlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.pyplot import figure
+from matplotlib import ticker
 from scipy.stats import gaussian_kde
 import statistics
 
@@ -223,78 +225,77 @@ total queries count:
 
 def analyze_time_rlimit_correlation():
     qlist = "data/qlists/smtlib_rand10K_known"
-    query_paths = load_qlist(qlist, [])
+    qpaths = load_qlist(qlist, prefix="gen/smtlib_10K_120s_TO/", seeds=[], trials=1)
     tskipped = 0
     rskipped = 0
 
     xs = []
     ys = []
-    for qp in query_paths:
-        pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_tbound"))
+    for qp in qpaths:
+        ptg = qp.plain_tg
+        assert(len(ptg.ress) == 1)
+        for resf in ptg.ress:
+            resf = resf.replace("smtlib/", "", 1)
+            try:
+                res = load_res_file(resf)
+                xs.append(res[TT_KEY])
+                ys.append(res[RL_KEY])
+            except:
+                print(resf)
+                print("oops")
 
-        if pers['rcode'] == RCode.Z3_R_TO:
-            tskipped += 1
-            continue
-        if int(pers[RL_KEY]) > 200000000:
-            rskipped += 1
-            continue
-        xs.append(pers[TT_KEY])
-        ys.append(pers[RL_KEY])
-    
     xy = np.vstack([xs,ys])
 
     fig, ax = plt.subplots()
     z = gaussian_kde(xy)(xy)
     ax.scatter(xs, ys, c=z, marker=".")
-    ax.set_title(f'rlimit and time (30s timeout)\n over {qlist}')
+    ax.set_title(f'rlimit and time (120s timeout)\n over {qlist}')
     ax.set_ylabel("rlimit")
     text = f"""
 data set:
     {qlist}
 total queries count:
-    {len(query_paths)}
+    {len(qpaths)}
 thread count:
     8
 
-skipped queries(30s timeout):
-    {tskipped}
 skipped queries (200000000 rlimit):
     {rskipped}
 """
     ax.set_xlabel(text, x=0, horizontalalignment='left')
     plt.savefig("fig/time_rlimit", bbox_inches='tight')
 
-def analyze_time_distribution():
-    qlist = "data/qlists/smtlib_rand10K_known_30s_TO"
-    query_paths = load_qlist(qlist, [])
-    xs = []
+# def analyze_time_distribution():
+#     qlist = "data/qlists/smtlib_rand10K_known_30s_TO"
+#     query_paths = load_qlist(qlist, [])
+#     xs = []
 
-    for qp in query_paths:
-        pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_TO_30_120s"))
-        if pers[RC_KEY] == RCode.Z3_R_TO:
-            xs.append(120)
-        else:
-            xs.append(pers[TT_KEY])
+#     for qp in query_paths:
+#         pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_TO_30_120s"))
+#         if pers[RC_KEY] == RCode.Z3_R_TO:
+#             xs.append(120)
+#         else:
+#             xs.append(pers[TT_KEY])
 
-    qlist = "data/qlists/smtlib_rand10K_known"
+#     qlist = "data/qlists/smtlib_rand10K_known"
 
-    query_paths = load_qlist(qlist, [])
+#     query_paths = load_qlist(qlist, [])
 
-    for qp in query_paths:
-        pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_tbound"))
-        if pers[RC_KEY] == RCode.Z3_R_TO:
-            pass
-        else:
-            xs.append(pers[TT_KEY])
+#     for qp in query_paths:
+#         pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_tbound"))
+#         if pers[RC_KEY] == RCode.Z3_R_TO:
+#             pass
+#         else:
+#             xs.append(pers[TT_KEY])
 
-    plt.title(f"time cdf on {qlist} (120s)")
-    plot_cdf(plt, xs, "all")
-    # xs = list(filter(lambda x: x >= 1, xs))
-    # plot_cdf(plt, xs, "1 second and above")
-    plt.legend()
-    plt.ylabel("cumulative probability")
-    # plt.xscale("log", basex=2)
-    plt.savefig("fig/time_cdf")
+    # plt.title(f"time cdf on {qlist} (120s)")
+    # plot_cdf(plt, xs, "all")
+    # # xs = list(filter(lambda x: x >= 1, xs))
+    # # plot_cdf(plt, xs, "1 second and above")
+    # plt.legend()
+    # plt.ylabel("cumulative probability")
+    # # plt.xscale("log", basex=2)
+    # plt.savefig("fig/time_cdf")
 
 def compute_deviation(r_scores):
     vs = []
@@ -304,52 +305,48 @@ def compute_deviation(r_scores):
     s = sum(vs) / len(r_scores)
     return math.sqrt(s)
 
-def analyze_time_consistency():
-    qlist = "data/qlists/smtlib_rand1K_known"
-    query_paths = load_qlist(qlist, [])
+def rlimit_fmt(x, pos): # your custom formatter function: divide by 100.0
+    s = '{}e6'.format(x / 1000000)
+    return s
 
-    t_count = 0
-    r_count = 0
-    skipped = 0
+def analyze_perf_consistency():
+    qpaths = load_qlist(CONSISTENCY_EXP_CONFIG)
 
-    for qp in query_paths:
-        pers0 = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_4t_0"))
-        pers1 = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_4t_1"))
-        pers2 = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_4t_2"))
-        pers3 = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_4t_3"))
+    time_sds = []
+    rlimit_sds = []
 
-        if pers0['rcode'] == RCode.Z3_R_TO:
-            assert pers1['rcode'] == RCode.Z3_R_TO
-            assert pers2['rcode'] == RCode.Z3_R_TO
-            assert pers3['rcode'] == RCode.Z3_R_TO
-            skipped += 1
-            continue
-        t0 = float(pers0[TT_KEY])
-        t1 = float(pers1[TT_KEY])
-        t2 = float(pers2[TT_KEY])
-        t3 = float(pers3[TT_KEY])
-        sd = statistics.stdev([t0, t1, t2, t3])
-        if sd > 0.1:
-            t_count += 1
-        
-        r0 = int(pers0[RL_KEY])
-        r1 = int(pers1[RL_KEY])
-        r2 = int(pers2[RL_KEY])
-        r3 = int(pers3[RL_KEY])
-        sd = statistics.stdev([r0, r1, r2, r3])
-        if sd > 300000:
-            r_count += 1
+    for qp in qpaths:
+        ptg = qp.plain_tg
+        times = []
+        rlimits = []
+        for resf in ptg.ress:
+            res = load_res_file(resf)
+            times.append(res[TT_KEY])
+            rlimits.append(res[RL_KEY])
+        assert(len(times) == len(rlimits) == 4)
+        sd = statistics.stdev(times)
+        time_sds.append(round(sd, 4))
+        sd = statistics.stdev(rlimits)
+        rlimit_sds.append(sd)
 
-    print("summary on time variance experiments\n")
-    print("data set:\n\t" + qlist)
-    print(f"total queries count:\n\t{len(query_paths)}")
-    print("thread count:\n\t4")
-    print("trials per query:\n\t4")
+    figure, axis = plt.subplots(2, 1)
+    figure.set_figheight(10)
+    figure.set_figwidth(10)
 
-    print(f"\nskipped queries(30s timeout):\n\t{skipped}")
-    print(f"standard deviation in time > 0.1 second:\n\t{t_count}")
-    print(f"standard deviation in rlimit-count > 300000:\n\t{r_count}")
-    print("")
+    sp = axis[0]
+    sp.set_title('histrgram of standard deviation of run time')
+    sp.hist(time_sds, 100)
+    sp.set_ylabel("count")
+    sp.set_xlabel("seconds (30 seconds timeout)")
+
+    sp = axis[1]
+    sp.set_title('histrgram of standard deviation of rlimit-count')
+    sp.hist(rlimit_sds, 100)
+    sp.set_ylabel("count")
+    xfmt = ticker.FuncFormatter(rlimit_fmt)
+    sp.xaxis.set_major_formatter(xfmt)
+    sp.set_xlabel("rlimit (3.0e6 cosidered 1 second)\n\n" + str(CONSISTENCY_EXP_CONFIG), x=0, horizontalalignment='left')
+    plt.savefig("fig/perf_std")
 
 def analyze_exp_res(query_paths):
     for qp in query_paths:
@@ -393,9 +390,5 @@ if __name__ == "__main__":
     # analyze_time_rlimit_correlation()
     # analyze_time_distribution()
     # get_timeout_qlist()
-    # analyze_time_consistency()
-    seeds = load_seeds_file("data/seeds/3_seeds")
-    # query_paths = load_qlist("data/qlists/smtlib_rand1K_known", seeds)
-    query_paths = load_qlist("data/qlists/dafny_rand1K", seeds)
-    analyze_exp_res(query_paths)
+    analyze_perf_consistency()
 

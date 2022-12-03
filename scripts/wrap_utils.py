@@ -110,7 +110,12 @@ def parse_z3_output(result):
     assert(code != None)
     output_lines.append(f"rcode,{code}")
 
-    assert(i < len(lines) and lines[i].startswith("(:"))
+    while True:
+        assert(i < len(lines))
+        line = lines[i]
+        if line.startswith("(:"):
+            break
+        i += 1
 
     while i < len(lines):
         line = lines[i]
