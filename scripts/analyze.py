@@ -45,7 +45,7 @@ def load_res_file(path):
         line = line.strip().split(",")
         key = line[0]
         if key == RL_KEY:
-            stats[key] = int(line[1])
+            stats[key] = round(float(line[1]), 0)
         elif key == TT_KEY:
             # assume at least take 0.01 second
             stats[TT_KEY] = max(float(line[1]), 0.01)
@@ -223,46 +223,105 @@ total queries count:
     figure.text(0.1, 0.05, text, wrap=False)
     plt.savefig("fig/thread_count_perf_change")
 
+def plot_scatter(sp, points, label):
+    count = len(points)
+    sp.scatter(points[::,0], points[::,1], label=f"{label}:{count}")
+    return count
+
+def plot_scatters(sp, dataset):
+    count = 0
+    for (pts, label) in dataset:
+        count += plot_scatter(sp, pts, label)
+    return count
+
+def plot_linear_reg(sp, points, label):
+    xs = points[::,0]
+    ys = points[::,1]
+    A = np.vstack([xs, np.ones(len(xs))]).T
+    m, c = np.linalg.lstsq(A, ys, rcond=None)[0]
+    plot_scatter(sp, points, label)
+    sp.plot(xs, m*xs + c, label=f'rc = {round(m, 2)} * t + {round(c, 2)}')
+    return len(xs)
+
+def filter_pts(points, time=None, rcount=None):
+    results = []
+    for pt in points:
+        if (rcount != None and pt[1] <= rcount) or (time != None and pt[0] <= time):
+            results.append(pt)
+    return np.array(results)
+
 def analyze_time_rlimit_correlation():
-    qlist = "data/qlists/smtlib_rand10K_known"
-    qpaths = load_qlist(qlist, prefix="gen/smtlib_10K_120s_TO/", seeds=[], trials=1)
+    config = TIME_RLIMIT_CORRELATION_CONFIG
+    qpaths = load_qlist(config)
     tskipped = 0
     rskipped = 0
+    total = len(qpaths)
 
-    xs = []
-    ys = []
-    for qp in qpaths:
+    pts_sat = []
+    pts_unsat = []
+    pts_unknown = []
+    pts_timeout = []
+
+    for i, qp in enumerate(qpaths):
         ptg = qp.plain_tg
         assert(len(ptg.ress) == 1)
-        for resf in ptg.ress:
-            resf = resf.replace("smtlib/", "", 1)
-            try:
-                res = load_res_file(resf)
-                xs.append(res[TT_KEY])
-                ys.append(res[RL_KEY])
-            except:
-                print(resf)
-                print("oops")
+        res = load_res_file(ptg.ress[0])
+        code = res[RC_KEY]
+        point = [res[TT_KEY], res[RL_KEY]]
+        if code == RCode.Z3_R_S:
+            pts_sat.append(point)
+        elif code == RCode.Z3_R_US:
+            pts_unsat.append(point)
+        elif code == RCode.Z3_R_U:
+            pts_unknown.append(point)
+        else:
+            pts_timeout.append(point)
+            assert code == RCode.Z3_R_TO
 
-    xy = np.vstack([xs,ys])
+    def sp_finish_up(sp):
+        sp.legend()
+        sp.set_ylabel("rlimit-count")
+        sp.set_xlabel("seconds")
 
-    fig, ax = plt.subplots()
-    z = gaussian_kde(xy)(xy)
-    ax.scatter(xs, ys, c=z, marker=".")
-    ax.set_title(f'rlimit and time (120s timeout)\n over {qlist}')
-    ax.set_ylabel("rlimit")
-    text = f"""
-data set:
-    {qlist}
-total queries count:
-    {len(qpaths)}
-thread count:
-    8
+    pts_sat = np.array(pts_sat)
+    pts_unsat = np.array(pts_unsat)
+    pts_unknown = np.array(pts_unknown)
+    pts_timeout = np.array(pts_timeout)
 
-skipped queries (200000000 rlimit):
-    {rskipped}
-"""
-    ax.set_xlabel(text, x=0, horizontalalignment='left')
+    figure, axis = plt.subplots(4, 1)
+    figure.set_figheight(25)
+    figure.set_figwidth(10)
+
+    sp = axis[0]
+    ds = [(pts_sat, "sat"), (pts_unsat, "unsat"), (pts_unknown, "unknown"), (pts_timeout, "timeout")]
+    count = plot_scatters(sp, ds)
+    sp.set_title(f"rlimit-count vs time (180 seconds TO) {count} queries")
+    sp_finish_up(sp)
+
+    sp = axis[1]
+    ds = [(pts_sat, "sat"), (pts_unsat, "unsat"), (pts_unknown, "unknown")]
+    count = plot_scatters(sp, ds)
+    sp.set_title(f"rlimit-count vs time (excluded: TO) {count} queries")
+    sp_finish_up(sp)
+
+    sp = axis[2]
+    count = plot_linear_reg(sp, pts_sat, "sat")
+    count += plot_linear_reg(sp, pts_unsat, "unsat")
+    sp.set_title(f"rlimit-count vs time (excluded: TO, U) {count} queries")
+    sp_finish_up(sp)
+
+    sp = axis[3]
+    pts_sat_ = filter_pts(pts_sat, time=30)
+    pts_unsat_ = filter_pts(pts_unsat, time=30)
+    # pts_unknown_ = filter_pts(pts_unknown, time=30)
+    count = plot_linear_reg(sp, pts_sat_, "sat")
+    count += plot_linear_reg(sp, pts_unsat_, "unsat")
+    # count += plot_linear_reg(sp, pts_unknown_, "unknown")
+    sp.set_title(f"rlimit-count vs time (excluded: >30s, U) {count} queries")
+    sp_finish_up(sp)
+
+    figure.text(0.1,0.92,str(config), ha="left")
+
     plt.savefig("fig/time_rlimit", bbox_inches='tight')
 
 # def analyze_time_distribution():
@@ -310,7 +369,8 @@ def rlimit_fmt(x, pos): # your custom formatter function: divide by 100.0
     return s
 
 def analyze_perf_consistency():
-    qpaths = load_qlist(CONSISTENCY_EXP_CONFIG)
+    config = CONSISTENCY_EXP_CONFIG
+    qpaths = load_qlist(config)
 
     time_sds = []
     rlimit_sds = []
@@ -345,7 +405,7 @@ def analyze_perf_consistency():
     sp.set_ylabel("count")
     xfmt = ticker.FuncFormatter(rlimit_fmt)
     sp.xaxis.set_major_formatter(xfmt)
-    sp.set_xlabel("rlimit (3.0e6 cosidered 1 second)\n\n" + str(CONSISTENCY_EXP_CONFIG), x=0, horizontalalignment='left')
+    sp.set_xlabel("rlimit (3.0e6 cosidered 1 second)\n\n" + str(config), x=0, horizontalalignment='left')
     plt.savefig("fig/perf_std")
 
 def analyze_exp_res(query_paths):
@@ -387,8 +447,8 @@ def analyze_exp_res(query_paths):
 
 if __name__ == "__main__":
     # analyze_perf_change_thread()
-    # analyze_time_rlimit_correlation()
+    analyze_time_rlimit_correlation()
     # analyze_time_distribution()
     # get_timeout_qlist()
-    analyze_perf_consistency()
+    # analyze_perf_consistency()
 
