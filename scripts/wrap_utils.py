@@ -16,6 +16,7 @@ class RCode(StrEnum):
     Z3_R_S = auto() # z3 run sat
     Z3_R_US = auto() # z3 run unsat
     Z3_R_U = auto() # z3 run unknown
+    Z3_R_ESF = auto() # z3 run seg fault
 
     MP_P_EP = auto() # mariposa parse panic (error)
     MP_GPT_EP = auto() # mariposa (model) plain test gen panic (error)
@@ -44,8 +45,10 @@ RCodes = [e.value for e in RCode]
 
 def subprocess_run(command, cwd=None):
     print(command)
-    output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, cwd=cwd).stdout
-    return output.decode("utf-8").strip()
+    res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+    stdout = res.stdout.decode("utf-8").strip()
+    stderr = res.stderr.decode("utf-8").strip()
+    return stdout, stderr
 
 def write_rcode(output_path, rcode):
     open(output_path, "w+").write(f"rcode,{rcode}\n")
@@ -82,7 +85,7 @@ def parse_z3_model(model):
 # dumps the model into output_file
 def z3_gen_model(query_file, output_file, timeout):
     command = f"{Z3_BIN_PATH} {query_file} -model -T:{timeout}"
-    model = subprocess_run(command)
+    model, _ = subprocess_run(command)
     if "unknown" in model:
         write_rcode(output_file, RCode.Z3_GM_EU)
     elif "timeout" in model:
@@ -133,8 +136,11 @@ def parse_z3_output(result):
 def z3_run(query_path, output_file, timeout):
     check_input_rcode(query_path, output_file)
     command = f"{Z3_BIN_PATH} {query_path} -T:{timeout} -st"
-    result = subprocess_run(command)
-    result = parse_z3_output(result)
+    result, error = subprocess_run(command)
+    if "Segmentation fault" in error:
+        result = f"rcode,{RCode.Z3_R_ESF}"
+    else:
+        result = parse_z3_output(result)
     open(output_file, "w+").write(result)
 
 # generate a test from the original query and a model

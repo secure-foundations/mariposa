@@ -24,7 +24,7 @@ def replace_path_colons():
     for file_path in file_paths:
         if ":" in file_path or "=" in file_path:
             new_path = file_path.replace(":", "_")
-            new_path = file_path.replace("=", "_")
+            new_path = new_path.replace("=", "_")
             os.system(f"mv {file_path} {new_path}")
 
 ERROR_PATTERN = "(check-sat)\n(get-info :reason-unknown)"
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # clean_dafny_queries()
     # replace_path_colons()
     # load_dafny_qlist(1000)
-    # qpaths = load_qlist(DFY100_STABLE_EXP_CONFIG)
+    qpaths = load_qlist(DFY100_STABLE_EXP_CONFIG)
     # for qp in qpaths:
     #     ptg = qp.plain_tg
     #     assert(len(ptg.ress) == 1)
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     #     assert(len(set(qp.shuffle_mg.ress)) == 3)
     #     assert(len(set(qp.mixed_mg.ress)) == 3)
 
-    file_paths = load_smtlib_qlist(None)
-    randlist = random.sample(file_paths, k=10000)
-    for f in randlist:
-        print(f)
+    # file_paths = load_smtlib_qlist(None)
+    # randlist = random.sample(file_paths, k=10000)
+    # for f in randlist:
+    #     print(f)

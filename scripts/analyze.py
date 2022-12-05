@@ -261,12 +261,16 @@ def analyze_time_rlimit_correlation():
     pts_unsat = []
     pts_unknown = []
     pts_timeout = []
+    z3_error = 0
 
     for i, qp in enumerate(qpaths):
         ptg = qp.plain_tg
         assert(len(ptg.ress) == 1)
         res = load_res_file(ptg.ress[0])
         code = res[RC_KEY]
+        if code == RCode.Z3_R_ESF:
+            z3_error += 1
+            continue
         point = [res[TT_KEY], res[RL_KEY]]
         if code == RCode.Z3_R_S:
             pts_sat.append(point)
@@ -320,7 +324,7 @@ def analyze_time_rlimit_correlation():
     sp.set_title(f"rlimit-count vs time (excluded: >30s, U) {count} queries")
     sp_finish_up(sp)
 
-    figure.text(0.1,0.92,str(config), ha="left")
+    figure.text(0.1,0.92,str(config) + "z3 errors:" + str(z3_error), ha="left")
 
     plt.savefig("fig/time_rlimit", bbox_inches='tight')
 

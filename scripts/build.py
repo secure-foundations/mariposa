@@ -122,17 +122,13 @@ def time_consistency_exp():
     print(rules())
     for qp in qpaths:
         ptg = qp.plain_tg
-        assert(len(ptg.ress) == 1)
-        res = ptg.ress[0]
-        print(z3_run_stmts(res, qp.orig, cfg.timeout))
+        assert(len(ptg.ress) == 4)
+        for res in ptg.ress:
+            print(z3_run_stmts(res, qp.orig, cfg.timeout))
 
+# def thread_consistency_exp():
 if __name__ == "__main__":
-    time_rlimit_correlation_exp()
-#     process = subprocess.Popen("cargo build --release --quiet", shell=True)
-#     process.wait()
-    # assert(process.returncode == 0)
-    # seeds = load_seeds_file(sys.argv[2])
-    # print("#qlist used: " + sys.argv[1])
-    # print("#seeds used: " + str(seeds))
-    # print("#timeout used: " + sys.argv[3])
-    # emit_z3_exp_rules(query_paths, int(sys.argv[3]))
+    process = subprocess.Popen("cargo build --release --quiet", shell=True)
+    process.wait()
+    assert(process.returncode == 0)
+    time_consistency_exp()
