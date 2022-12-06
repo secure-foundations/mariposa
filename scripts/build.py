@@ -70,33 +70,35 @@ def z3_run_stmts(res_path, query_path, timeout):
 #         print(f'build {qp.normalize_test}: mp_gen_normalize_test {qp.shuffle_test} | {MARIPOSA_BIN_PATH}')
 #         print(f'build {qp.normalize_test_res}: z3_run {qp.normalize_test}')
 
-# def emit_z3_exp_rules(query_paths, timeout):
-#     print(rules())
-#     for qp in query_paths:
-#         print("# emit plain experiment")
-#         print(f'build {qp.plain_exp_res}: z3_run {qp.orig}')
-#         print(f"    timeout = {timeout}")
+def emit_z3_exp_rules(cfg):
+    print(rules())
+    query_paths = load_qlist(cfg)
+    for qp in query_paths:
+        print("# emit plain experiment")
+        ptg = qp.plain_tg
+        res = ptg.get_single_res_path()
+        print(z3_run_stmts(res, qp.orig, cfg.timeout))
 
-        # print("# emit normalize experiment")
-        # for e in qp.normalize_exps():
-        #     print(f'build {e.exp}: mp_gen_normalize_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
-        #     print(f"    seed = {e.seed}")
-        #     print(f'build {e.res}: z3_run {e.exp}')
-        #     print(f"    timeout = {timeout}")
+        print("# emit normalize experiment")
+        for e in qp.normalize_mg.tgroups:
+            print(f'build {e.exp_path}: mp_gen_normalize_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+            print(f"    seed = {e.seed}")
+            res = e.get_single_res_path()
+            print(z3_run_stmts(res, e.exp_path, cfg.timeout))
 
-        # print("# emit shuffle experiment")
-        # for e in qp.shuffle_exps():
-        #     print(f'build {e.exp}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
-        #     print(f"    seed = {e.seed}")
-        #     print(f'build {e.res}: z3_run {e.exp}')
-        #     print(f"    timeout = {timeout}")
+        print("# emit shuffle experiment")
+        for e in qp.shuffle_mg.tgroups:
+            print(f'build {e.exp_path}: mp_gen_shuffle_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+            print(f"    seed = {e.seed}")
+            res = e.get_single_res_path()
+            print(z3_run_stmts(res, e.exp_path, cfg.timeout))
 
-        # print("# emit mix experiment")
-        # for e in qp.mix_exps():
-        #     print(f'build {e.exp}: mp_gen_mix_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
-        #     print(f"    seed = {e.seed}")
-        #     print(f'build {e.res}: z3_run {e.exp}')
-        #     print(f"    timeout = {timeout}")
+        print("# emit mix experiment")
+        for e in qp.mixed_mg.tgroups:
+            print(f'build {e.exp_path}: mp_gen_mix_exp {qp.orig} | {MARIPOSA_BIN_PATH}')
+            print(f"    seed = {e.seed}")
+            res = e.get_single_res_path()
+            print(z3_run_stmts(res, e.exp_path, cfg.timeout))
 
 # def parse_check_smtlib_suites():
 #     file_paths = load_smtlib_qlist("sat") + load_smtlib_qlist("unsat")
@@ -112,8 +114,7 @@ def time_rlimit_correlation_exp():
     print(rules())
     for qp in query_paths:
         ptg = qp.plain_tg
-        assert(len(ptg.ress) == 1)
-        res = ptg.ress[0]
+        res = ptg.get_single_res_path()
         print(z3_run_stmts(res, qp.orig, cfg.timeout))
 
 def time_consistency_exp():
@@ -126,9 +127,13 @@ def time_consistency_exp():
         for res in ptg.ress:
             print(z3_run_stmts(res, qp.orig, cfg.timeout))
 
+def smtlib_rand1k_stable_exp():
+    cfg = SMT1K_STABLE_EXP_CONFIG
+    emit_z3_exp_rules(cfg)
+
 # def thread_consistency_exp():
 if __name__ == "__main__":
     process = subprocess.Popen("cargo build --release --quiet", shell=True)
     process.wait()
     assert(process.returncode == 0)
-    time_consistency_exp()
+    smtlib_rand1k_stable_exp()

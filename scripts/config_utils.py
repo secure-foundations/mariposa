@@ -52,3 +52,10 @@ DFY100_STABLE_EXP_CONFIG =  Config(
     8, # run with 8 procs
     "gen/dfy100_stable/")
 
+SMT1K_STABLE_EXP_CONFIG =  Config(
+    "data/qlists/smtlib_rand1K",
+    1,
+    DEFAULT_3_SEEDS, # 3 mutations per class
+    30, # 30 seconds timeout
+    8, # run with 8 procs
+    "gen/smt1k_stable/")

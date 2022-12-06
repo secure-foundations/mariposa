@@ -10,6 +10,7 @@ from matplotlib.pyplot import figure
 from matplotlib import ticker
 from scipy.stats import gaussian_kde
 import statistics
+import seaborn as sns
 
 def dump_smtlib_plain_status():
     file_paths = list_smt2_files(SMT_ALL_DIR)
@@ -250,12 +251,9 @@ def filter_pts(points, time=None, rcount=None):
             results.append(pt)
     return np.array(results)
 
-def analyze_time_rlimit_correlation():
+def analyze_time_rlimit_common():
     config = TIME_RLIMIT_CORRELATION_CONFIG
     qpaths = load_qlist(config)
-    tskipped = 0
-    rskipped = 0
-    total = len(qpaths)
 
     pts_sat = []
     pts_unsat = []
@@ -282,15 +280,22 @@ def analyze_time_rlimit_correlation():
             pts_timeout.append(point)
             assert code == RCode.Z3_R_TO
 
+    pts_sat = np.array(pts_sat)
+    pts_unsat = np.array(pts_unsat)
+    pts_unknown = np.array(pts_unknown)
+    pts_timeout = np.array(pts_timeout)
+
+    return (pts_sat, pts_unsat, pts_unknown, pts_timeout)
+
+def analyze_time_rlimit_correlation():
+    config = TIME_RLIMIT_CORRELATION_CONFIG
+
     def sp_finish_up(sp):
         sp.legend()
         sp.set_ylabel("rlimit-count")
         sp.set_xlabel("seconds")
 
-    pts_sat = np.array(pts_sat)
-    pts_unsat = np.array(pts_unsat)
-    pts_unknown = np.array(pts_unknown)
-    pts_timeout = np.array(pts_timeout)
+    pts_sat, pts_unsat, pts_unknown, pts_timeout = analyze_time_rlimit_common()
 
     figure, axis = plt.subplots(4, 1)
     figure.set_figheight(25)
@@ -328,37 +333,16 @@ def analyze_time_rlimit_correlation():
 
     plt.savefig("fig/time_rlimit", bbox_inches='tight')
 
-# def analyze_time_distribution():
-#     qlist = "data/qlists/smtlib_rand10K_known_30s_TO"
-#     query_paths = load_qlist(qlist, [])
-#     xs = []
+def analyze_time_result_distribution():
+    pts_sat, pts_unsat, pts_unknown, pts_timeout = analyze_time_rlimit_common()
+    pts_sat = pts_sat[::,0]
+    pts_unsat = pts_unsat[::,0]
+    pts_unknown = pts_unknown[::,0]
+    pts_timeout = pts_timeout[::,0]
+    data = {"sat": pts_sat, "unsat" :pts_unsat, "unknown": pts_unknown, "timeout": pts_timeout}
 
-#     for qp in query_paths:
-#         pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_TO_30_120s"))
-#         if pers[RC_KEY] == RCode.Z3_R_TO:
-#             xs.append(120)
-#         else:
-#             xs.append(pers[TT_KEY])
-
-#     qlist = "data/qlists/smtlib_rand10K_known"
-
-#     query_paths = load_qlist(qlist, [])
-
-#     for qp in query_paths:
-#         pers = load_res_file(qp.plain_exp_res.replace("gen/smtlib", "gen/smtlib_10K_tbound"))
-#         if pers[RC_KEY] == RCode.Z3_R_TO:
-#             pass
-#         else:
-#             xs.append(pers[TT_KEY])
-
-    # plt.title(f"time cdf on {qlist} (120s)")
-    # plot_cdf(plt, xs, "all")
-    # # xs = list(filter(lambda x: x >= 1, xs))
-    # # plot_cdf(plt, xs, "1 second and above")
-    # plt.legend()
-    # plt.ylabel("cumulative probability")
-    # # plt.xscale("log", basex=2)
-    # plt.savefig("fig/time_cdf")
+    sns.histplot(data, label='sat', bins=180, multiple="stack")
+    plt.savefig("fig/time_result", bbox_inches='tight')
 
 def compute_deviation(r_scores):
     vs = []
@@ -368,7 +352,7 @@ def compute_deviation(r_scores):
     s = sum(vs) / len(r_scores)
     return math.sqrt(s)
 
-def rlimit_fmt(x, pos): # your custom formatter function: divide by 100.0
+def rlimit_fmt(x, pos): 
     s = '{}e6'.format(x / 1000000)
     return s
 
@@ -451,8 +435,8 @@ def analyze_exp_res(query_paths):
 
 if __name__ == "__main__":
     # analyze_perf_change_thread()
-    analyze_time_rlimit_correlation()
-    # analyze_time_distribution()
+    # analyze_time_rlimit_correlation()
+    analyze_time_result_distribution()
     # get_timeout_qlist()
     # analyze_perf_consistency()
 

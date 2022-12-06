@@ -54,7 +54,7 @@ def clean_dafny_queries():
 
 # same query (mutation), same seed, different runs are in the same TrailGroup
 class TrailGroup:
-    def __init__(self, exp_path, trials):
+    def __init__(self, exp_path, trials, seed=None):
         # number of trials
         self.trials = trials
         # path of the experiment file
@@ -62,11 +62,18 @@ class TrailGroup:
         # path of the result files
         self.ress = list()
 
+        self.seed = seed
+
         if trials == 1:
             self.ress.append(exp_path + f".r")
         else:
             for i in range(trials):
                 self.ress.append(exp_path + f".{i}.r")
+
+    def get_single_res_path(self):
+        assert (self.trials == 1)
+        assert (len(self.ress) == 1)
+        return self.ress[0]
 
 # same mutation, different seeds are in the the same MutationGroup
 class MutationGroup:
@@ -77,7 +84,7 @@ class MutationGroup:
 
         for seed in config.seeds:
             exp_path = exp_prefix + "." + str(seed) + "." + suffix
-            tg = TrailGroup(exp_path, config.trials)
+            tg = TrailGroup(exp_path, config.trials, seed)
             self.tgroups.append(tg)
             self.ress += tg.ress
 
@@ -150,7 +157,7 @@ if __name__ == "__main__":
     # clean_dafny_queries()
     # replace_path_colons()
     # load_dafny_qlist(1000)
-    qpaths = load_qlist(DFY100_STABLE_EXP_CONFIG)
+    # qpaths = load_qlist(DFY100_STABLE_EXP_CONFIG)
     # for qp in qpaths:
     #     ptg = qp.plain_tg
     #     assert(len(ptg.ress) == 1)
@@ -158,7 +165,7 @@ if __name__ == "__main__":
     #     assert(len(set(qp.shuffle_mg.ress)) == 3)
     #     assert(len(set(qp.mixed_mg.ress)) == 3)
 
-    # file_paths = load_smtlib_qlist(None)
-    # randlist = random.sample(file_paths, k=10000)
-    # for f in randlist:
-    #     print(f)
+    file_paths = load_smtlib_qlist(None)
+    randlist = random.sample(file_paths, k=1000)
+    for f in randlist:
+        print(f)
