@@ -27,10 +27,10 @@ def dump_smtlib_plain_status():
                     out.write(file_path + ",unknown\n")
 
 def print_results(des, results):
-    total = sum([results[k] for k in RCodes])
+    total = sum([results[k] for k in ALL_RCS])
     print(des)
     print(f"total count: {total}")
-    for k in RCodes:
+    for k in ALL_RCS:
         count = results[k]
         if count != 0:
             print(f"{code_des[k]}: {count}")
@@ -58,9 +58,9 @@ def percent_change(curr, orig):
     return (round((curr - orig) * 100 / orig, 2))
 
 def analyze_test_res():
-    plain_tests = {k:0 for k in RCodes}
-    shuffle_tests = {k:0 for k in RCodes}
-    normalize_tests = {k:0 for k in RCodes}
+    plain_tests = {k:0 for k in ALL_RCS}
+    shuffle_tests = {k:0 for k in ALL_RCS}
+    normalize_tests = {k:0 for k in ALL_RCS}
 
     ratios = []
 
@@ -115,19 +115,6 @@ def analyze_test_res():
 #     else:
 #         rl_5x = 5 * org_res["rlimit-count"]
 #         return  (rl_5x -  rrs) / rl_5x
-
-# BUF_SIZE = 65536
-
-# def file_hash(file_path):
-#     md5 = hashlib.md5()
-#     with open(file_path, 'rb') as f:
-#         while True:
-#             data = f.read(BUF_SIZE)
-#             if not data:
-#                 break
-#             md5.update(data)
-#     return md5.hexdigest()
-
 
 def res_percent_change(curr, orig, key):
     if key not in curr or key not in orig:
@@ -396,28 +383,67 @@ def analyze_perf_consistency():
     sp.set_xlabel("rlimit (3.0e6 cosidered 1 second)\n\n" + str(config), x=0, horizontalalignment='left')
     plt.savefig("fig/perf_std")
 
-def analyze_exp_res(query_paths):
-    for qp in query_paths:
-        pers = load_res_file(qp.plain_exp_res)
-        exps = qp.normalize_exps() + qp.shuffle_exps() + qp.mix_exps()
-        flip_count = 0
-        print(ers[RC_KEY])
+BUF_SIZE = 65536
 
-        for exp in exps:
-            ers = load_res_file(exp.res)
-            print(ers[RC_KEY])
-            # if ers[RC_KEY] in {RCode.MP_GSE_EP, RCode.MP_GNE_EP, RCode.MP_GME_EP}:
-            #     print("oh no")
-            #     continue
-            # if ers[RC_KEY] != pers[RC_KEY]:
-            #     print(qp.orig)
-            #     print(exp.exp)
-            #     print(pers)
-            #     print(ers)
-            #     flip_count += 1
-            #     print("")
-        # if flip_count != 0:
-        #     print(flip_count)
+def file_hash(file_path):
+    md5 = hashlib.md5()
+    with open(file_path, 'rb') as f:
+        while True:
+            data = f.read(BUF_SIZE)
+            if not data:
+                break
+            md5.update(data)
+    return md5.hexdigest()
+
+def analyze_exp_res():
+    cfg = SMT10K_STABLE_EXP_CONFIG
+    query_paths = load_qlist(cfg)
+
+    res_dist = empty_res_map()
+    flip_dist = empty_res_map()
+
+    for qp in query_paths:
+        pers = load_res_file(qp.plain_tg.get_single_res_path())
+        prcode = pers[RC_KEY]
+
+        tgs = qp.normalize_mg.tgroups + qp.shuffle_mg.tgroups + qp.mixed_mg.tgroups
+        res_rcodes = dict()
+
+        all_expps = list()
+        for tg in tgs:
+            expp = tg.exp_path
+            all_expps.append(expp)
+            resp = tg.get_single_res_path()
+            rs = load_res_file(resp)
+            rcode = rs[RC_KEY]
+            if rcode in MP_E_RCS:
+                continue
+            if rcode != prcode:
+                res_rcodes[expp] = rcode
+        
+        res_dist[prcode] += 1
+
+        if len(res_rcodes) != 0:
+            fhs = dict()
+            flipped = 0
+            for expp in all_expps:
+                h = file_hash(expp)
+                fhs[expp] = h
+            seen = set()
+            for expp in res_rcodes:
+                h = fhs[expp]
+                if h not in seen:
+                    seen.add(h)
+            flip_dist[prcode] += 1
+            print(prcode)
+            rcs = set(res_rcodes.values())
+            if prcode == RCode.Z3_R_S:
+                assert (RCode.Z3_R_US not in rcs)
+            elif prcode == RCode.Z3_R_US:
+                assert (RCode.Z3_R_S not in rcs)
+            print(rcs)
+    print_results("all", res_dist)
+    print_results("flipped", flip_dist)
 
     # print_results("plain experiment", plain_exps)
     # print_results("normalize experiment", normalize_exps)
@@ -433,10 +459,40 @@ def analyze_exp_res(query_paths):
 #         if pers[RC_KEY] == RCode.Z3_R_TO:
 #             print(qp.orig)
 
+def deep_parse_cvc5_res(path):
+    stats = dict()
+    lines = open(path).readlines()
+    rcode_line = lines[0]
+    rcode_line = rcode_line.strip().split(",")
+    assert rcode_line[0] == RC_KEY 
+    stats[RC_KEY] = rcode_line[1]
+        # key = line[0]
+        # if key == RL_KEY:
+        #     stats[key] = round(float(line[1]), 0)
+        # elif key == TT_KEY:
+        #     # assume at least take 0.01 second
+        #     stats[TT_KEY] = max(float(line[1]), 0.01)
+        # else:
+        #     stats[key] = line[1]
+    return stats
+
+    # f"rcode,{code}"
+
+def analyze_cvc5_dafny():
+    cfg = CVC_DFY_EXP_CONFIG
+    qpaths = load_qlist(cfg)
+    for qp in qpaths:
+        ptg = qp.plain_tg
+        res = ptg.get_single_res_path()
+        st = deep_parse_cvc5_res(res)
+        print(st)
+
 if __name__ == "__main__":
     # analyze_perf_change_thread()
     # analyze_time_rlimit_correlation()
-    analyze_time_result_distribution()
+    # analyze_time_result_distribution()
     # get_timeout_qlist()
     # analyze_perf_consistency()
+    # analyze_exp_res()
+    analyze_cvc5_dafny()
 

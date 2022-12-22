@@ -5,6 +5,7 @@ from enum import auto
 from strenum import StrEnum
 
 Z3_BIN_PATH = "/home/yizhou7/z3/build/z3"
+CVC5_BIN_PATH = "/home/yizhou7/cvc5-2022-12-09-x86_64-Linux-production"
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
 class RCode(StrEnum):
@@ -17,6 +18,12 @@ class RCode(StrEnum):
     Z3_R_US = auto() # z3 run unsat
     Z3_R_U = auto() # z3 run unknown
     Z3_R_ESF = auto() # z3 run seg fault
+
+    CVC5_R_TO = auto() # cvc5 run timeout
+    CVC5_R_S = auto() # cvc5 run sat
+    CVC5_R_US = auto() # cvc5 run unsat
+    CVC5_R_U = auto() # cvc5 run unknown
+    CVC5_R_E = auto() # cvc5 run some error
 
     MP_P_EP = auto() # mariposa parse panic (error)
     MP_GPT_EP = auto() # mariposa (model) plain test gen panic (error)
@@ -39,9 +46,13 @@ code_des = {RCode.Z3_GM_ETO: "z3 model gen timeout (error)",
     RCode.MP_GNT_EP: "mariposa (model) normalize test gen panic (error)",
     RCode.MP_GSE_EP: "mariposa shuffle experiment gen panic (error)",
     RCode.MP_GNE_EP: "mariposa normalize experiment gen panic (error)",
-    RCode.MP_GME_EP: "mariposa mix experiment gen panic (error)"}
+    RCode.MP_GME_EP: "mariposa mix experiment gen panZ3_BIN_PATHic (error)"}
 
-RCodes = [e.value for e in RCode]
+ALL_RCS = [e.value for e in RCode]
+MP_E_RCS = [RCode.MP_GSE_EP, RCode.MP_GNE_EP, RCode.MP_GME_EP] 
+
+def empty_res_map():
+    return {c:0 for c in ALL_RCS}
 
 def subprocess_run(command, cwd=None):
     print(command)
@@ -141,6 +152,37 @@ def z3_run(query_path, output_file, timeout):
         result = f"rcode,{RCode.Z3_R_ESF}"
     else:
         result = parse_z3_output(result)
+    open(output_file, "w+").write(result)
+
+def parse_cvc5_result(result):
+    lines = result.split("\n")
+    code = None
+    i = 0
+    while code == None and i < len(lines):
+        line = lines[i]
+        if line == "unsat":
+            code = RCode.CVC5_R_US
+        elif line == "sat":
+            code = RCode.CVC5_R_S
+        elif line == "unknown":
+            code = RCode.CVC5_R_U
+        elif "interrupted by timeout" in line:
+            code = RCode.CVC5_R_TO
+        i += 1
+    if code == None:
+        print(result)
+        assert("error" in result)
+        code = RCode.CVC5_R_E
+    return f"rcode,{code}"
+
+def cvc5_run(query_path, output_file, timeout):
+    check_input_rcode(query_path, output_file)
+    assert (int(timeout) < 1000)
+    command = f"{CVC5_BIN_PATH} {query_path} --incremental --tlimit={int(timeout) * 1000} -q --stats-internal"
+    result, error = subprocess_run(command)
+    # print(error)
+    # somehow stats are dumped into stderr
+    result = parse_cvc5_result(result + error)
     open(output_file, "w+").write(result)
 
 # generate a test from the original query and a model

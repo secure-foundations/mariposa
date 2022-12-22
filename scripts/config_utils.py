@@ -59,3 +59,19 @@ SMT1K_STABLE_EXP_CONFIG =  Config(
     30, # 30 seconds timeout
     8, # run with 8 procs
     "gen/smt1k_stable/")
+
+SMT10K_STABLE_EXP_CONFIG =  Config(
+    "data/qlists/smtlib_rand10K",
+    1,
+    DEFAULT_3_SEEDS, # 3 mutations per class
+    30, # 30 seconds timeout
+    8, # run with 8 procs
+    "gen/smt10k_stable/")
+
+CVC_DFY_EXP_CONFIG =  Config(
+    "data/qlists/cvc5_dafny_rand100",
+    1,
+    [],
+    30, # 30 seconds timeout
+    8, # run with 8 procs
+    "gen/cvc_dfy100/")

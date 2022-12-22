@@ -29,6 +29,9 @@ rule z3_gen_model
 rule z3_run
     command = python3 scripts/wrap_utils.py z3_run $in $out $timeout
 
+rule cvc5_run
+    command = python3 scripts/wrap_utils.py cvc5_run $in $out $timeout
+
 rule mp_gen_exp
     command = python3 scripts/wrap_utils.py $process $in $out $seed
 """
@@ -41,6 +44,11 @@ rule mp_gen_exp
 
 def z3_run_stmts(res_path, query_path, timeout):
     stmts = f"""build {res_path}: z3_run {query_path}
+    timeout = {timeout}"""
+    return stmts
+
+def cvc5_run_stmts(res_path, query_path, timeout):
+    stmts = f"""build {res_path}: cvc5_run {query_path}
     timeout = {timeout}"""
     return stmts
 
@@ -95,7 +103,6 @@ def emit_z3_exp_rules(cfg):
             stmts.append(mp_gen_exp_stmts(e.exp_path, orig_path, "mp_gen_mix_exp", e.seed))
             res = e.get_single_res_path()
             stmts.append(z3_run_stmts(res, e.exp_path, cfg.timeout))
-
     return stmts
 
 def time_rlimit_correlation_exp():
@@ -108,8 +115,19 @@ def time_rlimit_correlation_exp():
         stmts.append(z3_run_stmts(res, qp.orig, cfg.timeout))
     return stmts
 
+def cvc_dafny_exp():
+    cfg = CVC_DFY_EXP_CONFIG
+    qpaths = load_qlist(cfg)
+    stmts = []
+    for qp in qpaths:
+        ptg = qp.plain_tg
+        res = ptg.get_single_res_path()
+        stmts.append(cvc5_run_stmts(res, qp.orig, cfg.timeout))
+    return stmts
+
 def time_consistency_exp():
     cfg = CONSISTENCY_EXP_CONFIG
+    stmts = []
     qpaths = load_qlist(cfg)
     for qp in qpaths:
         ptg = qp.plain_tg
@@ -122,12 +140,16 @@ def smtlib_rand1k_stable_exp():
     cfg = SMT1K_STABLE_EXP_CONFIG
     return emit_z3_exp_rules(cfg)
 
+def smtlib_rand10k_stable_exp():
+    cfg = SMT10K_STABLE_EXP_CONFIG
+    return emit_z3_exp_rules(cfg)
+
 # def thread_consistency_exp():
 if __name__ == "__main__":
     process = subprocess.Popen("cargo build --release --quiet", shell=True)
     process.wait()
     assert(process.returncode == 0)
     print(rules())
-    stmts = smtlib_rand1k_stable_exp()
+    stmts = cvc_dafny_exp()
     random.shuffle(stmts)
     print("\n".join(stmts))

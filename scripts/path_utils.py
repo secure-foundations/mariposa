@@ -2,55 +2,9 @@ import sys
 import os
 import random
 from config_utils import *
-
-DFY_RAW_DIR = "data/dafny/"
-DFY_CLEAN_DIR = "data/cdafny/"
-SMT_ALL_DIR = "data/smtlib/"
-GEN_DIR = "gen/"
+from convert_utils import *
 
 SMT_PLAIN_QLIST_PATH = "data/qlists/smtlib_all_plain_status.csv"
-
-def list_smt2_files(sub_root):
-    file_paths = []
-    for root, _, files in os.walk(sub_root):
-        for file in files:
-            if file.endswith(".smt2"):
-                file_paths.append(os.path.join(root, file))
-    return file_paths
-
-## one time file renaming
-def replace_path_colons():
-    file_paths = list_smt2_files(SMT_ALL_DIR)
-    for file_path in file_paths:
-        if ":" in file_path or "=" in file_path:
-            new_path = file_path.replace(":", "_")
-            new_path = new_path.replace("=", "_")
-            os.system(f"mv {file_path} {new_path}")
-
-ERROR_PATTERN = "(check-sat)\n(get-info :reason-unknown)"
-ALT_PATTERN = "(check-sat)\n(pop 1)\n"
-
-def clean_dafny_queries():
-    file_paths = list_smt2_files(DFY_RAW_DIR)
-    for file_path in file_paths:
-        content = open(file_path).read()
-        out_path = file_path.replace(DFY_RAW_DIR, DFY_CLEAN_DIR, 1)
-        out_file = open(out_path, "w+")
-        index = content.find(ERROR_PATTERN)
-        if index != -1:
-            if "; Invalid" in content:
-                content = content[:index] + ALT_PATTERN + "; Invalid\n"
-                out_file.write(content)
-            else:
-                assert("; Out of resource" in content)
-                content = content[:index] + ALT_PATTERN + "; Out of resource\n"
-                out_file.write(content)  
-        else:
-            assert("; Valid" in content)
-            index = content.find("(pop 1)")
-            assert(index != -1)
-            content = content[:index+7] + "\n; Valid\n";
-            out_file.write(content)
 
 # same query (mutation), same seed, different runs are in the same TrailGroup
 class TrailGroup:
@@ -165,7 +119,7 @@ if __name__ == "__main__":
     #     assert(len(set(qp.shuffle_mg.ress)) == 3)
     #     assert(len(set(qp.mixed_mg.ress)) == 3)
 
-    file_paths = load_smtlib_qlist(None)
-    randlist = random.sample(file_paths, k=1000)
+    file_paths = list_smt2_files(DFY_CVC5_CLEAN_DIR)
+    randlist = random.sample(file_paths, k=100)
     for f in randlist:
         print(f)
