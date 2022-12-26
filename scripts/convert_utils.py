@@ -1,27 +1,6 @@
-from path_utils import *
-import sys
-import subprocess
+import os
 from tqdm import tqdm
-
-DFY_RAW_DIR = "data/dafny/"
-DFY_CLEAN_DIR = "data/cdafny/"
-
-SKOMODO_RAW_DIR = "data/serval_komodo"
-SKOMODO_CLEAN_DIR = "data/cskomodo"
-
-SMT_ALL_DIR = "data/smtlib/"
-
-DFY_CVC5_CLEAN_DIR = "data/cvc5_cdafny/"
-
-GEN_DIR = "gen/"
-
-def list_smt2_files(sub_root):
-    file_paths = []
-    for root, _, files in os.walk(sub_root):
-        for file in files:
-            if file.endswith(".smt2"):
-                file_paths.append(os.path.join(root, file))
-    return file_paths
+from path_utils import *
 
 ## one time file renaming
 def clean_smtlib_queries():
@@ -60,7 +39,7 @@ def clean_dafny_queries_for_z3():
 DECLARE_REGEX = "(declare-sort RegEx 0)\n"
 RLIMIT_RESET = "(set-option :rlimit 0)\n"
     
-def convert_cdafny_for_cvc5():
+def clean_cdafny_for_cvc5():
     file_paths = list_smt2_files(DFY_CLEAN_DIR)
     for file_path in file_paths:
         content = open(file_path).read()
