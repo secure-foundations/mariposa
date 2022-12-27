@@ -168,7 +168,7 @@ class Runner:
         # drop_experiment_table(cfg, False)
 
 if __name__ == '__main__':
-    queries = sample_vanilla_queries(PNAME_DAFNY_TESTS, 100)
+    queries = sample_vanilla_queries(PNAME_SMTLIB, 200)
     cfg = ExpConfig("test", ["z3-4.4.2"], queries)
     # cfg.num_procs = 1
     r = Runner(cfg)

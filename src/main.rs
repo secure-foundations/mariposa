@@ -100,6 +100,9 @@ impl Manager {
     fn new(out_file_path: Option<String>, seed: u64) -> Manager {
         let writer: BufWriter<Box<dyn std::io::Write>> = match out_file_path {
             Some(path) => {
+                let path = std::path::Path::new(&path);
+                let prefix = path.parent().unwrap();
+                std::fs::create_dir_all(prefix).unwrap();
                 let file = File::create(path).unwrap();
                 BufWriter::new(Box::new(file))
             },
