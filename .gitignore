@@ -1,8 +1,12 @@
 /data/dafny
 /data/smtlib
 /data/cdafny/
+/data/cs_komodo/
+/data/cvc5_cdafny/
+/data/s_komodo/
 /target
 /gen
+ninja
 .ninja*
 scripts/__pycache__/
 bin

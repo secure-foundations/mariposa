@@ -34,10 +34,16 @@ def sample_vanilla_queries(project, query_count):
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
 
-    res = cur.execute(f"""SELECT query_path from vanilla_queries
-        WHERE project = ?
-        ORDER BY RANDOM() LIMIT ?;
-        """, (project, query_count))
+    if query_count is None:
+        # get all queries
+        res = cur.execute("""SELECT query_path from vanilla_queries
+            WHERE project = ?;
+            """, (project))
+    else:
+        res = cur.execute("""SELECT query_path from vanilla_queries
+            WHERE project = ?
+            ORDER BY RANDOM() LIMIT ?;
+            """, (project, query_count))
     paths = [i[0] for i in res.fetchall()]
     con.close()
     return paths
@@ -57,10 +63,14 @@ def setup_experiment_table(cfg):
     con.commit()
     con.close()
 
-def drop_experiment_table(cfg):
+def drop_experiment_table(cfg, ignore_exist):
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
-    cur.execute(f"""DROP TABLE {cfg.table_name}""")
+
+    if ignore_exist:
+        cur.execute(f"""DROP TABLE IF EXISTS {cfg.table_name}""")
+    else:
+        cur.execute(f"""DROP TABLE {cfg.table_name}""")
     con.commit()
     con.close()
 
@@ -72,11 +82,9 @@ def show_tables():
     print(res.fetchall())
     con.close()
 
-# show_tables()
-# # reload_vanilla_queries_table()
-# path = select_vanilla_queries(PNAME_SERVAL_KOMODO, 10)
-# print(path)
-
+if __name__ == "__main__":
+    show_tables()
+    # reload_vanilla_queries_table()
 # cur.execute("""CREATE TABLE mutant_queries(
 #     mutant_path varchar(255) NOT NULL,
 #     vanilla_path varchar(255) NOT NULL,

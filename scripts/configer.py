@@ -20,8 +20,11 @@ class ExpConfig:
         # how many times do we run each query? default=1
         self.trials = 1
 
-        # # how many mutants to generate
-        # self.seeds = []
+        # how many mutants to generate at least
+        self.min_mutants = 10
+
+        # how many mutants to generate at most
+        self.max_mutants = 50
 
         # ho long do we wait?
         self.timeout = 30
