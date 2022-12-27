@@ -41,62 +41,60 @@ confidence interval: {confidence_interval}
 """)
 
 class Z3TaskGroup:
-    def __init__(self, cfg, mut, vanilla_path, solver_path):
+    def __init__(self, mut, vanilla_path, solver_path):
         assert ("z3" in solver_path)
-        self.table_name = cfg.table_name
         self.vanilla_path = vanilla_path
         self.mutant_paths = []
         self.solver_path = solver_path
-        self.timeout = cfg.timeout
-        self.trials = cfg.trials
-        self.max_mutants = cfg.max_mutants
-        self.min_mutants = cfg.min_mutants
 
-    def run_single(self, query_path, is_mut):
-        assert (self.trials == 1)
-        command = f"{self.solver_path} {query_path} -T:{self.timeout} -st"
+    def run_single(self, query_path, is_mut, cfg):
+        assert (cfg.trials == 1)
+        command = f"{self.solver_path} {query_path} -T:{cfg.timeout} -st"
         out, err, elapsed = subprocess_run(command)
         rcode = z3_basic_parse(out)
 
         con = sqlite3.connect(DB_PATH)
         cur = con.cursor()
-        cur.execute(f"""INSERT INTO {self.table_name}
-            (query_path, is_mut, command, std_out, std_error, elapsed_milli)
-            VALUES(?, ?, ?, ?, ?, ?);""", (self.vanilla_path, is_mut, command, out,
-            err, elapsed))
+        cur.execute(f"""INSERT INTO {cfg.table_name}
+            (query_path, is_mut, command, std_out, std_error, result_code, elapsed_milli)
+            VALUES(?, ?, ?, ?, ?, ?, ?);""", (self.vanilla_path, is_mut, command, out,
+            err, rcode, elapsed))
         con.commit()
         con.close()
         return elapsed, rcode
 
-    def run(self):
-        print(self.vanilla_path)
-        elapsed, rcode = self.run_single(self.vanilla_path, False)
-        print("vanilla done: " + str(elapsed) + " milliseconds " + rcode)
+    def run(self, cfg):
+        # print(self.vanilla_path)
+        elapsed, rcode = self.run_single(self.vanilla_path, False, cfg)
+        # print("vanilla done: " + str(elapsed) + " milliseconds " + rcode)
 
-        gen_path_pre = "gen/" + self.table_name + "_" + self.vanilla_path[5::]
+        gen_path_pre = "gen/" + cfg.table_name + "_" + self.vanilla_path[5::]
 
         veri_times = []
         veri_results = []
 
-        for _ in range(self.max_mutants):
+        for _ in range(cfg.max_mutants):
             seed = random.randint(0, 0xffffffffffffffff)
             mutant_path = gen_path_pre.replace("smt2", str(seed) + ".me.smt2")
             command = f"{MARIPOSA_BIN_PATH} -i {self.vanilla_path} -p mix -o {mutant_path} -s {seed}"
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-            assert (result.returncode == 0)
+            if result.returncode != 0:
+                print(command)
+                assert (False)
 
-            elapsed, rcode = self.run_single(mutant_path, True)
+            elapsed, rcode = self.run_single(mutant_path, True, cfg)
             veri_times.append(elapsed)
             if rcode == "unsat":
-                veri_results.append(100)
+                veri_results.append(1)
             else:
                 veri_results.append(0)
 
-            print("mutant done: " + str(elapsed) + " milliseconds " + rcode)
+            self.mutant_paths.append(mutant_path)
+            # print("mutant done: " + str(elapsed) + " milliseconds " + rcode)
 
             sample_size = len(veri_times)
 
-            if sample_size >= self.min_mutants:
+            if sample_size >= cfg.min_mutants:
                 t_critical = stats.t.ppf(q=0.95, df=sample_size-1)  
                 # get the sample standard deviation
                 time_stdev = np.std(veri_times, ddof=1)
@@ -104,24 +102,27 @@ class Z3TaskGroup:
                 sigma = time_stdev/math.sqrt(sample_size) 
                 time_moe = t_critical * sigma
 
-                res_stdev = np.std(veri_results, ddof=1)
-                sigma = res_stdev/math.sqrt(sample_size) 
-                res_moe = t_critical * sigma
+                p = sum(veri_results) / sample_size
+                res_moe = t_critical * math.sqrt((p*(1-p))/sample_size)
+                # res_stdev = np.std(veri_results, ddof=1)
+                # sigma = res_stdev/math.sqrt(sample_size) 
+                # res_moe = t_critical * sigma
+                # print(res_moe, time_moe)
 
-                print(res_moe, time_moe)
-
-                if time_moe < 3000 and res_moe < 5:
+                if time_moe < 3000 and res_moe < 0.05:
                     break
 
-        print_sample_stats(veri_times, time_moe)
-        print_sample_stats(veri_results, res_moe)
+        if res_moe != 0:
+            print(self.vanilla_path)
+            print_sample_stats(veri_times, time_moe)
+            print_sample_stats(veri_results, res_moe)
 
-def run_group_tasks(queue):
+def run_group_tasks(queue, cfg):
     while True:
         task = queue.get()
         if task is None:
             break
-        task.run()
+        task.run(cfg)
     print("worker exit")
 
 class Runner:
@@ -129,7 +130,7 @@ class Runner:
         # for each solver create a task group
         for solver_path in cfg.solver_paths:
             if "z3" in solver_path:
-                task = Z3TaskGroup(cfg, False, path, solver_path)
+                task = Z3TaskGroup(False, path, solver_path)
             else:
                 assert (False)
             self.task_queue.put(task)
@@ -150,7 +151,7 @@ class Runner:
         setup_experiment_table(cfg)
 
         for _ in range(cfg.num_procs):
-            p = mp.Process(target=run_group_tasks, args=(self.task_queue,))
+            p = mp.Process(target=run_group_tasks, args=(self.task_queue, cfg,))
             p.start()
             processes.append(p)
 
@@ -164,11 +165,18 @@ class Runner:
         #     print(row[3])
         #     print(row[4])
         #     print(row[5])
-        drop_experiment_table(cfg, False)
+        # drop_experiment_table(cfg, False)
 
 if __name__ == '__main__':
-    queries = sample_vanilla_queries(PNAME_SERVAL_KOMODO, 1)
-    # queries = ["data/cs_komodo/1546.2.smt2"]
+    queries = sample_vanilla_queries(PNAME_DAFNY_TESTS, 100)
     cfg = ExpConfig("test", ["z3-4.4.2"], queries)
-    cfg.num_procs = 1
+    # cfg.num_procs = 1
     r = Runner(cfg)
+
+    # con = sqlite3.connect(DB_PATH)
+    # cur = con.cursor()
+    # res = cur.execute(f"""SELECT * FROM test_results""")
+    # for row in res.fetchall():
+    #     print(row[3])
+    #     print(row[4])
+    #     print(row[5])
