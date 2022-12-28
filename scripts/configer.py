@@ -26,13 +26,22 @@ class ExpConfig:
         # how many mutants to generate at most
         self.max_mutants = 50
 
-        # ho long do we wait?
-        self.timeout = 30
+        # ho long do we wait? (seconds)
+        self.timeout = 60
 
         # how many solver processes to run in parallel?
         self.num_procs = 8
 
         self.table_name = self.name + "_results"
+
+        # margin of error in time (seconds)
+        self.time_moe_limit = 3
+
+        # margin of error in success rate (0.0 - 1.0)
+        self.res_moe_limit = 0.05
+
+        # confidence level
+        self.confidence_level = 0.95
 
 #     def __str__(self):
 #         return f"""qlist path: {self.qlist_path}

@@ -80,7 +80,7 @@ def setup_experiment_table(cfg):
     cur = con.cursor()
     cur.execute(f"""CREATE TABLE {cfg.table_name}(
         query_path varchar(255) NOT NULL,
-        is_mut BOOL,
+        vanilla_path varchar(255),
         command varchar(455) NOT NULL,
         std_out TEXT,
         std_error TEXT,

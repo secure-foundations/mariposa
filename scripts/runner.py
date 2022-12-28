@@ -27,18 +27,9 @@ def z3_basic_parse(output):
         return "sat"
     elif "unknown" in output:
         return "unknown"
-    assert "timeout" in output
-    return "timeout"
-
-def print_sample_stats(samples, moe):
-    sample_mean = np.mean(samples)
-    confidence_interval = (sample_mean - moe, sample_mean + moe)  
-
-    print(f"""size: {len(samples)}
-mean: {sample_mean}
-margin of error: {moe}
-confidence interval: {confidence_interval}
-""")
+    elif "timeout" in output:
+        return "timeout"
+    return "error"
 
 class Z3TaskGroup:
     def __init__(self, mut, vanilla_path, solver_path):
@@ -47,25 +38,49 @@ class Z3TaskGroup:
         self.mutant_paths = []
         self.solver_path = solver_path
 
-    def run_single(self, query_path, is_mut, cfg):
+    def _sample_size_enough(self, veri_times, veri_results, cfg):
+        sample_size = len(veri_times)
+        assert (sample_size == len(veri_results))
+
+        if sample_size < cfg.min_mutants:
+            return False
+
+        t_critical = stats.t.ppf(q=cfg.confidence_level, df=sample_size-1)  
+        # get the sample standard deviation
+        time_stdev = np.std(veri_times, ddof=1)
+        # standard deviation estimate
+        sigma = time_stdev/math.sqrt(sample_size) 
+        time_moe = t_critical * sigma
+
+        p = sum(veri_results) / sample_size
+        res_moe = t_critical * math.sqrt((p*(1-p))/sample_size)
+
+        # res_stdev = np.std(veri_results, ddof=1)
+        # sigma = res_stdev/math.sqrt(sample_size) 
+        # res_moe = t_critical * sigma
+        # print(res_moe, time_moe)
+
+        return time_moe < cfg.time_moe_limit * 1000 and res_moe < cfg.res_moe_limit
+
+    def _run_single(self, query_path, is_mut, cfg):
         assert (cfg.trials == 1)
         command = f"{self.solver_path} {query_path} -T:{cfg.timeout} -st"
+        print(command)
         out, err, elapsed = subprocess_run(command)
         rcode = z3_basic_parse(out)
 
         con = sqlite3.connect(DB_PATH)
         cur = con.cursor()
         cur.execute(f"""INSERT INTO {cfg.table_name}
-            (query_path, is_mut, command, std_out, std_error, result_code, elapsed_milli)
-            VALUES(?, ?, ?, ?, ?, ?, ?);""", (self.vanilla_path, is_mut, command, out,
-            err, rcode, elapsed))
+            (query_path, vanilla_path, command, std_out, std_error, result_code, elapsed_milli)
+            VALUES(?, ?, ?, ?, ?, ?, ?);""",
+            (query_path, self.vanilla_path, command, out, err, rcode, elapsed))
         con.commit()
         con.close()
         return elapsed, rcode
 
     def run(self, cfg):
-        # print(self.vanilla_path)
-        elapsed, rcode = self.run_single(self.vanilla_path, False, cfg)
+        elapsed, rcode = self._run_single(self.vanilla_path, False, cfg)
         # print("vanilla done: " + str(elapsed) + " milliseconds " + rcode)
 
         gen_path_pre = "gen/" + cfg.table_name + "_" + self.vanilla_path[5::]
@@ -79,43 +94,21 @@ class Z3TaskGroup:
             command = f"{MARIPOSA_BIN_PATH} -i {self.vanilla_path} -p mix -o {mutant_path} -s {seed}"
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
             if result.returncode != 0:
-                print(command)
-                assert (False)
+                print("MARIPOSA failed: " + command)
+                return
 
-            elapsed, rcode = self.run_single(mutant_path, True, cfg)
+            elapsed, rcode = self._run_single(mutant_path, True, cfg)
             veri_times.append(elapsed)
             if rcode == "unsat":
                 veri_results.append(1)
             else:
                 veri_results.append(0)
 
-            self.mutant_paths.append(mutant_path)
+            if self._sample_size_enough(veri_times, veri_results, cfg):
+                print(f"{self.vanilla_path} mutants: {len(veri_times)}")
+                break
+            # self.mutant_paths.append(mutant_path)
             # print("mutant done: " + str(elapsed) + " milliseconds " + rcode)
-
-            sample_size = len(veri_times)
-
-            if sample_size >= cfg.min_mutants:
-                t_critical = stats.t.ppf(q=0.95, df=sample_size-1)  
-                # get the sample standard deviation
-                time_stdev = np.std(veri_times, ddof=1)
-                # standard deviation estimate
-                sigma = time_stdev/math.sqrt(sample_size) 
-                time_moe = t_critical * sigma
-
-                p = sum(veri_results) / sample_size
-                res_moe = t_critical * math.sqrt((p*(1-p))/sample_size)
-                # res_stdev = np.std(veri_results, ddof=1)
-                # sigma = res_stdev/math.sqrt(sample_size) 
-                # res_moe = t_critical * sigma
-                # print(res_moe, time_moe)
-
-                if time_moe < 3000 and res_moe < 0.05:
-                    break
-
-        if res_moe != 0:
-            print(self.vanilla_path)
-            print_sample_stats(veri_times, time_moe)
-            print_sample_stats(veri_results, res_moe)
 
 def run_group_tasks(queue, cfg):
     while True:
@@ -158,19 +151,10 @@ class Runner:
         for p in processes:
             p.join()
 
-        # con = sqlite3.connect(DB_PATH)
-        # cur = con.cursor()
-        # res = cur.execute(f"""SELECT * FROM test_results""")
-        # for row in res.fetchall():
-        #     print(row[3])
-        #     print(row[4])
-        #     print(row[5])
-        # drop_experiment_table(cfg, False)
-
 if __name__ == '__main__':
-    queries = sample_vanilla_queries(PNAME_SMTLIB, 200)
-    cfg = ExpConfig("test", ["z3-4.4.2"], queries)
-    # cfg.num_procs = 1
+    queries = sample_vanilla_queries(PNAME_SERVAL_KOMODO, 200)
+    cfg = ExpConfig("test2", ["z3-4.4.2"], queries)
+    # print(cfg.timeout)
     r = Runner(cfg)
 
     # con = sqlite3.connect(DB_PATH)
