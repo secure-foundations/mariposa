@@ -7,6 +7,8 @@ use rand_chacha::ChaCha8Rng;
 use smt2parser::{CommandStream, concrete, renaming, visitors};
 use rustop::opts;
 
+const DEFAULT_SEED: u64 = 1234567890;
+
 fn parse_commands_from_file(file_path: String) -> Vec<concrete::Command> {
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
@@ -160,18 +162,17 @@ fn main() {
             desc: "input file path";
         opt model_file_path:Option<String>,
             desc: "model file with the query";
-        opt process:String=String::from("none"),
+        opt perturbation:String=String::from("none"),
             desc: "mutation to perform";
         opt quiet:bool=false,
-            desc: "process without printing";
+            desc: "perturbation without printing";
         opt out_file_path:Option<String>,
             desc: "output file path";
-        opt seed:u64=1234567890,
+        opt seed:u64=DEFAULT_SEED,
         desc: "seed for randomness";
     }.parse_or_exit();
 
     let mut commands :Vec<concrete::Command> = parse_commands_from_file(args.in_file_path);
-
 
     if let Some(file_path) = args.model_file_path {
         let model = parse_commands_from_file(file_path);
@@ -179,21 +180,22 @@ fn main() {
         manager.dump_model_test(&model, &commands);
     } else {
         let mut manager = Manager::new(args.out_file_path, args.seed);
-        if args.process == "none" {
-            manager.dump(&format!("{}\n", commands.len()));
-        } else if args.process == "print" {
-            manager.dump_non_info_commands(&commands);
-        } else if args.process  == "shuffle" {
-            shuffle_asserts(&mut commands, manager.seed);
-            manager.dump_non_info_commands(&commands);
-        } else if args.process == "normalize" {
-            commands = normalize_commands(commands, manager.seed);
-            manager.dump_non_info_commands(&commands);
-        } else if args.process  == "mix" {
-            shuffle_asserts(&mut commands, manager.seed);
-            commands = normalize_commands(commands, manager.seed);
-            manager.dump_non_info_commands(&commands);
+
+        if args.perturbation == "none" {
+            return; // parse then exit
         }
+
+        if args.perturbation  == "shuffle" {
+            shuffle_asserts(&mut commands, manager.seed);
+        } else if args.perturbation == "rename" {
+            commands = normalize_commands(commands, manager.seed);
+        } else if args.perturbation == "sseed" {
+            if manager.seed != DEFAULT_SEED {
+                let solver_seed = manager.seed as u32;
+                manager.dump(&format!("(set-option :random-seed {solver_seed})\n"));
+            };
+        }
+        manager.dump_non_info_commands(&commands);
     }
 }
 

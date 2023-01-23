@@ -81,6 +81,7 @@ def setup_experiment_table(cfg):
     cur.execute(f"""CREATE TABLE {cfg.table_name}(
         query_path varchar(255) NOT NULL,
         vanilla_path varchar(255),
+        perturbation varchar(10),
         command varchar(455) NOT NULL,
         std_out TEXT,
         std_error TEXT,

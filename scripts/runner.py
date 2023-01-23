@@ -1,11 +1,13 @@
 import sys, os, subprocess
-from db_utils import *
 import multiprocessing as mp
 import time
 import random
 import scipy.stats as stats
 import numpy as np
 import math
+
+from db_utils import *
+from configer import Mutation, ALL_MUTS
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
@@ -46,11 +48,11 @@ class Z3TaskGroup:
             return False
 
         t_critical = stats.t.ppf(q=cfg.confidence_level, df=sample_size-1)  
-        # get the sample standard deviation
-        time_stdev = np.std(veri_times, ddof=1)
-        # standard deviation estimate
-        sigma = time_stdev/math.sqrt(sample_size) 
-        time_moe = t_critical * sigma
+        # # get the sample standard deviation
+        # time_stdev = np.std(veri_times, ddof=1)
+        # # standard deviation estimate
+        # sigma = time_stdev/math.sqrt(sample_size) 
+        # time_moe = t_critical * sigma
 
         p = sum(veri_results) / sample_size
         res_moe = t_critical * math.sqrt((p*(1-p))/sample_size)
@@ -60,44 +62,42 @@ class Z3TaskGroup:
         # res_moe = t_critical * sigma
         # print(res_moe, time_moe)
 
-        return time_moe < cfg.time_moe_limit * 1000 and res_moe < cfg.res_moe_limit
+        return res_moe < cfg.res_moe_limit
 
-    def _run_single(self, query_path, is_mut, cfg):
+    def _run_single(self, query_path, perturb, cfg):
         assert (cfg.trials == 1)
         command = f"{self.solver_path} {query_path} -T:{cfg.timeout} -st"
-        print(command)
         out, err, elapsed = subprocess_run(command)
         rcode = z3_basic_parse(out)
 
         con = sqlite3.connect(DB_PATH)
         cur = con.cursor()
         cur.execute(f"""INSERT INTO {cfg.table_name}
-            (query_path, vanilla_path, command, std_out, std_error, result_code, elapsed_milli)
-            VALUES(?, ?, ?, ?, ?, ?, ?);""",
-            (query_path, self.vanilla_path, command, out, err, rcode, elapsed))
+            (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
+            (query_path, self.vanilla_path, perturb, command, out, err, rcode, elapsed))
         con.commit()
         con.close()
         return elapsed, rcode
 
-    def run(self, cfg):
-        elapsed, rcode = self._run_single(self.vanilla_path, False, cfg)
-        # print("vanilla done: " + str(elapsed) + " milliseconds " + rcode)
-
-        gen_path_pre = "gen/" + cfg.table_name + "_" + self.vanilla_path[5::]
-
+    def run_pert_group(self, gen_path_pre, perturb, cfg):
         veri_times = []
         veri_results = []
 
         for _ in range(cfg.max_mutants):
-            seed = random.randint(0, 0xffffffffffffffff)
-            mutant_path = gen_path_pre.replace("smt2", str(seed) + ".me.smt2")
-            command = f"{MARIPOSA_BIN_PATH} -i {self.vanilla_path} -p mix -o {mutant_path} -s {seed}"
+            seed = random.randint(0, 0xffffffffffff)
+
+            file_name = f"{str(seed)}.{perturb}.smt2"
+            mutant_path = gen_path_pre.replace("smt2", file_name)
+            command = f"{MARIPOSA_BIN_PATH} -i {self.vanilla_path} -p {perturb} -o {mutant_path} -s {seed}"
+
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
             if result.returncode != 0:
                 print("MARIPOSA failed: " + command)
                 return
 
-            elapsed, rcode = self._run_single(mutant_path, True, cfg)
+            elapsed, rcode = self._run_single(mutant_path, perturb, cfg)
+
             veri_times.append(elapsed)
             if rcode == "unsat":
                 veri_results.append(1)
@@ -105,14 +105,22 @@ class Z3TaskGroup:
                 veri_results.append(0)
 
             if self._sample_size_enough(veri_times, veri_results, cfg):
-                print(f"{self.vanilla_path} mutants: {len(veri_times)}")
+                # print(f"{self.vanilla_path} mutants: {len(veri_times)}")
                 break
-            # self.mutant_paths.append(mutant_path)
-            # print("mutant done: " + str(elapsed) + " milliseconds " + rcode)
+
+    def run(self, cfg):
+        elapsed, rcode = self._run_single(self.vanilla_path, None, cfg)
+        print("vanilla done: " + str(elapsed) + " milliseconds " + rcode)
+
+        gen_path_pre = "gen/" + cfg.table_name + "_" + self.vanilla_path[5::]
+
+        for perturb in ALL_MUTS:
+            self.run_pert_group(gen_path_pre, perturb, cfg)
 
 def run_group_tasks(queue, cfg):
     while True:
         task = queue.get()
+        print(queue.qsize())
         if task is None:
             break
         task.run(cfg)
@@ -152,7 +160,7 @@ class Runner:
             p.join()
 
 if __name__ == '__main__':
-    queries = sample_vanilla_queries(PNAME_SERVAL_KOMODO, 200)
+    queries = sample_vanilla_queries(PNAME_SERVAL_KOMODO, 20)
     cfg = ExpConfig("test2", ["z3-4.4.2"], queries)
     # print(cfg.timeout)
     r = Runner(cfg)
