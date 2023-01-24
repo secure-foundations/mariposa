@@ -8,6 +8,10 @@ class Mutation(str, Enum):
 
 ALL_MUTS = [e.value for e in Mutation]
 
+class SolverName(str, Enum):
+    Z3 = "z3"
+    CVC5 = "cvc5"
+
 def check_solver_exists(solver_path):
     assert (solver_path.startswith("solvers/"))
     assert (os.path.exists(solver_path))

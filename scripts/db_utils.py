@@ -1,7 +1,6 @@
 import sqlite3
 from path_utils import *
 from configer import *
-from tqdm import tqdm
 
 # from enum import auto
 # from strenum import StrEnum

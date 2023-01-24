@@ -22,7 +22,7 @@ def subprocess_run(command, debug=False, cwd=None):
     stderr = res.stderr.decode("utf-8").strip()
     return stdout, stderr, elapsed
 
-def z3_basic_parse(output):
+def parse_basic_output_z3(output):
     if "unsat" in output:
         return "unsat"
     elif "sat" in output:
@@ -33,9 +33,26 @@ def z3_basic_parse(output):
         return "timeout"
     return "error"
 
-class Z3TaskGroup:
-    def __init__(self, mut, vanilla_path, solver_path):
-        assert ("z3" in solver_path)
+def parse_basic_output_cvc(output, error):
+    if "unsat" in output:
+        return "unsat"
+    elif "sat" in output:
+        return "sat"
+    elif "unknown" in output:
+        return "unknown"
+    elif "interrupted by timeout" in error:
+        return "timeout"
+    return "error"
+
+class SolverTaskGroup:
+    def __init__(self, vanilla_path, solver_path):
+        # assert ("z3" in solver_path)
+        if "z3" in solver_path:
+            self.solver_name = SolverName.Z3
+        else:
+            assert ("cvc5" in solver_path)
+            self.solver_name = SolverName.CVC5
+
         self.vanilla_path = vanilla_path
         self.mutant_paths = []
         self.solver_path = solver_path
@@ -48,27 +65,41 @@ class Z3TaskGroup:
             return False
 
         t_critical = stats.t.ppf(q=cfg.confidence_level, df=sample_size-1)  
+
+        p = sum(veri_results) / sample_size
+        res_moe = t_critical * math.sqrt((p*(1-p))/sample_size)
+
         # # get the sample standard deviation
         # time_stdev = np.std(veri_times, ddof=1)
         # # standard deviation estimate
         # sigma = time_stdev/math.sqrt(sample_size) 
         # time_moe = t_critical * sigma
 
-        p = sum(veri_results) / sample_size
-        res_moe = t_critical * math.sqrt((p*(1-p))/sample_size)
-
-        # res_stdev = np.std(veri_results, ddof=1)
-        # sigma = res_stdev/math.sqrt(sample_size) 
-        # res_moe = t_critical * sigma
-        # print(res_moe, time_moe)
-
         return res_moe < cfg.res_moe_limit
 
     def _run_single(self, query_path, perturb, cfg):
         assert (cfg.trials == 1)
-        command = f"{self.solver_path} {query_path} -T:{cfg.timeout} -st"
+
+        if self.solver_name == SolverName.Z3:
+            # -st
+            command = f"{self.solver_path} {query_path} -T:{cfg.timeout}"
+        else:
+            assert (self.solver_name == SolverName.CVC5)
+            # --stats
+            # TODO: maybe instead cleanup push/pop
+            command = f"{self.solver_path} {query_path} -i --tlimit={cfg.timeout * 1000}"
+
         out, err, elapsed = subprocess_run(command)
-        rcode = z3_basic_parse(out)
+
+        # parse_basic_output_cvc
+
+        if self.solver_name == SolverName.Z3:
+            rcode = parse_basic_output_z3(out)
+        else:
+            rcode = parse_basic_output_cvc(out, err)
+
+        if rcode == "error":
+            print(out, err)
 
         con = sqlite3.connect(DB_PATH)
         cur = con.cursor()
@@ -110,7 +141,8 @@ class Z3TaskGroup:
 
     def run(self, cfg):
         elapsed, rcode = self._run_single(self.vanilla_path, None, cfg)
-        print("vanilla done: " + str(elapsed) + " milliseconds " + rcode)
+        if rcode != "unsat":
+            print("[WARN] vanilla: " + self.vanilla_path + " " + str(elapsed) + " milliseconds " + rcode)
 
         gen_path_pre = "gen/" + cfg.table_name + "_" + self.vanilla_path[5::]
 
@@ -130,10 +162,7 @@ class Runner:
     def _add_group_task(self, path, cfg):
         # for each solver create a task group
         for solver_path in cfg.solver_paths:
-            if "z3" in solver_path:
-                task = Z3TaskGroup(False, path, solver_path)
-            else:
-                assert (False)
+            task = SolverTaskGroup(path, solver_path)
             self.task_queue.put(task)
 
     def __init__(self, cfg):
@@ -148,8 +177,8 @@ class Runner:
             self.task_queue.put(None)
 
         processes = []
-        drop_experiment_table(cfg, True)
-        setup_experiment_table(cfg)
+        # drop_experiment_table(cfg, True)
+        # setup_experiment_table(cfg)
 
         for _ in range(cfg.num_procs):
             p = mp.Process(target=run_group_tasks, args=(self.task_queue, cfg,))
@@ -160,8 +189,8 @@ class Runner:
             p.join()
 
 if __name__ == '__main__':
-    queries = sample_vanilla_queries(PNAME_SERVAL_KOMODO, 20)
-    cfg = ExpConfig("test2", ["z3-4.4.2"], queries)
+    queries = sample_vanilla_queries(PNAME_SERVAL_KOMODO, None)
+    cfg = ExpConfig("test2", ["z3-4.4.2", "z3-4.11.2"], queries)
     # print(cfg.timeout)
     r = Runner(cfg)
 
