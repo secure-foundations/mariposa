@@ -1,6 +1,5 @@
 import sqlite3
 import sys
-from path_utils import *
 from tqdm import tqdm
 
 sys.path.insert(0, 'configs')

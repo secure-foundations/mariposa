@@ -7,7 +7,6 @@ import numpy as np
 import math
 
 from db_utils import *
-from path_utils import *
 from configs.projects import *
 from configs.experiments import *
 
@@ -19,18 +18,6 @@ class Mutation(str, Enum):
     SSEED = "sseed"
 
 ALL_MUTS = [e.value for e in Mutation]
-
-#     def __str__(self):
-#         return f"""qlist path: {self.qlist_path}
-# experiment name: {self.name}
-# trials per query: {self.trials}
-# solver: {self.solver_paths}
-# timeout (seconds): {self.timeout}
-# processes: {self.procs}"""
-
-# SERVAL_KOMODO_IDEAL = Config("serval_komodo_ideal", "cs_komodo", ["z3-4.4.2"])
-# print(SERVAL_KOMODO_IDEAL)
-
 
 def subprocess_run(command, time_limit, debug=False, cwd=None):
     command = f"timeout {time_limit} " + command

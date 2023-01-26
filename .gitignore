@@ -8,7 +8,7 @@
 /gen
 ninja
 .ninja*
-scripts/__pycache__/
+__pycache__/
 bin
 lib
 lib64
@@ -17,3 +17,4 @@ share
 pyvenv.cfg
 data/*
 !data/mariposa.db.tar.gz
+temp

@@ -62,6 +62,9 @@ class ProjectConfig:
         assert (os.path.exists(self._plain_dir))
         self.clean_dirs = dict()
 
+    def get_plain_dir(self):
+        return self._plain_dir
+
     def assign_z3_dirs(self, dir):
         assert (os.path.exists(dir))
         assert (dir.endswith("/"))
