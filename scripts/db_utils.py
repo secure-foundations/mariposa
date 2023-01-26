@@ -1,78 +1,79 @@
 import sqlite3
+import sys
 from path_utils import *
-from configer import *
+from tqdm import tqdm
+
+sys.path.insert(0, 'configs')
+
 
 # from enum import auto
-# from strenum import StrEnum
 
-# class RCode(StrEnum):
+DB_PATH = "data/mariposa.db"
 
-# res = cur.execute("""DROP TABLE vanilla_queries""")
-# res = cur.execute("""DROP TABLE vanilla_results""")
+# def reload_vanilla_queries_table():
+#     con = sqlite3.connect(DB_PATH)
+#     cur = con.cursor()
 
-PNAME_SERVAL_KOMODO = "serval_komodo"
-PNAME_DAFNY_TESTS = "dafny_tests"
-PNAME_SMTLIB = "smtlib"
+#     cur.execute("""DROP TABLE vanilla_queries""")
+#     cur.execute("""CREATE TABLE vanilla_queries(
+#         query_path varchar(255) NOT NULL,
+#         project varchar(255) NOT NULL,
+#         status varchar(10),
+#         PRIMARY KEY (query_path))""")
 
-def reload_vanilla_queries_table():
-    con = sqlite3.connect(DB_PATH)
-    cur = con.cursor()
-
-    # cur.execute("""DROP TABLE vanilla_queries""")
-    cur.execute("""CREATE TABLE vanilla_queries(
-        query_path varchar(255) NOT NULL,
-        project varchar(255) NOT NULL,
-        status varchar(10),
-        PRIMARY KEY (query_path))""")
-
-    print("loading " + PNAME_SERVAL_KOMODO)
-    for path in tqdm(list_smt2_files(SKOMODO_CLEAN_DIR)):
-        cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
-            VALUES(?, ?, 'unsat');""", (path, PNAME_SERVAL_KOMODO))
+#     print("loading " + PNAME_SERVAL_KOMODO)
+#     for path in tqdm(list_smt2_files(SKOMODO_CLEAN_DIR)):
+#         cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
+#             VALUES(?, ?, 'unsat');""", (path, PNAME_SERVAL_KOMODO))
     
-    print("loading " + PNAME_DAFNY_TESTS)
+#     # print("loading " + PNAME_DAFNY_TESTS)
 
-    for path in tqdm(list_smt2_files(DFY_CLEAN_DIR)):
-        cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
-            VALUES(?, ?, 'unsat');""", (path, PNAME_DAFNY_TESTS))
+#     # for path in tqdm(list_smt2_files(DFY_CLEAN_DIR)):
+#     #     cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
+#     #         VALUES(?, ?, 'unsat');""", (path, PNAME_DAFNY_TESTS))
 
-    print("loading " + PNAME_SMTLIB)
+#     # print("loading " + PNAME_SMTLIB)
 
-    for path in tqdm(list_smt2_files(SMT_ALL_DIR)):
-        with open(path) as f:
-            query = f.read()
-            status = "unknown"
-            if "(set-info :status unsat)" in query:
-                status = "unsat"
-            elif "(set-info :status sat)" in query:
-                status = "sat"
-            else:
-                assert("(set-info :status unknown)" in query)
-            cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
-                VALUES(?, ?, ?);""", (path, PNAME_SMTLIB, status))
+#     # for path in tqdm(list_smt2_files(SMT_ALL_DIR)):
+#     #     with open(path) as f:
+#     #         query = f.read()
+#     #         status = "unknown"
+#     #         if "(set-info :status unsat)" in query:
+#     #             status = "unsat"
+#     #         elif "(set-info :status sat)" in query:
+#     #             status = "sat"
+#     #         else:
+#     #             assert("(set-info :status unknown)" in query)
+#     #         cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
+#     #             VALUES(?, ?, ?);""", (path, PNAME_SMTLIB, status))
 
-    con.commit()
-    con.close()
+#     print("loading " + PNAME_DAFNY_KOMODO)
+#     for path in tqdm(list_smt2_files(DKOMODO_CLEAN_DIR)):
+#         cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
+#             VALUES(?, ?, 'unsat');""", (path, PNAME_DAFNY_KOMODO))
 
-def sample_vanilla_queries(project, query_count, status="unsat"):
-    con = sqlite3.connect(DB_PATH)
-    cur = con.cursor()
+#     con.commit()
+#     con.close()
 
-    if query_count is None:
-        # get all queries
-        res = cur.execute("""SELECT query_path from vanilla_queries
-            WHERE project = ?
-            AND status = ?;
-            """, (project, status))
-    else:
-        res = cur.execute("""SELECT query_path from vanilla_queries
-            WHERE project = ?
-            AND status = ?
-            ORDER BY RANDOM() LIMIT ?;
-            """, (project, status, query_count))
-    paths = [i[0] for i in res.fetchall()]
-    con.close()
-    return paths
+# def sample_vanilla_queries(project, query_count, status="unsat"):
+#     con = sqlite3.connect(DB_PATH)
+#     cur = con.cursor()
+
+#     if query_count is None:
+#         # get all queries
+#         res = cur.execute("""SELECT query_path from vanilla_queries
+#             WHERE project = ?
+#             AND status = ?;
+#             """, (project, status))
+#     else:
+#         res = cur.execute("""SELECT query_path from vanilla_queries
+#             WHERE project = ?
+#             AND status = ?
+#             ORDER BY RANDOM() LIMIT ?;
+#             """, (project, status, query_count))
+#     paths = [i[0] for i in res.fetchall()]
+#     con.close()
+#     return paths
 
 def setup_experiment_table(cfg):
     con = sqlite3.connect(DB_PATH)

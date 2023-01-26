@@ -15,4 +15,5 @@ lib64
 share
 .vscode/
 pyvenv.cfg
-data/mariposa.db
+data/*
+!data/mariposa.db.tar.gz

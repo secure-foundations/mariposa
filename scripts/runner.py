@@ -7,11 +7,33 @@ import numpy as np
 import math
 
 from db_utils import *
-from configer import Mutation, ALL_MUTS
+from path_utils import *
+from configs.projects import *
+from configs.experiments import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
-def subprocess_run(command, debug=False, cwd=None):
+class Mutation(str, Enum):
+    SHUFFLE = "shuffle"
+    RENAME = "rename"
+    SSEED = "sseed"
+
+ALL_MUTS = [e.value for e in Mutation]
+
+#     def __str__(self):
+#         return f"""qlist path: {self.qlist_path}
+# experiment name: {self.name}
+# trials per query: {self.trials}
+# solver: {self.solver_paths}
+# timeout (seconds): {self.timeout}
+# processes: {self.procs}"""
+
+# SERVAL_KOMODO_IDEAL = Config("serval_komodo_ideal", "cs_komodo", ["z3-4.4.2"])
+# print(SERVAL_KOMODO_IDEAL)
+
+
+def subprocess_run(command, time_limit, debug=False, cwd=None):
+    command = f"timeout {time_limit} " + command
     if debug:
         print(command)
     start_time = time.time()
@@ -45,17 +67,10 @@ def parse_basic_output_cvc(output, error):
     return "error"
 
 class SolverTaskGroup:
-    def __init__(self, vanilla_path, solver_path):
-        # assert ("z3" in solver_path)
-        if "z3" in solver_path:
-            self.solver_name = SolverName.Z3
-        else:
-            assert ("cvc5" in solver_path)
-            self.solver_name = SolverName.CVC5
-
+    def __init__(self, vanilla_path, solver):
         self.vanilla_path = vanilla_path
         self.mutant_paths = []
-        self.solver_path = solver_path
+        self.solver = solver
 
     def _sample_size_enough(self, veri_times, veri_results, cfg):
         sample_size = len(veri_times)
@@ -80,20 +95,20 @@ class SolverTaskGroup:
     def _run_single(self, query_path, perturb, cfg):
         assert (cfg.trials == 1)
 
-        if self.solver_name == SolverName.Z3:
+        if self.solver.brand == SolverBrand.Z3:
             # -st
-            command = f"{self.solver_path} {query_path} -T:{cfg.timeout}"
+            command = f"{self.solver.path} {query_path} -T:{cfg.timeout}"
         else:
-            assert (self.solver_name == SolverName.CVC5)
+            assert (self.solver.brand == SolverBrand.CVC5)
             # --stats
             # TODO: maybe instead cleanup push/pop
-            command = f"{self.solver_path} {query_path} -i --tlimit={cfg.timeout * 1000}"
+            command = f"{self.solver.path} {query_path} -i --tlimit={cfg.timeout * 1000}"
 
-        out, err, elapsed = subprocess_run(command)
+        out, err, elapsed = subprocess_run(command, cfg.timeout + 1)
 
         # parse_basic_output_cvc
 
-        if self.solver_name == SolverName.Z3:
+        if self.solver.brand == SolverBrand.Z3:
             rcode = parse_basic_output_z3(out)
         else:
             rcode = parse_basic_output_cvc(out, err)
@@ -122,12 +137,16 @@ class SolverTaskGroup:
             mutant_path = gen_path_pre.replace("smt2", file_name)
             command = f"{MARIPOSA_BIN_PATH} -i {self.vanilla_path} -p {perturb} -o {mutant_path} -s {seed}"
 
+            # generate mutant
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
             if result.returncode != 0:
                 print("MARIPOSA failed: " + command)
                 return
 
             elapsed, rcode = self._run_single(mutant_path, perturb, cfg)
+
+            # remove mutant
+            os.system(f"rm {mutant_path}")
 
             veri_times.append(elapsed)
             if rcode == "unsat":
@@ -144,7 +163,7 @@ class SolverTaskGroup:
         if rcode != "unsat":
             print("[WARN] vanilla: " + self.vanilla_path + " " + str(elapsed) + " milliseconds " + rcode)
 
-        gen_path_pre = "gen/" + cfg.table_name + "_" + self.vanilla_path[5::]
+        gen_path_pre = "gen/" + cfg.table_name + "/" + self.vanilla_path[5::]
 
         for perturb in ALL_MUTS:
             self.run_pert_group(gen_path_pre, perturb, cfg)
@@ -159,26 +178,24 @@ def run_group_tasks(queue, cfg):
     print("worker exit")
 
 class Runner:
-    def _add_group_task(self, path, cfg):
-        # for each solver create a task group
-        for solver_path in cfg.solver_paths:
-            task = SolverTaskGroup(path, solver_path)
-            self.task_queue.put(task)
-
     def __init__(self, cfg):
         mp.set_start_method('spawn')
         self.task_queue = mp.Queue()
 
-        for path in cfg.queries:
-            self._add_group_task(path, cfg)
+        for solver, queries in cfg.samples.items():
+            # self._add_group_task(path, cfg)
+            for query in queries:
+                task = SolverTaskGroup(query, solver)
+                self.task_queue.put(task)
+                # print(query, solver)
 
         # for proc exit
         for _ in range(cfg.num_procs):
             self.task_queue.put(None)
 
         processes = []
-        # drop_experiment_table(cfg, True)
-        # setup_experiment_table(cfg)
+        drop_experiment_table(cfg, True)
+        setup_experiment_table(cfg)
 
         for _ in range(cfg.num_procs):
             p = mp.Process(target=run_group_tasks, args=(self.task_queue, cfg,))
@@ -189,15 +206,28 @@ class Runner:
             p.join()
 
 if __name__ == '__main__':
-    queries = sample_vanilla_queries(PNAME_SERVAL_KOMODO, None)
-    cfg = ExpConfig("test2", ["z3-4.4.2", "z3-4.11.2"], queries)
-    # print(cfg.timeout)
+    samples = get_samples(S_KOMODO, [Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3])
+    # for s, qs in samples.items():
+    #     print(s)
+    #     print(qs)
+
+    cfg = ExpConfig("test1", S_KOMODO, samples)
     r = Runner(cfg)
 
     # con = sqlite3.connect(DB_PATH)
     # cur = con.cursor()
-    # res = cur.execute(f"""SELECT * FROM test_results""")
-    # for row in res.fetchall():
-    #     print(row[3])
-    #     print(row[4])
-    #     print(row[5])
+
+    # res = cur.execute(f"""
+    #     SELECT query_path, result_code, elapsed_milli
+    #     FROM {cfg.table_name}
+    #     """)
+    # for r in res.fetchall():
+    #     print(r)
+
+    # count = 0
+    # for i in tqdm(list_smt2_files(DKOMODO_RAW_DIR)):
+    #     command = f"./solvers/cvc5-1.0.3 --parse-only {i}"
+    #     out, err, t = subprocess_run(command, debug=False, cwd=None)
+    #     if "Error" in out:
+    #         count += 1
+    #         print(count)
