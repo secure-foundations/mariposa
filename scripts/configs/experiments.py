@@ -1,18 +1,18 @@
 from configs.projects import *
 
 class ExpConfig:
-    def __init__(self, name, project, samples):
+    def __init__(self, name, project, solvers, count=None):
         self.name = name
 
         assert isinstance(project, ProjectConfig)
 
         self.project = project
 
-        for s in samples:
+        for s in solvers:
             assert isinstance(s, SolverInfo)
 
         # these are the enabled solvers and their sampled queries
-        self.samples = samples
+        self.samples = get_samples(project, solvers, count)
 
         # how many times do we run each query? default=1
         self.trials = 1
@@ -47,3 +47,6 @@ class ExpConfig:
     #         for query in self.queries:
     #             print(dir + query)
     #             assert (os.path.exists(dir + query))
+
+S_KOMODO_BASIC_CFG = ExpConfig("test1", D_KOMODO, [Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3])
+D_KOMODO_BASIC_CFG = ExpConfig("test2", D_KOMODO, [Z3_4_11_2, CVC5_1_0_3])

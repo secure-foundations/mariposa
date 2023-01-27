@@ -118,4 +118,5 @@ S_KOMODO.assign_z3_dirs("data/s_komodo_clean/")
 
 D_KOMODO = ProjectConfig("d_komodo", FrameworkName.DAFNY, "data/d_komodo_plain/")
 # z3 uses the clean set
-D_KOMODO.assign_z3_dirs("data/d_komodo_clean/")
+D_KOMODO.assign_z3_dirs("data/d_komodo_z3_clean/")
+D_KOMODO.assign_cvc5_dirs("data/d_komodo_cvc5_clean/")

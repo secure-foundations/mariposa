@@ -169,20 +169,23 @@ class Runner:
         mp.set_start_method('spawn')
         self.task_queue = mp.Queue()
 
+        con = self.__setup_db(cfg)
+
         for solver, queries in cfg.samples.items():
             # self._add_group_task(path, cfg)
-            for query in queries:
+            for query in tqdm(queries):
                 task = SolverTaskGroup(query, solver)
-                self.task_queue.put(task)
-                # print(query, solver)
+                if self.__should_run_task(cfg, con, task):
+                    self.task_queue.put(task)
+
+        if con is not None:
+            con.close()
 
         # for proc exit
         for _ in range(cfg.num_procs):
             self.task_queue.put(None)
 
         processes = []
-        drop_experiment_table(cfg, True)
-        setup_experiment_table(cfg)
 
         for _ in range(cfg.num_procs):
             p = mp.Process(target=run_group_tasks, args=(self.task_queue, cfg,))
@@ -192,17 +195,42 @@ class Runner:
         for p in processes:
             p.join()
 
+    # creates db if not existing
+    # returns a con if db already exists
+    def __setup_db(self, cfg):
+        con = sqlite3.connect(DB_PATH)
+        cur = con.cursor()
+        cur.execute(f"""SELECT name from sqlite_master
+            WHERE type='table'
+            AND name=?""", (cfg.table_name,))
+        if cur.fetchone() != None:
+            return con
+
+        # drop_experiment_table(cfg, True)
+        con.close()
+        setup_experiment_table(cfg)
+        return None
+
+    # check if enough data has been collected in previous runs
+    def __should_run_task(self, cfg, con, task):
+        if con is None:
+            return True
+
+        threshold = cfg.min_mutants * len(ALL_MUTS)
+        cur = con.cursor()
+        cur.execute(f"""SELECT COUNT(*) from {cfg.table_name}
+            WHERE vanilla_path=?
+            AND command LIKE "%{task.solver}%"
+            """, (task.vanilla_path,))
+        if cur.fetchone()[0] < threshold:
+            return True
+        return False
+
 if __name__ == '__main__':
-    samples = get_samples(S_KOMODO, [Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3])
-    # for s, qs in samples.items():
-    #     print(s)
-    #     print(qs)
+    samples = get_samples(D_KOMODO, [Z3_4_11_2, CVC5_1_0_3], None)
 
-    cfg = ExpConfig("test1", S_KOMODO, samples)
+    cfg = ExpConfig("test2", D_KOMODO, samples)
     r = Runner(cfg)
-
-    # con = sqlite3.connect(DB_PATH)
-    # cur = con.cursor()
 
     # res = cur.execute(f"""
     #     SELECT query_path, result_code, elapsed_milli

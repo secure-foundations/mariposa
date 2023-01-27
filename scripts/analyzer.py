@@ -16,15 +16,11 @@ def as_seconds(milliseconds):
 def as_percentage(p):
     return round(p * 100, 2)
 
-samples = get_samples(S_KOMODO, [Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3])
+def build_unstable_table(cfg):
+    con = sqlite3.connect(DB_PATH)
+    cur = con.cursor()
+    unstable_table_name = "unstable_" + cfg.table_name
 
-cfg = ExpConfig("test1", S_KOMODO, samples)
-
-con = sqlite3.connect(DB_PATH)
-cur = con.cursor()
-unstable_table_name = "unstable_" + cfg.table_name
-
-def build_unstable_table():
     cur.execute(f"""DROP TABLE IF EXISTS {unstable_table_name}""")
 
     cur.execute(f"""CREATE TABLE {unstable_table_name} (
@@ -74,17 +70,18 @@ def build_unstable_table():
                 veri_res = [1 if r[0] == 'unsat' else 0 for r in rows]
                 if sample_size == 0:
                     print("[WARN] 0 sample size encountered")
+                    results[perturb] = (0, 0, 0)
                     continue
                 p = sum(veri_res) / sample_size
 
-                t_critical = stats.t.ppf(q=cfg.confidence_level, df=sample_size-1)  
+                # t_critical = stats.t.ppf(q=cfg.confidence_level, df=sample_size-1)  
                 # get the sample standard deviation
                 time_stdev = np.std(veri_times, ddof=1)
                 results[perturb] = (as_percentage(p), as_seconds(time_stdev), sample_size)
 
             maybe = False
             for perturb, (p, _, _) in results.items():
-                if p <= 0.9:
+                if p <= 0.99:
                     maybe = True
             if maybe:
                 summaries = []
@@ -96,8 +93,13 @@ def build_unstable_table():
                     VALUES(?, ?, ?, ?, ?, ?, ?);""", (solver, vanilla_path, v_rcode, v_time, summaries[0], summaries[1], summaries[2]))
     con.commit()
 
-build_unstable_table()
+cfg = D_KOMODO_BASIC_CFG
+# build_unstable_table(cfg)
 
+con = sqlite3.connect(DB_PATH)
+cur = con.cursor()
+
+unstable_table_name = "unstable_" + cfg.table_name
 for solver in cfg.samples:
     solver = str(solver)
     res = cur.execute(f"""SELECT COUNT(*) FROM {cfg.table_name}
@@ -116,15 +118,17 @@ for solver in cfg.samples:
         sseed_summary = ast.literal_eval(row[6])
         if shuffle_summary[1] != 0 or rename_summary[1] != 0 or sseed_summary[1] != 0:
             maybe += 1
+            print(shuffle_summary)
+            print(rename_summary)
+            print(sseed_summary)
+            print("")
 
     print(f"# vanilla queries: {v_count}")
-    print(f"# vanilla queries with [0, 90] success rate in any mut group: {len(rows)}")
-    print(f"# vanilla queries with (0, 90] success rate in any mut group: {maybe}")
+    print(f"# vanilla queries with [0, 99] success rate in any mut group: {len(rows)}")
+    print(f"# vanilla queries with (0, 99] success rate in any mut group: {maybe}")
     print("")
 
-# con = sqlite3.connect(DB_PATH)
-# cur = con.cursor()
-# res = cur.execute(f"""SELECT * FROM test_results""")
+# res = cur.execute(f"""SELECT * FROM {p.table_name}""")
 # for row in res.fetchall():
 #     print(row[3])
 #     print(row[4])
