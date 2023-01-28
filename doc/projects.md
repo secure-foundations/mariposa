@@ -1,13 +1,17 @@
 ## Serval
 repo: https://github.com/uw-unsat/serval
 
+This explains how to run things pretty well.
+https://unsat.cs.washington.edu/projects/serval/sosp19-artifact.html
+
 ### Serval-Komodo
 repo: https://github.com/uw-unsat/serval-sosp19
 
 solver: `z3-4.4.2`
 
 notes:  
-1. The docker image works pretty well.  `docker run -it --name serval unsat/serval-tools:artifact` then later something like `docker start serval` and `docker attach serval`
+1. The docker image works pretty well.  `docker pull unsat/serval-tools:artifact
+` then `docker run -it --name serval unsat/serval-tools:artifact`, later something like `docker start serval` and `docker attach serval`
 2. I didn't find a direct option to log SMT queries. Instead I wrote a script that acts as `z3` and record the inputs. The original `z3` path is at `/code/rosette/bin/z3`
 3. Some queries (I think 2 out of ~750) are supposed to be SAT. They are used to check if some top level preconditions are not vacuous. I have excluded those from the export.
 
