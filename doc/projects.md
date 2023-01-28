@@ -3,6 +3,7 @@ repo: https://github.com/uw-unsat/serval
 
 ### Serval-Komodo
 repo: https://github.com/uw-unsat/serval-sosp19
+
 solver: `z3-4.4.2`
 
 notes:  
@@ -10,10 +11,12 @@ notes:
 2. I didn't find a direct option to log SMT queries. Instead I wrote a script that acts as `z3` and record the inputs. The original `z3` path is at `/code/rosette/bin/z3`
 3. Some queries (I think 2 out of ~750) are supposed to be SAT. They are used to check if some top level preconditions are not vacuous. I have excluded those from the export.
 
+----
 ## Dafny
 
 ### Dafny-Komodo
 repo: https://github.com/microsoft/Komodo
+
 solver: `z3-4.5.0`
 
 notes:  
