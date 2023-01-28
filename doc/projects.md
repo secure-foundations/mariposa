@@ -1,7 +1,8 @@
 ## Serval
 repo: https://github.com/uw-unsat/serval
 
-This explains how to run things pretty well.
+This explains how to run things pretty well:
+
 https://unsat.cs.washington.edu/projects/serval/sosp19-artifact.html
 
 ### Serval-Komodo
