@@ -5,8 +5,11 @@ This explains how to run things pretty well:
 
 https://unsat.cs.washington.edu/projects/serval/sosp19-artifact.html
 
-### Serval-Komodo
+### Serval-Komodo 
+
 repo: https://github.com/uw-unsat/serval-sosp19
+
+status: OK
 
 solver: `z3-4.4.2`
 
@@ -20,7 +23,10 @@ notes:
 ## Dafny
 
 ### Dafny-Komodo
+
 repo: https://github.com/microsoft/Komodo
+
+status: OK
 
 solver: `z3-4.5.0`
 
@@ -35,7 +41,24 @@ notes:
 ## F*
 
 ### DICE*
+
 repo: https://github.com/verified-HRoT/dice-star
+
+status: FAILED
+
+notes:
+1. No docker image provided. Dockerfile exists but build fails when building F*. No revelant F* release found. 
+```
+File "src/extraction/ml/FStar_Extraction_ML_PrintML.ml", line 6, characters 5-31:
+6 | open Migrate_parsetree.Versions
+Error: Unbound module Migrate_parsetree.Versions
+```
+3. If we ignore the failure with F* build, Kremlin build also fails. No revelant Kremlin release found either. 
+```
+File "src/CFlatToWasm.ml", line 196, characters 18-32:
+196 |   [ dummy_phrase (W.Ast.TeeLocal (mk_var (env.n_args + 2)));
+Error: Unbound constructor W.Ast.TeeLocal
+```
 
 ### VWasm
 repo: https://github.com/secure-foundations/vWasm/
