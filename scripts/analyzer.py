@@ -93,7 +93,7 @@ def build_unstable_table(cfg):
                     VALUES(?, ?, ?, ?, ?, ?, ?);""", (solver, vanilla_path, v_rcode, v_time, summaries[0], summaries[1], summaries[2]))
     con.commit()
 
-cfg = D_KOMODO_BASIC_CFG
+cfg = S_KOMODO_BASIC_CFG
 # build_unstable_table(cfg)
 
 con = sqlite3.connect(DB_PATH)
@@ -102,7 +102,7 @@ cur = con.cursor()
 unstable_table_name = "unstable_" + cfg.table_name
 for solver in cfg.samples:
     solver = str(solver)
-    res = cur.execute(f"""SELECT COUNT(*) FROM {cfg.table_name}
+    res = cur.execute(f"""SELECT COUNT(DISTINCT(vanilla_path)) FROM {cfg.table_name}
             WHERE query_path == vanilla_path
             AND command LIKE "%{solver}%" """)
     v_count = res.fetchall()[0][0]
@@ -118,10 +118,10 @@ for solver in cfg.samples:
         sseed_summary = ast.literal_eval(row[6])
         if shuffle_summary[1] != 0 or rename_summary[1] != 0 or sseed_summary[1] != 0:
             maybe += 1
-            print(shuffle_summary)
-            print(rename_summary)
-            print(sseed_summary)
-            print("")
+            # print(shuffle_summary)
+            # print(rename_summary)
+            # print(sseed_summary)
+            # print("")
 
     print(f"# vanilla queries: {v_count}")
     print(f"# vanilla queries with [0, 99] success rate in any mut group: {len(rows)}")

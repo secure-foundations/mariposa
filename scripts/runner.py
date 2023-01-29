@@ -88,8 +88,7 @@ class SolverTaskGroup:
         else:
             assert (self.solver.brand == SolverBrand.CVC5)
             # --stats
-            # TODO: maybe instead cleanup push/pop
-            command = f"{self.solver.path} {query_path} -i --tlimit={cfg.timeout * 1000}"
+            command = f"{self.solver.path} {query_path} --tlimit={cfg.timeout * 1000}"
 
         out, err, elapsed = subprocess_run(command, cfg.timeout + 1)
 

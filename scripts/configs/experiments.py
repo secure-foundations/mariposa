@@ -49,4 +49,4 @@ class ExpConfig:
     #             assert (os.path.exists(dir + query))
 
 S_KOMODO_BASIC_CFG = ExpConfig("test1", D_KOMODO, [Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3])
-D_KOMODO_BASIC_CFG = ExpConfig("test2", D_KOMODO, [Z3_4_11_2, CVC5_1_0_3])
+D_KOMODO_BASIC_CFG = ExpConfig("test2", D_KOMODO, [Z3_4_5_0, Z3_4_11_2, CVC5_1_0_3])

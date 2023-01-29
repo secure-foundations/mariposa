@@ -22,16 +22,19 @@ def clean_dfy_komodo():
 
         for line in f.readlines():
             if re.search(PUSH_CMD, line):
+                # skip the push, check for at most one push
                 depth += 1
                 assert(depth <= 1)
             else:
                 z3o.write(line)
 
                 if "bv2int" in line:
+                    # for cvc5, use bv2nat instead
                     line = line.replace("bv2int", "bv2nat")
 
                 cvc5o.write(line)
                 if "(check-sat)" in line:
+                    # cut off the rest
                     break
 
 clean_dfy_komodo()
@@ -86,25 +89,6 @@ clean_dfy_komodo()
 #         contents = contents.replace(RLIMIT_RESET, "")
 #         out_file = open(out_path, "w+")
 #         out_file.write(DECLARE_REGEX + contents)
-
-# def clean_serval_queries():
-#     file_paths = list_smt2_files(SKOMODO_RAW_DIR)
-#     for file_path in file_paths:
-#         content = open(file_path).read()
-#         qcount = content.count("check-sat")
-#         assert(content.count("push") == 0)
-#         # print(file_path)
-#         paragraphs = content.split("(reset)\n")
-#         queries = []
-#         for p in paragraphs:
-#             if p.endswith("(check-sat)\n"):
-#                 queries.append(p)
-#         assert(len(queries) == qcount)
-#         for i, content in enumerate(queries):
-#             file_path = file_path.replace(SKOMODO_RAW_DIR, SKOMODO_CLEAN_DIR)
-#             out_path = file_path[:-4] + str(i) +  ".smt2"
-#             out_file = open(out_path, "w+")
-#             out_file.write(content)
 
 # if __name__ == "__main__":
 #     # convert_cdafny_queries_cvc5()
