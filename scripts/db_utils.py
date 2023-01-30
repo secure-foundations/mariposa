@@ -1,9 +1,6 @@
 import sqlite3
-import sys
+import sys, os
 from tqdm import tqdm
-
-sys.path.insert(0, 'configs')
-
 
 # from enum import auto
 
@@ -110,13 +107,15 @@ def show_tables():
     print(res.fetchall())
     con.close()
 
+def zip_db():
+    os.system(f"tar cvzf {DB_PATH}.tar.gz {DB_PATH}")
+
 if __name__ == "__main__":
-    show_tables()
-    # reload_vanilla_queries_table()
-# cur.execute("""CREATE TABLE mutant_queries(
-#     mutant_path varchar(255) NOT NULL,
-#     vanilla_path varchar(255) NOT NULL,
-#     full_command varchar(455) NOT NULL,
-#     timestamp DEFAULT CURRENT_TIMESTAMP,
-#     FOREIGN KEY (vanilla_path) REFERENCES vanilla_queries(query_path)
-#     )""")
+    if len(sys.argv) <= 1:
+        show_tables()
+    else:
+        cmd = sys.argv[1]
+        if cmd == "zip_db":
+            zip_db()
+        else:
+            show_tables()

@@ -5,6 +5,7 @@ import numpy as np
 import math
 from tqdm import tqdm
 import ast
+from datetime import datetime
 
 from runner import ALL_MUTS
 from configs.projects import *
@@ -93,43 +94,61 @@ def build_unstable_table(cfg):
                     VALUES(?, ?, ?, ?, ?, ?, ?);""", (solver, vanilla_path, v_rcode, v_time, summaries[0], summaries[1], summaries[2]))
     con.commit()
 
+def analyze_unstable_table(cfg):
+    con = sqlite3.connect(DB_PATH)
+    cur = con.cursor()
+
+    unstable_table_name = "unstable_" + cfg.table_name
+    for solver in cfg.samples:
+        solver = str(solver)
+
+        res = cur.execute(f"""
+            SELECT SUM(elapsed_milli)
+            FROM {cfg.table_name} WHERE
+            command LIKE "%{solver}%" 
+            """)
+
+        (cpu_hours, ) = res.fetchone()
+        cpu_hours = round(cpu_hours / 1000 / 60 / 60, 2)
+
+        res = cur.execute(f"""SELECT 
+                COUNT(DISTINCT(vanilla_path))
+                FROM {cfg.table_name}
+                WHERE query_path == vanilla_path
+                AND command LIKE "%{solver}%" """)
+        v_count = res.fetchall()[0][0]
+
+        res = cur.execute(f"""SELECT 
+                COUNT(DISTINCT(vanilla_path))
+                FROM {cfg.table_name}
+                WHERE query_path == vanilla_path
+                AND result_code == "unsat"
+                AND command LIKE "%{solver}%" """)
+        vs_count = res.fetchall()[0][0]
+
+        res = cur.execute(f"""SELECT * FROM {unstable_table_name}
+            WHERE solver = ?""", (solver, ))
+        rows = res.fetchall()
+        solvable = 0
+
+        for row in rows:
+            shuffle_summary = ast.literal_eval(row[4])
+            rename_summary = ast.literal_eval(row[5])
+            sseed_summary = ast.literal_eval(row[6])
+            if shuffle_summary[1] >= 0.01 or \
+                rename_summary[1] >= 0.01 or \
+                    sseed_summary[1] >= 0.01:
+                solvable += 1
+
+        print("solver " + solver)
+        print(f"cpu hours: {cpu_hours}")
+        print(f"vanilla count: {v_count}")
+        print(f"vanilla success count: {vs_count} ({round(vs_count * 100 / v_count, 2)})%")
+        print(f"[0, 1) success rate in ALL mut groups: {len(rows) - solvable}")
+        print(f"[1, 99] success rate in ANY mut group: {solvable}")
+        print("")
+
+    con.close()
+
 cfg = S_KOMODO_BASIC_CFG
 # build_unstable_table(cfg)
-
-con = sqlite3.connect(DB_PATH)
-cur = con.cursor()
-
-unstable_table_name = "unstable_" + cfg.table_name
-for solver in cfg.samples:
-    solver = str(solver)
-    res = cur.execute(f"""SELECT COUNT(DISTINCT(vanilla_path)) FROM {cfg.table_name}
-            WHERE query_path == vanilla_path
-            AND command LIKE "%{solver}%" """)
-    v_count = res.fetchall()[0][0]
-
-    res = cur.execute(f"""SELECT * FROM {unstable_table_name}
-        WHERE solver = ?""", (solver, ))
-    rows = res.fetchall()
-    print("solver " + solver)
-    maybe = 0
-    for row in rows:
-        shuffle_summary = ast.literal_eval(row[4])
-        rename_summary = ast.literal_eval(row[5])
-        sseed_summary = ast.literal_eval(row[6])
-        if shuffle_summary[1] != 0 or rename_summary[1] != 0 or sseed_summary[1] != 0:
-            maybe += 1
-            # print(shuffle_summary)
-            # print(rename_summary)
-            # print(sseed_summary)
-            # print("")
-
-    print(f"# vanilla queries: {v_count}")
-    print(f"# vanilla queries with [0, 99] success rate in any mut group: {len(rows)}")
-    print(f"# vanilla queries with (0, 99] success rate in any mut group: {maybe}")
-    print("")
-
-# res = cur.execute(f"""SELECT * FROM {p.table_name}""")
-# for row in res.fetchall():
-#     print(row[3])
-#     print(row[4])
-#     print(row[5])
