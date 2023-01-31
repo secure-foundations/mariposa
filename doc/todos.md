@@ -1,4 +1,5 @@
-cvc5 options to speed up queries
+cvc5 options to speed up queries (auto-config)
+
 figure out which option is making z3 fast
 
 
