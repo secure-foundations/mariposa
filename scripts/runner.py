@@ -126,7 +126,7 @@ class SolverTaskGroup:
             # generate mutant
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
             if result.returncode != 0:
-                print("MARIPOSA failed: " + command)
+                print("[WARN] MARIPOSA failed: " + command)
                 return
 
             elapsed, rcode = self._run_single(mutant_path, perturb, cfg)
@@ -141,13 +141,12 @@ class SolverTaskGroup:
                 veri_results.append(0)
 
             if self._sample_size_enough(veri_times, veri_results, cfg):
-                # print(f"{self.vanilla_path} mutants: {len(veri_times)}")
                 break
 
     def run(self, cfg):
         elapsed, rcode = self._run_single(self.vanilla_path, None, cfg)
         if rcode != "unsat":
-            print("[WARN] vanilla: " + self.vanilla_path + " " + str(elapsed) + " milliseconds " + rcode)
+            print("[WARN] vanilla not unsat: " + self.vanilla_path + " " + str(elapsed) + " milliseconds " + rcode)
 
         gen_path_pre = "gen/" + cfg.table_name + "/" + self.vanilla_path[5::]
 
@@ -164,14 +163,20 @@ def run_group_tasks(queue, cfg):
     print("worker exit")
 
 class Runner:
-    def __init__(self, cfg):
+    def __init__(self, cfg, override=False):
         mp.set_start_method('spawn')
         self.task_queue = mp.Queue()
+        if override:
+            print("confirm to drop existing experiment table [Y]")
+            if input() != "Y":
+                print("aborting")
+                return
 
-        con = self.__setup_db(cfg)
+        con = self.__setup_db(cfg, override)
 
         for solver, queries in cfg.samples.items():
             # self._add_group_task(path, cfg)
+            print("loading tasks")
             for query in tqdm(queries):
                 task = SolverTaskGroup(query, solver)
                 if self.__should_run_task(cfg, con, task):
@@ -196,16 +201,18 @@ class Runner:
 
     # creates db if not existing
     # returns a con if db already exists
-    def __setup_db(self, cfg):
+    def __setup_db(self, cfg, override):
         con = sqlite3.connect(DB_PATH)
         cur = con.cursor()
+        if override:
+            drop_experiment_table(cfg, True)
+
         cur.execute(f"""SELECT name from sqlite_master
             WHERE type='table'
             AND name=?""", (cfg.table_name,))
         if cur.fetchone() != None:
             return con
 
-        # drop_experiment_table(cfg, True)
         con.close()
         setup_experiment_table(cfg)
         return None
@@ -226,22 +233,6 @@ class Runner:
         return False
 
 if __name__ == '__main__':
-    samples = get_samples(D_KOMODO, [Z3_4_11_2, CVC5_1_0_3], None)
-
-    cfg = ExpConfig("test2", D_KOMODO, samples)
-    r = Runner(cfg)
-
-    # res = cur.execute(f"""
-    #     SELECT query_path, result_code, elapsed_milli
-    #     FROM {cfg.table_name}
-    #     """)
-    # for r in res.fetchall():
-    #     print(r)
-
-    # count = 0
-    # for i in tqdm(list_smt2_files(DKOMODO_RAW_DIR)):
-    #     command = f"./solvers/cvc5-1.0.3 --parse-only {i}"
-    #     out, err, t = subprocess_run(command, debug=False, cwd=None)
-    #     if "Error" in out:
-    #         count += 1
-    #         print(count)
+    cfg = ExpConfig("test3", D_FVBKV, [Z3_4_11_2], 200)
+    # print(len(set(cfg.samples[Z3_4_11_2])))
+    r = Runner(cfg, True)

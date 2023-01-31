@@ -71,6 +71,7 @@ def build_unstable_table(cfg):
                 veri_res = [1 if r[0] == 'unsat' else 0 for r in rows]
                 if sample_size == 0:
                     print("[WARN] 0 sample size encountered")
+                    print(vanilla_path)
                     results[perturb] = (0, 0, 0)
                     continue
                 p = sum(veri_res) / sample_size
@@ -150,5 +151,9 @@ def analyze_unstable_table(cfg):
 
     con.close()
 
-cfg = S_KOMODO_BASIC_CFG
+# cfg = ExpConfig("test3", D_FVBKV, [Z3_4_11_2], 20)
 # build_unstable_table(cfg)
+
+# cfg = S_KOMODO_BASIC_CFG
+cfg = D_KOMODO_BASIC_CFG
+analyze_unstable_table(cfg)

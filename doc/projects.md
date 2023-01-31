@@ -70,6 +70,10 @@ Error: Unbound constructor W.Ast.TeeLocal
 
 export status: TODO
 
+export PATH='/home/yizhou7/FStar/bin/':$PATH
+export FSTAR_HOME='/home/yizhou7/FStar/'
+export PATH='/home/yizhou7/vWasm/z3-4.8.5-x64-debian-8.11/bin':$PATH
+
 ----
 ## LiquidHaskell
 

@@ -12,7 +12,7 @@ class ExpConfig:
             assert isinstance(s, SolverInfo)
 
         # these are the enabled solvers and their sampled queries
-        self.samples = get_samples(project, solvers, count)
+        self.samples = project.get_samples(solvers, count)
 
         # how many times do we run each query? default=1
         self.trials = 1

@@ -35,6 +35,7 @@ Z3_4_5_0 = SolverInfo("z3-4.5.0")
 Z3_4_4_2 = SolverInfo("z3-4.4.2")
 Z3_4_11_2 = SolverInfo("z3-4.11.2")
 CVC5_1_0_3 = SolverInfo("cvc5-1.0.3")
+# d_fvbkv: z3_4_6_0 d_lvbkv: z3_4_8_5
 
 # ALL_SOLVERS = [Z3_4_5_0, Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3]
 ALL_SOLVERS = [SolverInfo(p) for p in os.listdir(SOLVER_BINS_DIR)]
@@ -88,28 +89,30 @@ class ProjectConfig:
 """
         return s
 
-# independently sample for each unique directory (NOT for each solver!)
-# because we can't guarantee the same query name exists
-def get_samples(project, enabled_solvers, count=None):
-    samples = dict()
-    enabled_dirs = set()
+    # independently sample for each unique directory (NOT for each solver!)
+    # because we can't guarantee the same query name exists
+    def get_samples(self, enabled_solvers, count=None):
+        samples = dict()
+        enabled_dirs = set()
+        # we should have consistent choices if dir is not updated
+        random.seed(12345) 
 
-    for solver in enabled_solvers:
-        dir = project.clean_dirs[solver]
-        enabled_dirs.add(dir)
+        for solver in enabled_solvers:
+            dir = self.clean_dirs[solver]
+            enabled_dirs.add(dir)
 
-    dir_samples = dict()
-    for dir in enabled_dirs:
-        queries = list_smt2_files(dir)
-        if count is not None:
-            queries = random.choices(queries, k=count)
-        dir_samples[dir] = queries
+        dir_samples = dict()
+        for dir in enabled_dirs:
+            queries = list_smt2_files(dir)
+            if count is not None:
+                queries = random.sample(queries, k=count)
+            dir_samples[dir] = queries
 
-    for solver in enabled_solvers:
-        dir = project.clean_dirs[solver]
-        samples[solver] = dir_samples[dir]
+        for solver in enabled_solvers:
+            dir = self.clean_dirs[solver]
+            samples[solver] = dir_samples[dir]
 
-    return samples
+        return samples
 
 S_KOMODO = ProjectConfig("s_komodo", FrameworkName.SERVAL, "data/s_komodo_plain/")
 # all solvers use the clean set
@@ -117,6 +120,9 @@ S_KOMODO.assign_cvc5_dirs("data/s_komodo_clean/")
 S_KOMODO.assign_z3_dirs("data/s_komodo_clean/")
 
 D_KOMODO = ProjectConfig("d_komodo", FrameworkName.DAFNY, "data/d_komodo_plain/")
-# z3 uses the clean set
 D_KOMODO.assign_z3_dirs("data/d_komodo_z3_clean/")
 D_KOMODO.assign_cvc5_dirs("data/d_komodo_cvc5_clean/")
+
+D_FVBKV = ProjectConfig("d_frames_vbkv", FrameworkName.DAFNY, "data/d_frames_vbkv_plain/")
+D_FVBKV.assign_z3_dirs("data/d_frames_vbkv_z3_clean/")
+D_FVBKV.assign_cvc5_dirs("data/d_frames_vbkv_cvc5_clean/")

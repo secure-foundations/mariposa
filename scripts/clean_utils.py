@@ -1,6 +1,8 @@
 import re
 from tqdm import tqdm
 from configs.projects import *
+import time
+import subprocess
 
 PUSH_CMD = re.compile("\(push (1)?\)")
 # POP_CMD = re.compile("\(pop (1)?\)")
@@ -37,7 +39,58 @@ def clean_dfy_komodo():
                     # cut off the rest
                     break
 
-clean_dfy_komodo()
+def subprocess_run(command, time_limit, debug=False, cwd=None):
+    command = f"timeout {time_limit} " + command
+    if debug:
+        print(command)
+    start_time = time.time()
+    res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+    # milliseconds
+    elapsed = round((time.time() - start_time) * 1000)
+    stdout = res.stdout.decode("utf-8").strip()
+    stderr = res.stderr.decode("utf-8").strip()
+    return stdout, stderr, elapsed
+
+def clean_dfy_frames_vbkv():
+    p = D_FVBKV
+    plain_dir = p.get_plain_dir()
+    z3_clean_dir = p.clean_dirs[Z3_4_5_0]
+    cvc_clean_dir = p.clean_dirs[CVC5_1_0_3]
+    for path in tqdm(list_smt2_files(plain_dir)):
+        z3_new_path = path.replace(plain_dir, z3_clean_dir)
+        cvc_clean_path = path.replace(plain_dir, cvc_clean_dir)
+
+        depth = 0
+        f = open(path)
+        z3o = open(z3_new_path, "w+")
+        cvc5o = open(cvc_clean_path, "w+")
+
+        for line in f.readlines():
+            if re.search(PUSH_CMD, line):
+                # skip the push, check for at most one push
+                depth += 1
+                assert(depth <= 1)
+            else:
+                z3o.write(line)
+                if "bv2int" in line:
+                    # for cvc5, use bv2nat instead
+                    line = line.replace("bv2int", "bv2nat")
+                cvc5o.write(line)
+
+                if "(check-sat)" in line:
+                    # cut off the rest
+                    break
+
+# clean_dfy_frames_vbkv()
+
+# count = 0
+# for i in tqdm(list_smt2_files(D_FVBKV.clean_dirs[CVC5_1_0_3])):
+#     command = f"./solvers/cvc5-1.0.3 --parse-only {i}"
+#     out, err, t = subprocess_run(command, 10, debug=False, cwd=None)
+#     if "Error" in out or "error" in out:
+#         count += 1
+#         print(i)
+
 
 # import os
 # from tqdm import tqdm
