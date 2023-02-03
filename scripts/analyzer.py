@@ -10,6 +10,7 @@ from datetime import datetime
 from runner import ALL_MUTS
 from configs.projects import *
 from configs.experiments import *
+from plot_utils import *
 
 def as_seconds(milliseconds):
     return round(milliseconds / 1000, 2)
@@ -29,9 +30,9 @@ def build_unstable_table(cfg):
         vanilla_path varchar(255),
         v_result_code varchar(10),
         v_elapsed_milli INTEGER,
-        shuffle_summary varchar(100),
-        rename_summary varchar(100),
-        sseed_summary varchar(100)
+        shuffle_summary TEXT,
+        rename_summary TEXT,
+        sseed_summary TEXT
         )""")
 
     for solver in cfg.samples:
@@ -45,14 +46,8 @@ def build_unstable_table(cfg):
 
         vanilla_rows = res.fetchall()
         for (vanilla_path, v_rcode, v_time) in tqdm(vanilla_rows):
-            # if v_rcode != 'unsat':
-            #     print("???")
-            #     print(vanilla_path)
-            #     print(vanilla_path, v_rcode, v_time)
-            
             res = cur.execute("DROP VIEW IF EXISTS query_view");
-            res = cur.execute(f"""
-                CREATE VIEW query_view AS
+            res = cur.execute(f"""CREATE VIEW query_view AS 
                 SELECT result_code, elapsed_milli, perturbation FROM {cfg.table_name}
                 WHERE query_path != vanilla_path
                 AND command LIKE "%{solver}%" 
@@ -67,40 +62,92 @@ def build_unstable_table(cfg):
                     """, (perturb,))
                 rows = res.fetchall()
                 sample_size = len(rows)
+                veri_res = [r[0] for r in rows]
                 veri_times = [r[1] for r in rows]
-                veri_res = [1 if r[0] == 'unsat' else 0 for r in rows]
+
                 if sample_size == 0:
                     print("[WARN] 0 sample size encountered")
                     print(vanilla_path)
-                    results[perturb] = (0, 0, 0)
+                    results[perturb] = (0, 0, [], [])
                     continue
-                p = sum(veri_res) / sample_size
 
-                # t_critical = stats.t.ppf(q=cfg.confidence_level, df=sample_size-1)  
+                p = veri_res.count("unsat") / sample_size
+
                 # get the sample standard deviation
                 time_stdev = np.std(veri_times, ddof=1)
-                results[perturb] = (as_percentage(p), as_seconds(time_stdev), sample_size)
+                results[perturb] = (p, time_stdev, veri_res, veri_times)
 
-            maybe = False
-            for perturb, (p, _, _) in results.items():
-                if p <= 0.99:
-                    maybe = True
-            if maybe:
-                summaries = []
-                for perturb, (p, std, sz) in results.items():
-                    summary = [perturb, p, std, sz]
-                    summaries.append(str(summary))
+            summaries = []
+            for perturb, (_, _, veri_res, veri_times) in results.items():
+                summary = (perturb, veri_res, veri_times)
+                summaries.append(str(summary))
 
-                cur.execute(f"""INSERT INTO {unstable_table_name}
-                    VALUES(?, ?, ?, ?, ?, ?, ?);""", (solver, vanilla_path, v_rcode, v_time, summaries[0], summaries[1], summaries[2]))
+            cur.execute(f"""INSERT INTO {unstable_table_name}
+                VALUES(?, ?, ?, ?, ?, ?, ?);""", 
+                (solver, vanilla_path, v_rcode, v_time, summaries[0], summaries[1], summaries[2]))
     con.commit()
+
+def process_mut_group(summary, v_res, v_time):
+    (perturb, veri_res, veri_times) = summary
+    assert len(veri_res) != 0
+    assert len(veri_res) == len(veri_times)
+    p1 = as_percentage(veri_res.count("unsat") / len(veri_res))
+    sd1 = as_seconds(np.std(veri_times, ddof=1))
+    nt_veri_times = []
+    # for i, t in enumerate(veri_times):
+    #     if veri_res[i] != 'timeout':
+    #         nt_veri_times.append(t)
+    # if len(nt_veri_times) != 0:
+    #     # diff = as_seconds(np.average(nt_veri_times) - v_time)
+    #     sd2 = as_seconds(np.std(nt_veri_times, ddof=1))
+    # else:
+    #     sd2 = np.nan
+    return sd1
+    # if 0 < p1 < 100:
+    #     print(p1, round(sd1 - sd2, 2))
+
+class QueryRes:
+    def __init__(self):
+        self.skip = False
+        self.solvable = False
+        self.res_unstable = False
+        self.time_unstable = False
+
+def process_query_experiment(summaries, v_res, v_time):
+    qr = QueryRes()
+    for s in summaries:
+        if len(s[1]) == 0:
+            qr.skip = True
+            return qr
+    all_res = set()
+    sds = []
+    for s in summaries:
+        sd = process_mut_group(s, v_res, v_time)
+        sds.append(sd)
+        all_res |= set(s[1])
+    all_res.add(v_res)
+    if 'unsat' in all_res:
+       qr.solvable = True
+    if "sat" in all_res:
+        print("[WARN] SAT in result code!")
+
+    if all_res - {'unsat'} != set():
+        qr.res_unstable = True
+
+    for sd in sds:
+        if sd > 5:
+            qr.time_unstable = True
+    return qr
 
 def analyze_unstable_table(cfg):
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
 
     unstable_table_name = "unstable_" + cfg.table_name
-    for solver in cfg.samples:
+
+    aixs = setup_project_time_cdfs(cfg.project.name)
+
+    for i, solver in enumerate(cfg.samples):
         solver = str(solver)
 
         res = cur.execute(f"""
@@ -130,25 +177,35 @@ def analyze_unstable_table(cfg):
         res = cur.execute(f"""SELECT * FROM {unstable_table_name}
             WHERE solver = ?""", (solver, ))
         rows = res.fetchall()
-        solvable = 0
-
+   
+        dists = {"plain": [], "shuffle": [],  "rename": [], "sseed": []}
         for row in rows:
-            shuffle_summary = ast.literal_eval(row[4])
-            rename_summary = ast.literal_eval(row[5])
-            sseed_summary = ast.literal_eval(row[6])
-            if shuffle_summary[1] >= 0.01 or \
-                rename_summary[1] >= 0.01 or \
-                    sseed_summary[1] >= 0.01:
-                solvable += 1
+            # print(f"{row[2]}, {row[3]}")
+            dists["plain"].append(row[3])
+            summaries = [ast.literal_eval(row[i]) for i in range(4, 7)]
 
-        print("solver " + solver)
-        print(f"cpu hours: {cpu_hours}")
-        print(f"vanilla count: {v_count}")
-        print(f"vanilla success count: {vs_count} ({round(vs_count * 100 / v_count, 2)})%")
-        print(f"[0, 1) success rate in ALL mut groups: {len(rows) - solvable}")
-        print(f"[1, 99] success rate in ANY mut group: {solvable}")
-        print("")
+            if len(summaries[0][2]) != 0:
+                # dists["shuffle"].append(random.choice(summaries[0][2]))
+                dists["shuffle"].append(np.average(summaries[0][2]))
+            if len(summaries[1][2]) != 0:
+                # dists["rename"].append(random.choice(summaries[1][2]))
+                dists["rename"].append(np.average(summaries[1][2]))
+            if len(summaries[2][2]) != 0:
+                # dists["sseed"].append(random.choice(summaries[2][2]))
+                dists["sseed"].append(np.average(summaries[2][2]))
 
+        plot_time_cdfs(aixs[i], dists, str(solver))
+
+        # print("solver " + solver)
+        # print(f"cpu hours: {cpu_hours}")
+        # print(f"vanilla count: {v_count}")
+        # print(f"vanilla success count: {vs_count} ({round(vs_count * 100 / v_count, 2)})%")
+        # print(f"unsolvable: {unsolvable}")
+        # print(f"solvable but result instable: {unstable}")
+        # print(f"solvable but time instable: {time_unstable}")
+        # print(f"skipped: {skipped}")
+        # print("")
+    save_project_time_cdfs(cfg.project.name)
     con.close()
 
 # cfg = ExpConfig("test3", D_FVBKV, [Z3_4_11_2], 20)
@@ -156,4 +213,10 @@ def analyze_unstable_table(cfg):
 
 # cfg = S_KOMODO_BASIC_CFG
 cfg = D_KOMODO_BASIC_CFG
+
+# cfg = ExpConfig("test5", D_KOMODO, [Z3_4_5_0])
+# cfg.min_mutants = 0
+# cfg.max_mutants = 0
+
+# build_unstable_table(cfg)
 analyze_unstable_table(cfg)

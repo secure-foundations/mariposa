@@ -81,7 +81,24 @@ def clean_dfy_frames_vbkv():
                     # cut off the rest
                     break
 
-# clean_dfy_frames_vbkv()
+def remove_z3_options():
+    p = D_KOMODO
+    z3_clean_dir = p.clean_dirs[Z3_4_5_0]
+    out_dir = "data/d_komodo_z3_opt/"
+
+    for path in tqdm(list_smt2_files(z3_clean_dir)):
+        z3_new_path = path.replace(z3_clean_dir, out_dir)
+        f = open(path)
+        z3o = open(z3_new_path, "w+")
+        # z3o.write("(set-option :AUTO_CONFIG false)")
+
+        for line in f.readlines():
+            if line.startswith("(set-option"):
+                continue
+            z3o.write(line)
+        # print(z3_new_path)
+
+remove_z3_options()
 
 # count = 0
 # for i in tqdm(list_smt2_files(D_FVBKV.clean_dirs[CVC5_1_0_3])):

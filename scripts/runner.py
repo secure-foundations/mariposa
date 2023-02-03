@@ -233,6 +233,10 @@ class Runner:
         return False
 
 if __name__ == '__main__':
-    cfg = ExpConfig("test3", D_FVBKV, [Z3_4_11_2], 200)
+    D_KOMODO.assign_z3_dirs("data/d_komodo_z3_opt/")
+    cfg = ExpConfig("test5", D_KOMODO, [Z3_4_5_0])
+    cfg.min_mutants = 0
+    cfg.max_mutants = 0
+
     # print(len(set(cfg.samples[Z3_4_11_2])))
     r = Runner(cfg, True)
