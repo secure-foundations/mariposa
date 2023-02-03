@@ -130,9 +130,10 @@ class SolverTaskGroup:
                 return
 
             elapsed, rcode = self._run_single(mutant_path, perturb, cfg)
+            print(mutant_path)
 
             # remove mutant
-            os.system(f"rm {mutant_path}")
+            # os.system(f"rm {mutant_path}")
 
             veri_times.append(elapsed)
             if rcode == "unsat":
@@ -234,9 +235,9 @@ class Runner:
 
 if __name__ == '__main__':
     D_KOMODO.assign_z3_dirs("data/d_komodo_z3_opt/")
-    cfg = ExpConfig("test5", D_KOMODO, [Z3_4_5_0])
-    cfg.min_mutants = 0
-    cfg.max_mutants = 0
+    cfg = ExpConfig("test5", D_KOMODO, [Z3_4_5_0], 5)
+    cfg.min_mutants = 5
+    cfg.max_mutants = 5
 
     # print(len(set(cfg.samples[Z3_4_11_2])))
     r = Runner(cfg, True)

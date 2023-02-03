@@ -11,6 +11,7 @@ from runner import ALL_MUTS
 from configs.projects import *
 from configs.experiments import *
 from plot_utils import *
+import matplotlib.pyplot as plt
 
 def as_seconds(milliseconds):
     return round(milliseconds / 1000, 2)
@@ -139,62 +140,142 @@ def process_query_experiment(summaries, v_res, v_time):
             qr.time_unstable = True
     return qr
 
-def analyze_unstable_table(cfg):
+def plot_time_cdf_comparison(cfg):
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
-
     unstable_table_name = "unstable_" + cfg.table_name
 
     aixs = setup_project_time_cdfs(cfg.project.name)
-
     for i, solver in enumerate(cfg.samples):
         solver = str(solver)
-
-        res = cur.execute(f"""
-            SELECT SUM(elapsed_milli)
-            FROM {cfg.table_name} WHERE
-            command LIKE "%{solver}%" 
-            """)
-
-        (cpu_hours, ) = res.fetchone()
-        cpu_hours = round(cpu_hours / 1000 / 60 / 60, 2)
-
-        res = cur.execute(f"""SELECT 
-                COUNT(DISTINCT(vanilla_path))
-                FROM {cfg.table_name}
-                WHERE query_path == vanilla_path
-                AND command LIKE "%{solver}%" """)
-        v_count = res.fetchall()[0][0]
-
-        res = cur.execute(f"""SELECT 
-                COUNT(DISTINCT(vanilla_path))
-                FROM {cfg.table_name}
-                WHERE query_path == vanilla_path
-                AND result_code == "unsat"
-                AND command LIKE "%{solver}%" """)
-        vs_count = res.fetchall()[0][0]
-
         res = cur.execute(f"""SELECT * FROM {unstable_table_name}
             WHERE solver = ?""", (solver, ))
         rows = res.fetchall()
-   
+
         dists = {"plain": [], "shuffle": [],  "rename": [], "sseed": []}
         for row in rows:
-            # print(f"{row[2]}, {row[3]}")
             dists["plain"].append(row[3])
             summaries = [ast.literal_eval(row[i]) for i in range(4, 7)]
 
             if len(summaries[0][2]) != 0:
-                # dists["shuffle"].append(random.choice(summaries[0][2]))
                 dists["shuffle"].append(np.average(summaries[0][2]))
             if len(summaries[1][2]) != 0:
-                # dists["rename"].append(random.choice(summaries[1][2]))
                 dists["rename"].append(np.average(summaries[1][2]))
             if len(summaries[2][2]) != 0:
-                # dists["sseed"].append(random.choice(summaries[2][2]))
                 dists["sseed"].append(np.average(summaries[2][2]))
+        plot_time_cdfs(aixs[i], dists, solver)
 
-        plot_time_cdfs(aixs[i], dists, str(solver))
+    name = f"fig/time_cdf_{cfg.project.name}.png"
+    plt.savefig(name)
+    con.close()
+
+def plot_time_variance_cdf(cfg):
+    con = sqlite3.connect(DB_PATH)
+    cur = con.cursor()
+    unstable_table_name = "unstable_" + cfg.table_name
+
+    aixs = setup_project_time_cdfs(cfg.project.name)
+    for i, solver in enumerate(cfg.samples):
+        solver = str(solver)
+        res = cur.execute(f"""SELECT * FROM {unstable_table_name}
+            WHERE solver = ?""", (solver, ))
+        rows = res.fetchall()
+
+    aixs = setup_project_time_cdfs(cfg.project.name)
+    for i, solver in enumerate(cfg.samples):
+        solver = str(solver)
+        res = cur.execute(f"""SELECT * FROM {unstable_table_name}
+            WHERE solver = ?""", (solver, ))
+        rows = res.fetchall()
+
+        dists = {"shuffle": [],  "rename": [], "sseed": []}
+        for row in rows:
+            # dists["plain"].append(row[3])
+            summaries = [ast.literal_eval(row[i]) for i in range(4, 7)]
+
+            if len(summaries[0][2]) != 0:
+                dists["shuffle"].append(np.std(summaries[0][2]))
+            if len(summaries[1][2]) != 0:
+                dists["rename"].append(np.std(summaries[1][2]))
+            if len(summaries[2][2]) != 0:
+                dists["sseed"].append(np.std(summaries[2][2]))
+        plot_time_variance_cdfs(aixs[i], dists, solver)
+    con.close()
+
+    name = f"fig/time_variance_cdf_{cfg.project.name}.png"
+    plt.savefig(name)
+
+
+def plot_success_rate_cdf(cfg):
+    con = sqlite3.connect(DB_PATH)
+    cur = con.cursor()
+    unstable_table_name = "unstable_" + cfg.table_name
+
+    aixs = setup_project_time_cdfs(cfg.project.name)
+    for i, solver in enumerate(cfg.samples):
+        solver = str(solver)
+        res = cur.execute(f"""SELECT * FROM {unstable_table_name}
+            WHERE solver = ?""", (solver, ))
+        rows = res.fetchall()
+
+    aixs = setup_project_time_cdfs(cfg.project.name)
+    for i, solver in enumerate(cfg.samples):
+        solver = str(solver)
+        res = cur.execute(f"""SELECT * FROM {unstable_table_name}
+            WHERE solver = ?""", (solver, ))
+        rows = res.fetchall()
+
+        dists = {"shuffle": [],  "rename": [], "sseed": []}
+        for row in rows:
+            # dists["plain"].append(row[3])
+            summaries = [ast.literal_eval(row[i]) for i in range(4, 7)]
+
+            if len(summaries[0][2]) != 0:
+                p = summaries[0][1].count("unsat") / len(summaries[0][2])
+                dists["shuffle"].append(p)
+            if len(summaries[1][2]) != 0:
+                p = summaries[1][1].count("unsat") / len(summaries[1][2])
+                dists["rename"].append(p)
+            if len(summaries[2][2]) != 0:
+                p = summaries[2][1].count("unsat") / len(summaries[2][2])
+                dists["sseed"].append(p)
+        plot_success_rate_cdfs(aixs[i], dists, solver)
+    con.close()
+
+    name = f"fig/success_rate_cdf_{cfg.project.name}.png"
+    plt.savefig(name)
+
+def analyze_unstable_table(cfg):
+    plot_success_rate_cdf(cfg)
+    plot_time_variance_cdf(cfg)
+    # plot_time_cdf_comparison(cfg)
+
+    # for i, solver in enumerate(cfg.samples):
+    #     solver = str(solver)
+
+    #     res = cur.execute(f"""
+    #         SELECT SUM(elapsed_milli)
+    #         FROM {cfg.table_name} WHERE
+    #         command LIKE "%{solver}%" 
+    #         """)
+
+    #     (cpu_hours, ) = res.fetchone()
+    #     cpu_hours = round(cpu_hours / 1000 / 60 / 60, 2)
+
+    #     res = cur.execute(f"""SELECT 
+    #             COUNT(DISTINCT(vanilla_path))
+    #             FROM {cfg.table_name}
+    #             WHERE query_path == vanilla_path
+    #             AND command LIKE "%{solver}%" """)
+    #     v_count = res.fetchall()[0][0]
+
+    #     res = cur.execute(f"""SELECT 
+    #             COUNT(DISTINCT(vanilla_path))
+    #             FROM {cfg.table_name}
+    #             WHERE query_path == vanilla_path
+    #             AND result_code == "unsat"
+    #             AND command LIKE "%{solver}%" """)
+    #     vs_count = res.fetchall()[0][0]
 
         # print("solver " + solver)
         # print(f"cpu hours: {cpu_hours}")
@@ -205,18 +286,17 @@ def analyze_unstable_table(cfg):
         # print(f"solvable but time instable: {time_unstable}")
         # print(f"skipped: {skipped}")
         # print("")
-    save_project_time_cdfs(cfg.project.name)
-    con.close()
+
 
 # cfg = ExpConfig("test3", D_FVBKV, [Z3_4_11_2], 20)
 # build_unstable_table(cfg)
 
-# cfg = S_KOMODO_BASIC_CFG
-cfg = D_KOMODO_BASIC_CFG
+cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG]
 
 # cfg = ExpConfig("test5", D_KOMODO, [Z3_4_5_0])
 # cfg.min_mutants = 0
 # cfg.max_mutants = 0
 
 # build_unstable_table(cfg)
-analyze_unstable_table(cfg)
+for cfg in cfgs:
+    analyze_unstable_table(cfg)
