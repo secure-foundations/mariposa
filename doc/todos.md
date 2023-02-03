@@ -1,3 +1,8 @@
+cvc5 options to speed up queries (auto-config)
+
+figure out which option is making z3 fast
+
+
 ## Query Collection Tasks:
 
 for details see [projects](projects.md)
