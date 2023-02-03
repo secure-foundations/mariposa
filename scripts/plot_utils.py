@@ -27,7 +27,8 @@ def plot_time_cdfs(sp, dists, sname):
     for label, dist in dists.items():
         plot_cdf(sp, dist, label)
     sp.set_ylabel("cumulative probability")
-    sp.set_xlabel("response time")
+    sp.set_xlabel("response time (log)")
+    sp.set_xscale("log")
     sp.legend()
 
 def save_project_time_cdfs(pname):
