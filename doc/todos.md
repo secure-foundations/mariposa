@@ -1,3 +1,10 @@
+|          | cvc5-1.0.3 | z3-4.4.2 | z3-4.5.0 | z3-4.6.0 | z3-4.11.2 |
+|----------|:----------:|:--------:|:--------:|:--------:|:---------:|
+| d_komodo |      ?     |          |    Ok    |          |     Ok    |
+| s_komodo |     Ok     |          |    Ok    |          |     Ok    |
+|  d_vbkv  |            |    Ok    |          |    Ok    |     Ok    |
+
+
 cvc5 options to speed up queries (auto-config)
 
 figure out which option is making z3 fast
