@@ -180,14 +180,7 @@ def plot_time_variance_cdf(cfg):
     cur = con.cursor()
     unstable_table_name = "unstable_" + cfg.table_name
 
-    aixs = setup_project_time_cdfs(cfg.project.name)
-    for i, solver in enumerate(cfg.samples):
-        solver = str(solver)
-        res = cur.execute(f"""SELECT * FROM {unstable_table_name}
-            WHERE solver = ?""", (solver, ))
-        rows = res.fetchall()
-
-    aixs = setup_project_time_cdfs(cfg.project.name)
+    aixs = setup_fig(cfg.project.name, 3, 1)
     for i, solver in enumerate(cfg.samples):
         solver = str(solver)
         res = cur.execute(f"""SELECT * FROM {unstable_table_name}
@@ -207,7 +200,6 @@ def plot_time_variance_cdf(cfg):
                 dists["sseed"].append(as_seconds(np.std(summaries[2][2])))
         plot_time_variance_cdfs(aixs[i], dists, solver)
     con.close()
-
     name = f"fig/time_variance_cdf_{cfg.project.name}.png"
     plt.savefig(name)
 
@@ -216,14 +208,7 @@ def plot_success_rate_cdf(cfg):
     cur = con.cursor()
     unstable_table_name = "unstable_" + cfg.table_name
 
-    aixs = setup_project_time_cdfs(cfg.project.name)
-    for i, solver in enumerate(cfg.samples):
-        solver = str(solver)
-        res = cur.execute(f"""SELECT * FROM {unstable_table_name}
-            WHERE solver = ?""", (solver, ))
-        rows = res.fetchall()
-
-    aixs = setup_project_time_cdfs(cfg.project.name)
+    aixs = setup_fig(cfg.project.name, 3, 2)
     for i, solver in enumerate(cfg.samples):
         solver = str(solver)
         res = cur.execute(f"""SELECT * FROM {unstable_table_name}
@@ -235,15 +220,18 @@ def plot_success_rate_cdf(cfg):
             # dists["plain"].append(row[3])
             summaries = [ast.literal_eval(row[i]) for i in range(4, 7)]
 
+            p1, p2, p3 = 0, 0, 0
+
             if len(summaries[0][2]) != 0:
-                p = summaries[0][1].count("unsat") / len(summaries[0][2])
-                dists["shuffle"].append(p)
+                p1 = summaries[0][1].count("unsat") * 100 / len(summaries[0][2])
             if len(summaries[1][2]) != 0:
-                p = summaries[1][1].count("unsat") / len(summaries[1][2])
-                dists["rename"].append(p)
+                p2 = summaries[1][1].count("unsat") * 100 / len(summaries[1][2])
             if len(summaries[2][2]) != 0:
-                p = summaries[2][1].count("unsat") / len(summaries[2][2])
-                dists["sseed"].append(p)
+                p3 = summaries[2][1].count("unsat") * 100 / len(summaries[2][2])
+
+            dists["shuffle"].append(p1)
+            dists["rename"].append(p2)
+            dists["sseed"].append(p3)
         plot_success_rate_cdfs(aixs[i], dists, solver)
     con.close()
 
@@ -296,8 +284,9 @@ def analyze_unstable_table(cfg):
 # cfg = ExpConfig("test3", D_FVBKV, [Z3_4_11_2], 20)
 # build_unstable_table(cfg)
 
-# cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG]
-cfgs = [ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2, Z3_4_6_0, Z3_4_11_2], None)]
+# 
+cfgs = [D_KOMODO_BASIC_CFG, S_KOMODO_BASIC_CFG, D_FVBKV_Z3_CFG]
+# cfgs = [D_KOMODO_BASIC_CFG]
 
 # build_unstable_table(cfg)
 for cfg in cfgs:

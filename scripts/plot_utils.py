@@ -6,11 +6,10 @@ from scipy.stats import gaussian_kde
 import statistics
 import seaborn as sns
 
-def plot_cdf(sp, data, label):
+def get_cdf_pts(data):
     n = len(data)
-    y = np.arange(n) / float(n)
-    label = label
-    sp.plot(np.sort(data), y, marker=",", label=label)
+    y = np.arange(n) * 100 / float(n) 
+    return np.sort(data), y
 
 def plot_csum(sp, data, label):
     n = len(data)
@@ -22,9 +21,9 @@ def plot_rev_csum(sp, data, label):
     y = np.arange(n)[::-1] / float(n)
     sp.plot(np.sort(data), y, marker=",", label=label)
 
-def setup_project_time_cdfs(pname):
-    figure, axis = plt.subplots(3, 1)
-    figure.suptitle(pname, fontsize=16)
+def setup_fig(title, rows, columns):
+    figure, axis = plt.subplots(rows, columns)
+    figure.suptitle(title, fontsize=16)
 
     figure.set_figheight(20)
     figure.set_figwidth(10)
@@ -42,27 +41,43 @@ def plot_time_cdfs(sp, dists, sname):
     sp.legend()
 
 def plot_time_variance_cdfs(sp, dists, sname):
-    sp.set_title(f'{sname}')
+    count = len(dists['sseed'])
+    sp.set_title(f'{sname} plain count: {count}')
 
     for label, dist in dists.items():
         plot_rev_csum(sp, dist, label)
-    sp.set_ylabel("cumulative count above threshold")
-    sp.set_xlabel("response time variance threshold")
+    sp.set_ylabel("cumulative percentage (%) above threshold")
+    sp.set_xlabel("response time variance (seconds) threshold log scale")
     sp.set_xscale("log")
-    sp.set_xlim(left=0.5e-2)
+    # sp.set_xlim(left=0.5e-2)
     sp.set_yscale("log")
     sp.legend()
 
-def plot_success_rate_cdfs(sp, dists, sname):
-    sp.set_title(f'{sname}')
-
+def plot_success_rate_cdfs(sps, dists, sname):
+    sp = sps[0]
+    count = len(dists['sseed'])
+    sp.set_title(f'{sname} plain count: {count}')
     for label, dist in dists.items():
-        dist = list(filter(lambda x: x >= 0.005, dist))
-        plot_cdf(sp, dist, label)
-    sp.set_ylabel("cumulative count below threshold")
-    sp.set_xlabel("success rate threshold")
-    sp.set_xlim(left=0.5e-2)
-    # sp.set_xlim(right=1-0.5e-2)
-    # sp.set_xscale("log")
-    sp.set_yscale("log")
+        xs, ys = get_cdf_pts(dist)
+        sp.plot(xs, ys, marker=",", label=label)
+    sp.set_ylabel("cumulative percentage (%) below threshold")
+    sp.set_xlabel("success rate (%) threshold")
+    sp.legend()
+
+    sp = sps[1]
+    sp.set_title(f'{sname} (zoomed in 1%<=SR<=99%)')
+    min_p, max_p = 100, 0
+    for label, dist in dists.items():
+        xs, ys = get_cdf_pts(dist)
+        li = np.where(xs>=1)[0][0]
+        hi = len(xs) - np.where(xs[::-1]<=99)[0][0] - 1
+        if li < hi:
+            min_p = min(ys[li], min_p)
+            max_p = max(ys[hi], max_p)
+            sp.plot(xs, ys, marker=",", label=label)
+    sp.set_ylabel("cumulative percentage (%) below threshold")
+    sp.set_xlabel("success rate (%) threshold")
+    sp.set_xlim(left=1, right=99)
+    sp.set_ylim(bottom=min_p-0.1, top=max_p+0.1)
+    sp.set_xticks([1] + [i for i in range(10, 100, 10)] + [99])
     sp.legend()
