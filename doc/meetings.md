@@ -1,3 +1,13 @@
+## Jan 7th:
+
+Tentative agenda:
+* present some initial analysis on the current experiments 
+   * time varaince cdf
+   * sucess rate cdf
+   * compare different perturbations
+* plan on the z3 atuo-config and cvc5
+   * what is the person to ask?
+
 ## Jan 31st
 
 Tentative agenda:
