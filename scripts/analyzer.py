@@ -14,7 +14,7 @@ from plot_utils import *
 import matplotlib.pyplot as plt
 
 def as_seconds(milliseconds):
-    return round(milliseconds / 1000, 2)
+    return milliseconds / 1000
 
 def as_percentage(p):
     return round(p * 100, 2)
@@ -38,20 +38,26 @@ def build_unstable_table(cfg):
 
     for solver in cfg.samples:
         solver = str(solver)
+        res = cur.execute("DROP VIEW IF EXISTS solver_view");
+        res = cur.execute(f"""
+            CREATE VIEW solver_view AS 
+            SELECT query_path, vanilla_path, perturbation, result_code, elapsed_milli
+            FROM {cfg.table_name}
+            WHERE command LIKE "%{solver}%"
+            """)
+
         res = cur.execute(f"""
             SELECT query_path, result_code, elapsed_milli
-            FROM {cfg.table_name}
+            FROM solver_view
             WHERE query_path = vanilla_path
-            AND command LIKE ?
-            """, (f"%{solver}%", ))
+            """)
 
         vanilla_rows = res.fetchall()
         for (vanilla_path, v_rcode, v_time) in tqdm(vanilla_rows):
             res = cur.execute("DROP VIEW IF EXISTS query_view");
             res = cur.execute(f"""CREATE VIEW query_view AS 
-                SELECT result_code, elapsed_milli, perturbation FROM {cfg.table_name}
+                SELECT result_code, elapsed_milli, perturbation FROM solver_view
                 WHERE query_path != vanilla_path
-                AND command LIKE "%{solver}%" 
                 AND vanilla_path = "{vanilla_path}" """)
 
             results = dict()
@@ -194,17 +200,16 @@ def plot_time_variance_cdf(cfg):
             summaries = [ast.literal_eval(row[i]) for i in range(4, 7)]
 
             if len(summaries[0][2]) != 0:
-                dists["shuffle"].append(np.std(summaries[0][2]))
+                dists["shuffle"].append(as_seconds((np.std(summaries[0][2]))))
             if len(summaries[1][2]) != 0:
-                dists["rename"].append(np.std(summaries[1][2]))
+                dists["rename"].append(as_seconds(np.std(summaries[1][2])))
             if len(summaries[2][2]) != 0:
-                dists["sseed"].append(np.std(summaries[2][2]))
+                dists["sseed"].append(as_seconds(np.std(summaries[2][2])))
         plot_time_variance_cdfs(aixs[i], dists, solver)
     con.close()
 
     name = f"fig/time_variance_cdf_{cfg.project.name}.png"
     plt.savefig(name)
-
 
 def plot_success_rate_cdf(cfg):
     con = sqlite3.connect(DB_PATH)
@@ -291,11 +296,8 @@ def analyze_unstable_table(cfg):
 # cfg = ExpConfig("test3", D_FVBKV, [Z3_4_11_2], 20)
 # build_unstable_table(cfg)
 
-cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG]
-
-# cfg = ExpConfig("test5", D_KOMODO, [Z3_4_5_0])
-# cfg.min_mutants = 0
-# cfg.max_mutants = 0
+# cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG]
+cfgs = [ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2, Z3_4_6_0, Z3_4_11_2], None)]
 
 # build_unstable_table(cfg)
 for cfg in cfgs:

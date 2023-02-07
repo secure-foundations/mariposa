@@ -130,10 +130,9 @@ class SolverTaskGroup:
                 return
 
             elapsed, rcode = self._run_single(mutant_path, perturb, cfg)
-            print(mutant_path)
 
             # remove mutant
-            # os.system(f"rm {mutant_path}")
+            os.system(f"rm {mutant_path}")
 
             veri_times.append(elapsed)
             if rcode == "unsat":
@@ -234,10 +233,16 @@ class Runner:
         return False
 
 if __name__ == '__main__':
-    D_KOMODO.assign_z3_dirs("data/d_komodo_z3_opt/")
-    cfg = ExpConfig("test5", D_KOMODO, [Z3_4_5_0], 5)
-    cfg.min_mutants = 5
-    cfg.max_mutants = 5
+    # D_KOMODO.assign_z3_dirs("data/d_komodo_z3_opt/")
+    cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2, Z3_4_6_0, Z3_4_11_2], None)
+    # cfg = ExpConfig("test5", D_KOMODO, [Z3_4_5_0])
 
-    # print(len(set(cfg.samples[Z3_4_11_2])))
     r = Runner(cfg, True)
+
+    # con = sqlite3.connect(DB_PATH)
+    # cur = con.cursor()
+
+    # cur.execute(f"""SELECT * from {cfg.table_name}""")
+    # rows = cur.fetchall()
+    # for row in rows:
+    #     print(row)

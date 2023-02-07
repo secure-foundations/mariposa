@@ -31,8 +31,9 @@ class SolverInfo:
     def __eq__(self, other):
         return hash(self) == hash(other)
 
-Z3_4_5_0 = SolverInfo("z3-4.5.0")
 Z3_4_4_2 = SolverInfo("z3-4.4.2")
+Z3_4_5_0 = SolverInfo("z3-4.5.0")
+Z3_4_6_0 = SolverInfo("z3-4.6.0")
 Z3_4_11_2 = SolverInfo("z3-4.11.2")
 CVC5_1_0_3 = SolverInfo("cvc5-1.0.3")
 # d_fvbkv: z3_4_6_0 d_lvbkv: z3_4_8_5
