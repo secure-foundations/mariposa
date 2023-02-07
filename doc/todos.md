@@ -2,7 +2,7 @@
 |----------|:----------:|:--------:|:--------:|:--------:|:---------:|
 | d_komodo |      ?     |          |    Ok    |          |     Ok    |
 | s_komodo |     Ok     |          |    Ok    |          |     Ok    |
-|  d_vbkv  |            |    Ok    |          |    Ok    |     Ok    |
+| df_vbkv  |            |    Ok    |          |    Ok    |     Ok    |
 
 
 cvc5 options to speed up queries (auto-config)
