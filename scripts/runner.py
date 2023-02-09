@@ -59,6 +59,7 @@ class SolverTaskGroup:
         self.mutant_paths = []
         self.solver = solver
         assert isinstance(cfg, QueryExpConfig)
+        self.cfg = cfg
         self.table_name = cfg.get_solver_table_name(self.solver)
 
     def _sample_size_enough(self, veri_times, veri_results):
@@ -68,7 +69,7 @@ class SolverTaskGroup:
         if sample_size < self.cfg.min_mutants:
             return False
 
-        t_critical = stats.t.ppf(q=cfg.confidence_level, df=sample_size-1)  
+        t_critical = stats.t.ppf(q=self.cfg.confidence_level, df=sample_size-1)  
 
         p = sum(veri_results) / sample_size
         res_moe = t_critical * math.sqrt((p*(1-p))/sample_size)
@@ -229,9 +230,5 @@ class Runner:
 
 if __name__ == '__main__':
     # cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2, Z3_4_6_0, Z3_4_11_2], None)
-    cfg = ExpConfig("test5", D_KOMODO, [Z3_4_5_0])
-    # r = Runner(cfg)
-    # cur.execute(f"""SELECT * from {cfg.table_name}""")
-    # rows = cur.fetchall()
-    # for row in rows:
-    #     print(row)
+    cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_5_0])
+    r = Runner(cfg, True)

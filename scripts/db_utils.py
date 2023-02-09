@@ -102,7 +102,7 @@ def check_table_exists(cur, table_name):
 
 def confirm_drop_table(cur, table_name):
     if check_table_exists(cur, table_name):
-        print("confirm to drop existing experiment table [Y]")
+        print(f"confirm to drop existing experiment table {table_name} [Y]")
         if input() != "Y":
             print(f"[WARN] abort dropping table {table_name}")
             return False
