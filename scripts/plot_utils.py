@@ -16,52 +16,53 @@ def plot_csum(sp, data, label):
     y = np.arange(n)
     sp.plot(np.sort(data), y, marker=",", label=label)
 
-def plot_rev_csum(sp, data, label):
-    n = len(data)
-    y = np.arange(n)[::-1] / float(n)
-    sp.plot(np.sort(data), y, marker=",", label=label)
-
-def setup_fig(title, rows, columns):
+def setup_fig(rows, columns):
     figure, axis = plt.subplots(rows, columns)
+
+    figure.set_figheight(10 * rows)
+    figure.set_figwidth(7.5 * columns)
+
+    return figure, axis
+
+def save_fig(figure, title, file):
     figure.suptitle(title, fontsize=16)
+    plt.savefig(file)
 
-    figure.set_figheight(20)
-    figure.set_figwidth(10)
+def plot_time_variance_cdfs(sps, dists, dists2, sname):
+    sp = sps[0]
+    sp.set_title(f'{sname} response time cdf')
 
-    return axis
-
-def plot_time_cdfs(sp, dists, sname):
-    sp.set_title(f'{sname}')
-
-    for label, dist in dists.items():
-        plot_cdf(sp, dist, label)
+    for label, dist in dists2.items():
+        xs, ys = get_cdf_pts(dist)
+        sp.plot(xs, ys, marker=",", label=label)
     sp.set_ylabel("cumulative probability")
     sp.set_xlabel("response time (log)")
-    sp.set_xscale("log")
+    # sp.set_xscale("log")
     sp.legend()
 
-def plot_time_variance_cdfs(sp, dists, sname):
-    count = len(dists['sseed'])
-    sp.set_title(f'{sname} plain count: {count}')
-
+    sp = sps[1]
+    sp.set_title(f'{sname} response time variance cdf')
     for label, dist in dists.items():
-        plot_rev_csum(sp, dist, label)
+        xs, ys = get_cdf_pts(dist)
+        sp.plot(xs, ys[::-1], marker=",", label=label)
     sp.set_ylabel("cumulative percentage (%) above threshold")
     sp.set_xlabel("response time variance (seconds) threshold log scale")
     sp.set_xscale("log")
-    # sp.set_xlim(left=0.5e-2)
+    sp.set_xlim(left=0.001)
     sp.set_yscale("log")
     sp.legend()
 
 def plot_success_rate_cdfs(sps, dists, sname):
     sp = sps[0]
-    count = len(dists['sseed'])
-    sp.set_title(f'{sname} plain count: {count}')
+    sp.set_title(f'{sname} success rate cdf')
     for label, dist in dists.items():
         xs, ys = get_cdf_pts(dist)
         sp.plot(xs, ys, marker=",", label=label)
     sp.set_ylabel("cumulative percentage (%) below threshold")
     sp.set_xlabel("success rate (%) threshold")
+    # sp.set_xlim(left=0, right=100)
+    sp.set_xticks([i for i in range(0, 110, 10)])
+    # sp.set_ylim(bottom=0)
     sp.legend()
 
     sp = sps[1]
@@ -75,9 +76,12 @@ def plot_success_rate_cdfs(sps, dists, sname):
             min_p = min(ys[li], min_p)
             max_p = max(ys[hi], max_p)
             sp.plot(xs, ys, marker=",", label=label)
+            # sp.plot([0, xs[hi], xs[hi]], [ys[hi], ys[hi], 0], linestyle="--")
+            # sp.text(point1[0]-0.015, point1[1]+0.25, "Point1")
     sp.set_ylabel("cumulative percentage (%) below threshold")
     sp.set_xlabel("success rate (%) threshold")
     sp.set_xlim(left=1, right=99)
     sp.set_ylim(bottom=min_p-0.1, top=max_p+0.1)
     sp.set_xticks([1] + [i for i in range(10, 100, 10)] + [99])
+
     sp.legend()

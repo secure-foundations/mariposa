@@ -71,41 +71,64 @@ DB_PATH = "data/mariposa.db"
 #     con.close()
 #     return paths
 
-def setup_experiment_table(cfg):
-    con = sqlite3.connect(DB_PATH)
-    cur = con.cursor()
-    cur.execute(f"""CREATE TABLE {cfg.table_name}(
-        query_path varchar(255) NOT NULL,
-        vanilla_path varchar(255),
+def create_experiment_table(cur, table_name):
+    cur.execute(f"""CREATE TABLE {table_name}(
+        query_path TEXT NOT NULL,
+        vanilla_path TEXT,
         perturbation varchar(10),
-        command varchar(455) NOT NULL,
+        command TEXT NOT NULL,
         std_out TEXT,
         std_error TEXT,
         result_code varchar(10),
         elapsed_milli INTEGER, 
         timestamp DEFAULT CURRENT_TIMESTAMP
         )""")
-    con.commit()
-    con.close()
+    print(f"[INFO] created new table {table_name}")
 
-def drop_experiment_table(cfg, ignore_exist):
-    con = sqlite3.connect(DB_PATH)
-    cur = con.cursor()
+def check_table_exists(cur, table_name):
+    cur.execute(f"""SELECT name from sqlite_master
+        WHERE type='table'
+        AND name=?""", (table_name,))
+    res = cur.fetchone() != None
+    return res
 
-    if ignore_exist:
-        cur.execute(f"""DROP TABLE IF EXISTS {cfg.table_name}""")
-    else:
-        cur.execute(f"""DROP TABLE {cfg.table_name}""")
-    con.commit()
-    con.close()
+# def drop_table(table_name, ignore_exist):
+#     if ignore_exist:
+#         cur.execute(f"""DROP TABLE IF EXISTS {table_name}""")
+#     else:
+#         cur.execute(f"""DROP TABLE {table_name}""")
+#     con.commit()
+#     con.close()
+
+def confirm_drop_table(cur, table_name):
+    if check_table_exists(cur, table_name):
+        print("confirm to drop existing experiment table [Y]")
+        if input() != "Y":
+            print(f"[WARN] abort dropping table {table_name}")
+            return False
+        cur.execute(f"""DROP TABLE {table_name}""")
+        print(f"[INFO] dropped existing table {table_name}")
+        return True
+    print(f"[INFO] ignored non-existing table {table_name}")
+    return True
 
 def show_tables():
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
     res = cur.execute("""SELECT name FROM sqlite_master
         WHERE type='table'""")
-    print(res.fetchall())
+    for r in res.fetchall():
+        res = cur.execute(f"""SELECT COUNT(*) FROM {r[0]}""")
+        print(r[0], res.fetchone()[0])
     con.close()
+
+def get_connection():
+    return sqlite3.connect(DB_PATH)
+
+def get_cursor():
+    con = sqlite3.connect(DB_PATH)
+    cur = con.cursor()
+    return con, cur
 
 def zip_db():
     os.system(f"tar cvzf {DB_PATH}.tar.gz {DB_PATH}")

@@ -23,7 +23,7 @@ class SolverInfo:
         self.ver = bin_name[len(self.brand.value)+1::]
 
     def __str__(self):
-        return self.brand.value + "-" + self.ver
+        return self.brand.value + "_" + self.ver.replace(".", "_")
 
     def __hash__(self):
         return hash(str(self))
