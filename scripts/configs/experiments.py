@@ -59,6 +59,6 @@ class ExpConfig:
     #             print(dir + query)
     #             assert (os.path.exists(dir + query))
 
-S_KOMODO_BASIC_CFG = ExpConfig("test1", S_KOMODO, [Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3])
-D_KOMODO_BASIC_CFG = ExpConfig("test2", D_KOMODO, [Z3_4_5_0, Z3_4_11_2, CVC5_1_0_3])
+S_KOMODO_BASIC_CFG = ExpConfig("S_KOMODO", S_KOMODO, [Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3])
+D_KOMODO_BASIC_CFG = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_5_0, Z3_4_11_2, CVC5_1_0_3])
 D_FVBKV_Z3_CFG = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2, Z3_4_6_0, Z3_4_11_2], None)

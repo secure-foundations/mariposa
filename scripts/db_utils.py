@@ -112,6 +112,11 @@ def confirm_drop_table(cur, table_name):
     print(f"[INFO] ignored non-existing table {table_name}")
     return True
 
+def rename_table(cur, old_name, new_name):
+    q = f"""ALTER TABLE {old_name} RENAME TO {new_name}"""
+    print(q)
+    cur.execute(q)
+
 def show_tables():
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
@@ -140,5 +145,3 @@ if __name__ == "__main__":
         cmd = sys.argv[1]
         if cmd == "zip_db":
             zip_db()
-        else:
-            show_tables()
