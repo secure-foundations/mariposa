@@ -184,7 +184,6 @@ class Runner:
                     self.task_queue.put(task)
         con.close()
 
-
         # for proc exit
         for _ in range(cfg.num_procs):
             self.task_queue.put(None)
@@ -225,10 +224,11 @@ class Runner:
             WHERE vanilla_path=?
             """, (task.vanilla_path,))
         if cur.fetchone()[0] < threshold:
+            print("should we run: " + task.vanilla_path)
             return True
         return False
 
 if __name__ == '__main__':
-    # cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2, Z3_4_6_0, Z3_4_11_2], None)
-    cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_5_0])
-    r = Runner(cfg, True)
+    # cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2])
+    cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_11_2])
+    r = Runner(cfg, False)

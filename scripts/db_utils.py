@@ -51,26 +51,6 @@ DB_PATH = "data/mariposa.db"
 #     con.commit()
 #     con.close()
 
-# def sample_vanilla_queries(project, query_count, status="unsat"):
-#     con = sqlite3.connect(DB_PATH)
-#     cur = con.cursor()
-
-#     if query_count is None:
-#         # get all queries
-#         res = cur.execute("""SELECT query_path from vanilla_queries
-#             WHERE project = ?
-#             AND status = ?;
-#             """, (project, status))
-#     else:
-#         res = cur.execute("""SELECT query_path from vanilla_queries
-#             WHERE project = ?
-#             AND status = ?
-#             ORDER BY RANDOM() LIMIT ?;
-#             """, (project, status, query_count))
-#     paths = [i[0] for i in res.fetchall()]
-#     con.close()
-#     return paths
-
 def create_experiment_table(cur, table_name):
     cur.execute(f"""CREATE TABLE {table_name}(
         query_path TEXT NOT NULL,
@@ -121,7 +101,8 @@ def show_tables():
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
     res = cur.execute("""SELECT name FROM sqlite_master
-        WHERE type='table'""")
+        WHERE type='table'
+        ORDER BY name ASC""")
     for r in res.fetchall():
         res = cur.execute(f"""SELECT COUNT(*) FROM {r[0]}""")
         print(r[0], res.fetchone()[0])
