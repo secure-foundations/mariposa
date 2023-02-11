@@ -166,8 +166,11 @@ def analyze_unstable_table(cfg):
 # cfg = ExpConfig("test3", D_FVBKV, [Z3_4_11_2], 20)
 # build_unstable_table(cfg)
 
-cfgs = [D_FVBKV_Z3_CFG]
+# cfgs = [D_FVBKV_Z3_CFG]
+cfg = ExpConfig("FS_VWASM", FS_VWASM, [Z3_4_8_5])
+# build_summary_table(cfg)
+analyze_unstable_table(cfg)
 
 # append_summary_table(D_FVBKV_Z3_CFG, Z3_4_5_0)
-for cfg in cfgs:
-    analyze_unstable_table(cfg)
+# for cfg in cfgs:
+#     analyze_unstable_table(cfg)

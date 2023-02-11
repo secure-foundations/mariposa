@@ -34,6 +34,7 @@ class SolverInfo:
 Z3_4_4_2 = SolverInfo("z3-4.4.2")
 Z3_4_5_0 = SolverInfo("z3-4.5.0")
 Z3_4_6_0 = SolverInfo("z3-4.6.0")
+Z3_4_8_5 = SolverInfo("z3-4.8.5")
 Z3_4_11_2 = SolverInfo("z3-4.11.2")
 CVC5_1_0_3 = SolverInfo("cvc5-1.0.3")
 # d_fvbkv: z3_4_6_0 d_lvbkv: z3_4_8_5
@@ -54,6 +55,7 @@ def list_smt2_files(sub_root):
 class FrameworkName(str, Enum):
     DAFNY = "dafny"
     SERVAL = "serval"
+    FSTAR = "fstar"
 
 class ProjectConfig:
     def __init__(self, name, framework, plain_dir):
@@ -126,4 +128,7 @@ D_KOMODO.assign_cvc5_dirs("data/d_komodo_cvc5_clean/")
 
 D_FVBKV = ProjectConfig("d_frames_vbkv", FrameworkName.DAFNY, "data/d_frames_vbkv_plain/")
 D_FVBKV.assign_z3_dirs("data/d_frames_vbkv_z3_clean/")
-D_FVBKV.assign_cvc5_dirs("data/d_frames_vbkv_cvc5_clean/")
+# D_FVBKV.assign_cvc5_dirs("data/d_frames_vbkv_cvc5_clean/")
+
+FS_VWASM = ProjectConfig("fs_vwasm", FrameworkName.FSTAR, "data/fs_vwasm_plain/")
+FS_VWASM.assign_z3_dirs("data/fs_vwasm_z3_clean/")
