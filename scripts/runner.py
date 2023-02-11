@@ -177,12 +177,13 @@ class Runner:
         self.task_queue = mp.Queue()
 
         for solver, queries in cfg.samples.items():
-            print("loading tasks")
+            print(f"loading tasks {str(solver)}")
             for query in tqdm(queries):
                 task = SolverTaskGroup(cfg.qcfg, query, solver)
                 if self.__should_run_task(cfg.qcfg, cur, task):
                     self.task_queue.put(task)
         con.close()
+        print("done loading all tasks")
 
         # for proc exit
         for _ in range(cfg.num_procs):
@@ -224,11 +225,10 @@ class Runner:
             WHERE vanilla_path=?
             """, (task.vanilla_path,))
         if cur.fetchone()[0] < threshold:
-            print("we should run: " + task.vanilla_path)
+            print(f"we should run {task.vanilla_path} with {task.solver}")
             return True
         return False
 
 if __name__ == '__main__':
     # cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2])
-    cfg = ExpConfig("FS_VWASM", FS_VWASM, [Z3_4_4_2, Z3_4_8_5])
-    r = Runner(cfg, True)
+    r = Runner(FS_VWASM_CFG)

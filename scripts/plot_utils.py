@@ -69,6 +69,8 @@ def plot_success_rate_cdfs(sps, dists, sname):
     sp.set_title(f'{sname} (zoomed in 1%<=SR<=99%)')
     min_p, max_p = 100, 0
     for label, dist in dists.items():
+        print(label, sname)
+        print(dist)
         xs, ys = get_cdf_pts(dist)
         li = np.where(xs>=1)[0][0]
         hi = len(xs) - np.where(xs[::-1]<=99)[0][0] - 1
