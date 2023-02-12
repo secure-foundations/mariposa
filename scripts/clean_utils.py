@@ -84,21 +84,19 @@ def clean_dfy_frames_vbkv():
 def remove_z3_options():
     p = D_KOMODO
     z3_clean_dir = p.clean_dirs[Z3_4_5_0]
-    out_dir = "data/d_komodo_z3_opt/"
+    out_dir = "data/d_komodo_z3_atuo_off/"
 
     for path in tqdm(list_smt2_files(z3_clean_dir)):
         z3_new_path = path.replace(z3_clean_dir, out_dir)
         f = open(path)
         z3o = open(z3_new_path, "w+")
-        # z3o.write("(set-option :AUTO_CONFIG false)")
+        z3o.write("(set-option :AUTO_CONFIG false)\n")
 
         for line in f.readlines():
             if line.startswith("(set-option"):
                 continue
             z3o.write(line)
         # print(z3_new_path)
-
-# remove_z3_options()
 
 def not_matching(cur_command):
     assert (cur_command[0]) == "("
@@ -158,4 +156,37 @@ def clean_fstar_vwasm():
         outlines = clean_parentheses(outlines)
         z3o.writelines(outlines)
 
-clean_fstar_vwasm()
+# clean_fstar_vwasm()
+
+def find_interesting():
+# data/d_komodo_z3_no_opt/
+    # p = D_KOMODO
+    # z3_clean_dir = p.clean_dirs[Z3_4_5_0]
+    # cvc_clean_dir = p.clean_dirs[CVC5_1_0_3]
+    # query_paths = list_smt2_files(z3_clean_dir)
+
+    # query_path = "verified-init_addrspace.gen.dfyImpl___module.__default.lemma__mask3IsMod4.smt2"
+    # command = f"{Z3_4_11_2.path} data/d_komodo_z3_auto_off/{query_path} -T:10"
+    # out, err, elapsed = subprocess_run(command, 11)
+    # print(out)
+
+    for query_path in open("list").readlines():
+        query_path = query_path.strip()
+        # command = f"{Z3_4_11_2.path} data/d_komodo_z3_clean/{query_path} -T:10"
+        # out, err, elapsed = subprocess_run(command, 11)
+        # assert "unsat" in out
+
+        # command = f"{Z3_4_11_2.path} data/d_komodo_z3_no_opt/{query_path} -T:10"
+        # out, err, elapsed = subprocess_run(command, 11)
+        # print(out)
+
+        # command = f"{Z3_4_11_2.path} data/d_komodo_z3_auto_off/{query_path} -T:10"
+        # print(command)
+        # out, err, elapsed = subprocess_run(command, 11)
+        # print(out)
+
+        command = f"{CVC5_1_0_3.path} data/d_komodo_cvc5_clean/{query_path} --tlimit=10000"
+        out, err, elapsed = subprocess_run(command, 11)
+        assert "timeout" in err
+
+find_interesting()

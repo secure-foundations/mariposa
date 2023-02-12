@@ -224,11 +224,21 @@ class Runner:
         cur.execute(f"""SELECT COUNT(*) from {cfg.get_solver_table_name(task.solver)}
             WHERE vanilla_path=?
             """, (task.vanilla_path,))
-        if cur.fetchone()[0] < threshold:
+        count = cur.fetchone()[0]
+        if count == 0:
+            return True
+        if count < threshold:
             print(f"we should run {task.vanilla_path} with {task.solver}")
             return True
         return False
 
 if __name__ == '__main__':
     # cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2])
-    r = Runner(FS_VWASM_CFG)
+    p = D_KOMODO
+    p.max_mutants = 0
+    p.min_mutants = 0
+    p.assign_z3_dirs("data/d_komodo_z3_no_opt/")
+    # p.assign_z3_dirs("data/d_komodo_z3_auto_off/")
+    # D_KOMODO_AUTO_OFF = ExpConfig("D_KOMODO_AUTO_OFF", D_KOMODO, [Z3_4_11_2])
+    D_KOMODO_NO_OPT = ExpConfig("D_KOMODO_NO_OPT", D_KOMODO, [Z3_4_11_2])
+    r = Runner(D_KOMODO_NO_OPT, True)
