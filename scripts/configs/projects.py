@@ -40,7 +40,8 @@ CVC5_1_0_3 = SolverInfo("cvc5-1.0.3")
 # d_fvbkv: z3_4_6_0 d_lvbkv: z3_4_8_5
 
 # ALL_SOLVERS = [Z3_4_5_0, Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3]
-ALL_SOLVERS = [SolverInfo(p) for p in os.listdir(SOLVER_BINS_DIR)]
+ALL_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2, CVC5_1_0_3]
+# ALL_SOLVERS = [SolverInfo(p) for p in os.listdir(SOLVER_BINS_DIR)]
 
 # project related
 

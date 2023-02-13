@@ -41,9 +41,13 @@ def plot_time_variance_cdfs(sps, dists, dists2, sname):
     sp.legend()
 
     sp = sps[1]
+    max_p = 0
     sp.set_title(f'{sname} response time variance cdf')
     for label, dist in dists.items():
         xs, ys = get_cdf_pts(dist)
+        if xs[-1] >= 1:
+            li = len(xs) - np.where(xs>=1)[0][0] - 1
+            max_p = max(ys[li], max_p)
         sp.plot(xs, ys[::-1], marker=",", label=label)
     sp.set_ylabel("cumulative percentage (%) above threshold")
     sp.set_xlabel("response time variance (seconds) threshold log scale")
@@ -51,6 +55,7 @@ def plot_time_variance_cdfs(sps, dists, dists2, sname):
     sp.set_xlim(left=0.001)
     sp.set_yscale("log")
     sp.legend()
+    return max_p
 
 def plot_success_rate_cdfs(sps, dists, sname):
     sp = sps[0]
@@ -72,12 +77,10 @@ def plot_success_rate_cdfs(sps, dists, sname):
         xs, ys = get_cdf_pts(dist)
         li = np.where(xs>=1)[0][0]
         hi = len(xs) - np.where(xs[::-1]<=99)[0][0] - 1
+        min_p = min(ys[li], min_p)
         if li < hi:
-            min_p = min(ys[li], min_p)
             max_p = max(ys[hi], max_p)
             sp.plot(xs, ys, marker=",", label=label)
-            # sp.plot([0, xs[hi], xs[hi]], [ys[hi], ys[hi], 0], linestyle="--")
-            # sp.text(point1[0]-0.015, point1[1]+0.25, "Point1")
     sp.set_ylabel("cumulative percentage (%) below threshold")
     sp.set_xlabel("success rate (%) threshold")
     sp.set_xlim(left=1, right=99)
@@ -85,3 +88,6 @@ def plot_success_rate_cdfs(sps, dists, sname):
     sp.set_xticks([1] + [i for i in range(10, 100, 10)] + [99])
 
     sp.legend()
+    if max_p == 0:
+        max_p = min_p
+    return min_p, max_p
