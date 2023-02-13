@@ -37,7 +37,7 @@ Z3_4_6_0 = SolverInfo("z3-4.6.0")
 Z3_4_8_5 = SolverInfo("z3-4.8.5")
 Z3_4_11_2 = SolverInfo("z3-4.11.2")
 CVC5_1_0_3 = SolverInfo("cvc5-1.0.3")
-# d_fvbkv: z3_4_6_0 d_lvbkv: z3_4_8_5
+# d_fvbkv:  d_lvbkv: z3_4_8_5
 
 # ALL_SOLVERS = [Z3_4_5_0, Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3]
 ALL_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2, CVC5_1_0_3]
@@ -59,13 +59,14 @@ class FrameworkName(str, Enum):
     FSTAR = "fstar"
 
 class ProjectConfig:
-    def __init__(self, name, framework, plain_dir):
+    def __init__(self, name, framework, plain_dir, orig_solver):
         self.name = name
         self.framework = framework
         self._plain_dir = plain_dir
         assert (plain_dir.endswith("/"))
         assert (os.path.exists(self._plain_dir))
         self.clean_dirs = dict()
+        self.orig_solver = orig_solver
 
     def get_plain_dir(self):
         return self._plain_dir
@@ -118,18 +119,18 @@ class ProjectConfig:
 
         return samples
 
-S_KOMODO = ProjectConfig("s_komodo", FrameworkName.SERVAL, "data/s_komodo_plain/")
+S_KOMODO = ProjectConfig("s_komodo", FrameworkName.SERVAL, "data/s_komodo_plain/", Z3_4_4_2)
 # all solvers use the clean set
 S_KOMODO.assign_cvc5_dirs("data/s_komodo_clean/")
 S_KOMODO.assign_z3_dirs("data/s_komodo_clean/")
 
-D_KOMODO = ProjectConfig("d_komodo", FrameworkName.DAFNY, "data/d_komodo_plain/")
+D_KOMODO = ProjectConfig("d_komodo", FrameworkName.DAFNY, "data/d_komodo_plain/", Z3_4_5_0)
 D_KOMODO.assign_z3_dirs("data/d_komodo_z3_clean/")
 D_KOMODO.assign_cvc5_dirs("data/d_komodo_cvc5_clean/")
 
-D_FVBKV = ProjectConfig("d_frames_vbkv", FrameworkName.DAFNY, "data/d_frames_vbkv_plain/")
+D_FVBKV = ProjectConfig("d_frames_vbkv", FrameworkName.DAFNY, "data/d_frames_vbkv_plain/", Z3_4_6_0)
 D_FVBKV.assign_z3_dirs("data/d_frames_vbkv_z3_clean/")
 # D_FVBKV.assign_cvc5_dirs("data/d_frames_vbkv_cvc5_clean/")
 
-FS_VWASM = ProjectConfig("fs_vwasm", FrameworkName.FSTAR, "data/fs_vwasm_plain/")
+FS_VWASM = ProjectConfig("fs_vwasm", FrameworkName.FSTAR, "data/fs_vwasm_plain/", Z3_4_8_5)
 FS_VWASM.assign_z3_dirs("data/fs_vwasm_z3_clean/")

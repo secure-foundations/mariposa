@@ -234,11 +234,5 @@ class Runner:
 
 if __name__ == '__main__':
     # cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2])
-    p = D_KOMODO
-    p.max_mutants = 0
-    p.min_mutants = 0
-    p.assign_z3_dirs("data/d_komodo_z3_no_opt/")
-    # p.assign_z3_dirs("data/d_komodo_z3_auto_off/")
-    # D_KOMODO_AUTO_OFF = ExpConfig("D_KOMODO_AUTO_OFF", D_KOMODO, [Z3_4_11_2])
-    D_KOMODO_NO_OPT = ExpConfig("D_KOMODO_NO_OPT", D_KOMODO, [Z3_4_11_2])
-    r = Runner(D_KOMODO_NO_OPT, True)
+    cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_4_2, Z3_4_6_0, Z3_4_8_5])
+    r = Runner(cfg)
