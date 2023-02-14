@@ -1,4 +1,7 @@
 z3 seed option difference
+
+shuffle experiment
+
 cvc nl arith option
 
 | |z3_4_4_2|z3_4_5_0|z3_4_6_0|z3_4_8_5|z3_4_11_2|cvc5_1_0_3|
