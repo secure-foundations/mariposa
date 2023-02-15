@@ -1,4 +1,11 @@
-## Jan 7th:
+## Feb 14th:
+
+Tentative agenda:
+* update on F* project exports
+* present the summary graph
+* advanced shuffling?
+
+## Feb 7th:
 
 Tentative agenda:
 * present some initial analysis on the current experiments 
