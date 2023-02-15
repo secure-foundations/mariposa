@@ -117,7 +117,7 @@ def get_cursor():
     return con, cur
 
 def zip_db():
-    os.system(f"tar cvzf {DB_PATH}.tar.gz {DB_PATH}")
+    os.system(f"cd data && tar cvzf mariposa.db.tar.gz mariposa.db")
 
 if __name__ == "__main__":
     if len(sys.argv) <= 1:

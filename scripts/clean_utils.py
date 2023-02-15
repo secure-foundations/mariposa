@@ -4,189 +4,151 @@ from configs.projects import *
 import time
 import subprocess
 
-PUSH_CMD = re.compile("\(push( 1)?\)")
-POP_CMD = re.compile("\(pop( 1)?\)")
+SPACED_CMD = re.compile("\(( +)[a-z]+")
+def remove_cmd_space(cmd):
+    match = re.search(SPACED_CMD, cmd)
+    if match:
+        s, e = match.start(1), match.end(1)
+        return cmd[:s] + cmd[e:]
+    return cmd
 
-def clean_dfy_komodo():
-    p = D_KOMODO
-    plain_dir = p.get_plain_dir()
-    z3_clean_dir = p.clean_dirs[Z3_4_5_0]
-    cvc_clean_dir = p.clean_dirs[CVC5_1_0_3]
-
-    for path in tqdm(list_smt2_files(plain_dir)):
-        z3_new_path = path.replace(plain_dir, z3_clean_dir)
-        cvc_clean_path = path.replace(plain_dir, cvc_clean_dir)
-
-        depth = 0
-        f = open(path)
-        z3o = open(z3_new_path, "w+")
-        cvc5o = open(cvc_clean_path, "w+")
-
-        for line in f.readlines():
-            if re.search(PUSH_CMD, line):
-                # skip the push, check for at most one push
-                depth += 1
-                assert(depth <= 1)
-            else:
-                z3o.write(line)
-
-                if "bv2int" in line:
-                    # for cvc5, use bv2nat instead
-                    line = line.replace("bv2int", "bv2nat")
-
-                cvc5o.write(line)
-                if "(check-sat)" in line:
-                    # cut off the rest
-                    break
-
-def subprocess_run(command, time_limit, debug=False, cwd=None):
-    command = f"timeout {time_limit} " + command
-    if debug:
-        print(command)
-    start_time = time.time()
-    res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-    # milliseconds
-    elapsed = round((time.time() - start_time) * 1000)
-    stdout = res.stdout.decode("utf-8").strip()
-    stderr = res.stderr.decode("utf-8").strip()
-    return stdout, stderr, elapsed
-
-def clean_dfy_frames_vbkv():
-    p = D_FVBKV
-    plain_dir = p.get_plain_dir()
-    z3_clean_dir = p.clean_dirs[Z3_4_5_0]
-    cvc_clean_dir = p.clean_dirs[CVC5_1_0_3]
-    for path in tqdm(list_smt2_files(plain_dir)):
-        z3_new_path = path.replace(plain_dir, z3_clean_dir)
-        cvc_clean_path = path.replace(plain_dir, cvc_clean_dir)
-
-        depth = 0
-        f = open(path)
-        z3o = open(z3_new_path, "w+")
-        cvc5o = open(cvc_clean_path, "w+")
-
-        for line in f.readlines():
-            if re.search(PUSH_CMD, line):
-                # skip the push, check for at most one push
-                depth += 1
-                assert(depth <= 1)
-            else:
-                z3o.write(line)
-                if "bv2int" in line:
-                    # for cvc5, use bv2nat instead
-                    line = line.replace("bv2int", "bv2nat")
-                cvc5o.write(line)
-
-                if "(check-sat)" in line:
-                    # cut off the rest
-                    break
-
-def remove_z3_options():
-    p = D_KOMODO
-    z3_clean_dir = p.clean_dirs[Z3_4_5_0]
-    out_dir = "data/d_komodo_z3_atuo_off/"
-
-    for path in tqdm(list_smt2_files(z3_clean_dir)):
-        z3_new_path = path.replace(z3_clean_dir, out_dir)
-        f = open(path)
-        z3o = open(z3_new_path, "w+")
-        z3o.write("(set-option :AUTO_CONFIG false)\n")
-
-        for line in f.readlines():
-            if line.startswith("(set-option"):
-                continue
-            z3o.write(line)
-        # print(z3_new_path)
-
-def not_matching(cur_command):
-    assert (cur_command[0]) == "("
-    # this should be fine
+# should not neeed stack if we know the input is well formed
+def parentheses_not_matching(cur_command):
+    # assert (cur_command[0]) == "("
     return cur_command.count("(") != cur_command.count(")")
 
-FUEL_PAT = """(declare-datatypes () ((Fuel (ZFuel) (SFuel (prec Fuel)))))"""
-
-FUEL_ALT = """(declare-sort Fuel)
-(declare-fun ZFuel () Fuel)
-(declare-fun SFuel (Fuel) Fuel)
-(declare-fun MaxIFuel () Fuel)"""
-
-def clean_parentheses(lines):
+def convert_to_standard_cmds(lines):
     i = 0
-    result_lines = []
+    commands = []
     cur_command = ""
+
+    new_lines = []
+    for line in lines:
+        line = line.strip()
+        if line.startswith(";") or line == "":
+            continue
+        new_lines.append(line)
+
+    lines = new_lines
+
     while i < len(lines):
         cur_line = lines[i].strip()
-        # print("cur_line: ", cur_line)
-        cur_command += cur_line
-        # print("cur_command: ", cur_command)
-        # print("not matching? ", not_matching(cur_command))
-        while not_matching(cur_command):
-            i += 1
-            cur_command += " " + lines[i].strip()
-        if cur_command == FUEL_PAT:
-            result_lines.append(FUEL_ALT + "\n")
-        else:
-            result_lines.append(cur_command + "\n")
-        # print("command: ", cur_command)
-        cur_command = ""
         i += 1
-    return result_lines
 
-def clean_fstar_vwasm():
-    p = FS_VWASM
-    plain_dir = p.get_plain_dir()
-    z3_clean_dir = p.clean_dirs[Z3_4_5_0]
-    for path in tqdm(list_smt2_files(plain_dir)):
-        rel_path = path[len(plain_dir):]
-        z3_new_path = z3_clean_dir + rel_path.replace("/", "-")
-        f = open(path)
-        z3o = open(z3_new_path, "w+")
-        content = f.read()
-        assert content.count("(check-sat)") == 1
-        f.seek(0, 0)
-        outlines = []
-        for line in f:
-            if re.search(PUSH_CMD, line) or re.search(POP_CMD, line):
-                continue
-            if ";" in line or line.startswith("(echo") or line.strip() == "":
-                continue
-            outlines.append(line)
-            if "(check-sat)" in line:
+        cur_command += cur_line
+        while parentheses_not_matching(cur_command):
+            cur_command += " " + lines[i].strip()
+            i += 1
+        cur_command = remove_cmd_space(cur_command)
+        commands.append(cur_command + "\n")
+        cur_command = ""
+    return commands
+
+def remove_target_cmds(commands, targets):
+    new_commands = []
+    for command in commands:
+        remove = False
+        for target in targets:
+            if command.startswith("(" + target):
+                remove = True
                 break
-        outlines = clean_parentheses(outlines)
-        z3o.writelines(outlines)
+        if not remove:
+            new_commands.append(command.strip() + "\n")
+    return new_commands
 
-# clean_fstar_vwasm()
+def cutoff_check_sat(commands, ignore_rest):
+    index = None
+    for i, command in enumerate(commands):
+        if "check-sat" in command:
+            # there should be one check-sat?
+            assert index is None
 
-def find_interesting():
-# data/d_komodo_z3_no_opt/
-    # p = D_KOMODO
-    # z3_clean_dir = p.clean_dirs[Z3_4_5_0]
-    # cvc_clean_dir = p.clean_dirs[CVC5_1_0_3]
-    # query_paths = list_smt2_files(z3_clean_dir)
+            index = i
+            if ignore_rest:
+                break
+    return commands[:index+1]
 
-    # query_path = "verified-init_addrspace.gen.dfyImpl___module.__default.lemma__mask3IsMod4.smt2"
-    # command = f"{Z3_4_11_2.path} data/d_komodo_z3_auto_off/{query_path} -T:10"
-    # out, err, elapsed = subprocess_run(command, 11)
-    # print(out)
+def flatten_path(base_dir, path):
+    assert base_dir in path
+    if not base_dir.endswith("/"):
+        base_dir += "/"
+    rest = path[len(base_dir):]
+    rest = rest.replace("/", "-")
+    return base_dir + rest
 
-    for query_path in open("list").readlines():
-        query_path = query_path.strip()
-        # command = f"{Z3_4_11_2.path} data/d_komodo_z3_clean/{query_path} -T:10"
-        # out, err, elapsed = subprocess_run(command, 11)
-        # assert "unsat" in out
+def convert_path(src_path, src_dir, dst_dir):
+    dst_path = flatten_path(src_dir, src_path)
+    dst_path = dst_path.replace(src_dir, dst_dir)
+    return dst_path
 
-        # command = f"{Z3_4_11_2.path} data/d_komodo_z3_no_opt/{query_path} -T:10"
-        # out, err, elapsed = subprocess_run(command, 11)
-        # print(out)
+STD_REMOVE_CMDS = {
+    "push",
+    "pop",
+    "echo",
+    "set-option :rlimit",
+    "set-option :timeout"
+}
 
-        # command = f"{Z3_4_11_2.path} data/d_komodo_z3_auto_off/{query_path} -T:10"
-        # print(command)
-        # out, err, elapsed = subprocess_run(command, 11)
-        # print(out)
+def read_standard_cmds(in_path):
+    in_f = open(in_path)
+    lines = in_f.readlines()
+    # convert to command standard form
+    cmds = convert_to_standard_cmds(lines)
+    # remove push, pop, echo and rlimit
+    cmds = remove_target_cmds(cmds, STD_REMOVE_CMDS)
+    cmds = cutoff_check_sat(cmds, ignore_rest=True)
+    return cmds
 
-        command = f"{CVC5_1_0_3.path} data/d_komodo_cvc5_clean/{query_path} --tlimit=10000"
-        out, err, elapsed = subprocess_run(command, 11)
-        assert "timeout" in err
+FUEL_CMD = """(declare-datatypes () ((Fuel (ZFuel) (SFuel (prec Fuel)))))\n"""
 
-find_interesting()
+FUEL_ALT_CMD = """(declare-sort Fuel)
+(declare-fun ZFuel () Fuel)
+(declare-fun SFuel (Fuel) Fuel)
+(declare-fun MaxIFuel () Fuel)\n"""
+
+def replace_fs_fuel(commands):
+    replaced = False
+    for i, command in enumerate(commands):
+        if command == FUEL_CMD:
+            replaced = True
+            commands[i] = FUEL_ALT_CMD
+            break
+    assert replaced
+    return commands
+
+def clean_fs_project(project):
+    assert project.framework == FrameworkName.FSTAR
+    src_dir = project.get_plain_dir()
+    dst_dir = project.clean_dirs[str(Z3_4_11_2)]
+
+    for in_path in tqdm(list_smt2_files(src_dir)):
+        cmds = read_standard_cmds(in_path)
+        cmds = replace_fs_fuel(cmds)
+
+        out_path = convert_path(in_path, src_dir, dst_dir)
+        out_f = open(out_path, "w+")
+        out_f.writelines(cmds)
+
+def clean_dfy_project(project):
+    assert project.framework == FrameworkName.DAFNY
+    src_dir = project.get_plain_dir()
+    dst_dir = project.clean_dirs[Z3_4_11_2]
+
+    for in_path in tqdm(list_smt2_files(src_dir)):
+        out_path = convert_path(in_path, src_dir, dst_dir)
+        cmds = read_standard_cmds(in_path)
+        open(out_path, "w+").writelines(cmds)
+
+clean_dfy_project(D_LVBKV)
+
+# def subprocess_run(command, time_limit, debug=False, cwd=None):
+#     command = f"timeout {time_limit} " + command
+#     if debug:
+#         print(command)
+#     start_time = time.time()
+#     res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+#     # milliseconds
+#     elapsed = round((time.time() - start_time) * 1000)
+#     stdout = res.stdout.decode("utf-8").strip()
+#     stderr = res.stderr.decode("utf-8").strip()
+#     return stdout, stderr, elapsed

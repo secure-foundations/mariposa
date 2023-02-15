@@ -64,26 +64,29 @@ class ProjectConfig:
         self.framework = framework
         self._plain_dir = plain_dir
         assert (plain_dir.endswith("/"))
-        assert (os.path.exists(self._plain_dir))
+        if not os.path.exists(self._plain_dir):
+            print(f"[WARN] project {self.name} plain dir {self._plain_dir} does not exist!")
         self.clean_dirs = dict()
         self.orig_solver = orig_solver
 
     def get_plain_dir(self):
         return self._plain_dir
 
-    def assign_z3_dirs(self, dir):
-        assert (os.path.exists(dir))
-        assert (dir.endswith("/"))
+    def assign_z3_dirs(self, qdir):
+        if not os.path.exists(qdir):
+            print(f"[WARN] project {self.name} z3 dir {qdir} does not exist")
+        assert (qdir.endswith("/"))
         for solver in ALL_SOLVERS:
             if solver.brand == SolverBrand.Z3:
-                self.clean_dirs[solver] = dir
+                self.clean_dirs[solver] = qdir
 
-    def assign_cvc5_dirs(self, dir):
-        assert (os.path.exists(dir))
-        assert (dir.endswith("/"))
+    def assign_cvc5_dirs(self, qdir):
+        if not os.path.exists(qdir):
+            print(f"[WARN] project {self.name} z3 dir {qdir} does not exist")
+        assert (qdir.endswith("/"))
         for solver in ALL_SOLVERS:
             if solver.brand == SolverBrand.CVC5:
-                self.clean_dirs[solver] = dir
+                self.clean_dirs[solver] = qdir
 
     def __str__(self):
         solver_assigns = [f"{s}: {d}" for s, d in self.clean_dirs.items()]
@@ -132,5 +135,9 @@ D_FVBKV = ProjectConfig("d_frames_vbkv", FrameworkName.DAFNY, "data/d_frames_vbk
 D_FVBKV.assign_z3_dirs("data/d_frames_vbkv_z3_clean/")
 # D_FVBKV.assign_cvc5_dirs("data/d_frames_vbkv_cvc5_clean/")
 
+D_LVBKV = ProjectConfig("d_lvbkv", FrameworkName.DAFNY, "data/d_lvbkv_plain/", Z3_4_8_5)
+D_LVBKV.assign_z3_dirs("data/d_lvbkv_z3_clean/")
+
 FS_VWASM = ProjectConfig("fs_vwasm", FrameworkName.FSTAR, "data/fs_vwasm_plain/", Z3_4_8_5)
 FS_VWASM.assign_z3_dirs("data/fs_vwasm_z3_clean/")
+
