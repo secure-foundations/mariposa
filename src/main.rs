@@ -74,6 +74,28 @@ fn shuffle_asserts(commands: &mut Vec<concrete::Command>, seed: u64) {
     }
 }
 
+fn lower_shuffle_asserts(mut commands: Vec<concrete::Command>, seed: u64) -> Vec<concrete::Command> 
+{
+    let mut rng = ChaCha8Rng::seed_from_u64(seed);
+    let check_sat_index = &commands.iter().position(|x| 
+        matches!(x, concrete::Command::CheckSat { .. })).unwrap();
+
+    // truncate at the first check-sat
+    commands.truncate(*check_sat_index);
+
+    let (mut asserts, mut others): (_,Vec<_>) = commands
+        .into_iter()
+        .partition(|x|
+            matches!(x, concrete::Command::Assert { .. }));
+
+    (&mut asserts).shuffle(&mut rng);
+    others.append(&mut asserts);
+
+    // append a check-sat (the one above was truncated)
+    others.push(concrete::Command::CheckSat);
+    others
+}
+
 fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concrete::Command> {
     let randomization_space = BTreeMap::from([
         (visitors::SymbolKind::Variable, usize::MAX),
@@ -194,6 +216,8 @@ fn main() {
                 let solver_seed = manager.seed as u32;
                 manager.dump(&format!("(set-option :random-seed {solver_seed})\n"));
             };
+        } else if args.perturbation  == "lower-shuffle" {
+            commands = lower_shuffle_asserts(commands, manager.seed);
         }
         manager.dump_non_info_commands(&commands);
     }
