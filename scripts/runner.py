@@ -234,5 +234,6 @@ class Runner:
 
 if __name__ == '__main__':
     # cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2])
-    cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_4_2, Z3_4_6_0, Z3_4_8_5])
-    r = Runner(cfg)
+    # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_4_2, Z3_4_6_0, Z3_4_8_5])
+    cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_8_5, Z3_4_11_2])
+    # r = Runner(cfg, True)

@@ -119,7 +119,26 @@ def get_cursor():
 def zip_db():
     os.system(f"cd data && tar cvzf mariposa.db.tar.gz mariposa.db")
 
+# def import_tables():
+#     con, cur = get_cursor()
+#     cur.execute('ATTACH "data/mariposa2.db" as OTHER_DB;')
+#     tables = [
+#         "FS_DICE_z3_4_11_2",
+#         "FS_DICE_z3_4_4_2",
+#         "FS_DICE_z3_4_5_0",
+#         "FS_DICE_z3_4_6_0",
+#         "FS_DICE_z3_4_8_5"]
+#     for table_name in tables:
+#         create_experiment_table(cur, table_name)
+#         # cur.execute(f"SELECT COUNT(*) FROM OTHER_DB.{table}")
+#         cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
+#         print(cur.fetchall())
+#     con.commit()
+#     # print(cur.fetchall())
+#     con.close()
+
 if __name__ == "__main__":
+    # import_tables()
     if len(sys.argv) <= 1:
         show_tables()
     else:
