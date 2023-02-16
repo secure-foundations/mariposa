@@ -1,5 +1,16 @@
 from configs.projects import *
 
+class Mutation(str, Enum):
+    SHUFFLE = "shuffle"
+    RENAME = "rename"
+    SSEED = "sseed"
+    SMT_SEED = "smt_seed"
+    SAT_SEED = "sat_seed"
+    MIX_SEED = "mix_seed"
+
+    def __str__(self):
+        return str.__str__(self)
+
 class QueryExpConfig:
     def __init__(self, name, project):
         self.name = name
@@ -28,6 +39,8 @@ class QueryExpConfig:
 
         # confidence level
         self.confidence_level = 0.95
+
+        self.enabled_muts = [Mutation.SHUFFLE, Mutation.RENAME, Mutation.SSEED]
 
     def get_solver_table_name(self, solver):
         # assert (solver in self.samples)

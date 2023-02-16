@@ -12,13 +12,6 @@ from configs.experiments import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
-class Mutation(str, Enum):
-    SHUFFLE = "shuffle"
-    RENAME = "rename"
-    SSEED = "sseed"
-
-ALL_MUTS = [e.value for e in Mutation]
-
 def subprocess_run(command, time_limit, debug=False, cwd=None):
     command = f"timeout {time_limit} " + command
     if debug:
@@ -54,13 +47,14 @@ def parse_basic_output_cvc(output, error):
     return "error"
 
 class SolverTaskGroup:
-    def __init__(self, cfg, vanilla_path, solver):
+    def __init__(self, cfg, vanilla_path, solver, remove_mut):
         self.vanilla_path = vanilla_path
         self.mutant_paths = []
         self.solver = solver
         assert isinstance(cfg, QueryExpConfig)
         self.cfg = cfg
         self.table_name = cfg.get_solver_table_name(self.solver)
+        self.remove_mut = remove_mut
 
     def _sample_size_enough(self, veri_times, veri_results):
         sample_size = len(veri_times)
@@ -91,7 +85,7 @@ class SolverTaskGroup:
         else:
             assert (self.solver.brand == SolverBrand.CVC5)
             # --stats
-            command = f"{self.solver.path} {query_path} --tlimit={self.cfg.timeout * 1000}"
+            command = f"{self.solver.path} {query_path} --tlimit={self.cfg.timeout * 1000} --no-nl-cov --nl-ext=none --fmf-mbqi=none --no-mbqi --no-cbqi --no-cegqi"
 
         out, err, elapsed = subprocess_run(command, self.cfg.timeout + 1)
 
@@ -120,7 +114,7 @@ class SolverTaskGroup:
         veri_results = []
 
         for _ in range(self.cfg.max_mutants):
-            seed = random.randint(0, 0xffffffffffff)
+            seed = random.randint(0, 0xffffffffffffffff)
 
             file_name = f"{str(seed)}.{perturb}.smt2"
             mutant_path = gen_path_pre.replace("smt2", file_name)
@@ -134,8 +128,9 @@ class SolverTaskGroup:
 
             elapsed, rcode = self._run_single(mutant_path, perturb)
 
-            # remove mutant
-            os.system(f"rm {mutant_path}")
+            if self.remove_mut:
+                # remove mutant
+                os.system(f"rm {mutant_path}")
 
             veri_times.append(elapsed)
             if rcode == "unsat":
@@ -153,7 +148,7 @@ class SolverTaskGroup:
 
         gen_path_pre = "gen/" + self.table_name + "/" + self.vanilla_path[5::]
 
-        for perturb in ALL_MUTS:
+        for perturb in self.cfg.enabled_muts:
             self.run_pert_group(gen_path_pre, perturb)
 
 def run_group_tasks(queue):
@@ -166,7 +161,7 @@ def run_group_tasks(queue):
     print("worker exit")
 
 class Runner:
-    def __init__(self, cfg, override=False):
+    def __init__(self, cfg, override=False, remove_mut=True):
         assert isinstance(cfg, ExpConfig)
         self.__setup_tables(cfg, override)
 
@@ -176,10 +171,13 @@ class Runner:
         mp.set_start_method('spawn')
         self.task_queue = mp.Queue()
 
+        if not remove_mut:
+            print("[WARN] not removing generated mutant files!")
+
         for solver, queries in cfg.samples.items():
             print(f"loading tasks {str(solver)}")
             for query in tqdm(queries):
-                task = SolverTaskGroup(cfg.qcfg, query, solver)
+                task = SolverTaskGroup(cfg.qcfg, query, solver, remove_mut)
                 if self.__should_run_task(cfg.qcfg, cur, task):
                     self.task_queue.put(task)
         con.close()
@@ -220,10 +218,9 @@ class Runner:
 
     # check if enough data has been collected in previous runs
     def __should_run_task(self, cfg, cur, task):
-        threshold = cfg.min_mutants * len(ALL_MUTS)
+        threshold = cfg.min_mutants * len(cfg.enabled_muts)
         cur.execute(f"""SELECT COUNT(*) from {cfg.get_solver_table_name(task.solver)}
-            WHERE vanilla_path=?
-            """, (task.vanilla_path,))
+            WHERE vanilla_path=?""", (task.vanilla_path,))
         count = cur.fetchone()[0]
         if count == 0:
             return True
