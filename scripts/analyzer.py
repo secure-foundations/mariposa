@@ -5,6 +5,7 @@ import math
 from tqdm import tqdm
 import ast
 from datetime import datetime
+from matplotlib_venn import venn3
 
 from configs.projects import *
 from configs.experiments import *
@@ -175,9 +176,6 @@ def print_summary_data(cfgs):
         rows.append(row)
     print(rows)
 
-def print_md_row(row):
-    print("|" + "|".join(row) + "|")
-
 def analyze_sr(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
@@ -203,8 +201,9 @@ def analyze_sr(cfg):
                     unsolvable[perturb].add(row[1])
 
         muts = ["plain", "shuffle", "rename", "sseed"]
-        print_md_row([solver] + muts)
-        print("|:---------:" * (len(muts) + 1) + "|")
+        md_rows = []
+        md_rows.append(as_md_row([solver] + muts))
+        md_rows.append("|:---------:" * (len(muts) + 1) + "|")
 
         for p1 in muts:
             row = [p1]
@@ -213,14 +212,28 @@ def analyze_sr(cfg):
                 us2 = unsolvable[p2]
                 inter = len(us1.intersection(us2))
                 row.append(str(round(inter * 100 / len(us1), 2)))
-            print_md_row(row)
-        print("")
+            md_rows.append(as_md_row(row))
+        md_rows.append("")
+    print(md_rows)
     con.close()
+
+def as_md_row(row):
+    return "|" + "|".join(row) + "|"
+
+def as_md_table(table):
+    lines = [as_md_row(table[0])]
+    lines.append("|:---------:" * (len(table[0])) + "|")
+    for row in table[1:]:
+        lines.append(as_md_row(row))
+    lines.append("\n")
+    return "\n".join(lines)
 
 def analyze_tr(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
     print(cfg.get_project_name())
+
+    f = open("fig/cond_fail/" + summary_table_name + ".md", "w+")
 
     for i, solver in enumerate(cfg.samples):
         solver = str(solver)
@@ -242,21 +255,22 @@ def analyze_tr(cfg):
                     unsolvable[perturb].add(row[1])
 
         muts = ["plain", "shuffle", "rename", "sseed"]
-        print_md_row([solver] + muts)
-        print("|:---------:" * (len(muts) + 1) + "|")
+        table = [[solver] + [m + "(" + str(len(unsolvable[m])) + ")" for m in muts]]
 
         for p1 in muts:
-            row = [p1]
+            row = [p1 + "(" + str(len(unsolvable[p1])) + ")"]
             for p2 in muts:
                 us1 = unsolvable[p1]
                 us2 = unsolvable[p2]
                 inter = len(us1.intersection(us2))
+                if p1 == p2:
+                    row.append("-")
                 if len(us1) == 0:
-                    row.append("nan")
+                    row.append(f"nan")
                 else:
-                    row.append(str(round(inter * 100 / len(us1), 2)))
-            print_md_row(row)
-        print("")
+                    row.append(f"{inter}({str(round(inter * 100 / len(us1), 2))})")
+            table.append(row)
+        f.write(as_md_table(table))
     con.close()
 
 # def print_as_md_table(cfgs, summary_rows):
@@ -272,81 +286,79 @@ def analyze_tr(cfg):
 #             row.append(f"{str_percent(lp)}~{str_percent(hp)}, {str_percent(p)}")
 #         print("|" + "|".join(row) + "|")
 
+def dump_all(cfgs):
+    projects = [cfg.qcfg.project for  cfg in cfgs]
+    project_names = [cfg.get_project_name() for  cfg in cfgs]
+    solver_names = [str(s) for s in ALL_SOLVERS]
+
+    nan = np.nan
+
+    data = [[[0.38809831824062097, 1.6817593790426908, 4.139715394566624], [0.38809831824062097, 1.6817593790426908, 3.4928848641655885], [0.6468305304010349, 1.1642949547218628, 0.6468305304010349], [0.129366106080207, 0.7761966364812419, 2.5873221216041395], [0.517464424320828, 1.423027166882277, 4.786545924967658], [1.034928848641656, 1.034928848641656, 0]], [[2.044790652385589, 3.554040895813048, 4.284323271665044], [1.9474196689386563, 3.456669912366115, 4.33300876338851], [1.9474196689386563, 3.6514118792599803, 4.430379746835443], [6.815968841285297, 9.444985394352482, 6.621226874391431], [5.150631681243926, 8.309037900874635, 7.337220602526725], [85.34566699123661, 86.31937682570594, 1.2171372930866602]], [[1.483568075117371, 2.4976525821596245, 0.863849765258216], [1.5023474178403755, 2.3661971830985915, 0.7699530516431925], [0.9577464788732394, 1.9154929577464788, 1.0704225352112675], [nan, nan, nan], [1.6150234741784038, 4.356807511737089, 2.572769953051643], [nan, nan, nan]], [[1.6524216524216524, 1.8233618233618234, 0.17094017094017094], [1.7094017094017093, 1.8803418803418803, 0.11396011396011396], [2.507122507122507, 2.507122507122507, 0.05698005698005698], [2.507122507122507, 2.5641025641025643, 0.11396011396011396], [2.507122507122507, 2.6210826210826212, 0.11396011396011396], [nan, nan, nan]], [[3.5807291666666665, 4.4921875, 3.9713541666666665], [3.5807291666666665, 4.557291666666667, 4.296875], [3.7760416666666665, 4.427083333333333, 4.4921875], [2.6041666666666665, 3.2552083333333335, 3.125], [3.2552083333333335, 3.90625, 3.6458333333333335], [nan, nan, nan]]]
+
+    # # # print_as_md_table(data)
+    total = len(solver_names) * len(project_names)
+    barWidth = len(solver_names)/40
+    # fig = plt.subplots(figsize=(total, 8))
+    fig = plt.figure()
+
+    br = np.arange(len(solver_names))
+    br = [x - barWidth for x in br]
+
+    colors = [
+        "#FFB300", # Vivid Yellow
+        "#803E75", # Strong Purple
+        "#FF6800", # Vivid Orange
+        "#A6BDD7", # Very Light Blue
+        "#C10020", # Vivid Red
+        "#CEA262", # Grayish Yellow
+        "#817066", # Medium Gray
+    ]
+
+    for pi, project_row in enumerate(data):
+        lps = []
+        hps = []
+        br = [x + barWidth for x in br]
+        pcolor = colors[pi]
+        pds = []
+        patterns = []
+        for i, (lp, hp, p) in enumerate(project_row):
+            if np.isnan(lp):
+                lp = 0
+            if np.isnan(hp):
+                hp = 0
+            if not np.isnan(p):
+                pds.append(p)
+            else:
+                pds.append(-1)
+            if lp == hp and lp != 0:
+                plt.scatter(br[i], lp, marker='_', color=pcolor, s=80)
+            lps.append(lp)
+            hps.append(hp)
+            if projects[pi].orig_solver == ALL_SOLVERS[i]:
+                plt.bar(br[i], hp-lp, bottom=lp, width = barWidth, color=pcolor, edgecolor='black')
+                # patterns.append('\\')
+            else:
+                patterns.append(None)
+
+        hps_ = [hps[i] - lps[i] for i in range(len(hps))]
+        plt.bar(br, lps, width = barWidth, color=pcolor, alpha=0.20)
+        plt.bar(br, hps_, bottom=lps, width = barWidth, label=project_names[pi], color=pcolor)
+        plt.scatter(br, pds, marker='x', s=20, color='black')
+
+    plt.ylim(bottom=0, top=10)
+    plt.xlabel('solvers', fontsize = 15)
+    plt.ylabel('unstable ratios', fontsize = 15)
+    plt.xticks([r + barWidth for r in range(len(lps))], solver_names)
+    plt.legend()
+    plt.savefig("fig/all.png")
+
 cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG, D_FVBKV_Z3_CFG, FS_VWASM_CFG, FS_DICE_CFG]
 
-# for cfg in cfgs:
+for cfg in cfgs:
+    analyze_tr(cfg)
 #     analyze_sr(cfg)
 
 # analyze_sr(D_KOMODO_BASIC_CFG)
-# analyze_tr(D_KOMODO_BASIC_CFG)
-# print(cfg.qcfg.name)
+
 # build_summary_table(D_KOMODO_BASIC_CFG)
 # append_summary_table(cfg, Z3_4_6_0)
-
-# print_summary_data(cfgs)
-
-projects = [cfg.qcfg.project for  cfg in cfgs]
-project_names = [cfg.get_project_name() for  cfg in cfgs]
-solver_names = [str(s) for s in ALL_SOLVERS]
-
-nan = np.nan
-
-data = [[[0.38809831824062097, 1.6817593790426908, 4.139715394566624], [0.38809831824062097, 1.6817593790426908, 3.4928848641655885], [0.6468305304010349, 1.1642949547218628, 0.6468305304010349], [0.129366106080207, 0.7761966364812419, 2.5873221216041395], [0.517464424320828, 1.423027166882277, 4.786545924967658], [1.034928848641656, 1.034928848641656, 0]], [[2.044790652385589, 3.554040895813048, 4.284323271665044], [1.9474196689386563, 3.456669912366115, 4.33300876338851], [1.9474196689386563, 3.6514118792599803, 4.430379746835443], [6.815968841285297, 9.444985394352482, 6.621226874391431], [5.150631681243926, 8.309037900874635, 7.337220602526725], [85.34566699123661, 86.31937682570594, 1.2171372930866602]], [[1.483568075117371, 2.4976525821596245, 0.863849765258216], [1.5023474178403755, 2.3661971830985915, 0.7699530516431925], [0.9577464788732394, 1.9154929577464788, 1.0704225352112675], [nan, nan, nan], [1.6150234741784038, 4.356807511737089, 2.572769953051643], [nan, nan, nan]], [[1.6524216524216524, 1.8233618233618234, 0.17094017094017094], [1.7094017094017093, 1.8803418803418803, 0.11396011396011396], [2.507122507122507, 2.507122507122507, 0.05698005698005698], [2.507122507122507, 2.5641025641025643, 0.11396011396011396], [2.507122507122507, 2.6210826210826212, 0.11396011396011396], [nan, nan, nan]], [[3.5807291666666665, 4.4921875, 3.9713541666666665], [3.5807291666666665, 4.557291666666667, 4.296875], [3.7760416666666665, 4.427083333333333, 4.4921875], [2.6041666666666665, 3.2552083333333335, 3.125], [3.2552083333333335, 3.90625, 3.6458333333333335], [nan, nan, nan]]]
-
-# # # print_as_md_table(data)
-total = len(solver_names) * len(project_names)
-barWidth = len(solver_names)/40
-# fig = plt.subplots(figsize=(total, 8))
-fig = plt.figure()
-
-br = np.arange(len(solver_names))
-br = [x - barWidth for x in br]
-
-colors = [
-    "#FFB300", # Vivid Yellow
-    "#803E75", # Strong Purple
-    "#FF6800", # Vivid Orange
-    "#A6BDD7", # Very Light Blue
-    "#C10020", # Vivid Red
-    "#CEA262", # Grayish Yellow
-    "#817066", # Medium Gray
-]
-
-for pi, project_row in enumerate(data):
-    lps = []
-    hps = []
-    br = [x + barWidth for x in br]
-    pcolor = colors[pi]
-    pds = []
-    patterns = []
-    for i, (lp, hp, p) in enumerate(project_row):
-        if np.isnan(lp):
-            lp = 0
-        if np.isnan(hp):
-            hp = 0
-        if not np.isnan(p):
-            pds.append(p)
-        else:
-            pds.append(-1)
-        if lp == hp and lp != 0:
-            plt.scatter(br[i], lp, marker='_', color=pcolor, s=80)
-        lps.append(lp)
-        hps.append(hp)
-        ecolor = None
-        if projects[pi].orig_solver == ALL_SOLVERS[i]:
-            plt.bar(br[i], hp-lp, bottom=lp, width = barWidth, color=pcolor, edgecolor='black')
-            # patterns.append('\\')
-        else:
-            patterns.append(None)
-
-    hps_ = [hps[i] - lps[i] for i in range(len(hps))]
-    plt.bar(br, lps, width = barWidth, color=pcolor, alpha=0.20)
-    plt.bar(br, hps_, bottom=lps, width = barWidth, label=project_names[pi], color=pcolor)
-    plt.scatter(br, pds, marker='x', s=20, color='black')
-
-plt.ylim(bottom=0, top=10)
-plt.xlabel('solvers', fontsize = 15)
-plt.ylabel('unstable ratios', fontsize = 15)
-plt.xticks([r + barWidth for r in range(len(lps))], solver_names)
-plt.legend()
-plt.savefig("fig/all.png")
