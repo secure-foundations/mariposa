@@ -29,10 +29,10 @@ def parse_basic_output_z3(output):
         return "unsat"
     elif "sat" in output:
         return "sat"
-    elif "unknown" in output:
-        return "unknown"
     elif "timeout" in output:
         return "timeout"
+    elif "unknown" in output:
+        return "unknown"
     return "error"
 
 def parse_basic_output_cvc(output, error):
@@ -234,3 +234,4 @@ if __name__ == '__main__':
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_4_2, Z3_4_6_0, Z3_4_8_5])
     cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_8_5, Z3_4_11_2])
     # r = Runner(cfg, True)
+    pass

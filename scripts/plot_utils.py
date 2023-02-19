@@ -4,7 +4,7 @@ from matplotlib.pyplot import figure
 from matplotlib import ticker
 from scipy.stats import gaussian_kde
 import statistics
-import seaborn as sns
+# import seaborn as sns
 
 def get_cdf_pts(data):
     n = len(data)

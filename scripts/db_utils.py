@@ -138,7 +138,6 @@ def zip_db():
 #     con.close()
 
 if __name__ == "__main__":
-    # import_tables()
     if len(sys.argv) <= 1:
         show_tables()
     else:

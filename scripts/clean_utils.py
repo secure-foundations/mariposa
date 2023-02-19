@@ -82,11 +82,13 @@ def convert_path(src_path, src_dir, dst_dir):
     return dst_path
 
 STD_REMOVE_CMDS = {
-    "push",
-    "pop",
+    # "push",
+    # "pop",
     "echo",
     "set-option :rlimit",
-    "set-option :timeout"
+    "set-option :RLIMIT",
+    "set-option :timeout",
+    "set-option :TIMEOUT",
 }
 
 def read_standard_cmds(in_path):

@@ -141,3 +141,6 @@ D_LVBKV.assign_z3_dirs("data/d_lvbkv_z3_clean/")
 FS_VWASM = ProjectConfig("fs_vwasm", FrameworkName.FSTAR, "data/fs_vwasm_plain/", Z3_4_8_5)
 FS_VWASM.assign_z3_dirs("data/fs_vwasm_z3_clean/")
 
+FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, "data/fs_dice_plain/", Z3_4_8_5)
+FS_DICE.assign_z3_dirs("data/fs_dice_z3_clean/")
+
