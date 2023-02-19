@@ -176,46 +176,46 @@ def print_summary_data(cfgs):
         rows.append(row)
     print(rows)
 
-def analyze_sr(cfg):
-    con, cur = get_cursor()
-    summary_table_name = cfg.get_summary_table_name()
-    print(cfg.get_project_name())
+# def analyze_timeout(cfg):
+#     con, cur = get_cursor()
+#     summary_table_name = cfg.get_summary_table_name()
+#     print(cfg.get_project_name())
 
-    for i, solver in enumerate(cfg.samples):
-        solver = str(solver)
-        # print(solver, cfg.get_project_name())
-        res = cur.execute(f"""SELECT * FROM {summary_table_name}
-            WHERE solver = ?""", (solver, ))
-        rows = res.fetchall()
+#     for i, solver in enumerate(cfg.samples):
+#         solver = str(solver)
+#         # print(solver, cfg.get_project_name())
+#         res = cur.execute(f"""SELECT * FROM {summary_table_name}
+#             WHERE solver = ?""", (solver, ))
+#         rows = res.fetchall()
 
-        unsolvable = {p: set() for p in cfg.qcfg.enabled_muts}
-        unsolvable["plain"] = set()
+#         unsolvable = {p: set() for p in cfg.qcfg.enabled_muts}
+#         unsolvable["plain"] = set()
 
-        for row in rows:
-            if row[2] != "unsat":
-                unsolvable["plain"].add(row[1])
+#         for row in rows:
+#             if row[2] != "unsat":
+#                 unsolvable["plain"].add(row[1])
 
-            summaries = ast.literal_eval(row[4])
-            for (perturb, vres, _) in summaries:
-                if len(vres) != 0 and vres.count("unsat") == 0:
-                    unsolvable[perturb].add(row[1])
+#             summaries = ast.literal_eval(row[4])
+#             for (perturb, vres, _) in summaries:
+#                 if len(vres) != 0 and vres.count("unsat") == 0:
+#                     unsolvable[perturb].add(row[1])
 
-        muts = ["plain", "shuffle", "rename", "sseed"]
-        md_rows = []
-        md_rows.append(as_md_row([solver] + muts))
-        md_rows.append("|:---------:" * (len(muts) + 1) + "|")
+#         muts = ["plain", "shuffle", "rename", "sseed"]
+#         md_rows = []
+#         md_rows.append(as_md_row([solver] + muts))
+#         md_rows.append("|:---------:" * (len(muts) + 1) + "|")
 
-        for p1 in muts:
-            row = [p1]
-            for p2 in muts:
-                us1 = unsolvable[p1]
-                us2 = unsolvable[p2]
-                inter = len(us1.intersection(us2))
-                row.append(str(round(inter * 100 / len(us1), 2)))
-            md_rows.append(as_md_row(row))
-        md_rows.append("")
-    print(md_rows)
-    con.close()
+#         for p1 in muts:
+#             row = [p1]
+#             for p2 in muts:
+#                 us1 = unsolvable[p1]
+#                 us2 = unsolvable[p2]
+#                 inter = len(us1.intersection(us2))
+#                 row.append(str(round(inter * 100 / len(us1), 2)))
+#             md_rows.append(as_md_row(row))
+#         md_rows.append("")
+#     print(md_rows)
+#     con.close()
 
 def as_md_row(row):
     return "|" + "|".join(row) + "|"
@@ -228,7 +228,7 @@ def as_md_table(table):
     lines.append("\n")
     return "\n".join(lines)
 
-def analyze_tr(cfg):
+def analyze_cond_fail(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
     print(cfg.get_project_name())
@@ -246,12 +246,12 @@ def analyze_tr(cfg):
         unsolvable["plain"] = set()
 
         for row in rows:
-            if row[2] == "timeout":
+            if row[2] != "unsat":
                 unsolvable["plain"].add(row[1])
 
             summaries = ast.literal_eval(row[4])
             for (perturb, vres, _) in summaries:
-                if len(vres) != 0 and vres.count("timeout") == len(vres):
+                if len(vres) != 0 and vres.count("unsat") ==0:
                     unsolvable[perturb].add(row[1])
 
         muts = ["plain", "shuffle", "rename", "sseed"]
@@ -355,7 +355,7 @@ def dump_all(cfgs):
 cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG, D_FVBKV_Z3_CFG, FS_VWASM_CFG, FS_DICE_CFG]
 
 for cfg in cfgs:
-    analyze_tr(cfg)
+    analyze_cond_fail(cfg)
 #     analyze_sr(cfg)
 
 # analyze_sr(D_KOMODO_BASIC_CFG)
