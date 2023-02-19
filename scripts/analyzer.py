@@ -265,7 +265,7 @@ def analyze_cond_fail(cfg):
                 inter = len(us1.intersection(us2))
                 if p1 == p2:
                     row.append("-")
-                if len(us1) == 0:
+                elif len(us1) == 0:
                     row.append(f"nan")
                 else:
                     row.append(f"{inter}({str(round(inter * 100 / len(us1), 2))})")
