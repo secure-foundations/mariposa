@@ -1,13 +1,22 @@
+
+## Feb 21th:
+
+* DICE* results
+* overall figure
+* z3 seed option difference
+* shuffle experiment
+* cvc nl arith option
+* unsolvable correlation
+* time varaince on stable queries
+
 ## Feb 14th:
 
-Tentative agenda:
 * update on F* project exports
 * present the summary graph
 * advanced shuffling?
 
 ## Feb 7th:
 
-Tentative agenda:
 * present some initial analysis on the current experiments 
    * time varaince cdf
    * sucess rate cdf
