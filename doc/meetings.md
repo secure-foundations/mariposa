@@ -1,6 +1,7 @@
 
 ## Feb 21th:
 
+* database schema updates
 * DICE* results
 * overall figure
 * z3 seed option difference
@@ -8,6 +9,7 @@
 * cvc nl arith option
 * unsolvable correlation
 * time varaince on stable queries
+* what should be considered unsolvable?
 
 ## Feb 14th:
 
