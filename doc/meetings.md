@@ -8,15 +8,15 @@ present:
 * overall figure
 * z3 seed option difference
 * shuffle experiment
-* cvc nl arith option
+* cvc nl arith option (14% -> 22%)
 * unsolvable correlation
 * time varaince on stable queries
-* average time on unstable queries
+* average time on unstable queries (15s jump in df vbkv？)
 
 discuss:
 * what should be considered unsolvable? 
   * current: the intersection of everything (the original and the mutant all failed).
-  * alterative: just the plain result as predictor of solvability (?) the overall picture can inlcude the plain performance as well.
+  * alterative: the plain result as predictor of solvability (?) the overall picture can inlcude the plain performance as well.
 
 proposed changes:
  * use 40 seconds timeouts, cut off (say 30s) post experiment is adjustable  
