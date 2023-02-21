@@ -1,6 +1,8 @@
 
 ## Feb 21th:
 
+present:
+
 * database schema updates
 * DICE* results
 * overall figure
@@ -10,10 +12,15 @@
 * unsolvable correlation
 * time varaince on stable queries
 * average time on unstable queries
+
+discuss:
 * what should be considered unsolvable? 
   * current: the intersection of everything (the original and the mutant all failed).
   * alterative: just the plain result as predictor of solvability (?) the overall picture can inlcude the plain performance as well.
-* use 40 seconds timeouts, cut off (say 30s) post experiment is adjustable  
+
+proposed changes:
+ * use 40 seconds timeouts, cut off (say 30s) post experiment is adjustable  
+ * use both sat-seed and smt-seed for randomization options
 
 ## Feb 14th:
 
