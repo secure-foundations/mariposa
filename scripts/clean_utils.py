@@ -1,7 +1,14 @@
 import re
 from tqdm import tqdm
-import time
-import subprocess
+import os
+
+def list_smt2_files(sub_root):
+    file_paths = []
+    for root, _, files in os.walk(sub_root):
+        for file in files:
+            if file.endswith(".smt2"):
+                file_paths.append(os.path.join(root, file))
+    return file_paths
 
 SPACED_CMD = re.compile("\(( +)[a-z]+")
 def remove_cmd_space(cmd):
@@ -88,6 +95,7 @@ STD_REMOVE_CMDS = {
     "set-option :RLIMIT",
     "set-option :timeout",
     "set-option :TIMEOUT",
+    "set-option :fixedpoint.TIMEOUT",
 }
 
 def read_standard_cmds(in_path):
@@ -117,10 +125,8 @@ def replace_fs_fuel(commands):
     assert replaced
     return commands
 
-def clean_fs_project(project):
-    assert project.framework == FrameworkName.FSTAR
+def clean_fs_project(project, dst_dir):
     src_dir = project.get_plain_dir()
-    dst_dir = project.clean_dirs[str(Z3_4_11_2)]
 
     for in_path in tqdm(list_smt2_files(src_dir)):
         cmds = read_standard_cmds(in_path)
@@ -130,19 +136,13 @@ def clean_fs_project(project):
         out_f = open(out_path, "w+")
         out_f.writelines(cmds)
 
-def clean_dfy_project(project):
-    assert project.framework == FrameworkName.DAFNY
+def clean_dfy_project(project, dst_dir):
     src_dir = project.get_plain_dir()
-    dst_dir = project.clean_dirs[Z3_4_11_2]
 
     for in_path in tqdm(list_smt2_files(src_dir)):
         out_path = convert_path(in_path, src_dir, dst_dir)
         cmds = read_standard_cmds(in_path)
         open(out_path, "w+").writelines(cmds)
-
-if __name__ == '__main__':
-    from configs.projects import *
-    clean_dfy_project(D_KOMODO)
 
 # def subprocess_run(command, time_limit, debug=False, cwd=None):
 #     command = f"timeout {time_limit} " + command

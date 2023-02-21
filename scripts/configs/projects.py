@@ -1,6 +1,7 @@
 import os
 import random
 from enum import Enum
+from clean_utils import list_smt2_files
 
 # solver related
 class SolverBrand(Enum):
@@ -44,14 +45,6 @@ ALL_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2, CVC5_1_0_3]
 # ALL_SOLVERS = [SolverInfo(p) for p in os.listdir(SOLVER_BINS_DIR)]
 
 # project related
-
-def list_smt2_files(sub_root):
-    file_paths = []
-    for root, _, files in os.walk(sub_root):
-        for file in files:
-            if file.endswith(".smt2"):
-                file_paths.append(os.path.join(root, file))
-    return file_paths
 
 class FrameworkName(str, Enum):
     DAFNY = "dafny"
