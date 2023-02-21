@@ -209,6 +209,7 @@ def plot_time_mixed(cfg):
         for p in unsolvable:
             plot_csum(sp, unsolvable[p][1], label=p)
             sp.legend()
+        sp.set_title(f'{solver} time mixed query cumulative count')
     name = cfg.qcfg.name
     save_fig(figure, f"{name}", f"fig/time_mixed/{name}.png")
     con.close()
@@ -238,7 +239,7 @@ def plot_time_success(cfg):
             sp.plot(xs, ys, marker=",", label=p)
             sp.legend()
         sp.set_yscale("log")
-        # sp.set_xscale("log")
+        sp.set_title(f'{solver} success query time variance cdf')
     con.close()
     name = cfg.qcfg.name
     save_fig(figure, f"{name}", f"fig/time_success/{name}.png")
@@ -312,7 +313,7 @@ def dump_all(cfgs):
 
     # # # print_as_md_table(data)
     total = len(solver_names) * len(project_names)
-    barWidth = len(solver_names)/40
+    barWidth = len(solver_names)/50
     # fig = plt.subplots(figsize=(total, 8))
     fig = plt.figure()
 
@@ -363,17 +364,18 @@ def dump_all(cfgs):
     plt.ylim(bottom=0, top=15)
     plt.xlabel('solvers', fontsize = 15)
     plt.ylabel('unstable ratios', fontsize = 15)
-    plt.xticks([r + barWidth for r in range(len(lps))], solver_names)
+    plt.xticks([r + barWidth for r in range(len(lps))], solver_names, rotation=30, ha='right')
     plt.legend()
-    plt.savefig("fig/all.png")
+    plt.tight_layout()
+    plt.savefig("fig/all.pdf")
 
 cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG, D_FVBKV_Z3_CFG, FS_VWASM_CFG, D_LVBKV_CFG, FS_DICE_CFG]
 
 # dump_all(cfgs)
 # print_summary_data(cfgs)
-# for cfg in cfgs:
-#     plot_time_mixed(cfg)
-#     plot_time_success(cfg)
+for cfg in cfgs:
+    plot_time_mixed(cfg)
+    plot_time_success(cfg)
 
 # build_summary_table(D_KOMODO_BASIC_CFG)
 # append_summary_table(cfg, Z3_4_6_0)
