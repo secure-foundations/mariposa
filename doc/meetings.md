@@ -9,7 +9,11 @@
 * cvc nl arith option
 * unsolvable correlation
 * time varaince on stable queries
-* what should be considered unsolvable?
+* average time on unstable queries
+* what should be considered unsolvable? 
+  * current: the intersection of everything (the original and the mutant all failed).
+  * alterative: just the plain result as predictor of solvability (?) the overall picture can inlcude the plain performance as well.
+* use 40 seconds timeouts, cut off (say 30s) post experiment is adjustable  
 
 ## Feb 14th:
 
