@@ -14,10 +14,6 @@ run cvc5 on F* projects
 |s_komodo|0.39%~1.68%, 4.14%|0.39%~1.68%, 3.49%|0.65%~1.16%, 0.65%|0.13%~0.78%, 2.59%|0.52%~1.42%, 4.79%|1.03%~1.03%, 0%|
 |d_komodo|2.04%~3.55%, 4.28%|1.95%~3.46%, 4.33%|1.95%~3.65%, 4.43%|6.82%~9.44%, 6.62%|5.15%~8.31%, 7.34%|85.35%~86.32%, 1.22%|
 
-cvc5 options to speed up queries (auto-config)
-
-figure out which option is making z3 fast
-
 
 ## Query Collection Tasks:
 
