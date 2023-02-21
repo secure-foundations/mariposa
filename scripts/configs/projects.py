@@ -59,14 +59,15 @@ class FrameworkName(str, Enum):
     FSTAR = "fstar"
 
 class ProjectConfig:
-    def __init__(self, name, framework, plain_dir, orig_solver):
+    def __init__(self, name, framework, orig_solver):
         self.name = name
         self.framework = framework
-        self._plain_dir = plain_dir
-        assert (plain_dir.endswith("/"))
+        self._plain_dir = f"data/{name}_plain/"
         if not os.path.exists(self._plain_dir):
             print(f"[WARN] project {self.name} plain dir {self._plain_dir} does not exist")
         self.clean_dirs = dict()
+        self.assign_z3_dirs(self._plain_dir.replace("_plain", "_z3_clean"))
+        # self.assign_cvc5_dirs(self._plain_dir.replace("_plain", "_cvc5_clean"))
         self.orig_solver = orig_solver
 
     def get_plain_dir(self):
@@ -87,15 +88,6 @@ class ProjectConfig:
         for solver in ALL_SOLVERS:
             if solver.brand == SolverBrand.CVC5:
                 self.clean_dirs[solver] = qdir
-
-    def __str__(self):
-        solver_assigns = [f"{s}: {d}" for s, d in self.clean_dirs.items()]
-        solver_assigns = "\n".join(solver_assigns)
-        s = f"""{self.name} {self.framework}
-{self._plain_dir}
-{solver_assigns}
-"""
-        return s
 
     # independently sample for each unique directory (NOT for each solver!)
     # because we can't guarantee the same query name exists
@@ -121,26 +113,3 @@ class ProjectConfig:
             samples[solver] = dir_samples[dir]
 
         return samples
-
-S_KOMODO = ProjectConfig("s_komodo", FrameworkName.SERVAL, "data/s_komodo_plain/", Z3_4_4_2)
-# all solvers use the clean set
-S_KOMODO.assign_cvc5_dirs("data/s_komodo_clean/")
-S_KOMODO.assign_z3_dirs("data/s_komodo_clean/")
-
-D_KOMODO = ProjectConfig("d_komodo", FrameworkName.DAFNY, "data/d_komodo_plain/", Z3_4_5_0)
-D_KOMODO.assign_z3_dirs("data/d_komodo_z3_clean/")
-D_KOMODO.assign_cvc5_dirs("data/d_komodo_cvc5_clean/")
-
-D_FVBKV = ProjectConfig("d_frames_vbkv", FrameworkName.DAFNY, "data/d_frames_vbkv_plain/", Z3_4_6_0)
-D_FVBKV.assign_z3_dirs("data/d_frames_vbkv_z3_clean/")
-# D_FVBKV.assign_cvc5_dirs("data/d_frames_vbkv_cvc5_clean/")
-
-D_LVBKV = ProjectConfig("d_lvbkv", FrameworkName.DAFNY, "data/d_lvbkv_plain/", Z3_4_8_5)
-D_LVBKV.assign_z3_dirs("data/d_lvbkv_z3_clean/")
-
-FS_VWASM = ProjectConfig("fs_vwasm", FrameworkName.FSTAR, "data/fs_vwasm_plain/", Z3_4_8_5)
-FS_VWASM.assign_z3_dirs("data/fs_vwasm_z3_clean/")
-
-FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, "data/fs_dice_plain/", Z3_4_8_5)
-FS_DICE.assign_z3_dirs("data/fs_dice_z3_clean/")
-

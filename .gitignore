@@ -16,5 +16,5 @@ share
 .vscode/
 pyvenv.cfg
 data/*
-!data/mariposa.db.tar.gz
+!data/*.lrz
 temp

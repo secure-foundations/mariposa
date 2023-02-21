@@ -7,6 +7,8 @@ import numpy as np
 import math
 
 from db_utils import *
+from configs.projects import *
+from configs.experiments import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
@@ -226,13 +228,3 @@ class Runner:
             print(f"we should run {task.vanilla_path} with {task.solver}")
             return True
         return False
-
-if __name__ == '__main__':
-    from configs.projects import *
-    from configs.experiments import *
-
-    # cfg = ExpConfig("D_FVBKV_Z3", D_FVBKV, [Z3_4_4_2])
-    cfg = ExpConfig("D_KOMODO_SHUFFLE", D_KOMODO, [Z3_4_11_2], 10)
-    cfg.qcfg.enabled_muts = [Mutation.LOWER_SHUFFLE, Mutation.SHUFFLE]
-    # cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_8_5, Z3_4_11_2])
-    r = Runner(cfg, True, False)
