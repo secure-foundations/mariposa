@@ -1,13 +1,35 @@
+
+## Feb 21th:
+
+present:
+
+* database schema updates
+* DICE* results
+* overall figure
+* z3 seed option difference
+* shuffle experiment
+* cvc nl arith option
+* unsolvable correlation
+* time varaince on stable queries
+* average time on unstable queries
+
+discuss:
+* what should be considered unsolvable? 
+  * current: the intersection of everything (the original and the mutant all failed).
+  * alterative: just the plain result as predictor of solvability (?) the overall picture can inlcude the plain performance as well.
+
+proposed changes:
+ * use 40 seconds timeouts, cut off (say 30s) post experiment is adjustable  
+ * use both sat-seed and smt-seed for randomization options
+
 ## Feb 14th:
 
-Tentative agenda:
 * update on F* project exports
 * present the summary graph
 * advanced shuffling?
 
 ## Feb 7th:
 
-Tentative agenda:
 * present some initial analysis on the current experiments 
    * time varaince cdf
    * sucess rate cdf
