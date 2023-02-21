@@ -7,6 +7,7 @@ class Mutation(str, Enum):
     SMT_SEED = "smt_seed"
     SAT_SEED = "sat_seed"
     MIX_SEED = "mix_seed"
+    LOWER_SHUFFLE = "lower_shuffle"
 
     def __str__(self):
         return str.__str__(self)

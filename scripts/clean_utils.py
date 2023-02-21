@@ -1,6 +1,5 @@
 import re
 from tqdm import tqdm
-from configs.projects import *
 import time
 import subprocess
 
@@ -141,7 +140,9 @@ def clean_dfy_project(project):
         cmds = read_standard_cmds(in_path)
         open(out_path, "w+").writelines(cmds)
 
-clean_dfy_project(D_LVBKV)
+if __name__ == '__main__':
+    from configs.projects import *
+    clean_dfy_project(D_KOMODO)
 
 # def subprocess_run(command, time_limit, debug=False, cwd=None):
 #     command = f"timeout {time_limit} " + command
