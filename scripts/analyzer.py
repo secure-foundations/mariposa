@@ -85,7 +85,7 @@ def build_summary_table(cfg):
     for solver in cfg.samples:
         append_summary_table(cfg, solver)
 
-def plot_overall_time(cfg):
+def plot_time_overall(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
     upper_bounds = dict()
@@ -108,11 +108,11 @@ def plot_overall_time(cfg):
         bound = plot_time_variance_cdfs(aixs[i], dists, dists2, solver)
         upper_bounds[solver] = bound
     con.close()
-    name = cfg.get_project_name()
-    save_fig(figure, f"{name}", f"fig/overall_time/{name}.png")
+    name = cfg.qcfg.name
+    save_fig(figure, f"{name}", f"fig/time_overall/{name}.png")
     return upper_bounds
 
-def plot_overall_result(cfg):
+def plot_result_overall(cfg):
     con, cur = get_cursor()
     intervals = dict()
     summary_table_name = cfg.get_summary_table_name()
@@ -134,7 +134,7 @@ def plot_overall_result(cfg):
         intervals[solver] = interval
     con.close()
     name = cfg.qcfg.name
-    save_fig(figure, f"{name}", f"fig/overall_result/{name}.png")
+    save_fig(figure, f"{name}", f"fig/result_overall/{name}.png")
     return intervals
 
 # def str_percent(p):
@@ -145,16 +145,13 @@ def plot_overall_result(cfg):
 # def str_interval(interval):
 #     return f"{str_percent(interval[0])}, {str_percent(interval[1])}"
 
-def analyze_unstable_table(cfg):
-    intervals = plot_overall_time(cfg)
-    bounds = plot_overall_result(cfg)
-    return (intervals, bounds)
-
 def print_summary_data(cfgs):
     rows = []
     for cfg in cfgs:
+        # print(cfg.get_project_name())
         row = []
-        intervals, bounds = analyze_unstable_table(cfg)
+        intervals = plot_result_overall(cfg)
+        bounds = plot_time_overall(cfg)
         for solver in ALL_SOLVERS:
             item = [np.nan, np.nan, np.nan]
             if solver in intervals:
@@ -182,12 +179,9 @@ def get_percent(a, b):
         return np.nan
     return round(a * 100 / b, 2)
 
-def analyze_cond_to(cfg):
+def plot_time_mixed(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
-    print(cfg.get_project_name())
-
-    # f = open("fig/cond_fail/" + summary_table_name + ".md", "w+")
 
     figure, axis = setup_fig(len(cfg.samples), 1)
 
@@ -200,31 +194,54 @@ def analyze_cond_to(cfg):
         sp = axis[i]
 
         unsolvable = {p: [0, []] for p in cfg.qcfg.enabled_muts}
-        toc = 0
         for row in rows:
-            toc += 1
             summaries = ast.literal_eval(row[4])
             for (perturb, vres, times) in summaries:
-                if len(vres) == 0:
+                assert len(times) == len(vres)
+                if vres.count("timeout") == 0:
                     continue
                 nt_times = []
-                assert len(times) == len(vres)
-                # if vres.count("timeout") == len(vres):
-                #     unsolvable[perturb][0] += 1
-                if vres.count("timeout") != 0:
-                    for i, r in enumerate(vres):
-                        if r != "timeout":
-                            nt_times.append(times[i])
-                    if len(nt_times) != 0:
-                        unsolvable[perturb][1].append(round(np.mean(nt_times) / 1000, 2))
-        # print(solver)
+                for i, r in enumerate(vres):
+                    if r != "timeout":
+                        nt_times.append(times[i])
+                if len(nt_times) != 0:
+                    unsolvable[perturb][1].append(round(np.mean(nt_times) / 1000, 2))
         for p in unsolvable:
-            # print(p, end=" ")
-            # print(unsolvable[p][1])
             plot_csum(sp, unsolvable[p][1], label=p)
             sp.legend()
-    save_fig(figure, f"{solver, toc}", f"fig/mixed_time_{cfg.get_project_name()}.png")
+    name = cfg.qcfg.name
+    save_fig(figure, f"{name}", f"fig/time_mixed/{name}.png")
     con.close()
+
+def plot_time_success(cfg):
+    con, cur = get_cursor()
+    summary_table_name = cfg.get_summary_table_name()
+
+    figure, axis = setup_fig(len(cfg.samples), 1)
+
+    for i, solver in enumerate(cfg.samples):
+        solver = str(solver)
+        res = cur.execute(f"""SELECT * FROM {summary_table_name}
+            WHERE solver = ?""", (solver, ))
+        rows = res.fetchall()
+        sp = axis[i]
+
+        stds = cfg.empty_muts_map()
+
+        for row in rows:
+            summaries = ast.literal_eval(row[4])
+            for (perturb, vres, times) in summaries:
+                if len(vres) != 0 and vres.count("unsat") == len(vres):
+                    stds[perturb].append(np.std(times) / 1000)
+        for p in stds:
+            xs, ys = get_cdf_pts(stds[p])
+            sp.plot(xs, ys, marker=",", label=p)
+            sp.legend()
+        sp.set_yscale("log")
+        # sp.set_xscale("log")
+    con.close()
+    name = cfg.qcfg.name
+    save_fig(figure, f"{name}", f"fig/time_success/{name}.png")
 
 def analyze_cond_fail(cfg):
     con, cur = get_cursor()
@@ -271,39 +288,6 @@ def analyze_cond_fail(cfg):
         f.write(as_md_table(table))
     con.close()
 
-def analyze_cond_success(cfg):
-    con, cur = get_cursor()
-    summary_table_name = cfg.get_summary_table_name()
-    print(cfg.get_project_name())
-
-    figure, axis = setup_fig(len(cfg.samples), 1)
-
-    for i, solver in enumerate(cfg.samples):
-        solver = str(solver)
-        # print(solver, cfg.get_project_name())
-        res = cur.execute(f"""SELECT * FROM {summary_table_name}
-            WHERE solver = ?""", (solver, ))
-        rows = res.fetchall()
-        sp = axis[i]
-
-        stds = {p: [] for p in cfg.qcfg.enabled_muts}
-
-        for row in rows:
-            summaries = ast.literal_eval(row[4])
-            for (perturb, vres, times) in summaries:
-                if len(vres) != 0 and vres.count("unsat") == len(vres):
-                    stds[perturb].append(np.std(times) / 1000)
-        for p in stds:
-            # print(p, end=" ")
-            # print(unsolvable[p][1])
-            xs, ys = get_cdf_pts(stds[p])
-            sp.plot(xs, ys, marker=",", label=p)
-            sp.legend()
-        sp.set_yscale("log")
-        # sp.set_xscale("log")
-    con.close()
-    save_fig(figure, f"{solver}", f"fig/succ_var_{cfg.get_project_name()}.png")
-
 # def print_as_md_table(cfgs, summary_rows):
 #     solver_names = [str(s) for s in ALL_SOLVERS]
 #     project_names = [cfg.get_project_name() for  cfg in cfgs]
@@ -324,7 +308,7 @@ def dump_all(cfgs):
 
     nan = np.nan
 
-    data = [[[0.38809831824062097, 1.6817593790426908, 4.139715394566624], [0.38809831824062097, 1.6817593790426908, 3.4928848641655885], [0.6468305304010349, 1.1642949547218628, 0.6468305304010349], [0.129366106080207, 0.7761966364812419, 2.5873221216041395], [0.517464424320828, 1.423027166882277, 4.786545924967658], [1.034928848641656, 1.034928848641656, 0]], [[2.044790652385589, 3.554040895813048, 4.284323271665044], [1.9474196689386563, 3.456669912366115, 4.33300876338851], [1.9474196689386563, 3.6514118792599803, 4.430379746835443], [6.815968841285297, 9.444985394352482, 6.621226874391431], [5.150631681243926, 8.309037900874635, 7.337220602526725], [85.34566699123661, 86.31937682570594, 1.2171372930866602]], [[1.483568075117371, 2.4976525821596245, 0.863849765258216], [1.5023474178403755, 2.3661971830985915, 0.7699530516431925], [0.9577464788732394, 1.9154929577464788, 1.0704225352112675], [nan, nan, nan], [1.6150234741784038, 4.356807511737089, 2.572769953051643], [nan, nan, nan]], [[1.6524216524216524, 1.8233618233618234, 0.17094017094017094], [1.7094017094017093, 1.8803418803418803, 0.11396011396011396], [2.507122507122507, 2.507122507122507, 0.05698005698005698], [2.507122507122507, 2.5641025641025643, 0.11396011396011396], [2.507122507122507, 2.6210826210826212, 0.11396011396011396], [nan, nan, nan]], [[3.5807291666666665, 4.4921875, 3.9713541666666665], [3.5807291666666665, 4.557291666666667, 4.296875], [3.7760416666666665, 4.427083333333333, 4.4921875], [2.6041666666666665, 3.2552083333333335, 3.125], [3.2552083333333335, 3.90625, 3.6458333333333335], [nan, nan, nan]]]
+    data = [[[0.38809831824062097, 1.6817593790426908, 4.139715394566624], [0.38809831824062097, 1.6817593790426908, 3.4928848641655885], [0.6468305304010349, 1.1642949547218628, 0.6468305304010349], [0.129366106080207, 0.7761966364812419, 2.5873221216041395], [0.517464424320828, 1.423027166882277, 4.786545924967658], [1.034928848641656, 1.034928848641656, 0]], [[2.044790652385589, 3.554040895813048, 4.284323271665044], [1.9474196689386563, 3.456669912366115, 4.33300876338851], [1.9474196689386563, 3.6514118792599803, 4.430379746835443], [6.815968841285297, 9.444985394352482, 6.621226874391431], [5.150631681243926, 8.309037900874635, 7.337220602526725], [85.34566699123661, 86.31937682570594, 1.2171372930866602]], [[1.483568075117371, 2.4976525821596245, 0.863849765258216], [1.5023474178403755, 2.3661971830985915, 0.7699530516431925], [0.9577464788732394, 1.9154929577464788, 1.0704225352112675], [nan, nan, nan], [1.6150234741784038, 4.356807511737089, 2.572769953051643], [nan, nan, nan]], [[1.6524216524216524, 1.8233618233618234, 0.17094017094017094], [1.7094017094017093, 1.8803418803418803, 0.11396011396011396], [2.507122507122507, 2.507122507122507, 0.05698005698005698], [2.507122507122507, 2.5641025641025643, 0.11396011396011396], [2.507122507122507, 2.6210826210826212, 0.11396011396011396], [nan, nan, nan]], [[1.4642857142857142, 2.1607142857142856, 1.7142857142857142], [nan, nan, nan], [nan, nan, nan], [1.1607142857142858, 1.9464285714285714, 1.625], [1.5357142857142858, 5.071428571428571, 5.428571428571429], [nan, nan, nan]], [[3.5807291666666665, 4.4921875, 3.9713541666666665], [3.5807291666666665, 4.557291666666667, 4.296875], [3.7760416666666665, 4.427083333333333, 4.4921875], [2.6041666666666665, 3.2552083333333335, 3.125], [3.2552083333333335, 3.90625, 3.6458333333333335], [nan, nan, nan]]]
 
     # # # print_as_md_table(data)
     total = len(solver_names) * len(project_names)
@@ -383,14 +367,13 @@ def dump_all(cfgs):
     plt.legend()
     plt.savefig("fig/all.png")
 
-# cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG, D_FVBKV_Z3_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG, D_FVBKV_Z3_CFG, FS_VWASM_CFG, D_LVBKV_CFG, FS_DICE_CFG]
 
-# for cfg in cfgs:
-#     analyze_cond_success(cfg)
-#     analyze_cond_fail(cfg)
-#     analyze_sr(cfg)
 # dump_all(cfgs)
-# analyze_sr(D_KOMODO_BASIC_CFG)
+# print_summary_data(cfgs)
+# for cfg in cfgs:
+#     plot_time_mixed(cfg)
+#     plot_time_success(cfg)
 
 # build_summary_table(D_KOMODO_BASIC_CFG)
 # append_summary_table(cfg, Z3_4_6_0)

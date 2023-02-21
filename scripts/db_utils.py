@@ -75,12 +75,12 @@ def zip_db():
     os.system(f"cd data && tar cvzf mariposa.db.tar.gz mariposa.db")
 
 def import_tables():
-    # con, cur = get_cursor()
-    # cur.execute('ATTACH "data/mariposa3.db" as OTHER_DB;')
-    # tables = [
-    #     "D_LVBKV_summary"]
+    con, cur = get_cursor()
+    cur.execute('ATTACH "data/mariposa3.db" as OTHER_DB;')
+    tables = [
+        "D_LVBKV_z3_4_11_2",
+        "D_LVBKV_z3_4_4_2"]
     # cur.execute(f"""DROP TABLE IF EXISTS D_LVBKV_summary""")
-
     # cur.execute(f"""CREATE TABLE D_LVBKV_summary (
     #     solver varchar(10),
     #     vanilla_path TEXT,
@@ -88,17 +88,15 @@ def import_tables():
     #     v_elapsed_milli INTEGER,
     #     summaries TEXT)""")
 
-    # for table_name in tables:
-    #     # create_experiment_table(cur, table_name)
-    #     # cur.execute(f"SELECT COUNT(*) FROM OTHER_DB.{table}")
-    #     cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
-    # con.commit()
-    # con.close()
+    for table_name in tables:
+        create_experiment_table(cur, table_name)
+        cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
+    con.commit()
+    con.close()
     pass
 
 if __name__ == "__main__":
     # import_tables()
-
     if len(sys.argv) <= 1:
         show_tables()
     else:
