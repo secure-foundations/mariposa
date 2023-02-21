@@ -216,10 +216,14 @@ fn main() {
                 let solver_seed = manager.seed as u32;
                 manager.dump(&format!("(set-option :random-seed {solver_seed})\n"));
             };
+        } else if args.perturbation == "rseed" {
+            let smt_seed = manager.seed as u32;
+            let sat_seed = (manager.seed >> 32) as u32;
+            manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
+            manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
         } else if args.perturbation  == "lower_shuffle" {
             commands = lower_shuffle_asserts(commands, manager.seed);
         }
         manager.dump_non_info_commands(&commands);
     }
 }
-
