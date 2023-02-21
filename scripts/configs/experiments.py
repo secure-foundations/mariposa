@@ -63,6 +63,10 @@ class ExpConfig:
     def get_project_name(self):
         return self.qcfg.project.name
 
+    def empty_muts_map(self):
+        m = {str(mut): [] for mut in self.qcfg.enabled_muts}
+        return m
+
     # def _check_queries_exist(self):
     #     dirs = [self.project.clean_dirs[str(solver)] for solver in self.solvers]
     #     enabled_dirs = set(dirs)

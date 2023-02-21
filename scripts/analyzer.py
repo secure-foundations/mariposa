@@ -5,7 +5,6 @@ import math
 from tqdm import tqdm
 import ast
 from datetime import datetime
-from matplotlib_venn import venn3
 
 from configs.projects import *
 from configs.experiments import *
@@ -86,21 +85,19 @@ def build_summary_table(cfg):
     for solver in cfg.samples:
         append_summary_table(cfg, solver)
 
-def plot_time_variance_cdf(cfg):
+def plot_overall_time(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
     upper_bounds = dict()
-    enabled_muts = cfg.qcfg.enabled_muts
-
-    figure, aixs = setup_fig(len(cfg.samples) + 1, 2)
+    figure, aixs = setup_fig(len(cfg.samples), 2)
     for i, solver in enumerate(cfg.samples):
         solver = str(solver)
         res = cur.execute(f"""SELECT * FROM {summary_table_name}
             WHERE solver = ?""", (solver, ))
         rows = res.fetchall()
 
-        dists = {str(mut): [] for mut in enabled_muts}
-        dists2 = {str(mut): [] for mut in enabled_muts}
+        dists = cfg.empty_muts_map()
+        dists2 = cfg.empty_muts_map()
 
         for row in rows:
             summaries = ast.literal_eval(row[4])
@@ -111,26 +108,22 @@ def plot_time_variance_cdf(cfg):
         bound = plot_time_variance_cdfs(aixs[i], dists, dists2, solver)
         upper_bounds[solver] = bound
     con.close()
-    count = i - 1
-    # count = len(dists["shuffle"])
-    name = cfg.qcfg.name
-    save_fig(figure, f"{name}({count})", f"fig/time_{name}.png")
+    name = cfg.get_project_name()
+    save_fig(figure, f"{name}", f"fig/overall_time/{name}.png")
     return upper_bounds
 
-def plot_success_rate_cdf(cfg):
+def plot_overall_result(cfg):
     con, cur = get_cursor()
     intervals = dict()
     summary_table_name = cfg.get_summary_table_name()
-    enabled_muts = cfg.qcfg.enabled_muts
-
-    figure, aixs = setup_fig(len(cfg.samples) + 1, 2)
+    figure, aixs = setup_fig(len(cfg.samples), 2)
     for i, solver in enumerate(cfg.samples):
         solver = str(solver)
         res = cur.execute(f"""SELECT * FROM {summary_table_name}
             WHERE solver = ?""", (solver, ))
         rows = res.fetchall()
 
-        dists = {str(mut): [] for mut in enabled_muts}
+        dists = cfg.empty_muts_map()
 
         for row in rows:
             summaries = ast.literal_eval(row[4])
@@ -140,25 +133,22 @@ def plot_success_rate_cdf(cfg):
         interval = plot_success_rate_cdfs(aixs[i], dists, solver)
         intervals[solver] = interval
     con.close()
-
-    count = i - 1
     name = cfg.qcfg.name
-    save_fig(figure, f"{name}({count})", f"fig/response_{name}.png")
+    save_fig(figure, f"{name}", f"fig/overall_result/{name}.png")
     return intervals
 
-def str_percent(p):
-    if np.isnan(p):
-        return "-"
-    return str(round(p, 2)) + "%"
+# def str_percent(p):
+#     if np.isnan(p):
+#         return "-"
+#     return str(round(p, 2)) + "%"
 
-def str_interval(interval):
-    return f"{str_percent(interval[0])}, {str_percent(interval[1])}"
+# def str_interval(interval):
+#     return f"{str_percent(interval[0])}, {str_percent(interval[1])}"
 
 def analyze_unstable_table(cfg):
-    intervals = plot_success_rate_cdf(cfg)
-    bounds = plot_time_variance_cdf(cfg)
+    intervals = plot_overall_time(cfg)
+    bounds = plot_overall_result(cfg)
     return (intervals, bounds)
-    # plot_time_cdf_comparison(cfg)
 
 def print_summary_data(cfgs):
     rows = []
@@ -176,47 +166,6 @@ def print_summary_data(cfgs):
         rows.append(row)
     print(rows)
 
-# def analyze_timeout(cfg):
-#     con, cur = get_cursor()
-#     summary_table_name = cfg.get_summary_table_name()
-#     print(cfg.get_project_name())
-
-#     for i, solver in enumerate(cfg.samples):
-#         solver = str(solver)
-#         # print(solver, cfg.get_project_name())
-#         res = cur.execute(f"""SELECT * FROM {summary_table_name}
-#             WHERE solver = ?""", (solver, ))
-#         rows = res.fetchall()
-
-#         unsolvable = {p: set() for p in cfg.qcfg.enabled_muts}
-#         unsolvable["plain"] = set()
-
-#         for row in rows:
-#             if row[2] != "unsat":
-#                 unsolvable["plain"].add(row[1])
-
-#             summaries = ast.literal_eval(row[4])
-#             for (perturb, vres, _) in summaries:
-#                 if len(vres) != 0 and vres.count("unsat") == 0:
-#                     unsolvable[perturb].add(row[1])
-
-#         muts = ["plain", "shuffle", "rename", "sseed"]
-#         md_rows = []
-#         md_rows.append(as_md_row([solver] + muts))
-#         md_rows.append("|:---------:" * (len(muts) + 1) + "|")
-
-#         for p1 in muts:
-#             row = [p1]
-#             for p2 in muts:
-#                 us1 = unsolvable[p1]
-#                 us2 = unsolvable[p2]
-#                 inter = len(us1.intersection(us2))
-#                 row.append(str(round(inter * 100 / len(us1), 2)))
-#             md_rows.append(as_md_row(row))
-#         md_rows.append("")
-#     print(md_rows)
-#     con.close()
-
 def as_md_row(row):
     return "|" + "|".join(row) + "|"
 
@@ -227,6 +176,55 @@ def as_md_table(table):
         lines.append(as_md_row(row))
     lines.append("\n")
     return "\n".join(lines)
+
+def get_percent(a, b):
+    if b == 0:
+        return np.nan
+    return round(a * 100 / b, 2)
+
+def analyze_cond_to(cfg):
+    con, cur = get_cursor()
+    summary_table_name = cfg.get_summary_table_name()
+    print(cfg.get_project_name())
+
+    # f = open("fig/cond_fail/" + summary_table_name + ".md", "w+")
+
+    figure, axis = setup_fig(len(cfg.samples), 1)
+
+    for i, solver in enumerate(cfg.samples):
+        solver = str(solver)
+        # print(solver, cfg.get_project_name())
+        res = cur.execute(f"""SELECT * FROM {summary_table_name}
+            WHERE solver = ?""", (solver, ))
+        rows = res.fetchall()
+        sp = axis[i]
+
+        unsolvable = {p: [0, []] for p in cfg.qcfg.enabled_muts}
+        toc = 0
+        for row in rows:
+            toc += 1
+            summaries = ast.literal_eval(row[4])
+            for (perturb, vres, times) in summaries:
+                if len(vres) == 0:
+                    continue
+                nt_times = []
+                assert len(times) == len(vres)
+                # if vres.count("timeout") == len(vres):
+                #     unsolvable[perturb][0] += 1
+                if vres.count("timeout") != 0:
+                    for i, r in enumerate(vres):
+                        if r != "timeout":
+                            nt_times.append(times[i])
+                    if len(nt_times) != 0:
+                        unsolvable[perturb][1].append(round(np.mean(nt_times) / 1000, 2))
+        # print(solver)
+        for p in unsolvable:
+            # print(p, end=" ")
+            # print(unsolvable[p][1])
+            plot_csum(sp, unsolvable[p][1], label=p)
+            sp.legend()
+    save_fig(figure, f"{solver, toc}", f"fig/mixed_time_{cfg.get_project_name()}.png")
+    con.close()
 
 def analyze_cond_fail(cfg):
     con, cur = get_cursor()
@@ -265,13 +263,46 @@ def analyze_cond_fail(cfg):
                 inter = len(us1.intersection(us2))
                 if p1 == p2:
                     row.append("-")
-                elif len(us1) == 0:
+                if len(us1) == 0:
                     row.append(f"nan")
                 else:
                     row.append(f"{inter}({str(round(inter * 100 / len(us1), 2))})")
             table.append(row)
         f.write(as_md_table(table))
     con.close()
+
+def analyze_cond_success(cfg):
+    con, cur = get_cursor()
+    summary_table_name = cfg.get_summary_table_name()
+    print(cfg.get_project_name())
+
+    figure, axis = setup_fig(len(cfg.samples), 1)
+
+    for i, solver in enumerate(cfg.samples):
+        solver = str(solver)
+        # print(solver, cfg.get_project_name())
+        res = cur.execute(f"""SELECT * FROM {summary_table_name}
+            WHERE solver = ?""", (solver, ))
+        rows = res.fetchall()
+        sp = axis[i]
+
+        stds = {p: [] for p in cfg.qcfg.enabled_muts}
+
+        for row in rows:
+            summaries = ast.literal_eval(row[4])
+            for (perturb, vres, times) in summaries:
+                if len(vres) != 0 and vres.count("unsat") == len(vres):
+                    stds[perturb].append(np.std(times) / 1000)
+        for p in stds:
+            # print(p, end=" ")
+            # print(unsolvable[p][1])
+            xs, ys = get_cdf_pts(stds[p])
+            sp.plot(xs, ys, marker=",", label=p)
+            sp.legend()
+        sp.set_yscale("log")
+        # sp.set_xscale("log")
+    con.close()
+    save_fig(figure, f"{solver}", f"fig/succ_var_{cfg.get_project_name()}.png")
 
 # def print_as_md_table(cfgs, summary_rows):
 #     solver_names = [str(s) for s in ALL_SOLVERS]
@@ -343,21 +374,22 @@ def dump_all(cfgs):
         hps_ = [hps[i] - lps[i] for i in range(len(hps))]
         plt.bar(br, lps, width = barWidth, color=pcolor, alpha=0.20)
         plt.bar(br, hps_, bottom=lps, width = barWidth, label=project_names[pi], color=pcolor)
-        plt.scatter(br, pds, marker='x', s=20, color='black')
+        plt.scatter(br, pds, marker='x', s=20, color='black', zorder=3)
 
-    plt.ylim(bottom=0, top=10)
+    plt.ylim(bottom=0, top=15)
     plt.xlabel('solvers', fontsize = 15)
     plt.ylabel('unstable ratios', fontsize = 15)
     plt.xticks([r + barWidth for r in range(len(lps))], solver_names)
     plt.legend()
     plt.savefig("fig/all.png")
 
-cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG, D_FVBKV_Z3_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+# cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG, D_FVBKV_Z3_CFG, FS_VWASM_CFG, FS_DICE_CFG]
 
-for cfg in cfgs:
-    analyze_cond_fail(cfg)
+# for cfg in cfgs:
+#     analyze_cond_success(cfg)
+#     analyze_cond_fail(cfg)
 #     analyze_sr(cfg)
-
+# dump_all(cfgs)
 # analyze_sr(D_KOMODO_BASIC_CFG)
 
 # build_summary_table(D_KOMODO_BASIC_CFG)

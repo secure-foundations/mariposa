@@ -6,51 +6,6 @@ from tqdm import tqdm
 
 DB_PATH = "data/mariposa.db"
 
-# def reload_vanilla_queries_table():
-#     con = sqlite3.connect(DB_PATH)
-#     cur = con.cursor()
-
-#     cur.execute("""DROP TABLE vanilla_queries""")
-#     cur.execute("""CREATE TABLE vanilla_queries(
-#         query_path varchar(255) NOT NULL,
-#         project varchar(255) NOT NULL,
-#         status varchar(10),
-#         PRIMARY KEY (query_path))""")
-
-#     print("loading " + PNAME_SERVAL_KOMODO)
-#     for path in tqdm(list_smt2_files(SKOMODO_CLEAN_DIR)):
-#         cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
-#             VALUES(?, ?, 'unsat');""", (path, PNAME_SERVAL_KOMODO))
-    
-#     # print("loading " + PNAME_DAFNY_TESTS)
-
-#     # for path in tqdm(list_smt2_files(DFY_CLEAN_DIR)):
-#     #     cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
-#     #         VALUES(?, ?, 'unsat');""", (path, PNAME_DAFNY_TESTS))
-
-#     # print("loading " + PNAME_SMTLIB)
-
-#     # for path in tqdm(list_smt2_files(SMT_ALL_DIR)):
-#     #     with open(path) as f:
-#     #         query = f.read()
-#     #         status = "unknown"
-#     #         if "(set-info :status unsat)" in query:
-#     #             status = "unsat"
-#     #         elif "(set-info :status sat)" in query:
-#     #             status = "sat"
-#     #         else:
-#     #             assert("(set-info :status unknown)" in query)
-#     #         cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
-#     #             VALUES(?, ?, ?);""", (path, PNAME_SMTLIB, status))
-
-#     print("loading " + PNAME_DAFNY_KOMODO)
-#     for path in tqdm(list_smt2_files(DKOMODO_CLEAN_DIR)):
-#         cur.execute(f"""INSERT INTO vanilla_queries (query_path, project, status)
-#             VALUES(?, ?, 'unsat');""", (path, PNAME_DAFNY_KOMODO))
-
-#     con.commit()
-#     con.close()
-
 def create_experiment_table(cur, table_name):
     cur.execute(f"""CREATE TABLE {table_name}(
         query_path TEXT NOT NULL,
@@ -119,25 +74,31 @@ def get_cursor():
 def zip_db():
     os.system(f"cd data && tar cvzf mariposa.db.tar.gz mariposa.db")
 
-# def import_tables():
-#     con, cur = get_cursor()
-#     cur.execute('ATTACH "data/mariposa2.db" as OTHER_DB;')
-#     tables = [
-#         "FS_DICE_z3_4_11_2",
-#         "FS_DICE_z3_4_4_2",
-#         "FS_DICE_z3_4_5_0",
-#         "FS_DICE_z3_4_6_0",
-#         "FS_DICE_z3_4_8_5"]
-#     for table_name in tables:
-#         create_experiment_table(cur, table_name)
-#         # cur.execute(f"SELECT COUNT(*) FROM OTHER_DB.{table}")
-#         cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
-#         print(cur.fetchall())
-#     con.commit()
-#     # print(cur.fetchall())
-#     con.close()
+def import_tables():
+    # con, cur = get_cursor()
+    # cur.execute('ATTACH "data/mariposa3.db" as OTHER_DB;')
+    # tables = [
+    #     "D_LVBKV_summary"]
+    # cur.execute(f"""DROP TABLE IF EXISTS D_LVBKV_summary""")
+
+    # cur.execute(f"""CREATE TABLE D_LVBKV_summary (
+    #     solver varchar(10),
+    #     vanilla_path TEXT,
+    #     v_result_code varchar(10),
+    #     v_elapsed_milli INTEGER,
+    #     summaries TEXT)""")
+
+    # for table_name in tables:
+    #     # create_experiment_table(cur, table_name)
+    #     # cur.execute(f"SELECT COUNT(*) FROM OTHER_DB.{table}")
+    #     cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
+    # con.commit()
+    # con.close()
+    pass
 
 if __name__ == "__main__":
+    # import_tables()
+
     if len(sys.argv) <= 1:
         show_tables()
     else:

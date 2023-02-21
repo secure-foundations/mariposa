@@ -65,7 +65,7 @@ class ProjectConfig:
         self._plain_dir = plain_dir
         assert (plain_dir.endswith("/"))
         if not os.path.exists(self._plain_dir):
-            print(f"[WARN] project {self.name} plain dir {self._plain_dir} does not exist!")
+            print(f"[WARN] project {self.name} plain dir {self._plain_dir} does not exist")
         self.clean_dirs = dict()
         self.orig_solver = orig_solver
 
