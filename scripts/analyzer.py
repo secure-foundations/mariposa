@@ -244,6 +244,41 @@ def plot_time_success(cfg):
     name = cfg.qcfg.name
     save_fig(figure, f"{name}", f"fig/time_success/{name}.png")
 
+def plot_query_sizes(cfgs):
+    import os
+    figure, axis = setup_fig(1, 2)
+    colors = [
+        "#FFB300", # Vivid Yellow
+        "#803E75", # Strong Purple
+        "#FF6800", # Vivid Orange
+        "#A6BDD7", # Very Light Blue
+        "#C10020", # Vivid Red
+        "#CEA262", # Grayish Yellow
+        "#817066", # Medium Gray
+    ]
+    for i, cfg in enumerate(cfgs):
+        clean_dir = cfg.qcfg.project.clean_dirs[Z3_4_11_2]
+        paths = list_smt2_files(clean_dir)
+        sizes = [] 
+        for path in paths:
+            sizes.append(os.path.getsize(path) / (8 * 1024 * 1024))
+        # plot_csum(plt, sizes, )
+        n = len(sizes)
+        axis[0].plot(np.sort(sizes), np.arange(n), marker=",", label=cfg.qcfg.name, color=colors[i])
+        xs, ys = get_cdf_pts(sizes)
+        axis[1].plot(xs, ys, marker=",", label=cfg.qcfg.name, color=colors[i])
+
+    axis[0].legend()
+    axis[0].set_ylabel("cumulative probability")
+    axis[0].set_xlabel("query size (mb)")
+
+    axis[1].legend()
+    axis[1].set_xlabel("query size (mb)")
+
+    plt.tight_layout()
+        # plt.plot(xs, ys, marker=",", label=cfg.qcfg.name)
+    save_fig(figure, f"sizes", f"fig/sizes.pdf")
+
 def analyze_cond_fail(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
@@ -373,9 +408,9 @@ cfgs = [S_KOMODO_BASIC_CFG, D_KOMODO_BASIC_CFG, D_FVBKV_Z3_CFG, FS_VWASM_CFG, D_
 
 # dump_all(cfgs)
 # print_summary_data(cfgs)
-for cfg in cfgs:
-    plot_time_mixed(cfg)
-    plot_time_success(cfg)
-
+# for cfg in cfgs:
+#     plot_time_mixed(cfg)
+#     plot_time_success(cfg)
+plot_query_sizes(cfgs)
 # build_summary_table(D_KOMODO_BASIC_CFG)
 # append_summary_table(cfg, Z3_4_6_0)
