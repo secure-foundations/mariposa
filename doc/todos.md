@@ -1,5 +1,7 @@
-dice* shuffle 
+dice* shuffle
+
 ping cvc5 guy 
+
 cvc5 longer timeout?
 
 
