@@ -152,9 +152,13 @@ class SolverTaskGroup:
             self.run_pert_group(gen_path_pre, perturb)
 
 def run_group_tasks(queue):
+    init_size = queue.qsize()
+    start_time = time.time()
+
     while True:
         task = queue.get()
-        print(queue.qsize())
+        print(init_size, queue.qsize())
+        print(round((time.time() - start_time) / 360, 2))
         if task is None:
             break
         task.run()
@@ -174,20 +178,26 @@ class Runner:
         if not remove_mut:
             print("[WARN] not removing generated mutant files!")
 
+        print("loading tasks")
+        tasks = []
         for solver, queries in cfg.samples.items():
             print(f"loading tasks {str(solver)}")
             for query in tqdm(queries):
                 task = SolverTaskGroup(cfg.qcfg, query, solver, remove_mut)
                 if self.__should_run_task(cfg.qcfg, cur, task):
-                    self.task_queue.put(task)
+                    tasks.append(task)
         con.close()
-        print("done loading all tasks")
+        print("shuffling tasks")
+        random.shuffle(tasks)
+        for task in tasks:
+            self.task_queue.put(task)
 
         # for proc exit
         for _ in range(cfg.num_procs):
             self.task_queue.put(None)
-
         processes = []
+
+        print("starting solvers")
 
         for _ in range(cfg.num_procs):
             p = mp.Process(target=run_group_tasks, args=(self.task_queue,))

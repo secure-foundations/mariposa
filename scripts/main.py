@@ -5,8 +5,8 @@ from db_utils import *
 from analyzer import *
 
 S_KOMODO = ProjectConfig("s_komodo", FrameworkName.SERVAL, Z3_4_4_2)
-S_KOMODO.assign_z3_dirs("data/s_komodo_plain/")
-# S_KOMODO.assign_cvc5_dirs("data/s_komodo_plain/")
+S_KOMODO.assign_z3_dirs("data/s_komodo_clean/")
+# S_KOMODO.assign_cvc5_dirs("data/s_komodo_clean/")
 
 D_KOMODO = ProjectConfig("d_komodo", FrameworkName.DAFNY, Z3_4_5_0)
 # D_KOMODO.assign_cvc5_dirs("data/d_komodo_cvc5_clean/")
@@ -29,6 +29,10 @@ FS_VWASM_CFG = ExpConfig("FS_VWASM", FS_VWASM, Z3_SOLVERS)
 ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, FS_VWASM_CFG]
 
 def analyze_results():
+    # build_summary_table(S_KOMODO_CFG)
+    plot_time_overall(S_KOMODO_CFG)
+    plot_result_overall(S_KOMODO_CFG)
+    # build_summary_table(D_LVBKV_CFG)
     # print_summary_data(cfgs)
     # plot_query_sizes(cfgs)
     # dump_all(cfgs)
@@ -38,8 +42,6 @@ def analyze_results():
     pass
 
 def import_tables():
-    # build_summary_table(D_LVBKV_CFG)
-    # append_summary_table(D_LVBKV_CFG, Z3_4_5_0)
     # tables = [
     #     "D_LVBKV_z3_4_5_0",
     #     "D_LVBKV_z3_4_6_0"]
@@ -55,14 +57,15 @@ def send_dir():
     pass
 
 if __name__ == '__main__':
-    # cfg = ExpConfig("test1", D_FVBKV, [Z3_4_8_5], 10)
-    # # cfg.qcfg.enabled_muts = [Mutation.LOWER_SHUFFLE, Mutation.SHUFFLE]
-    # # r = Runner(cfg, True, False)
-
+    # cfg = ExpConfig("test1", D_KOMODO, [Z3_4_8_5])
+    # cfg = S_KOMODO_CFG
+    # cfg.num_procs = 6
+    # r = Runner(S_KOMODO_CFG, True)
+    analyze_results()
     # con, cur = get_cursor()
     # cur.execute(f"select * from {cfg.qcfg.get_solver_table_name(Z3_4_8_5)}")
     # for row in cur.fetchall():
     #     print(row)
-    clean_queries()
+    # clean_queries()
 
 
