@@ -41,13 +41,11 @@ def plot_time_variance_cdfs(sps, dists, dists2, sname):
     sp.legend()
 
     sp = sps[1]
-    max_p = 0
     sp.set_title(f'{sname} response time variance cdf')
     for label, dist in dists.items():
         xs, ys = get_cdf_pts(dist)
         if xs[-1] >= 1:
             li = len(xs) - np.where(xs>=1)[0][0] - 1
-            max_p = max(ys[li], max_p)
         sp.plot(xs, ys[::-1], marker=",", label=label)
     sp.set_ylabel("cumulative percentage (%) above threshold")
     sp.set_xlabel("response time variance (seconds) threshold log scale")
@@ -55,7 +53,6 @@ def plot_time_variance_cdfs(sps, dists, dists2, sname):
     sp.set_xlim(left=0.001)
     sp.set_yscale("log")
     sp.legend()
-    return max_p
 
 def plot_success_rate_cdfs(sps, dists, sname):
     sp = sps[0]
@@ -86,8 +83,3 @@ def plot_success_rate_cdfs(sps, dists, sname):
     sp.set_xlim(left=1, right=99)
     sp.set_ylim(bottom=min_p-0.1, top=max_p+0.1)
     sp.set_xticks([1] + [i for i in range(10, 100, 10)] + [99])
-
-    sp.legend()
-    if max_p == 0:
-        max_p = min_p
-    return min_p, max_p

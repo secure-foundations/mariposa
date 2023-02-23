@@ -88,8 +88,8 @@ def build_summary_table(cfg):
 def plot_time_overall(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
-    upper_bounds = dict()
-    figure, aixs = setup_fig(len(cfg.samples), 2)
+    solver_count = len(cfg.samples)
+    figure, aixs = setup_fig(solver_count, 2)
     for i, solver in enumerate(cfg.samples):
         solver = str(solver)
         res = cur.execute(f"""SELECT * FROM {summary_table_name}
@@ -105,24 +105,25 @@ def plot_time_overall(cfg):
                 if len(times) != 0:
                     dists[perturb].append(as_seconds(np.std(times)))
                     dists2[perturb].append(as_seconds(np.mean(times)))
-        bound = plot_time_variance_cdfs(aixs[i], dists, dists2, solver)
-        upper_bounds[solver] = bound
+        if solver_count == 1:
+            plot_time_variance_cdfs(aixs, dists, dists2, solver)
+        else:
+            plot_time_variance_cdfs(aixs[i], dists, dists2, solver)
     con.close()
     name = cfg.qcfg.name
     save_fig(figure, f"{name}", f"fig/time_overall/{name}.png")
-    return upper_bounds
 
 def plot_result_overall(cfg):
     con, cur = get_cursor()
     intervals = dict()
     summary_table_name = cfg.get_summary_table_name()
-    figure, aixs = setup_fig(len(cfg.samples), 2)
+    solver_count = len(cfg.samples)
+    figure, aixs = setup_fig(solver_count, 2)
     for i, solver in enumerate(cfg.samples):
         solver = str(solver)
         res = cur.execute(f"""SELECT * FROM {summary_table_name}
             WHERE solver = ?""", (solver, ))
         rows = res.fetchall()
-
         dists = cfg.empty_muts_map()
 
         for row in rows:
@@ -130,8 +131,10 @@ def plot_result_overall(cfg):
             for (perturb, vres, _) in summaries:
                 if len(vres) != 0:
                     dists[perturb].append(vres.count("unsat") * 100 / len(vres))
-        interval = plot_success_rate_cdfs(aixs[i], dists, solver)
-        intervals[solver] = interval
+        if solver_count == 1:
+            plot_success_rate_cdfs(aixs, dists, solver)
+        else:
+            plot_success_rate_cdfs(aixs[i], dists, solver)
     con.close()
     name = cfg.qcfg.name
     save_fig(figure, f"{name}", f"fig/result_overall/{name}.png")
