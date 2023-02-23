@@ -151,14 +151,12 @@ class SolverTaskGroup:
         for perturb in self.cfg.enabled_muts:
             self.run_pert_group(gen_path_pre, perturb)
 
-def run_group_tasks(queue):
+def run_group_tasks(queue, start_time):
     init_size = queue.qsize()
-    start_time = time.time()
 
     while True:
         task = queue.get()
-        print(init_size, queue.qsize())
-        print(round((time.time() - start_time) / 360, 2))
+        print(init_size, queue.qsize(), round((time.time() - start_time) / 3600, 2))
         if task is None:
             break
         task.run()
@@ -200,7 +198,8 @@ class Runner:
         print("starting solvers")
 
         for _ in range(cfg.num_procs):
-            p = mp.Process(target=run_group_tasks, args=(self.task_queue,))
+            start_time = time.time()
+            p = mp.Process(target=run_group_tasks, args=(self.task_queue, start_time, ))
             p.start()
             processes.append(p)
 
