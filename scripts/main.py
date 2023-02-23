@@ -50,18 +50,21 @@ def import_tables():
 
 def clean_queries():
     from clean_utils import clean_dfy_project
-    cfg = D_KOMODO
-    clean_dfy_project(cfg, cfg.clean_dirs[Z3_4_11_2])
+    from clean_utils import clean_fs_project
+    cfg = FS_VWASM
+    clean_fs_project(cfg, cfg.clean_dirs[Z3_4_11_2])
 
 def send_dir():
     pass
 
 if __name__ == '__main__':
+    # clean_queries()
     # cfg = ExpConfig("test1", D_KOMODO, [Z3_4_8_5])
-    # cfg = S_KOMODO_CFG
-    # cfg.num_procs = 6
-    # r = Runner(S_KOMODO_CFG, True)
-    analyze_results()
+    cfg = FS_VWASM_CFG
+    cfg.num_procs = 6
+    r = Runner(cfg, True)
+    # clean_queries()
+
     # con, cur = get_cursor()
     # cur.execute(f"select * from {cfg.qcfg.get_solver_table_name(Z3_4_8_5)}")
     # for row in cur.fetchall():
