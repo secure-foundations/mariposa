@@ -13,7 +13,6 @@ from configs.experiments import *
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
 def subprocess_run(command, time_limit, debug=False, cwd=None):
-    command = f"timeout {time_limit} " + command
     if debug:
         print(command)
     start_time = time.time()
@@ -85,7 +84,7 @@ class SolverTaskGroup:
         else:
             assert (self.solver.brand == SolverBrand.CVC5)
             # --stats
-            command = f"{self.solver.path} {query_path} --tlimit={self.cfg.timeout * 1000} --no-nl-cov --nl-ext=none --fmf-mbqi=none --no-mbqi --no-cbqi --no-cegqi"
+            command = f"{self.solver.path} {query_path} -i --tlimit={self.cfg.timeout * 1000} --no-nl-cov --nl-ext=none --fmf-mbqi=none --no-mbqi --no-cbqi --no-cegqi"
 
         out, err, elapsed = subprocess_run(command, self.cfg.timeout + 1)
 
