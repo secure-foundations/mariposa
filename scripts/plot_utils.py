@@ -28,7 +28,7 @@ def save_fig(figure, title, file):
     figure.suptitle(title, fontsize=16)
     plt.savefig(file)
 
-def plot_time_variance_cdfs(sps, dists, dists2, sname):
+def plot_time_overall(sps, dists, dists2, sname):
     sp = sps[0]
     sp.set_title(f'{sname} response time cdf')
 
@@ -37,24 +37,23 @@ def plot_time_variance_cdfs(sps, dists, dists2, sname):
         sp.plot(xs, ys, marker=",", label=label)
     sp.set_ylabel("cumulative probability")
     sp.set_xlabel("response time (log)")
-    # sp.set_xscale("log")
     sp.legend()
 
     sp = sps[1]
-    sp.set_title(f'{sname} response time variance cdf')
+    sp.set_title(f'{sname} response time standard deviation cdf')
     for label, dist in dists.items():
         xs, ys = get_cdf_pts(dist)
         if xs[-1] >= 1:
             li = len(xs) - np.where(xs>=1)[0][0] - 1
         sp.plot(xs, ys[::-1], marker=",", label=label)
     sp.set_ylabel("cumulative percentage (%) above threshold")
-    sp.set_xlabel("response time variance (seconds) threshold log scale")
+    sp.set_xlabel("response time standard deviation (seconds) threshold log scale")
     sp.set_xscale("log")
     sp.set_xlim(left=0.001)
     sp.set_yscale("log")
     sp.legend()
 
-def plot_success_rate_cdfs(sps, dists, sname):
+def plot_result_overall(sps, dists, sname):
     sp = sps[0]
     sp.set_title(f'{sname} success rate cdf')
     for label, dist in dists.items():

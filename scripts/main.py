@@ -32,8 +32,9 @@ ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, F
 
 def analyze_results(cfg):
     # build_summary_table(cfg)
-    plot_time_overall(cfg)
-    plot_result_overall(cfg)
+    # plot_basic_overall(cfg)
+    get_unstable_intervals(cfg)
+    # plot_result_overall(cfg)
     # build_summary_table(D_LVBKV_CFG)
     # print_summary_data(cfgs)
     # plot_query_sizes(cfgs)
@@ -59,6 +60,8 @@ def send_dir():
 
 if __name__ == '__main__':
     os.system("cargo build --release")
+    print("checking scaling_governor")
+    os.system("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq")
     # S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, [CVC5_1_0_3])
     analyze_results(FS_VWASM_CFG)
     # clean_queries()

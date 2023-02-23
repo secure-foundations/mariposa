@@ -11,12 +11,6 @@ from configs.experiments import *
 from plot_utils import *
 import matplotlib.pyplot as plt
 
-def as_seconds(milliseconds):
-    return milliseconds / 1000
-
-def as_percentage(p):
-    return p * 100
-
 def append_summary_table(cfg, solver):
     con, cur = get_cursor()
     solver_table = cfg.qcfg.get_solver_table_name(solver)
@@ -85,59 +79,94 @@ def build_summary_table(cfg):
     for solver in cfg.samples:
         append_summary_table(cfg, solver)
 
-def plot_time_overall(cfg):
+def as_seconds(milliseconds):
+    return milliseconds / 1000
+
+def group_time_mean(times):
+    assert len(times) != 0
+    return as_seconds(np.mean(times))
+
+def group_time_std(times):
+    assert len(times) != 0
+    return as_seconds(np.std(times))
+
+def group_success_rate(vres):
+    assert len(vres) != 0
+    return vres.count("unsat") * 100 / len(vres)
+
+def plot_basic_overall(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
     solver_count = len(cfg.samples)
-    figure, aixs = setup_fig(solver_count, 2)
+    time_figure, time_aixs = setup_fig(solver_count, 2)
+    result_figure, result_aixs = setup_fig(solver_count, 2)
     for i, solver in enumerate(cfg.samples):
         solver = str(solver)
         res = cur.execute(f"""SELECT * FROM {summary_table_name}
             WHERE solver = ?""", (solver, ))
         rows = res.fetchall()
 
-        dists = cfg.empty_muts_map()
-        dists2 = cfg.empty_muts_map()
+        means = cfg.empty_muts_map()
+        stds = cfg.empty_muts_map()
+        srs = cfg.empty_muts_map()
 
         for row in rows:
             summaries = ast.literal_eval(row[4])
-            for (perturb, _, times) in summaries:
-                if len(times) != 0:
-                    dists[perturb].append(as_seconds(np.std(times)))
-                    dists2[perturb].append(as_seconds(np.mean(times)))
+            for (perturb, vres, times) in summaries:
+                if len(times) == 0:
+                    continue
+                assert len(vres) == len(times)
+                means[perturb].append(group_time_mean(times))
+                stds[perturb].append(group_time_std(times))
+                srs[perturb].append(group_success_rate(vres))
         if solver_count == 1:
-            plot_time_variance_cdfs(aixs, dists, dists2, solver)
+            plot_time_overall(time_aixs, means, stds, solver)
+            plot_result_overall(result_aixs, srs, solver)
         else:
-            plot_time_variance_cdfs(aixs[i], dists, dists2, solver)
+            plot_time_overall(time_aixs[i], means, stds, solver)
+            plot_result_overall(result_aixs[i], srs, solver)
     con.close()
     name = cfg.qcfg.name
-    save_fig(figure, f"{name}", f"fig/time_overall/{name}.png")
+    save_fig(time_figure, f"{name}", f"fig/time_overall/{name}.png")
+    save_fig(result_figure, f"{name}", f"fig/result_overall/{name}.png")
 
-def plot_result_overall(cfg):
+def get_unstable_intervals(cfg):
     con, cur = get_cursor()
+    summary_table_name = cfg.get_summary_table_name()
     intervals = dict()
-    summary_table_name = cfg.get_summary_table_name()
-    solver_count = len(cfg.samples)
-    figure, aixs = setup_fig(solver_count, 2)
-    for i, solver in enumerate(cfg.samples):
+    for _, solver in enumerate(cfg.samples):
         solver = str(solver)
         res = cur.execute(f"""SELECT * FROM {summary_table_name}
             WHERE solver = ?""", (solver, ))
         rows = res.fetchall()
-        dists = cfg.empty_muts_map()
+
+        unsolvables = cfg.empty_muts_map(set())
+        stables = cfg.empty_muts_map(set())
+        count = 0
 
         for row in rows:
             summaries = ast.literal_eval(row[4])
-            for (perturb, vres, _) in summaries:
-                if len(vres) != 0:
-                    dists[perturb].append(vres.count("unsat") * 100 / len(vres))
-        if solver_count == 1:
-            plot_success_rate_cdfs(aixs, dists, solver)
-        else:
-            plot_success_rate_cdfs(aixs[i], dists, solver)
-    con.close()
-    name = cfg.qcfg.name
-    save_fig(figure, f"{name}", f"fig/result_overall/{name}.png")
+            plain_res = row[2]
+            plain_path = row[1]
+            for (perturb, vres, times) in summaries:
+                if len(times) == 0:
+                    continue
+                assert len(vres) == len(times)
+                # consider the plain one as well
+                vres.append(plain_res) 
+                if group_success_rate(vres) == 0:
+                    unsolvables[perturb].add(plain_path)
+                elif group_success_rate(vres) == 100:
+                    stables[perturb].add(plain_path)
+            count += 1    
+        unsolvables = [v for v in unsolvables.values()]
+        stables = [v for v in stables.values()]
+
+        unsolvables = set.intersection(*unsolvables)
+        stables = set.intersection(*stables)
+        max_ratio = (count - len(stables)) * 100 / count
+        min_ratio = len(unsolvables) * 100 / count
+        intervals[solver] = (min_ratio, max_ratio)
     return intervals
 
 # def str_percent(p):
@@ -148,23 +177,23 @@ def plot_result_overall(cfg):
 # def str_interval(interval):
 #     return f"{str_percent(interval[0])}, {str_percent(interval[1])}"
 
-def print_summary_data(cfgs):
-    rows = []
-    for cfg in cfgs:
-        # print(cfg.get_project_name())
-        row = []
-        intervals = plot_result_overall(cfg)
-        bounds = plot_time_overall(cfg)
-        for solver in ALL_SOLVERS:
-            item = [np.nan, np.nan, np.nan]
-            if solver in intervals:
-                item[0] = intervals[solver][0]
-                item[1] = intervals[solver][1]
-            if solver in bounds:
-                item[2] = bounds[solver]
-            row.append(item)
-        rows.append(row)
-    print(rows)
+# def print_summary_data(cfgs):
+#     rows = []
+#     for cfg in cfgs:
+#         # print(cfg.get_project_name())
+#         row = []
+#         intervals = plot_result_overall(cfg)
+#         bounds = plot_time_overall(cfg)
+#         for solver in ALL_SOLVERS:
+#             item = [np.nan, np.nan, np.nan]
+#             if solver in intervals:
+#                 item[0] = intervals[solver][0]
+#                 item[1] = intervals[solver][1]
+#             if solver in bounds:
+#                 item[2] = bounds[solver]
+#             row.append(item)
+#         rows.append(row)
+#     print(rows)
 
 def as_md_row(row):
     return "|" + "|".join(row) + "|"
@@ -176,11 +205,6 @@ def as_md_table(table):
         lines.append(as_md_row(row))
     lines.append("\n")
     return "\n".join(lines)
-
-def get_percent(a, b):
-    if b == 0:
-        return np.nan
-    return round(a * 100 / b, 2)
 
 def plot_time_mixed(cfg):
     con, cur = get_cursor()
