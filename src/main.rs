@@ -93,24 +93,40 @@ fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concre
     commands.into_iter().map(|c| c.accept(&mut normalizer).unwrap()).collect()
 }
 
-// patterns
-fn remove_patterns(commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
-    for command in &commands {
-        println!("assert: {}", command);
-        if let concrete::Command::Assert {term} = command {
-            println!("term: {}", term);
-            if let concrete::Term::Forall {vars: _, term:attributed_term} = term {
-                println!("pattern: {}", *attributed_term);
-                match *attributed_term {
-                    term => (),
-                }
-//              if let concrete::Term::Attributes {term: _, attributes} = *pattern {
-//                  println!("attributes: {}", attributes);
-//              }
+fn print_test(command: &mut concrete::Command) {
+    if let concrete::Command::Assert {term} = command {
+        // println!("term: {}", term);
+        if let concrete::Term::Forall {vars: _, term:attributed_term} = term {
+            if let concrete::Term::Attributes {term:_, mut attributes} = *attributed_term.clone() {
+                // for (k, v) in attributes {
+                //     if k == concrete::Keyword("pattern".to_owned()) {
+                //         println!("attributed_term: {:?}", k);
+                //         println!("attributed_term: {:?}", v);
+                //     }
+                // }
+                attributes.pop();
+                println!("term: {}", term);
             }
         }
     }
-    commands
+}
+
+// patterns
+fn remove_patterns(commands: &mut Vec<concrete::Command>) {
+    // let vector = vec!(1, 2, 3);
+    // let result = vector.into_iter().map(|x| x * 2).collect::<Vec<i32>>();
+    // println!("{:?}", vector);
+    // println!("{:?}", result);
+
+    commands.iter_mut().for_each(|x| print_test(x));
+    // println!("{:?}", commands);
+    // println!("{:?}", result);
+
+    // for command in &mut commands {
+    //     // println!("assert: {}", command);
+
+    // }
+    // commands
 }
 
 struct Manager {
@@ -215,8 +231,9 @@ fn main() {
                 manager.dump(&format!("(set-option :random-seed {solver_seed})\n"));
             };
         } else if args.perturbation == "patterns" {
-            commands = remove_patterns(commands);
+            remove_patterns(&mut commands);
         }
         manager.dump_non_info_commands(&commands);
     }
 }
+
