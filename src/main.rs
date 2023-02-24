@@ -97,16 +97,17 @@ fn print_test(command: &mut concrete::Command) {
     if let concrete::Command::Assert {term} = command {
         // println!("term: {}", term);
         if let concrete::Term::Forall {vars: _, term:attributed_term} = term {
-            if let concrete::Term::Attributes {term, mut attributes} = *attributed_term.clone() {
-                attributes.pop();
-                **attributed_term = concrete::Term::Attributes {term,attributes};  
+            if let concrete::Term::Attributes {term, attributes} = *attributed_term.clone() {
+                let attributes = attributes.into_iter().filter(|x|
+                    x.0 == concrete::Keyword("pattern".to_owned()) 
+                ).collect();
+                **attributed_term = concrete::Term::Attributes {term,attributes};
                 // for (k, v) in attributes {
                 //     if k == concrete::Keyword("pattern".to_owned()) {
                 //         println!("attributed_term: {:?}", k);
                 //         println!("attributed_term: {:?}", v);
                 //     }
                 // }
-                // println!("term: {}", term);
             }
         }
     }
