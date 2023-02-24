@@ -11,6 +11,16 @@ from configs.experiments import *
 from plot_utils import *
 import matplotlib.pyplot as plt
 
+COLORS = [
+    "#FFB300", # Vivid Yellow
+    "#803E75", # Strong Purple
+    "#FF6800", # Vivid Orange
+    "#A6BDD7", # Very Light Blue
+    "#C10020", # Vivid Red
+    "#CEA262", # Grayish Yellow
+    "#817066", # Medium Gray
+]
+
 def append_summary_table(cfg, solver):
     con, cur = get_cursor()
     solver_table = cfg.qcfg.get_solver_table_name(solver)
@@ -94,80 +104,140 @@ def group_success_rate(vres):
     assert len(vres) != 0
     return vres.count("unsat") * 100 / len(vres)
 
-def plot_basic_overall(cfg):
+def load_summary(cfg):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
+    summaries = dict()
+    for solver in cfg.samples:
+        solver = str(solver)
+        res = cur.execute(f"""SELECT * FROM {summary_table_name}
+            WHERE solver = ?""", (solver,))
+        rows = res.fetchall()
+        nrows = []
+        for row in rows:
+            nrow = list(row)
+            nrow[4] = ast.literal_eval(row[4])
+            nrows.append(nrow)
+        summaries[solver] = nrows
+    con.close()
+    return summaries
+
+def plot_basic(cfg, solver_summaries):
     solver_count = len(cfg.samples)
     time_figure, time_aixs = setup_fig(solver_count, 2)
     result_figure, result_aixs = setup_fig(solver_count, 2)
-    for i, solver in enumerate(cfg.samples):
-        solver = str(solver)
-        res = cur.execute(f"""SELECT * FROM {summary_table_name}
-            WHERE solver = ?""", (solver, ))
-        rows = res.fetchall()
 
+    for i, (solver, rows) in enumerate(solver_summaries.items()):
         means = cfg.empty_muts_map()
         stds = cfg.empty_muts_map()
         srs = cfg.empty_muts_map()
 
         for row in rows:
-            summaries = ast.literal_eval(row[4])
-            for (perturb, vres, times) in summaries:
+            row_summaries = row[4]
+            for (perturb, vres, times) in row_summaries:
                 if len(times) == 0:
                     continue
                 assert len(vres) == len(times)
                 means[perturb].append(group_time_mean(times))
                 stds[perturb].append(group_time_std(times))
                 srs[perturb].append(group_success_rate(vres))
-        if solver_count == 1:
+        if solver_count != 1:
             plot_time_overall(time_aixs, means, stds, solver)
             plot_result_overall(result_aixs, srs, solver)
         else:
             plot_time_overall(time_aixs[i], means, stds, solver)
             plot_result_overall(result_aixs[i], srs, solver)
-    con.close()
     name = cfg.qcfg.name
     save_fig(time_figure, f"{name}", f"fig/time_overall/{name}.png")
     save_fig(result_figure, f"{name}", f"fig/result_overall/{name}.png")
 
-def get_unstable_intervals(cfg):
-    con, cur = get_cursor()
-    summary_table_name = cfg.get_summary_table_name()
-    intervals = dict()
-    for _, solver in enumerate(cfg.samples):
-        solver = str(solver)
-        res = cur.execute(f"""SELECT * FROM {summary_table_name}
-            WHERE solver = ?""", (solver, ))
-        rows = res.fetchall()
+def get_all_sr(plain_res, summaries):
+    # consider the plain one as well
+    all_vres = [plain_res]
+    for (_, vres, _) in summaries:
+        all_vres += vres
+    return group_success_rate(all_vres)
 
-        unsolvables = cfg.empty_muts_map(set())
-        stables = cfg.empty_muts_map(set())
+def get_categories(solver_summaries):
+    categories = dict()
+    for solver, rows in solver_summaries.items():
+        unsolvables, stables, unstables = set(), set(), set()
         count = 0
-
         for row in rows:
-            summaries = ast.literal_eval(row[4])
-            plain_res = row[2]
-            plain_path = row[1]
-            for (perturb, vres, times) in summaries:
-                if len(times) == 0:
-                    continue
-                assert len(vres) == len(times)
-                # consider the plain one as well
-                vres.append(plain_res) 
-                if group_success_rate(vres) == 0:
-                    unsolvables[perturb].add(plain_path)
-                elif group_success_rate(vres) == 100:
-                    stables[perturb].add(plain_path)
-            count += 1    
-        unsolvables = [v for v in unsolvables.values()]
-        stables = [v for v in stables.values()]
+            summaries = row[4]
+            plain_path, plain_res = row[1], row[2]
+            all_sr = get_all_sr(plain_res, summaries)
+            if all_sr == 100:
+                stables.add(plain_path)
+            elif all_sr == 0:
+                unsolvables.add(plain_path)
+            else:
+                unstables.add(plain_path)
+            count += 1
+        categories[solver] = (unsolvables, stables, unstables, count)
+    return categories
 
-        unsolvables = set.intersection(*unsolvables)
-        stables = set.intersection(*stables)
+def get_unstable_intervals(solver_summaries):
+    categories = get_categories(solver_summaries)
+    intervals = dict()
+
+    for solver, (unsolvables, stables, _, count) in categories.items():
         max_ratio = (count - len(stables)) * 100 / count
         min_ratio = len(unsolvables) * 100 / count
         intervals[solver] = (min_ratio, max_ratio)
     return intervals
+
+def plot_time_stable(cfg, solver_summaries):
+    solver_count = len(cfg.samples)
+    time_figure, time_aixs = setup_fig(solver_count, 1)
+
+    for i, (solver, rows) in enumerate(solver_summaries.items()):
+        stds = cfg.empty_muts_map()
+        for row in rows:
+            summaries = row[4]
+            plain_path, plain_res = row[1], row[2]
+            all_sr = get_all_sr(plain_res, summaries)
+            if all_sr != 100:
+                continue
+            for (perturb, _, times) in summaries:
+                if len(times) == 0:
+                    continue
+                stds[perturb].append(group_time_std(times))
+        sp = time_aixs[i]
+        for perturb, values in stds.items():
+            xs, ys = get_cdf_pts(values)
+            sp.set_ylabel("cumulative probability")
+            sp.plot(xs, ys, marker=",", label=perturb)
+            sp.set_title(f'{solver} stable query standard deviation cdf')
+        name = cfg.qcfg.name
+        save_fig(time_figure, f"{name}", f"fig/time_stable/{name}.png")
+
+def plot_time_mixed(cfg, solver_summaries):
+    solver_count = len(cfg.samples)
+    time_figure, time_aixs = setup_fig(solver_count, 1)
+
+    for i, (solver, rows) in enumerate(solver_summaries.items()):
+        means = cfg.empty_muts_map()
+        for row in rows:
+            summaries = row[4]
+            plain_path, plain_res = row[1], row[2]
+            all_sr = get_all_sr(plain_res, summaries)
+            if all_sr == 100 or all_sr == 0:
+                continue
+            for (perturb, vres, times) in summaries:
+                nts = [times[i] for i, x in enumerate(vres) if x != "timeout"]
+                if len(nts) == 0:
+                    continue
+                means[perturb].append(group_time_mean(nts))
+        sp = time_aixs[i]
+        for perturb, values in means.items():
+            xs, ys = get_cdf_pts(values)
+            sp.set_ylabel("cumulative probability")
+            sp.set_xlabel("mean response time (success only)")
+            sp.plot(xs, ys, marker=",", label=perturb)
+            sp.set_title(f'{solver} mixed queries cdf')
+        name = cfg.qcfg.name
+        save_fig(time_figure, f"{name}", f"fig/time_mixed/{name}.png")
 
 # def str_percent(p):
 #     if np.isnan(p):
@@ -205,71 +275,6 @@ def as_md_table(table):
         lines.append(as_md_row(row))
     lines.append("\n")
     return "\n".join(lines)
-
-def plot_time_mixed(cfg):
-    con, cur = get_cursor()
-    summary_table_name = cfg.get_summary_table_name()
-
-    figure, axis = setup_fig(len(cfg.samples), 1)
-
-    for i, solver in enumerate(cfg.samples):
-        solver = str(solver)
-        # print(solver, cfg.get_project_name())
-        res = cur.execute(f"""SELECT * FROM {summary_table_name}
-            WHERE solver = ?""", (solver, ))
-        rows = res.fetchall()
-        sp = axis[i]
-
-        unsolvable = {p: [0, []] for p in cfg.qcfg.enabled_muts}
-        for row in rows:
-            summaries = ast.literal_eval(row[4])
-            for (perturb, vres, times) in summaries:
-                assert len(times) == len(vres)
-                if vres.count("timeout") == 0:
-                    continue
-                nt_times = []
-                for i, r in enumerate(vres):
-                    if r != "timeout":
-                        nt_times.append(times[i])
-                if len(nt_times) != 0:
-                    unsolvable[perturb][1].append(round(np.mean(nt_times) / 1000, 2))
-        for p in unsolvable:
-            plot_csum(sp, unsolvable[p][1], label=p)
-            sp.legend()
-        sp.set_title(f'{solver} time mixed query cumulative count')
-    name = cfg.qcfg.name
-    save_fig(figure, f"{name}", f"fig/time_mixed/{name}.png")
-    con.close()
-
-def plot_time_success(cfg):
-    con, cur = get_cursor()
-    summary_table_name = cfg.get_summary_table_name()
-
-    figure, axis = setup_fig(len(cfg.samples), 1)
-
-    for i, solver in enumerate(cfg.samples):
-        solver = str(solver)
-        res = cur.execute(f"""SELECT * FROM {summary_table_name}
-            WHERE solver = ?""", (solver, ))
-        rows = res.fetchall()
-        sp = axis[i]
-
-        stds = cfg.empty_muts_map()
-
-        for row in rows:
-            summaries = ast.literal_eval(row[4])
-            for (perturb, vres, times) in summaries:
-                if len(vres) != 0 and vres.count("unsat") == len(vres):
-                    stds[perturb].append(np.std(times) / 1000)
-        for p in stds:
-            xs, ys = get_cdf_pts(stds[p])
-            sp.plot(xs, ys, marker=",", label=p)
-            sp.legend()
-        sp.set_yscale("log")
-        sp.set_title(f'{solver} success query time variance cdf')
-    con.close()
-    name = cfg.qcfg.name
-    save_fig(figure, f"{name}", f"fig/time_success/{name}.png")
 
 def plot_query_sizes(cfgs):
     import os
