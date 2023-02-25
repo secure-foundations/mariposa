@@ -1,6 +1,6 @@
 from configs.projects import *
 from configs.experiments import *
-from runner import Runner
+from runner import Runner, subprocess_run
 from db_utils import *
 from analyzer import *
 
@@ -21,7 +21,7 @@ FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
 
 Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2]
 
-S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, ALL_SOLVERS)
+S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, Z3_SOLVERS)
 D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS)
 D_LVBKV_CFG = ExpConfig("D_LVBKV", D_LVBKV, Z3_SOLVERS)
 D_FVBKV_CFG = ExpConfig("D_FVBKV", D_FVBKV, Z3_SOLVERS)
@@ -32,11 +32,10 @@ ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, F
 
 def analyze_results(cfg):
     # build_summary_table(cfg)
-
     summaries = load_summary(cfg)
-    # plot_basic(cfg, summaries)
+    plot_basic(cfg, summaries)
     # get_unstable_intervals(summaries)
-    # plot_time_stable(cfg, summaries)
+    plot_time_stable(cfg, summaries)
     plot_time_mixed(cfg, summaries)
 
     # build_summary_table(D_LVBKV_CFG)
@@ -46,7 +45,6 @@ def analyze_results(cfg):
     # for cfg in cfgs:
     #     plot_time_mixed(cfg)
     #     plot_time_success(cfg)
-    pass
 
 def import_database():
     tables = [
@@ -59,22 +57,24 @@ def clean_queries():
     cfg = FS_VWASM
     clean_fs_project(cfg, cfg.clean_dirs[Z3_4_11_2])
 
-def send_dir():
+def send_project_queries(project, dst):
     pass
 
 if __name__ == '__main__':
+    print("building mariposa...")
+    stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
+    assert stdout == "master"
     os.system("cargo build --release")
-    print("checking scaling_governor: ")
-    os.system("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq")
-    # S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, [CVC5_1_0_3])
-    analyze_results(FS_VWASM_CFG)
-    # clean_queries()
-    # cfg = ExpConfig("test1", D_KOMODO, [Z3_4_8_5])
-    # cfg = FS_VWASM_CFG
-    # import_database()
-    # analyze_results(cfg)
-    # cfg.num_procs = 6
-    # r = Runner(cfg, True)
+
+    print("checking scaling_governor...")
+    stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
+    assert stdout == "performance"
+
+    # analyze_results(S_KOMODO_CFG)
+
+    cfg = ExpConfig("S_KOMODO", S_KOMODO, [CVC5_1_0_3])
+    cfg.num_procs = 8
+    r = Runner(cfg, True)
     # clean_queries()
 
     # con, cur = get_cursor()

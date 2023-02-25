@@ -21,6 +21,10 @@ COLORS = [
     "#817066", # Medium Gray
 ]
 
+def get_color_map(keys):
+    assert len(keys) <= len(COLORS)
+    return {k: COLORS[i] for i, k in enumerate(keys)}
+
 def append_summary_table(cfg, solver):
     con, cur = get_cursor()
     solver_table = cfg.qcfg.get_solver_table_name(solver)
@@ -126,6 +130,7 @@ def plot_basic(cfg, solver_summaries):
     solver_count = len(cfg.samples)
     time_figure, time_aixs = setup_fig(solver_count, 2)
     result_figure, result_aixs = setup_fig(solver_count, 2)
+    colors = get_color_map(cfg.empty_muts_map())
 
     for i, (solver, rows) in enumerate(solver_summaries.items()):
         means = cfg.empty_muts_map()
@@ -142,11 +147,11 @@ def plot_basic(cfg, solver_summaries):
                 stds[perturb].append(group_time_std(times))
                 srs[perturb].append(group_success_rate(vres))
         if solver_count != 1:
-            plot_time_overall(time_aixs, means, stds, solver)
-            plot_result_overall(result_aixs, srs, solver)
+            plot_time_overall(time_aixs[i], means, stds, solver, colors)
+            plot_result_overall(result_aixs[i], srs, solver, colors)
         else:
-            plot_time_overall(time_aixs[i], means, stds, solver)
-            plot_result_overall(result_aixs[i], srs, solver)
+            plot_time_overall(time_aixs, means, stds, solver, colors)
+            plot_result_overall(result_aixs, srs, solver, colors)
     name = cfg.qcfg.name
     save_fig(time_figure, f"{name}", f"fig/time_overall/{name}.png")
     save_fig(result_figure, f"{name}", f"fig/result_overall/{name}.png")
@@ -194,8 +199,7 @@ def plot_time_stable(cfg, solver_summaries):
     for i, (solver, rows) in enumerate(solver_summaries.items()):
         stds = cfg.empty_muts_map()
         for row in rows:
-            summaries = row[4]
-            plain_path, plain_res = row[1], row[2]
+            summaries, plain_res = row[4], row[2]
             all_sr = get_all_sr(plain_res, summaries)
             if all_sr != 100:
                 continue
@@ -279,26 +283,19 @@ def as_md_table(table):
 def plot_query_sizes(cfgs):
     import os
     figure, axis = setup_fig(1, 2)
-    colors = [
-        "#FFB300", # Vivid Yellow
-        "#803E75", # Strong Purple
-        "#FF6800", # Vivid Orange
-        "#A6BDD7", # Very Light Blue
-        "#C10020", # Vivid Red
-        "#CEA262", # Grayish Yellow
-        "#817066", # Medium Gray
-    ]
-    for i, cfg in enumerate(cfgs):
+    colors = get_color_map([cfg.qcfg.name for cfg in cfgs])
+
+    for cfg in cfgs:
         clean_dir = cfg.qcfg.project.clean_dirs[Z3_4_11_2]
         paths = list_smt2_files(clean_dir)
         sizes = [] 
         for path in paths:
             sizes.append(os.path.getsize(path) / (8 * 1024 * 1024))
-        # plot_csum(plt, sizes, )
         n = len(sizes)
-        axis[0].plot(np.sort(sizes), np.arange(n), marker=",", label=cfg.qcfg.name, color=colors[i])
+        label, color = cfg.qcfg.name, colors[label]
+        axis[0].plot(np.sort(sizes), np.arange(n), marker=",", label=label, color=color)
         xs, ys = get_cdf_pts(sizes)
-        axis[1].plot(xs, ys, marker=",", label=cfg.qcfg.name, color=colors[i])
+        axis[1].plot(xs, ys, marker=",", label=label, color=color)
 
     axis[0].legend()
     axis[0].set_ylabel("cumulative probability")
@@ -308,53 +305,52 @@ def plot_query_sizes(cfgs):
     axis[1].set_xlabel("query size (mb)")
 
     plt.tight_layout()
-        # plt.plot(xs, ys, marker=",", label=cfg.qcfg.name)
     save_fig(figure, f"sizes", f"fig/sizes.pdf")
 
-def analyze_cond_fail(cfg):
-    con, cur = get_cursor()
-    summary_table_name = cfg.get_summary_table_name()
-    print(cfg.get_project_name())
+# def analyze_cond_fail(cfg):
+#     con, cur = get_cursor()
+#     summary_table_name = cfg.get_summary_table_name()
+#     print(cfg.get_project_name())
 
-    f = open("fig/cond_fail/" + summary_table_name + ".md", "w+")
+#     f = open("fig/cond_fail/" + summary_table_name + ".md", "w+")
 
-    for i, solver in enumerate(cfg.samples):
-        solver = str(solver)
-        # print(solver, cfg.get_project_name())
-        res = cur.execute(f"""SELECT * FROM {summary_table_name}
-            WHERE solver = ?""", (solver, ))
-        rows = res.fetchall()
+#     for i, solver in enumerate(cfg.samples):
+#         solver = str(solver)
+#         # print(solver, cfg.get_project_name())
+#         res = cur.execute(f"""SELECT * FROM {summary_table_name}
+#             WHERE solver = ?""", (solver, ))
+#         rows = res.fetchall()
 
-        unsolvable = {p: set() for p in cfg.qcfg.enabled_muts}
-        unsolvable["plain"] = set()
+#         unsolvable = {p: set() for p in cfg.qcfg.enabled_muts}
+#         unsolvable["plain"] = set()
 
-        for row in rows:
-            if row[2] != "unsat":
-                unsolvable["plain"].add(row[1])
+#         for row in rows:
+#             if row[2] != "unsat":
+#                 unsolvable["plain"].add(row[1])
 
-            summaries = ast.literal_eval(row[4])
-            for (perturb, vres, _) in summaries:
-                if len(vres) != 0 and vres.count("unsat") ==0:
-                    unsolvable[perturb].add(row[1])
+#             summaries = ast.literal_eval(row[4])
+#             for (perturb, vres, _) in summaries:
+#                 if len(vres) != 0 and vres.count("unsat") ==0:
+#                     unsolvable[perturb].add(row[1])
 
-        muts = ["plain", "shuffle", "rename", "sseed"]
-        table = [[solver] + [m + "(" + str(len(unsolvable[m])) + ")" for m in muts]]
+#         muts = ["plain", "shuffle", "rename", "sseed"]
+#         table = [[solver] + [m + "(" + str(len(unsolvable[m])) + ")" for m in muts]]
 
-        for p1 in muts:
-            row = [p1 + "(" + str(len(unsolvable[p1])) + ")"]
-            for p2 in muts:
-                us1 = unsolvable[p1]
-                us2 = unsolvable[p2]
-                inter = len(us1.intersection(us2))
-                if p1 == p2:
-                    row.append("-")
-                if len(us1) == 0:
-                    row.append(f"nan")
-                else:
-                    row.append(f"{inter}({str(round(inter * 100 / len(us1), 2))})")
-            table.append(row)
-        f.write(as_md_table(table))
-    con.close()
+#         for p1 in muts:
+#             row = [p1 + "(" + str(len(unsolvable[p1])) + ")"]
+#             for p2 in muts:
+#                 us1 = unsolvable[p1]
+#                 us2 = unsolvable[p2]
+#                 inter = len(us1.intersection(us2))
+#                 if p1 == p2:
+#                     row.append("-")
+#                 if len(us1) == 0:
+#                     row.append(f"nan")
+#                 else:
+#                     row.append(f"{inter}({str(round(inter * 100 / len(us1), 2))})")
+#             table.append(row)
+#         f.write(as_md_table(table))
+#     con.close()
 
 # def print_as_md_table(cfgs, summary_rows):
 #     solver_names = [str(s) for s in ALL_SOLVERS]
@@ -374,9 +370,10 @@ def dump_all(cfgs):
     project_names = [cfg.get_project_name() for  cfg in cfgs]
     solver_names = [str(s) for s in ALL_SOLVERS]
 
-    nan = np.nan
+    colors = get_color_map([cfg.qcfg.name for cfg in cfgs])
 
-    data = [[[0.38809831824062097, 1.6817593790426908, 4.139715394566624], [0.38809831824062097, 1.6817593790426908, 3.4928848641655885], [0.6468305304010349, 1.1642949547218628, 0.6468305304010349], [0.129366106080207, 0.7761966364812419, 2.5873221216041395], [0.517464424320828, 1.423027166882277, 4.786545924967658], [1.034928848641656, 1.034928848641656, 0]], [[2.044790652385589, 3.554040895813048, 4.284323271665044], [1.9474196689386563, 3.456669912366115, 4.33300876338851], [1.9474196689386563, 3.6514118792599803, 4.430379746835443], [6.815968841285297, 9.444985394352482, 6.621226874391431], [5.150631681243926, 8.309037900874635, 7.337220602526725], [85.34566699123661, 86.31937682570594, 1.2171372930866602]], [[1.483568075117371, 2.4976525821596245, 0.863849765258216], [1.5023474178403755, 2.3661971830985915, 0.7699530516431925], [0.9577464788732394, 1.9154929577464788, 1.0704225352112675], [nan, nan, nan], [1.6150234741784038, 4.356807511737089, 2.572769953051643], [nan, nan, nan]], [[1.6524216524216524, 1.8233618233618234, 0.17094017094017094], [1.7094017094017093, 1.8803418803418803, 0.11396011396011396], [2.507122507122507, 2.507122507122507, 0.05698005698005698], [2.507122507122507, 2.5641025641025643, 0.11396011396011396], [2.507122507122507, 2.6210826210826212, 0.11396011396011396], [nan, nan, nan]], [[1.4642857142857142, 2.1607142857142856, 1.7142857142857142], [1.4642857142857142, 2.1785714285714284, 1.7857142857142858], [1.3214285714285714, 2.4642857142857144, 2.1964285714285716], [1.1607142857142858, 1.9464285714285714, 1.625], [1.5357142857142858, 5.071428571428571, 5.428571428571429], [nan, nan, nan]], [[3.5807291666666665, 4.4921875, 3.9713541666666665], [3.5807291666666665, 4.557291666666667, 4.296875], [3.7760416666666665, 4.427083333333333, 4.4921875], [2.6041666666666665, 3.2552083333333335, 3.125], [3.2552083333333335, 3.90625, 3.6458333333333335], [nan, nan, nan]]]
+    # nan = np.nan
+    # data = [[[0.38809831824062097, 1.6817593790426908, 4.139715394566624], [0.38809831824062097, 1.6817593790426908, 3.4928848641655885], [0.6468305304010349, 1.1642949547218628, 0.6468305304010349], [0.129366106080207, 0.7761966364812419, 2.5873221216041395], [0.517464424320828, 1.423027166882277, 4.786545924967658], [1.034928848641656, 1.034928848641656, 0]], [[2.044790652385589, 3.554040895813048, 4.284323271665044], [1.9474196689386563, 3.456669912366115, 4.33300876338851], [1.9474196689386563, 3.6514118792599803, 4.430379746835443], [6.815968841285297, 9.444985394352482, 6.621226874391431], [5.150631681243926, 8.309037900874635, 7.337220602526725], [85.34566699123661, 86.31937682570594, 1.2171372930866602]], [[1.483568075117371, 2.4976525821596245, 0.863849765258216], [1.5023474178403755, 2.3661971830985915, 0.7699530516431925], [0.9577464788732394, 1.9154929577464788, 1.0704225352112675], [nan, nan, nan], [1.6150234741784038, 4.356807511737089, 2.572769953051643], [nan, nan, nan]], [[1.6524216524216524, 1.8233618233618234, 0.17094017094017094], [1.7094017094017093, 1.8803418803418803, 0.11396011396011396], [2.507122507122507, 2.507122507122507, 0.05698005698005698], [2.507122507122507, 2.5641025641025643, 0.11396011396011396], [2.507122507122507, 2.6210826210826212, 0.11396011396011396], [nan, nan, nan]], [[1.4642857142857142, 2.1607142857142856, 1.7142857142857142], [1.4642857142857142, 2.1785714285714284, 1.7857142857142858], [1.3214285714285714, 2.4642857142857144, 2.1964285714285716], [1.1607142857142858, 1.9464285714285714, 1.625], [1.5357142857142858, 5.071428571428571, 5.428571428571429], [nan, nan, nan]], [[3.5807291666666665, 4.4921875, 3.9713541666666665], [3.5807291666666665, 4.557291666666667, 4.296875], [3.7760416666666665, 4.427083333333333, 4.4921875], [2.6041666666666665, 3.2552083333333335, 3.125], [3.2552083333333335, 3.90625, 3.6458333333333335], [nan, nan, nan]]]
 
     # # # print_as_md_table(data)
     total = len(solver_names) * len(project_names)
@@ -387,21 +384,11 @@ def dump_all(cfgs):
     br = np.arange(len(solver_names))
     br = [x - barWidth for x in br]
 
-    colors = [
-        "#FFB300", # Vivid Yellow
-        "#803E75", # Strong Purple
-        "#FF6800", # Vivid Orange
-        "#A6BDD7", # Very Light Blue
-        "#C10020", # Vivid Red
-        "#CEA262", # Grayish Yellow
-        "#817066", # Medium Gray
-    ]
-
     for pi, project_row in enumerate(data):
         lps = []
         hps = []
         br = [x + barWidth for x in br]
-        pcolor = colors[pi]
+        pcolor = COLORS[pi]
         pds = []
         patterns = []
         for i, (lp, hp, p) in enumerate(project_row):

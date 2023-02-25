@@ -155,7 +155,11 @@ def run_group_tasks(queue, start_time):
 
     while True:
         task = queue.get()
-        print(init_size, queue.qsize(), round((time.time() - start_time) / 3600, 2))
+        cur_size = queue.qsize()
+        done_size = init_size - cur_size
+        elapsed = round((time.time() - start_time) / 3600, 2)
+        estimated = queue.qsize() * (elapsed / done_size)
+        print(f"finished: {done_size}/{init_size}, elapsed: {elapsed}, estimated: {estimated}")
         if task is None:
             break
         task.run()
