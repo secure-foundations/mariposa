@@ -129,13 +129,11 @@ def load_summary(cfg):
 def plot_basic(cfg, solver_summaries):
     solver_count = len(cfg.samples)
     time_figure, time_aixs = setup_fig(solver_count, 2)
-    result_figure, result_aixs = setup_fig(solver_count, 2)
     colors = get_color_map(cfg.empty_muts_map())
 
     for i, (solver, rows) in enumerate(solver_summaries.items()):
         means = cfg.empty_muts_map()
         stds = cfg.empty_muts_map()
-        srs = cfg.empty_muts_map()
 
         for row in rows:
             row_summaries = row[4]
@@ -145,15 +143,29 @@ def plot_basic(cfg, solver_summaries):
                 assert len(vres) == len(times)
                 means[perturb].append(group_time_mean(times))
                 stds[perturb].append(group_time_std(times))
-                srs[perturb].append(group_success_rate(vres))
         if solver_count != 1:
             plot_time_overall(time_aixs[i], means, stds, solver, colors)
-            plot_result_overall(result_aixs[i], srs, solver, colors)
         else:
             plot_time_overall(time_aixs, means, stds, solver, colors)
-            plot_result_overall(result_aixs, srs, solver, colors)
     name = cfg.qcfg.name
     save_fig(time_figure, f"{name}", f"fig/time_overall/{name}.png")
+
+    result_figure, result_aixs = setup_fig(solver_count, 2)
+    for i, (solver, rows) in enumerate(solver_summaries.items()):
+        srs = cfg.empty_muts_map()
+
+        for row in rows:
+            row_summaries = row[4]
+            for (perturb, vres, times) in row_summaries:
+                if len(times) == 0:
+                    continue
+                assert len(vres) == len(times)
+                srs[perturb].append(group_success_rate(vres))
+        if solver_count != 1:
+            plot_result_overall(result_aixs[i], srs, solver, colors)
+        else:
+            plot_result_overall(result_aixs, srs, solver, colors)
+
     save_fig(result_figure, f"{name}", f"fig/result_overall/{name}.png")
 
 def get_all_sr(plain_res, summaries):
@@ -366,7 +378,7 @@ def plot_query_sizes(cfgs):
 #         print("|" + "|".join(row) + "|")
 
 def dump_all(cfgs):
-    projects = [cfg.qcfg.project for  cfg in cfgs]
+    projects = [cfg.qcfg.project for cfg in cfgs]
     project_names = [cfg.get_project_name() for  cfg in cfgs]
     solver_names = [str(s) for s in ALL_SOLVERS]
 

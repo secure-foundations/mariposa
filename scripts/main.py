@@ -21,7 +21,7 @@ FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
 
 Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2]
 
-S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, Z3_SOLVERS)
+S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, ALL_SOLVERS)
 D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS)
 D_LVBKV_CFG = ExpConfig("D_LVBKV", D_LVBKV, Z3_SOLVERS)
 D_FVBKV_CFG = ExpConfig("D_FVBKV", D_FVBKV, Z3_SOLVERS)
@@ -38,7 +38,6 @@ def analyze_results(cfg):
     plot_time_stable(cfg, summaries)
     plot_time_mixed(cfg, summaries)
 
-    # build_summary_table(D_LVBKV_CFG)
     # print_summary_data(cfgs)
     # plot_query_sizes(cfgs)
     # dump_all(cfgs)
@@ -70,11 +69,11 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
-    # analyze_results(S_KOMODO_CFG)
+    analyze_results(FS_VWASM_CFG)
 
-    cfg = ExpConfig("S_KOMODO", S_KOMODO, [CVC5_1_0_3])
-    cfg.num_procs = 8
-    r = Runner(cfg, True)
+    # cfg = ExpConfig("S_KOMODO", S_KOMODO, [CVC5_1_0_3])
+    # cfg.num_procs = 8
+    # r = Runner(cfg, True)
     # clean_queries()
 
     # con, cur = get_cursor()
