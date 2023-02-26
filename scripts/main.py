@@ -32,9 +32,10 @@ ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, F
 
 def analyze_results(cfg):
     # build_summary_table(cfg)
-    summaries = load_summary(cfg)
+    summaries = load_summary(cfg, 40)
     plot_basic(cfg, summaries)
-    # get_unstable_intervals(summaries)
+    intervals = get_unstable_intervals(summaries)
+    # print(intervals)
     plot_time_stable(cfg, summaries)
     plot_time_mixed(cfg, summaries)
 
@@ -47,7 +48,11 @@ def analyze_results(cfg):
 
 def import_database():
     tables = [
-        "FS_VWASM_cvc5_1_0_3"]
+        "D_LVBKV_z3_4_11_2",
+        "D_LVBKV_z3_4_4_2",
+        "D_LVBKV_z3_4_5_0",
+        "D_LVBKV_z3_4_6_0",
+        "D_LVBKV_z3_4_8_5"]
     import_tables("data/mariposa2.db", tables)
 
 def clean_queries():
@@ -69,9 +74,11 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
-    analyze_results(FS_VWASM_CFG)
+    # analyze_results(S_KOMODO_CFG)
+    # build_summary_table(D_LVBKV_CFG)
+    analyze_results(D_LVBKV_CFG)
 
-    # cfg = ExpConfig("S_KOMODO", S_KOMODO, [CVC5_1_0_3])
+    # import_database()
     # cfg.num_procs = 8
     # r = Runner(cfg, True)
     # clean_queries()
