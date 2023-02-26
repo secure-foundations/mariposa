@@ -34,7 +34,6 @@ def analyze_results(cfg):
     # build_summary_table(cfg)
     summaries = load_summary(cfg, 40)
     plot_basic(cfg, summaries)
-    intervals = get_unstable_intervals(summaries)
     # print(intervals)
     plot_time_stable(cfg, summaries)
     plot_time_mixed(cfg, summaries)
@@ -48,11 +47,11 @@ def analyze_results(cfg):
 
 def import_database():
     tables = [
-        "D_LVBKV_z3_4_11_2",
-        "D_LVBKV_z3_4_4_2",
-        "D_LVBKV_z3_4_5_0",
-        "D_LVBKV_z3_4_6_0",
-        "D_LVBKV_z3_4_8_5"]
+"D_FVBKV_z3_4_11_2",
+"D_FVBKV_z3_4_4_2",
+"D_FVBKV_z3_4_5_0",
+"D_FVBKV_z3_4_6_0",
+"D_FVBKV_z3_4_8_5 "]
     import_tables("data/mariposa2.db", tables)
 
 def clean_queries():
@@ -74,11 +73,13 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
-    # analyze_results(S_KOMODO_CFG)
-    # build_summary_table(D_LVBKV_CFG)
-    # analyze_results(D_LVBKV_CFG)
-    dump_all([S_KOMODO_CFG, FS_VWASM_CFG, D_LVBKV_CFG], timeout_threshold=40, time_std_threshold=3)
     # import_database()
+
+    # analyze_results(D_FVBKV_CFG)
+    # build_summary_table(D_FVBKV_CFG)
+    # analyze_results(D_LVBKV_CFG)
+    dump_all([S_KOMODO_CFG, FS_VWASM_CFG, D_LVBKV_CFG, D_FVBKV_CFG], timeout_threshold=40, time_std_threshold=3)
+
     # cfg.num_procs = 8
     # r = Runner(cfg, True)
     # clean_queries()
