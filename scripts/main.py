@@ -76,8 +76,8 @@ if __name__ == '__main__':
 
     # analyze_results(S_KOMODO_CFG)
     # build_summary_table(D_LVBKV_CFG)
-    analyze_results(D_LVBKV_CFG)
-
+    # analyze_results(D_LVBKV_CFG)
+    dump_all([S_KOMODO_CFG, FS_VWASM_CFG, D_LVBKV_CFG], timeout_threshold=40, time_std_threshold=3)
     # import_database()
     # cfg.num_procs = 8
     # r = Runner(cfg, True)

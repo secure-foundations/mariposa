@@ -25,6 +25,9 @@ def get_color_map(keys):
     assert len(keys) <= len(COLORS)
     return {k: COLORS[i] for i, k in enumerate(keys)}
 
+def percentage(a, b):
+    return a * 100 / b
+
 def append_summary_table(cfg, solver):
     con, cur = get_cursor()
     solver_table = cfg.qcfg.get_solver_table_name(solver)
@@ -106,7 +109,7 @@ def group_time_std(times):
 
 def group_success_rate(vres):
     assert len(vres) != 0
-    return vres.count("unsat") * 100 / len(vres)
+    return percentage(vres.count("unsat"), len(vres))
 
 def remap_timeouts(summaries, timeout_threshold=None):
     if timeout_threshold is None:
@@ -129,7 +132,8 @@ def load_summary(cfg, timeout_threshold):
         nrows = []
         for row in rows:
             nrow = list(row)
-            if as_seconds(nrow[3]) >= timeout_threshold:
+            # remap the plain one as well
+            if timeout_threshold is not None and as_seconds(nrow[3]) >= timeout_threshold:
                 nrow[2] = "timeout"
             nrow[4] = remap_timeouts(ast.literal_eval(row[4]), timeout_threshold)
             nrows.append(nrow)
@@ -205,16 +209,36 @@ def get_categories(solver_summaries):
         categories[solver] = (unsolvables, stables, unstables, count)
     return categories
 
-def get_unstable_intervals(solver_summaries):
+def get_res_unstable_intervals(solver_summaries):
     categories = get_categories(solver_summaries)
     intervals = dict()
     for solver, (unsolvables, stables, _, count) in categories.items():
-        max_ratio = (count - len(stables)) * 100 / count
-        min_ratio = len(unsolvables) * 100 / count
+        max_ratio = percentage(count - len(stables), count)
+        min_ratio = percentage(len(unsolvables), count)
         intervals[solver] = (min_ratio, max_ratio)
-        print(solver, round(min_ratio, 2), "~" ,round(max_ratio, 2), 
-              round(max_ratio - min_ratio, 2))
+        # print(solver, round(min_ratio, 2), "~" ,round(max_ratio, 2), 
+        #       round(max_ratio - min_ratio, 2))
     return intervals
+
+def get_time_unstable_ratios(solver_summaries, time_std_threshold):
+    ratios = dict()
+    for solver, rows in solver_summaries.items():
+        ratios[solver] = set()
+        count = len(rows)
+        for row in rows:
+            plain_path, summaries = row[1], row[4]
+            plain_res, plain_time = row[2], row[3]
+            all_sr = get_all_sr(plain_res, summaries)
+            if all_sr != 100:
+                continue
+            for (_, _, times) in summaries:
+                if len(times) == 0:
+                    continue
+                # if any group has such behavior
+                if group_time_std(times + [plain_time]) > time_std_threshold:
+                    ratios[solver].add(plain_path)
+    ratios = {s: percentage(len(paths), count) for s, paths in ratios.items()}
+    return ratios
 
 def plot_time_stable(cfg, solver_summaries):
     solver_count = len(cfg.samples)
@@ -389,66 +413,62 @@ def plot_query_sizes(cfgs):
 #             row.append(f"{str_percent(lp)}~{str_percent(hp)}, {str_percent(p)}")
 #         print("|" + "|".join(row) + "|")
 
-def dump_all(cfgs):
+def dump_all(cfgs, timeout_threshold, time_std_threshold):
     projects = [cfg.qcfg.project for cfg in cfgs]
     project_names = [cfg.get_project_name() for  cfg in cfgs]
     solver_names = [str(s) for s in ALL_SOLVERS]
 
+    # data = []
+    # for cfg in cfgs:
+    #     summaries = load_summary(cfg, timeout_threshold)
+    #     intervals = get_res_unstable_intervals(summaries)
+    #     ratios = get_time_unstable_ratios(summaries, time_std_threshold)
+    #     row = []
+    #     for solver_name in solver_names:
+    #         if solver_name in intervals:
+    #             lb, ub = intervals[solver_name]
+    #             row.append([lb, ub, ratios[solver_name]])
+    #         else:
+    #             row.append([-1, -1, -1])
+    #     data.append(row)
+    
+    # print(data)
+
+    data = [[[0.38809831824062097, 1.5523932729624839, 1.9404915912031049], [0.258732212160414, 1.8111254851228977, 1.8111254851228977], [0.258732212160414, 1.6817593790426908, 0.9055627425614489], [0.0, 1.423027166882277, 0.7761966364812419], [0.0, 1.2936610608020698, 1.8111254851228977], [1.034928848641656, 1.2936610608020698, 0.0]], [[1.5954415954415955, 1.7663817663817665, 0.0], [1.5954415954415955, 1.8233618233618234, 0.0], [1.3105413105413106, 1.4814814814814814, 0.05698005698005698], [1.2535612535612535, 1.3105413105413106, 0.05698005698005698], [1.2535612535612535, 1.5384615384615385, 0.17094017094017094], [11.396011396011396, 12.706552706552706, 0.0]], [[1.3214285714285714, 2.142857142857143, 0.35714285714285715], [1.3214285714285714, 2.1785714285714284, 0.375], [1.2142857142857142, 2.357142857142857, 0.5535714285714286], [1.0714285714285714, 1.8571428571428572, 0.30357142857142855], [1.4464285714285714, 5.589285714285714, 1.0714285714285714], [-1, -1, -1]]]
+
     colors = get_color_map([cfg.qcfg.name for cfg in cfgs])
 
     # # # print_as_md_table(data)
-    total = len(solver_names) * len(project_names)
-    barWidth = len(solver_names)/50
-    # fig = plt.subplots(figsize=(total, 8))
+    total = len(solver_names) * len(projects)
+    bar_width = len(solver_names)/50
+    fig = plt.subplots(figsize=(total, 8))
     fig = plt.figure()
 
     br = np.arange(len(solver_names))
-    br = [x - barWidth for x in br]
+    br = [x - bar_width for x in br]
 
     for pi, project_row in enumerate(data):
-        lps = []
-        hps = []
-        br = [x + barWidth for x in br]
+        lps, hps, pds = [], [], []
+        br = [x + bar_width for x in br]
         pcolor = COLORS[pi]
-        pds = []
-        patterns = []
         for i, (lp, hp, p) in enumerate(project_row):
-            if np.isnan(lp):
-                lp = 0
-            if np.isnan(hp):
-                hp = 0
-            if not np.isnan(p):
-                pds.append(p)
-            else:
-                pds.append(-1)
             if lp == hp and lp != 0:
                 plt.scatter(br[i], lp, marker='_', color=pcolor, s=80)
             lps.append(lp)
             hps.append(hp)
             if projects[pi].orig_solver == ALL_SOLVERS[i]:
-                plt.bar(br[i], hp-lp, bottom=lp, width = barWidth, color=pcolor, edgecolor='black')
-                # patterns.append('\\')
-            else:
-                patterns.append(None)
+                plt.bar(br[i], hp-lp, bottom=lp, width = bar_width, color=pcolor, edgecolor='black')
+            pds.append(p)
 
         hps_ = [hps[i] - lps[i] for i in range(len(hps))]
-        plt.bar(br, lps, width = barWidth, color=pcolor, alpha=0.20)
-        plt.bar(br, hps_, bottom=lps, width = barWidth, label=project_names[pi], color=pcolor)
-        plt.scatter(br, pds, marker='x', s=20, color='black', zorder=3)
+        plt.bar(br, height=lps, width=bar_width, color=pcolor, alpha=0.20)
+        plt.bar(br, height=hps_, bottom=lps, width=bar_width, label=project_names[pi], color=pcolor)
+        plt.bar(br, height=pds, bottom=hps, width=bar_width, color=pcolor, alpha=0.40)
 
     plt.ylim(bottom=0, top=15)
     plt.xlabel('solvers', fontsize = 15)
     plt.ylabel('unstable ratios', fontsize = 15)
-    plt.xticks([r + barWidth for r in range(len(lps))], solver_names, rotation=30, ha='right')
+    plt.xticks([r + bar_width for r in range(len(lps))], solver_names, rotation=30, ha='right')
     plt.legend()
     plt.tight_layout()
     plt.savefig("fig/all.pdf")
-
-# dump_all(cfgs)
-# print_summary_data(cfgs)
-# for cfg in cfgs:
-#     plot_time_mixed(cfg)
-#     plot_time_success(cfg)
-# plot_query_sizes(cfgs)
-# build_summary_table(D_KOMODO_BASIC_CFG)
-# append_summary_table(cfg, Z3_4_6_0)
