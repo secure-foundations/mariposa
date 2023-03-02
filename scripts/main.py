@@ -40,28 +40,24 @@ def analyze_results(cfg):
 
     # print_summary_data(cfgs)
     # plot_query_sizes(cfgs)
-    # dump_all(cfgs)
-    # for cfg in cfgs:
-    #     plot_time_mixed(cfg)
-    #     plot_time_success(cfg)
 
 def import_database():
     tables = [
-"D_FVBKV_z3_4_11_2",
-"D_FVBKV_z3_4_4_2",
-"D_FVBKV_z3_4_5_0",
-"D_FVBKV_z3_4_6_0",
-"D_FVBKV_z3_4_8_5 "]
+        "D_KOMODO_z3_4_11_2"]
+
     import_tables("data/mariposa2.db", tables)
 
-def clean_queries():
+def clean_queries(cfg):
     from clean_utils import clean_dfy_project
     from clean_utils import clean_fs_project
-    cfg = FS_VWASM
-    clean_fs_project(cfg, cfg.clean_dirs[Z3_4_11_2])
+    clean_dfy_project(cfg, cfg.clean_dirs[Z3_4_11_2])
 
 def send_project_queries(project, dst):
     pass
+
+def sample_projects(projects):
+    for proj in projects:
+        print(proj)
 
 if __name__ == '__main__':
     print("building mariposa...")
@@ -74,15 +70,30 @@ if __name__ == '__main__':
     assert stdout == "performance"
 
     # import_database()
-
+    # append_summary_table(D_KOMODO_CFG, Z3_4_11_2)
     # analyze_results(D_FVBKV_CFG)
-    # build_summary_table(D_FVBKV_CFG)
-    # analyze_results(D_LVBKV_CFG)
-    dump_all([S_KOMODO_CFG, FS_VWASM_CFG, D_LVBKV_CFG, D_FVBKV_CFG], timeout_threshold=40, time_std_threshold=3)
+    # build_summary_table(FS_DICE_CFG)
 
-    # cfg.num_procs = 8
+    # cfg = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS)
+    # # build_summary_table(cfg)
+    # analyze_results(cfg)
+
+    # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_11_2])
+    # summaries = load_summary(cfg, 40)
+    # get_categories(summaries)
+
+    # # q = "data/d_komodo_z3_clean/verified-verify.gen.dfyImpl___module.__default.va__lemma__compare__memory__to__regs.smt2"
+    # q = "data/d_komodo_z3_clean/verified-secprop-sec_prop_util.i.dfyImpl___module.__default.lemma__allocatePageRefs.smt2"
+
+    # con, cur = get_cursor()
+    # cur.execute("select result_code, elapsed_milli from D_KOMODO_z3_4_11_2 where vanilla_path = ?", (q, ))
+    # for r in cur.fetchall():
+    #     print(r)
+
+    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+    # dump_all(cfgs, timeout_threshold=40, time_std_threshold=3)
+
     # r = Runner(cfg, True)
-    # clean_queries()
 
     # con, cur = get_cursor()
     # cur.execute(f"select * from {cfg.qcfg.get_solver_table_name(Z3_4_8_5)}")

@@ -11,8 +11,9 @@ class SolverBrand(Enum):
 SOLVER_BINS_DIR = "solvers/"
 
 class SolverInfo:
-    def __init__(self, bin_name):
+    def __init__(self, bin_name, date):
         self.path = SOLVER_BINS_DIR + bin_name
+        self.data = date
         assert (os.path.exists(self.path))
 
         self.brand = None
@@ -32,12 +33,14 @@ class SolverInfo:
     def __eq__(self, other):
         return hash(self) == hash(other)
 
-Z3_4_4_2 = SolverInfo("z3-4.4.2")
-Z3_4_5_0 = SolverInfo("z3-4.5.0")
-Z3_4_6_0 = SolverInfo("z3-4.6.0")
-Z3_4_8_5 = SolverInfo("z3-4.8.5")
-Z3_4_11_2 = SolverInfo("z3-4.11.2")
-CVC5_1_0_3 = SolverInfo("cvc5-1.0.3")
+Z3_4_4_2 = SolverInfo("z3-4.4.2", "2015/10/05")
+Z3_4_5_0 = SolverInfo("z3-4.5.0", "2016/11/07")
+Z3_4_6_0 = SolverInfo("z3-4.6.0", "2017/12/18")
+Z3_4_8_5 = SolverInfo("z3-4.8.5","2019/06/02")
+Z3_4_8_17 = SolverInfo("z3-4.8.17","2022/05/04")
+Z3_4_11_2 = SolverInfo("z3-4.11.2", "2022/09/03")
+CVC5_1_0_3 = SolverInfo("cvc5-1.0.3", "2022/12/12")
+
 # d_fvbkv:  d_lvbkv: z3_4_8_5
 
 # ALL_SOLVERS = [Z3_4_5_0, Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3]

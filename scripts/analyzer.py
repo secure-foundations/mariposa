@@ -204,6 +204,7 @@ def get_categories(solver_summaries):
             elif all_sr == 0:
                 unsolvables.add(plain_path)
             else:
+                print(plain_path)
                 unstables.add(plain_path)
             count += 1
         categories[solver] = (unsolvables, stables, unstables, count)
