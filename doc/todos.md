@@ -1,4 +1,4 @@
-- [ ] longer timeouts on "ununsolvable" parts
+- [ ] longer timeouts on "unsolvable" parts
 
 - [ ] dice* shuffle
 
