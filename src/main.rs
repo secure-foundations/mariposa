@@ -90,15 +90,7 @@ fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concre
         .collect()
 }
 
-
-// helper
 fn remove_pattern_rec_helper(curr_term: &mut concrete::Term) {
-    // base case: attributed term (assuming attributed terms will not have patterns nested in
-    // them.. might be wrong?
-    if let concrete::Term::Attributes { term:_, attributes } = curr_term {
-        attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()));
-        return;
-    }
     match curr_term {
         concrete::Term::Application { qual_identifier:_, arguments } => 
             for argument in arguments.iter_mut(){
@@ -108,31 +100,18 @@ fn remove_pattern_rec_helper(curr_term: &mut concrete::Term) {
         concrete::Term::Forall { vars:_, term } => remove_pattern_rec_helper(&mut *term),
         concrete::Term::Exists { vars:_, term } => remove_pattern_rec_helper(&mut *term),
         concrete::Term::Match { term, cases:_ } => remove_pattern_rec_helper(&mut *term),
-        _ => ()
+        concrete::Term::Attributes { term, attributes } => {
+            remove_pattern_rec_helper(term);
+            attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()))
+        }
+        concrete::Term::Constant(_) => (),
+        concrete::Term::QualIdentifier(_) => (),
     }
 }
-
-
 
 fn remove_pattern_rec(command: &mut concrete::Command) {
     if let concrete::Command::Assert { term } = command {
         remove_pattern_rec_helper(term);
-    }
-}
-
-
-fn remove_pattern_non_rec(command: &mut concrete::Command) {
-    print!("{:?\n}\n", command);
-    if let concrete::Command::Assert { term } = command {
-        if let concrete::Term::Forall {
-            vars: _,
-            term: attributed_term,
-        } = term
-        {
-            if let concrete::Term::Attributes { term: _, attributes } = &mut **attributed_term {
-                attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()));
-            }
-        }
     }
 }
 
