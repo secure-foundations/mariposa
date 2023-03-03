@@ -41,11 +41,11 @@ def analyze_results(cfg):
     # print_summary_data(cfgs)
     # plot_query_sizes(cfgs)
 
-def import_database():
-    tables = [
-        "D_KOMODO_z3_4_8_17"]
-
-    import_tables("data/mariposa2.db", tables)
+def import_database(other_server):
+    other_db_path = "data/mariposa2.db"
+    os.system(f"rm {other_db_path}")
+    os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {other_db_path}")
+    import_tables(other_db_path)
 
 def clean_queries(cfg):
     from clean_utils import clean_dfy_project
@@ -70,8 +70,8 @@ if __name__ == '__main__':
     assert stdout == "performance"
 
     # import_database()
-    # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_17])
-    # append_summary_table(cfg, Z3_4_8_17)
+    # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_7])
+    # append_summary_table(cfg, Z3_4_8_7)
 
     # analyze_results(D_FVBKV_CFG)
     # build_summary_table(FS_DICE_CFG)
