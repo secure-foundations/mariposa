@@ -90,7 +90,38 @@ fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concre
         .collect()
 }
 
+
+// helper
+fn remove_pattern_rec_helper(curr_term: &mut concrete::Term) {
+    // base case: attributed term (assuming attributed terms will not have patterns nested in
+    // them.. might be wrong?
+    if let concrete::Term::Attributes { term:_, attributes } = curr_term {
+        attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()))
+    }
+    match curr_term.as_mut() {
+        concrete::Term::Application { qual_identifier:_, arguments } => 
+            for argument in arguments.iter_mut(){
+                remove_pattern_rec_helper(argument)
+            },
+        concrete::Term::Let { var_bindings:_, term } => remove_pattern_rec_helper(&mut *term),
+        concrete::Term::Forall { vars:_, term } => remove_pattern_rec_helper(&mut *term),
+        concrete::Term::Exists { vars:_, term } => remove_pattern_rec_helper(&mut *term),
+        concrete::Term::Match { term, cases:_ } => remove_pattern_rec_helper(&mut *term),
+        _ => ()
+    }
+}
+
+
+
+fn remove_pattern_rec(command: &mut concrete::Command) {
+    if let concrete::Command::Assert { term } = command {
+        remove_pattern_rec_helper(term);
+    }
+}
+
+
 fn remove_pattern_non_rec(command: &mut concrete::Command) {
+    print!("{:?\n}\n", command);
     if let concrete::Command::Assert { term } = command {
         if let concrete::Term::Forall {
             vars: _,
@@ -100,7 +131,7 @@ fn remove_pattern_non_rec(command: &mut concrete::Command) {
             if let concrete::Term::Attributes { term, attributes } = *attributed_term.clone() {
                 let attributes = attributes
                     .into_iter()
-                    .filter(|x| x.0 == concrete::Keyword("pattern".to_owned()))
+                    .filter(|x| x.0 != concrete::Keyword("pattern".to_owned()))
                     .collect();
                 **attributed_term = concrete::Term::Attributes { term, attributes };
             }
@@ -110,20 +141,7 @@ fn remove_pattern_non_rec(command: &mut concrete::Command) {
 
 // patterns
 fn remove_patterns(commands: &mut Vec<concrete::Command>) {
-    // let vector = vec!(1, 2, 3);
-    // let result = vector.into_iter().map(|x| x * 2).collect::<Vec<i32>>();
-    // println!("{:?}", vector);
-    // println!("{:?}", result);
-
     commands.iter_mut().for_each(|x| remove_pattern_non_rec(x));
-    // println!("{:?}", commands);
-    // println!("{:?}", result);
-
-    // for command in &mut commands {
-    //     // println!("assert: {}", command);
-
-    // }
-    // commands
 }
 
 struct Manager {
