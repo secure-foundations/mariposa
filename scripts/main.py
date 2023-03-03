@@ -19,7 +19,7 @@ FS_VWASM.assign_cvc5_dirs("data/fs_vwasm_cvc5_clean/")
 
 FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
 
-Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2]
+Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_17, Z3_4_11_2]
 
 S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, ALL_SOLVERS)
 D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS)
@@ -70,12 +70,15 @@ if __name__ == '__main__':
     assert stdout == "performance"
 
     # import_database()
-    # append_summary_table(D_KOMODO_CFG, Z3_4_11_2)
     # analyze_results(D_FVBKV_CFG)
     # build_summary_table(FS_DICE_CFG)
 
-    # cfg = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS)
-    # # build_summary_table(cfg)
+    # cfg = ExpConfig("FS_DICE", FS_VWASM, [Z3_4_8_17])
+    # cfg = ExpConfig("FS_VWASM", FS_VWASM, [Z3_4_8_17])
+    # r = Runner(cfg, True)
+    # append_summary_table(cfg, Z3_4_8_17)
+
+    # build_summary_table(cfg)
     # analyze_results(cfg)
 
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_11_2])
@@ -90,10 +93,8 @@ if __name__ == '__main__':
     # for r in cur.fetchall():
     #     print(r)
 
-    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
-    # dump_all(cfgs, timeout_threshold=40, time_std_threshold=3)
-
-    # r = Runner(cfg, True)
+    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+    dump_all(cfgs, timeout_threshold=40, time_std_threshold=3)
 
     # con, cur = get_cursor()
     # cur.execute(f"select * from {cfg.qcfg.get_solver_table_name(Z3_4_8_5)}")

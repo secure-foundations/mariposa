@@ -129,6 +129,8 @@ def load_summary(cfg, timeout_threshold):
         res = cur.execute(f"""SELECT * FROM {summary_table_name}
             WHERE solver = ?""", (solver,))
         rows = res.fetchall()
+        if len(rows) == 0:
+            continue
         nrows = []
         for row in rows:
             nrow = list(row)
@@ -204,7 +206,6 @@ def get_categories(solver_summaries):
             elif all_sr == 0:
                 unsolvables.add(plain_path)
             else:
-                print(plain_path)
                 unstables.add(plain_path)
             count += 1
         categories[solver] = (unsolvables, stables, unstables, count)
