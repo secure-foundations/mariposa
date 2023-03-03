@@ -43,7 +43,7 @@ def analyze_results(cfg):
 
 def import_database():
     tables = [
-        "D_KOMODO_z3_4_11_2"]
+        "D_KOMODO_z3_4_8_17"]
 
     import_tables("data/mariposa2.db", tables)
 
@@ -70,18 +70,15 @@ if __name__ == '__main__':
     assert stdout == "performance"
 
     # import_database()
+    # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_17])
+    # append_summary_table(cfg, Z3_4_8_17)
+
     # analyze_results(D_FVBKV_CFG)
     # build_summary_table(FS_DICE_CFG)
 
-    # cfg = ExpConfig("FS_DICE", FS_VWASM, [Z3_4_8_17])
-    # cfg = ExpConfig("FS_VWASM", FS_VWASM, [Z3_4_8_17])
+    # cfg = ExpConfig("FS_DICE", FS_DICE, [Z3_4_8_17])
     # r = Runner(cfg, True)
-    # append_summary_table(cfg, Z3_4_8_17)
 
-    # build_summary_table(cfg)
-    # analyze_results(cfg)
-
-    # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_11_2])
     # summaries = load_summary(cfg, 40)
     # get_categories(summaries)
 
@@ -93,8 +90,8 @@ if __name__ == '__main__':
     # for r in cur.fetchall():
     #     print(r)
 
-    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
-    dump_all(cfgs, timeout_threshold=40, time_std_threshold=3)
+    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+    # dump_all(cfgs, timeout_threshold=40, time_std_threshold=3)
 
     # con, cur = get_cursor()
     # cur.execute(f"select * from {cfg.qcfg.get_solver_table_name(Z3_4_8_5)}")
