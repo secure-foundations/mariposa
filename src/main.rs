@@ -97,10 +97,10 @@ fn remove_pattern_non_rec(command: &mut concrete::Command) {
             term: attributed_term,
         } = term
         {
-            if let concrete::Term::Attributes { term, attributes } = *attributed_term.clone() {
+            if let concrete::Term::Attributes { term, attributes } = *(attributed_term.clone()) {
                 let attributes = attributes
                     .into_iter()
-                    .filter(|x| x.0 == concrete::Keyword("pattern".to_owned()))
+                    .filter(|x| x.0 != concrete::Keyword("pattern".to_owned()))
                     .collect();
                 **attributed_term = concrete::Term::Attributes { term, attributes };
             }
