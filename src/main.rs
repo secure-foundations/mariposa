@@ -1,5 +1,6 @@
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
+use rand::Rng;
 use rand_chacha::ChaCha8Rng;
 use rustop::opts;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
@@ -90,34 +91,38 @@ fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concre
         .collect()
 }
 
-fn remove_pattern_rec_helper(curr_term: &mut concrete::Term) {
+fn remove_pattern_rec_helper(curr_term: &mut concrete::Term, rng: &mut ChaCha8Rng, threshold: u64) {
     match curr_term {
         concrete::Term::Application { qual_identifier:_, arguments } => 
             for argument in arguments.iter_mut(){
-                remove_pattern_rec_helper(argument)
+                remove_pattern_rec_helper(argument, rng, threshold)
             },
-        concrete::Term::Let { var_bindings:_, term } => remove_pattern_rec_helper(&mut *term),
-        concrete::Term::Forall { vars:_, term } => remove_pattern_rec_helper(&mut *term),
-        concrete::Term::Exists { vars:_, term } => remove_pattern_rec_helper(&mut *term),
-        concrete::Term::Match { term, cases:_ } => remove_pattern_rec_helper(&mut *term),
+        concrete::Term::Let { var_bindings:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
+        concrete::Term::Forall { vars:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
+        concrete::Term::Exists { vars:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
+        concrete::Term::Match { term, cases:_ } => remove_pattern_rec_helper(&mut *term, rng, threshold),
         concrete::Term::Attributes { term, attributes } => {
-            remove_pattern_rec_helper(term);
-            attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()))
+            remove_pattern_rec_helper(term, rng, threshold);
+            let random = rng.gen_range(1..101);
+            if random <= threshold {
+                attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()))
+            }
         }
         concrete::Term::Constant(_) => (),
         concrete::Term::QualIdentifier(_) => (),
     }
 }
 
-fn remove_pattern_rec(command: &mut concrete::Command) {
+fn remove_pattern_rec(command: &mut concrete::Command, rng: &mut ChaCha8Rng, threshold: u64) {
     if let concrete::Command::Assert { term } = command {
-        remove_pattern_rec_helper(term);
+        remove_pattern_rec_helper(term, rng, threshold);
     }
 }
 
 // patterns
-fn remove_patterns(commands: &mut Vec<concrete::Command>) {
-    commands.iter_mut().for_each(|x| remove_pattern_rec(x));
+fn remove_patterns(commands: &mut Vec<concrete::Command>, seed: u64, threshold: u64) {
+    let mut rng = ChaCha8Rng::seed_from_u64(seed);
+    commands.iter_mut().for_each(|x| remove_pattern_rec(x, &mut rng, threshold));
 }
 
 struct Manager {
@@ -194,7 +199,9 @@ fn main() {
         opt out_file_path:Option<String>,
             desc: "output file path";
         opt seed:u64=DEFAULT_SEED,
-        desc: "seed for randomness";
+            desc: "seed for randomness";
+        opt threshold:u64=100,
+            desc: "threshold for pattern removal";
     }
     .parse_or_exit();
 
@@ -221,7 +228,7 @@ fn main() {
                 manager.dump(&format!("(set-option :random-seed {solver_seed})\n"));
             };
         } else if args.perturbation == "patterns" {
-            remove_patterns(&mut commands);
+            remove_patterns(&mut commands, manager.seed, args.threshold);
         }
         manager.dump_non_info_commands(&commands);
     }
