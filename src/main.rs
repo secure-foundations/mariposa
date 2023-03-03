@@ -96,9 +96,10 @@ fn remove_pattern_rec_helper(curr_term: &mut concrete::Term) {
     // base case: attributed term (assuming attributed terms will not have patterns nested in
     // them.. might be wrong?
     if let concrete::Term::Attributes { term:_, attributes } = curr_term {
-        attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()))
+        attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()));
+        return;
     }
-    match curr_term.as_mut() {
+    match curr_term {
         concrete::Term::Application { qual_identifier:_, arguments } => 
             for argument in arguments.iter_mut(){
                 remove_pattern_rec_helper(argument)
@@ -137,7 +138,7 @@ fn remove_pattern_non_rec(command: &mut concrete::Command) {
 
 // patterns
 fn remove_patterns(commands: &mut Vec<concrete::Command>) {
-    commands.iter_mut().for_each(|x| remove_pattern_non_rec(x));
+    commands.iter_mut().for_each(|x| remove_pattern_rec(x));
 }
 
 struct Manager {
