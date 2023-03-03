@@ -1,6 +1,8 @@
+- [ ] longer timeouts on "ununsolvable" parts
+
 - [ ] dice* shuffle
 
-- [x] ping cvc5 guy 
+- [x] ping cvc5 guy
 
 - [ ] cvc5 longer timeout?
 
