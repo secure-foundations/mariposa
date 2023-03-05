@@ -119,11 +119,11 @@ def replace_fs_fuel(commands):
 DSORT_CMD = re.compile("\(declare-sort ([^\)]+)\)")
 QID_ATTR = re.compile(":qid @([^ \)]+)")
 NAMED_ATTR = re.compile(":named @([^ \)]+)")
+BOXINT_NEG = re.compile("BoxInt (-[0-9]+)")
 
 import string
 
 # def check_single_pattern(command):
-    
 
 def clean_cmds_cvc5(commands):
     for i, command in enumerate(commands):
@@ -139,10 +139,14 @@ def clean_cmds_cvc5(commands):
         if match:
             res = ''.join(random.choices(string.ascii_lowercase, k=10))
             command = command.replace(match.group(0), f":named {res}")
-        command = command.replace("BoxInt -1", "BoxInt - 1")
+
+        matches = re.finditer(BOXINT_NEG, command)
+
+        for match in matches:
+            num = match.group(1)
+            command = command.replace(num, f"(- {num[1:]})")
         command = command.replace(":pattern (Prims.precedes t1 t2 e1 e2)", ":pattern ((Prims.precedes t1 t2 e1 e2))")
         commands[i] = command
-        # print(command, end="")
 
 def clean_fs_project(project, z3_dst_dir, cvc5_dst_dir):
     src_dir = project.get_plain_dir()
@@ -151,6 +155,7 @@ def clean_fs_project(project, z3_dst_dir, cvc5_dst_dir):
         cmds = read_standard_cmds(in_path)
         cmds = replace_fs_fuel(cmds)
         clean_cmds_cvc5(cmds)
+
         cvc5_out_path = convert_path(in_path, src_dir, cvc5_dst_dir)
         cvc5_out_f = open(cvc5_out_path, "w+")
         cvc5_out_f.writelines(cmds)

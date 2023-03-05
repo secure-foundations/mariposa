@@ -72,8 +72,10 @@ if __name__ == '__main__':
     # from clean_utils import clean_fs_project
     # clean_fs_project(FS_DICE, None, "data/fs_dice_cvc5_clean/")
 
-    # import_database("s1905")
-    # append_summary_table(D_KOMODO_CFG, Z3_4_8_8)
+    # import_database("s1907")
+    # append_summary_table(D_KOMODO_CFG, Z3_4_8_11)
+
+    analyze_d_komodo_sus(D_KOMODO_CFG)
 
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_7])
 
@@ -83,9 +85,6 @@ if __name__ == '__main__':
     # cfg = ExpConfig("FS_DICE", FS_DICE, [Z3_4_8_17])
     # r = Runner(cfg, True)
 
-    # summaries = load_summary(cfg, 40)
-    # get_categories(summaries)
-
     # # q = "data/d_komodo_z3_clean/verified-verify.gen.dfyImpl___module.__default.va__lemma__compare__memory__to__regs.smt2"
     # q = "data/d_komodo_z3_clean/verified-secprop-sec_prop_util.i.dfyImpl___module.__default.lemma__allocatePageRefs.smt2"
 
@@ -94,8 +93,9 @@ if __name__ == '__main__':
     # for r in cur.fetchall():
     #     print(r)
 
-    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
-    dump_all(cfgs, timeout_threshold=40, time_std_threshold=3)
+    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+    # # # cfgs = [D_KOMODO_CFG]
+    # dump_all(cfgs, timeout_threshold=40, time_std_threshold=3)
 
     # con, cur = get_cursor()
     # cur.execute(f"select * from {cfg.qcfg.get_solver_table_name(Z3_4_8_5)}")

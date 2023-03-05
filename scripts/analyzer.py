@@ -109,6 +109,9 @@ def group_time_std(times):
 
 def group_success_rate(vres):
     assert len(vres) != 0
+    # ec = vres.count("error")
+    # if ec != 0:
+    #     print(ec)
     return percentage(vres.count("unsat"), len(vres))
 
 def remap_timeouts(summaries, timeout_threshold=None):
@@ -415,6 +418,32 @@ def plot_query_sizes(cfgs):
 #             row.append(f"{str_percent(lp)}~{str_percent(hp)}, {str_percent(p)}")
 #         print("|" + "|".join(row) + "|")
 
+def analyze_d_komodo_sus(cfg):
+    assert cfg.qcfg.name == "D_KOMODO"
+    print("D_KOMODO total:")
+    os.system("""ls data/d_komodo_z3_clean/ | wc -l""")
+    print("D_KOMODO va__* total:")
+    os.system("""ls data/d_komodo_z3_clean/ | grep "va__" | wc -l""")
+    summaries = load_summary(cfg, 40)
+    categories = get_categories(summaries)
+
+    for other in [Z3_4_8_6, Z3_4_8_7, Z3_4_8_8, Z3_4_8_11, Z3_4_8_17, Z3_4_11_2]:
+        usol, ausol = 0, 0
+        for i in categories[other][0] - categories[Z3_4_8_5][0]:
+            if "va__" in i:
+                usol += 1
+            ausol += 1
+
+        usta, austa = 0, 0
+        for i in categories[other][2] - categories[Z3_4_8_5][2]:
+            if "va__" in i:
+                usta += 1
+            austa += 1
+
+        print(other)
+        print("va__* in additional unsolvable:", usol, "/", ausol)
+        print("va__* in additional unstable:", usta, "/", austa)
+
 def dump_all(cfgs, timeout_threshold, time_std_threshold):
     projects = [cfg.qcfg.project for cfg in cfgs]
     project_names = [cfg.get_project_name() for  cfg in cfgs]
@@ -433,7 +462,7 @@ def dump_all(cfgs, timeout_threshold, time_std_threshold):
             else:
                 row.append([-1, -1, -1])
         data.append(row)
-    
+
     print(data)
 
     # data = [[[0.38809831824062097, 1.5523932729624839, 1.9404915912031049], [0.258732212160414, 1.8111254851228977, 1.8111254851228977], [0.258732212160414, 1.6817593790426908, 0.9055627425614489], [0.0, 1.423027166882277, 0.7761966364812419], [0.0, 1.2936610608020698, 1.8111254851228977], [1.034928848641656, 1.2936610608020698, 0.0]], [[1.5954415954415955, 1.7663817663817665, 0.0], [1.5954415954415955, 1.8233618233618234, 0.0], [1.3105413105413106, 1.4814814814814814, 0.05698005698005698], [1.2535612535612535, 1.3105413105413106, 0.05698005698005698], [1.2535612535612535, 1.5384615384615385, 0.17094017094017094], [11.396011396011396, 12.706552706552706, 0.0]], [[1.3214285714285714, 2.142857142857143, 0.35714285714285715], [1.3214285714285714, 2.1785714285714284, 0.375], [1.2142857142857142, 2.357142857142857, 0.5535714285714286], [1.0714285714285714, 1.8571428571428572, 0.30357142857142855], [1.4464285714285714, 5.589285714285714, 1.0714285714285714], [-1, -1, -1]]]
