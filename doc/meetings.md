@@ -1,3 +1,18 @@
+## March 7th:
+
+present:
+
+* current overall fig
+* current categorization of queries
+* selection of timelimit cutoff and result diff
+* pattern removal
+
+discuss:
+
+* z3 regression
+* triaging of tasks
+  * eco-system vs moving on to controlled experiments?
+* db too large for git?
 
 ## Feb 21th:
 
