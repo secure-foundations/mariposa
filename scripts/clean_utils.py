@@ -1,14 +1,6 @@
 import re
 from tqdm import tqdm
-import os
-
-def list_smt2_files(sub_root):
-    file_paths = []
-    for root, _, files in os.walk(sub_root):
-        for file in files:
-            if file.endswith(".smt2"):
-                file_paths.append(os.path.join(root, file))
-    return file_paths
+from configs.projects import *
 
 SPACED_CMD = re.compile("\(( +)[a-z]+")
 def remove_cmd_space(cmd):
@@ -112,8 +104,7 @@ FUEL_CMD = """(declare-datatypes () ((Fuel (ZFuel) (SFuel (prec Fuel)))))\n"""
 
 FUEL_ALT_CMD = """(declare-sort Fuel)
 (declare-fun ZFuel () Fuel)
-(declare-fun SFuel (Fuel) Fuel)
-(declare-fun MaxIFuel () Fuel)\n"""
+(declare-fun SFuel (Fuel) Fuel)\n"""
 
 def replace_fs_fuel(commands):
     replaced = False
@@ -125,16 +116,48 @@ def replace_fs_fuel(commands):
     assert replaced
     return commands
 
-def clean_fs_project(project, dst_dir):
+DSORT_CMD = re.compile("\(declare-sort ([^\)]+)\)")
+QID_ATTR = re.compile(":qid @([^ \)]+)")
+NAMED_ATTR = re.compile(":named @([^ \)]+)")
+
+import string
+
+# def check_single_pattern(command):
+    
+
+def clean_cmds_cvc5(commands):
+    for i, command in enumerate(commands):
+        match = re.search(DSORT_CMD, command)
+        if match:
+            res = f"(declare-sort {match.group(1)} 0)"
+            command = command.replace(match.group(0), res)
+        if "bv2int" in command:
+            command = command.replace("bv2int", "bv2nat")
+        command = command.replace("(iff ", "(= ")
+        command = command.replace("(implies ", "(=> ")
+        match = re.search(NAMED_ATTR, command)
+        if match:
+            res = ''.join(random.choices(string.ascii_lowercase, k=10))
+            command = command.replace(match.group(0), f":named {res}")
+        command = command.replace("BoxInt -1", "BoxInt - 1")
+        command = command.replace(":pattern (Prims.precedes t1 t2 e1 e2)", ":pattern ((Prims.precedes t1 t2 e1 e2))")
+        commands[i] = command
+        # print(command, end="")
+
+def clean_fs_project(project, z3_dst_dir, cvc5_dst_dir):
     src_dir = project.get_plain_dir()
 
     for in_path in tqdm(list_smt2_files(src_dir)):
         cmds = read_standard_cmds(in_path)
         cmds = replace_fs_fuel(cmds)
+        clean_cmds_cvc5(cmds)
+        cvc5_out_path = convert_path(in_path, src_dir, cvc5_dst_dir)
+        cvc5_out_f = open(cvc5_out_path, "w+")
+        cvc5_out_f.writelines(cmds)
 
-        out_path = convert_path(in_path, src_dir, dst_dir)
-        out_f = open(out_path, "w+")
-        out_f.writelines(cmds)
+        # z3_out_path = convert_path(in_path, src_dir, z3_dst_dir)
+        # z3_out_f = open(z3_out_path, "w+")
+        # z3_out_f.writelines(cmds)
 
 def clean_dfy_project(project, dst_dir):
     src_dir = project.get_plain_dir()
@@ -144,6 +167,8 @@ def clean_dfy_project(project, dst_dir):
         cmds = read_standard_cmds(in_path)
         open(out_path, "w+").writelines(cmds)
 
+# FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
+# clean_fs_project(FS_DICE, None, None)
 # def subprocess_run(command, time_limit, debug=False, cwd=None):
 #     command = f"timeout {time_limit} " + command
 #     if debug:

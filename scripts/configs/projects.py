@@ -1,7 +1,6 @@
 import os
 import random
 from enum import Enum
-from clean_utils import list_smt2_files
 
 # solver related
 class SolverBrand(Enum):
@@ -38,6 +37,7 @@ Z3_4_5_0 = SolverInfo("z3-4.5.0", "2016/11/07")
 Z3_4_6_0 = SolverInfo("z3-4.6.0", "2017/12/18")
 Z3_4_8_5 = SolverInfo("z3-4.8.5","2019/06/02")
 
+Z3_4_8_6 = SolverInfo("z3-4.8.6","2019/09/19")
 Z3_4_8_7 = SolverInfo("z3-4.8.7","2019/11/19")
 Z3_4_8_8 = SolverInfo("z3-4.8.8","2020/05/08")
 Z3_4_8_11 = SolverInfo("z3-4.8.11","2021/07/11")
@@ -49,8 +49,16 @@ CVC5_1_0_3 = SolverInfo("cvc5-1.0.3", "2022/12/12")
 # d_fvbkv:  d_lvbkv: z3_4_8_5
 
 # ALL_SOLVERS = [Z3_4_5_0, Z3_4_4_2, Z3_4_11_2, CVC5_1_0_3]
-ALL_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_7, Z3_4_8_8, Z3_4_8_11, Z3_4_8_17, Z3_4_11_2, CVC5_1_0_3]
+ALL_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_6, Z3_4_8_7, Z3_4_8_8, Z3_4_8_11, Z3_4_8_17, Z3_4_11_2, CVC5_1_0_3]
 # ALL_SOLVERS = [SolverInfo(p) for p in os.listdir(SOLVER_BINS_DIR)]
+
+def list_smt2_files(sub_root):
+    file_paths = []
+    for root, _, files in os.walk(sub_root):
+        for file in files:
+            if file.endswith(".smt2"):
+                file_paths.append(os.path.join(root, file))
+    return file_paths
 
 # project related
 
