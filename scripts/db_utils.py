@@ -80,7 +80,7 @@ def get_cursor():
     return con, cur
 
 def zip_db():
-    os.system(f"cd data && lrzip -z mariposa.db")
+    os.system(f"cd data && mv mariposa.db.lrz mariposa.temp.db.lrz && lrzip -z mariposa.db && rm mariposa.temp.db.lrz")
 
 def import_tables(other_db_path):
     ts0 = get_tables(DB_PATH)
