@@ -1,15 +1,17 @@
 
-## Finding (more) unstable from unsolvable/stable
+### Finding (more) unstable from unsolvable/stable
 
 - [ ] longer timeouts on "unsolvable" parts
 
 - [ ] dice* shuffle
 
-## Z3 regression:
+## Ecosystem Characterization Experiments:
+
+### Z3 regression:
 
 - [ ] figure out the conmmit between 4.8.5 and 4.8.6 that "broke" things?
 
-## making CVC5 work:
+### Making CVC5 work:
 
 - [x] ping cvc5 guy
 
@@ -19,17 +21,16 @@
 
 - [ ] finding cvc5 configs
 
-
 ## Query Collection Tasks:
 
 for details see [projects](projects.md)
 
 ## Engineering Tasks:
 
-* Advanced command shuffling
-* Dumping and parsing the unsat cores 
-* Testing perturbations (did we perturb correctly?)
-* Erasing triggers (should be easy)
+- [ ] Advanced command shuffling
+- [ ] Dumping and parsing the unsat cores 
+- [ ] Testing perturbations (did we perturb correctly?)
+- [x] Erasing triggers (should be easy)
 
 ## Literature Questions:
 
