@@ -75,7 +75,7 @@ if __name__ == '__main__':
     # import_database("s1907")
     # append_summary_table(D_KOMODO_CFG, Z3_4_8_11)
 
-    analyze_d_komodo_sus(D_KOMODO_CFG)
+    # analyze_d_komodo_sus(D_KOMODO_CFG)
 
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_7])
 
@@ -93,9 +93,9 @@ if __name__ == '__main__':
     # for r in cur.fetchall():
     #     print(r)
 
-    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
     # # # cfgs = [D_KOMODO_CFG]
-    # dump_all(cfgs, timeout_threshold=40, time_std_threshold=3)
+    dump_all(cfgs, timeout_threshold=40, time_std_threshold=3, success_threshold=80)
 
     # con, cur = get_cursor()
     # cur.execute(f"select * from {cfg.qcfg.get_solver_table_name(Z3_4_8_5)}")
