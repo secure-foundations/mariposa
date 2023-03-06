@@ -1,9 +1,4 @@
 
-### Finding (more) unstable from unsolvable/stable
-
-- [ ] longer timeouts on "unsolvable" parts
-
-- [ ] dice* shuffle
 
 ## Ecosystem Characterization Experiments:
 
@@ -20,6 +15,12 @@
 - [ ] run cvc5 on F* projects
 
 - [ ] finding cvc5 configs
+
+### Finding (more) unstable from unsolvable/stable
+
+- [ ] longer timeouts on "unsolvable" parts
+
+- [ ] dice* shuffle
 
 ## Query Collection Tasks:
 
