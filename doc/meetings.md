@@ -4,6 +4,8 @@ present:
 
 * current overall fig
 * current categorization of queries
+  * z-test for unsolvable/result stable
+  * chi2-test for time unstable
 * selection of timelimit and success rate cutoff
 * pattern removal
 
