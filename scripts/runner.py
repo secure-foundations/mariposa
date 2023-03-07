@@ -166,9 +166,10 @@ def run_group_tasks(queue, start_time):
     print("worker exit")
 
 class Runner:
-    def __init__(self, cfg, override=False, remove_mut=True):
-        assert isinstance(cfg, ExpConfig)
-        self.__setup_tables(cfg, override)
+    def __init__(self, cfgs, override=False, remove_mut=True):
+        for cfg in cfgs:
+            assert isinstance(cfg, ExpConfig)
+            self.__setup_tables(cfg, override)
 
         con = get_connection()
         con, cur = get_cursor()
@@ -181,11 +182,11 @@ class Runner:
 
         print("loading tasks")
         tasks = []
-        for solver, queries in cfg.samples.items():
-            print(f"loading tasks {str(solver)}")
-            for query in tqdm(queries):
-                task = SolverTaskGroup(cfg.qcfg, query, solver, remove_mut)
-                if self.__should_run_task(cfg.qcfg, cur, task):
+        for cfg in cfgs:
+            for solver, queries in cfg.samples.items():
+                print(f"loading tasks {str(solver)}")
+                for query in tqdm(queries):
+                    task = SolverTaskGroup(cfg.qcfg, query, solver, remove_mut)
                     tasks.append(task)
         con.close()
         print("shuffling tasks")
@@ -227,16 +228,3 @@ class Runner:
                 create_experiment_table(cur, table_name)
         con.commit()
         con.close()
-
-    # check if enough data has been collected in previous runs
-    def __should_run_task(self, cfg, cur, task):
-        threshold = cfg.min_mutants * len(cfg.enabled_muts)
-        cur.execute(f"""SELECT COUNT(*) from {cfg.get_solver_table_name(task.solver)}
-            WHERE vanilla_path=?""", (task.vanilla_path,))
-        count = cur.fetchone()[0]
-        if count == 0:
-            return True
-        if count < threshold:
-            print(f"we should run {task.vanilla_path} with {task.solver}")
-            return True
-        return False

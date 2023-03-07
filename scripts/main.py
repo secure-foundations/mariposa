@@ -33,10 +33,11 @@ ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, F
 def analyze_results(cfg):
     # build_summary_table(cfg)
     summaries = load_summary(cfg, 40)
-    plot_basic(cfg, summaries)
+    get_categories(summaries)
+    # plot_basic(cfg, summaries)
     # print(intervals)
-    plot_time_stable(cfg, summaries)
-    plot_time_mixed(cfg, summaries)
+    # plot_time_stable(cfg, summaries)
+    # plot_time_mixed(cfg, summaries)
 
     # print_summary_data(cfgs)
     # plot_query_sizes(cfgs)
@@ -72,8 +73,8 @@ if __name__ == '__main__':
     # from clean_utils import clean_fs_project
     # clean_fs_project(FS_DICE, None, "data/fs_dice_cvc5_clean/")
 
-    # import_database("s1907")
-    # append_summary_table(D_KOMODO_CFG, Z3_4_8_11)
+    # import_database("s1905")
+    # append_summary_table(D_FVBKV_CFG, Z3_4_8_11)
 
     # analyze_d_komodo_sus(D_KOMODO_CFG)
 
@@ -82,25 +83,11 @@ if __name__ == '__main__':
     # analyze_results(D_FVBKV_CFG)
     # build_summary_table(FS_DICE_CFG)
 
-    # cfg = ExpConfig("FS_DICE", FS_DICE, [Z3_4_8_17])
-    # r = Runner(cfg, True)
-
-    # # q = "data/d_komodo_z3_clean/verified-verify.gen.dfyImpl___module.__default.va__lemma__compare__memory__to__regs.smt2"
-    # q = "data/d_komodo_z3_clean/verified-secprop-sec_prop_util.i.dfyImpl___module.__default.lemma__allocatePageRefs.smt2"
-
-    # con, cur = get_cursor()
-    # cur.execute("select result_code, elapsed_milli from D_KOMODO_z3_4_11_2 where vanilla_path = ?", (q, ))
-    # for r in cur.fetchall():
-    #     print(r)
-
     cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
-    # # # cfgs = [D_KOMODO_CFG]
-    dump_all(cfgs, timeout_threshold=40, time_std_threshold=3, success_threshold=80)
+    dump_all(cfgs, timeout_threshold=40, time_std_threshold=3, success_threshold=100)
 
-    # con, cur = get_cursor()
-    # cur.execute(f"select * from {cfg.qcfg.get_solver_table_name(Z3_4_8_5)}")
-    # for row in cur.fetchall():
-    #     print(row)
-    # clean_queries()
+    # t1 = ExpConfig("t11", S_KOMODO, [Z3_4_4_2], 5)
+    # t2 = ExpConfig("t22", D_KOMODO, [Z3_4_4_2], 5)
 
-
+    # cfgs = [t1, t2]
+    # r = Runner(cfgs)

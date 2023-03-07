@@ -115,6 +115,10 @@ def group_success_rate(vres):
     return percentage(vres.count("unsat"), len(vres))
 
 def remap_timeouts(summaries, timeout_threshold=None):
+    # new_summaries = []
+    # for (p, vres, times) in summaries:
+    #     new_summaries.append((p, vres[:30], times[:30]))
+    # summaries = new_summaries 
     if timeout_threshold is None:
         return summaries
     for (_, vres, times) in summaries:
@@ -195,6 +199,26 @@ def get_all_sr(plain_res, summaries):
         all_vres += vres
     return group_success_rate(all_vres)
 
+def test_group(vres, times, success_threshold):
+    from statsmodels.stats.proportion import proportions_ztest
+    success_count = vres.count("unsat")
+    sample_size = len(vres)
+    value = success_threshold/100
+    stat, p_value = proportions_ztest(count=success_count, nobs=sample_size, value=value, alternative='smaller', prop_var=value)
+    if p_value > 0.05:
+        # prop = round(success_count/sample_size, 2)
+        # print(p_value, prop)
+        print("not ok")
+    else:
+        print("ok")
+
+    # else:
+    #     print("Reject the null hypothesis - suggest the alternative hypothesis is true")
+
+    # t_critical = stats.t.ppf(q=0.95, df=len(vres)-1)  
+    # res_moe = t_critical * math.sqrt((p*(1-p))/len(vres))
+
+#FIXME: this sr threshold makes no sense
 def get_categories(solver_summaries, success_threshold=100):
     categories = dict()
     for solver, rows in solver_summaries.items():
@@ -204,6 +228,8 @@ def get_categories(solver_summaries, success_threshold=100):
             summaries = row[4]
             plain_path, plain_res = row[1], row[2]
             all_sr = get_all_sr(plain_res, summaries)
+            # for (_, vres, times) in summaries:
+                # test_group(vres, times)
             if all_sr >= success_threshold:
                 stables.add(plain_path)
             elif all_sr == 0:
