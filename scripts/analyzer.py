@@ -10,6 +10,7 @@ from configs.projects import *
 from configs.experiments import *
 from plot_utils import *
 import matplotlib.pyplot as plt
+from statsmodels.stats.proportion import proportions_ztest
 
 COLORS = [
     "#FFB300", # Vivid Yellow
@@ -199,40 +200,63 @@ def get_all_sr(plain_res, summaries):
         all_vres += vres
     return group_success_rate(all_vres)
 
-def test_group(vres, times, success_threshold):
-    from statsmodels.stats.proportion import proportions_ztest
-    success_count = vres.count("unsat")
-    sample_size = len(vres)
-    value = success_threshold/100
-    stat, p_value = proportions_ztest(count=success_count, nobs=sample_size, value=value, alternative='smaller', prop_var=value)
+def is_group_unsolvable(vres, unsolvable_threshold):
+    success = vres.count("unsat")
+    size = len(vres)
+    if size == 10:
+        if success == 10:
+            success = 30
+        size = 30
+    value = unsolvable_threshold/100
+    stat, p_value = proportions_ztest(count=success, nobs=size, value=value, alternative='smaller', prop_var=value)
     if p_value > 0.05:
-        # prop = round(success_count/sample_size, 2)
-        # print(p_value, prop)
-        print("not ok")
+        return False
     else:
-        print("ok")
+        return True
+    
+def is_group_stable(vres, stable_threshold):
+    success = vres.count("unsat")
+    size = len(vres)
+    if size == 10:
+        if success == 10:
+            success = 30
+        size = 30
+    value = stable_threshold/100
+    stat, p_value = proportions_ztest(count=success, nobs=size, value=value, alternative='larger', prop_var=value)
+    if p_value > 0.05:
+        return False
+    else:
+        return True
 
-    # else:
-    #     print("Reject the null hypothesis - suggest the alternative hypothesis is true")
+def check_group(vres, stable_threshold, unsolvable_threshold):
+    unsolvable = is_group_unsolvable(vres, unsolvable_threshold)
+    stable = is_group_stable(vres, stable_threshold)
+    if unsolvable:
+        return "unsolvable"
+    if stable:
+        return "stable"
+    return "unstable"
 
-    # t_critical = stats.t.ppf(q=0.95, df=len(vres)-1)  
-    # res_moe = t_critical * math.sqrt((p*(1-p))/len(vres))
+def check_groups(summaries, stable_threshold, unsolvable_threshold):
+    ress = set()
+    for (_, vres, _) in summaries:
+        ress.add(check_group(vres, stable_threshold, unsolvable_threshold))
+    if len(ress) == 1:
+        return ress.pop()
+    return "unstable"
 
-#FIXME: this sr threshold makes no sense
-def get_categories(solver_summaries, success_threshold=100):
+def get_categories(solver_summaries):
     categories = dict()
-    for solver, rows in solver_summaries.items():
+    for solver, rows in tqdm(solver_summaries.items()):
         unsolvables, stables, unstables = set(), set(), set()
         count = 0
         for row in rows:
             summaries = row[4]
             plain_path, plain_res = row[1], row[2]
-            all_sr = get_all_sr(plain_res, summaries)
-            # for (_, vres, times) in summaries:
-                # test_group(vres, times)
-            if all_sr >= success_threshold:
+            res = check_groups(summaries, 80, 20)
+            if res == "stable":
                 stables.add(plain_path)
-            elif all_sr == 0:
+            elif res == "unsolvable":
                 unsolvables.add(plain_path)
             else:
                 unstables.add(plain_path)
@@ -240,8 +264,8 @@ def get_categories(solver_summaries, success_threshold=100):
         categories[solver] = (unsolvables, stables, unstables, count)
     return categories
 
-def get_res_unstable_intervals(solver_summaries, success_threshold):
-    categories = get_categories(solver_summaries, success_threshold)
+def get_res_unstable_intervals(solver_summaries):
+    categories = get_categories(solver_summaries)
     intervals = dict()
     for solver, (unsolvables, stables, _, count) in categories.items():
         max_ratio = percentage(count - len(stables), count)
@@ -250,6 +274,15 @@ def get_res_unstable_intervals(solver_summaries, success_threshold):
         # print(solver, round(min_ratio, 2), "~" ,round(max_ratio, 2), 
         #       round(max_ratio - min_ratio, 2))
     return intervals
+
+import scipy
+
+def variance_test(times, time_std):
+    size = len(times)
+    std = np.std(times)
+    T = (size - 1) * ((std / time_std) ** 2)
+    c2 = scipy.stats.chi2.ppf(1-0.05, df=size-1)
+    return T > c2
 
 def get_time_unstable_ratios(solver_summaries, time_std_threshold):
     ratios = dict()
@@ -263,10 +296,7 @@ def get_time_unstable_ratios(solver_summaries, time_std_threshold):
             if all_sr != 100:
                 continue
             for (_, _, times) in summaries:
-                if len(times) == 0:
-                    continue
-                # if any group has such behavior
-                if group_time_std(times + [plain_time]) > time_std_threshold:
+                if variance_test(times, time_std_threshold):
                     ratios[solver].add(plain_path)
     ratios = {s: percentage(len(paths), count) for s, paths in ratios.items()}
     return ratios
@@ -470,7 +500,7 @@ def analyze_d_komodo_sus(cfg):
         print("va__* in additional unsolvable:", usol, "/", ausol)
         print("va__* in additional unstable:", usta, "/", austa)
 
-def dump_all(cfgs, timeout_threshold, time_std_threshold, success_threshold):
+def dump_all(cfgs, timeout_threshold, time_std_threshold):
     projects = [cfg.qcfg.project for cfg in cfgs]
     project_names = [cfg.get_project_name() for  cfg in cfgs]
     solver_names = [str(s) for s in ALL_SOLVERS]
@@ -478,7 +508,7 @@ def dump_all(cfgs, timeout_threshold, time_std_threshold, success_threshold):
     data = []
     for cfg in cfgs:
         summaries = load_summary(cfg, timeout_threshold)
-        intervals = get_res_unstable_intervals(summaries, success_threshold)
+        intervals = get_res_unstable_intervals(summaries)
         ratios = get_time_unstable_ratios(summaries, time_std_threshold)
         row = []
         for solver_name in solver_names:
@@ -488,8 +518,6 @@ def dump_all(cfgs, timeout_threshold, time_std_threshold, success_threshold):
             else:
                 row.append([-1, -1, -1])
         data.append(row)
-
-    # print(data)
     # data = [[[0.38809831824062097, 1.5523932729624839, 1.9404915912031049], [0.258732212160414, 1.8111254851228977, 1.8111254851228977], [0.258732212160414, 1.6817593790426908, 0.9055627425614489], [0.0, 1.423027166882277, 0.7761966364812419], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [0.129366106080207, 1.2936610608020698, 3.3635187580853816], [0.0, 1.2936610608020698, 1.8111254851228977], [1.034928848641656, 1.2936610608020698, 0.0]], [[1.3631937682570594, 3.359298928919182, 1.2171372930866602], [1.4118792599805259, 3.2619279454722494, 1.1684518013631937], [1.2658227848101267, 2.8237585199610518, 0.7302823758519961], [1.1197663096397275, 2.6777020447906525, 0.9250243427458618], [2.3369036027263874, 7.254138266796494, 3.0185004868549172], [2.4342745861733204, 7.546251217137293, 3.1645569620253164], [2.4342745861733204, 7.643622200584226, 2.8237585199610518], [3.8461538461538463, 10.662122687439144, 2.775073028237585], [3.6514118792599803, 9.980525803310613, 3.7974683544303796], [3.6514118792599803, 10.17526777020448, 3.9922103213242455], [-1, -1, -1]], [[1.3214285714285714, 2.142857142857143, 0.35714285714285715], [1.3214285714285714, 2.1785714285714284, 0.375], [1.2142857142857142, 2.357142857142857, 0.5535714285714286], [1.0714285714285714, 1.8571428571428572, 0.30357142857142855], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [1.4821428571428572, 5.589285714285714, 1.0], [1.4464285714285714, 5.589285714285714, 1.0714285714285714], [-1, -1, -1]], [[0.8262910798122066, 2.0093896713615025, 0.5070422535211268], [0.8075117370892019, 1.9530516431924883, 0.39436619718309857], [0.4131455399061033, 1.4460093896713615, 0.4131455399061033], [0.4507042253521127, 1.5211267605633803, 0.39436619718309857], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [0.8450704225352113, 4.769953051643192, 0.6572769953051644], [0.7887323943661971, 4.525821596244131, 0.7136150234741784], [-1, -1, -1]], [[1.5954415954415955, 1.7663817663817665, 0.0], [1.5954415954415955, 1.8233618233618234, 0.0], [1.3105413105413106, 1.4814814814814814, 0.05698005698005698], [1.2535612535612535, 1.3105413105413106, 0.05698005698005698], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [1.1965811965811965, 1.6524216524216524, 0.05698005698005698], [1.2535612535612535, 1.5384615384615385, 0.17094017094017094], [11.396011396011396, 12.706552706552706, 0.0]], [[2.9947916666666665, 4.1015625, 0.5859375], [3.3854166666666665, 4.036458333333333, 0.5208333333333334], [3.125, 4.036458333333333, 0.390625], [2.4088541666666665, 3.3203125, 0.390625], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [-1, -1, -1], [2.7994791666666665, 3.90625, 0.9114583333333334], [2.734375, 4.036458333333333, 1.0416666666666667], [-1, -1, -1]]]
 
     colors = get_color_map([cfg.qcfg.name for cfg in cfgs])

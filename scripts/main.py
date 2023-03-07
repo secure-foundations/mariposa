@@ -2,7 +2,6 @@ from configs.projects import *
 from configs.experiments import *
 from runner import Runner, subprocess_run
 from db_utils import *
-from analyzer import *
 
 S_KOMODO = ProjectConfig("s_komodo", FrameworkName.SERVAL, Z3_4_4_2)
 S_KOMODO.assign_z3_dirs("data/s_komodo_clean/")
@@ -30,10 +29,15 @@ FS_VWASM_CFG = ExpConfig("FS_VWASM", FS_VWASM, ALL_SOLVERS)
 
 ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, FS_VWASM_CFG]
 
-def analyze_results(cfg):
-    # build_summary_table(cfg)
-    summaries = load_summary(cfg, 40)
-    get_categories(summaries)
+def analyze_results():
+    from analyzer import dump_all, load_summary, get_categories
+    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+    dump_all(cfgs, timeout_threshold=None, time_std_threshold=3000)
+    # for cfg in cfgs:
+    # # build_summary_table(cfg)
+    #     print(cfg.qcfg.name)
+    #     summaries = load_summary(cfg, 40)
+    #     get_categories(summaries)
     # plot_basic(cfg, summaries)
     # print(intervals)
     # plot_time_stable(cfg, summaries)
@@ -80,14 +84,5 @@ if __name__ == '__main__':
 
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_7])
 
-    # analyze_results(D_FVBKV_CFG)
+    analyze_results()
     # build_summary_table(FS_DICE_CFG)
-
-    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
-    dump_all(cfgs, timeout_threshold=40, time_std_threshold=3, success_threshold=100)
-
-    # t1 = ExpConfig("t11", S_KOMODO, [Z3_4_4_2], 5)
-    # t2 = ExpConfig("t22", D_KOMODO, [Z3_4_4_2], 5)
-
-    # cfgs = [t1, t2]
-    # r = Runner(cfgs)
