@@ -14,11 +14,11 @@
 
 - [ ] run cvc5 on F* projects
 
-- [ ] finding cvc5 configs
+- [ ] finding cvc5 configs** <- this is esay
 
 ### Finding (more) unstable from unsolvable/stable
 
-- [ ] longer timeouts on "unsolvable" parts
+- [ ] longer timeouts on "unsolvable" parts <- small scale
 
 - [ ] dice* shuffle
 
