@@ -118,3 +118,5 @@ if __name__ == "__main__":
         cmd = sys.argv[1]
         if cmd == "zip_db":
             zip_db()
+        elif cmd == "unzip_db":
+            unzip_db()
