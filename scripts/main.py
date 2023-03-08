@@ -19,6 +19,7 @@ FS_VWASM.assign_cvc5_dirs("data/fs_vwasm_cvc5_clean/")
 FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
 
 Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_6, Z3_4_8_7, Z3_4_8_8, Z3_4_8_11, Z3_4_8_17, Z3_4_11_2]
+Z3_MAIN_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2]
 
 S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, ALL_SOLVERS)
 D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS)
@@ -26,8 +27,20 @@ D_LVBKV_CFG = ExpConfig("D_LVBKV", D_LVBKV, Z3_SOLVERS)
 D_FVBKV_CFG = ExpConfig("D_FVBKV", D_FVBKV, Z3_SOLVERS)
 FS_DICE_CFG = ExpConfig("FS_DICE", FS_DICE, Z3_SOLVERS)
 FS_VWASM_CFG = ExpConfig("FS_VWASM", FS_VWASM, ALL_SOLVERS)
-
 ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, FS_VWASM_CFG]
+
+S_KOMODO_UNSOL_CFG = ExpConfig("S_KOMODO_UNSOL", S_KOMODO, Z3_MAIN_SOLVERS, load_list=True)
+D_KOMODO_UNSOL_CFG = ExpConfig("D_KOMODO_UNSOL", D_KOMODO, Z3_MAIN_SOLVERS, load_list=True)
+D_LVBKV_UNSOL_CFG = ExpConfig("D_LVBKV_UNSOL", D_LVBKV, Z3_MAIN_SOLVERS, load_list=True)
+D_FVBKV_UNSOL_CFG = ExpConfig("D_FVBKV_UNSOL", D_FVBKV, Z3_MAIN_SOLVERS, load_list=True)
+FS_DICE_UNSOL_CFG = ExpConfig("FS_DICE_UNSOL", FS_DICE, Z3_MAIN_SOLVERS, load_list=True)
+FS_VWASM_UNSOL_CFG = ExpConfig("FS_VWASM_UNSOL", FS_VWASM, Z3_MAIN_SOLVERS, load_list=True)
+
+ALL_UNSOL_CFGs = [S_KOMODO_UNSOL_CFG, D_KOMODO_UNSOL_CFG, D_LVBKV_UNSOL_CFG, D_FVBKV_UNSOL_CFG, FS_DICE_UNSOL_CFG, FS_VWASM_UNSOL_CFG]
+
+for cfg in ALL_UNSOL_CFGs:
+    cfg.qcfg.max_mutants = 5
+    cfg.qcfg.timeout = 120
 
 def analyze_results():
     from analyzer import dump_all, load_summary, get_categories
@@ -85,8 +98,9 @@ if __name__ == '__main__':
 
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_7])
 
+    cfg = S_KOMODO_UNSOL_CFG
+    r = Runner([cfg], override=True)
     # analyze_results()
-    from analyzer import dump_unsolvable
-    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
-    dump_unsolvable(cfgs, 40)
-    # build_summary_table(FS_DICE_CFG)
+    # from analyzer import dump_unsolvable
+    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+    # dump_unsolvable(cfgs, 40)

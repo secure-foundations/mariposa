@@ -569,7 +569,8 @@ def dump_unsolvable(cfgs, timeout_threshold):
         summaries = load_summary(cfg, timeout_threshold)
         categories = get_categories(summaries)
         for solver, (unsolvables, _, _, _) in categories.items():
-            f = open(f"data/sample_lists/{cfg.qcfg.get_solver_table_name(solver)}.unsolvables", "w+")
+            lname = f"data/sample_lists/{cfg.qcfg.name}_UNSOL_{solver}"
+            f = open(lname, "w+")
             for item in unsolvables:
                 f.write(item + "\n")
             f.close()
