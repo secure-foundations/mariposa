@@ -85,5 +85,8 @@ if __name__ == '__main__':
 
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_7])
 
-    analyze_results()
+    # analyze_results()
+    from analyzer import dump_unsolvable
+    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
+    dump_unsolvable(cfgs, 40)
     # build_summary_table(FS_DICE_CFG)
