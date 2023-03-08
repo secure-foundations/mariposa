@@ -23,23 +23,11 @@ class QueryExpConfig:
         # how many times do we run each query? default=1
         self.trials = 1
 
-        # how many mutants to generate at least
-        self.min_mutants = 10
-
         # how many mutants to generate at most
         self.max_mutants = 50
 
         # how long do we wait? (seconds)
         self.timeout = 40
-
-        # margin of error in time (seconds)
-        # self.time_moe_limit = 3
-
-        # margin of error in success rate (0.0 - 1.0)
-        self.res_moe_limit = 0.05
-
-        # confidence level
-        self.confidence_level = 0.95
 
         self.enabled_muts = [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RSEED]
 
@@ -53,7 +41,7 @@ class ExpConfig:
         for s in solvers:
             assert isinstance(s, SolverInfo)
         # how many solver processes to run in parallel?
-        self.num_procs = 8
+        self.num_procs = 7
 
         # these are the enabled solvers and their sampled queries
         self.samples = project.get_samples(solvers, count)
@@ -68,10 +56,9 @@ class ExpConfig:
         m = {str(mut): init.copy() for mut in self.qcfg.enabled_muts}
         return m
 
-    # def _check_queries_exist(self):
-    #     dirs = [self.project.clean_dirs[str(solver)] for solver in self.solvers]
-    #     enabled_dirs = set(dirs)
-    #     for dir in enabled_dirs:
-    #         for query in self.queries:
-    #             print(dir + query)
-    #             assert (os.path.exists(dir + query))
+    def set_plain_only(self):
+        self.max_mutants = 0
+
+    # def load_sample_list(self, list_path):
+        # with open(list_path) as f:
+            # for line in f:

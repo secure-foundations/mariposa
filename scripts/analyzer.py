@@ -132,6 +132,11 @@ def load_summary(cfg, timeout_threshold):
     con, cur = get_cursor()
     summary_table_name = cfg.get_summary_table_name()
     summaries = dict()
+
+    if not check_table_exists(cur, summary_table_name):
+        con.close()
+        return summaries
+
     for solver in cfg.samples:
         solver = str(solver)
         res = cur.execute(f"""SELECT * FROM {summary_table_name}
@@ -558,3 +563,13 @@ def dump_all(cfgs, timeout_threshold, time_std_threshold):
     plt.legend()
     plt.tight_layout()
     plt.savefig("fig/all.pdf")
+
+def dump_unsolvable(cfgs, timeout_threshold):
+    for cfg in cfgs:
+        summaries = load_summary(cfg, timeout_threshold)
+        categories = get_categories(summaries)
+        for solver, (unsolvables, _, _, _) in categories.items():
+            f = open(f"data/sample_lists/{cfg.qcfg.get_solver_table_name(solver)}.unsolvables", "w+")
+            for item in unsolvables:
+                f.write(item + "\n")
+            f.close()

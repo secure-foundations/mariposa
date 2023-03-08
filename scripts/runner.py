@@ -55,26 +55,6 @@ class SolverTaskGroup:
         self.table_name = cfg.get_solver_table_name(self.solver)
         self.remove_mut = remove_mut
 
-    def _sample_size_enough(self, veri_times, veri_results):
-        sample_size = len(veri_times)
-        assert (sample_size == len(veri_results))
-
-        if sample_size < self.cfg.min_mutants:
-            return False
-
-        t_critical = stats.t.ppf(q=self.cfg.confidence_level, df=sample_size-1)  
-
-        p = sum(veri_results) / sample_size
-        res_moe = t_critical * math.sqrt((p*(1-p))/sample_size)
-
-        # # get the sample standard deviation
-        # time_stdev = np.std(veri_times, ddof=1)
-        # # standard deviation estimate
-        # sigma = time_stdev/math.sqrt(sample_size) 
-        # time_moe = t_critical * sigma
-
-        return res_moe < self.cfg.res_moe_limit
-
     def _run_single(self, query_path, perturb):
         assert (self.cfg.trials == 1)
 
@@ -109,9 +89,6 @@ class SolverTaskGroup:
         return elapsed, rcode
 
     def run_pert_group(self, gen_path_pre, perturb):
-        veri_times = []
-        veri_results = []
-
         for _ in range(self.cfg.max_mutants):
             seed = random.randint(0, 0xffffffffffffffff)
 
@@ -130,16 +107,7 @@ class SolverTaskGroup:
             if self.remove_mut:
                 # remove mutant
                 os.system(f"rm {mutant_path}")
-
-            veri_times.append(elapsed)
-            if rcode == "unsat":
-                veri_results.append(1)
-            else:
-                veri_results.append(0)
-
-            if self._sample_size_enough(veri_times, veri_results):
-                break
-
+ 
     def run(self):
         elapsed, rcode = self._run_single(self.vanilla_path, None)
         if rcode != "unsat":
