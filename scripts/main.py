@@ -77,12 +77,12 @@ if __name__ == '__main__':
     # from clean_utils import clean_fs_project
     # clean_fs_project(FS_DICE, None, "data/fs_dice_cvc5_clean/")
 
-    # import_database("s1905")
+    # import_database("s1907")
     # append_summary_table(D_FVBKV_CFG, Z3_4_8_11)
 
     # analyze_d_komodo_sus(D_KOMODO_CFG)
 
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_7])
 
-    analyze_results()
+    # analyze_results()
     # build_summary_table(FS_DICE_CFG)
