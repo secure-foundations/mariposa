@@ -18,7 +18,7 @@ FS_VWASM.assign_cvc5_dirs("data/fs_vwasm_cvc5_clean/")
 
 FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
 
-Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_6, Z3_4_8_7, Z3_4_8_8, Z3_4_8_11, Z3_4_8_17, Z3_4_11_2]
+Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8, Z3_4_8_11, Z3_4_8_17, Z3_4_11_2]
 Z3_MAIN_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2]
 
 S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, ALL_SOLVERS)
@@ -98,8 +98,8 @@ if __name__ == '__main__':
 
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_7])
 
-    cfg = S_KOMODO_UNSOL_CFG
-    r = Runner([cfg], override=True)
+    # cfg = D_LVBKV_UNSOL_CFG
+    r = Runner([D_LVBKV_CFG])
     # analyze_results()
     # from analyzer import dump_unsolvable
     # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]

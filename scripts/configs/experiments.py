@@ -24,10 +24,10 @@ class QueryExpConfig:
         self.trials = 1
 
         # how many mutants to generate at most
-        self.max_mutants = 50
+        self.max_mutants = 60
 
         # how long do we wait? (seconds)
-        self.timeout = 40
+        self.timeout = 60
 
         self.enabled_muts = [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RSEED]
 
