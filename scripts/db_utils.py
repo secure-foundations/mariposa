@@ -66,16 +66,16 @@ def get_tables(db_path):
     con.close()
     return tables
 
-def show_tables():
-    tables = get_tables(DB_PATH)
+def show_tables(db_path=DB_PATH):
+    tables = get_tables(db_path)
     for table, count in tables.items():
         print(table, count)
 
-def get_connection():
-    return sqlite3.connect(DB_PATH)
+def get_connection(db_path=DB_PATH):
+    return sqlite3.connect(db_path)
 
-def get_cursor():
-    con = sqlite3.connect(DB_PATH)
+def get_cursor(db_path=DB_PATH):
+    con = sqlite3.connect(db_path)
     cur = con.cursor()
     return con, cur
 

@@ -13,7 +13,7 @@ class Mutation(str, Enum):
         return str.__str__(self)
 
 class QueryExpConfig:
-    def __init__(self, name, project):
+    def __init__(self, name, project, db_path):
         self.name = name
 
         assert isinstance(project, ProjectConfig)
@@ -31,13 +31,15 @@ class QueryExpConfig:
 
         self.enabled_muts = [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RSEED]
 
+        self.db_path = db_path
+
     def get_solver_table_name(self, solver):
         # assert (solver in self.samples)
         return f"{self.name}_{str(solver)}"
 
 class ExpConfig:
-    def __init__(self, name, project, solvers, count=None, load_list=False):
-        self.qcfg = QueryExpConfig(name, project)
+    def __init__(self, name, project, solvers, db_path, count=None, load_list=False):
+        self.qcfg = QueryExpConfig(name, project, db_path)
         for s in solvers:
             assert isinstance(s, SolverInfo)
         # how many solver processes to run in parallel?

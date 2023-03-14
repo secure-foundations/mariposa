@@ -19,55 +19,67 @@ FS_VWASM.assign_cvc5_dirs("data/fs_vwasm_cvc5_clean/")
 FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
 
 # Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8, Z3_4_8_11, Z3_4_8_17, Z3_4_11_2]
-Z3_SOLVERS_0 = [Z3_4_4_2, Z3_4_6_0, Z3_4_8_5, Z3_4_8_11]
-Z3_SOLVERS_1 = [Z3_4_8_8, Z3_4_5_0, Z3_4_11_2]
+Z3_SOLVERS_ALL = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8, Z3_4_8_11, Z3_4_11_2]
 
-Z3_SOLVERS_ALL = Z3_SOLVERS_0 + Z3_SOLVERS_1
+S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, Z3_SOLVERS_ALL, DB_PATH)
+D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS_ALL, DB_PATH)
+D_LVBKV_CFG = ExpConfig("D_LVBKV", D_LVBKV, Z3_SOLVERS_ALL, DB_PATH)
+D_FVBKV_CFG = ExpConfig("D_FVBKV", D_FVBKV, Z3_SOLVERS_ALL, DB_PATH)
+FS_DICE_CFG = ExpConfig("FS_DICE", FS_DICE, Z3_SOLVERS_ALL, DB_PATH)
+FS_VWASM_CFG = ExpConfig("FS_VWASM", FS_VWASM, Z3_SOLVERS_ALL, DB_PATH)
 
-S_KOMODO_CFG = ExpConfig("S_KOMODO", S_KOMODO, Z3_SOLVERS_ALL)
-
-D_KOMODO_CFG_0 = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS_0)
-D_KOMODO_CFG_1 = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS_1)
-D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, Z3_SOLVERS_ALL)
-
-D_LVBKV_CFG_0 = ExpConfig("D_LVBKV", D_LVBKV, Z3_SOLVERS_0)
-D_LVBKV_CFG_1 = ExpConfig("D_LVBKV", D_LVBKV, Z3_SOLVERS_1)
-D_LVBKV_CFG = ExpConfig("D_LVBKV", D_LVBKV, Z3_SOLVERS_ALL)
-
-D_FVBKV_CFG_0 = ExpConfig("D_FVBKV", D_FVBKV, Z3_SOLVERS_0)
-D_FVBKV_CFG_1 = ExpConfig("D_FVBKV", D_FVBKV, Z3_SOLVERS_1)
-D_FVBKV_CFG = ExpConfig("D_FVBKV", D_FVBKV, Z3_SOLVERS_ALL)
-
-FS_DICE_CFG_0 = ExpConfig("FS_DICE", FS_DICE, Z3_SOLVERS_0)
-FS_DICE_CFG_1 = ExpConfig("FS_DICE", FS_DICE, Z3_SOLVERS_1)
-FS_DICE_CFG = ExpConfig("FS_DICE", FS_DICE, Z3_SOLVERS_ALL)
-
-FS_VWASM_CFG = ExpConfig("FS_VWASM", FS_VWASM, Z3_SOLVERS_ALL)
 
 ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, FS_VWASM_CFG]
 
-# S_KOMODO_UNSOL_CFG = ExpConfig("S_KOMODO_UNSOL", S_KOMODO, Z3_MAIN_SOLVERS, load_list=True)
-# D_KOMODO_UNSOL_CFG = ExpConfig("D_KOMODO_UNSOL", D_KOMODO, Z3_MAIN_SOLVERS, load_list=True)
-# D_LVBKV_UNSOL_CFG = ExpConfig("D_LVBKV_UNSOL", D_LVBKV, Z3_MAIN_SOLVERS, load_list=True)
-# D_FVBKV_UNSOL_CFG = ExpConfig("D_FVBKV_UNSOL", D_FVBKV, Z3_MAIN_SOLVERS, load_list=True)
-# FS_DICE_UNSOL_CFG = ExpConfig("FS_DICE_UNSOL", FS_DICE, Z3_MAIN_SOLVERS, load_list=True)
-# FS_VWASM_UNSOL_CFG = ExpConfig("FS_VWASM_UNSOL", FS_VWASM, Z3_MAIN_SOLVERS, load_list=True)
 
-# ALL_UNSOL_CFGs = [S_KOMODO_UNSOL_CFG, D_KOMODO_UNSOL_CFG, D_LVBKV_UNSOL_CFG, D_FVBKV_UNSOL_CFG, FS_DICE_UNSOL_CFG, FS_VWASM_UNSOL_CFG]
+UNSOL_Z3 = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2]
+S_KOMODO_UNSOL_CFG = ExpConfig("S_KOMODO_UNSOL", S_KOMODO, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+D_KOMODO_UNSOL_CFG = ExpConfig("D_KOMODO_UNSOL", D_KOMODO, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+D_LVBKV_UNSOL_CFG = ExpConfig("D_LVBKV_UNSOL", D_LVBKV, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+D_FVBKV_UNSOL_CFG = ExpConfig("D_FVBKV_UNSOL", D_FVBKV, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+FS_DICE_UNSOL_CFG = ExpConfig("FS_DICE_UNSOL", FS_DICE, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+FS_VWASM_UNSOL_CFG = ExpConfig("FS_VWASM_UNSOL", FS_VWASM, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+ALL_UNSOL_CFGs = [S_KOMODO_UNSOL_CFG, D_KOMODO_UNSOL_CFG, D_LVBKV_UNSOL_CFG, D_FVBKV_UNSOL_CFG, FS_DICE_UNSOL_CFG, FS_VWASM_UNSOL_CFG]
 
-# for cfg in ALL_UNSOL_CFGs:
-#     cfg.qcfg.max_mutants = 5
-#     cfg.qcfg.timeout = 120
+for cfg in ALL_UNSOL_CFGs:
+    cfg.qcfg.max_mutants = 5
+    cfg.qcfg.timeout = 120
 
 def analyze_results():
-    from analyzer import dump_all, load_summary, get_categories
-    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
-    dump_all(cfgs, timeout_threshold=None, time_std_threshold=3000)
-    # for cfg in cfgs:
-    # # build_summary_table(cfg)
-    #     print(cfg.qcfg.name)
-    #     summaries = load_summary(cfg, 40)
-    #     get_categories(summaries)
+    import numpy as np
+    from analyzer import load_summary, get_categories, build_summary_table, get_all_sr
+    total = 0
+    for cfg in ALL_UNSOL_CFGs:
+        print(cfg.qcfg.name)
+        for solver, summaries in load_summary(cfg, None).items():
+            counts = {"stable":0, "time_unstable":0, "res_unstable":0, "to_unsolvable": 0, "uk_unsolvable": 0}
+            for row in summaries:
+                pres = row[2]
+                sr = get_all_sr(pres, row[4])
+                all_vres = [pres]
+                all_times = [row[3]]
+                for (_, vres, times) in row[4]:
+                    all_vres += vres
+                    all_times += times
+                if set(all_vres) == {"unknown"}:
+                    counts["uk_unsolvable"] += 1
+                elif sr == 100:
+                    std = round(np.std(all_times) / 1000, 2)
+                    if std < 3:
+                        counts["stable"] += 1
+                    else:
+                        counts["time_unstable"] += 1
+                elif sr == 0:
+                    counts["to_unsolvable"] += 1
+                else:
+                    counts["res_unstable"] += 1
+                # print(sr)
+                # if pres not in counts:
+                #     counts[pres] = 0
+                # counts[pres] += 1
+            total += len(summaries)
+            print(solver, len(summaries), counts)
+    print("total solver/plain query pair tested: ", total)
     # plot_basic(cfg, summaries)
     # print(intervals)
     # plot_time_stable(cfg, summaries)
@@ -104,12 +116,19 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
+    # analyze_results()
+
     # from clean_utils import clean_fs_project
     # clean_fs_project(FS_DICE, None, "data/fs_dice_cvc5_clean/")
 
-    # from analyzer import append_summary_table
+    # from analyzer import append_summary_table, build_summary_table, dump_all
+    # build_summary_table(S_KOMODO_CFG)
     # import_database("s1907")
-    # append_summary_table(D_FVBKV_CFG, Z3_4_8_8)
+    # D_KOMODO_CFG.samples = {Z3_4_8_8: []}
+    # build_summary_table(D_KOMODO_CFG)
+
+    # cfgs = [S_KOMODO_CFG, FS_VWASM_CFG, D_KOMODO_CFG]
+    # dump_all(cfgs, timeout_threshold=45, time_std_threshold=3)
 
     # analyze_d_komodo_sus(D_KOMODO_CFG)
 
@@ -117,8 +136,11 @@ if __name__ == '__main__':
 
     # cfg = D_LVBKV_UNSOL_CFG
     # cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8])
-    r = Runner([D_KOMODO_CFG_0])
+    # r = Runner([D_KOMODO_CFG_0])
+    # cfg = S_KOMODO_UNSOL_CFG
+    # r = Runner([cfg], override=True)
     # analyze_results()
+
     # from analyzer import dump_unsolvable
     # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]
     # dump_unsolvable(cfgs, 40)

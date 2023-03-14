@@ -30,7 +30,7 @@ def percentage(a, b):
     return a * 100 / b
 
 def append_summary_table(cfg, solver):
-    con, cur = get_cursor()
+    con, cur = get_cursor(cfg.qcfg.db_path)
     solver_table = cfg.qcfg.get_solver_table_name(solver)
     summary_table = cfg.get_summary_table_name()
 
@@ -79,7 +79,7 @@ def append_summary_table(cfg, solver):
     con.close()
 
 def build_summary_table(cfg):
-    con, cur = get_cursor()
+    con, cur = get_cursor(cfg.qcfg.db_path)
     summary_table = cfg.get_summary_table_name()
 
     cur.execute(f"""DROP TABLE IF EXISTS {summary_table}""")
@@ -129,7 +129,7 @@ def remap_timeouts(summaries, timeout_threshold=None):
     return summaries
 
 def load_summary(cfg, timeout_threshold):
-    con, cur = get_cursor()
+    con, cur = get_cursor(cfg.qcfg.db_path)
     summary_table_name = cfg.get_summary_table_name()
     summaries = dict()
 
@@ -285,6 +285,7 @@ import scipy
 def variance_test(times, time_std):
     size = len(times)
     std = np.std(times)
+    time_std = time_std * 1000
     T = (size - 1) * ((std / time_std) ** 2)
     c2 = scipy.stats.chi2.ppf(1-0.05, df=size-1)
     return T > c2
@@ -422,7 +423,7 @@ def plot_query_sizes(cfgs):
     save_fig(figure, f"sizes", f"fig/sizes.pdf")
 
 # def analyze_cond_fail(cfg):
-#     con, cur = get_cursor()
+#     con, cur = get_cursor(cfg.qcfg.db_path)
 #     summary_table_name = cfg.get_summary_table_name()
 #     print(cfg.get_project_name())
 
