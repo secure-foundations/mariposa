@@ -6,6 +6,7 @@
  * adjusting the timeouts and std thresholds and get different results
 * unsolvable queries in the previous experiments
 * cvc5 testing?
+* db spliting
 
 ## March 7th:
 
