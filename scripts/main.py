@@ -121,14 +121,14 @@ if __name__ == '__main__':
     # from clean_utils import clean_fs_project
     # clean_fs_project(FS_DICE, None, "data/fs_dice_cvc5_clean/")
 
-    # from analyzer import append_summary_table, build_summary_table, dump_all
+    from analyzer import append_summary_table, build_summary_table, dump_all
     # build_summary_table(S_KOMODO_CFG)
     # import_database("s1907")
     # D_KOMODO_CFG.samples = {Z3_4_8_8: []}
     # build_summary_table(D_KOMODO_CFG)
 
-    # cfgs = [S_KOMODO_CFG, FS_VWASM_CFG, D_KOMODO_CFG]
-    # dump_all(cfgs, timeout_threshold=45, time_std_threshold=3)
+    cfgs = [S_KOMODO_CFG, FS_VWASM_CFG, D_KOMODO_CFG]
+    dump_all(cfgs, timeout_threshold=30, time_std_threshold=3, stable_threshold=95, unsolvable_threshold=5)
 
     # analyze_d_komodo_sus(D_KOMODO_CFG)
 

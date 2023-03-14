@@ -250,7 +250,7 @@ def check_groups(summaries, stable_threshold, unsolvable_threshold):
         return ress.pop()
     return "unstable"
 
-def get_categories(solver_summaries):
+def get_categories(solver_summaries, stable_threshold, unsolvable_threshold):
     categories = dict()
     for solver, rows in tqdm(solver_summaries.items()):
         unsolvables, stables, unstables = set(), set(), set()
@@ -258,7 +258,7 @@ def get_categories(solver_summaries):
         for row in rows:
             summaries = row[4]
             plain_path, plain_res = row[1], row[2]
-            res = check_groups(summaries, 80, 20)
+            res = check_groups(summaries, stable_threshold, unsolvable_threshold)
             if res == "stable":
                 stables.add(plain_path)
             elif res == "unsolvable":
@@ -269,8 +269,8 @@ def get_categories(solver_summaries):
         categories[solver] = (unsolvables, stables, unstables, count)
     return categories
 
-def get_res_unstable_intervals(solver_summaries):
-    categories = get_categories(solver_summaries)
+def get_res_unstable_intervals(solver_summaries, stable_threshold, unsolvable_threshold):
+    categories = get_categories(solver_summaries, stable_threshold, unsolvable_threshold)
     intervals = dict()
     for solver, (unsolvables, stables, _, count) in categories.items():
         max_ratio = percentage(count - len(stables), count)
@@ -506,15 +506,15 @@ def analyze_d_komodo_sus(cfg):
         print("va__* in additional unsolvable:", usol, "/", ausol)
         print("va__* in additional unstable:", usta, "/", austa)
 
-def dump_all(cfgs, timeout_threshold, time_std_threshold):
+def dump_all(cfgs, timeout_threshold, time_std_threshold, stable_threshold, unsolvable_threshold):
     projects = [cfg.qcfg.project for cfg in cfgs]
-    project_names = [cfg.get_project_name() for  cfg in cfgs]
+    project_names = [cfg.get_project_name() for cfg in cfgs]
     solver_names = [str(s) for s in ALL_SOLVERS]
 
     data = []
     for cfg in cfgs:
         summaries = load_summary(cfg, timeout_threshold)
-        intervals = get_res_unstable_intervals(summaries)
+        intervals = get_res_unstable_intervals(summaries, stable_threshold, unsolvable_threshold)
         ratios = get_time_unstable_ratios(summaries, time_std_threshold)
         row = []
         for solver_name in solver_names:
