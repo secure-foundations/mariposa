@@ -1,3 +1,12 @@
+## March 13th:
+
+present:
+
+* some experiment results on the new configs (60 seconds 60 instances, shortcut removed)
+* adjusting the timeouts and std thresholds
+* unsolvable queries in the previous experiments
+* cvc5 testing?
+
 ## March 7th:
 
 present:
