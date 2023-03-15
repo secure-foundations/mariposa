@@ -1,11 +1,12 @@
 ## March 13th:
 
-present:
-
-* some experiment results on the new configs (60 seconds 60 instances, shortcut removed)
-* adjusting the timeouts and std thresholds
+* some experiment results on the new configs (60 seconds 60 instances, shortcut removed, 7 cores only)
+ * 60 is probably overkill for a non-normal distribution?
+ * false discovery rate https://www.statisticshowto.com/false-discovery-rate/
+ * adjusting the timeouts and std thresholds and get different results
 * unsolvable queries in the previous experiments
 * cvc5 testing?
+* db spliting
 
 ## March 7th:
 
