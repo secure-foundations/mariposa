@@ -12,6 +12,13 @@ from configs.experiments import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-entry.i.dfyImpl___module.__default.lemma__userExecutionModel__sufficiency.smt2 1
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-mapping.s.dfyCheckWellformed___module.__default.updateL2Pte.smt2 2
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-secprop-conf_ni_entry.i.dfyImpl___module.__default.lemma__validEnclaveEx__conf.smt2 3
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-secprop-sec_prop_util.i.dfyImpl___module.__default.lemma__user__regs__domain.smt2 4
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-sha-sha256-body-16-xx.gen.dfyCheckWellformed___module.__default.va__refined__Body__16__XX.smt2 5
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-valesupp.i.dfyCheckWellformed___module.__default.va__get__osp.smt2 6
+
 def subprocess_run(command, time_limit, debug=False, cwd=None):
     if debug:
         print(command)
@@ -119,6 +126,8 @@ class SolverTaskGroup:
             self.run_pert_group(gen_path_pre, perturb)
 
 def run_group_tasks(queue, start_time):
+    from datetime import timedelta
+    from datetime import datetime
     init_size = queue.qsize()
 
     while True:
@@ -127,7 +136,8 @@ def run_group_tasks(queue, start_time):
         done_size = init_size - cur_size
         elapsed = round((time.time() - start_time) / 3600, 2)
         estimated = round(queue.qsize() * (elapsed / done_size), 2)
-        print(f"finished: {done_size}/{init_size}, elapsed: {elapsed}, estimated: {estimated}")
+
+        print(f"finished: {done_size}/{init_size}, elapsed: {elapsed}, estimated: {datetime.now() + timedelta(hours=estimated)}")
         if task is None:
             break
         task.run()
