@@ -7,6 +7,10 @@ S_KOMODO = ProjectConfig("s_komodo", FrameworkName.SERVAL, Z3_4_4_2)
 S_KOMODO.assign_z3_dirs("data/s_komodo_clean/")
 S_KOMODO.assign_cvc5_dirs("data/s_komodo_clean/")
 
+S_CERTIKOS = ProjectConfig("s_certikos", FrameworkName.SERVAL, Z3_4_4_2)
+S_CERTIKOS.assign_z3_dirs("data/s_certikos_clean/")
+S_CERTIKOS.assign_cvc5_dirs("data/s_certikos_clean/")
+
 D_KOMODO = ProjectConfig("d_komodo", FrameworkName.DAFNY, Z3_4_5_0)
 # D_KOMODO.assign_cvc5_dirs("data/d_komodo_cvc5_clean/")
 
@@ -27,7 +31,7 @@ D_LVBKV_CFG = ExpConfig("D_LVBKV", D_LVBKV, Z3_SOLVERS_ALL, DB_PATH)
 D_FVBKV_CFG = ExpConfig("D_FVBKV", D_FVBKV, Z3_SOLVERS_ALL, DB_PATH)
 FS_DICE_CFG = ExpConfig("FS_DICE", FS_DICE, Z3_SOLVERS_ALL, DB_PATH)
 FS_VWASM_CFG = ExpConfig("FS_VWASM", FS_VWASM, Z3_SOLVERS_ALL, DB_PATH)
-
+S_CERTIKOS_CFG = ExpConfig("S_CERTIKOS", S_CERTIKOS, Z3_SOLVERS_ALL, DB_PATH)
 
 ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, FS_VWASM_CFG]
 
@@ -118,17 +122,24 @@ if __name__ == '__main__':
 
     # analyze_results()
 
+    cfg = ExpConfig("S_CERTIKOS", S_CERTIKOS, [Z3_4_4_2], DB_PATH, count=100)
+    cfg.qcfg.max_mutants = 0
+    r = Runner([cfg], override=True)
+
+
     # from clean_utils import clean_fs_project
     # clean_fs_project(FS_DICE, None, "data/fs_dice_cvc5_clean/")
 
-    from analyzer import append_summary_table, build_summary_table, dump_all
+    # from analyzer import append_summary_table, build_summary_table, dump_all
     # build_summary_table(S_KOMODO_CFG)
-    # import_database("s1907")
+    # import_database("s1905")
     # D_KOMODO_CFG.samples = {Z3_4_8_8: []}
     # build_summary_table(D_KOMODO_CFG)
+    # append_summary_table(D_KOMODO_CFG, Z3_4_6_0)
+    # append_summary_table(D_KOMODO_CFG, Z3_4_5_0)
 
-    cfgs = [S_KOMODO_CFG, FS_VWASM_CFG, D_KOMODO_CFG]
-    dump_all(cfgs, timeout_threshold=30, time_std_threshold=3, stable_threshold=95, unsolvable_threshold=5)
+    # cfgs = [S_KOMODO_CFG, FS_VWASM_CFG, D_KOMODO_CFG]
+    # dump_all(cfgs, timeout_threshold=None, time_std_threshold=3, res_stable_threshold=95, unsolvable_threshold=5)
 
     # analyze_d_komodo_sus(D_KOMODO_CFG)
 

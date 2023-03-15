@@ -218,39 +218,39 @@ def is_group_unsolvable(vres, unsolvable_threshold):
         return False
     else:
         return True
-    
-def is_group_stable(vres, stable_threshold):
+
+def is_group_stable(vres, res_stable_threshold):
     success = vres.count("unsat")
     size = len(vres)
     if size == 10:
         if success == 10:
             success = 30
         size = 30
-    value = stable_threshold/100
+    value = res_stable_threshold/100
     stat, p_value = proportions_ztest(count=success, nobs=size, value=value, alternative='larger', prop_var=value)
     if p_value > 0.05:
         return False
     else:
         return True
 
-def check_group(vres, stable_threshold, unsolvable_threshold):
+def check_group(vres, res_stable_threshold, unsolvable_threshold):
     unsolvable = is_group_unsolvable(vres, unsolvable_threshold)
-    stable = is_group_stable(vres, stable_threshold)
+    stable = is_group_stable(vres, res_stable_threshold)
     if unsolvable:
         return "unsolvable"
     if stable:
         return "stable"
     return "unstable"
 
-def check_groups(summaries, stable_threshold, unsolvable_threshold):
+def check_groups(summaries, res_stable_threshold, unsolvable_threshold):
     ress = set()
     for (_, vres, _) in summaries:
-        ress.add(check_group(vres, stable_threshold, unsolvable_threshold))
+        ress.add(check_group(vres, res_stable_threshold, unsolvable_threshold))
     if len(ress) == 1:
         return ress.pop()
     return "unstable"
 
-def get_categories(solver_summaries, stable_threshold, unsolvable_threshold):
+def get_categories(solver_summaries, res_stable_threshold, unsolvable_threshold):
     categories = dict()
     for solver, rows in tqdm(solver_summaries.items()):
         unsolvables, stables, unstables = set(), set(), set()
@@ -258,7 +258,7 @@ def get_categories(solver_summaries, stable_threshold, unsolvable_threshold):
         for row in rows:
             summaries = row[4]
             plain_path, plain_res = row[1], row[2]
-            res = check_groups(summaries, stable_threshold, unsolvable_threshold)
+            res = check_groups(summaries, res_stable_threshold, unsolvable_threshold)
             if res == "stable":
                 stables.add(plain_path)
             elif res == "unsolvable":
@@ -269,8 +269,8 @@ def get_categories(solver_summaries, stable_threshold, unsolvable_threshold):
         categories[solver] = (unsolvables, stables, unstables, count)
     return categories
 
-def get_res_unstable_intervals(solver_summaries, stable_threshold, unsolvable_threshold):
-    categories = get_categories(solver_summaries, stable_threshold, unsolvable_threshold)
+def get_res_unstable_intervals(solver_summaries, res_stable_threshold, unsolvable_threshold):
+    categories = get_categories(solver_summaries, res_stable_threshold, unsolvable_threshold)
     intervals = dict()
     for solver, (unsolvables, stables, _, count) in categories.items():
         max_ratio = percentage(count - len(stables), count)
@@ -506,7 +506,7 @@ def analyze_d_komodo_sus(cfg):
         print("va__* in additional unsolvable:", usol, "/", ausol)
         print("va__* in additional unstable:", usta, "/", austa)
 
-def dump_all(cfgs, timeout_threshold, time_std_threshold, stable_threshold, unsolvable_threshold):
+def dump_all(cfgs, timeout_threshold, time_std_threshold, res_stable_threshold, unsolvable_threshold):
     projects = [cfg.qcfg.project for cfg in cfgs]
     project_names = [cfg.get_project_name() for cfg in cfgs]
     solver_names = [str(s) for s in ALL_SOLVERS]
@@ -514,7 +514,7 @@ def dump_all(cfgs, timeout_threshold, time_std_threshold, stable_threshold, unso
     data = []
     for cfg in cfgs:
         summaries = load_summary(cfg, timeout_threshold)
-        intervals = get_res_unstable_intervals(summaries, stable_threshold, unsolvable_threshold)
+        intervals = get_res_unstable_intervals(summaries, res_stable_threshold, unsolvable_threshold)
         ratios = get_time_unstable_ratios(summaries, time_std_threshold)
         row = []
         for solver_name in solver_names:
