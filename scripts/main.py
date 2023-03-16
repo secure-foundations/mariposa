@@ -35,7 +35,6 @@ S_CERTIKOS_CFG = ExpConfig("S_CERTIKOS", S_CERTIKOS, Z3_SOLVERS_ALL, DB_PATH)
 
 ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, FS_VWASM_CFG]
 
-
 UNSOL_Z3 = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2]
 S_KOMODO_UNSOL_CFG = ExpConfig("S_KOMODO_UNSOL", S_KOMODO, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
 D_KOMODO_UNSOL_CFG = ExpConfig("D_KOMODO_UNSOL", D_KOMODO, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
@@ -51,39 +50,44 @@ for cfg in ALL_UNSOL_CFGs:
 
 def analyze_results():
     import numpy as np
-    from analyzer import load_summary, get_categories, build_summary_table, get_all_sr
-    total = 0
-    for cfg in ALL_UNSOL_CFGs:
-        print(cfg.qcfg.name)
-        for solver, summaries in load_summary(cfg, None).items():
-            counts = {"stable":0, "time_unstable":0, "res_unstable":0, "to_unsolvable": 0, "uk_unsolvable": 0}
-            for row in summaries:
-                pres = row[2]
-                sr = get_all_sr(pres, row[4])
-                all_vres = [pres]
-                all_times = [row[3]]
-                for (_, vres, times) in row[4]:
-                    all_vres += vres
-                    all_times += times
-                if set(all_vres) == {"unknown"}:
-                    counts["uk_unsolvable"] += 1
-                elif sr == 100:
-                    std = round(np.std(all_times) / 1000, 2)
-                    if std < 3:
-                        counts["stable"] += 1
-                    else:
-                        counts["time_unstable"] += 1
-                elif sr == 0:
-                    counts["to_unsolvable"] += 1
-                else:
-                    counts["res_unstable"] += 1
-                # print(sr)
-                # if pres not in counts:
-                #     counts[pres] = 0
-                # counts[pres] += 1
-            total += len(summaries)
-            print(solver, len(summaries), counts)
-    print("total solver/plain query pair tested: ", total)
+    from analyzer import do_stuff, dump_all
+    # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_4_2], DB_PATH)
+    # cfg = ExpConfig("S_KOMODO", S_KOMODO, [Z3_4_4_2], DB_PATH)
+    do_stuff(D_KOMODO_CFG)
+    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
+    # dump_all(cfgs)
+    # total = 0
+    # for cfg in ALL_UNSOL_CFGs:
+    #     print(cfg.qcfg.name)
+    #     for solver, summaries in load_summary(cfg, None).items():
+    #         counts = {"stable":0, "time_unstable":0, "res_unstable":0, "to_unsolvable": 0, "uk_unsolvable": 0}
+    #         for row in summaries:
+    #             pres = row[2]
+    #             sr = get_all_sr(pres, row[4])
+    #             all_vres = [pres]
+    #             all_times = [row[3]]
+    #             for (_, vres, times) in row[4]:
+    #                 all_vres += vres
+    #                 all_times += times
+    #             if set(all_vres) == {"unknown"}:
+    #                 counts["uk_unsolvable"] += 1
+    #             elif sr == 100:
+    #                 std = round(np.std(all_times) / 1000, 2)
+    #                 if std < 3:
+    #                     counts["stable"] += 1
+    #                 else:
+    #                     counts["time_unstable"] += 1
+    #             elif sr == 0:
+    #                 counts["to_unsolvable"] += 1
+    #             else:
+    #                 counts["res_unstable"] += 1
+    #             # print(sr)
+    #             # if pres not in counts:
+    #             #     counts[pres] = 0
+    #             # counts[pres] += 1
+    #         total += len(summaries)
+    #         print(solver, len(summaries), counts)
+    # print("total solver/plain query pair tested: ", total)
     # plot_basic(cfg, summaries)
     # print(intervals)
     # plot_time_stable(cfg, summaries)
@@ -120,26 +124,26 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
-    # analyze_results()
+    analyze_results()
 
-    cfg = ExpConfig("S_CERTIKOS", S_CERTIKOS, [Z3_4_4_2], DB_PATH, count=100)
-    cfg.qcfg.max_mutants = 0
-    r = Runner([cfg], override=True)
-
+    # cfg = ExpConfig("S_CERTIKOS", S_CERTIKOS, [Z3_4_4_2], DB_PATH, count=100)
+    # cfg.qcfg.max_mutants = 0
+    # r = Runner([cfg], override=True)
 
     # from clean_utils import clean_fs_project
     # clean_fs_project(FS_DICE, None, "data/fs_dice_cvc5_clean/")
 
-    # from analyzer import append_summary_table, build_summary_table, dump_all
     # build_summary_table(S_KOMODO_CFG)
-    # import_database("s1905")
+    # import_database("s1906")
     # D_KOMODO_CFG.samples = {Z3_4_8_8: []}
     # build_summary_table(D_KOMODO_CFG)
-    # append_summary_table(D_KOMODO_CFG, Z3_4_6_0)
+    # from analyzer import build_summary_table, append_summary_table
+    # D_LVBKV_CFG = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_8_5], DB_PATH)
+    # build_summary_table(D_LVBKV_CFG)
     # append_summary_table(D_KOMODO_CFG, Z3_4_5_0)
 
     # cfgs = [S_KOMODO_CFG, FS_VWASM_CFG, D_KOMODO_CFG]
-    # dump_all(cfgs, timeout_threshold=None, time_std_threshold=3, res_stable_threshold=95, unsolvable_threshold=5)
+    # dump_all(cfgs, timeout_threshold=20, time_std_threshold=3, res_stable_threshold=95, unsolvable_threshold=5)
 
     # analyze_d_komodo_sus(D_KOMODO_CFG)
 
@@ -150,7 +154,6 @@ if __name__ == '__main__':
     # r = Runner([D_KOMODO_CFG_0])
     # cfg = S_KOMODO_UNSOL_CFG
     # r = Runner([cfg], override=True)
-    # analyze_results()
 
     # from analyzer import dump_unsolvable
     # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG, FS_DICE_CFG]

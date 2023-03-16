@@ -1,5 +1,9 @@
-from statsmodels.stats.proportion import proportions_ztest
+import statsmodels
+import statsmodels.stats.proportion as prop
+#  sm.power  zt_ind_solve_power
 from sys import argv
+import numpy as np
+import scipy
 
 significance = 0.05
 
@@ -14,13 +18,21 @@ def z_test():
     # check our sample against Ho for Ha > Ho
     # for Ha < Ho use alternative='smaller'
     # for Ha != Ho use alternative='two-sided'
-    stat, p_value = proportions_ztest(
+    alternative = "smaller" if direction == "<" else "larger"
+    stat, p_value = prop.proportions_ztest(
         count=sample_success,
         nobs=sample_size,
         value=null_hypothesis,
-        alternative="smaller" if direction == "<" else "larger",
+        alternative=alternative,
         prop_var=null_hypothesis,
     )
+
+    effect_size = prop.proportion_effectsize(sample_success/sample_size, null_hypothesis, method='normal')
+    from statsmodels.stats.power import zt_ind_solve_power
+    # p = NormalIndPower()
+    # power = p.power(effect_size, sample_size, alpha=significance, ratio=0, alternative=alternative)
+    power = zt_ind_solve_power(effect_size=effect_size, nobs1=sample_size, alpha=significance, power=None, ratio=0.0, alternative=alternative)
+    print(power)
 
     # report
     # print("z_stat: %0.3f, p_value: %0.3f" % (stat, p_value))
@@ -35,19 +47,19 @@ def z_test():
             f"Reject the null hypothesis - suggest the alternative hypothesis is true; samples support true proportion {direction} {null_hypothesis}"
         )
 
-import numpy as np
-import scipy
+def chi2_test():
+    ts = [5982, 6653, 8364, 9198, 9233, 7163, 6050, 7724, 10607, 10841]
+    # std = np.std(ts)
+    std = 1001
+    # print(std)
+    size = 10
+    est = 1000
+    T = (size - 1) * ((std / est) ** 2)
+    print(T)
+    # c1 = scipy.stats.chi2.ppf(0.05, df=size-1)
+    c2 = scipy.stats.chi2.ppf(1-0.05, df=size-1)
+    print(c2)
+    print(T > c2)
+    # print(T < c1)
 
-ts = [5982, 6653, 8364, 9198, 9233, 7163, 6050, 7724, 10607, 10841]
-# std = np.std(ts)
-std = 1001
-# print(std)
-size = 10
-est = 1000
-T = (size - 1) * ((std / est) ** 2)
-print(T)
-# c1 = scipy.stats.chi2.ppf(0.05, df=size-1)
-c2 = scipy.stats.chi2.ppf(1-0.05, df=size-1)
-print(c2)
-print(T > c2)
-# print(T < c1)
+z_test()
