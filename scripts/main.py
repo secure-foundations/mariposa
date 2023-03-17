@@ -51,11 +51,12 @@ for cfg in ALL_UNSOL_CFGs:
 def analyze_results():
     import numpy as np
     from analyzer import do_stuff, dump_all
-    # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_4_2], DB_PATH)
-    # cfg = ExpConfig("S_KOMODO", S_KOMODO, [Z3_4_4_2], DB_PATH)
-    do_stuff(D_KOMODO_CFG)
-    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
-    # dump_all(cfgs)
+    # analyze_d_komodo_sus(D_KOMODO_CFG)
+
+    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
+    dump_all(cfgs)
+    # do_stuff(D_KOMODO_CFG)
+
     # total = 0
     # for cfg in ALL_UNSOL_CFGs:
     #     print(cfg.qcfg.name)
@@ -133,19 +134,13 @@ if __name__ == '__main__':
     # from clean_utils import clean_fs_project
     # clean_fs_project(FS_DICE, None, "data/fs_dice_cvc5_clean/")
 
-    # build_summary_table(S_KOMODO_CFG)
-    # import_database("s1906")
     # D_KOMODO_CFG.samples = {Z3_4_8_8: []}
     # build_summary_table(D_KOMODO_CFG)
     # from analyzer import build_summary_table, append_summary_table
     # D_LVBKV_CFG = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_8_5], DB_PATH)
+    # import_database("s1901")
     # build_summary_table(D_LVBKV_CFG)
-    # append_summary_table(D_KOMODO_CFG, Z3_4_5_0)
-
-    # cfgs = [S_KOMODO_CFG, FS_VWASM_CFG, D_KOMODO_CFG]
-    # dump_all(cfgs, timeout_threshold=20, time_std_threshold=3, res_stable_threshold=95, unsolvable_threshold=5)
-
-    # analyze_d_komodo_sus(D_KOMODO_CFG)
+    # append_summary_table(D_LVBKV_CFG, Z3_4_4_2)
 
     # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_8_7])
 
