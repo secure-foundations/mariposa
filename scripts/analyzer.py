@@ -2,6 +2,7 @@ from db_utils import *
 import numpy as np
 from tqdm import tqdm
 import ast
+import scipy.stats
 from enum import Enum
 
 from configs.projects import *
@@ -141,14 +142,14 @@ class Thresholds:
         self.res_stable = 95
         assert 0 < self.res_stable < 100
 
-        self.time_stable = 1000
+        self.time_std = 1000
 
         if method == "plain":
-            self._categorize_group = self._categorize_group_plain
+            self.categorize_group = self._categorize_group_plain
         elif method == "strict":
-            self._categorize_group = self._categorize_group_strict
+            self.categorize_group = self._categorize_group_strict
         elif method == "threshold":
-            self._categorize_group = self._categorize_group_threshold
+            self.categorize_group = self._categorize_group_threshold
         else:
             assert False
 
@@ -178,13 +179,14 @@ class Thresholds:
 
     def _categorize_group_threshold(self, pres, ptime, vress, times):
         success = vress.count("unsat")
+        size = len(vress)
         # for i, x in enumerate(times):
         #     if as_seconds(x) <= self.timeout and vress[i] == "unsat":
         #         success += 1
 
         value = self.unsolvable/100
         _, p_value = proportions_ztest(count=success,
-                                        nobs=len(vress),
+                                        nobs=size,
                                         value=value, 
                                         alternative='smaller',
                                         prop_var=value)
@@ -193,12 +195,19 @@ class Thresholds:
 
         value = self.res_stable / 100
         _, p_value = proportions_ztest(count=success, 
-                                        nobs=len(vress),
+                                        nobs=size,
                                         value=value,
                                         alternative='larger',
                                         prop_var=value)
-        if  p_value <= self.confidence:
-            return Stablity.STABLE
+
+        if p_value <= self.confidence:
+            std = np.std(times)
+            time_std = self.time_std * 1000
+            T = (size - 1) * ((std / time_std) ** 2)
+            if T > scipy.stats.chi2.ppf(1-self.confidence, df=size-1):
+                return Stablity.TIME_UNSTABLE
+            else:
+                return Stablity.STABLE
 
         return Stablity.RES_UNSTABLE
     
@@ -206,10 +215,12 @@ class Thresholds:
         ress = set()
         pres, ptime = query_row[2], query_row[3]
         for (_, vress, times) in query_row[4]:
-            ress.add(self._categorize_group(pres, ptime, vress, times))
+            ress.add(self.categorize_group(pres, ptime, vress, times))
         if len(ress) == 1:
             return ress.pop()
-        return  Stablity.RES_UNSTABLE
+        if ress == {Stablity.TIME_UNSTABLE, Stablity.STABLE}:
+            return Stablity.TIME_UNSTABLE
+        return Stablity.RES_UNSTABLE
 
 def categorize_qeuries(rows, thresholds):
     categories = Stablity.empty_map()
@@ -235,20 +246,7 @@ def get_category_precentages(categories):
         percentages[c] = percentage(len(i), total)
     return percentages
 
-# def get_res_unstable_intervals(solver_summaries, res_stable_threshold, unsolvable_threshold):
-#     categories = dict()
-#     for solver, rows in solver_summaries.items():
-#         categories[solver] = get_categories(rows, res_stable_threshold, unsolvable_threshold)
-#     intervals = dict()
-#     for solver, (unsolvables, stables, _, count) in categories.items():
-#         max_ratio = percentage(count - len(stables), count)
-#         min_ratio = percentage(len(unsolvables), count)
-#         intervals[solver] = (min_ratio, max_ratio)
-#         # print(solver, round(min_ratio, 2), "~" ,round(max_ratio, 2), 
-#         #       round(max_ratio - min_ratio, 2))
-#     return intervals
-
-def do_stuff(cfg):
+def plot_cutoff(cfg):
     s = load_summary_table(cfg)
     # colors = get_color_map(cfg.empty_muts_map())
     solver_count = len(s.keys())
@@ -258,6 +256,7 @@ def do_stuff(cfg):
         th = Thresholds("plain")
         unsolvables = []
         unstables = []
+        inconsistents = []
         xs = [i for i in range(1, 63, 3)]
         xs.reverse()
         cc = []
@@ -270,16 +269,26 @@ def do_stuff(cfg):
             ps = get_category_precentages(categories)
             unsolvables.append(ps[Stablity.UNSOLVABLE])
             unstables.append(ps[Stablity.RES_UNSTABLE])
+            inconsistent = 0
+            for query_row in rows:
+                pres, ptime = query_row[2], query_row[3]
+                ress = set()
+                for (_, vress, times) in query_row[4]:
+                    ress.add(th.categorize_group(pres, ptime, vress, times))
+                if len(ress) != 1:
+                    inconsistent += 1
+            inconsistents.append(percentage(inconsistent, len(rows)))
 
         sps = cut_aixs
         if solver_count != 1:
             sps = cut_aixs[j]
         sp = sps[0]
-        print(unsolvables)
-        print(unstables)
+        # print(unsolvables)
+        # print(unstables)
 
         sp.plot(xs, unsolvables, marker=",", label="unsolvables")
         sp.plot(xs, unstables, marker=",", label="res_unstables")
+        sp.plot(xs, inconsistents, marker=",", label="categorty disagree")
         sp.legend()
         sp.set_title(f'{solver} timelimit cutoff vs category precentage')
         sp.set_ylabel("precentage of query")
@@ -289,6 +298,7 @@ def do_stuff(cfg):
 
         unsolvables = []
         unstables = []
+        inconsistents = []
         # cc = []
         th = Thresholds("strict")
 
@@ -300,11 +310,21 @@ def do_stuff(cfg):
             ps = get_category_precentages(categories)
             unsolvables.append(ps[Stablity.UNSOLVABLE])
             unstables.append(ps[Stablity.RES_UNSTABLE])
+            inconsistent = 0
+            for query_row in rows:
+                pres, ptime = query_row[2], query_row[3]
+                ress = set()
+                for (_, vress, times) in query_row[4]:
+                    ress.add(th.categorize_group(pres, ptime, vress, times))
+                if len(ress) != 1:
+                    inconsistent += 1
+            inconsistents.append(percentage(inconsistent, len(rows)))
 
         sp = sps[1]
 
         sp.plot(xs, unsolvables, marker=",", label="unsolvables")
         sp.plot(xs, unstables, marker=",", label="res_unstables")
+        sp.plot(xs, inconsistents, marker=",", label="categorty disagree")
         sp.legend()
         sp.set_title(f'{solver} timelimit cutoff vs category precentage')
         sp.set_ylabel("precentage of query")
@@ -312,6 +332,7 @@ def do_stuff(cfg):
         sp.set_xlim(left=1)
         sp.set_ylim(bottom=0, top=30)
 
+        # inconsistents
         # tt = 1
         # prev = None
         # for categories in reversed(cc):
@@ -328,8 +349,37 @@ def do_stuff(cfg):
 
     name = cfg.qcfg.name
     save_fig(cut_figure, f"{name}", f"fig/time_cutoff/{name}.png")
-    # print(i, unsolvables, unstables)
-    # print(s)
+
+def do_stuff(cfg):
+    s = load_summary_table(cfg)
+
+    for j, (solver, rows) in enumerate(s.items()):
+        th = Thresholds("strict")
+        unsolvables = []
+        unstables = []
+        xs = [i for i in range(1, 63, 3)]
+        xs.reverse()
+        cc = []
+
+        for i in xs:
+            th.timeout = i
+            remap_timeouts(rows, th)
+            count = 0
+            cc = 0
+            for query_row in rows:
+                pres, ptime = query_row[2], query_row[3]
+                ress = set()
+                for (_, vress, times) in query_row[4]:
+                    ress.add(th.categorize_group(pres, ptime, vress, times))
+                if len(ress) != 1:
+                    # print(ress)
+                    count += 1
+                elif Stablity.RES_UNSTABLE in ress:
+                    cc += 1
+            print(i, count, cc)
+
+                # categorize_group
+        # print(len(rows))
 
 # def plot_basic(cfg, solver_summaries):
 #     solver_count = len(cfg.samples)
@@ -372,40 +422,6 @@ def do_stuff(cfg):
 #             plot_result_overall(result_aixs, srs, solver, colors)
 
 #     save_fig(result_figure, f"{name}", f"fig/result_overall/{name}.png")
-
-# def get_all_sr(plain_res, summaries):
-#     # consider the plain one as well
-#     all_vres = [plain_res]
-#     for (_, vres, _) in summaries:
-#         all_vres += vres
-#     return group_success_rate(all_vres)
-
-# import scipy
-
-# def variance_test(times, time_std):
-#     size = len(times)
-#     std = np.std(times)
-#     time_std = time_std * 1000
-#     T = (size - 1) * ((std / time_std) ** 2)
-#     c2 = scipy.stats.chi2.ppf(1-0.05, df=size-1)
-#     return T > c2
-
-# def get_time_unstable_ratios(solver_summaries, time_std_threshold):
-#     ratios = dict()
-#     for solver, rows in solver_summaries.items():
-#         ratios[solver] = set()
-#         count = len(rows)
-#         for row in rows:
-#             plain_path, summaries = row[1], row[4]
-#             plain_res, plain_time = row[2], row[3]
-#             all_sr = get_all_sr(plain_res, summaries)
-#             if all_sr != 100:
-#                 continue
-#             for (_, _, times) in summaries:
-#                 if variance_test(times, time_std_threshold):
-#                     ratios[solver].add(plain_path)
-#     ratios = {s: percentage(len(paths), count) for s, paths in ratios.items()}
-#     return ratios
 
 # def plot_time_stable(cfg, solver_summaries):
 #     solver_count = len(cfg.samples)
@@ -496,18 +512,6 @@ def do_stuff(cfg):
 #     plt.tight_layout()
 #     save_fig(figure, f"sizes", f"fig/sizes.pdf")
 
-# def plot_time_cutoff(cfg):
-#     summaries = load_summary(cfg)
-#     thresholds = Thresholds(5, 95)
-#     for i in reversed(range(3, 63, 3)):
-#         for _, rows in summaries:
-#             remap_query_summary_timeout(row, thresholds)
-        # summaries = remap_summaries(summaries, i)
-        # get_categories(rows, 95, 5)
-        # vs = get_res_unstable_intervals(summaries, 90, 10)['z3_4_8_5']
-        # print(i, vs[0], vs[1])
-#     # get_categories(rows, res_stable_threshold, unsolvable_threshold):
-
 # # def analyze_cond_fail(cfg):
 # #     con, cur = get_cursor(cfg.qcfg.db_path)
 # #     summary_table_name = cfg.get_summary_table_name()
@@ -588,33 +592,29 @@ def dump_all(cfgs):
     project_names = [cfg.get_project_name() for cfg in cfgs]
     solver_names = [str(s) for s in ALL_SOLVERS]
 
-    thres = Thresholds("strict")
-    # thres.timeout = 30
+    thres = Thresholds("threshold")
+    thres.timeout = 30
+    thres.time_std = 3
 
-    data = []
-    for cfg in cfgs:
-        summaries = load_summary_table(cfg)
-        row = []
-        for solver in solver_names:
-            if solver in summaries:
-                rows = summaries[solver]
-                remap_timeouts(rows, thres)
-                items = categorize_qeuries(rows, thres)
-                ps = get_category_precentages(items)
-                row.append([ps[Stablity.UNSOLVABLE], ps[Stablity.RES_UNSTABLE], ps[Stablity.TIME_UNSTABLE]])
-            else:
-                row.append([0, 0, 0])
-        data.append(row)
+    # data = []
+    # for cfg in cfgs:
+    #     summaries = load_summary_table(cfg)
+    #     row = []
+    #     for solver in tqdm(solver_names):
+    #         if solver in summaries:
+    #             rows = summaries[solver]
+    #             remap_timeouts(rows, thres)
+    #             items = categorize_qeuries(rows, thres)
+    #             ps = get_category_precentages(items)
+    #             row.append([ps[Stablity.UNSOLVABLE], ps[Stablity.RES_UNSTABLE], ps[Stablity.TIME_UNSTABLE]])
+    #         else:
+    #             row.append([0, 0, 0])
+    #     data.append(row)
     # print(data)
 
-    # data = [[[0.258732212160414, 4.3984476067270375, 0], [0.7761966364812419, 3.8809831824062098, 0], [0.6468305304010349, 2.1992238033635187, 0], [0.129366106080207, 4.657179818887451, 0], [-1, -1, 0], [-1, -1, 0], [0.0, 5.692108667529108, 0], [0.258732212160414, 5.562742561448901, 0], [-1, -1, 0], [0.38809831824062097, 5.821474773609315, 0], [-1, -1, 0]], [[0.6329113924050633, 2.6777020447906525, 0], [0.7789678675754625, 2.4829600778967866, 0], [0.7789678675754625, 2.385589094449854, 0], [0.7789678675754625, 1.8987341772151898, 0], [-1, -1, 0], [-1, -1, 0], [2.5316455696202533, 9.34761441090555, 0], [-1, -1, 0], [-1, -1, 0], [4.040895813047712, 12.658227848101266, 0], [-1, -1, 0]], [[1.3928571428571428, 0.9464285714285714, 0], [-1, -1, 0], [-1, -1, 0], [1.0535714285714286, 1.0892857142857142, 0], [-1, -1, 0], [-1, -1, 0], [-1, -1, 0], [-1, -1, 0], [-1, -1, 0], [-1, -1, 0], [-1, -1, 0]], [[1.7094017094017093, 0.11396011396011396, 0], [1.7094017094017093, 0.11396011396011396, 0], [1.3105413105413106, 0.7407407407407407, 0], [1.2535612535612535, 0.5128205128205128, 0], [-1, -1, 0], [-1, -1, 0], [1.7094017094017093, 0.6837606837606838, 0], [1.5384615384615385, 0.8547008547008547, 0], [-1, -1, 0], [1.4245014245014245, 0.3418803418803419, 0], [-1, -1, 0]]]
+    data = [[[0.38809831824062097, 1.8111254851228977, 1.8111254851228977], [0.38809831824062097, 2.1992238033635187, 0.7761966364812419], [0.258732212160414, 1.8111254851228977, 0.517464424320828], [0.0, 1.8111254851228977, 0.0], [0, 0, 0], [0, 0, 0], [0.0, 2.1992238033635187, 0.129366106080207], [0.258732212160414, 2.069857697283312, 1.034928848641656], [0, 0, 0], [0.0, 2.3285899094437257, 1.034928848641656], [0, 0, 0]], [[1.7039922103213243, 3.2619279454722494, 0.19474196689386564], [1.6553067185978578, 3.3106134371957157, 0.19474196689386564], [1.6066212268743914, 2.775073028237585, 0.2921129503407984], [1.3631937682570594, 2.4829600778967866, 0.34079844206426485], [0, 0, 0], [0, 0, 0], [2.775073028237585, 8.568646543330088, 1.071080817916261], [0, 0, 0], [0, 0, 0], [4.040895813047712, 9.104186952288218, 1.4605647517039921], [0, 0, 0]], [[1.4107142857142858, 0.75, 0.4107142857142857], [0, 0, 0], [0, 0, 0], [1.125, 0.8392857142857143, 0.3392857142857143], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], [[1.5954415954415955, 0.2849002849002849, 0.0], [1.5954415954415955, 0.22792022792022792, 0.0], [1.3105413105413106, 0.3418803418803419, 0.05698005698005698], [1.2535612535612535, 0.17094017094017094, 0.0], [0, 0, 0], [0, 0, 0], [1.3675213675213675, 0.5698005698005698, 0.0], [1.3105413105413106, 0.5698005698005698, 0.0], [0, 0, 0], [1.1396011396011396, 0.45584045584045585, 0.05698005698005698], [0, 0, 0]]]
 
-    # colors = get_color_map([cfg.qcfg.name for cfg in cfgs])
-
-    # # # # print_as_md_table(data)
-    # total = len(solver_names) * len(projects)
     bar_width = len(solver_names)/100
-    # fig, aixs = plt.subplots(figsize=(total, 16))
     fig, ax = plt.subplots()
 
     br = np.arange(len(solver_names))
@@ -633,9 +633,9 @@ def dump_all(cfgs):
                 plt.bar(br[i], hp, bottom=lp, width = bar_width, color=pcolor, edgecolor='black')
             pds.append(p)
 
-        # hps_ = [hps[i] - lps[i] for i in range(len(hps))]
         plt.bar(br, height=lps, width=bar_width, color=pcolor, alpha=0.20)
         plt.bar(br, height=hps, bottom=lps, width=bar_width, label=project_names[pi], color=pcolor)
+        hps = [hps[i] + lps[i] for i in range(len(hps))]
         plt.bar(br, height=pds, bottom=hps, width=bar_width, color=pcolor, alpha=0.40)
 
     plt.ylim(bottom=0, top=15)

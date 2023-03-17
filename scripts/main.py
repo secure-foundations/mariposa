@@ -50,12 +50,15 @@ for cfg in ALL_UNSOL_CFGs:
 
 def analyze_results():
     import numpy as np
-    from analyzer import do_stuff, dump_all
+    from analyzer import do_stuff, dump_all, plot_cutoff
     # analyze_d_komodo_sus(D_KOMODO_CFG)
 
-    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
-    dump_all(cfgs)
-    # do_stuff(D_KOMODO_CFG)
+    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
+    # cfgs = [D_KOMODO_CFG]
+    # dump_all(cfgs)
+    cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_4_2], DB_PATH)
+    cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_4_2], DB_PATH)
+    plot_cutoff(D_LVBKV_CFG)
 
     # total = 0
     # for cfg in ALL_UNSOL_CFGs:
