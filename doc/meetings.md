@@ -1,4 +1,4 @@
-## March 13th:
+## March 14th:
 
 * some experiment results on the new configs (60 seconds 60 instances, shortcut removed, 7 cores only)
  * 60 is probably overkill for a non-normal distribution?
@@ -7,6 +7,9 @@
 * unsolvable queries in the previous experiments
 * cvc5 testing?
 * db spliting
+* Yoshi: Serval CertiKOS Complete
+  * SAT queries are because of state machine refinements that are being sanity checked. 
+    They are from called as part of serval, not the project or Rosette itself.
 
 ## March 7th:
 
