@@ -7,6 +7,9 @@ use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
 use std::io::{stdout, BufReader, BufWriter, Write};
+use std::mem;
+use std::process;
+use std::process::Command;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -125,6 +128,35 @@ fn remove_patterns(commands: &mut Vec<concrete::Command>, seed: u64, threshold: 
     commands.iter_mut().for_each(|x| remove_pattern_rec(x, &mut rng, threshold));
 }
 
+
+fn name_assert(command: &mut concrete::Command, ct: usize) {
+    let concrete::Command::Assert { term } = command else { return; };
+    // does assert have attributes?
+    if let concrete::Term::Attributes { term: _, attributes: _ } = term {
+        // if name already exists, don't mess with it
+    }
+    else {
+        let new_name = "unsat-cores-dump-name-".to_owned() + &ct.to_string();
+        let attributes = vec![(concrete::Keyword("named".to_owned()), visitors::AttributeValue::Symbol(concrete::Symbol(new_name)))];
+        let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
+        mem::swap(term, &mut temp);
+        *term = concrete::Term::Attributes { term: Box::new(temp), attributes };
+    }
+}
+
+fn name_asserts(commands: &mut Vec<concrete::Command>) {
+//  for command in commands {
+//      print!("{:?}\n", command);
+//  }
+    commands.iter_mut().enumerate().for_each(|(i, x)| name_assert(x, i));
+    // add the following commands if necessary:
+    // (set-option :produce-unsat-cores true)
+    // (get-unsat-core)
+    commands.insert(0, concrete::Command::SetOption { keyword: concrete::Keyword("produce-unsat-cores".to_owned()), value: visitors::AttributeValue::Symbol(concrete::Symbol("true".to_owned())) });
+    commands.push(concrete::Command::GetUnsatCore)
+}
+
+
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -212,6 +244,7 @@ fn main() {
         let mut manager = Manager::new(args.out_file_path, args.seed);
         manager.dump_model_test(&model, &commands);
     } else {
+        let out_path = args.out_file_path.clone();
         let mut manager = Manager::new(args.out_file_path, args.seed);
 
         if args.perturbation == "none" {
@@ -229,6 +262,8 @@ fn main() {
             };
         } else if args.perturbation == "patterns" {
             remove_patterns(&mut commands, manager.seed, args.threshold);
+        } else if args.perturbation == "unsat-core" {
+            name_asserts(&mut commands);
         }
         manager.dump_non_info_commands(&commands);
     }
