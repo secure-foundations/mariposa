@@ -6,7 +6,8 @@
   * regression assumes something special about the plain query, then measures the delta between the plain and the mutants
   * divergence treats the plain as one sample of any perturbation group, then measures the variance within that group
   * high regression does not necessarily imply high divergence (mutants might be bad, but very consistently bad)
-  * high divergence tends to imply regression (mutants differ, so at least some badness exists) 
+  * high divergence tends to imply regression (mutants differ, so at least some badness exists)
+* some analysis on the difference between perturbations 
 * Serval CertiKOS export complete [Yoshi]
   * SAT queries are because of state machine refinements that are being sanity checked. They are from called as part of serval, not the project or Rosette itself.
 
