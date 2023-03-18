@@ -65,14 +65,10 @@ class ExpConfig:
             self.samples = project.get_samples(solvers, count)
 
     def get_summary_table_name(self):
-        return self.qcfg.name + "_summary"
+        return self.qcfg.name + "_new_summary"
 
     def get_project_name(self):
         return self.qcfg.project.name
-
-    def empty_muts_map(self, init=[]):
-        m = {str(mut): init.copy() for mut in self.qcfg.enabled_muts}
-        return m
 
     # def set_plain_only(self):
     #     self.max_mutants = 0
