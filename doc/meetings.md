@@ -1,4 +1,17 @@
-## March 13th:
+
+## March 21st:
+
+* some analysis on effect of time cutoff vs. instablity
+* what should instability measure? regression? divergence? both?
+  * regression assumes something special about the plain query, then measures the delta between the plain and the mutants
+  * divergence treats the plain as one sample of any perturbation group, then measures the variance within that group
+  * high regression does not necessarily imply high divergence (mutants might be bad, but very consistently bad)
+  * high divergence tends to imply regression (mutants differ, so at least some badness exists)
+* some analysis on the difference between perturbations 
+* Serval CertiKOS export complete [Yoshi]
+  * SAT queries are because of state machine refinements that are being sanity checked. They are from called as part of serval, not the project or Rosette itself.
+
+## March 14th:
 
 * some experiment results on the new configs (60 seconds 60 instances, shortcut removed, 7 cores only)
  * 60 is probably overkill for a non-normal distribution?
@@ -7,6 +20,7 @@
 * unsolvable queries in the previous experiments
 * cvc5 testing?
 * db spliting
+
 
 ## March 7th:
 
