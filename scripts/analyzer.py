@@ -272,9 +272,11 @@ class Thresholds:
 
     #     return Stablity.RES_UNSTABLE
     
-    def categorize_query(self, group_blobs):
+    def categorize_query(self, group_blobs, perturbs=None):
         ress = set()
-        for i in range(group_blobs.shape[0]):
+        if perturbs is None:
+            perturbs = [i for i in range(group_blobs.shape[0])]
+        for i in perturbs:
             ress.add(self.categorize_group(group_blobs[i]))
         if len(ress) == 1:
             return ress.pop()
@@ -282,11 +284,11 @@ class Thresholds:
             return Stablity.TIME_UNSTABLE
         return Stablity.RES_UNSTABLE
 
-def categorize_qeuries(rows, thresholds):
+def categorize_qeuries(rows, thresholds, perturbs=None):
     categories = Stablity.empty_map()
     for query_row in rows:
         plain_path = query_row[1]
-        res = thresholds.categorize_query(query_row[3])
+        res = thresholds.categorize_query(query_row[3], perturbs)
         categories[res].add(plain_path)
     return categories
 
@@ -295,48 +297,75 @@ def get_category_precentages(categories):
     total = sum([len(i) for i in categories.values()])
     for c, i in categories.items():
         percentages[c] = percentage(len(i), total)
-    return percentages
+    return percentages, total
 
-def subplot_cutoff(sp, xs, ys0, ys1, solver):
-    sp.plot(xs, ys0, marker=",", label="unsolvables")
-    sp.plot(xs, ys1, marker=",", label="res_unstables")
-    sp.set_title(f'{solver} timelimit cutoff vs category precentage')
-    sp.set_xlabel("timelimit selection (seconds)")
-    sp.set_ylabel("precentage of query")
-    sp.set_xticks(xs[::5])
-    sp.set_xlim(left=5, right=60)
-    sp.set_ylim(bottom=0, top=15)
-    sp.legend()
+# def subplot_cutoff(sp, xs, ys0, ys1, ys2, solver):
+#     sp.plot(xs, ys0, marker=",", label="unsolvables")
+#     sp.plot(xs, ys1, marker=",", label="res_unstables")
+#     sp.plot(xs, ys2, marker=",", label=" res_unstables")
+#     sp.set_title(f'{solver} timelimit cutoff vs category precentage')
+#     sp.set_xlabel("timelimit selection (seconds)")
+#     sp.set_ylabel("precentage of query")
+#     sp.set_xlim(left=5, right=60)
+#     sp.set_ylim(bottom=0, top=15)
+#     sp.legend()
 
 def plot_cutoff(cfg):
     s = load_summary_table(cfg)
     solver_count = len(s.keys())
     cut_figure, cut_aixs = setup_fig(solver_count, 2)
     xs = [i for i in range(5, 61, 1)]
+    perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
 
-    for j, (solver, rows) in tqdm(enumerate(s.items())):
-        strict_th = Thresholds("strict")
-        palin_th = Thresholds("regression")
-        stricts = [[], []]
-        plains = [[], []]
-
-        for i in xs:
-            strict_th.timeout = i * 1000
-            categories = categorize_qeuries(rows, strict_th)
-            ps = get_category_precentages(categories)
-            stricts[0].append(ps[Stablity.UNSOLVABLE])
-            stricts[1].append(ps[Stablity.RES_UNSTABLE])
-            palin_th.timeout = i * 1000
-            categories = categorize_qeuries(rows, palin_th)
-            ps = get_category_precentages(categories)
-            plains[0].append(ps[Stablity.UNSOLVABLE])
-            plains[1].append(ps[Stablity.RES_UNSTABLE])
-
+    for j, (solver, rows) in enumerate(s.items()):
         sps = cut_aixs
         if solver_count != 1:
             sps = cut_aixs[j]
-        subplot_cutoff(sps[0], xs, stricts[0], stricts[1], solver)
-        subplot_cutoff(sps[1], xs, plains[0], plains[1], solver)
+
+        strict_th = Thresholds("strict")
+        palin_th = Thresholds("regression")
+
+        stricts = {"unsolvable": [], "union": [], "shuffle": [], 
+                    "rename": [], "rseed": [], "intersect": []}
+        plains = {"unsolvable": [], "res_unstable": []}
+
+        for i in xs:
+            strict_th.timeout = i * 1000
+            palin_th.timeout = i * 1000
+
+            categories = {"unsolvable": set(), "shuffle": set(), "rename":set(), "rseed": set(), "union": set()}
+            categories2 = {"unsolvable": 0, "res_unstable": 0, "stable": 0}
+            for query_row in rows:
+                plain_path = query_row[1]
+                group_blobs = query_row[3]
+                ress = set()
+                for k, p in enumerate(perturbs):
+                    res = strict_th.categorize_group(group_blobs[k])
+                    if res == Stablity.RES_UNSTABLE:
+                        categories[p].add(plain_path)
+                    ress.add(res)
+                if ress == {Stablity.UNSOLVABLE}:
+                    categories["unsolvable"].add(plain_path)
+                elif ress != {Stablity.STABLE}:
+                    categories["union"].add(plain_path)
+
+                res = palin_th.categorize_query(group_blobs)
+                categories2[res] += 1
+
+            total = len(rows)
+            intersect = set.intersection(*[categories["shuffle"], categories["rename"], categories["rseed"]])
+            categories["intersect"] = intersect
+            for k, v in categories.items():
+                stricts[k].append(percentage(len(v) , total))
+            for k in {"unsolvable", "res_unstable"}:
+                plains[k].append(percentage(categories2[k], total))
+
+        for k in stricts:
+            sps[0].plot(xs, stricts[k], marker=".", label=k)
+        sps[0].legend()
+        for k in plains:
+            sps[1].plot(xs, plains[k], marker=".", label=k)
+        sps[1].legend()
 
     name = cfg.qcfg.name
     save_fig(cut_figure, f"{name}", f"fig/time_cutoff/{name}.png")

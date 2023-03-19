@@ -56,7 +56,7 @@ def analyze_results():
 
     # D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_11_2], DB_PATH)
     # plot_cutoff(D_KOMODO_CFG)
-    compare_perturbations(D_LVBKV_CFG)
+    plot_cutoff(D_KOMODO_CFG)
 
 def import_database(other_server):
     other_db_path = "data/mariposa2.db"
