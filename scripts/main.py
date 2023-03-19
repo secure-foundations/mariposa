@@ -48,17 +48,15 @@ for cfg in ALL_UNSOL_CFGs:
     cfg.qcfg.timeout = 120
 
 def analyze_results():
-    from analyzer import load_summary_table, plot_cutoff, dump_all
+    from analyzer import load_summary_table, plot_cutoff, dump_all, build_summary_table, compare_perturbations
     # analyze_d_komodo_sus(D_KOMODO_CFG)
 
-    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
-    # cfgs = [D_KOMODO_CFG]
-    dump_all(cfgs)
+    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
+    # D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_11_2], DB_PATH)
     # plot_cutoff(D_KOMODO_CFG)
-    # cfg = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_4_2], DB_PATH)
-    # cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_4_2], DB_PATH)
-    # load_summary_table(D_KOMODO_CFG)
-
+    compare_perturbations(D_LVBKV_CFG)
+    # do_stuff(D_LVBKV_CFG)
+    # dump_all(cfgs)
     # total = 0
     # for cfg in ALL_UNSOL_CFGs:
     #     print(cfg.qcfg.name)
@@ -135,8 +133,8 @@ if __name__ == '__main__':
 
     from analyzer import build_summary_table, append_summary_table
     # build_summary_table(D_LVBKV_CFG)
-    # import_database("s1907")
-    # append_summary_table(D_LVBKV_CFG, Z3_4_8_5)
+    # import_database("s1902")
+    # append_summary_table(D_KOMODO_CFG, Z3_4_8_11)
 
     # cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8])
     # r = Runner([cfg], override=True)

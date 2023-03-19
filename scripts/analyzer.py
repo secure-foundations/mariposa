@@ -174,14 +174,24 @@ class Stablity(str, Enum):
     TIME_UNSTABLE = "time_unstable"
     STABLE = "stable"
 
+    def __str__(self) -> str:
+        return super().__str__()
+
     def empty_map():
         em = {c: set() for c in Stablity}
         return em
 
+# miliseconds
+def successes_within_timeout(blob, timeout=1e6):
+    success = blob[0] == RCode.UNSAT.value
+    none_timeout = blob[1] < timeout 
+    success = np.sum(np.logical_and(success, none_timeout))
+    return success
+
 class Thresholds:
     def __init__(self, method):
         self.confidence = 0.05
-        self.timeout = 1000
+        self.timeout = 1e6
 
         self.unsolvable = 5
         assert 0 < self.unsolvable < 100
@@ -189,35 +199,36 @@ class Thresholds:
         self.res_stable = 95
         assert 0 < self.res_stable < 100
 
-        self.time_std = 1000
+        self.time_std = 1e6
 
-        if method == "plain":
-            self.categorize_group = self._categorize_group_plain
+        if method == "regression":
+            self.categorize_group = self._categorize_group_regression
         elif method == "strict":
-            self.categorize_group = self._categorize_group_strict
-        elif method == "threshold":
-            self.categorize_group = self._categorize_group_threshold
+            self.categorize_group = self._categorize_group_divergence_strict
+        # elif method == "threshold":
+        #     self.categorize_group = self._categorize_group_threshold
         else:
             assert False
 
-    def _categorize_group_plain(self, group_blob):
+    def _categorize_group_regression(self, group_blob):
         pres = group_blob[0][0]
-        ptime = as_seconds(group_blob[1][0])
+        ptime = group_blob[1][0]
         if pres != RCode.UNSAT.value or ptime > self.timeout:
             return Stablity.UNSOLVABLE
 
-        success = np.sum(group_blob[0] == RCode.UNSAT.value)
+        timeout = max(ptime * 1.5, ptime + 50000)
+        success = successes_within_timeout(group_blob, timeout)
+        # if success < len(group_blob[0]) * 0.8:
+        #     return Stablity.RES_UNSTABLE
+
         size = len(group_blob[0])
         if success != size:
             return Stablity.RES_UNSTABLE
-
         return Stablity.STABLE
 
-    def _categorize_group_strict(self, group_blob):
+    def _categorize_group_divergence_strict(self, group_blob):
         size = len(group_blob[0])
-        success = group_blob[0] == RCode.UNSAT.value
-        none_timeout = group_blob[1] < self.timeout * 1000 
-        success = np.sum(np.logical_and(success, none_timeout))
+        success = successes_within_timeout(group_blob, self.timeout)
 
         if success == 0:
             return Stablity.UNSOLVABLE
@@ -286,88 +297,128 @@ def get_category_precentages(categories):
         percentages[c] = percentage(len(i), total)
     return percentages
 
+def subplot_cutoff(sp, xs, ys0, ys1, solver):
+    sp.plot(xs, ys0, marker=",", label="unsolvables")
+    sp.plot(xs, ys1, marker=",", label="res_unstables")
+    sp.set_title(f'{solver} timelimit cutoff vs category precentage')
+    sp.set_xlabel("timelimit selection (seconds)")
+    sp.set_ylabel("precentage of query")
+    sp.set_xticks(xs[::5])
+    sp.set_xlim(left=5, right=60)
+    sp.set_ylim(bottom=0, top=15)
+    sp.legend()
+
 def plot_cutoff(cfg):
     s = load_summary_table(cfg)
     solver_count = len(s.keys())
     cut_figure, cut_aixs = setup_fig(solver_count, 2)
-    xs = [i for i in range(1, 63, 3)]
+    xs = [i for i in range(5, 61, 1)]
 
-    for j, (solver, rows) in enumerate(s.items()):
+    for j, (solver, rows) in tqdm(enumerate(s.items())):
         strict_th = Thresholds("strict")
-        palin_th = Thresholds("plain")
+        palin_th = Thresholds("regression")
         stricts = [[], []]
         plains = [[], []]
 
         for i in xs:
-            strict_th.timeout = i
+            strict_th.timeout = i * 1000
             categories = categorize_qeuries(rows, strict_th)
             ps = get_category_precentages(categories)
             stricts[0].append(ps[Stablity.UNSOLVABLE])
             stricts[1].append(ps[Stablity.RES_UNSTABLE])
-            palin_th.timeout = i
+            palin_th.timeout = i * 1000
             categories = categorize_qeuries(rows, palin_th)
             ps = get_category_precentages(categories)
             plains[0].append(ps[Stablity.UNSOLVABLE])
             plains[1].append(ps[Stablity.RES_UNSTABLE])
 
         sps = cut_aixs
-
         if solver_count != 1:
             sps = cut_aixs[j]
-        sp = sps[0]
-
-        sp.plot(xs, stricts[0], marker=",", label="unsolvables")
-        sp.plot(xs, stricts[1], marker=",", label="res_unstables")
-        sp.set_title(f'{solver} timelimit cutoff vs category precentage')
-        sp.set_ylabel("precentage of query")
-        sp.set_xlabel("timelimit selection (seconds)")
-        sp.set_xlim(left=1, right=60)
-        sp.set_ylim(bottom=0, top=30)
-        sp.legend()
-
-        sp = sps[1]
-
-        sp.plot(xs, plains[0], marker=",", label="unsolvables")
-        sp.plot(xs, plains[1], marker=",", label="res_unstables")
-        sp.legend()
-        sp.set_title(f'{solver} timelimit cutoff vs category precentage')
-        sp.set_ylabel("precentage of query")
-        sp.set_xlabel("timelimit selection (seconds)")
-        sp.set_xlim(left=1, right=60)
-        sp.set_ylim(bottom=0, top=30)
+        subplot_cutoff(sps[0], xs, stricts[0], stricts[1], solver)
+        subplot_cutoff(sps[1], xs, plains[0], plains[1], solver)
 
     name = cfg.qcfg.name
     save_fig(cut_figure, f"{name}", f"fig/time_cutoff/{name}.png")
 
-# def do_stuff(cfg):
-#     s = load_summary_table(cfg)
-#     for j, (solver, rows) in enumerate(s.items()):
-#         th = Thresholds("strict")
-#         unsolvables = []
-#         unstables = []
-#         xs = [i for i in range(1, 63, 3)]
-#         xs.reverse()
-#         cc = []
+def categorty_prediction(cfg):
+    summaries = load_summary_table(cfg)
+    sample_size = 30
+    for solver in summaries:
+        true_unsol, est_unsol = 0, 0
+        true_stable, est_stable = 0, 0
+        for query_row in summaries[solver]:
+            group_blobs = query_row[3]
+            for i in range(group_blobs.shape[0]):
+                sample = group_blobs[i][:,:sample_size]
+                sample_success = successes_within_timeout(sample)
+                true_success = successes_within_timeout(group_blobs[i])
+                if sample_success == 0:
+                    est_unsol += 1
+                    if true_success == 0:
+                        true_unsol += 1
+                if sample_success == sample_size:
+                    est_stable += 1
+                    if true_success == group_blobs.shape[2]:
+                        true_stable += 1
+        print(solver, 
+              round(percentage(true_unsol, est_unsol), 2),
+              round(percentage(true_stable, est_stable), 2))
 
-#         for i in xs:
-#             th.timeout = i
-#             remap_timeouts(rows, th)
-#             count = 0
-#             cc = 0
-#             for query_row in rows:
-#                 pres, ptime = query_row[2], query_row[3]
-#                 ress = set()
-#                 for (_, vress, times) in query_row[4]:
-#                     ress.add(th.categorize_group(pres, ptime, vress, times))
-#                 if len(ress) != 1:
-#                     # print(ress)
-#                     count += 1
-#                 elif Stablity.RES_UNSTABLE in ress:
-#                     cc += 1
-#             print(i, count, cc)
+def compare_perturbations(cfg, solver=None):
+    summaries = load_summary_table(cfg)
+    th = Thresholds("strict")
 
-#                 # categorize_group
-#         # print(len(rows))
+    # votes = {c: 0 for c in Stablity}
+    if solver is not None:
+        summaries = {solver: summaries[solver]}
+
+    solver_count = len(summaries.keys())
+    figure, aixs = setup_fig(solver_count, 2)
+
+    for j, solver in enumerate(summaries):
+        decisions = dict()
+        perturbations = summaries[solver][0][2]
+        categories = [c for c in Stablity]
+        for p in perturbations:
+           decisions[p] = {c: 0 for c in Stablity}
+        for query_row in summaries[solver]:
+            group_blobs = query_row[3]
+            for i in range(group_blobs.shape[0]):
+                p = perturbations[i]
+                c = th.categorize_group(group_blobs[i])
+                decisions[p][c] += 1
+        sps = aixs
+        if solver_count != 1:
+            sps = aixs[j]
+        data = []
+        for i, (_, decision) in enumerate(decisions.items()):
+            pts = []
+            for c in categories:
+                pts.append(decision[c])
+            data.append(pts)
+
+        data = np.array(data)
+
+        for i, row in enumerate(data):
+            sps[0].scatter(categories, row, color=COLORS[i], marker="o", label=str(perturbations[i]))
+        sps[0].legend()
+
+        new_data = np.zeros(data.T.shape)
+        for i, col in enumerate(data.T):
+            new_col = np.zeros(col.shape)
+            if np.max(col) != 0:
+                new_col = np.array(col) / np.max(col)
+            new_data[i] = new_col
+        for i, row in enumerate(new_data.T):
+            sps[1].scatter(categories, row, color=COLORS[i], marker="o", label=str(perturbations[i]))
+        sps[1].legend()
+
+    name = cfg.qcfg.name
+    plt.savefig(f"fig/pert_diff/{name}.png")
+
+# def do_stuff():
+#     pass
 
 # def plot_basic(cfg, solver_summaries):
 #     solver_count = len(cfg.samples)
@@ -515,18 +566,18 @@ def plot_cutoff(cfg):
 #         rows = res.fetchall()
 
 #         unsolvable = {p: set() for p in cfg.qcfg.enabled_muts}
-#         unsolvable["plain"] = set()
+#         unsolvable["regression"] = set()
 
 #         for row in rows:
 #             if row[2] != "unsat":
-#                 unsolvable["plain"].add(row[1])
+#                 unsolvable["regression"].add(row[1])
 
 #             summaries = ast.literal_eval(row[4])
 #             for (perturb, vres, _) in summaries:
 #                 if len(vres) != 0 and vres.count("unsat") ==0:
 #                     unsolvable[perturb].add(row[1])
 
-#         muts = ["plain", "shuffle", "rename", "sseed"]
+#         muts = ["regression", "shuffle", "rename", "sseed"]
 #         table = [[solver] + [m + "(" + str(len(unsolvable[m])) + ")" for m in muts]]
 
 #         for p1 in muts:
@@ -566,7 +617,7 @@ def plot_cutoff(cfg):
 # #     os.system("""ls data/d_komodo_z3_clean/ | grep "va__" | wc -l""")
 # #     summaries = load_summary_table(cfg)
 
-# #     thres = Thresholds("plain")
+# #     thres = Thresholds("regression")
 # #     # thres.timeout = 60
 # #     unsolvables0 = categorize_qeuries(summaries['z3_4_8_5'], thres)[0]
 # #     unsolvables8 = categorize_qeuries(summaries['z3_4_8_8'], thres)[0]
