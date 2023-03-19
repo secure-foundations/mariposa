@@ -52,50 +52,11 @@ def analyze_results():
     # analyze_d_komodo_sus(D_KOMODO_CFG)
 
     # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
+    # dump_all(cfgs)
+
     # D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_11_2], DB_PATH)
     # plot_cutoff(D_KOMODO_CFG)
     compare_perturbations(D_LVBKV_CFG)
-    # do_stuff(D_LVBKV_CFG)
-    # dump_all(cfgs)
-    # total = 0
-    # for cfg in ALL_UNSOL_CFGs:
-    #     print(cfg.qcfg.name)
-    #     for solver, summaries in load_summary(cfg, None).items():
-    #         counts = {"stable":0, "time_unstable":0, "res_unstable":0, "to_unsolvable": 0, "uk_unsolvable": 0}
-    #         for row in summaries:
-    #             pres = row[2]
-    #             sr = get_all_sr(pres, row[4])
-    #             all_vres = [pres]
-    #             all_times = [row[3]]
-    #             for (_, vres, times) in row[4]:
-    #                 all_vres += vres
-    #                 all_times += times
-    #             if set(all_vres) == {"unknown"}:
-    #                 counts["uk_unsolvable"] += 1
-    #             elif sr == 100:
-    #                 std = round(np.std(all_times) / 1000, 2)
-    #                 if std < 3:
-    #                     counts["stable"] += 1
-    #                 else:
-    #                     counts["time_unstable"] += 1
-    #             elif sr == 0:
-    #                 counts["to_unsolvable"] += 1
-    #             else:
-    #                 counts["res_unstable"] += 1
-    #             # print(sr)
-    #             # if pres not in counts:
-    #             #     counts[pres] = 0
-    #             # counts[pres] += 1
-    #         total += len(summaries)
-    #         print(solver, len(summaries), counts)
-    # print("total solver/plain query pair tested: ", total)
-    # plot_basic(cfg, summaries)
-    # print(intervals)
-    # plot_time_stable(cfg, summaries)
-    # plot_time_mixed(cfg, summaries)
-
-    # print_summary_data(cfgs)
-    # plot_query_sizes(cfgs)
 
 def import_database(other_server):
     other_db_path = "data/mariposa2.db"
@@ -132,9 +93,9 @@ if __name__ == '__main__':
     # r = Runner([cfg], override=True)
 
     from analyzer import build_summary_table, append_summary_table
+    # import_database("s1901")
     # build_summary_table(D_LVBKV_CFG)
-    # import_database("s1902")
-    # append_summary_table(D_KOMODO_CFG, Z3_4_8_11)
+    # append_summary_table(D_LVBKV_CFG, Z3_4_6_0)
 
     # cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8])
     # r = Runner([cfg], override=True)

@@ -381,37 +381,61 @@ def compare_perturbations(cfg, solver=None):
         perturbations = summaries[solver][0][2]
         categories = [c for c in Stablity]
         for p in perturbations:
-           decisions[p] = {c: 0 for c in Stablity}
+           decisions[p] = {c: set() for c in Stablity}
         for query_row in summaries[solver]:
             group_blobs = query_row[3]
             for i in range(group_blobs.shape[0]):
                 p = perturbations[i]
                 c = th.categorize_group(group_blobs[i])
-                decisions[p][c] += 1
+                decisions[p][c].add(query_row[1])
         sps = aixs
         if solver_count != 1:
             sps = aixs[j]
         data = []
-        for i, (_, decision) in enumerate(decisions.items()):
+        for (_, decision) in decisions.items():
             pts = []
             for c in categories:
-                pts.append(decision[c])
+                pts.append(len(decision[c]))
             data.append(pts)
-
         data = np.array(data)
 
-        for i, row in enumerate(data):
-            sps[0].scatter(categories, row, color=COLORS[i], marker="o", label=str(perturbations[i]))
-        sps[0].legend()
+        new_row = np.zeros(data.shape[1])
+        for i, c in enumerate(categories):
+            things = [decisions[p][c] for p in perturbations]
+            common = set.intersection(*things)
+            new_row[i] = len(common)
+        data = np.vstack((data, new_row))
+        perturbations += ["common"]
 
-        new_data = np.zeros(data.T.shape)
+        norm_data = np.zeros(data.T.shape)
         for i, col in enumerate(data.T):
             new_col = np.zeros(col.shape)
             if np.max(col) != 0:
                 new_col = np.array(col) / np.max(col)
-            new_data[i] = new_col
-        for i, row in enumerate(new_data.T):
-            sps[1].scatter(categories, row, color=COLORS[i], marker="o", label=str(perturbations[i]))
+            norm_data[i] = new_col
+        norm_data = norm_data.T
+
+        bar_width = len(categories)/50
+        br = np.arange(len(categories))
+        br = [x - bar_width for x in br]
+
+        for i in range(data.shape[0]):
+            if i == len(data) - 1:
+                continue
+            br = [x + bar_width for x in br]
+            sps[0].bar(br, height=data[i]-data[-1], bottom=data[-1], width=bar_width, color=COLORS[i], label=str(perturbations[i]))
+            sps[0].bar(br, height=data[-1], width=bar_width, color=COLORS[i], alpha=0.5)
+            sps[1].bar(br, height=norm_data[i]-norm_data[-1], bottom=norm_data[-1], width=bar_width, color=COLORS[i], label=str(perturbations[i]))
+            sps[1].bar(br, height=norm_data[-1], width=bar_width, color=COLORS[i], alpha=0.5)
+
+        sps[0].set_xticks([r + bar_width for r in range(len(categories))])
+        sps[0].set_xticklabels([str(c) for c in categories])
+        sps[0].set_xlabel('categorties', fontsize = 12)
+        sps[0].legend()
+
+        sps[1].set_xticks([r + bar_width for r in range(len(categories))])
+        sps[1].set_xticklabels([str(c) for c in categories])
+        sps[1].set_xlabel('categorties', fontsize = 12)
         sps[1].legend()
 
     name = cfg.qcfg.name
@@ -631,7 +655,7 @@ def dump_all(cfgs):
     solver_names = [str(s) for s in Z3_SOLVERS_ALL]
 
     thres = Thresholds("strict")
-    thres.timeout = 30
+    thres.timeout = 3e4 # 30s
 
     data = []
     for cfg in cfgs:
