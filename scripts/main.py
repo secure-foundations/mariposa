@@ -34,30 +34,35 @@ S_CERTIKOS_CFG = ExpConfig("S_CERTIKOS", S_CERTIKOS, Z3_SOLVERS_ALL, DB_PATH)
 
 ALL_CFGS = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG, FS_VWASM_CFG]
 
-UNSOL_Z3 = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2]
-S_KOMODO_UNSOL_CFG = ExpConfig("S_KOMODO_UNSOL", S_KOMODO, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
-D_KOMODO_UNSOL_CFG = ExpConfig("D_KOMODO_UNSOL", D_KOMODO, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
-D_LVBKV_UNSOL_CFG = ExpConfig("D_LVBKV_UNSOL", D_LVBKV, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
-D_FVBKV_UNSOL_CFG = ExpConfig("D_FVBKV_UNSOL", D_FVBKV, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
-FS_DICE_UNSOL_CFG = ExpConfig("FS_DICE_UNSOL", FS_DICE, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
-FS_VWASM_UNSOL_CFG = ExpConfig("FS_VWASM_UNSOL", FS_VWASM, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
-ALL_UNSOL_CFGs = [S_KOMODO_UNSOL_CFG, D_KOMODO_UNSOL_CFG, D_LVBKV_UNSOL_CFG, D_FVBKV_UNSOL_CFG, FS_DICE_UNSOL_CFG, FS_VWASM_UNSOL_CFG]
+# UNSOL_Z3 = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_11_2]
+# S_KOMODO_UNSOL_CFG = ExpConfig("S_KOMODO_UNSOL", S_KOMODO, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+# D_KOMODO_UNSOL_CFG = ExpConfig("D_KOMODO_UNSOL", D_KOMODO, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+# D_LVBKV_UNSOL_CFG = ExpConfig("D_LVBKV_UNSOL", D_LVBKV, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+# D_FVBKV_UNSOL_CFG = ExpConfig("D_FVBKV_UNSOL", D_FVBKV, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+# FS_DICE_UNSOL_CFG = ExpConfig("FS_DICE_UNSOL", FS_DICE, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+# FS_VWASM_UNSOL_CFG = ExpConfig("FS_VWASM_UNSOL", FS_VWASM, UNSOL_Z3, "data/mariposa.saved.db", load_list=True)
+# ALL_UNSOL_CFGs = [S_KOMODO_UNSOL_CFG, D_KOMODO_UNSOL_CFG, D_LVBKV_UNSOL_CFG, D_FVBKV_UNSOL_CFG, FS_DICE_UNSOL_CFG, FS_VWASM_UNSOL_CFG]
 
-for cfg in ALL_UNSOL_CFGs:
-    cfg.qcfg.max_mutants = 5
-    cfg.qcfg.timeout = 120
+# D_KOMODO_TO = ProjectConfig("d_komodo_to", FrameworkName.DAFNY, Z3_4_11_2)
+# D_KOMODO_TO.assign_z3_dirs("data/d_komodo_z3_clean_z3_4_11_2_ext/")
+# D_KOMODO_TO_CFG = ExpConfig("D_KOMODO_UNSOL", D_KOMODO, Z3_4_11_2, DB_PATH)
+
+# for cfg in ALL_UNSOL_CFGs:
+#     cfg.qcfg.max_mutants = 5
+#     cfg.qcfg.timeout = 120
 
 def analyze_results():
-    from analyzer import load_summary_table, plot_cutoff, dump_all, build_summary_table, compare_perturbations, export_timeouts
+    from analyzer import plot_cutoff, dump_all, compare_perturbations, export_timeouts, plot_query_sizes
     # , split_summary_table
     # analyze_d_komodo_sus(D_KOMODO_CFG)
     # split_summary_table(D_LVBKV_CFG)
     # split_summary_table(FS_VWASM_CFG)
     # split_summary_table(S_KOMODO_CFG)
 
-    # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
+    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
+    # plot_query_sizes(cfgs)
     # dump_all(cfgs)
-    # export_timeouts(D_KOMODO_CFG, Z3_4_11_2)
+    # export_timeouts(D_LVBKV_CFG, Z3_4_11_2)
 
     # D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_11_2], DB_PATH)
     # plot_cutoff(FS_VWASM_CFG)
@@ -99,10 +104,9 @@ if __name__ == '__main__':
     # cfg.qcfg.max_mutants = 0
     # r = Runner([cfg], override=True)
 
-    # from analyzer import build_summary_table, append_summary_table
-    # import_database("s1906")
-    # build_summary_table(D_LVBKV_CFG)
-    # append_summary_table(D_LVBKV_CFG, Z3_4_8_11)
+    from analyzer import build_solver_summary_table
+    # import_database("s1907")
+    # build_solver_summary_table(D_FVBKV_CFG, Z3_4_8_8)
 
     # cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8])
     # r = Runner([cfg], override=True)

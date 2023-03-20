@@ -72,6 +72,8 @@ def build_solver_summary_table(cfg, solver):
         con.close()
         return
 
+    cur.execute(f"""DROP TABLE IF EXISTS {summary_table}""")
+
     cur.execute(f"""CREATE TABLE {summary_table} (
         vanilla_path TEXT,
         pretubrations TEXT,
@@ -88,14 +90,14 @@ def build_solver_summary_table(cfg, solver):
             SELECT result_code, elapsed_milli, perturbation FROM {solver_table}
             WHERE vanilla_path = "{vanilla_path}"
             AND perturbation IS NOT NULL""")
-        
+
         perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
         v_rcode = RCode.from_str(v_rcode).value
         results = {p: [[v_rcode], [v_time]] for p in perturbs}
 
         for row in res.fetchall():
-            results[row[2]][0].append(RCode.from_str(row[1]).value)
-            results[row[2]][1].append(row[2])
+            results[row[2]][0].append(RCode.from_str(row[0]).value)
+            results[row[2]][1].append(row[1])
 
         mut_size = cfg.qcfg.max_mutants
         blob = np.zeros((len(perturbs), 2, mut_size + 1), dtype=int)
@@ -105,7 +107,7 @@ def build_solver_summary_table(cfg, solver):
             blob[pi][1] = veri_times
 
         cur.execute(f"""INSERT INTO {summary_table}
-            VALUES(?, ?, ?, ?);""", 
+            VALUES(?, ?, ?);""", 
             (vanilla_path, str(perturbs), blob))
 
     con.commit()
@@ -156,7 +158,7 @@ def group_success_rate(vres):
 #     con.commit()
 #     con.close()
 
-def load_summary_table(cfg):
+def load_solver_summaries(cfg):
     con, cur = get_cursor(cfg.qcfg.db_path)
     summaries = dict()
 
@@ -323,7 +325,7 @@ def get_category_precentages(categories):
 #     sp.legend()
 
 def plot_cutoff(cfg):
-    s = load_summary_table(cfg)
+    s = load_solver_summaries(cfg)
     solver_count = len(s.keys())
     cut_figure, cut_aixs = setup_fig(solver_count, 2)
     xs = [i for i in range(5, 61, 1)]
@@ -388,7 +390,7 @@ def plot_cutoff(cfg):
     save_fig(cut_figure, f"{name}", f"fig/time_cutoff/{name}.png")
 
 def categorty_prediction(cfg):
-    summaries = load_summary_table(cfg)
+    summaries = load_solver_summaries(cfg)
     sample_size = 30
     for solver in summaries:
         true_unsol, est_unsol = 0, 0
@@ -412,7 +414,7 @@ def categorty_prediction(cfg):
               round(percentage(true_stable, est_stable), 2))
 
 def compare_perturbations(cfg, solver=None):
-    summaries = load_summary_table(cfg)
+    summaries = load_solver_summaries(cfg)
     th = Thresholds("strict")
 
     # votes = {c: 0 for c in Stablity}
@@ -504,43 +506,53 @@ def export_timeouts(cfg, solver):
         WHERE result_code = "timeout" """)
 
     rows = res.fetchall()
-    print(len(rows))
+    # print(len(rows))
 
-    # for row in rows:
-        # vanilla_path = row[0]
-        # perturb = row[1]
-        # assert vanilla_path.endswith(".smt2")
-        # assert vanilla_path.startswith(clean_dir)
-        # stemed = vanilla_path[len(clean_dir):-5]
-        # command = row[2]
-        # [solver_path, mut_path, limit] = command.split(" ")
-        # index = mut_path.index(stemed) + len(stemed)
-        # info = mut_path[index:].split(".")
-        # if perturb is None:
-        #     command = f"cp {vanilla_path} {target_dir}"
-        # else:
-        #     seed = int(info[1])
-        #     assert perturb == info[2]
-        #     file_name = f"{str(seed)}.{perturb}.smt2"
-        #     mutant_path = target_dir + stemed + "." + file_name
-        #     command = f"./target/release/mariposa -i {vanilla_path} -p {perturb} -o {mutant_path} -s {seed}"
-        # print(command)
+    for row in rows:
+        vanilla_path = row[0]
+        perturb = row[1]
+        assert vanilla_path.endswith(".smt2")
+        assert vanilla_path.startswith(clean_dir)
+        stemed = vanilla_path[len(clean_dir):-5]
+        command = row[2]
+        [solver_path, mut_path, limit] = command.split(" ")
+        index = mut_path.index(stemed) + len(stemed)
+        info = mut_path[index:].split(".")
+        if perturb is None:
+            command = f"cp {vanilla_path} {target_dir}"
+        else:
+            seed = int(info[1])
+            assert perturb == info[2]
+            file_name = f"{str(seed)}.{perturb}.smt2"
+            mutant_path = target_dir + stemed + "." + file_name
+            command = f"./target/release/mariposa -i {vanilla_path} -p {perturb} -o {mutant_path} -s {seed}"
+        print(command)
 
     con.close()
-    # for (vanilla_path, v_rcode, v_time) in tqdm(vanilla_rows):
-    #     res = cur.execute(f"""
-    #         SELECT result_code, elapsed_milli, perturbation FROM {solver_table}
-    #         WHERE vanilla_path = "{vanilla_path}"
-    #         AND perturbation IS NOT NULL""")
-        
-    #     perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
-    #     v_rcode = RCode.from_str(v_rcode).value
-    #     results = {p: [[v_rcode], [v_time]] for p in perturbs}
 
-    #     for row in res.fetchall():
-    #         results[row[2]][0].append(RCode.from_str(row[0]).value)
-    #         results[row[2]][1].append(row[1])
+def plot_query_sizes(cfgs):
+    import os
+    # figure, axis = setup_fig(1, 2)
+    colors = get_color_map([cfg.qcfg.name for cfg in cfgs])
 
+    for cfg in cfgs:
+        clean_dir = cfg.qcfg.project.clean_dirs[Z3_4_11_2]
+        paths = list_smt2_files(clean_dir)
+        sizes = [] 
+        for path in paths:
+            sizes.append(os.path.getsize(path) / 1024)
+        n = len(sizes)
+        label = cfg.qcfg.name
+        color = colors[label]
+        plt.plot(np.sort(sizes), np.arange(n), marker=",", label=label, color=color)
+
+    plt.legend()
+    plt.xscale("log")
+    plt.ylabel("cumulative count")
+    plt.xlabel("query size (log) KB")
+
+    plt.tight_layout()
+    plt.savefig("fig/sizes.pdf")
 
 def dump_all(cfgs):
     projects = [cfg.qcfg.project for cfg in cfgs]
@@ -552,7 +564,7 @@ def dump_all(cfgs):
 
     data = []
     for cfg in cfgs:
-        summaries = load_summary_table(cfg)
+        summaries = load_solver_summaries(cfg)
         row = []
         for solver in tqdm(solver_names):
             if solver in summaries:
