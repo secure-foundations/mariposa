@@ -59,8 +59,8 @@ def analyze_results():
     # split_summary_table(FS_VWASM_CFG)
     # split_summary_table(S_KOMODO_CFG)
 
-    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
-    # plot_query_sizes(cfgs)
+    cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_VWASM_CFG]
+    plot_query_sizes(cfgs)
     # dump_all(cfgs)
     # export_timeouts(D_LVBKV_CFG, Z3_4_11_2)
 
@@ -68,7 +68,8 @@ def analyze_results():
     # plot_cutoff(FS_VWASM_CFG)
     # plot_cutoff(S_KOMODO_CFG)
     # plot_cutoff(D_KOMODO_CFG)
-    # plot_cutoff(D_LVBKV_CFG)
+    plot_cutoff(D_LVBKV_CFG)
+    # plot_cutoff(D_FVBKV_CFG)
 
 def import_database(other_server):
     other_db_path = "data/mariposa2.db"
@@ -98,15 +99,15 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
-    # analyze_results()
+    analyze_results()
 
     # cfg = ExpConfig("S_CERTIKOS", S_CERTIKOS, [Z3_4_4_2], DB_PATH, count=100)
     # cfg.qcfg.max_mutants = 0
     # r = Runner([cfg], override=True)
 
     from analyzer import build_solver_summary_table
-    # import_database("s1907")
-    # build_solver_summary_table(D_FVBKV_CFG, Z3_4_8_8)
+    # import_database("s1905")
+    # build_solver_summary_table(D_FVBKV_CFG, Z3_4_11_2)
 
-    cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_12_1])
-    r = Runner([cfg], override=True)
+    # cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_12_1], DB_PATH)
+    # r = Runner([cfg], override=True)

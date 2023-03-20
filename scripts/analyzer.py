@@ -165,11 +165,13 @@ def load_solver_summaries(cfg):
     for solver in cfg.samples:
         solver = str(solver)
         new_table_name = cfg.qcfg.get_solver_table_name(solver) + "_summary"
-        res = cur.execute(f"""SELECT * FROM {new_table_name}""")
-        rows = res.fetchall()
-        if len(rows) == 0:
+        if not check_table_exists(cur, new_table_name):
             print(f"[INFO] skipping {new_table_name}")
             continue
+
+        res = cur.execute(f"""SELECT * FROM {new_table_name}""")
+        rows = res.fetchall()
+    
         nrows = []
         mut_size = cfg.qcfg.max_mutants
         for row in rows:
@@ -373,18 +375,21 @@ def plot_cutoff(cfg):
                 stricts[k].append(percentage(len(v) , total))
             for k in {"unsolvable", "res_unstable"}:
                 plains[k].append(percentage(categories2[k], total))
-
         for k in stricts:
             sps[0].plot(xs, stricts[k], marker="o", label=k)
         sps[0].legend()
         sps[0].set_xlim(left=5, right=60)
-        sps[0].set_ylim(bottom=0, top=12)
+        sps[0].set_ylim(bottom=0, top=8)
+        sps[0].set_title(f"{solver} timelimit cutoff vs category precentage [divergence]")
+        sps[0].set_xlabel("timelimit selection (seconds)")
 
         for k in plains:
             sps[1].plot(xs, plains[k], marker="o", label=k)
         sps[1].legend()
         sps[1].set_xlim(left=5, right=60)
-        sps[1].set_ylim(bottom=0, top=12)
+        sps[1].set_ylim(bottom=0, top=8)
+        sps[1].set_title(f"{solver} timelimit cutoff vs category precentage [regression]")
+        sps[1].set_xlabel("timelimit selection (seconds)")
 
     name = cfg.qcfg.name
     save_fig(cut_figure, f"{name}", f"fig/time_cutoff/{name}.png")
