@@ -85,7 +85,7 @@ class SolverTaskGroup:
         if rcode == "error":
             print(out, err)
 
-        con = sqlite3.connect(DB_PATH)
+        con = sqlite3.connect(self.cfg.db_path)
         cur = con.cursor()
         cur.execute(f"""INSERT INTO {self.table_name}
             (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
@@ -189,7 +189,7 @@ class Runner:
             p.join()
 
     def __setup_tables(self, cfg, override):
-        con, cur = get_cursor()
+        con, cur = get_cursor(cfg.qcfg.db_path)
         ok = True
 
         for solver in cfg.samples:

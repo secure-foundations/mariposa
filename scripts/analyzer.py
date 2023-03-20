@@ -549,7 +549,7 @@ def plot_query_sizes(cfgs):
     plt.legend()
     plt.xscale("log")
     plt.ylabel("cumulative count")
-    plt.xlabel("query size (log) KB")
+    plt.xlabel("query size KB (log scale)")
 
     plt.tight_layout()
     plt.savefig("fig/sizes.pdf")
