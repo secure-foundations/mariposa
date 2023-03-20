@@ -64,8 +64,8 @@ class ExpConfig:
         else:
             self.samples = project.get_samples(solvers, count)
 
-    def get_summary_table_name(self):
-        return self.qcfg.name + "_new_summary"
+    def get_solver_summary_table_name(self, solver):
+        return self.qcfg.get_solver_table_name(solver) + "_summary"
 
     def get_project_name(self):
         return self.qcfg.project.name

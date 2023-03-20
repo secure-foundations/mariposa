@@ -48,15 +48,22 @@ for cfg in ALL_UNSOL_CFGs:
     cfg.qcfg.timeout = 120
 
 def analyze_results():
-    from analyzer import load_summary_table, plot_cutoff, dump_all, build_summary_table, compare_perturbations
+    from analyzer import load_summary_table, plot_cutoff, dump_all, build_summary_table, compare_perturbations, export_timeouts
+    # , split_summary_table
     # analyze_d_komodo_sus(D_KOMODO_CFG)
+    # split_summary_table(D_LVBKV_CFG)
+    # split_summary_table(FS_VWASM_CFG)
+    # split_summary_table(S_KOMODO_CFG)
 
     # cfgs = [S_KOMODO_CFG, D_KOMODO_CFG, D_LVBKV_CFG, FS_VWASM_CFG]
     # dump_all(cfgs)
+    # export_timeouts(D_KOMODO_CFG, Z3_4_11_2)
 
     # D_KOMODO_CFG = ExpConfig("D_KOMODO", D_KOMODO, [Z3_4_11_2], DB_PATH)
+    # plot_cutoff(FS_VWASM_CFG)
+    # plot_cutoff(S_KOMODO_CFG)
     # plot_cutoff(D_KOMODO_CFG)
-    plot_cutoff(D_KOMODO_CFG)
+    # plot_cutoff(D_LVBKV_CFG)
 
 def import_database(other_server):
     other_db_path = "data/mariposa2.db"
@@ -92,10 +99,10 @@ if __name__ == '__main__':
     # cfg.qcfg.max_mutants = 0
     # r = Runner([cfg], override=True)
 
-    from analyzer import build_summary_table, append_summary_table
-    # import_database("s1901")
+    # from analyzer import build_summary_table, append_summary_table
+    # import_database("s1906")
     # build_summary_table(D_LVBKV_CFG)
-    # append_summary_table(D_LVBKV_CFG, Z3_4_6_0)
+    # append_summary_table(D_LVBKV_CFG, Z3_4_8_11)
 
     # cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8])
     # r = Runner([cfg], override=True)
