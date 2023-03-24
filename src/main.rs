@@ -4,7 +4,7 @@ use rand::Rng;
 use rand_chacha::ChaCha8Rng;
 use rustop::opts;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
 use std::path::Path;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
@@ -144,46 +144,50 @@ fn name_assert(command: &mut concrete::Command, ct: usize) {
 }
 
 fn name_asserts(commands: &mut Vec<concrete::Command>) {
-//  for command in commands {
-//      print!("{:?}\n", command);
-//  }
     commands.iter_mut().enumerate().for_each(|(i, x)| name_assert(x, i));
-    // add the following commands if necessary:
-    // (set-option :produce-unsat-cores true)
-    // (get-unsat-core)
     commands.insert(0, concrete::Command::SetOption { keyword: concrete::Keyword("produce-unsat-cores".to_owned()), value: visitors::AttributeValue::Symbol(concrete::Symbol("true".to_owned())) });
     commands.push(concrete::Command::GetUnsatCore)
 }
 
-//fn naive_minimize()
+fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> bool {
+    let concrete::Command::Assert { term } = command else { 
+        return true;
+    };
+    let named = concrete::Keyword("named".to_owned());
 
-fn read_lines<P>(filename: P) -> std::io::Result<std::io::Lines<std::io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(std::io::BufReader::new(file).lines())
-}
-
-// return a Vec<String> where each element is the name of an assert from the unsat core
-fn parse_core_from_file(file_path: Option<String>) -> Vec<String> {
-    match file_path {
-        Some(s) => {
-            let mut v = vec![];
-            if let Ok(lines) = read_lines(s) {
-                for line in lines {
-                    if let Ok(ip) = line {
-                        v.push(ip);
+    if let concrete::Term::Attributes { term: _, attributes } = term {
+        for (key, value) in attributes {
+            if key == &named {
+                if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
+                    if core.contains(name) {
+                        return true;
                     }
                 }
             }
-            if let Some(cores) = v.last() {
-                cores.split_whitespace()
-            }
-            v
         }
-        None => {vec![]}
     }
+    return false;
 }
 
+// return a Vec<String> where each element is the name of an assert from the unsat core
+fn parse_core_from_file(commands: Vec<concrete::Command>, file_path: String) -> Vec<concrete::Command> {
+    // read lines from file
+    let file = File::open(file_path).unwrap();
+    let reader = BufReader::new(file);
+    let lines = reader.lines().map(|x| x.unwrap());
+    // get the last line of the file
+    let last_line = lines.last().unwrap();
+    // strip the first and last character 
+    let last_line = &last_line[1..last_line.len()-1];
+    // split the last line into a vector of strings 
+    let core = last_line.split(" ").map(|x| x.to_string()).collect::<Vec<String>>();
+    // convert core to a HashSet
+    let core = core.into_iter().collect::<HashSet<String>>();
+
+    // filter out commands that are not in the core
+    let new_commands = commands.into_iter().filter(|x| should_keep_command(x, &core)).collect::<Vec<concrete::Command>>();
+    return new_commands;
+}
 
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
@@ -274,7 +278,6 @@ fn main() {
         let mut manager = Manager::new(args.out_file_path, args.seed);
         manager.dump_model_test(&model, &commands);
     } else {
-        let out_path = args.out_file_path.clone();
         let mut manager = Manager::new(args.out_file_path, args.seed);
 
         if args.perturbation == "none" {
@@ -295,7 +298,7 @@ fn main() {
         } else if args.perturbation == "unsat-core" {
             name_asserts(&mut commands);
         } else if args.perturbation == "minimize-query" {
-            let core_list = parse_core_from_file(args.core_file);
+            commands = parse_core_from_file(commands, args.core_file.unwrap());
         }
         manager.dump_non_info_commands(&commands);
     }
