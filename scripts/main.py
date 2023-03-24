@@ -110,7 +110,7 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
-    analyze_results()
+    # analyze_results()
 
     # cfg = ExpConfig("S_CERTIKOS", S_CERTIKOS, [Z3_4_4_2], DB_PATH, count=100)
     # cfg.qcfg.max_mutants = 0
@@ -124,4 +124,7 @@ if __name__ == '__main__':
         # build_solver_summary_table(S_CERTIKOS_CFG, solver)
 
     # cfg = ExpConfig("D_LVBKV", D_LVBKV, [Z3_4_12_1], DB_PATH)
-    # r = Runner([cfg], override=True)
+    cfg = D_KOMODO_TO_CFG
+    cfg.qcfg.timeout = 150
+    cfg.qcfg.max_mutants = 0
+    r = Runner([cfg], override=True)
