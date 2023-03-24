@@ -73,7 +73,7 @@ def analyze_results():
     # plot_query_sizes(cfgs)
     # dump_all(cfgs)
 
-    # compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
+    compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
     # export_timeouts(D_FVBKV_CFG, Z3_4_12_1)
 
     # plot_cutoff(FS_VWASM_CFG)
@@ -116,9 +116,9 @@ if __name__ == '__main__':
     # cfg.qcfg.max_mutants = 0
     # r = Runner([cfg], override=True)
 
-    # from analyzer import build_solver_summary_table
-    # import_database("s1902")
-    # build_solver_summary_table(D_FVBKV_CFG, Z3_4_12_1)
+    from analyzer import build_solver_summary_table
+    # import_database("s1906")
+    # build_solver_summary_table(D_LVBKV_CFG, Z3_4_12_1)
 
     # for solver in Z3_SOLVERS_ALL:
         # build_solver_summary_table(S_CERTIKOS_CFG, solver)

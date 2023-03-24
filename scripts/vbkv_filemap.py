@@ -38,7 +38,8 @@ IMPL_FILE_MAP = {"AllocationReport": (["AllocationReport.i.dfy"], ["AllocationRe
 # impl files under lib/DataStructures
 DS_FILE_MAP = {
     "Bitmap": (["BitmapImpl.i.dfy", "BitmapModel.i.dfy"],["BitmapImpl.i.dfy", "BitmapModel.i.dfy"]),
-    "Btree": (["BtreeModel.i.dfy", "KMBtree.i.dfy", "MutableBtree.i.dfy"], ["BtreeModel.i.dfy", "KMBtree.i.dfy", "MutableBtree.i.dfy"]),
+    # "Btree": (["BtreeModel.i.dfy", "KMBtree.i.dfy", "MutableBtree.i.dfy"], ["BtreeModel.i.dfy", "KMBtree.i.dfy", "MutableBtree.i.dfy"]),
+    "Btree": (["KMBtree.i.dfy"], ["KMBtree.i.dfy"]),
     "Lru": (["LruImpl.i.dfy", "LruModel.i.dfy"], ["LinearLru.i.dfy", "LruModel.i.dfy", "LinearDList.i.dfy", "LinearUSeq.i.dfy"]),
     "Map": (["MutableMapImpl.i.dfy", "MutableMapModel.i.dfy"], ["LinearMutableMap.i.dfy", "LinearMutableMapBase.i.dfy", "LinearContentMutableMap.i.dfy"])
 }

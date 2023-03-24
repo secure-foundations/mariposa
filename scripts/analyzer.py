@@ -575,23 +575,23 @@ def plot_query_sizes(cfgs):
     plt.tight_layout()
     plt.savefig("fig/sizes.pdf")
 
-def plot_stacked_bars(data):
-    assert len(data.shape) == 3
+# def plot_stacked_bars(data):
+#     assert len(data.shape) == 3
 
-    bar_width = len(data.shape[1]) / 100
-    fig, ax = plt.subplots()
+#     bar_width = len(data.shape[1]) / 100
+#     fig, ax = plt.subplots()
 
-    for pi, project_row in enumerate(data):
-        pcs = np.zeros((data.shape[2], data.shape[1]))
-        br = [x + bar_width for x in br]
-        for i, ps in enumerate(project_row):
-            pcs[:, i] = ps
-        pcolor = COLORS[pi]
-        pcs = np.cumsum(pcs,axis=0)
+#     for pi, project_row in enumerate(data):
+#         pcs = np.zeros((data.shape[2], data.shape[1]))
+#         br = [x + bar_width for x in br]
+#         for i, ps in enumerate(project_row):
+#             pcs[:, i] = ps
+#         pcolor = COLORS[pi]
+#         pcs = np.cumsum(pcs,axis=0)
 
-        plt.bar(br, height=pcs[0], width=bar_width, color=pcolor, alpha=0.10, edgecolor='black', hatch='/////')
-        plt.bar(br, height=pcs[1]-pcs[0], bottom=pcs[0], width=bar_width, color=pcolor, alpha=0.40, edgecolor='black')
-        plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width, color=pcolor, label=project_names[pi], edgecolor='black')
+#         plt.bar(br, height=pcs[0], width=bar_width, color=pcolor, alpha=0.10, edgecolor='black', hatch='/////')
+#         plt.bar(br, height=pcs[1]-pcs[0], bottom=pcs[0], width=bar_width, color=pcolor, alpha=0.40, edgecolor='black')
+#         plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width, color=pcolor, label=project_names[pi], edgecolor='black')
 
 
 def dump_all(cfgs):
@@ -630,9 +630,9 @@ def dump_all(cfgs):
         pcolor = COLORS[pi]
         pcs = np.cumsum(pcs,axis=0)
 
-        plt.bar(br, height=pcs[0], width=bar_width, color=pcolor, alpha=0.10, edgecolor='black', hatch='/////')
-        plt.bar(br, height=pcs[1]-pcs[0], bottom=pcs[0], width=bar_width, color=pcolor, alpha=0.40, edgecolor='black')
-        plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width, color=pcolor, label=project_names[pi], edgecolor='black')
+        plt.bar(br, height=pcs[0], width=bar_width, color=pcolor, alpha=0.40, edgecolor='black', hatch='xxxxx', linewidth=0.2)
+        plt.bar(br, height=pcs[1]-pcs[0], bottom=pcs[0], width=bar_width, color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.2)
+        plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width, color=pcolor,label=project_names[pi], edgecolor='black', linewidth=0.2)
 
         # for i, ps in enumerate(project_row):
         #     if projects[pi].orig_solver == solver_names[i]:
