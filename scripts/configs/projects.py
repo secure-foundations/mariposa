@@ -76,8 +76,8 @@ class ProjectConfig:
         self.name = name
         self.framework = framework
         self._plain_dir = f"data/{name}_plain/"
-        if not os.path.exists(self._plain_dir):
-            print(f"[WARN] project {self.name} plain dir {self._plain_dir} does not exist")
+        # if not os.path.exists(self._plain_dir):
+            # print(f"[WARN] project {self.name} plain dir {self._plain_dir} does not exist")
         self.clean_dirs = dict()
         self.assign_z3_dirs(self._plain_dir.replace("_plain", "_z3_clean"))
         # self.assign_cvc5_dirs(self._plain_dir.replace("_plain", "_cvc5_clean"))
@@ -87,16 +87,16 @@ class ProjectConfig:
         return self._plain_dir
 
     def assign_z3_dirs(self, qdir):
-        if not os.path.exists(qdir):
-            print(f"[WARN] project {self.name} z3 dir {qdir} does not exist")
+        # if not os.path.exists(qdir):
+            # print(f"[WARN] project {self.name} z3 dir {qdir} does not exist")
         assert (qdir.endswith("/"))
         for solver in Z3_SOLVERS_ALL:
             if solver.brand == SolverBrand.Z3:
                 self.clean_dirs[solver] = qdir
 
     def assign_cvc5_dirs(self, qdir):
-        if not os.path.exists(qdir):
-            print(f"[WARN] project {self.name} z3 dir {qdir} does not exist")
+        # if not os.path.exists(qdir):
+            # print(f"[WARN] project {self.name} z3 dir {qdir} does not exist")
         assert (qdir.endswith("/"))
         for solver in Z3_SOLVERS_ALL:
             if solver.brand == SolverBrand.CVC5:

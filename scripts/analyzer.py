@@ -4,10 +4,12 @@ from tqdm import tqdm
 import ast
 import scipy.stats
 from enum import Enum
+from vbkv_filemap import *
 
 from configs.projects import *
 from configs.experiments import *
 from plot_utils import *
+import matplotlib
 import matplotlib.pyplot as plt
 from statsmodels.stats.proportion import proportions_ztest
 
@@ -158,34 +160,40 @@ def group_success_rate(vres):
 #     con.commit()
 #     con.close()
 
-def load_solver_summaries(cfg):
+def load_solver_summary(cfg, solver):
     con, cur = get_cursor(cfg.qcfg.db_path)
+    new_table_name = cfg.qcfg.get_solver_table_name(solver) + "_summary"
+    if not check_table_exists(cur, new_table_name):
+        print(f"[INFO] skipping {new_table_name}")
+        return None
+    solver = str(solver)
+
+    res = cur.execute(f"""SELECT * FROM {new_table_name}""")
+    rows = res.fetchall()
+
+    nrows = []
+    mut_size = cfg.qcfg.max_mutants
+    for row in rows:
+        perturbs = ast.literal_eval(row[1])
+        blob = np.frombuffer(row[2], dtype=int)
+        blob = blob.reshape((len(perturbs), 2, mut_size + 1))
+        nrow = [row[0], perturbs, blob]
+        nrows.append(nrow)
+    con.close()
+    return nrows
+
+def load_solver_summaries(cfg):
     summaries = dict()
 
     for solver in cfg.samples:
-        solver = str(solver)
-        new_table_name = cfg.qcfg.get_solver_table_name(solver) + "_summary"
-        if not check_table_exists(cur, new_table_name):
-            print(f"[INFO] skipping {new_table_name}")
+        nrows = load_solver_summary(cfg, solver)
+        if nrows is None:
             continue
-
-        res = cur.execute(f"""SELECT * FROM {new_table_name}""")
-        rows = res.fetchall()
-    
-        nrows = []
-        mut_size = cfg.qcfg.max_mutants
-        for row in rows:
-            perturbs = ast.literal_eval(row[1])
-            blob = np.frombuffer(row[2], dtype=int)
-            blob = blob.reshape((len(perturbs), 2, mut_size + 1))
-            nrow = [row[0], perturbs, blob]
-            nrows.append(nrow)
         summaries[solver] = nrows
-        # print(f"[INFO] loaded {summary_table_name} {solver}")
-    con.close()
     return summaries
 
 class Stablity(str, Enum):
+    UNKOWN = "unknown"
     UNSOLVABLE = "unsolvable"
     RES_UNSTABLE = "res_unstable"
     TIME_UNSTABLE = "time_unstable"
@@ -199,8 +207,8 @@ class Stablity(str, Enum):
         return em
 
 # miliseconds
-def successes_within_timeout(blob, timeout=1e6):
-    success = blob[0] == RCode.UNSAT.value
+def count_within_timeout(blob, rcode, timeout=1e6):
+    success = blob[0] == rcode.value
     none_timeout = blob[1] < timeout 
     success = np.sum(np.logical_and(success, none_timeout))
     return success
@@ -222,8 +230,8 @@ class Thresholds:
             self.categorize_group = self._categorize_group_regression
         elif method == "strict":
             self.categorize_group = self._categorize_group_divergence_strict
-        # elif method == "threshold":
-        #     self.categorize_group = self._categorize_group_threshold
+        elif method == "threshold":
+            self.categorize_group = self._categorize_group_threshold
         else:
             assert False
 
@@ -234,7 +242,7 @@ class Thresholds:
             return Stablity.UNSOLVABLE
 
         timeout = max(ptime * 1.5, ptime + 50000)
-        success = successes_within_timeout(group_blob, timeout)
+        success = count_within_timeout(group_blob, RCode.UNSAT, timeout)
         # if success < len(group_blob[0]) * 0.8:
         #     return Stablity.RES_UNSTABLE
 
@@ -245,9 +253,12 @@ class Thresholds:
 
     def _categorize_group_divergence_strict(self, group_blob):
         size = len(group_blob[0])
-        success = successes_within_timeout(group_blob, self.timeout)
+        success = count_within_timeout(group_blob, RCode.UNSAT, self.timeout)
 
         if success == 0:
+            uks = count_within_timeout(group_blob, RCode.UNKNOWN, self.timeout)
+            if uks == size:
+                return Stablity.UNKOWN
             return Stablity.UNSOLVABLE
 
         if success == size:
@@ -255,39 +266,41 @@ class Thresholds:
         
         return Stablity.RES_UNSTABLE
 
-    # def _categorize_group_threshold(self, group_blob):
-    #     success = vress.count("unsat")
-    #     size = len(vress)
-    #     # for i, x in enumerate(times):
-    #     #     if as_seconds(x) <= self.timeout and vress[i] == "unsat":
-    #     #         success += 1
+    def _categorize_group_threshold(self, group_blob):
+        # pres = group_blob[0][0]
+        # ptime = group_blob[1][0]
+        ress = group_blob[0]
+        times = group_blob[1]
 
-    #     value = self.unsolvable/100
-    #     _, p_value = proportions_ztest(count=success,
-    #                                     nobs=size,
-    #                                     value=value, 
-    #                                     alternative='smaller',
-    #                                     prop_var=value)
-    #     if p_value <= self.confidence:
-    #         return Stablity.UNSOLVABLE
+        size = len(ress)
+        success = count_within_timeout(group_blob, RCode.UNSAT, self.timeout)
 
-    #     value = self.res_stable / 100
-    #     _, p_value = proportions_ztest(count=success, 
-    #                                     nobs=size,
-    #                                     value=value,
-    #                                     alternative='larger',
-    #                                     prop_var=value)
+        value = self.unsolvable/100
+        _, p_value = proportions_ztest(count=success,
+                                        nobs=size,
+                                        value=value, 
+                                        alternative='smaller',
+                                        prop_var=value)
+        if p_value <= self.confidence:
+            return Stablity.UNSOLVABLE
 
-    #     if p_value <= self.confidence:
-    #         std = np.std(times)
-    #         time_std = self.time_std * 1000
-    #         T = (size - 1) * ((std / time_std) ** 2)
-    #         if T > scipy.stats.chi2.ppf(1-self.confidence, df=size-1):
-    #             return Stablity.TIME_UNSTABLE
-    #         else:
-    #             return Stablity.STABLE
+        value = self.res_stable / 100
+        _, p_value = proportions_ztest(count=success, 
+                                        nobs=size,
+                                        value=value,
+                                        alternative='larger',
+                                        prop_var=value)
 
-    #     return Stablity.RES_UNSTABLE
+        if p_value <= self.confidence:
+        #     std = np.std(times)
+        #     time_std = self.time_std * 1000
+        #     T = (size - 1) * ((std / time_std) ** 2)
+        #     if T > scipy.stats.chi2.ppf(1-self.confidence, df=size-1):
+        #         return Stablity.TIME_UNSTABLE
+        #     else:
+            return Stablity.STABLE
+
+        return Stablity.RES_UNSTABLE
     
     def categorize_query(self, group_blobs, perturbs=None):
         ress = set()
@@ -495,6 +508,8 @@ def compare_perturbations(cfg, solver=None):
     plt.savefig(f"fig/pert_diff/{name}.png")
 
 def export_timeouts(cfg, solver):
+    # th.timeout = threshold * 1000
+
     con, cur = get_cursor(cfg.qcfg.db_path)
     solver_table = cfg.qcfg.get_solver_table_name(solver)
 
@@ -523,6 +538,7 @@ def export_timeouts(cfg, solver):
         [solver_path, mut_path, limit] = command.split(" ")
         index = mut_path.index(stemed) + len(stemed)
         info = mut_path[index:].split(".")
+        # print(vanilla_path)
         if perturb is None:
             command = f"cp {vanilla_path} {target_dir}"
         else:
@@ -559,28 +575,44 @@ def plot_query_sizes(cfgs):
     plt.tight_layout()
     plt.savefig("fig/sizes.pdf")
 
+def plot_stacked_bars(data):
+    assert len(data.shape) == 3
+
+    bar_width = len(data.shape[1]) / 100
+    fig, ax = plt.subplots()
+
+    for pi, project_row in enumerate(data):
+        pcs = np.zeros((data.shape[2], data.shape[1]))
+        br = [x + bar_width for x in br]
+        for i, ps in enumerate(project_row):
+            pcs[:, i] = ps
+        pcolor = COLORS[pi]
+        pcs = np.cumsum(pcs,axis=0)
+
+        plt.bar(br, height=pcs[0], width=bar_width, color=pcolor, alpha=0.10, edgecolor='black', hatch='/////')
+        plt.bar(br, height=pcs[1]-pcs[0], bottom=pcs[0], width=bar_width, color=pcolor, alpha=0.40, edgecolor='black')
+        plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width, color=pcolor, label=project_names[pi], edgecolor='black')
+
+
 def dump_all(cfgs):
     projects = [cfg.qcfg.project for cfg in cfgs]
     project_names = [cfg.get_project_name() for cfg in cfgs]
     solver_names = [str(s) for s in Z3_SOLVERS_ALL]
 
+    category_count = len(Stablity)
     thres = Thresholds("strict")
-    thres.timeout = 3e4 # 30s
-
-    data = []
+    thres.timeout = 3e4 
+    data = np.zeros((len(cfgs), len(solver_names), category_count))
     for cfg in cfgs:
         summaries = load_solver_summaries(cfg)
-        row = []
         for solver in tqdm(solver_names):
             if solver in summaries:
-                rows = summaries[solver]
-                items = categorize_qeuries(rows, thres)
+                items = categorize_qeuries(summaries[solver], thres)
                 ps, _ = get_category_precentages(items)
-                row.append([ps[Stablity.UNSOLVABLE], ps[Stablity.RES_UNSTABLE], ps[Stablity.TIME_UNSTABLE]])
-            else:
-                row.append([0, 0, 0])
-        data.append(row)
-    print(data)
+                ps = [ps[c] for c in Stablity]
+                data[cfgs.index(cfg), solver_names.index(solver)] = ps
+
+    data = np.array(data)
 
     bar_width = len(solver_names)/100
     fig, ax = plt.subplots()
@@ -588,33 +620,97 @@ def dump_all(cfgs):
     br = np.arange(len(solver_names))
     br = [x - bar_width for x in br]
 
-    for pi, project_row in enumerate(data):
-        lps, hps, pds = [], [], []
-        br = [x + bar_width for x in br]
-        pcolor = COLORS[pi]
-        for i, (lp, hp, p) in enumerate(project_row):
-            if lp == hp and lp != 0:
-                plt.scatter(br[i], lp, marker='_', color=pcolor, s=bar_width)
-            lps.append(lp)
-            hps.append(hp)
-            if projects[pi].orig_solver == solver_names[i]:
-                plt.bar(br[i], hp, bottom=lp, width = bar_width, color=pcolor, edgecolor='black')
-            pds.append(p)
+    # data[solver_index][project_index][category_index]
 
-        plt.bar(br, height=lps, width=bar_width, color=pcolor, alpha=0.20)
-        plt.bar(br, height=hps, bottom=lps, width=bar_width, label=project_names[pi], color=pcolor)
-        hps = [hps[i] + lps[i] for i in range(len(hps))]
-        plt.bar(br, height=pds, bottom=hps, width=bar_width, color=pcolor, alpha=0.40)
+    for pi, project_row in enumerate(data):
+        pcs = np.zeros((category_count, len(solver_names)))
+        br = [x + bar_width for x in br]
+        for i, ps in enumerate(project_row):
+            pcs[:, i] = ps
+        pcolor = COLORS[pi]
+        pcs = np.cumsum(pcs,axis=0)
+
+        plt.bar(br, height=pcs[0], width=bar_width, color=pcolor, alpha=0.10, edgecolor='black', hatch='/////')
+        plt.bar(br, height=pcs[1]-pcs[0], bottom=pcs[0], width=bar_width, color=pcolor, alpha=0.40, edgecolor='black')
+        plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width, color=pcolor, label=project_names[pi], edgecolor='black')
+
+        # for i, ps in enumerate(project_row):
+        #     if projects[pi].orig_solver == solver_names[i]:
+        #         plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width, color=pcolor, hatch='////')
 
     plt.ylim(bottom=0, top=15)
     plt.xlabel('solvers', fontsize = 12)
-    plt.ylabel('unstable ratios', fontsize = 12)
+    plt.ylabel('categorty ratios', fontsize = 12)
     solver_lables = [f"{str(s).replace('_', '.')}\n{s.data[:-3]}" for s in Z3_SOLVERS_ALL]
     ax.tick_params(axis='both', which='major', labelsize=8)
-    plt.xticks([r + bar_width for r in range(len(lps))], solver_lables, rotation=30, ha='right')
+    plt.xticks([r + bar_width for r in range(len(solver_names))], solver_lables, rotation=30, ha='right')
     plt.legend()
     plt.tight_layout()
     plt.savefig("fig/all.pdf")
+
+# def map_query_to_file(files, query):
+#     for f in files:
+#         if query in f:
+#             return f
+#     return None
+
+def compare_vbkvs(linear, dynamic):
+    dfiles, lfiles = set(), set()
+    for k, v in FILE_MAP.items():
+        dfiles |= set(v[0])
+        lfiles |= set(v[1])
+    # print(len(lfiles))
+    # print(len(dfiles))
+
+    th = Thresholds("strict")
+    # th.timeout = 3e4 # 30s
+    # th.unsolvable = 20
+    # th.res_stable = 80
+
+    linear_filtered = set()
+    for query in linear.samples[Z3_4_11_2]:
+        for f in lfiles:
+            if "-" + f in query:
+                linear_filtered.add(query)
+    dynamic_filtered = set()
+    for query in dynamic.samples[Z3_4_11_2]:
+        for f in dfiles:
+            if "-" + f in query:
+                dynamic_filtered.add(query)
+                break
+
+    print(len(linear_filtered))
+    print(len(dynamic_filtered))
+
+    for solver in Z3_SOLVERS_ALL:
+        linear_summary = load_solver_summary(linear, solver)
+        if linear_summary is None:
+            continue
+
+        linear_categories = categorize_qeuries(linear_summary, th)
+
+        linear_filtered_categories = {c: set() for c in Stablity}
+        for c, qs in linear_categories.items():
+            linear_filtered_categories[c] = qs.intersection(linear_filtered)
+        # print(get_category_precentages(linear_filtered_categories))
+
+        dynamic_summary = load_solver_summary(dynamic, solver)
+        if dynamic_summary is None:
+            continue
+        d_categories = categorize_qeuries(dynamic_summary, th)
+        # dynamic_all = set.union(*[v for v in dynamic.values()])
+
+        dynamic_filtered_categories = {c: set() for c in Stablity}
+
+        for c, qs in d_categories.items():
+            dynamic_filtered_categories[c] = qs.intersection(dynamic_filtered)
+
+        for c, qs in linear_filtered_categories.items():
+            print(c, len(qs))
+        print(" ")
+        for c, qs in dynamic_filtered_categories.items():
+            print(c, len(qs))
+        print("----")
 
 # def dump_unsolvable(cfgs, timeout_threshold):
 #     for cfg in cfgs:
