@@ -6,10 +6,9 @@ use rustop::opts;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
-use std::io::{stdout, BufReader, BufWriter, Write};
+use std::path::Path;
+use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::mem;
-use std::process;
-use std::process::Command;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -156,6 +155,35 @@ fn name_asserts(commands: &mut Vec<concrete::Command>) {
     commands.push(concrete::Command::GetUnsatCore)
 }
 
+//fn naive_minimize()
+
+fn read_lines<P>(filename: P) -> std::io::Result<std::io::Lines<std::io::BufReader<File>>>
+where P: AsRef<Path>, {
+    let file = File::open(filename)?;
+    Ok(std::io::BufReader::new(file).lines())
+}
+
+// return a Vec<String> where each element is the name of an assert from the unsat core
+fn parse_core_from_file(file_path: Option<String>) -> Vec<String> {
+    match file_path {
+        Some(s) => {
+            let mut v = vec![];
+            if let Ok(lines) = read_lines(s) {
+                for line in lines {
+                    if let Ok(ip) = line {
+                        v.push(ip);
+                    }
+                }
+            }
+            if let Some(cores) = v.last() {
+                cores.split_whitespace()
+            }
+            v
+        }
+        None => {vec![]}
+    }
+}
+
 
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
@@ -234,6 +262,8 @@ fn main() {
             desc: "seed for randomness";
         opt threshold:u64=100,
             desc: "threshold for pattern removal";
+        opt core_file:Option<String>,
+            desc: "file containing unsat cores";
     }
     .parse_or_exit();
 
@@ -264,6 +294,8 @@ fn main() {
             remove_patterns(&mut commands, manager.seed, args.threshold);
         } else if args.perturbation == "unsat-core" {
             name_asserts(&mut commands);
+        } else if args.perturbation == "minimize-query" {
+            let core_list = parse_core_from_file(args.core_file);
         }
         manager.dump_non_info_commands(&commands);
     }
