@@ -12,6 +12,13 @@ from configs.experiments import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-entry.i.dfyImpl___module.__default.lemma__userExecutionModel__sufficiency.smt2 1
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-mapping.s.dfyCheckWellformed___module.__default.updateL2Pte.smt2 2
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-secprop-conf_ni_entry.i.dfyImpl___module.__default.lemma__validEnclaveEx__conf.smt2 3
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-secprop-sec_prop_util.i.dfyImpl___module.__default.lemma__user__regs__domain.smt2 4
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-sha-sha256-body-16-xx.gen.dfyCheckWellformed___module.__default.va__refined__Body__16__XX.smt2 5
+# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-valesupp.i.dfyCheckWellformed___module.__default.va__get__osp.smt2 6
+
 def subprocess_run(command, time_limit, debug=False, cwd=None):
     if debug:
         print(command)
@@ -55,26 +62,6 @@ class SolverTaskGroup:
         self.table_name = cfg.get_solver_table_name(self.solver)
         self.remove_mut = remove_mut
 
-    def _sample_size_enough(self, veri_times, veri_results):
-        sample_size = len(veri_times)
-        assert (sample_size == len(veri_results))
-
-        if sample_size < self.cfg.min_mutants:
-            return False
-
-        t_critical = stats.t.ppf(q=self.cfg.confidence_level, df=sample_size-1)  
-
-        p = sum(veri_results) / sample_size
-        res_moe = t_critical * math.sqrt((p*(1-p))/sample_size)
-
-        # # get the sample standard deviation
-        # time_stdev = np.std(veri_times, ddof=1)
-        # # standard deviation estimate
-        # sigma = time_stdev/math.sqrt(sample_size) 
-        # time_moe = t_critical * sigma
-
-        return res_moe < self.cfg.res_moe_limit
-
     def _run_single(self, query_path, perturb):
         assert (self.cfg.trials == 1)
 
@@ -98,7 +85,7 @@ class SolverTaskGroup:
         if rcode == "error":
             print(out, err)
 
-        con = sqlite3.connect(DB_PATH)
+        con = sqlite3.connect(self.cfg.db_path)
         cur = con.cursor()
         cur.execute(f"""INSERT INTO {self.table_name}
             (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
@@ -109,9 +96,6 @@ class SolverTaskGroup:
         return elapsed, rcode
 
     def run_pert_group(self, gen_path_pre, perturb):
-        veri_times = []
-        veri_results = []
-
         for _ in range(self.cfg.max_mutants):
             seed = random.randint(0, 0xffffffffffffffff)
 
@@ -130,16 +114,7 @@ class SolverTaskGroup:
             if self.remove_mut:
                 # remove mutant
                 os.system(f"rm {mutant_path}")
-
-            veri_times.append(elapsed)
-            if rcode == "unsat":
-                veri_results.append(1)
-            else:
-                veri_results.append(0)
-
-            if self._sample_size_enough(veri_times, veri_results):
-                break
-
+ 
     def run(self):
         elapsed, rcode = self._run_single(self.vanilla_path, None)
         if rcode != "unsat":
@@ -151,20 +126,28 @@ class SolverTaskGroup:
             self.run_pert_group(gen_path_pre, perturb)
 
 def run_group_tasks(queue, start_time):
+    from datetime import timedelta
+    from datetime import datetime
     init_size = queue.qsize()
 
     while True:
         task = queue.get()
-        print(init_size, queue.qsize(), round((time.time() - start_time) / 3600, 2))
+        cur_size = queue.qsize()
+        done_size = init_size - cur_size
+        elapsed = round((time.time() - start_time) / 3600, 2)
+        estimated = round(queue.qsize() * (elapsed / done_size), 2)
+
+        print(f"finished: {done_size}/{init_size}, elapsed: {elapsed}, estimated: {datetime.now() + timedelta(hours=estimated)}")
         if task is None:
             break
         task.run()
     print("worker exit")
 
 class Runner:
-    def __init__(self, cfg, override=False, remove_mut=True):
-        assert isinstance(cfg, ExpConfig)
-        self.__setup_tables(cfg, override)
+    def __init__(self, cfgs, override=False, remove_mut=True):
+        for cfg in cfgs:
+            assert isinstance(cfg, ExpConfig)
+            self.__setup_tables(cfg, override)
 
         con = get_connection()
         con, cur = get_cursor()
@@ -177,11 +160,11 @@ class Runner:
 
         print("loading tasks")
         tasks = []
-        for solver, queries in cfg.samples.items():
-            print(f"loading tasks {str(solver)}")
-            for query in tqdm(queries):
-                task = SolverTaskGroup(cfg.qcfg, query, solver, remove_mut)
-                if self.__should_run_task(cfg.qcfg, cur, task):
+        for cfg in cfgs:
+            for solver, queries in cfg.samples.items():
+                print(f"loading tasks {str(solver)}")
+                for query in tqdm(queries):
+                    task = SolverTaskGroup(cfg.qcfg, query, solver, remove_mut)
                     tasks.append(task)
         con.close()
         print("shuffling tasks")
@@ -206,7 +189,7 @@ class Runner:
             p.join()
 
     def __setup_tables(self, cfg, override):
-        con, cur = get_cursor()
+        con, cur = get_cursor(cfg.qcfg.db_path)
         ok = True
 
         for solver in cfg.samples:
@@ -223,16 +206,3 @@ class Runner:
                 create_experiment_table(cur, table_name)
         con.commit()
         con.close()
-
-    # check if enough data has been collected in previous runs
-    def __should_run_task(self, cfg, cur, task):
-        threshold = cfg.min_mutants * len(cfg.enabled_muts)
-        cur.execute(f"""SELECT COUNT(*) from {cfg.get_solver_table_name(task.solver)}
-            WHERE vanilla_path=?""", (task.vanilla_path,))
-        count = cur.fetchone()[0]
-        if count == 0:
-            return True
-        if count < threshold:
-            print(f"we should run {task.vanilla_path} with {task.solver}")
-            return True
-        return False

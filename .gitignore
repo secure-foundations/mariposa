@@ -16,5 +16,7 @@ share
 .vscode/
 pyvenv.cfg
 data/*
+!data/chunk.tar.gz.*
+!data/sample_lists/
 !data/*.lrz
 temp

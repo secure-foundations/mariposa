@@ -28,13 +28,13 @@ def save_fig(figure, title, file):
     figure.suptitle(title, fontsize=16)
     plt.savefig(file)
 
-def plot_time_overall(sps, dists, dists2, sname):
+def plot_time_overall(sps, dists, dists2, sname, colors):
     sp = sps[0]
     sp.set_title(f'{sname} response time cdf')
 
     for label, dist in dists2.items():
         xs, ys = get_cdf_pts(dist)
-        sp.plot(xs, ys, marker=",", label=label)
+        sp.plot(xs, ys, marker=",", label=label, color=colors[label])
     sp.set_ylabel("cumulative probability")
     sp.set_xlabel("response time (log)")
     sp.legend()
@@ -45,7 +45,7 @@ def plot_time_overall(sps, dists, dists2, sname):
         xs, ys = get_cdf_pts(dist)
         if xs[-1] >= 1:
             li = len(xs) - np.where(xs>=1)[0][0] - 1
-        sp.plot(xs, ys[::-1], marker=",", label=label)
+        sp.plot(xs, ys[::-1], marker=",", label=label, color=colors[label])
     sp.set_ylabel("cumulative percentage (%) above threshold")
     sp.set_xlabel("response time standard deviation (seconds) threshold log scale")
     sp.set_xscale("log")
@@ -53,12 +53,12 @@ def plot_time_overall(sps, dists, dists2, sname):
     sp.set_yscale("log")
     sp.legend()
 
-def plot_result_overall(sps, dists, sname):
+def plot_result_overall(sps, dists, sname, colors):
     sp = sps[0]
     sp.set_title(f'{sname} success rate cdf')
     for label, dist in dists.items():
         xs, ys = get_cdf_pts(dist)
-        sp.plot(xs, ys, marker=",", label=label)
+        sp.plot(xs, ys, marker=",", label=label, color=colors[label])
     sp.set_ylabel("cumulative percentage (%) below threshold")
     sp.set_xlabel("success rate (%) threshold")
     # sp.set_xlim(left=0, right=100)
@@ -76,9 +76,10 @@ def plot_result_overall(sps, dists, sname):
         min_p = min(ys[li], min_p)
         if li < hi:
             max_p = max(ys[hi], max_p)
-            sp.plot(xs, ys, marker=",", label=label)
+            sp.plot(xs, ys, marker=",", label=label, color=colors[label])
     sp.set_ylabel("cumulative percentage (%) below threshold")
     sp.set_xlabel("success rate (%) threshold")
     sp.set_xlim(left=1, right=99)
     sp.set_ylim(bottom=min_p-0.1, top=max_p+0.1)
     sp.set_xticks([1] + [i for i in range(10, 100, 10)] + [99])
+    sp.legend()

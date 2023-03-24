@@ -13,7 +13,7 @@ class Mutation(str, Enum):
         return str.__str__(self)
 
 class QueryExpConfig:
-    def __init__(self, name, project):
+    def __init__(self, name, project, db_path):
         self.name = name
 
         assert isinstance(project, ProjectConfig)
@@ -23,55 +23,56 @@ class QueryExpConfig:
         # how many times do we run each query? default=1
         self.trials = 1
 
-        # how many mutants to generate at least
-        self.min_mutants = 10
-
         # how many mutants to generate at most
-        self.max_mutants = 50
+        self.max_mutants = 60
 
         # how long do we wait? (seconds)
-        self.timeout = 40
-
-        # margin of error in time (seconds)
-        # self.time_moe_limit = 3
-
-        # margin of error in success rate (0.0 - 1.0)
-        self.res_moe_limit = 0.05
-
-        # confidence level
-        self.confidence_level = 0.95
+        self.timeout = 60
 
         self.enabled_muts = [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RSEED]
+
+        self.db_path = db_path
 
     def get_solver_table_name(self, solver):
         # assert (solver in self.samples)
         return f"{self.name}_{str(solver)}"
 
 class ExpConfig:
-    def __init__(self, name, project, solvers, count=None):
-        self.qcfg = QueryExpConfig(name, project)
+    def __init__(self, name, project, solvers, db_path, count=None, load_list=False):
+        self.qcfg = QueryExpConfig(name, project, db_path)
         for s in solvers:
             assert isinstance(s, SolverInfo)
         # how many solver processes to run in parallel?
-        self.num_procs = 8
+        self.num_procs = 7
 
+        self.samples = dict()
         # these are the enabled solvers and their sampled queries
-        self.samples = project.get_samples(solvers, count)
+        if load_list:
+            total = 0
+            for solver in solvers:
+                lname = f"data/sample_lists/{name}_{str(solver)}"
+                if not os.path.isfile(lname):
+                    print(f"[WARN] sample list not found: {lname}")
+                else:
+                    solver_samples = set()
+                    for line in open(lname).readlines():
+                        line = line.strip()
+                        solver_samples.add(line)
+                    self.samples[solver] = solver_samples
+                    total += len(solver_samples)
+            # print(name, total)
+        else:
+            self.samples = project.get_samples(solvers, count)
 
-    def get_summary_table_name(self):
-        return self.qcfg.name + "_summary"
+    def get_solver_summary_table_name(self, solver):
+        return self.qcfg.get_solver_table_name(solver) + "_summary"
 
     def get_project_name(self):
         return self.qcfg.project.name
 
-    def empty_muts_map(self, init=[]):
-        m = {str(mut): init.copy() for mut in self.qcfg.enabled_muts}
-        return m
+    # def set_plain_only(self):
+    #     self.max_mutants = 0
 
-    # def _check_queries_exist(self):
-    #     dirs = [self.project.clean_dirs[str(solver)] for solver in self.solvers]
-    #     enabled_dirs = set(dirs)
-    #     for dir in enabled_dirs:
-    #         for query in self.queries:
-    #             print(dir + query)
-    #             assert (os.path.exists(dir + query))
+    # def load_sample_list(self):
+        # with open(list_path) as f:
+        #     for line in f:

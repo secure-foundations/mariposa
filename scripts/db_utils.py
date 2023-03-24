@@ -52,41 +52,61 @@ def rename_table(cur, old_name, new_name):
     print(q)
     cur.execute(q)
 
-def show_tables():
-    con = sqlite3.connect(DB_PATH)
+def get_tables(db_path):
+    con = sqlite3.connect(db_path)
     cur = con.cursor()
     res = cur.execute("""SELECT name FROM sqlite_master
         WHERE type='table'
         ORDER BY name ASC""")
-    for r in res.fetchall():
+    tables = dict()
+    tns = res.fetchall()
+    for r in tns:
         res = cur.execute(f"""SELECT COUNT(*) FROM {r[0]}""")
-        print(r[0], res.fetchone()[0])
+        tables[r[0]] = res.fetchone()[0]
     con.close()
+    return tables
 
-def get_connection():
-    return sqlite3.connect(DB_PATH)
+def show_tables(db_path=DB_PATH):
+    tables = get_tables(db_path)
+    for table, count in tables.items():
+        print(table, count)
 
-def get_cursor():
-    con = sqlite3.connect(DB_PATH)
+def get_connection(db_path=DB_PATH):
+    return sqlite3.connect(db_path)
+
+def get_cursor(db_path=DB_PATH):
+    con = sqlite3.connect(db_path)
     cur = con.cursor()
     return con, cur
 
 def zip_db():
-    os.system(f"cd data && lrzip -z mariposa.db")
+    os.system("cd data && rm chunk.tar.gz.*")
+    os.system("cd data && tar cvzf - mariposa.db | split --bytes=50MB - chunk.tar.gz.")
 
-def import_tables(other_db_path, tables):
+def unzip_db():
+    os.system("cd data && mv mariposa.db mariposa.temp.db")
+    os.system("cd data && cat chunk.tar.gz.* | tar xzvf -")
+
+def import_tables(other_db_path):
+    ts0 = get_tables(DB_PATH)
+    ts1 = get_tables(other_db_path)
+    tn0 = set(ts0.keys())
+    tn1 = set(ts1.keys())
+    for t in tn0.intersection(tn1):
+        if ts0[t] != ts1[t]:
+            print(f"[WARN] table row count mismatch {t} {ts0[t]} vs {ts1[t]}")
+
     con, cur = get_cursor()
     cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-    # cur.execute(f"""DROP TABLE IF EXISTS D_LVBKV_summary""")
-    # cur.execute(f"""CREATE TABLE D_LVBKV_summary (
-    #     solver varchar(10),
-    #     vanilla_path TEXT,
-    #     v_result_code varchar(10),
-    #     v_elapsed_milli INTEGER,
-    #     summaries TEXT)""")
-    for table_name in tables:
-        create_experiment_table(cur, table_name)
-        cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
+
+    for table_name in tn1 - tn0:
+        print(f"confirm importing table {table_name} [Y]")
+        if input() != "Y":
+            print(f"[INFO] skip importing table {table_name}")
+        else:
+            create_experiment_table(cur, table_name)
+            cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
+            print(f"[INFO] done importing table {table_name}")
     con.commit()
     con.close()
 
@@ -98,3 +118,5 @@ if __name__ == "__main__":
         cmd = sys.argv[1]
         if cmd == "zip_db":
             zip_db()
+        elif cmd == "unzip_db":
+            unzip_db()
