@@ -127,4 +127,4 @@ if __name__ == '__main__':
     cfg = D_KOMODO_TO_CFG
     cfg.qcfg.timeout = 150
     cfg.qcfg.max_mutants = 0
-    r = Runner([], override=True)
+    r = Runner([cfg], override=True)
