@@ -1,10 +1,8 @@
 import sqlite3
 import sys, os
 from tqdm import tqdm
-
+from configs.experiments import DB_PATH
 # from enum import auto
-
-DB_PATH = "data/mariposa.db"
 
 def create_experiment_table(cur, table_name):
     cur.execute(f"""CREATE TABLE {table_name}(
