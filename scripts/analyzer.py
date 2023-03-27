@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from statsmodels.stats.proportion import proportions_ztest
 
 COLORS = [
+    "#00538A", # Strong Blue
     "#FFB300", # Vivid Yellow
     "#803E75", # Strong Purple
     "#FF6800", # Vivid Orange
