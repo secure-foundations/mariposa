@@ -32,8 +32,7 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
-    dump_all()
-
+    # dump_all()
     # plot_query_sizes(cfgs)
     # compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
     # export_timeouts(D_LVBKV_CFG, Z3_4_12_1)
