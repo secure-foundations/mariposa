@@ -68,6 +68,7 @@ class FrameworkName(str, Enum):
     DAFNY = "dafny"
     SERVAL = "serval"
     FSTAR = "fstar"
+    VERUS = "verus"
 
 class ProjectConfig:
     def __init__(self, name, framework, orig_solver):

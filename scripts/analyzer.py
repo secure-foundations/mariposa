@@ -248,6 +248,8 @@ def load_solver_summaries(cfg, skip_unknowns=True):
 
     if skip_unknowns:
         unkowns = get_unknowns(cfg)
+    else:
+        unkowns = set()
 
     for solver in cfg.samples:
         nrows = load_solver_summary(cfg, solver, unkowns)
@@ -661,7 +663,7 @@ def compare_vbkvs(linear, dynamic):
 
     data = np.zeros((4, len(Stablity)))
 
-    linear_summary = load_solver_summary(linear, Z3_4_12_1, get_unknowns(linear))
+    linear_summary = load_solver_summary(linear, linear.qcfg.project.orig_solver, get_unknowns(linear))
     linear_categories = categorize_qeuries(linear_summary, th)
 
     linear_filtered_categories = {c: set() for c in Stablity}
@@ -674,7 +676,7 @@ def compare_vbkvs(linear, dynamic):
     lfcs, lftot = get_category_precentages(linear_filtered_categories)
     lfcs = [lfcs[c] for c in Stablity]
 
-    dynamic_summary = load_solver_summary(dynamic, Z3_4_12_1, get_unknowns(dynamic))
+    dynamic_summary = load_solver_summary(dynamic, dynamic.qcfg.project.orig_solver, get_unknowns(dynamic))
     d_categories = categorize_qeuries(dynamic_summary, th)
 
     dynamic_filtered_categories = {c: set() for c in Stablity}
@@ -717,3 +719,25 @@ def compare_vbkvs(linear, dynamic):
     plt.tight_layout()
     plt.savefig("fig/compare.pdf")
 
+def v_test():
+    # thres = Thresholds("strict")
+    # thres.timeout = 61e3 # 1 min
+
+    # V_TEST = ProjectConfig("v_test", FrameworkName.VERUS, Z3_4_8_11)
+    # cfg = ExpConfig("V_TEST", V_TEST, Z3_SOLVERS_ALL, "data/test.db")
+
+    # for solver in Z3_SOLVERS_ALL:
+        # build_solver_summary_table(cfg, solver)
+
+    # summaries = load_solver_summaries(cfg, skip_unknowns=False)
+    # print([str(c) for c in Stablity])
+    # for solver in Z3_SOLVERS_ALL:
+    #     if solver in summaries:
+    #         items = categorize_qeuries(summaries[solver], thres)
+    #         ps, _ = get_category_precentages(items)
+    #         ps = [ps[c] for c in Stablity]
+    #         print(solver, [round(p, 2) for p in ps])
+
+    # cfg.num_procs = 4
+    # r = Runner([cfg])
+    pass

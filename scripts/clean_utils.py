@@ -172,6 +172,36 @@ def clean_dfy_project(project, dst_dir):
         cmds = read_standard_cmds(in_path)
         open(out_path, "w+").writelines(cmds)
 
+def split_queries(file_path):
+    in_f = open(file_path)
+    lines = in_f.readlines()
+    # convert to command standard form
+    cmds = convert_to_standard_cmds(lines)
+    # remove push, pop, echo and rlimit
+    cmds = remove_target_cmds(cmds, STD_REMOVE_CMDS)
+    depth = 0
+    stack = [[]]
+    splits = 0
+    for cmd in cmds:
+        if cmd.startswith("(push"):
+            depth += 1
+            stack.append([])
+        elif cmd.startswith("(pop"):
+            depth -= 1
+            stack = stack[:-1]
+        else:
+            assert depth == len(stack) - 1
+            stack[depth].append(cmd)
+
+        if "check-sat" in cmd:
+            splits += 1
+            out_f = open(f"data/v_test_z3_clean/{file_path[:-5]}.{splits}.smt2", "w+")
+            for item in stack:
+                out_f.writelines(item)
+    return cmds
+
+split_queries("root.smt2")
+
 # FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
 # clean_fs_project(FS_DICE, None, None)
 # def subprocess_run(command, time_limit, debug=False, cwd=None):
