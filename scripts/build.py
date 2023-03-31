@@ -8,7 +8,7 @@ def rules():
 rule instrument-query
     command = ./target/release/mariposa -i $in -o $out -p unsat-core
 rule get-cores
-    command = ./solvers/z3-4.12.1 $in > $out
+    command = ./solvers/z3-4.4.2 -T:10 $in > $out
 rule minimize-query
     command = ./target/release/mariposa -i $in -c $core -o $out -p minimize-query
 """
@@ -28,9 +28,9 @@ def emit_build_commands(plain_root):
         sus_path = plain_path.replace(plain_root, sus_root)
         print(f"build {insts_path}: instrument-query {plain_path}")
         print(f"build {core_path}: get-cores {insts_path}")
-        print(f"build {sus_path}: minimize-query {insts_path}")
+        print(f"build {sus_path}: minimize-query {insts_path} | {core_path}")
         print(f"    core = {core_path}")
-        if cout >= 5:
+        if cout >= 10:
             break
         cout += 1
 
