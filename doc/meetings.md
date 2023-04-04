@@ -1,3 +1,12 @@
+## April 4st:
+
+present:
+* plain query vs median time
+
+disucss:
+* plain perf regression vs delta?
+* next step experiment plans
+
 ## March 28st:
 
 present:
