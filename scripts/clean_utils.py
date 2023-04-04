@@ -195,12 +195,12 @@ def split_queries(file_path):
 
         if "check-sat" in cmd:
             splits += 1
-            out_f = open(f"data/v_test_z3_clean/{file_path[:-5]}.{splits}.smt2", "w+")
+            out_f = open(f"data/v_test3_z3_clean/{file_path[:-5]}.{splits}.smt2", "w+")
             for item in stack:
                 out_f.writelines(item)
     return cmds
 
-split_queries("root.smt2")
+split_queries("top_sort_dfs.smt2")
 
 # FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
 # clean_fs_project(FS_DICE, None, None)

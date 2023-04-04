@@ -175,40 +175,6 @@ def group_time_std(times):
     assert len(times) != 0
     return as_seconds(np.std(times))
 
-def group_success_rate(vres):
-    assert len(vres) != 0
-    return percentage(vres.count("unsat"), len(vres))
-
-# def split_summary_table(cfg):
-#     con, cur = get_cursor(cfg.qcfg.db_path)
-#     summary_table_name = cfg.get_summary_table_name()
-#     # summaries = dict()
-
-#     for solver in cfg.samples:
-#         solver = str(solver)
-#         new_table_name = cfg.qcfg.get_solver_table_name(solver) + "_summary"
-
-#         res = cur.execute(f"""SELECT * FROM {summary_table_name}
-#             WHERE solver = ?""", (solver,))
-#         rows = res.fetchall()
-#         if len(rows) == 0:
-#             print(f"[INFO] skipping {summary_table_name} {solver}")
-#             continue
-
-#         cur.execute(f"""DROP TABLE IF EXISTS {new_table_name}""")
-
-#         cur.execute(f"""CREATE TABLE {new_table_name} (
-#             vanilla_path TEXT,
-#             pretubrations TEXT,
-#             summaries BLOB)""")
-
-#         cur.execute(f"""
-#             INSERT INTO {new_table_name} 
-#             SELECT vanilla_path, pretubrations, summaries FROM {summary_table_name}
-#             WHERE solver = ?""", (solver,))
-#     con.commit()
-#     con.close()
-
 def load_solver_summary(cfg, solver, skip=set()):
     con, cur = get_cursor(cfg.qcfg.db_path)
     new_table_name = cfg.qcfg.get_solver_table_name(solver) + "_summary"
@@ -285,11 +251,7 @@ class Thresholds:
         self.timeout = 1e6
 
         self.unsolvable = 5
-        assert 0 < self.unsolvable < 100
-
         self.res_stable = 95
-        assert 0 < self.res_stable < 100
-
         self.time_std = None
 
         if method == "regression":
@@ -309,8 +271,9 @@ class Thresholds:
 
         timeout = max(ptime * 1.5, ptime + 50000)
         success = count_within_timeout(group_blob, RCode.UNSAT, timeout)
-        # if success < len(group_blob[0]) * 0.8:
-        #     return Stablity.RES_UNSTABLE
+
+        if success < len(group_blob[0]) * 0.8:
+            return Stablity.RES_UNSTABLE
 
         size = len(group_blob[0])
         if success != size:
@@ -368,12 +331,12 @@ class Thresholds:
                                         prop_var=value)
 
         if p_value <= self.confidence:
-            std = np.std(times)
-            T = (size - 1) * ((std / self.time_std) ** 2)
-            if T > scipy.stats.chi2.ppf(1-self.confidence, df=size-1):
-                return Stablity.TIME_UNSTABLE
-            else:
-                return Stablity.STABLE
+            if self.time_std is not None:
+                std = np.std(times)
+                T = (size - 1) * ((std / self.time_std) ** 2)
+                if T > scipy.stats.chi2.ppf(1-self.confidence, df=size-1):
+                    return Stablity.TIME_UNSTABLE
+            return Stablity.STABLE
 
         return Stablity.RES_UNSTABLE
     
@@ -590,7 +553,7 @@ def dump_all(cfgs=ALL_CFGS):
     category_count = len(Stablity)
     thres = Thresholds("strict")
     thres.timeout = 61e3 # 1 min
-    # thres.time_std = 5e3 # 5 sec
+    thres.time_std = 5e3 # 5 sec
 
     data = np.zeros((len(cfgs), len(solver_names), category_count))
     for cfg in cfgs:
@@ -720,24 +683,128 @@ def compare_vbkvs(linear, dynamic):
     plt.savefig("fig/compare.pdf")
 
 def v_test():
-    # thres = Thresholds("strict")
-    # thres.timeout = 61e3 # 1 min
+    from runner import Runner
+    thres = Thresholds("strict")
+    thres.timeout = 61e3 # 1 min
 
-    # V_TEST = ProjectConfig("v_test", FrameworkName.VERUS, Z3_4_8_11)
-    # cfg = ExpConfig("V_TEST", V_TEST, Z3_SOLVERS_ALL, "data/test.db")
+    V_TEST = ProjectConfig("v_test", FrameworkName.VERUS, Z3_4_10_1)
+    cfg1 = ExpConfig("V_TEST", V_TEST, [Z3_4_10_1], "data/test.db")
 
-    # for solver in Z3_SOLVERS_ALL:
-        # build_solver_summary_table(cfg, solver)
+    V2_TEST = ProjectConfig("v_test2", FrameworkName.VERUS, Z3_4_10_1)
+    cfg2 = ExpConfig("V2_TEST", V2_TEST, [Z3_4_10_1], "data/test.db")
 
-    # summaries = load_solver_summaries(cfg, skip_unknowns=False)
+    V3_TEST = ProjectConfig("v_test3", FrameworkName.VERUS, Z3_4_10_1)
+    cfg3 = ExpConfig("V3_TEST", V3_TEST, [Z3_4_10_1], "data/test.db")
+    
+    cfg = cfg3
+
+    cfg.qcfg.enabled_muts = [Mutation.SHUFFLE, Mutation.RSEED]
+    cfg.num_procs = 6
+    r = Runner([cfg], override=True, remove_mut=False)
+
+    build_solver_summary_table(cfg, Z3_4_10_1)
+
     # print([str(c) for c in Stablity])
-    # for solver in Z3_SOLVERS_ALL:
-    #     if solver in summaries:
-    #         items = categorize_qeuries(summaries[solver], thres)
-    #         ps, _ = get_category_precentages(items)
-    #         ps = [ps[c] for c in Stablity]
-    #         print(solver, [round(p, 2) for p in ps])
+    
+    # for cfg in [cfg1, cfg2, cfg3]:
+    #     summaries = load_solver_summaries(cfg, skip_unknowns=False)
+    #     for solver in Z3_SOLVERS_ALL:
+    #         if solver in summaries:
+    #             items = categorize_qeuries(summaries[solver], thres)
+    #             ps, _ = get_category_precentages(items)
+    #             ps = [ps[c] for c in Stablity]
+    #             print(solver, [round(p, 2) for p in ps])
+    #     print("")
 
-    # cfg.num_procs = 4
-    # r = Runner([cfg])
-    pass
+# def analyze_regression(cfg, solver):
+#     unkowns = get_unknowns(cfg)
+#     nrows = load_solver_summary(cfg, solver, unkowns)
+#     regres = []
+#     tregres = []
+#     imporoves = []
+#     for query_row in nrows:
+#         # query = query_row[0]
+#         group_blobs = query_row[2]
+#         plain_res = group_blobs[0][0][0]
+#         plain_time = group_blobs[0][1][0]
+
+#         # print(group_blobs.shape)
+#         for group_blob in group_blobs:
+#             ress = group_blob[0][1:]
+#             times = group_blob[1][1:]
+#             # print(len(ress), len(times))
+#             if plain_res == RCode.UNSAT.value:
+#                 if np.all(ress == RCode.UNSAT.value):
+#                     ratio = np.median(times) / plain_time
+#                     if ratio > 1.5:
+#                         print(ratio)
+#                 else:
+#                     print(np.sum(ress == RCode.UNSAT.value))
+                    
+            # and plain_res == RCode.UNSAT.value:
+    #             if time > plain_time:
+    #                 print("regression", query)
+    #         if res == RCode.UNSAT.value and plain_res != RCode.UNSAT.value:
+    #             print("improve", query)
+    #     # print(plain_res, np.sum(group_blobs[0][0][1:] == RCode.UNSAT.value) / 60)
+    #     times = group_blobs[0][1][1:]
+    #     successes = np.sum(group_blobs[0][0][1:] == RCode.UNSAT.value)
+    #     if plain_res == RCode.UNSAT.value:
+    #         regres.append(successes * 100 / 60)
+    #         tregres.append(np.median(times) / plain_time)
+    #     else:
+    #         imporoves.append(successes * 100 / 60)
+    # print(np.sum(np.array(regres) < 80))
+    # print(np.sum(np.array(tregres) > 1.5))
+    # print(imporoves)
+
+        # tt = (group_blobs[0][1][0], np.median(times), np.min(times), np.max(times))
+        # print(tt)
+
+def do_stuff(cfg):
+    summaries = load_solver_summaries(cfg)
+    # perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+
+    solver_count = len(cfg.samples.keys())
+    cut_figure, cut_aixs = setup_fig(solver_count, 1)
+    xs = [i for i in range(5, 62, 1)]
+    perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+    skip = get_unknowns(cfg)
+
+    for j, solver in enumerate(cfg.samples.keys()):
+        sps = cut_aixs
+        if solver_count != 1:
+            sps = cut_aixs[j]
+
+        rows = summaries[solver]
+        pts = [[], [], []]
+        for query_row in rows:
+            group_blobs = query_row[2]
+            t = min(group_blobs[0][1][0], 60000)
+            for j in range(3):
+                times = group_blobs[:,1][j]
+                times = np.clip(times, 0, 60000)
+                pts[j].append((t, np.median(times), np.min(times), np.max(times)))
+
+        for pt in pts:
+            pt.sort(key=lambda x: x[0])
+
+        xs = np.arange(start=0, stop=len(pts[0])*3, step=3)
+
+        sps.scatter([p[0] for p in pts[0]], [p[1] for p in pts[0]], label="shuffle", marker='.')
+        sps.scatter([p[0] for p in pts[1]], [p[1] for p in pts[1]], label="rename", marker='.')
+        sps.scatter([p[0] for p in pts[2]], [p[2] for p in pts[1]], label="rseed", marker='.')
+        x = np.linspace(0, 60000, 100)
+        y = 2*x
+        sps.plot(x, y)
+        y = x/2
+        sps.plot(x, y)
+        
+        sps.set_ylim(0, 60000)
+        sps.set_xlim(0, 60000)
+
+        sps.set_aspect('equal', adjustable='box')
+        sps.legend()
+        plt.tight_layout()
+        name = cfg.qcfg.name
+        plt.savefig(f"fig/time_scatter/{name}.png")
