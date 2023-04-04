@@ -61,6 +61,7 @@ class SolverTaskGroup:
         self.cfg = cfg
         self.table_name = cfg.get_solver_table_name(self.solver)
         self.remove_mut = remove_mut
+        self.early_return = False
 
     def _run_single(self, query_path, perturb):
         assert (self.cfg.trials == 1)
@@ -107,13 +108,17 @@ class SolverTaskGroup:
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
             if result.returncode != 0:
                 print("[WARN] MARIPOSA failed: " + command)
-                return
+                return "stable"
 
             elapsed, rcode = self._run_single(mutant_path, perturb)
 
             if self.remove_mut:
                 # remove mutant
                 os.system(f"rm {mutant_path}")
+                
+            if rcode != "unsat" and self.early_return:
+                return "unstable"
+        return "stable"
  
     def run(self):
         elapsed, rcode = self._run_single(self.vanilla_path, None)
@@ -123,7 +128,10 @@ class SolverTaskGroup:
         gen_path_pre = "gen/" + self.table_name + "/" + self.vanilla_path[5::]
 
         for perturb in self.cfg.enabled_muts:
-            self.run_pert_group(gen_path_pre, perturb)
+            stability = self.run_pert_group(gen_path_pre, perturb)
+            if stability != "stable" and self.early_return:
+                return "unstable"
+        return "stable"
 
 def run_group_tasks(queue, start_time):
     from datetime import timedelta
@@ -206,3 +214,25 @@ class Runner:
                 create_experiment_table(cur, table_name)
         con.commit()
         con.close()
+
+if __name__ == "__main__":
+    solver = SolverInfo("z3_place_holder","2000/01/01")
+
+    D_KOMODO_BISEC = QueryExpConfig("D_DOMODO_BISEC", ProjectConfig("d_komodo_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
+    D_LVBKV_BISEC = QueryExpConfig("D_LVBKV_BISEC", ProjectConfig("d_lvbkv_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
+    D_FVBKV_BISEC = QueryExpConfig("D_FVBKV_BISEC", ProjectConfig("d_fvbkv_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
+    FS_DICE_CFG_BISEC = QueryExpConfig("FS_DICE_CFG_BISEC", ProjectConfig("fs_dice_cfg_bisec", FrameworkName.FSTAR, solver), "data/bisect.db")    
+
+    qcfg = D_KOMODO_BISEC
+    table_name = qcfg.get_solver_table_name(solver)
+    con, cur = get_cursor(qcfg.db_path)
+    if not check_table_exists(cur, table_name):
+        create_experiment_table(cur, table_name)
+    con.commit()
+    con.close()
+
+    # show_tables("data/bisect.db")
+    tg = SolverTaskGroup(qcfg, sys.argv[1], solver, True)
+    tg.early_return = True
+    res = tg.run()
+    print(res)
