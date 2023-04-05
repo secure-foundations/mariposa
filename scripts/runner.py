@@ -86,14 +86,14 @@ class SolverTaskGroup:
         if rcode == "error":
             print(out, err)
 
-        con = sqlite3.connect(self.cfg.db_path)
-        cur = con.cursor()
-        cur.execute(f"""INSERT INTO {self.table_name}
-            (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
-            VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
-            (query_path, self.vanilla_path, perturb, command, out, err, rcode, elapsed))
-        con.commit()
-        con.close()
+        # con = sqlite3.connect(self.cfg.db_path)
+        # cur = con.cursor()
+        # cur.execute(f"""INSERT INTO {self.table_name}
+        #     (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
+        #     VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
+        #     (query_path, self.vanilla_path, perturb, command, out, err, rcode, elapsed))
+        # con.commit()
+        # con.close()
         return elapsed, rcode
 
     def run_pert_group(self, gen_path_pre, perturb):
@@ -218,21 +218,14 @@ class Runner:
 if __name__ == "__main__":
     solver = SolverInfo("z3_place_holder","2000/01/01")
 
-    D_KOMODO_BISEC = QueryExpConfig("D_DOMODO_BISEC", ProjectConfig("d_komodo_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
-    D_LVBKV_BISEC = QueryExpConfig("D_LVBKV_BISEC", ProjectConfig("d_lvbkv_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
-    D_FVBKV_BISEC = QueryExpConfig("D_FVBKV_BISEC", ProjectConfig("d_fvbkv_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
-    FS_DICE_CFG_BISEC = QueryExpConfig("FS_DICE_CFG_BISEC", ProjectConfig("fs_dice_cfg_bisec", FrameworkName.FSTAR, solver), "data/bisect.db")    
+    qcfg = QueryExpConfig("BISEC", ProjectConfig("bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
+    # D_LVBKV_BISEC = QueryExpConfig("D_LVBKV_BISEC", ProjectConfig("d_lvbkv_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
+    # D_FVBKV_BISEC = QueryExpConfig("D_FVBKV_BISEC", ProjectConfig("d_fvbkv_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
+    # FS_DICE_CFG_BISEC = QueryExpConfig("FS_DICE_CFG_BISEC", ProjectConfig("fs_dice_cfg_bisec", FrameworkName.FSTAR, solver), "data/bisect.db")    
 
-    qcfg = D_KOMODO_BISEC
-    table_name = qcfg.get_solver_table_name(solver)
-    con, cur = get_cursor(qcfg.db_path)
-    if not check_table_exists(cur, table_name):
-        create_experiment_table(cur, table_name)
-    con.commit()
-    con.close()
-
+    # qcfg = D_KOMODO_BISEC
     # show_tables("data/bisect.db")
     tg = SolverTaskGroup(qcfg, sys.argv[1], solver, True)
     tg.early_return = True
     res = tg.run()
-    print(res)
+    print("[RESULT]: ", res)

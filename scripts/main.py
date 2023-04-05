@@ -25,7 +25,7 @@ def sample_projects(projects):
 if __name__ == '__main__':
     print("building mariposa...")
     stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
-    assert stdout == "master"
+    # assert stdout == "master"
     os.system("cargo build --release")
 
     print("checking scaling_governor...")
@@ -41,14 +41,26 @@ if __name__ == '__main__':
 
     # cfg = ExpConfig("FS_DICE", FS_DICE, [Z3_4_12_1], DB_PATH)
     
-    # for cfg in [D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG]:
-    #     summaries = load_solver_summaries(cfg, skip_unknowns=False)
-    #     th = Thresholds("strict")
-    #     th.timeout = 6e4
-    #     categories1 = categorize_qeuries(summaries[Z3_4_8_5], th)
-    #     categories2 = categorize_qeuries(summaries[Z3_4_8_8], th)
-    #     diff = categories2[Stablity.RES_UNSTABLE.value] - categories1[Stablity.RES_UNSTABLE.value]
-    #     print(len(diff))
+    for cfg in [D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG]:
+        summaries = load_solver_summaries(cfg, skip_unknowns=False)
+        th = Thresholds("strict")
+        th.timeout = 6e4
+        categories1 = categorize_qeuries(summaries[Z3_4_8_5], th)
+        categories2 = categorize_qeuries(summaries[Z3_4_8_8], th)
+
+        stable_1 = categories1[Stablity.STABLE.value]
+        stable_2 = categories2[Stablity.STABLE.value]
+
+        unstable_1 = categories1[Stablity.RES_UNSTABLE]
+        unstable_2 = categories2[Stablity.RES_UNSTABLE]
+        
+        # print(len(unstable_1.intersection(stable_2)))
+        for i in stable_1.intersection(unstable_2):
+            print(i)
+        
+        # diff = categories2[Stablity.RES_UNSTABLE.value] - categories1[Stablity.RES_UNSTABLE.value]
+        # diff2 = categories1[Stablity.RES_UNSTABLE.value] - categories2[Stablity.RES_UNSTABLE.value]
+        # print(len(diff), len(diff2))
 
     # for cfg in tqdm(ALL_CFGS):
     #     do_stuff(cfg)
