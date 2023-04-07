@@ -177,6 +177,10 @@ fn parse_core_from_file(commands: Vec<concrete::Command>, file_path: String) -> 
     let lines = reader.lines().map(|x| x.unwrap());
     // get the last line of the file
     let last_line = lines.last().unwrap();
+    // last_line could be timeout -- if so, throw error
+    if last_line == "timeout" {
+        panic!("file timed out")
+    }
     // strip the first and last character 
     let last_line = &last_line[1..last_line.len()-1];
     // split the last line into a vector of strings 

@@ -30,7 +30,7 @@ def emit_build_commands(plain_root):
         print(f"build {core_path}: get-cores {insts_path}")
         print(f"build {sus_path}: minimize-query {insts_path} | {core_path}")
         print(f"    core = {core_path}")
-        if cout >= 10:
+        if cout >= 800:
             break
         cout += 1
 
