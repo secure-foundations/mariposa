@@ -34,8 +34,19 @@ if __name__ == '__main__':
 
     # v_test()
     # dump_all()
+    
+    # plot_dkomodo_cutoff()
 
-    # plot_query_sizes(cfgs)
+    # plot_sr_cdf(D_KOMODO_CFG)
+    # plot_pert_diff(D_KOMODO_CFG)
+    # do_what(D_KOMODO_CFG)
+    plot_time_std(D_KOMODO_CFG)
+    
+    # for cfg in ALL_CFGS:
+    #     plot_ext_cutoff(cfg)
+    # cutoff_edge(D_KOMODO_CFG)
+
+    # plot_query_sizes(ALL_CFGS)
     # compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
     # export_timeouts(D_LVBKV_CFG, Z3_4_12_1)
 
