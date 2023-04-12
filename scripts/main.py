@@ -40,14 +40,16 @@ if __name__ == '__main__':
     # plot_sr_cdf(D_KOMODO_CFG)
     # plot_pert_diff(D_KOMODO_CFG)
     # do_what(D_KOMODO_CFG)
-    plot_time_std(D_KOMODO_CFG)
+    # plot_time_std(D_KOMODO_CFG)
     
     # for cfg in ALL_CFGS:
-    #     plot_ext_cutoff(cfg)
+    plot_ext_cutoff(D_KOMODO_CFG)
+    # plot_pert_diff(D_KOMODO_CFG)
     # cutoff_edge(D_KOMODO_CFG)
 
     # plot_query_sizes(ALL_CFGS)
     # compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
+
     # export_timeouts(D_LVBKV_CFG, Z3_4_12_1)
 
     # cfg = ExpConfig("FS_DICE", FS_DICE, [Z3_4_12_1], DB_PATH)
