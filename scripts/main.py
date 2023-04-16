@@ -34,19 +34,21 @@ if __name__ == '__main__':
 
     # v_test()
     # dump_all()
-    
-    # plot_dkomodo_cutoff()
+    cfg = D_KOMODO_CFG
+    plot_sr_cdf(cfg)
+    plot_pert_diff(cfg)
+    plot_time_std(cfg)
+    plot_ext_cutoff(cfg)
 
-    # plot_sr_cdf(D_KOMODO_CFG)
-    # plot_pert_diff(D_KOMODO_CFG)
+    # plot_pert_diff(D_LVBKV_CFG)
+    # plot_pert_diff(D_FVBKV_CFG)
+    # plot_pert_diff(FS_DICE_CFG)
+
     # do_what(D_KOMODO_CFG)
-    # plot_time_std(D_KOMODO_CFG)
-    
     # for cfg in ALL_CFGS:
-    plot_ext_cutoff(D_KOMODO_CFG)
-    # plot_pert_diff(D_KOMODO_CFG)
-    # cutoff_edge(D_KOMODO_CFG)
-
+    #     plot_time_std(cfg)
+    # plot_time_std(FS_DICE_CFG)
+    
     # plot_query_sizes(ALL_CFGS)
     # compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
 

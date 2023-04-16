@@ -13,12 +13,11 @@ import matplotlib.pyplot as plt
 from statsmodels.stats.proportion import proportions_ztest
 
 COLORS = [
-    "#FFB300", # Vivid Yellow
     "#803E75", # Strong Purple
     "#FF6800", # Vivid Orange
     "#A6BDD7", # Very Light Blue
     "#C10020", # Vivid Red
-    "#CEA262", # Grayish Yellow
+    "#FFB300", # Vivid Yellow
     "#817066", # Medium Gray
     "#F6768E", # Strong Purplish Pink
 ]
@@ -39,8 +38,19 @@ def get_color_map(keys):
     return {k: COLORS[i] for i, k in enumerate(keys)}
 
 PROJECT_COLORS = get_color_map([c.get_project_name() for c in ALL_CFGS])
-PERTURBATION_COLORS = get_color_map(["unsolvable", "union", "intersect"] + [c for c in Mutation])
-PERTURBATION_COLORS["res_unstable"] = PERTURBATION_COLORS["union"]
+
+PERTURBATION_COLORS = {
+    "shuffle": "#803E75",        
+    "rename": "#FF6800",
+    "rseed": "#A6BDD7",
+    "union": "#FFB300",
+    "unstable": "#FFB300",
+    "unsolvable": "#C10020",
+    "intersect": "#817066",
+}
+
+# PERTURBATION_COLORS = get_color_map([c for c in Mutation] + ["unsolvable", "union", "intersect"])
+# PERTURBATION_COLORS["unstable"] = PERTURBATION_COLORS["union"]
 
 def percentage(a, b):
     return a * 100 / b
@@ -239,6 +249,7 @@ class Stablity(str, Enum):
     UNSOLVABLE = "unsolvable"
     UNSTABLE = "unstable"
     # TIME_UNSTABLE = "time_unstable"
+    INCONCLUSIVE = "inconclusive"
     STABLE = "stable"
 
     def __str__(self) -> str:
@@ -279,8 +290,8 @@ class Classifier:
             # self.categorize_group = self._categorize_group_regression
         elif method == "strict":
             self.categorize_group = self._categorize_strict
-        elif method == "t_test":
-            self.categorize_group = self._categorize_t_test
+        elif method == "z_test":
+            self.categorize_group = self._categorize_z_test
         else:
             assert False
 
@@ -317,7 +328,7 @@ class Classifier:
         #     return Stablity.STABLE
         return Stablity.UNSTABLE
 
-    def _categorize_t_test(self, group_blob):
+    def _categorize_z_test(self, group_blob):
         size =  group_blob.shape[1]
 
         unsat_indices = group_blob[0] == RCode.UNSAT.value
@@ -349,19 +360,29 @@ class Classifier:
         if p_value <= self.confidence and \
             np.mean(group_blob[1][valid_indices]) < self.timeout * self.discount:
             return Stablity.UNSTABLE
-
-        return Stablity.STABLE
     
+        _, p_value = proportions_ztest(count=success, 
+                                        nobs=size,
+                                        value=value,
+                                        alternative='larger',
+                                        prop_var=value)
+        if p_value <= self.confidence:
+            return Stablity.STABLE
+        return Stablity.INCONCLUSIVE
+
     def categorize_query(self, group_blobs, perturbs=None):
         ress = set()
         if perturbs is None:
             perturbs = [i for i in range(group_blobs.shape[0])]
         for i in perturbs:
             ress.add(self.categorize_group(group_blobs[i]))
+        if ress == {Stablity.INCONCLUSIVE}:
+            return Stablity.INCONCLUSIVE
+        ress -= {Stablity.INCONCLUSIVE}
         if len(ress) == 1:
             return ress.pop()
-        if Stablity.UNSTABLE not in ress:
-            print(ress)
+        # if Stablity.UNSTABLE not in ress:
+        #     print(ress)
         return Stablity.UNSTABLE
 
 def categorize_queries(rows, classifier, perturbs=None):
@@ -379,9 +400,9 @@ def get_category_percentages(categories):
         percentages[c] = percentage(len(i), total)
     return percentages, total
 
-def get_cutoff_categories(categories, i, classifier, rows, perturbs):
+def async_cutoff_categories(categories, i, classifier, rows, perturbs):
     classifier.timeout = i * 1e3
-    cur = {p: set() for p in perturbs + ["unsolvable", "union", "intersect"]}
+    cur = {p: set() for p in perturbs + ["unsolvable", "unstable", "intersect"]}
     for query_row in rows:
         plain_path = query_row[0]
         group_blobs = query_row[2]
@@ -390,8 +411,9 @@ def get_cutoff_categories(categories, i, classifier, rows, perturbs):
             res = classifier.categorize_group(group_blobs[k])
             if res == Stablity.UNSTABLE:
                 cur[p].add(plain_path)
-                cur["union"].add(plain_path)
+                cur["unstable"].add(plain_path)
             ress.add(res)
+        ress -= {Stablity.INCONCLUSIVE}
         if ress == {Stablity.UNSOLVABLE}:
             cur["unsolvable"].add(plain_path)
         elif ress == {Stablity.UNSTABLE}:
@@ -400,84 +422,83 @@ def get_cutoff_categories(categories, i, classifier, rows, perturbs):
         elif ress != {Stablity.STABLE}:
             # if any of the perturbations is unstable
             # or the results are mixed
-            cur["union"].add(plain_path)
-
+            cur["unstable"].add(plain_path)
     categories[i] = cur
 
-def get_all_cutoff_categories(classifier, rows, cutoffs, perturbs):
+def mp_get_all_cutoff_categories(classifier, rows, cutoffs, perturbs):
     import multiprocessing as mp
     manager = mp.Manager()
+    pool = mp.Pool() 
     categories = manager.dict()
 
-    processes = []
     for i in cutoffs:
-        p = mp.Process(target=get_cutoff_categories, args=(categories, i, classifier, rows, perturbs))
-        p.start()
-        processes.append(p)
-
-    for p in processes:
-        p.join()
+        pool.apply_async(async_cutoff_categories, 
+                         args=(categories, i, classifier, rows, perturbs,))
+  
+    pool.close()
+    pool.join()
 
     return categories
 
 def plot_ext_cutoff(cfg):
-    classifier = Classifier("t_test")
+    classifier = Classifier("z_test")
     perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
     name = cfg.qcfg.name
-
     skip = get_unknowns(cfg)
-    # figure, axis = plt.subplots(2, 1)
+    figure, axis = plt.subplots(1, 1)
+    sp = axis
+
+    cutoffs = [i for i in range(10, 151, 1)]
+    steps = [5, 30, 60]
 
     rows = load_solver_summary(cfg, Z3_4_12_1, skip)
-    cutoffs = [i for i in range(10, 151, 1)]
-
-    categories = get_all_cutoff_categories(classifier, rows, cutoffs, perturbs)
+    categories = mp_get_all_cutoff_categories(classifier, rows, cutoffs, perturbs)
     total = len(rows)
-
-    sp = plt
-    cm = ColorMapper()
-
-    sp.plot(cutoffs, [percentage(len(categories[i]["union"]), total) for i in cutoffs], label="unstable", color=cm.pop())
-    sp.plot(cutoffs, [percentage(len(categories[i]["unsolvable"]), total) for i in cutoffs], label="unsolvable", color=cm.pop())
-
-    for step in [5, 30, 60]:
+    untables = [percentage(len(categories[i]["unstable"]), total) for i in cutoffs]
+    unsolvables = [percentage(len(categories[i]["unsolvable"]), total) for i in cutoffs]
+    
+    diffs = [[] for _ in steps]
+    for j, step in enumerate(steps):
         changes = []
         for i in cutoffs:
             if i + step > cutoffs[-1]:
                 continue
             curr = categories[i]
             next = categories[i+step]
-            changes.append(percentage(len(curr["union"].intersection(next["union"])), total))
-        print(changes[-1])
-        sp.vlines(cutoffs[-1]-step, ymin=0, ymax=changes[-1], color=cm.peek(), linestyle='--')
-        sp.plot(cutoffs[:len(changes)], changes, label=f"{step}s forward", color=cm.pop())
-    # sp.legend(loc='upper center', ncol=3, fancybox=True, shadow=True,bbox_to_anchor=(0.5, 1.15))
-    sp.legend()
-    sp.xlim(left=min(cutoffs), right=max(cutoffs))
-    sp.xlabel("timelimit choice (seconds)")
-    sp.xticks([10, 30, 60, 90, 120, 150])
-    
-    sp.ylim(bottom=0)
-    sp.ylabel("percentages of queries")
+            changes.append(percentage(len(curr["unstable"].intersection(next["unstable"])), total))
+        diffs[j] = changes
 
+    # print("diffs = ", diffs)
+    # print("untables = ", untables)
+    # print("unsolvables = ", unsolvables)
+
+    sp.plot(cutoffs, unsolvables,
+            label="unsolvable",color=PERTURBATION_COLORS["unsolvable"], linewidth=1.5)
+    sp.plot(cutoffs, untables, 
+            label="unstable", color=PERTURBATION_COLORS["unstable"], linewidth=1.5)
+    
+    step_colors = ["#A6BDD7", "#817066", "#F6768E"]
+
+    for j, step in enumerate(steps):
+        changes = diffs[j]
+        sp.plot(cutoffs[:len(changes)], changes,
+                label=f"forward {step}s", color=step_colors[j], linewidth=1.5)
+        sp.vlines(cutoffs[-1]-step,
+                ymin=0, ymax=changes[-1], linestyle='--', color=step_colors[j], linewidth=1.5)
+    # sp.legend(loc='upper center', ncol=3, fancybox=True, shadow=True,bbox_to_anchor=(0.5, 1.15))
+    sp.legend(ncol=2)
+    sp.set_xlim(left=min(cutoffs), right=max(cutoffs))
+    sp.set_xticks([10, 30, 60, 90, 120, 150])
+    sp.set_title(f"{name} {Z3_4_12_1.pstr()}", fontsize=12)
+
+    sp.set_ylim(bottom=0)
+    
+    sp.set_ylabel("ratio of unstable queries (%)", fontsize=12)
+    sp.set_xlabel("timeout threshold (seconds)", fontsize=12)
+    
     plt.tight_layout()
     plt.savefig(f"fig/time_cutoff/{name}_ext.png")
-
-# def cutoff_edge(cfg):
-#     summaries = load_solver_summaries(cfg)
-#     for solver in summaries:
-#         for query_row in summaries[solver]:
-#             group_blobs = query_row[2]
-#             scs = []
-#             for i in range(group_blobs.shape[0]):
-#                 group_blob = group_blobs[i]
-#                 sc = count_within_timeout(group_blob, RCode.UNSAT, timeout=61e3)
-#                 if sc != 61:
-#                     scs.append(sc)
-#                     scs.append(round(np.mean([t for i, t in enumerate(group_blob[1]) if t < 61e3 and group_blob[0][i] == RCode.UNSAT.value])/1000, 3))
-#             if scs != []:
-#                 print(scs)
-#         break
+    plt.close()
 
 def plot_pert_diff(cfg):
     perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
@@ -488,15 +509,16 @@ def plot_pert_diff(cfg):
   
     cutoffs = [i for i in range(10, 61, 1)]
 
-    classifier = Classifier("t_test")
+    classifier = Classifier("z_test")
+    top = 0
 
     for si, solver in enumerate([cfg.qcfg.project.orig_solver, Z3_4_12_1]):
         rows = load_solver_summary(cfg, solver, skip)
         total = len(rows)
         sp = axis[si]
 
-        categories = get_all_cutoff_categories(classifier, rows, cutoffs, perturbs)
-        keys = ["union"] + perturbs + ["unsolvable","intersect"]
+        categories = mp_get_all_cutoff_categories(classifier, rows, cutoffs, perturbs)
+        keys = ["unstable"] + perturbs + ["unsolvable", "intersect"]
         points = {p:[] for p in keys}
 
         for j in cutoffs:
@@ -506,25 +528,32 @@ def plot_pert_diff(cfg):
         for k in points:
             if k == "unsolvable":
                 continue
-            sp.plot(cutoffs, points[k], label=k, color=PERTURBATION_COLORS[k])
-        sp.set_ylim(bottom=0, top=6)
-        sp.set_xlabel("timelimit choice (seconds)")
+            # if k == "unstable":
+            #     label = "overall unstable"
+            sp.plot(cutoffs, points[k], label=k, color=PERTURBATION_COLORS[k], linewidth=1.5)
+            top = max(top, max(points[k]))
+
         sp.set_xlim(left=min(cutoffs), right=60)
         # sp.set_xticks([15, 30, 45, 60])
-        sp.set_title(str(solver))
+        sp.set_title(f"{name} {solver.pstr()}", fontsize=12)
 
+    axis[0].set_ylim(bottom=0, top=top)
+    axis[1].set_ylim(bottom=0, top=top)
     # axis[i].set_xticks([min(cutoffs)] + np.arange(30, 6, 30).tolist() + [max(cutoffs)])
-    axis[0].set_ylabel("percetable of queries")
     axis[0].legend()
 
+    figure.supylabel("ratio of unstable queries (%)", fontsize=12)
+    figure.supxlabel("timeout threshold (seconds)", fontsize=12)
+    plt.tight_layout()
+
     plt.savefig(f"fig/pert_diff/{name}.png")
+    plt.close()
 
 def plot_sr_cdf(cfg):
     perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
     name = cfg.qcfg.name
 
     skip = get_unknowns(cfg)
-    pa = 1
 
     for solver in Z3_SOLVERS_ALL:
         rows = load_solver_summary(cfg, solver, skip)
@@ -535,7 +564,7 @@ def plot_sr_cdf(cfg):
             # ress = set()
             msr1, msr2 = 61, 61
             plain_res = group_blobs[0][0][0]
-            plain_time = group_blobs[0][1][0]
+            # plain_time = group_blobs[0][1][0]
 
             for k, p in enumerate(perturbs):
                 sr1 = count_within_timeout(group_blobs[k], RCode.UNSAT, timeout=61e3)
@@ -548,16 +577,13 @@ def plot_sr_cdf(cfg):
             dps[rows.index(query_row), 0] = percentage(msr1, 61)
             dps[rows.index(query_row), 1] = percentage(msr2, 61)
         xs, ys = get_cdf_pts(dps[:,0])
-        plt.scatter(xs, ys, label=str(solver), marker=".")
-        # xs, ys = get_cdf_pts(dps[:,1])
-        # plt.scatter(xs, ys, label=str(solver) + "_reg", marker=".")  
-        # for i in range(dps.shape[1]):
-        #     xs, ys = get_cdf_pts(dps[:,i])
-        #     plt.scatter(xs, ys, label=str(perturbs[i]), color=PERTURBATION_COLORS[str(perturbs[i])], marker=".")
+        plt.scatter(xs, ys, label=solver.pstr(), marker=".")
     plt.ylim(bottom=0, top=12)
     plt.xlim(left=0, right=100)
-    plt.xlabel("min success rate among perturbation groups")
-    plt.ylabel("cumulative percentage of queries")
+    plt.title(f"{name}", fontsize=12)
+    plt.xlabel("success rate (%)", fontsize=12)
+    plt.ylabel("cumulative ratio of queries (%)", fontsize=12)
+    plt.tight_layout()
     plt.legend()
     plt.savefig(f"fig/sr_cdf/{name}.png")
 
@@ -568,34 +594,52 @@ def plot_time_std(cfg):
     skip = get_unknowns(cfg)
     figure, axis = plt.subplots(1, 2)
   
-    i = 0
+    classifier = Classifier("z_test")
+    classifier.timeout = 61e3 # 1 min
 
-    for solver in [Z3_4_12_1]:
+    std_max = 0
+    y_bound = 0
+    for i, solver in enumerate([cfg.qcfg.project.orig_solver, Z3_4_12_1]):
         rows = load_solver_summary(cfg, solver, skip)
+        items = categorize_queries(rows, classifier)
+        stables = items['stable']
+
+        sp = axis[i]
         dps = [[], [], []]
         for query_row in rows:
+            query_path = query_row[0]
+            if query_path not in stables:
+                continue
             group_blobs = query_row[2]
 
-            # for k, p in enumerate(perturbs):
-            sr0 = count_within_timeout(group_blobs[0], RCode.UNSAT, timeout=61e3)
-            sr1 = count_within_timeout(group_blobs[1], RCode.UNSAT, timeout=61e3)
-            sr2 = count_within_timeout(group_blobs[2], RCode.UNSAT, timeout=61e3)
+            for k, p in enumerate(perturbs):
+                ts = group_blobs[k][1] 
+                bs = np.clip(ts, 0, 61e3) / 1000
+                dps[k].append(np.std(bs))
 
-            if sr0 == 61:
-                dps[0].append(np.std(group_blobs[0][1])/1000)
-            if sr1 == 61:
-                dps[1].append(np.std(group_blobs[1][1])/1000)
-            if sr2 == 61:
-                dps[2].append(np.std(group_blobs[2][1])/1000)
-
-        for i in range(len(dps)):
+        for i in range(3):
             xs, ys = get_cdf_pts(dps[i])
-            axis[0].plot(xs, ys, label=str(perturbs[i]), color=PERTURBATION_COLORS[str(perturbs[i])])
+            ys = np.flip(ys)
+            try:
+                start = np.where(xs > 0.2)[0][0]
+            except:
+                start = 0
+            y_bound = max(ys[start], y_bound)
+            std_max = max(std_max, max(xs))
+            sp.plot(xs, ys, label=perturbs[i], color=PERTURBATION_COLORS[perturbs[i]])
+        sp.set_title(f"{name} {solver.pstr()}", fontsize=12)
 
-    # axis[0].set_ylim(bottom=80)
-    axis[0].set_xlim(left=0.1)
-    # axis[0].set_xscale("log")
     axis[0].legend()
+
+    axis[0].set_xlim(left=0, right=std_max)
+    axis[1].set_xlim(left=0, right=std_max)
+
+    axis[0].set_ylim(bottom=0, top=y_bound)
+    axis[1].set_ylim(bottom=0, top=y_bound)
+    
+    figure.supylabel("ratio of queries below threshold (%)", fontsize=12)
+    figure.supxlabel("time standard deviation threshold (seconds)", fontsize=12)
+    plt.tight_layout()
 
     plt.savefig(f"fig/time_stable/{name}.png")
 
@@ -689,27 +733,53 @@ def plot_query_sizes(cfgs):
     plt.tight_layout()
     plt.savefig("fig/sizes.pdf")
 
+def async_mp_categorize_project(ratios, key, classifier, rows):
+    items = categorize_queries(rows, classifier)
+    ps, _ = get_category_percentages(items)
+    ratios[key] = ps
+
+def mp_categorize_projects(cfgs, classifier, solver_names):
+    import multiprocessing as mp
+    manager = mp.Manager()
+    ratios = manager.dict()
+    
+    for cfg in cfgs:
+        summaries = load_solver_summaries(cfg)
+        pool = mp.Pool()
+        for solver in solver_names:
+            key = (cfgs.index(cfg), solver_names.index(solver))
+            rows = summaries[solver]
+            pool.apply_async(async_mp_categorize_project, 
+                            args=(ratios, key, classifier, rows,))
+        pool.close()
+        pool.join()
+
+    category_count = len(Stablity)
+    data = np.zeros((len(cfgs), len(solver_names), category_count))
+
+    for key in ratios:
+        i, j = key
+        data[i][j] = [ratios[key][s] for s in Stablity]
+
+    return data
+
+# def mp_get_all_categories(classifier, solver_names, perturbs):
+#     for cfg in cfgs:
+#         pool.apply_async(categorize_project, args=(ratios, classifier, solver_names, classifier, rows, perturbs,))
+
 def dump_all(cfgs=ALL_CFGS):
     project_names = [cfg.get_project_name() for cfg in cfgs]
     solver_names = [str(s) for s in Z3_SOLVERS_ALL]
 
-    category_count = len(Stablity)
-    thres = Classifier("t_test")
-    thres.timeout = 61e3 # 1 min
-    # thres.res_stable = 80
+    classifier = Classifier("z_test")
+    classifier.timeout = 61e3 # 1 min
+    # classifier.res_stable = 80
     # thres.time_std = 6e3 # 6 sec
+    data = mp_categorize_projects(cfgs, classifier, solver_names)
 
-    data = np.zeros((len(cfgs), len(solver_names), category_count))
-    for cfg in cfgs:
-        summaries = load_solver_summaries(cfg)
-        for solver in tqdm(solver_names):
-            if solver in summaries:
-                items = categorize_queries(summaries[solver], thres)
-                ps, _ = get_category_percentages(items)
-                ps = [ps[c] for c in Stablity]
-                data[cfgs.index(cfg), solver_names.index(solver)] = ps
-    print(data.tolist())
-
+    # print(data.tolist())
+    
+    # data = [[[0.0, 0.48685491723466406, 0.43816942551119764, 0.7789678675754625, 98.29600778967868], [0.0, 0.5842259006815969, 0.5842259006815969, 0.6329113924050633, 98.19863680623175], [0.0, 0.6329113924050633, 0.24342745861733203, 0.5842259006815969, 98.539435248296], [0.0, 0.5355404089581305, 0.3894839337877313, 0.24342745861733203, 98.83154819863681], [0.0, 1.7526777020447906, 2.4342745861733204, 1.071080817916261, 94.74196689386562], [0.0, 2.5803310613437196, 4.771178188899708, 1.2171372930866602, 91.43135345666991], [0.0, 2.4342745861733204, 4.576436222005842, 1.071080817916261, 91.91820837390458], [0.0, 2.5316455696202533, 5.111976630963973, 0.9737098344693281, 91.38266796494645]], [[0.0, 0.5755395683453237, 0.28776978417266186, 0.1618705035971223, 98.9748201438849], [0.0, 0.5575539568345323, 0.3237410071942446, 0.12589928057553956, 98.99280575539568], [0.0, 0.3597122302158273, 0.8812949640287769, 0.0539568345323741, 98.70503597122303], [0.0, 0.3057553956834532, 0.4856115107913669, 0.0539568345323741, 99.15467625899281], [0.0, 0.39568345323741005, 2.9676258992805757, 0.1079136690647482, 96.52877697841727], [0.0, 0.539568345323741, 3.2194244604316546, 0.17985611510791366, 96.06115107913669], [0.0, 0.5215827338129496, 3.3633093525179856, 0.1618705035971223, 95.95323741007195], [0.0, 0.5215827338129496, 3.183453237410072, 0.14388489208633093, 96.15107913669065]], [[0.0, 0.6011647567161376, 0.7138831486004134, 0.3569415743002067, 98.32801052038324], [0.0, 0.6011647567161376, 0.7890287431899304, 0.1502911891790344, 98.4595153109149], [0.0, 0.1690775878264137, 0.6387375540108962, 0.1502911891790344, 99.04189366898366], [0.0, 0.3381551756528274, 0.7138831486004134, 0.1502911891790344, 98.79767048656772], [0.0, 0.375727972947586, 2.536163817396205, 0.5072327634792411, 96.58087544617696], [0.0, 0.6763103513056548, 3.1373285741123427, 0.3381551756528274, 95.84820589892918], [0.0, 0.563591959421379, 3.118542175464963, 0.3381551756528274, 95.97971068946083], [0.0, 0.563591959421379, 2.911891790343791, 0.3381551756528274, 96.18636107458201]], [[0.0, 1.2541254125412542, 0.39603960396039606, 0.132013201320132, 98.21782178217822], [0.0, 1.2541254125412542, 0.33003300330033003, 0.132013201320132, 98.28382838283828], [0.0, 1.1221122112211221, 0.46204620462046203, 0.132013201320132, 98.28382838283828], [0.0, 0.594059405940594, 0.594059405940594, 0.132013201320132, 98.67986798679868], [0.0, 0.9240924092409241, 0.528052805280528, 0.264026402640264, 98.28382838283828], [0.0, 1.386138613861386, 0.6600660066006601, 0.0, 97.95379537953795], [0.0, 1.056105610561056, 0.594059405940594, 0.264026402640264, 98.08580858085809], [0.0, 0.9240924092409241, 0.7920792079207921, 0.132013201320132, 98.15181518151815]], [[0.0, 0.3462204270051933, 0.17311021350259664, 0.0, 99.48066935949221], [0.0, 0.3462204270051933, 0.17311021350259664, 0.0, 99.48066935949221], [0.0, 0.05770340450086555, 0.1154068090017311, 0.0, 99.8268897864974], [0.0, 0.0, 0.05770340450086555, 0.0, 99.94229659549913], [0.0, 0.17311021350259664, 0.4039238315060589, 0.0, 99.42296595499134], [0.0, 0.1154068090017311, 0.3462204270051933, 0.0, 99.53837276399308], [0.0, 0.0, 0.28851702250432776, 0.0, 99.71148297749568], [0.0, 0.05770340450086555, 0.2308136180034622, 0.0, 99.71148297749568]], [[0.0, 1.9230769230769231, 0.0, 0.0, 98.07692307692308], [0.0, 1.9230769230769231, 0.0, 0.0, 98.07692307692308], [0.0, 1.9230769230769231, 0.0, 0.0, 98.07692307692308], [0.0, 0.0, 1.9230769230769231, 0.0, 98.07692307692308], [0.0, 0.0, 0.9615384615384616, 0.9615384615384616, 98.07692307692308], [0.0, 2.8846153846153846, 0.0, 0.0, 97.11538461538461], [0.0, 0.9615384615384616, 0.9615384615384616, 0.0, 98.07692307692308], [0.0, 0.0, 0.9615384615384616, 0.0, 99.03846153846153]], [[0.0, 0.258732212160414, 0.6468305304010349, 0.0, 99.09443725743856], [0.0, 0.258732212160414, 0.6468305304010349, 0.0, 99.09443725743856], [0.0, 0.129366106080207, 0.6468305304010349, 0.0, 99.22380336351875], [0.0, 0.0, 0.38809831824062097, 0.0, 99.61190168175938], [0.0, 0.0, 0.129366106080207, 0.0, 99.87063389391979], [0.0, 0.258732212160414, 0.258732212160414, 0.0, 99.48253557567917], [0.0, 0.258732212160414, 0.258732212160414, 0.0, 99.48253557567917], [0.0, 0.129366106080207, 0.38809831824062097, 0.0, 99.48253557567917]]]
     data = np.array(data)
 
     bar_width = len(solver_names)/100
@@ -720,9 +790,10 @@ def dump_all(cfgs=ALL_CFGS):
     br = [x - bar_width for x in br]
 
     # data[project_index][solver_index][category_index]
+    handles = []
 
     for pi, project_row in enumerate(data):
-        pcs = np.zeros((category_count, len(solver_names)))
+        pcs = np.zeros((len(Stablity), len(solver_names)))
 
         br = [x + bar_width for x in br]
         for i, ps in enumerate(project_row):
@@ -730,21 +801,29 @@ def dump_all(cfgs=ALL_CFGS):
         pcolor = PROJECT_COLORS[project_names[pi]]
         pcs = np.cumsum(pcs,axis=0)
 
-        plt.bar(br, height=pcs[1], width=bar_width, color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.2)
-        plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width, color=pcolor,label=project_names[pi], edgecolor='black', linewidth=0.2)
+        plt.bar(br, height=pcs[1], width=bar_width,
+                color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.2)
+        hd = plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width,
+                color=pcolor,label=project_names[pi], edgecolor='black', linewidth=0.2)
+        handles.append(hd)
+        plt.bar(br, height=pcs[3]-pcs[2], bottom=pcs[2], width=bar_width,
+                color="w", edgecolor='black', linewidth=0.2, alpha=0.60)
 
         for i in range(len(solver_names)):
             if solver_names[i] == str(cfgs[pi].qcfg.project.orig_solver):
-                plt.bar(br[i], height=pcs[1][i], width=bar_width, color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.2, hatch='xxxx')
-                plt.bar(br[i], height=pcs[2][i]-pcs[1][i], bottom=pcs[1][i], width=bar_width, color=pcolor, edgecolor='black', linewidth=0.2, hatch='xxxx')
+                plt.bar(br[i], height=pcs[1][i], width=bar_width,
+                        color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.2, hatch='////')
+                # plt.bar(br[i], height=pcs[2][i]-pcs[1][i], bottom=pcs[1][i], width=bar_width, color=pcolor, edgecolor='black', linewidth=0.2, hatch='////')
 
     # plt.ylim(bottom=0, top=8)
-    plt.xlabel('solvers', fontsize = 12)
-    plt.ylabel('categorty ratios', fontsize = 12)
-    solver_lables = [f"{str(s).replace('_', '.')}\n{s.data[:-3]}" for s in Z3_SOLVERS_ALL]
+    # plt.xlabel('solvers', fontsize = 12)
+    plt.ylabel('category ratios (%)', fontsize = 12)
+    solver_lables = [f"{s.pstr()}\n{s.data[:-3]}" for s in Z3_SOLVERS_ALL]
     ax.tick_params(axis='both', which='major', labelsize=8)
     plt.xticks([r + bar_width for r in range(len(solver_names))], solver_lables, rotation=30, ha='right')
-    plt.legend()
+    import matplotlib.patches as mpatches
+    red_patch = mpatches.Patch(facecolor="w", hatch='////', edgecolor='black', linewidth=0.2, label='default solver')
+    plt.legend(handles + [red_patch], project_names + ['defualt solver'])
     plt.tight_layout()
     plt.savefig("fig/all.pdf")
 
@@ -756,7 +835,7 @@ def compare_vbkvs(linear, dynamic):
     # print(len(lfiles))
     # print(len(dfiles))
 
-    th = Classifier("t_test")
+    th = Classifier("z_test")
     th.timeout = 61e4
     # th.unsolvable = 20
     # th.res_stable = 80
@@ -924,33 +1003,4 @@ def do_stuff(cfg):
         plt.tight_layout()
         name = cfg.qcfg.name
         plt.savefig(f"fig/time_scatter/{name}.png")
-
-def do_what(cfg):
-    for cfg in [D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG]:
-        summaries = load_solver_summaries(cfg, skip_unknowns=False)
-        for query_row in summaries[Z3_4_8_8]:
-            sc = 1000
-            if query_row[0] in issues:
-                group_blobs = query_row[2]
-                for i in range(group_blobs.shape[0]):
-                    group_blob = group_blobs[i]
-                    sc = min(count_within_timeout(group_blob, RCode.UNSAT, timeout=61e3), sc)
-                print(sc)
-        # th = Classifier("strict")
-        # th.timeout = 6e4
-        # categories1 = categorize_queries(summaries[Z3_4_8_5], th)
-        # categories2 = categorize_queries(summaries[Z3_4_8_8], th)
-        # diff = categories2[Stablity.RES_UNSTABLE.value] - categories1[Stablity.STABLE.value]
-        # # assert "data/d_komodo_z3_clean/verified-smcapi.i.dfyImpl___module.__default.lemma__sha256__suffix.smt2" in categories2[Stablity.RES_UNSTABLE.value]
-
-        # # for query_row in summaries[Z3_4_8_8]:
-        # #     if "data/d_komodo_z3_clean/verified-pagedb.i.dfyCheckWellformed___module.__default.pageDbL2PTableCorresponds.smt2" in query_row[0]:
-        # #         print(query_row)
-        # print(len(diff))
-    
-    # summaries = load_solver_summaries(cfg)
-    # summary = summaries[Z3_4_8_8]
-
-    
-    # print(summary)
 

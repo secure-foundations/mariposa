@@ -32,6 +32,10 @@ class SolverInfo:
     def __eq__(self, other):
         return hash(self) == hash(other)
 
+    def pstr(self):
+        assert self.brand.value == "z3"
+        return "Z3 " + self.ver
+
 Z3_4_4_2 = SolverInfo("z3-4.4.2", "2015/10/05")
 Z3_4_5_0 = SolverInfo("z3-4.5.0", "2016/11/07")
 Z3_4_6_0 = SolverInfo("z3-4.6.0", "2017/12/18")
