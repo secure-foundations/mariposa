@@ -335,6 +335,8 @@ fn main() {
             name_asserts(&mut commands);
         } else if args.perturbation == "minimize-query" {
             commands = parse_core_from_file(commands, args.core_file.unwrap());
+            // minimize-query will now also clean names by default
+            clean_names(&mut commands);
         } else if args.perturbation == "clean-names" {
             clean_names(&mut commands);
         }
