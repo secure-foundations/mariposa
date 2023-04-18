@@ -169,6 +169,7 @@ fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> b
     return false;
 }
 
+
 // return a Vec<String> where each element is the name of an assert from the unsat core
 fn parse_core_from_file(commands: Vec<concrete::Command>, file_path: String) -> Vec<concrete::Command> {
     // read lines from file
@@ -191,6 +192,37 @@ fn parse_core_from_file(commands: Vec<concrete::Command>, file_path: String) -> 
     // filter out commands that are not in the core
     let new_commands = commands.into_iter().filter(|x| should_keep_command(x, &core)).collect::<Vec<concrete::Command>>();
     return new_commands;
+}
+
+fn clean_name(command: &mut concrete::Command) {
+    let concrete::Command::Assert { term } = command else { return; };
+    let named = concrete::Keyword("named".to_owned());
+    let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
+    let mut flag = false;
+
+    // does assert have a named attribute?
+    if let concrete::Term::Attributes { term: new_term, attributes } = term {
+        for (key, value) in attributes {
+            if key == &named {
+                if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
+                    // check if name starts with "unsat-cores-dump-name-"
+                    if name.starts_with("unsat-cores-dump-name-") {
+                        // yuck but doesn't seem to affect performance significantly
+                        temp = *new_term.clone();
+                        flag = true;
+                    }
+                }
+            }
+        }
+    }
+    if flag {
+        *command = concrete::Command::Assert { term: temp };
+    }
+
+}
+
+fn clean_names(commands: &mut Vec<concrete::Command>) {
+    commands.iter_mut().for_each(|x| clean_name(x));
 }
 
 struct Manager {
@@ -303,6 +335,8 @@ fn main() {
             name_asserts(&mut commands);
         } else if args.perturbation == "minimize-query" {
             commands = parse_core_from_file(commands, args.core_file.unwrap());
+        } else if args.perturbation == "clean-names" {
+            clean_names(&mut commands);
         }
         manager.dump_non_info_commands(&commands);
     }
