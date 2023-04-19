@@ -1,6 +1,8 @@
 #!/bin/bash
 #
 # This is a fake z3 used to multiplex between multiple Z3s in `z3/build/z3`.
+# Please note that this is meant to be run inside the Z3 directory under
+# bisection. Otherwise, the local path will not make much sense.
 
-/home/ytakashima/z3/build/z3 $@
+./build/z3 $@
 

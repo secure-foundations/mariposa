@@ -21,7 +21,7 @@ def compile_z3() -> bool:
     config fails.
 
     """
-    BUILD_MAX_PARALLEL = 32
+    BUILD_MAX_PARALLEL = 1
 
     run(["rm", "-rf", "build"])
     build_env = environ.copy()
@@ -37,13 +37,13 @@ def compile_z3() -> bool:
 
 def z3_solves_within_time_bound(smt_formula_path) -> bool:
     """Run z3 with Z3_TIMEOUT as the limit."""
-    Z3_TIMEOUT = 60
 
     out: str = run(
-        [Z3_PATH, smt_formula_path, f"-T:{Z3_TIMEOUT}"], capture_output=True
+        ["python3", "/home/ytakashima/mariposa/scripts/runner.py", smt_formula_path],
+        capture_output=True,
     ).stdout.decode()
-    print(f"z3 result: {out}")
-    return "timeout" not in out
+    print(f"mariposa  result: {out}")
+    return "[RESULT]:  unstable" not in out
 
 
 def main(argv: List[str]) -> int:
