@@ -35,11 +35,11 @@ def compile_z3() -> bool:
     )
 
 
-def z3_solves_within_time_bound(smt_formula_path) -> bool:
+def z3_solves_within_time_bound(smt_formula_path, index) -> bool:
     """Run z3 with Z3_TIMEOUT as the limit."""
 
     out: str = run(
-        ["python3", "/home/ytakashima/mariposa/scripts/runner.py", smt_formula_path],
+        ["python3", f"/home/ytakashima/m{index}/scripts/runner.py", smt_formula_path],
         capture_output=True,
     ).stdout.decode()
     print(f"mariposa  result: {out}")
@@ -57,13 +57,13 @@ def main(argv: List[str]) -> int:
     NEGATIVE = 1
     POSITIVE = 0
 
-    if len(argv) < 1:
-        return SKIP_COMIT_GIT_BISECT
+    if len(argv) < 3:
+        raise Exception("not enough inputs")
 
     if not compile_z3():
         return SKIP_COMIT_GIT_BISECT
 
-    if not z3_solves_within_time_bound(argv[1]):
+    if not z3_solves_within_time_bound(argv[1], argv[2]):
         return NEGATIVE
 
     return POSITIVE
