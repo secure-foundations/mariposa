@@ -42,7 +42,7 @@ def z3_solves_within_time_bound(smt_formula_path, index) -> bool:
     exe = run(
         CMD,
         capture_output=True,
-        cwd=f"/home/ytakashima/m{index}/scripts"
+        cwd=f"/home/ytakashima/m{index}"
     )
     out = exe.stdout.decode()
     err = exe.stderr.decode()
