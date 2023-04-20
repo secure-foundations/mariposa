@@ -37,12 +37,15 @@ def compile_z3() -> bool:
 
 def z3_solves_within_time_bound(smt_formula_path, index) -> bool:
     """Run z3 with Z3_TIMEOUT as the limit."""
-
-    out: str = run(
-        ["python3", f"/home/ytakashima/m{index}/scripts/runner.py", smt_formula_path],
+    CMD = ["python3", f"/home/ytakashima/m{index}/scripts/runner.py", smt_formula_path]
+    print(CMD)
+    exe = run(
+        CMD,
         capture_output=True,
-    ).stdout.decode()
-    print(f"mariposa  result: {out}")
+    )
+    out = exe.stdout.decode()
+    err = exe.stderr.decode()
+    print(f"mariposa  result: {out} err: {err}")
     return "[RESULT]:  unstable" not in out
 
 
