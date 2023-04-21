@@ -32,23 +32,22 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
+    # create_benchmark()
     # v_test()
     # dump_all()
     cfg = D_KOMODO_CFG
-    plot_sr_cdf(cfg)
-    plot_pert_diff(cfg)
+    # plot_ext_cutoff(cfg)
     plot_time_std(cfg)
-    plot_ext_cutoff(cfg)
+    # for cfg in ALL_CFGS:
+    #     plot_time_std(cfg)
+    # plot_sr_cdf(D_KOMODO_CFG)
+    plot_pert_diff(cfg)
+    # plot_vbkv_ext_cutoff()
 
     # plot_pert_diff(D_LVBKV_CFG)
     # plot_pert_diff(D_FVBKV_CFG)
     # plot_pert_diff(FS_DICE_CFG)
 
-    # do_what(D_KOMODO_CFG)
-    # for cfg in ALL_CFGS:
-    #     plot_time_std(cfg)
-    # plot_time_std(FS_DICE_CFG)
-    
     # plot_query_sizes(ALL_CFGS)
     # compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
 
@@ -56,14 +55,15 @@ if __name__ == '__main__':
 
     # cfg = ExpConfig("FS_DICE", FS_DICE, [Z3_4_12_1], DB_PATH)
     
-    # for cfg in [D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG]:
+    # for cfg in [D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG]:
     #     summaries = load_solver_summaries(cfg, skip_unknowns=False)
-    #     th = Thresholds("strict")
-    #     th.timeout = 6e4
-    #     categories1 = categorize_qeuries(summaries[Z3_4_8_5], th)
-    #     categories2 = categorize_qeuries(summaries[Z3_4_8_8], th)
-    #     diff = categories2[Stablity.RES_UNSTABLE.value] - categories1[Stablity.RES_UNSTABLE.value]
-    #     print(len(diff))
+    #     classifier = Classifier("z_test")
+    #     classifier.timeout = 6e4
+    #     categories1 = categorize_queries(summaries[Z3_4_8_5], classifier)
+    #     categories2 = categorize_queries(summaries[Z3_4_8_8], classifier)
+    #     diff = categories1[Stablity.STABLE.value].intersection(categories2[Stablity.UNSTABLE.value])
+    #     for q in diff :
+    #         print(q)
 
     # for cfg in tqdm(ALL_CFGS):
     #     do_stuff(cfg)
