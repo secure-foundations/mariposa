@@ -32,7 +32,7 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
-    # create_benchmark()
+    create_benchmark()
     # v_test()
     # dump_all()
     cfg = D_KOMODO_CFG
