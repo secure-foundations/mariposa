@@ -546,7 +546,7 @@ def plot_pert_diff(cfg):
 
     skip = get_unknowns(cfg)
     figure, axis = plt.subplots(1, 2)
-    figure.set_size_inches(7, 4.5)
+    figure.set_size_inches(7, 4)
 
     cutoffs = [i for i in range(10, 61, 1)]
 
@@ -635,6 +635,7 @@ def plot_time_std(cfg):
 
     skip = get_unknowns(cfg)
     figure, axis = plt.subplots(1, 2)
+    figure.set_size_inches(7, 4)
   
     classifier = Classifier("z_test")
     classifier.timeout = 61e3 # 1 min

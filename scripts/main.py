@@ -37,9 +37,9 @@ if __name__ == '__main__':
     # dump_all()
     cfg = D_KOMODO_CFG
     # plot_ext_cutoff(cfg)
-    plot_time_std(cfg)
+    # plot_time_std(cfg)
     # for cfg in ALL_CFGS:
-    #     plot_time_std(cfg)
+    # plot_time_std(cfg)
     # plot_sr_cdf(D_KOMODO_CFG)
     plot_pert_diff(cfg)
     # plot_vbkv_ext_cutoff()
