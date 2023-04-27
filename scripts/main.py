@@ -22,6 +22,13 @@ def sample_projects(projects):
     for proj in projects:
         print(proj)
 
+def get_diff_mutants():
+    f = open("unstable.list")
+    cfg = D_KOMODO_CFG
+    for l in f.readlines():
+        l = l.strip()
+
+
 if __name__ == '__main__':
     print("building mariposa...")
     stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
@@ -34,9 +41,9 @@ if __name__ == '__main__':
 
     # entropy_test()
     # create_benchmark()
-    create_benchmark()
+    # create_benchmark()
     # v_test()
-    dump_all()
+    # dump_all()
 
     # cfg = D_KOMODO_CFG
     # plot_ext_cutoff(cfg)
@@ -84,9 +91,30 @@ if __name__ == '__main__':
         categories1 = categorize_queries(summaries[Z3_4_8_5], classifier)
         categories2 = categorize_queries(summaries[Z3_4_8_8], classifier)
         diff = categories1[Stablity.STABLE.value].intersection(categories2[Stablity.UNSTABLE.value])
-        for q in diff :
-            print(q)
+        # print(len(diff))
+        for l in diff:
+            solver_table = cfg.qcfg.get_solver_table_name(Z3_4_8_8)
+            con, cur = get_cursor(cfg.qcfg.db_path)
+            res = cur.execute(f"""SELECT query_path FROM {solver_table}
+                WHERE vanilla_path = '{l}'
+                AND perturbation != ''
+                """)
+            assert(l.startswith("data/"))
+            assert(l.endswith(".smt2"))
+            p = l[5:-5]
+            out_path_root = "data/bisect/" + p.replace("/", "--") + "/"
+            os.system(f"mkdir -p {out_path_root}")
+            print(f"cp {l} {out_path_root}original.smt2")
+            for row in res.fetchall():
+                mpath = row[0]
+                assert mpath.find(p) != -1
+                args = mpath.split(".")[-3:]
+                assert args[-1] == "smt2"
+                out_path = out_path_root + ".".join(args)
+                command = f"./target/release/mariposa -i {l} -p {args[1]} -o {out_path} -s {args[0]}"
+                print(command)
 
+    # # get_diff_mutants()
     # for cfg in tqdm(ALL_CFGS):
     #     do_stuff(cfg)
 

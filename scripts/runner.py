@@ -219,9 +219,13 @@ if __name__ == "__main__":
     solver = SolverInfo("z3_place_holder","2000/01/01")
 
     qcfg = QueryExpConfig("BISEC", ProjectConfig("bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
-    # D_LVBKV_BISEC = QueryExpConfig("D_LVBKV_BISEC", ProjectConfig("d_lvbkv_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
-    # D_FVBKV_BISEC = QueryExpConfig("D_FVBKV_BISEC", ProjectConfig("d_fvbkv_bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
-    # FS_DICE_CFG_BISEC = QueryExpConfig("FS_DICE_CFG_BISEC", ProjectConfig("fs_dice_cfg_bisec", FrameworkName.FSTAR, solver), "data/bisect.db")    
+    # D_LVBKV_BISEC = QueryExpConfig("D_LVBKV_BISEC",
+    # ProjectConfig("d_lvbkv_bisec", FrameworkName.DAFNY, solver),
+    # "data/bisect.db") D_FVBKV_BISEC = QueryExpConfig("D_FVBKV_BISEC",
+    # ProjectConfig("d_fvbkv_bisec", FrameworkName.DAFNY, solver),
+    # "data/bisect.db") FS_DICE_CFG_BISEC = QueryExpConfig("FS_DICE_CFG_BISEC",
+    # ProjectConfig("fs_dice_cfg_bisec", FrameworkName.FSTAR, solver),
+    # "data/bisect.db")    
 
     # qcfg = D_KOMODO_BISEC
     # show_tables("data/bisect.db")

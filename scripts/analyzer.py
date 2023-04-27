@@ -14,12 +14,9 @@ import matplotlib.pyplot as plt
 from statsmodels.stats.proportion import proportions_ztest
 import seaborn as sns
 
-<<<<<<< HEAD
 FSIZE = 16
 FNAME ="times new roman"
-=======
 import random
->>>>>>> 897b66646e085b140652ad07a8b4da6bd4c8fc9a
 
 COLORS = [
     "#803E75", # Strong Purple
@@ -813,7 +810,7 @@ def dump_all(cfgs=ALL_CFGS):
     solver_names = [str(s) for s in Z3_SOLVERS_ALL]
 
     classifier = Classifier("z_test")
-    classifier.timeout = 61e3 # 1 min
+    classifier.timeout = 6e4 # 1 min
     # classifier.res_stable = 80
     # thres.time_std = 6e3 # 6 sec
     # data = mp_categorize_projects(cfgs, classifier, solver_names)
