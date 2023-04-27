@@ -13,6 +13,9 @@ import matplotlib.pyplot as plt
 from statsmodels.stats.proportion import proportions_ztest
 import seaborn as sns
 
+FSIZE = 16
+FNAME ="times new roman"
+
 COLORS = [
     "#803E75", # Strong Purple
     "#FF6800", # Vivid Orange
@@ -414,31 +417,33 @@ def async_cutoff_categories(categories, i, classifier, rows, perturbs):
                 cur[p].add(plain_path)
                 cur["unstable"].add(plain_path)
             ress.add(res)
+        if ress == {Stablity.UNSTABLE}:
+            # if all of the perturbations is unstable
+            cur["intersect"].add(plain_path)
         ress -= {Stablity.INCONCLUSIVE}
         if ress == {Stablity.UNSOLVABLE}:
             cur["unsolvable"].add(plain_path)
-        elif ress == {Stablity.UNSTABLE}:
-            # if all of the perturbations is unstable
-            cur["intersect"].add(plain_path)
         elif ress != {Stablity.STABLE}:
             # if any of the perturbations is unstable
             # or the results are mixed
             cur["unstable"].add(plain_path)
+    # print(len(cur["intersect"]), len(cur["rseed"]))
+    assert(len(cur["intersect"]) < len(cur["rseed"]))
     categories[i] = cur
 
 def mp_get_all_cutoff_categories(classifier, rows, cutoffs, perturbs):
     import multiprocessing as mp
     manager = mp.Manager()
-    pool = mp.Pool() 
+    pool = mp.Pool(processes=8)
     categories = manager.dict()
 
     for i in cutoffs:
+        # async_cutoff_categories(categories, i, classifier, rows, perturbs)
         pool.apply_async(async_cutoff_categories, 
                          args=(categories, i, classifier, rows, perturbs,))
-  
     pool.close()
     pool.join()
-
+    # print(categories)
     return categories
 
 def _plot_ext_cutoff(cfg, sp):
@@ -505,7 +510,7 @@ def _plot_ext_cutoff(cfg, sp):
 
     sp.set_xlim(left=min(cutoffs), right=max(cutoffs))
     sp.set_xticks([10, 30, 60, 90, 120, 150])
-    sp.set_title(f"{name} {Z3_4_12_1.pstr()}", fontsize=12)
+    sp.set_title(f"{name} {Z3_4_12_1.pstr()}", fontsize=FSIZE, fontname=FNAME)
 
 def plot_ext_cutoff(cfg):
     figure, axis = plt.subplots(1, 1)
@@ -515,8 +520,8 @@ def plot_ext_cutoff(cfg):
     axis.legend(loc='lower left')
     axis.set_ylim(bottom=0)
     name = cfg.qcfg.name
-    plt.ylabel("proportion of queries (%)", fontsize=12)
-    plt.xlabel("timeout threshold (seconds)", fontsize=12) 
+    plt.ylabel("proportion of queries (%)", fontsize=FSIZE, fontname=FNAME)
+    plt.xlabel("time limit threshold (second)", fontsize=FSIZE, fontname=FNAME) 
     plt.tight_layout()
     plt.savefig(f"fig/time_cutoff/{name}_ext.pdf")
     plt.close()
@@ -532,8 +537,8 @@ def plot_vbkv_ext_cutoff():
         axis[i].set_ylim(bottom=0, top=4)
     axis[0].legend(loc='lower left')
     
-    figure.supylabel("proportion of queries (%)", fontsize=12)
-    figure.supxlabel("timeout threshold (seconds)", fontsize=12) 
+    figure.supylabel("proportion of queries (%)", fontsize=FSIZE, fontname=FNAME)
+    figure.supxlabel("time limit threshold (second)", fontsize=FSIZE, fontname=FNAME) 
     plt.tight_layout()
     
     # sp.legend(loc='upper center', ncol=3, fancybox=True, shadow=True,bbox_to_anchor=(0.5, 1.15))
@@ -569,22 +574,28 @@ def plot_pert_diff(cfg):
         for k in points:
             if k == "unsolvable":
                 continue
-            # if k == "unstable":
-            #     label = "overall unstable"
-            sp.plot(cutoffs, points[k], label=k, color=PERTURBATION_COLORS[k], linewidth=1.5)
+            if k == "shuffle":
+                l = "shuffling"
+            elif k == "rseed":
+                l = "reseeding"
+            elif k == "rename":
+                l == "renaming"
+            else:
+                l = k
+            sp.plot(cutoffs, points[k], label=l, color=PERTURBATION_COLORS[k], linewidth=1.5)
             top = max(top, max(points[k]))
 
         sp.set_xlim(left=min(cutoffs), right=60)
         # sp.set_xticks([15, 30, 45, 60])
-        sp.set_title(f"{name} {solver.pstr()}", fontsize=12)
+        sp.set_title(f"{name} {solver.pstr()}", fontsize=FSIZE, fontname=FNAME)
 
     axis[0].set_ylim(bottom=0, top=top)
     axis[1].set_ylim(bottom=0, top=top)
     # axis[i].set_xticks([min(cutoffs)] + np.arange(30, 6, 30).tolist() + [max(cutoffs)])
     axis[0].legend()
 
-    figure.supylabel("proportion of unstable queries (%)", fontsize=12)
-    figure.supxlabel("timeout threshold (seconds)", fontsize=12)
+    figure.supylabel("proportion of unstable queries (%)", fontsize=FSIZE, fontname=FNAME)
+    figure.supxlabel("time limit threshold (second)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
 
     plt.savefig(f"fig/pert_diff/{name}.pdf")
@@ -621,9 +632,9 @@ def plot_sr_cdf(cfg):
         plt.scatter(xs, ys, label=solver.pstr(), marker=".", s=8)
     plt.ylim(bottom=0, top=12)
     plt.xlim(left=0, right=100)
-    plt.title(f"{name}", fontsize=12)
-    plt.xlabel("success rate (%)", fontsize=12)
-    plt.ylabel("cumulative proportion of queries (%)", fontsize=12)
+    plt.title(f"{name}", fontsize=FSIZE, fontname=FNAME)
+    plt.xlabel("success rate (%)", fontsize=FSIZE, fontname=FNAME)
+    plt.ylabel("cumulative proportion of queries (%)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.legend(ncols=2)
 
@@ -669,8 +680,15 @@ def plot_time_std(cfg):
                 start = 0
             y_bound = max(ys[start], y_bound)
             std_max = max(std_max, max(xs))
-            sp.plot(xs, ys, label=perturbs[i], color=PERTURBATION_COLORS[perturbs[i]])
-        sp.set_title(f"{name} {solver.pstr()}", fontsize=12)
+            k = perturbs[i]
+            if k == "shuffle":
+                l = "shuffling"
+            elif k == "rseed":
+                l = "reseeding"
+            elif k == "rename":
+                l == "renaming"
+            sp.plot(xs, ys, label=l, color=PERTURBATION_COLORS[perturbs[i]])
+        sp.set_title(f"{name} {solver.pstr()}", fontsize=FSIZE, fontname=FNAME)
 
     axis[0].legend()
 
@@ -679,8 +697,8 @@ def plot_time_std(cfg):
         axis[i].set_xticks([1] + [i for i in range(5, int(std_max), 5)])
         axis[i].set_ylim(bottom=0, top=y_bound)
 
-    figure.supylabel("proportion of queries above threshold (%)", fontsize=12)
-    figure.supxlabel("time standard deviation threshold (seconds)", fontsize=12)
+    figure.supylabel("proportion of queries above threshold (%)", fontsize=FSIZE, fontname=FNAME)
+    figure.supxlabel("time standard deviation threshold (second)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.savefig(f"fig/time_stable/{name}.pdf")
     plt.close()
@@ -763,7 +781,7 @@ def mp_categorize_projects(cfgs, classifier, solver_names):
     
     for cfg in cfgs:
         summaries = load_solver_summaries(cfg)
-        pool = mp.Pool()
+        pool = mp.Pool(processes=8)
         for solver in solver_names:
             key = (cfgs.index(cfg), solver_names.index(solver))
             rows = summaries[solver]
@@ -839,15 +857,16 @@ def dump_all(cfgs=ALL_CFGS):
 
     # plt.ylim(bottom=0, top=8)
     # plt.xlabel('solvers', fontsize = 12)
-    plt.ylabel('proportions of each category in a project (%)', fontsize = 12)
+    plt.ylabel('query proportions (%)', fontsize=FSIZE, fontname=FNAME)
     solver_lables = [f"{s.pstr()}\n{s.data[:-3]}" for s in Z3_SOLVERS_ALL]
-    ax.tick_params(axis='both', which='major', labelsize=8)
-    plt.xticks([r + bar_width for r in range(len(solver_names))], solver_lables, rotation=30, ha='right')
+    ax.tick_params(axis='both', which='major')
+    plt.xticks([r + 2 * bar_width for r in range(len(solver_names))], solver_lables, rotation=30, ha='right')
     # red_patch = mpatches.Patch(facecolor="w", marker="*", edgecolor='black', linewidth=0.2, label='default solver')
     from matplotlib.lines import Line2D
     woot = Line2D([0], [0], marker="*", color='black', linestyle='None', label='default solver'),
-    plt.legend(handles + [woot], project_names + ['default solver'], fontsize=8)
-    plt.xlabel('solver versions and release dates', fontsize = 12)
+    project_names = [p.upper() for p in project_names]
+    plt.legend(handles + [woot], project_names + ['default solver'])
+    plt.xlabel('solver versions and release dates', fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.savefig("fig/all.pdf")
     plt.close()
@@ -1071,4 +1090,29 @@ def create_benchmark(cfgs=ALL_CFGS):
                     # maybes[query_path] = np.std(bs)
         print(len(maybes))
     
+from scipy.stats import entropy
 
+
+def entropy_test():
+    cfg = D_KOMODO_CFG
+    summaries = load_solver_summaries(cfg, skip_unknowns=True)
+
+    for summary in summaries.values():
+        c = Classifier("z_test")
+        c.timeout = 61e3
+        counts = set()
+        counts2 = set()
+        for row in summary:
+            group_blobs = row[2]
+            max_ent = 0 
+            if c.categorize_query(group_blobs) == Stablity.UNSTABLE:
+                counts2.add(row[0]) 
+            # entropy([1/2, 1/2], base=2)
+            for i in range(3):
+                sr = count_within_timeout(group_blobs[i], RCode.UNSAT, 61e3) / 61
+                max_ent = max(max_ent, entropy([1- sr, sr], base=2))
+            if max_ent >= 0.5:
+                counts.add(row[0]) 
+        print(len(counts), len(counts2), len(counts.intersection(counts2)))
+    # pk = np.array([1/2, 1/2])
+    # print(entropy(pk, base=2))

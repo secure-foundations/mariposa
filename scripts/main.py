@@ -32,16 +32,16 @@ if __name__ == '__main__':
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
 
+    # entropy_test()
     # create_benchmark()
     # v_test()
-    # dump_all()
-    cfg = D_KOMODO_CFG
+    dump_all()
+
+    # cfg = D_KOMODO_CFG
     # plot_ext_cutoff(cfg)
     # plot_time_std(cfg)
-    # for cfg in ALL_CFGS:
-    # plot_time_std(cfg)
-    # plot_sr_cdf(D_KOMODO_CFG)
-    plot_pert_diff(cfg)
+    # plot_pert_diff(cfg)
+    # plot_sr_cdf(cfg)
     # plot_vbkv_ext_cutoff()
 
     # plot_pert_diff(D_LVBKV_CFG)
