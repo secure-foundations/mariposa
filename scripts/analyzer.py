@@ -14,12 +14,11 @@ import matplotlib.pyplot as plt
 from statsmodels.stats.proportion import proportions_ztest
 import seaborn as sns
 
-<<<<<<< HEAD
 FSIZE = 16
 FNAME ="times new roman"
-=======
+
 import random
->>>>>>> 897b66646e085b140652ad07a8b4da6bd4c8fc9a
+
 
 COLORS = [
     "#803E75", # Strong Purple
