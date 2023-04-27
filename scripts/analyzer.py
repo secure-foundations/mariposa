@@ -5,6 +5,7 @@ import ast
 import scipy.stats
 from enum import Enum
 from vbkv_filemap import *
+import shutil
 
 from configs.projects import *
 from configs.experiments import *
@@ -13,8 +14,12 @@ import matplotlib.pyplot as plt
 from statsmodels.stats.proportion import proportions_ztest
 import seaborn as sns
 
+<<<<<<< HEAD
 FSIZE = 16
 FNAME ="times new roman"
+=======
+import random
+>>>>>>> 897b66646e085b140652ad07a8b4da6bd4c8fc9a
 
 COLORS = [
     "#803E75", # Strong Purple
@@ -1044,12 +1049,23 @@ def do_stuff(cfg):
 def create_benchmark(cfgs=ALL_CFGS):
     project_names = [cfg.get_project_name() for cfg in cfgs]
 
+    benchmark_path = "data/benchmarks"
+    
+    unstable_core_path = f"{benchmark_path}/unstable_core"
+    unstable_ext_path = f"{benchmark_path}/unstable_ext"
+    stable_core_path = f"{benchmark_path}/stable_core"
+    stable_ext_path = f"{benchmark_path}/stable_ext"
+
+    os.system(f"mkdir -p {unstable_core_path}")
+    os.system(f"mkdir -p {unstable_ext_path}")
+    os.system(f"mkdir -p {stable_core_path}")
+    os.system(f"mkdir -p {stable_ext_path}")
+        
     classifier = Classifier("z_test")
     classifier.timeout = 61e3 # 1 min
     # classifier.res_stable = 80
     # thres.time_std = 6e3 # 6 sec
     # data = mp_categorize_projects(cfgs, classifier, solver_names)
-    ratios = dict()
     
     for cfg in cfgs:
         print(cfg.get_project_name())
@@ -1058,15 +1074,18 @@ def create_benchmark(cfgs=ALL_CFGS):
         for solver in [cfg.qcfg.project.orig_solver, Z3_4_12_1]:
             rows = load_solver_summary(cfg, solver, unkowns)
             items = categorize_queries(rows, classifier)
-        # print(cfg.get_project_name())
             unss.append(items)
         core = unss[0]['unstable'].intersection(unss[1]['unstable'])
         ext = unss[1]['unstable'] - core
-        # print(len(core), len(ext))
+        print("unstable core: ", len(core))
+        print("unstable ext:", len(ext))
         
         stables = items['stable']
         
+        # stable ext
         maybes = set()
+        # stable core
+        stable_core = set()
 
         for query_row in rows:
             query_path = query_row[0]
@@ -1075,23 +1094,57 @@ def create_benchmark(cfgs=ALL_CFGS):
             group_blobs = query_row[2]
 
             std = 0
+            combined = np.concatenate((group_blobs[:,1][0], group_blobs[:,1][1], group_blobs[:,1][2]))
+            std_combined = np.std(combined) / 1000
+
+            # going thru each perturb
             for i in range(3):
                 times = group_blobs[:,1][i]
                 times = np.clip(times, 0, 61e3) / 1000
-
-                cur = np.std(times)
-                if std < cur:
-                    mean = np.mean(times)
-                    std = cur
+                std = max(std, np.std(times))
 
             # std = np.std(np.clip(group_blobs[0][1], 0, 61e3) / 1000)
             if std > 6:
                 maybes.add(query_path)
                     # maybes[query_path] = np.std(bs)
-        print(len(maybes))
-    
-from scipy.stats import entropy
+            # std of all groups is less than 1
+            elif std_combined < 1:
+                stable_core.add(query_path)
 
+        # randomly sample from stable_core:
+        random.seed(4)
+        sampled_core = random.sample(sorted(list(stable_core)), 30)
+
+        print("stable core:", len(sampled_core), f" (original: {len(stable_core)})")
+        print("stable ext:", len(maybes))
+        
+        DATA_PATH = f"/home/yizhou7/mariposa/"
+        
+        # add all unstable core 
+        for filename in core:
+            shutil.copyfile(f"{DATA_PATH}/{filename}", f"{unstable_core_path}/{cfg.get_project_name()}-{filename.split('/')[2]}")
+#           print("added: ", filename)
+        print("done! added ", len(core), " files!")
+
+        # add all unstable ext
+        for filename in ext:
+            shutil.copyfile(f"{DATA_PATH}/{filename}", f"{unstable_ext_path}/{cfg.get_project_name()}-{filename.split('/')[2]}")
+#           print("added: ", filename)
+        print("done! added ", len(ext), " files!")
+
+        # add all stable core
+        for filename in sampled_core:
+            shutil.copyfile(f"{DATA_PATH}/{filename}", f"{stable_core_path}/{cfg.get_project_name()}-{filename.split('/')[2]}")
+#           print("added: ", filename)
+        print("done! added ", len(sampled_core), " files!")
+
+        # add all stable ext
+        for filename in maybes:
+            shutil.copyfile(f"{DATA_PATH}/{filename}", f"{stable_ext_path}/{cfg.get_project_name()}-{filename.split('/')[2]}")
+#           print("added: ", filename)
+        print("done! added ", len(maybes), " files!")
+
+from scipy.stats import entropy
 
 def entropy_test():
     cfg = D_KOMODO_CFG

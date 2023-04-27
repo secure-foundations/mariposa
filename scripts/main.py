@@ -34,6 +34,7 @@ if __name__ == '__main__':
 
     # entropy_test()
     # create_benchmark()
+    create_benchmark()
     # v_test()
     dump_all()
 
