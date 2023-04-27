@@ -21,7 +21,7 @@ def compile_z3() -> bool:
     config fails.
 
     """
-    BUILD_MAX_PARALLEL = 32
+    BUILD_MAX_PARALLEL = 1
 
     run(["rm", "-rf", "build"])
     build_env = environ.copy()
@@ -35,15 +35,19 @@ def compile_z3() -> bool:
     )
 
 
-def z3_solves_within_time_bound(smt_formula_path) -> bool:
+def z3_solves_within_time_bound(smt_formula_path, index) -> bool:
     """Run z3 with Z3_TIMEOUT as the limit."""
-    Z3_TIMEOUT = 60
-
-    out: str = run(
-        [Z3_PATH, smt_formula_path, f"-T:{Z3_TIMEOUT}"], capture_output=True
-    ).stdout.decode()
-    print(f"z3 result: {out}")
-    return "timeout" not in out
+    CMD = ["python3", f"/home/ytakashima/m{index}/scripts/runner.py", smt_formula_path]
+    print(CMD)
+    exe = run(
+        CMD,
+        capture_output=True,
+        cwd=f"/home/ytakashima/m{index}"
+    )
+    out = exe.stdout.decode()
+    err = exe.stderr.decode()
+    print(f"mariposa  result: {out} err: {err}")
+    return "[RESULT]:  unstable" not in out
 
 
 def main(argv: List[str]) -> int:
@@ -57,13 +61,13 @@ def main(argv: List[str]) -> int:
     NEGATIVE = 1
     POSITIVE = 0
 
-    if len(argv) < 1:
-        return SKIP_COMIT_GIT_BISECT
+    if len(argv) < 3:
+        raise Exception("not enough inputs")
 
     if not compile_z3():
         return SKIP_COMIT_GIT_BISECT
 
-    if not z3_solves_within_time_bound(argv[1]):
+    if not z3_solves_within_time_bound(argv[1], argv[2]):
         return NEGATIVE
 
     return POSITIVE

@@ -228,4 +228,4 @@ if __name__ == "__main__":
     tg = SolverTaskGroup(qcfg, sys.argv[1], solver, True)
     tg.early_return = True
     res = tg.run()
-    print("[RESULT]: ", res)
+    print("[RESULT]: ", res, sys.argv[1])
