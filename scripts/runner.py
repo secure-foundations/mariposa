@@ -215,21 +215,65 @@ class Runner:
         con.commit()
         con.close()
 
-if __name__ == "__main__":
-    solver = SolverInfo("z3_place_holder","2000/01/01")
+# timeout = 60
+# solver = SolverInfo("z3_place_holder","2000/01/01")
 
-    qcfg = QueryExpConfig("BISEC", ProjectConfig("bisec", FrameworkName.DAFNY, solver), "data/bisect.db")
-    # D_LVBKV_BISEC = QueryExpConfig("D_LVBKV_BISEC",
-    # ProjectConfig("d_lvbkv_bisec", FrameworkName.DAFNY, solver),
-    # "data/bisect.db") D_FVBKV_BISEC = QueryExpConfig("D_FVBKV_BISEC",
-    # ProjectConfig("d_fvbkv_bisec", FrameworkName.DAFNY, solver),
-    # "data/bisect.db") FS_DICE_CFG_BISEC = QueryExpConfig("FS_DICE_CFG_BISEC",
-    # ProjectConfig("fs_dice_cfg_bisec", FrameworkName.FSTAR, solver),
-    # "data/bisect.db")    
+# def async_run_single_mutant(results, command):
+#     items = command.split(" ")
+#     os.system(command)
+#     items = command.split(" ")
+#     command = f"{solver.path} {items[6]} -T:{timeout}"
+#     out, err, elapsed = subprocess_run(command, timeout + 1)
+#     rcode = parse_basic_output_z3(out)
+#     os.system(f"rm {items[6]}")
+#     results.append((elapsed, rcode))
 
-    # qcfg = D_KOMODO_BISEC
-    # show_tables("data/bisect.db")
-    tg = SolverTaskGroup(qcfg, sys.argv[1], solver, True)
-    tg.early_return = True
-    res = tg.run()
-    print("[RESULT]: ", res, sys.argv[1])
+# from analyzer import RCode 
+# from analyzer import Classifier
+
+# if __name__ == "__main__":
+#     commands = [t.strip() for t in open(sys.argv[1], "r").readlines()]
+#     plain = commands[0]
+#     commands = commands[1:]
+
+#     import multiprocessing as mp
+#     manager = mp.Manager()
+#     pool = mp.Pool(processes=7)
+
+#     command = f"{solver.path} {plain} -T:{timeout}"
+#     out, err, elapsed = subprocess_run(command, timeout + 1)
+#     rcode = parse_basic_output_z3(out)
+#     pr = (elapsed, rcode)
+#     classifier = Classifier("z_test")
+#     classifier.timeout = 6e4 # 1 min
+
+#     reseeds = manager.list([pr])
+#     renames = manager.list([pr])
+#     shuffles = manager.list([pr])
+
+#     for command in commands:
+#         if "rseed" in command:
+#             pool.apply_async(async_run_single_mutant, args=(reseeds, command))
+#         elif "rename" in command:
+#             pool.apply_async(async_run_single_mutant, args=(renames, command))
+#         elif "shuffle" in command:
+#             pool.apply_async(async_run_single_mutant, args=(shuffles, command))
+#         else:
+#             assert False
+    
+#     pool.close()
+#     pool.join()
+
+#     assert len(reseeds) == len(renames) == len(shuffles) == 61
+
+#     blob = np.zeros((3, 2, 61), dtype=int)
+#     for i, things in enumerate([reseeds, renames, shuffles]):
+#         for j, (veri_times, veri_res) in enumerate(things):
+#             blob[i, 0, j] = RCode.from_str(veri_res).value
+#             blob[i, 1, j] = veri_times
+#     # print(blob)
+
+#     cat = classifier.categorize_query(blob)
+#     print(str(cat))
+
+        # os.system("rm " + items[6])

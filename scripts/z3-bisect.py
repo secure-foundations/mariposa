@@ -21,7 +21,7 @@ def compile_z3() -> bool:
     config fails.
 
     """
-    BUILD_MAX_PARALLEL = 1
+    BUILD_MAX_PARALLEL = 16
 
     run(["rm", "-rf", "build"])
     build_env = environ.copy()
@@ -34,21 +34,73 @@ def compile_z3() -> bool:
         and path.exists(Z3_PATH)
     )
 
+timeout = 60
 
-def z3_solves_within_time_bound(smt_formula_path, index) -> bool:
-    """Run z3 with Z3_TIMEOUT as the limit."""
-    CMD = ["python3", f"/home/ytakashima/m{index}/scripts/runner.py", smt_formula_path]
-    print(CMD)
-    exe = run(
-        CMD,
-        capture_output=True,
-        cwd=f"/home/ytakashima/m{index}"
-    )
-    out = exe.stdout.decode()
-    err = exe.stderr.decode()
-    print(f"mariposa  result: {out} err: {err}")
-    return "[RESULT]:  unstable" not in out
+from analyzer import RCode 
+from analyzer import Classifier
+from analyzer import Stablity
+from runner import parse_basic_output_z3
+from runner import subprocess_run
+import numpy as np
 
+def async_run_single_mutant(results, command):
+    items = command.split(" ")
+    os.system(command)
+    items = command.split(" ")
+    command = f"solvers/z3_place_holder {items[6]} -T:{timeout}"
+    out, err, elapsed = subprocess_run(command, timeout + 1)
+    rcode = parse_basic_output_z3(out)
+    os.system(f"rm {items[6]}")
+    results.append((elapsed, rcode))
+
+
+def mariposa(task_file):
+    commands = [t.strip() for t in open(task_file, "r").readlines()]
+    plain = commands[0]
+    commands = commands[1:]
+
+    import multiprocessing as mp
+    manager = mp.Manager()
+    pool = mp.Pool(processes=7)
+
+    command = f"solvers/z3_place_holder {plain} -T:{timeout}"
+    out, err, elapsed = subprocess_run(command, timeout + 1)
+    rcode = parse_basic_output_z3(out)
+    pr = (elapsed, rcode)
+    classifier = Classifier("z_test")
+    classifier.timeout = 6e4 # 1 min
+
+    reseeds = manager.list([pr])
+    renames = manager.list([pr])
+    shuffles = manager.list([pr])
+
+    for command in commands:
+        if "rseed" in command:
+            pool.apply_async(async_run_single_mutant, args=(reseeds, command))
+        elif "rename" in command:
+            pool.apply_async(async_run_single_mutant, args=(renames, command))
+        elif "shuffle" in command:
+            pool.apply_async(async_run_single_mutant, args=(shuffles, command))
+        else:
+            assert False
+    
+    pool.close()
+    pool.join()
+
+    assert len(reseeds) == len(renames) == len(shuffles) == 61
+
+    blob = np.zeros((3, 2, 61), dtype=int)
+    for i, things in enumerate([reseeds, renames, shuffles]):
+        for j, (veri_times, veri_res) in enumerate(things):
+            blob[i, 0, j] = RCode.from_str(veri_res).value
+            blob[i, 1, j] = veri_times
+
+    cat = classifier.categorize_query(blob)
+    if cat == Stablity.STABLE:
+        return 0 # good
+    if Stablity.INCONCLUSIVE:
+        return 125
+    return 1 # bad 
 
 def main(argv: List[str]) -> int:
     """Main logic of the script. This will first compile z3. If it
@@ -58,8 +110,6 @@ def main(argv: List[str]) -> int:
 
     """
     SKIP_COMIT_GIT_BISECT = 125
-    NEGATIVE = 1
-    POSITIVE = 0
 
     if len(argv) < 3:
         raise Exception("not enough inputs")
@@ -67,11 +117,7 @@ def main(argv: List[str]) -> int:
     if not compile_z3():
         return SKIP_COMIT_GIT_BISECT
 
-    if not z3_solves_within_time_bound(argv[1], argv[2]):
-        return NEGATIVE
-
-    return POSITIVE
-
+    return mariposa()
 
 if __name__ == "__main__":
     from sys import argv
