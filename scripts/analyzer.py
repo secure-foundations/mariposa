@@ -12,7 +12,7 @@ from configs.experiments import *
 from plot_utils import *
 import matplotlib.pyplot as plt
 from statsmodels.stats.proportion import proportions_ztest
-import seaborn as sns
+# import seaborn as sns
 
 FSIZE = 16
 FNAME ="times new roman"
