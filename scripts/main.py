@@ -82,9 +82,11 @@ import re
 def parse_bisect():
     commit_re = re.compile("\[([a-z0-9]+)\]")
     blames = dict()
-    logs = os.listdir("1902_bisect")
+    logs = os.listdir("data/bisect_tasks")
     for log in logs:
-        f = open(f"1902_bisect/{log}")
+        if log.endswith(".txt"):
+            continue
+        f = open(f"data/bisect_tasks/{log}")
         lines = f.readlines()
         blames[log] = set()
         for l in lines:
@@ -94,8 +96,13 @@ def parse_bisect():
             if "# possible first bad commit:" in l:
                 blames[log].add(commit_re.search(l).group(1))
     for log in blames:
-        if len(blames[log]) > 2:
-            print("../mariposa/scripts/bisect-metascript.sh", log)
+        count = len(blames[log])
+        if count > 2:
+            pass
+            # print(log, count)
+            # print("../mariposa/scripts/bisect-metascript.sh", log)
+        else:
+            print(blames[log])
 
 if __name__ == '__main__':
     print("building mariposa...")
