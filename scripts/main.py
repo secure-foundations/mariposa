@@ -34,26 +34,20 @@ if __name__ == '__main__':
 
     # entropy_test()
     # create_benchmark()
-    # create_benchmark()
     # v_test()
     # dump_all()
-    do_stuff(D_FVBKV_CFG)
-
-    # cfg = D_KOMODO_CFG
+    # do_stuff(D_FVBKV_CFG)
+    cfg = D_KOMODO_CFG
     # plot_ext_cutoff(cfg)
-    # plot_time_std(cfg)
-    # plot_pert_diff(cfg)
-    # plot_sr_cdf(cfg)
     # plot_vbkv_ext_cutoff()
-
-    # plot_pert_diff(D_LVBKV_CFG)
-    # plot_pert_diff(D_FVBKV_CFG)
-    # plot_pert_diff(FS_DICE_CFG)
+    # plot_pert_diff(cfg)
+    # plot_time_std(cfg)
+    # plot_sr_cdf(cfg)
+    do_stuff(cfg)
+    # plot_vbkv_ext_cutoff()
 
     # plot_query_sizes(ALL_CFGS)
     # compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
-
-    # export_timeouts(D_LVBKV_CFG, Z3_4_12_1)
 
     # cfg = ExpConfig("FS_DICE", FS_DICE, [Z3_4_12_1], DB_PATH)
     
