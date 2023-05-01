@@ -1,0 +1,513 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [229 292 265 289 267 267 265 267 271 281 265 265 267 268 263 289 269
+   266 265 265 265 263 266 303 263 307 273 266 265 284 293 267 267 269
+   265 263 286 304 264 308 266 284 266 283 269 326 289 288 265 266 287
+   286 266 263 268 267 282 257 257 257 271]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   2   4   4   2   4   2   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   2   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   2   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [229 273 293 287 292 294 271 311 271 269 277 275 271 274 269 268 312
+   292 277 269 288 295 279 315 269 276 291 272 271 290 313 292 274 297
+   274 282 270 269 279 277 269 268 268 310 279 309 275 271 270 282 269
+   272 327 268 268 270 270 309 290 289 269]]
+
+ [[  4   4   2   4   4   4   4   2   4   4   4   4   4   4   4   4   2
+     4   4   2   4   4   2   4   2   4   4   4   4   4   2   4   4   4
+     4   4   4   4   2   4   4   4   2   2   4   4   4   2   2   4   4
+     4   4   4   4   4   4   2   4   4   4]
+  [229 302 310 307 330 304 305 334 292 324 297 339 313 330 335 300 333
+   368 332 313 368 394 328 293 298 344 353 335 398 299 301 310 335 353
+   352 346 306 301 325 327 338 328 300 305 334 328 322 361 346 317 387
+   295 352 307 324 316 299 308 297 337 396]]]
+unstable
+ 
+ err: 
+done running mariposa 14.7
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [228 293 270 292 273 283 274 290 272 269 269 306 273 312 269 290 344
+   287 284 284 275 320 269 270 294 293 273 292 271 348 272 273 295 273
+   272 271 273 295 272 290 306 278 283 272 288 289 269 322 320 272 272
+   306 270 327 271 290 267 267 262 283 255]]
+
+ [[  4   4   4   2   4   4   4   4   4   4   2   4   4   4   4   2   4
+     4   4   4   2   4   4   4   4   4   4   4   4   2   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [228 273 281 275 272 275 296 294 273 273 302 273 271 269 312 275 295
+   294 277 272 276 291 275 278 276 277 271 275 300 271 287 290 270 273
+   271 300 314 294 294 280 286 271 273 296 291 271 276 275 276 308 274
+   272 293 275 273 273 271 273 275 273 285]]
+
+ [[  4   2   4   4   2   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   2   4   4   4   4   4   4   4   4   4   4   4   4   2   4
+     2   4   4   2   4   4   4   4   2   4   4   4   2   4   4   4   2
+     4   2   4   4   4   2   4   4   4   4]
+  [228 313 304 314 304 303 366 369 291 294 298 374 360 362 367 333 351
+   327 361 323 345 300 327 298 369 349 329 390 370 335 306 320 330 351
+   329 345 299 319 330 309 354 389 326 321 324 337 336 302 302 370 350
+   326 345 298 297 325 310 310 327 351 355]]]
+unstable
+ 
+ err: 
+done running mariposa 14.8
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [210 251 272 251 250 249 252 250 249 250 288 266 274 249 274 255 250
+   268 294 274 272 270 248 249 250 273 251 331 251 262 249 250 266 290
+   251 249 294 265 264 251 251 248 248 293 251 248 267 250 333 250 254
+   254 260 264 262 250 279 243 241 244 241]]
+
+ [[  4   2   4   4   4   4   4   4   4   4   4   4   2   4   4   4   4
+     4   4   4   4   4   4   2   4   4   4   4   4   4   4   4   4   2
+     4   4   4   4   4   4   2   4   4   4   4   4   4   4   4   4   2
+     4   4   4   4   4   4   2   4   4   4]
+  [210 261 255 255 264 255 251 259 251 270 305 251 260 298 274 255 251
+   309 268 275 314 257 284 268 252 257 252 263 326 277 327 253 274 262
+   255 267 290 253 256 255 261 253 287 262 257 290 257 287 254 281 285
+   277 255 274 252 276 277 264 275 252 256]]
+
+ [[  4   2   4   2   2   2   4   4   4   2   4   4   4   4   4   2   2
+     4   4   4   2   4   4   4   2   4   4   2   4   4   2   2   4   4
+     4   4   2   4   4   4   4   4   4   2   4   4   4   4   2   4   4
+     2   4   4   2   4   4   4   2   4   4]
+  [210 279 279 278 284 284 337 335 279 276 301 277 276 278 306 284 295
+   277 301 290 288 292 308 296 310 278 282 281 334 277 286 299 327 279
+   281 311 279 278 289 279 296 333 306 311 273 276 328 307 311 284 300
+   288 308 297 302 304 278 279 284 293 292]]]
+unstable
+ 
+ err: 
+done running mariposa 14.1
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [203 260 245 273 243 244 242 240 242 292 242 247 260 260 262 242 273
+   289 274 262 274 240 244 243 241 277 282 241 265 258 243 242 252 253
+   252 246 276 249 246 244 289 238 258 261 243 261 264 242 240 244 244
+   242 241 288 242 240 268 236 236 236 222]]
+
+ [[  4   4   4   4   4   2   4   4   2   4   4   4   4   4   4   4   4
+     2   4   2   4   4   2   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   2   2   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   2   4]
+  [203 267 268 251 247 252 263 258 253 249 285 246 251 249 248 249 250
+   251 250 255 249 249 261 264 275 247 270 248 272 272 246 270 247 269
+   247 277 290 245 247 257 264 246 270 248 265 290 248 248 264 263 260
+   260 252 249 262 256 258 246 280 255 263]]
+
+ [[  4   2   2   4   4   4   4   4   4   4   4   4   4   4   4   2   4
+     4   4   2   2   2   2   2   4   4   4   4   4   4   2   4   4   2
+     2   4   2   2   2   2   4   4   2   4   2   4   2   4   4   4   4
+     4   2   2   2   4   4   4   2   4   4]
+  [203 273 273 270 274 277 282 301 266 272 277 269 293 277 305 274 281
+   270 287 303 272 327 271 273 279 278 269 305 289 267 272 270 288 276
+   304 307 275 273 275 288 288 271 286 301 281 271 279 269 299 298 266
+   277 306 321 282 273 289 268 274 287 269]]]
+unstable
+ 
+ err: 
+done running mariposa 13.8
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [205 245 285 244 246 246 252 296 243 276 255 267 253 271 239 273 260
+   259 244 243 241 279 243 266 255 292 262 255 244 243 246 243 278 244
+   245 244 253 283 299 277 299 250 245 241 262 245 274 259 244 244 246
+   276 276 274 262 263 255 259 236 234 249]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [205 255 250 294 253 295 287 252 249 272 268 253 248 248 274 260 280
+   254 250 254 254 251 251 263 251 250 252 252 272 251 249 251 250 309
+   250 252 251 273 251 250 281 249 247 286 265 272 253 268 252 249 251
+   250 249 271 264 272 266 254 251 267 248]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [205 271 270 275 273 273 308 323 267 286 274 271 298 310 310 276 270
+   304 304 272 273 271 273 268 271 271 329 296 315 268 295 306 273 271
+   274 298 269 277 270 351 297 282 312 271 270 317 272 272 281 293 269
+   315 284 270 296 274 288 290 273 269 298]]]
+stable
+ 
+ err: 
+done running mariposa 13.9
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [207 247 246 246 270 263 283 245 244 248 282 250 245 279 272 260 288
+   246 326 330 248 247 296 248 248 275 244 274 252 264 248 265 252 275
+   247 247 245 267 259 249 276 245 275 245 247 277 244 256 249 282 273
+   259 246 245 275 255 284 236 235 235 236]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [207 261 260 277 251 255 252 278 253 275 304 252 275 265 271 251 249
+   273 250 310 252 283 290 251 251 276 251 254 281 248 285 250 284 269
+   286 251 269 250 289 257 251 253 277 280 250 252 252 276 269 297 253
+   272 277 254 250 273 250 251 254 253 252]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [207 274 276 278 305 277 279 298 277 273 273 282 276 277 282 272 302
+   280 273 273 276 301 274 280 275 285 288 281 289 272 273 274 275 275
+   291 286 272 276 335 316 338 276 269 272 278 273 275 292 277 274 274
+   272 276 276 271 302 272 272 283 296 299]]]
+stable
+ 
+ err: 
+done running mariposa 14.0
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [207 247 247 246 247 283 252 247 251 248 271 245 250 294 244 249 249
+   283 280 247 280 266 260 250 246 258 280 246 276 248 246 248 248 247
+   246 248 262 246 248 274 251 272 248 256 267 254 248 246 246 246 266
+   249 291 304 244 266 245 244 244 240 223]]
+
+ [[  2   4   4   2   4   2   2   4   2   2   2   2   4   2   4   2   4
+     2   4   2   2   2   2   2   4   2   4   4   2   4   2   2   4   2
+     2   4   2   4   4   4   2   2   4   2   2   2   2   2   2   4   4
+     4   2   4   4   2   2   4   4   2   4]
+  [207 246 269 254 248 252 252 249 257 254 261 255 248 272 247 264 253
+   250 251 256 249 278 253 254 269 253 250 272 272 251 252 250 248 274
+   252 248 255 271 274 248 254 273 248 255 272 253 253 253 250 248 247
+   273 270 265 253 252 299 280 252 263 261]]
+
+ [[  2   4   4   4   2   4   4   4   4   2   4   4   4   2   4   4   2
+     2   2   4   4   4   4   2   4   4   2   4   4   4   2   4   4   2
+     2   4   4   4   4   4   4   2   4   4   2   4   4   2   4   4   4
+     4   4   4   4   2   2   2   4   4   4]
+  [207 279 289 267 271 316 301 320 269 276 267 289 272 277 290 287 274
+   279 271 273 295 270 284 274 272 274 283 303 298 276 272 293 321 309
+   288 297 264 266 303 315 330 314 300 266 272 270 270 280 268 295 306
+   296 267 277 265 271 322 274 300 286 302]]]
+unstable
+ 
+ err: 
+done running mariposa 13.9
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [205 253 242 243 259 240 253 243 242 254 243 243 253 243 243 276 241
+   246 273 242 272 241 244 242 243 244 241 243 266 251 267 242 242 240
+   254 243 250 240 275 258 270 241 261 288 242 243 241 290 243 241 254
+   241 258 244 243 242 267 240 238 234 221]]
+
+ [[  2   2   4   4   2   4   4   4   4   4   2   2   4   2   4   2   4
+     4   2   2   2   2   2   4   4   4   2   4   4   2   4   4   4   4
+     2   2   4   2   4   2   2   2   4   2   4   4   4   4   4   4   4
+     4   2   2   4   4   2   2   2   2   2]
+  [205 250 247 267 250 267 247 266 246 248 248 251 245 261 245 248 245
+   299 249 250 249 251 249 247 245 246 247 246 246 250 244 276 246 246
+   252 248 268 276 247 247 250 247 245 250 245 271 245 246 248 265 246
+   252 268 248 248 247 248 248 252 250 268]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [205 266 270 271 273 292 288 292 270 271 292 288 293 270 309 280 286
+   281 303 303 284 289 269 270 272 279 271 274 271 271 290 275 270 276
+   271 294 269 267 270 271 329 279 326 267 270 310 271 275 269 313 268
+   266 285 298 299 270 340 271 270 289 272]]]
+unstable
+ 
+ err: 
+done running mariposa 13.8
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [206 249 272 268 247 241 300 258 245 246 248 244 242 262 315 271 266
+   244 246 257 242 245 295 277 245 252 270 276 272 253 257 246 246 246
+   248 270 247 284 316 244 268 260 246 271 248 244 260 244 244 247 246
+   279 256 247 265 241 243 242 255 254 222]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [206 248 289 288 247 250 250 266 275 253 251 253 252 249 275 250 282
+   263 248 250 266 253 306 279 285 249 252 282 258 249 251 252 249 252
+   251 251 276 263 266 254 253 256 290 289 249 312 251 251 249 251 252
+   249 251 250 249 249 253 250 274 286 249]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [206 291 278 274 276 276 277 292 272 275 271 275 274 314 291 274 290
+   284 314 304 297 282 269 273 268 291 288 276 285 271 297 271 301 284
+   282 302 271 270 276 318 276 298 279 269 279 270 277 274 277 289 334
+   291 278 271 277 288 291 278 284 275 282]]]
+stable
+ 
+ err: 
+done running mariposa 14.0
+Bisecting: 3 revisions left to test after this (roughly 2 steps)
+[ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [207 248 252 248 248 246 246 261 246 246 251 258 249 245 257 245 265
+   265 248 245 248 245 282 264 247 245 245 281 242 259 276 285 247 275
+   266 268 244 272 270 246 244 270 288 245 263 268 247 242 243 270 247
+   297 291 247 246 244 254 243 242 238 235]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [207 252 250 269 248 249 252 252 252 253 251 251 249 250 306 257 255
+   252 256 264 254 251 250 252 261 249 253 252 257 308 251 252 251 253
+   250 265 250 261 251 253 269 250 274 259 253 273 251 251 270 253 251
+   253 277 250 277 251 249 261 254 288 254]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [207 278 298 275 276 277 284 310 273 276 285 309 286 297 273 297 272
+   300 279 282 297 316 270 281 299 277 270 297 307 285 270 309 291 296
+   278 273 279 314 283 276 280 276 347 270 270 272 280 314 285 274 273
+   275 276 276 281 294 275 275 286 273 297]]]
+stable
+ 
+ err: 
+done running mariposa 13.9
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [204 273 279 242 250 274 250 240 249 259 240 284 270 242 240 259 249
+   280 242 249 341 241 244 239 241 286 254 241 250 241 242 270 242 259
+   259 242 243 262 242 241 279 264 265 243 264 264 242 257 258 243 243
+   268 246 239 292 242 239 246 235 228 221]]
+
+ [[  2   2   4   4   4   2   4   4   4   4   2   2   4   2   4   2   4
+     4   2   2   2   2   2   4   4   4   2   4   4   2   4   4   4   4
+     2   2   2   4   4   2   2   2   4   4   2   4   4   4   4   4   4
+     4   2   2   4   2   4   2   2   2   2]
+  [204 255 254 243 243 245 259 266 245 257 246 253 246 247 255 246 245
+   247 247 245 248 270 247 248 247 244 270 254 273 248 243 244 244 284
+   260 287 245 244 244 247 250 246 244 244 244 264 242 246 243 265 242
+   265 246 273 258 242 270 286 292 249 271]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [204 269 284 275 277 269 271 296 268 265 267 273 299 274 293 267 270
+   284 269 290 286 291 269 294 273 270 293 295 313 269 270 265 268 292
+   289 289 265 271 268 285 270 271 271 266 266 268 280 287 273 274 267
+   270 279 326 281 269 303 273 272 267 289]]]
+unstable
+ 
+ err: 
+done running mariposa 13.8
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [204 242 240 243 240 242 259 269 241 281 283 250 241 241 297 240 241
+   245 242 256 243 262 241 239 281 239 262 240 244 241 268 246 241 241
+   265 260 240 242 242 241 243 286 269 238 304 279 283 286 239 261 251
+   249 248 269 244 240 240 235 235 234 220]]
+
+ [[  2   2   4   4   2   4   4   4   4   4   2   2   2   4   4   2   4
+     4   2   2   2   2   4   2   4   4   2   4   4   2   4   4   4   4
+     2   2   4   2   4   2   2   2   4   2   4   4   4   4   4   4   4
+     4   2   4   2   2   4   2   2   2   2]
+  [204 246 245 266 247 244 245 243 243 244 267 247 246 273 250 246 241
+   243 286 253 248 288 243 271 244 245 243 276 303 246 287 243 244 244
+   247 294 243 247 244 247 268 270 245 259 244 244 246 246 246 245 271
+   245 263 264 262 247 270 244 251 275 246]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [204 265 267 268 293 303 295 310 295 286 264 293 289 295 326 270 270
+   271 282 281 316 282 268 284 269 267 297 336 307 295 267 269 266 268
+   290 317 266 267 278 304 313 281 283 269 272 268 279 268 301 269 270
+   308 266 278 288 271 305 275 271 270 278]]]
+unstable
+ 
+ err: 
+done running mariposa 13.9
+1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8 is the first bad commit
+commit 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Fri Jun 14 09:29:41 2019 -0700
+
+    local sort
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+:040000 040000 0a3c7d7a39c8bafde7c0d96e40f38d5126f0b425 d2abe755e1f95482eb3e83cc96b729db2bab8fda M	src
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# bad: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect bad 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# good: [d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+git bisect good d17248821ad047f889237ce20b6bdaa1465ceff9
+# good: [ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+git bisect good ec1653fdff146ff8d1b3b2281e875494f4fc3a96
+# bad: [f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+git bisect bad f3b79087eef389011fa90eefcf64b987bed54a9d
+# bad: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+git bisect bad 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+# first bad commit: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
