@@ -20,3 +20,4 @@ data/*
 !data/sample_lists/
 !data/*.lrz
 temp
+!data/bisect_tasks/

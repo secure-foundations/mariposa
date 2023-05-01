@@ -51,6 +51,52 @@ def gen_bisec_tasks():
                 command = f"./target/release/mariposa -i {l} -p {args[1]} -o {row[0]} -s {args[0]}\n"
                 tsk.write(command)
 
+from datetime import datetime
+
+def get_runtime():
+    con, cur = get_cursor()
+    total = 0
+    for cfg in ALL_CFGS:
+        for solver in cfg.samples:
+            solver_table = cfg.qcfg.get_solver_table_name(solver)
+            res = cur.execute(f"""
+                SELECT SUM(elapsed_milli)
+                FROM {solver_table}""")
+            time = res.fetchone()[0] / 1000 / 3600
+            # start, end = res.fetchone()
+            # date from string 
+            # start = datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
+            # end = datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
+            # diff = end - start
+            # convert into hours
+            total += time
+            print(cfg.qcfg.name, solver, time)
+    print(total)
+            # diff = diff.total_seconds() / 3600
+            # print(cfg.qcfg.name, solver, round(diff, 2))
+        # print(solver_df["time"].mean())
+    # solver_table = cfg.qcfg.get_solver_table_name(solver)
+
+import re
+
+def parse_bisect():
+    commit_re = re.compile("\[([a-z0-9]+)\]")
+    blames = dict()
+    logs = os.listdir("1902_bisect")
+    for log in logs:
+        f = open(f"1902_bisect/{log}")
+        lines = f.readlines()
+        blames[log] = set()
+        for l in lines:
+            if "# first bad commit:" in l:
+                blames[log].add(commit_re.search(l).group(1))
+                break
+            if "# possible first bad commit:" in l:
+                blames[log].add(commit_re.search(l).group(1))
+    for log in blames:
+        if len(blames[log]) > 2:
+            print("../mariposa/scripts/bisect-metascript.sh", log)
+
 if __name__ == '__main__':
     print("building mariposa...")
     stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
@@ -60,12 +106,11 @@ if __name__ == '__main__':
     print("checking scaling_governor...")
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
-
-    gen_bisec_tasks()
-
+    
+    # get_runtime()
     # entropy_test()
     # create_benchmark()
-    # create_benchmark()
+
     # v_test()
     # dump_all()
 
@@ -75,6 +120,11 @@ if __name__ == '__main__':
     # plot_pert_diff(cfg)
     # plot_sr_cdf(cfg)
     # plot_vbkv_ext_cutoff()
+    
+    # do_stuff(D_KOMODO_CFG)
+    
+    # gen_bisec_tasks()
+    parse_bisect()
 
     # plot_pert_diff(D_LVBKV_CFG)
     # plot_pert_diff(D_FVBKV_CFG)

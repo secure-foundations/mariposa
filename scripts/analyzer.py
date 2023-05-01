@@ -998,14 +998,20 @@ def compare_vbkvs(linear, dynamic):
 def do_stuff(cfg):
     summaries = load_solver_summaries(cfg)
     # perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+    solvers = [Z3_4_5_0, Z3_4_12_1]
 
-    solver_count = len(cfg.samples.keys())
+    solver_count = len(solvers )
     cut_figure, cut_aixs = setup_fig(solver_count, 1)
     xs = [i for i in range(5, 62, 1)]
     perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
     skip = get_unknowns(cfg)
 
-    for j, solver in enumerate(cfg.samples.keys()):
+    for j, solver in enumerate(solvers):
+        fcs = []
+        scs = []
+        blah = []
+        percentiles = []
+
         sps = cut_aixs
         if solver_count != 1:
             sps = cut_aixs[j]
@@ -1014,39 +1020,87 @@ def do_stuff(cfg):
         pts = [[], [], []]
         for query_row in rows:
             group_blobs = query_row[2]
-            t = min(group_blobs[0][1][0], 60000)
-            for j in range(3):
-                times = group_blobs[:,1][j]
-                times = np.clip(times, 0, 60000)
-                pts[j].append((t, np.median(times), np.min(times), np.max(times)))
 
-        for pt in pts:
-            pt.sort(key=lambda x: x[0])
+            plain_res = group_blobs[0][0][0]
+            plain_time = group_blobs[0][1][0]
+            
+            if plain_time > 6e4:
+                plain_res = RCode.TIMEOUT.value
 
-        xs = np.arange(start=0, stop=len(pts[0])*3, step=3)
+            mutants = np.hstack((group_blobs[0,:,1:], group_blobs[1,:,1:], group_blobs[2,:,1:]))
+            success = mutants[0] == RCode.UNSAT.value
+            none_timeout = mutants[1] < 6e4
+            valid = np.logical_and(success, none_timeout)
+            cs = np.sum(valid)
+            ts = np.median(np.clip(mutants[1], 0, 6e4))
+            
+            # cs = count_within_timeout(mutants, RCode.UNSAT, timeout=6e4)
 
-        sps.scatter([p[0] for p in pts[0]], [p[1] for p in pts[0]], label="shuffle", marker='.')
-        sps.scatter([p[0] for p in pts[1]], [p[1] for p in pts[1]], label="rename", marker='.')
-        sps.scatter([p[0] for p in pts[2]], [p[2] for p in pts[1]], label="rseed", marker='.')
-        x = np.linspace(0, 60000, 100)
-        y = 2*x
-        sps.plot(x, y)
-        y = x/2
-        sps.plot(x, y)
+            # if plain_res != RCode.UNSAT.value:
+            #     fcs.append(cs)
+            # else:
+            sorted_times = np.sort(mutants[1])[::-1]
+            place = np.argmax(sorted_times <= plain_time)
+            
+            percentiles.append(place/len(sorted_times) * 100)
+            blah.append((plain_time, ts))
+            scs.append(cs)
+
+        percentiles = np.sort(percentiles)
+        # xs, ys = get_cdf_pts(percentiles)
+        # sps.plot(xs, ys)
+        # sps.scatter([0, 100], percentiles, s=2, alpha=0.5)
+        sps.hist(percentiles, bins=300)
+
+        # CDF
+        # fcs = np.array(fcs)
+        # scs = np.array(scs)
+        # blah = np.array(blah)
+        # print(percentage(len(scs), len(fcs) + len(scs)))
+        # print(percentage(np.sum(fcs <= 0), len(fcs)))
+        # print(percentage(np.sum(scs >= 180), len(scs)))
+        # print("")
+        # # print(blah)
         
-        sps.set_ylim(0, 60000)
-        sps.set_xlim(0, 60000)
+        # blah2 = []
+        # ratios = []
+        # for i in range(len(blah)):
+        #     plain, mean = blah[i]
+        #     # if plain > 1e4 and mean > 1e4:
+        #     blah2.append((plain, mean))
+        #     ratios.append(mean / plain)
 
-        sps.set_aspect('equal', adjustable='box')
-        sps.legend()
-        plt.tight_layout()
-        name = cfg.qcfg.name
-        plt.savefig(f"fig/time_scatter/{name}.pdf")
+        # blah = np.array(blah2)
+        
+        # count = 0        
+        # for i in range(len(blah)):
+        #     plain, mean = blah[i]
+        #     if mean / plain > 1:
+        #         count += 1
+        # print(count, len(blah))
+        # print("")
+        # xs, ys = get_cdf_pts(ratios)
+        # sps.plot(xs, ys)
+        # sps.set_xlim(left=0, right=2)
+        
+        # sps.scatter(blah[:,0], blah[:,1])
+        
+        # # draw a line at x = y
+        # sps.plot([0, 6e4], [0, 6e4], color="black", linestyle="dashed")
+        # sps.plot([0, 6e4], [0, 1.25 * 6e4], color="black", linestyle="dashed")
+        # sps.plot([0, 6e4], [0,  6e4 / 1.25], color="black", linestyle="dashed")
+        # sps.set_xlim(left=0, right=6e4)
+        # sps.set_ylim(bottom=0, top=6e4)
+        # sps.set_aspect('equal', adjustable='box')
+        
+    name = cfg.qcfg.name
+    
+    plt.savefig(f"fig/time_scatter/{name}.png")
 
 def create_benchmark(cfgs=ALL_CFGS):
     project_names = [cfg.get_project_name() for cfg in cfgs]
 
-    benchmark_path = "data/benchmarks"
+    benchmark_path = "data/benchmarklefts"
     
     unstable_core_path = f"{benchmark_path}/unstable_core"
     unstable_ext_path = f"{benchmark_path}/unstable_ext"
