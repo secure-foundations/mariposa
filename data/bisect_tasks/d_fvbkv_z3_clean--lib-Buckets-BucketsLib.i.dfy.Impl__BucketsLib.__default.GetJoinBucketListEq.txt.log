@@ -1,0 +1,600 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  951  1419  1049  1231  1233  1444  1460  1362  1373  1338  2036
+    1418  1508  1390  1589  1430  1987  1435  1374  1410  1150  1934
+    1563  1365  1445  1459  1296  1477  1251  1441  2464  3073  1619
+    1433  1367  1699  1396  1454  1325  2177  1713  1620  1797  1625
+    1396  1892  1793  1969  2512  1463  2950  1385  1296  1287  1451
+    1593  1880  2568  1654  1469  1973]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  951  1636  2577  1784  1522  1605  1679  1554  1350  1508  1936
+    1654  1474  1658  2100  2803  1620  1504  1547  1506  1319  1706
+    1545  2027  1941  1831  1594  1347  1565  1623  1468  1795  1756
+    1712  1999  2402  1687  1679  1216  1377  2475  1618  1563  1884
+    1856  1854  1856  1648  1670  1372  1606  1746  2128  1947  1442
+    1741  1853  1544  1496  1461  1345]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     3     2     2     3
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     2     3     3     3]
+  [  951  1296  1307  1659  1682  1945  1549  1631  2074  1170  2077
+    1284  1234  1017  1803  1843  2012  1570  1636  2581 12724  1470
+    3550  2033  1770  1672  7224 16040  3714  1750 30675  1547  1570
+   10591  1490 32446 13508  7116  1283  1411 60107  1955  3458 60103
+    1464  1341 60097  1791  1310  1711  1089  2921  3930  2104  1573
+    1838  1282  2780 60019 60106 60051]]]
+unstable
+ 
+ err: 
+done running mariposa 124.8
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  937  1569  1331  1788  1447  1162  1393  1439  1248  1367  1360
+    1823  1490  1347  1216  1483  1877  1263  1325  2257  1397  1153
+    1362  2130  1278  1982  1128  1333  1379  1143  1762  1355  1293
+    1423  1390  1570  1264  1117  1434  1897  3140  1913  1591  1640
+    1572  2088  1449  1112  1851  2435  1939  1260  1406  1277  1295
+    1213  1368  1173  1601  1193  1306]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  937  1651  2852  1569  1476  1334  1251  1191  1462  1436  1356
+    1262  1566  1448  1511  1361  1857  1416  1344  1419  1581  1501
+    1606  1858  1604  1619  1091  1676  1337  1390  1532  1436  1427
+    1417  1570  1500  1174  1620  1553  1638  1546  1498  1156  1441
+    1442  1697  1522  1483  1387  1539  1595  1703  1397  1436  1310
+    1527  1392  1489  1440  1793  1198]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     3     3     2     3]
+  [  937  1305  1443  1495  1642  2285  1698  2509  3001  1134  1612
+    2355  1125  1896  1369  1808  8325  1347  2522  1634  1739  1908
+    1599  1933 16469  5737  3047  3721 33725  1868  3947  1674  1855
+    1591  1910  1435  1601  1580  1417  2852  1389  2074  1387  1219
+   34524  1591  2228  3129  1763  1242  1774  4030  1754  1710  1281
+    1375 60101 60089 60018 20693 60020]]]
+stable
+ 
+ err: 
+done running mariposa 99.4
+Bisecting: 220 revisions left to test after this (roughly 8 steps)
+[56584922e9aa073a97ed65fe71b7364989ae9702] if it isn't used, it isn't templatized
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.9
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1894  1578  2249  1988  2465  2619  2234  3012  1809  2159  2552
+    2452  1432  3394  2269  3071  3903  3054  1444  1672  2989  2149
+    1608  2010  2236  3469  2697  1754  1873  3350  1663  2682  2296
+    3322  2040  2104  1656  1378  1692  2512  2109  3383  2008  6062
+    2657  1814  2660  2245  2551  2609  2978  1838  2232  2074  1827
+    3329  2862  2746  1893  2180  2207]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1894  3678  2672  2744  2796  3073  2775  2187  1972  2678  2088
+    2608  3081  2976  1946  2769  3120  1740  2403  2530  2001  2574
+    2569  1865  1929  2708  2159  2208  2310  2971  1724  1881  2977
+    2254  1986  2250  2267  2104  1865  2598  2348  2941  2086  2395
+    4357  2585  2604  2595  2441  2135  2115  2163  3556  2873  1787
+    2335  2952  2092  2312  4196  3983]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     3
+       3     2     2     2     2     2     3     2     2     2     2
+       2     2     2     2     2     2     3     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       3     2     3     3     3     3]
+  [ 1894  2292  2377  2362  2370  3620  1804  2543  2769  1725  3480
+   13780  5156  2836  2251  2793 46724  4327  2112 60058  2481 60053
+   60023  2975  3088  1896  2672  3078 60017  2258  1849  2098  1582
+    4841  3208  2168 12392  2848  1623 60053 60019  2583  3305  2011
+    2456  2535  2518  3107  3404  2824 17365  3286 39714 60018  1809
+   60018 37739 60057 60064 60020 60018]]]
+unstable
+ 
+ err: 
+done running mariposa 195.0
+Bisecting: 109 revisions left to test after this (roughly 7 steps)
+[61d99604202e49a5df52484f1706a4092fd21c81] fix #3461
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.9
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  923  1562  1352  1768  1151  1430  1401  1465  1341  1236  1834
+    1373  1510  1360  1192  1893  1483  1267  1338  2280  1395  1148
+    2108  1396  1300  2004  1135  1374  1375  1156  1762  1377  1323
+    1397  1425  1552  1275  1133  1445  1893  3151  1909  1571  1648
+    1548  2139  1469  1123  1869  2389  1936  1231  1412  1303  1154
+    1342  1374  1163  1627  1190  1345]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  923  1655  2838  1576  1496  1283  1241  1176  1471  1453  1342
+    1257  1544  1422  1516  1359  1408  1849  1340  1439  1551  1492
+    1619  1891  1586  1623  1096  1689  1334  1366  1517  1439  1414
+    1580  1445  1492  1169  1661  1622  1569  1529  1529  1217  1457
+    1669  1412  1534  1513  1385  1643  1579  1676  1414  1420  1540
+    1339  1369  1452  1831  1457  1239]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     3     3     2     3]
+  [  923  1330  1437  1472  1645  2275  1717  2493  2990  1142  1643
+    2319  1134  1959  1386  1797  8285  1356  2509  1644  1721  1911
+    1590  1927 16555  5733  3065  3796 34043  3952  1920  1682  1882
+    1629  1923  1476  1579  1599  1424  2817  1389  2068  1402 34284
+    1206  1594  2223  3088  1788  1757  1241  4000  1756  1722  1290
+    1370 60101 60022 60093 20927 60018]]]
+stable
+ 
+ err: 
+done running mariposa 99.6
+Bisecting: 54 revisions left to test after this (roughly 6 steps)
+[fad08454c1955b0660ada7b7b1daf797e50e29db] remove debug code
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1895  1608  2302  2623  2489  1969  2209  3023  1827  2145  2535
+    2476  1435  3372  2266  3038  3109  3914  1419  1675  3024  2170
+    1606  1995  2247  3434  2669  1885  1765  3356  1702  2711  2282
+    3238  2033  2086  1656  1677  1381  2514  2069  3391  6020  2015
+    2727  2664  1863  2560  2208  2606  2964  2066  2145  1861  1877
+    3331  2847  2712  1852  2170  2213]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1895  3598  2640  2729  2776  2745  3101  2196  1956  2652  2621
+    3113  2082  2946  1961  2770  3133  2359  1740  2492  1993  2570
+    2595  1804  1909  2696  2224  2238  3031  2295  1685  1888  2305
+    2921  2009  2272  2250  2092  1913  2299  2642  2878  2106  2391
+    4385  2582  2592  2598  2429  2145  2107  2195  3567  2820  1789
+    2325  2945  2289  2095  4237  3944]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     3
+       3     2     2     2     2     2     3     2     2     2     2
+       2     2     2     2     2     2     3     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       3     2     3     3     3     3]
+  [ 1895  2259  2365  2377  2404  3665  1797  2542  2749  1764  3497
+   13716  5103  2821  2230  2765 47337  4366  2130 60058  2473 60023
+   60050  3048  1892  3037  2688  3065 60016  2263  1869  2099  1580
+    4943  3210  2157 12294  2872  1633 60052 60019  2601  3346  2460
+    2010  2585  2514  3193  3400  2833 17257  3268 39195 60017  1769
+   60018 37644 60059 60055 60021 60016]]]
+unstable
+ 
+ err: 
+done running mariposa 194.9
+Bisecting: 26 revisions left to test after this (roughly 5 steps)
+[145ec8f248dae5b6cff03a3d0be3e1589cdb340b] pick up log configuration consistently #3513
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  934  1564  1342  1768  1155  1453  1414  1441  1366  1292  1353
+    1788  1497  1380  1210  1432  1293  1912  1365  2286  1136  1425
+    1379  2113  1298  2003  1353  1165  1352  1133  1802  1363  1322
+    1421  1397  1605  1277  1151  1452  1931  3085  1932  1589  1659
+    1553  2116  1450  1144  2400  1855  1947  1235  1413  1298  1181
+    1301  1370  1159  1621  1199  1334]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  934  1676  2876  1574  1468  1354  1209  1186  1437  1443  1368
+    1233  1545  1446  1366  1551  1812  1405  1389  1586  1435  1472
+    1602  1869  1605  1610  1109  1696  1338  1360  1516  1443  1423
+    1402  1583  1498  1209  1610  1629  1598  1530  1528  1483  1152
+    1413  1676  1495  1542  1395  1567  1583  1730  1381  1443  1562
+    1347  1380  1493  1452  1804  1220]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     3     3     2     3]
+  [  934  1315  1432  1533  1609  2305  1692  2538  2994  1129  1624
+    2370  1117  1898  1375  1800  8261  1333  2516  1687  1747  1917
+    1609  1908 16386  5732  3047  3713 33779  1879  3956  1681  1860
+    1611  1925  1465  1589  1579  1413  2821  1379  2023  1387  1221
+   34149  1600  2196  3115  1778  1760  1258  4001  1738  1741  1281
+    1366 60100 60089 60020 20844 60018]]]
+stable
+ 
+ err: 
+done running mariposa 99.5
+Bisecting: 12 revisions left to test after this (roughly 4 steps)
+[0229ab2811a209e49e73d79c76850e1c0fbda41c] remove debug code
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1909  1599  2237  1963  2627  2514  2185  2943  2134  1807  2610
+    2457  1440  3421  2274  3026  3810  3112  1419  1684  3036  2139
+    1619  1985  2215  3467  2683  1766  1881  3428  1668  2723  2308
+    3265  2009  2106  1652  1676  1388  2489  3393  5970  2132  1996
+    2675  2661  1798  2597  2249  2593  2928  1846  2137  2067  1886
+    3378  2891  1848  2684  2187  2228]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1909  3594  2626  2739  2791  3077  2750  2222  1976  2676  2072
+    2615  3065  1978  2963  2754  3151  1757  2424  2487  2005  2633
+    1816  2563  1917  2649  2181  2228  2326  1690  3024  2251  2958
+    1892  1997  2303  2231  2090  1928  2310  2591  2878  2142  2356
+    4349  2581  2560  2623  2468  2139  2098  2192  3552  2831  1804
+    2274  2925  2264  2084  4216  3909]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     3
+       3     2     2     2     2     2     3     2     2     2     2
+       2     2     2     2     2     2     3     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       3     2     3     3     3     3]
+  [ 1909  2239  2372  2418  2406  3604  1813  2532  2731  1740  3460
+   13631  5062  2832  2229  2792 46380  4317  2113 60059  2469 60022
+   60051  2986  3089  1880  2683  3064 60016  2277  1838  2091  1591
+    4844  3219  2146 12438  2898  1647 60052 60019  2610  3311  2446
+    2033  2534  2545  3124  3457  2880 17190  3280 38960 60019  1777
+   60018 37415 60058 60062 60020 60017]]]
+unstable
+ 
+ err: 
+done running mariposa 194.7
+Bisecting: 6 revisions left to test after this (roughly 3 steps)
+[c469ea2717b16a6741142a6526e88b078a0df5e3] do not call get_model() from assume_eqs()
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.9
+running mariposa
+res: 1 
+ out: [[[    4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4]
+  [  422   589   590   587   608   583   576   613   588   605   587
+     562   606   587   587   584   607   608   567   567   601   586
+     605   605   585   588   596   577   611   597   579   580   582
+     582   581   619   596   586   570   599   572   621   569   564
+     590   564   574   569   567   555   578   572   552   566   586
+     568   552   571   548   537   535]]
+
+ [[    4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4]
+  [  422   642   668   739   714   579   751   502   571   692   615
+     712   588   606   773   762   665   672   617   816   505   718
+     739   590   687   705   707   679   657   525   500   578   628
+     573   609   616   581   688   637   621   649   662   624   743
+     818   641   747   806   656   668   529   707   562   704   668
+     652   639   691   662   609   634]]
+
+ [[    4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     4     4     4     4     4
+       4     4     4     4     3     3     3     4     4     4     4
+       4     4     3     3     3     3]
+  [  422   511   617   684   673   733   886   718   510   744   688
+     690   596   597   798   531   683   915   657   705   627   712
+     761   735   585  1011   776  1188   746   671   599   693   810
+     672   706   618   657   835   782   873 31361   811   671   813
+     828   711   691   967 60059 60053 60024  1026   731   787   756
+     627   651 60053 60019 60055 60058]]]
+unsolvable
+ 
+ err: 
+done running mariposa 107.0
+Bisecting: 2 revisions left to test after this (roughly 2 steps)
+[762f265616a9e8b88b7119cbec345da1368c00a6] merge with master
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1882  1613  2317  2658  2495  2056  2272  3064  2171  1828  2632
+    2563  1466  3397  2476  3050  3214  1480  3919  1679  3033  1652
+    2189  2114  2316  3486  2698  1900  1766  3414  1685  2720  2339
+    3295  2073  2185  1690  1404  1736  2504  2142  6035  3464  1997
+    2683  2702  1879  2597  2279  2626  2953  1863  2123  2249  1879
+    2866  3412  2738  2224  1847  2225]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1882  3872  2696  2788  2811  2833  3176  1986  2220  2694  3147
+    2076  2659  3013  1963  2845  3273  2393  1781  2516  2001  2681
+    2608  1822  1969  2706  2214  2244  1689  3120  2268  1888  2240
+    2010  3016  2295  2260  2126  1882  2890  2373  2617  2111  2349
+    4465  2637  2640  2588  2453  2188  2117  2173  3594  2878  1825
+    2363  2986  2132  2313  4264  4152]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     3
+       3     2     2     2     2     2     3     2     2     2     2
+       2     2     2     2     2     2     3     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       3     2     3     3     3     3]
+  [ 1882  2257  2438  2424  2458  3695  1856  2557  2751  1744  3604
+   13890  5194  2891  2284  2878 47067  4343  2134 60057  2533 60023
+   60050  2972  3127  1953  2744  3131 60016  2262  1886  2127  1602
+    4914  3342  2187 12371  1661  2913 60055 60019  2629  3327  2501
+    2049  2565  2518  3164  3557  2862 17908  3317 40391 60017  1802
+   60019 38493 60057 60064 60020 60017]]]
+unstable
+ 
+ err: 
+done running mariposa 196.3
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[73d73e6c953dd0d63d76c1dca7f88bc04ccf4565] enhance rewriting for indexof based on #3516
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.8
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  933  1582  1332  1773  1165  1438  1421  1444  1357  1274  1807
+    1340  1528  1364  1213  1449  1900  1280  1357  2304  1133  1388
+    1410  2161  1271  1984  1132  1387  1370  1162  1789  1360  1324
+    1418  1428  1579  1293  1119  1430  1910  3130  1560  1933  1658
+    1580  2102  1494  2370  1128  1873  1934  1257  1390  1321  1161
+    1303  1375  1182  1613  1171  1284]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  933  1658  2845  1561  1469  1287  1181  1255  1449  1464  1346
+    1253  1549  1423  1513  1387  1406  1355  1861  1567  1404  1490
+    1631  1892  1586  1632  1095  1655  1344  1389  1517  1429  1410
+    1570  1436  1467  1187  1620  1551  1620  1561  1530  1464  1163
+    1415  1705  1510  1502  1422  1559  1586  1713  1375  1449  1567
+    1316  1391  1483  1804  1449  1221]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     3     3     2     3]
+  [  933  1326  1445  1488  1612  2290  1692  2492  3039  1144  1624
+    2357  1135  1906  1398  1817  8248  1353  2560  1655  1750  1940
+    1622  1960 16341  5818  3108  3841 33854  1879  4013  1858  1720
+    1583  1887  1465  1584  1585  1390  2809  1401  2089  1388  1229
+   34285  1618  2195  3165  1786  1769  1242  3981  1751  1744  1304
+    1375 60101 60020 60101 20892 60019]]]
+stable
+ 
+ err: 
+done running mariposa 99.6
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[cf86e6ef73bf64669ccf48cc739e8447d4982c0f] disable dubious eq adapter code causing perf hit
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  938  1603  1328  1778  1137  1427  1441  1459  1364  1266  1851
+    1340  1491  1432  1229  1444  1881  1273  1324  2276  1137  1387
+    1426  2134  1304  1997  1133  1362  1389  1142  1799  1365  1311
+    1402  1398  1566  1274  1125  1427  1914  3138  1924  1544  1644
+    1574  2172  1465  2387  1124  1906  1962  1267  1368  1298  1158
+    1304  1162  1350  1638  1201  1307]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  938  1639  2816  1576  1488  1283  1193  1256  1506  1463  1352
+    1253  1563  1422  1505  1363  1411  1869  1327  1567  1415  1520
+    1648  1864  1597  1605  1095  1732  1337  1383  1502  1438  1447
+    1547  1461  1484  1175  1665  1647  1616  1530  1526  1188  1479
+    1433  1708  1527  1514  1386  1586  1586  1723  1367  1437  1573
+    1320  1379  1475  1811  1426  1212]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     3     3     2     3]
+  [  938  1321  1458  1519  1632  2269  1706  2492  3045  1133  1621
+    2351  1131  1900  1356  1796  8295  1358  2550  1650  1748  1892
+    1609  1941 16480  5791  3106  3733 34993  4000  1885  1890  1656
+    1585  1895  1464  1598  1581  1432  2896  2054  1407 34245  1374
+    1238  1592  2209  3074  1763  1760  1241  3991  1756  1711  1278
+    1373 60102 60085 60020 20805 60020]]]
+stable
+ 
+ err: 
+done running mariposa 99.8
+762f265616a9e8b88b7119cbec345da1368c00a6 is the first bad commit
+commit 762f265616a9e8b88b7119cbec345da1368c00a6
+Author: Lev Nachmanson <levnach@hotmail.com>
+Date:   Fri Feb 14 10:55:21 2020 -0800
+
+    merge with master
+    
+    Signed-off-by: Lev Nachmanson <levnach@hotmail.com>
+
+:040000 040000 71a4a67b856fcba9154dee3bf495a28910a990a3 28fbc5c0a1b5c10d5f56b8761ab92f9db596926f M	src
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# good: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect good f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# bad: [56584922e9aa073a97ed65fe71b7364989ae9702] if it isn't used, it isn't templatized
+git bisect bad 56584922e9aa073a97ed65fe71b7364989ae9702
+# good: [61d99604202e49a5df52484f1706a4092fd21c81] fix #3461
+git bisect good 61d99604202e49a5df52484f1706a4092fd21c81
+# bad: [fad08454c1955b0660ada7b7b1daf797e50e29db] remove debug code
+git bisect bad fad08454c1955b0660ada7b7b1daf797e50e29db
+# good: [145ec8f248dae5b6cff03a3d0be3e1589cdb340b] pick up log configuration consistently #3513
+git bisect good 145ec8f248dae5b6cff03a3d0be3e1589cdb340b
+# bad: [0229ab2811a209e49e73d79c76850e1c0fbda41c] remove debug code
+git bisect bad 0229ab2811a209e49e73d79c76850e1c0fbda41c
+# bad: [c469ea2717b16a6741142a6526e88b078a0df5e3] do not call get_model() from assume_eqs()
+git bisect bad c469ea2717b16a6741142a6526e88b078a0df5e3
+# bad: [762f265616a9e8b88b7119cbec345da1368c00a6] merge with master
+git bisect bad 762f265616a9e8b88b7119cbec345da1368c00a6
+# good: [73d73e6c953dd0d63d76c1dca7f88bc04ccf4565] enhance rewriting for indexof based on #3516
+git bisect good 73d73e6c953dd0d63d76c1dca7f88bc04ccf4565
+# good: [cf86e6ef73bf64669ccf48cc739e8447d4982c0f] disable dubious eq adapter code causing perf hit
+git bisect good cf86e6ef73bf64669ccf48cc739e8447d4982c0f
+# first bad commit: [762f265616a9e8b88b7119cbec345da1368c00a6] merge with master
