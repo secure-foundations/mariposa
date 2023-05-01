@@ -1,0 +1,601 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  639   807   796   795   822   796   801   795   818   795   797
+     805   798   800   808   797   799   794   807   802   796   798
+     804   789   806   796   799   808   799   808   797   801   795
+     813   798   800   811   799   798   802   807   800   795   796
+     810   801   808   798   797   791   825   793   790   796   801
+     794   795   796   804   797   791]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  639   821   808   806   804   819   795   807   786   784   801
+     792   787   794   792   798   787   798   793   799   788   796
+     822   793   799   798   790   786   789   808   793   797   800
+     796   803   793   787   790   790   789   804   795   794   807
+     792   790   799   785   789   798   807   798   801   792   797
+     789   787   790   809   791   797]]
+
+ [[    2     2     2     2     2     2     3     3     3     2     2
+       3     3     3     2     2     3     2     2     2     3     2
+       3     2     2     3     3     3     3     2     2     3     2
+       2     2     3     3     3     3     2     3     2     2     3
+       2     3     2     2     3     3     3     3     2     3     3
+       3     3     3     3     3     3]
+  [  639   829   837   853   856   835 60008 60008 60007   810   812
+   60010 60009 60008   842   848 60009   841   864   826 60007   774
+   60009   791   811 60009 60008 60008 60009   803   830 60009   805
+     812   886 60008 60010 60009 60008   798 60009   829   826 60009
+     833 60010   893   828 60010 60010 60010 60009   807 60010 60010
+   60010 60008 60010 60010 60009 60008]]]
+unstable
+ 
+ err: 
+done running mariposa 305.0
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.8
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  633   800   798   802   803   789   801   791   798   795   793
+     800   801   798   793   800   802   795   798   788   797   801
+     801   803   794   803   799   809   792   801   822   805   798
+     794   802   789   799   791   795   802   801   806   800   801
+     802   800   796   801   794   797   796   802   798   799   801
+     804   799   801   799   802   801]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  633   815   813   814   805   814   804   791   784   787   804
+     788   791   788   791   786   788   795   789   784   788   795
+     784   794   791   792   792   803   785   797   791   798   800
+     799   794   795   787   796   788   792   805   807   798   793
+     799   790   798   790   794   802   789   791   808   802   804
+     790   793   792   801   788   827]]
+
+ [[    2     2     2     2     2     2     3     3     3     2     2
+       3     3     3     2     2     3     2     2     2     3     3
+       2     2     3     3     2     3     3     2     2     3     2
+       2     2     3     3     3     3     2     3     2     2     3
+       2     3     2     2     3     3     3     3     2     3     3
+       3     3     3     3     3     3]
+  [  633   825   841   850   852   820 60009 60009 60103   807   808
+   60009 60009 60008   842   843 60010   841   858   835 60010 60007
+     768   786 60010 60009   813 60009 60009   809   832 60009   812
+     814   891 60009 60008 60008 60010   786 60010   814   816 60009
+     831 60010   892   819 60010 60009 60010 60009   813 60009 60010
+   60009 60009 60009 60010 60010 60008]]]
+unstable
+ 
+ err: 
+done running mariposa 305.0
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  671   819   819   820   828   828   824   818   826   823   818
+     822   815   820   819   826   818   819   816   815   816   826
+     817   825   814   830   820   819   821   827   815   824   816
+     817   822   820   817   826   831   821   822   820   821   821
+     814   830   822   823   821   821   825   822   822   821   818
+     824   822   828   825   830   831]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  671   829   822   825   825   834   823   820   810   823   816
+     815   807   812   814   819   805   816   814   823   811   826
+     816   818   812   817   818   810   829   815   811   817   820
+     820   812   817   814   810   819   819   814   826   811   815
+     810   817   812   826   820   823   817   819   825   817   825
+     816   821   811   817   812   821]]
+
+ [[    2     2     2     2     2     2     3     3     3     2     2
+       3     3     3     3     2     2     2     2     2     3     2
+       3     2     2     3     3     3     3     2     2     3     2
+       2     2     3     3     3     3     2     3     2     2     3
+       2     3     2     2     3     3     3     3     2     3     3
+       3     3     3     3     3     3]
+  [  671   850   854   871   881   832 60007 60008 60006   823   846
+   60010 60010 60008 60009   871   874   874   869   838 60007   794
+   60009   810   836 60008 60007 60009 60008   823   837 60008   817
+     833   977 60010 60010 60009 60008   813 60010   840   835 60010
+     834 60009   978   829 60010 60009 60010 60010   826 60008 60010
+   60008 60009 60010 60010 60010 60008]]]
+unstable
+ 
+ err: 
+done running mariposa 305.1
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  663   825   832   832   823   827   832   840   830   830   831
+     834   834   840   837   835   830   826   834   833   828   835
+     827   836   832   831   835   831   827   829   829   826   838
+     830   832   833   824   840   837   827   826   838   825   824
+     838   839   834   833   830   833   828   836   830   837   824
+     842   844   826   831   830   831]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  663   817   822   834   840   840   836   841   831   837   847
+     828   831   838   826   824   825   821   825   816   820   827
+     824   821   821   834   825   819   832   824   820   832   822
+     837   827   826   823   830   823   826   845   823   822   825
+     825   832   823   817   817   835   825   842   828   829   822
+     820   825   826   822   828   826]]
+
+ [[    2     2     2     2     3     3     3     3     2     2     3
+       3     3     2     2     2     3     2     3     3     3     3
+       2     2     3     3     2     3     3     3     2     3     3
+       3     2     3     2     2     2     3     3     3     3     2
+       3     3     2     2     3     3     3     3     3     3     2
+       3     3     3     3     3     3]
+  [  663   824   847   849 60008 60008 60008 60008   823   838 60009
+   60009 60009   847   833   842 60008   812 60008 60009 60007 60008
+     817   822 60008 60008   827 60008 60008 60008   794 60007 60009
+   60008   812 60008   835   811   824 60009 60010 60009 60008   965
+   60010 60008   820   976 60010 60010 60008 60009 60009 60008   820
+   60009 60009 60009 60009 60008 60009]]]
+unstable
+ 
+ err: 
+done running mariposa 364.2
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 58  66  66  68  67  68  69  66  67  69  68  70  67  69  66  67  69
+    69  68  69  70  65  67  70  70  70  70  70  67  67  69  69  70  70
+    71  68  69  70  69  69  70  70  68  69  70  70  70  70  70  69  69
+    68  70  70  70  70  68  68  65  64  64]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 58  69  68  69  70  70  70  70  71  71  69  68  69  70  70  70 104
+   104  68  68  69  69  68  68  69  68  68  69  69  69  68  69  67  69
+    71  69  69  68  68  70  68  67  67  68  68  70  68  68  67  69  69
+    70  70  67  68  68  67  69  69  69  69]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 58  74  74  75  74  74  74  74  72  73  74  73  73  73  74  72  73
+    73  74  73  74  73  74  72  74  74  73  73  72  73  73  73  74  74
+    74  74  74  73  73  74  72  73  74  74  73  74  74  73  73  74  74
+    74  74  74  73  74  73  71  69  70  72]]]
+stable
+ 
+ err: 
+done running mariposa 3.7
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 58  68  69  69  70  69  68  69  69  69  68  69  71  71  69  69  70
+    68  68  69  69  68  69  69  68  67  68  70  68  68  70  68  68  69
+    69  67  67  69  69  67  69  70  68  69  70  71  69  69  69  68  67
+    68  69  69  69  69  66  65  67  66  65]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 58  69  69  70  69  69  69  70  68  70  71  69  69  69  70  70  68
+    69  68  69  70  71  69  69  69  69  69  69  68  69  70  70  68  68
+    68  69  69  69  69  69  69  69  70  69  69  69  69  69  70  70  69
+    69  69  69  68  69  70  69  69  70  70]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 58  72  72  72  72  74  75  74  73  74  74  74  73  73  73  72  72
+    73  73  74  74  73  73  74  74  73  74  73  73  71  70  71  72  72
+   116 114  73  73  73  74  72  73  74  73  71  73  73  73  73  74  72
+    73  73  72  71  73  72  72  72  73  73]]]
+stable
+ 
+ err: 
+done running mariposa 3.7
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2]
+  [58 67 68 67 68 69 70 67 68 67 71 70 70 71 67 67 67 70 69 70 70 67 68
+   69 70 70 70 71 68 66 68 69 70 70 70 68 68 69 70 70 70 70 68 67 68 71
+   71 71 71 68 68 68 71 71 70 71 66 66 67 65 63]]
+
+ [[ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2]
+  [58 70 69 69 69 68 69 69 70 70 72 69 69 69 69 73 69 69 70 69 70 70 71
+   68 68 69 69 70 70 69 69 69 69 69 69 70 68 69 71 69 69 69 67 69 70 70
+   69 70 69 70 69 69 69 69 69 69 70 69 70 67 69]]
+
+ [[ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2]
+  [58 73 73 74 74 74 89 88 73 73 73 74 74 73 73 73 73 73 74 74 73 73 74
+   74 74 74 72 72 74 73 74 72 73 72 75 75 74 74 74 74 74 73 74 74 74 74
+   74 74 74 74 74 74 74 74 75 73 75 72 71 73 73]]]
+stable
+ 
+ err: 
+done running mariposa 3.7
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[60c504f4ef64eaf085b1fec2773704cd1102c611] make a few helpers static
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2]
+  [59 68 68 68 69 69 69 67 68 68 70 68 69 71 68 68 68 70 70 70 70 68 69
+   69 70 70 70 70 68 68 70 71 71 71 71 67 68 67 71 71 71 71 70 69 68 70
+   71 71 71 69 69 70 69 70 70 71 69 67 70 64 64]]
+
+ [[ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2]
+  [59 71 70 70 70 69 69 69 70 71 70 69 69 70 69 70 69 70 69 69 71 68 72
+   70 70 68 69 69 70 70 69 70 69 69 69 71 71 70 71 69 70 70 68 70 70 68
+   70 70 70 68 72 69 69 69 70 70 70 70 69 70 72]]
+
+ [[ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    2  2  2  2  2  2  2  2  2  2  2  2  2  2  2]
+  [59 72 73 73 75 73 74 75 74 75 75 75 74 75 75 72 73 74 74 74 75 75 72
+   72 71 73 73 91 91 73 71 73 73 74 73 73 73 73 72 73 75 73 73 73 73 72
+   74 73 74 73 73 72 73 75 75 73 73 72 71 71 72]]]
+stable
+ 
+ err: 
+done running mariposa 3.7
+Bisecting: 8 revisions left to test after this (roughly 3 steps)
+[8e2ad4e461a4469d345a7b93b17f6acb23e64d38] #2379 and #2380
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  663   818   823   827   819   825   831   821   822   834   818
+     822   821   819   827   833   815   821   822   814   827   823
+     812   824   819   811   825   818   814   845   816   821   819
+     813   819   823   822   828   822   823   821   816   818   815
+     819   820   829   824   816   817   828   815   816   822   823
+     812   828   829   817   814   819]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  663   809   826   826   844   844   845   845   840   835   848
+     838   836   821   833   835   813   821   823   820   829   827
+     818   826   822   815   818   819   819   829   822   819   824
+     830   820   832   823   813   821   831   835   822   817   820
+     817   827   828   818   822   823   820   831   819   821   832
+     823   819   820   817   819   837]]
+
+ [[    2     2     2     2     3     3     3     3     2     3     2
+       2     3     3     2     2     3     2     3     3     3     3
+       2     2     3     3     2     3     3     3     2     3     3
+       3     2     3     2     2     2     3     3     3     2     5
+       3     3     2     2     3     3     3     3     3     2     3
+       3     3     3     3     3     3]
+  [  663   840   856   857 60009 60009 60009 60009   831 60009   845
+     847 60007 60008   834   846 60008   805 60008 60010 60008 60009
+     819   821 60010 60010   833 60009 60008 60009   793 60009 60009
+   60008   820 60010   847   807   832 60010 60010 60010   964 60104
+   60010 60006   831   978 60009 60008 60009 60008 60009   814 60010
+   60009 60010 60009 60009 60010 60009]]]
+unstable
+ 
+ err: 
+done running mariposa 364.3
+Bisecting: 3 revisions left to test after this (roughly 2 steps)
+[e0dc05c97edc559ae0d5ce841120bb55ad8e479b] Fixed final alignment step of fp.rem. Fixes #2369 and does not break #2289.
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  660   829   824   820   830   822   836   831   825   830   832
+     826   832   825   824   821   833   831   824   850   838   833
+     828   837   828   830   829   838   832   825   839   827   833
+     825   831   828   830   833   836   825   827   836   828   832
+     824   835   834   835   835   826   823   824   830   821   826
+     828   824   838   829   831   840]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  660   807   832   874   831   841   844   842   829   837   842
+     826   825   820   831   825   822   816   820   827   828   823
+     818   820   826   821   814   813   818   819   815   824   827
+     835   824   822   817   819   824   814   830   826   818   823
+     830   814   822   824   820   829   831   823   818   831   821
+     821   810   826   825   820   835]]
+
+ [[    2     2     2     2     3     3     3     3     3     2     2
+       3     2     3     2     2     3     2     3     3     3     3
+       2     2     3     3     2     3     3     3     2     3     3
+       3     2     3     2     2     2     3     3     3     3     2
+       3     3     2     2     3     3     3     3     3     3     2
+       3     3     3     3     3     3]
+  [  660   829   845   848 60008 60009 60008 60008 60008   828   837
+   60009   845 60009   838   834 60008   810 60008 60007 60009 60006
+     811   822 60009 60008   836 60008 60008 60006   794 60008 60008
+   60010   821 60008   838   812   839 60009 60007 60010 60009   966
+   60009 60008   816   970 60009 60010 60010 60010 60008 60006   816
+   60008 60009 60010 60008 60009 60009]]]
+unstable
+ 
+ err: 
+done running mariposa 364.2
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[1202554dbcaa67b18e507206ee6f0e6f2a5c95d5] Merge branch 'master' of https://github.com/z3prover/z3
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  667   808   815   826   805   814   822   813   813   820   820
+     816   819   819   811   814   821   815   819   817   813   810
+     819   815   821   815   824   814   812   808   824   810   827
+     813   809   825   821   805   816   825   813   813   814   811
+     810   822   810   814   823   806   822   814   812   822   822
+     806   825   813   808   814   800]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  667   817   818   826   845   846   844   834   837   841   831
+     832   834   817   823   828   808   821   820   825   820   820
+     811   828   828   813   819   820   825   822   812   812   824
+     835   813   819   824   810   816   825   816   816   818   812
+     831   820   805   818   812   812   817   815   803   817   810
+     807   814   821   804   817   817]]
+
+ [[    2     2     2     2     3     3     3     3     2     3     3
+       2     2     3     2     2     3     2     3     3     3     3
+       2     2     3     3     2     3     3     3     2     3     3
+       3     2     3     2     2     2     3     3     3     3     2
+       3     3     2     2     3     3     3     3     3     3     2
+       3     3     3     3     3     3]
+  [  667   830   834   849 60007 60008 60007 60009   836 60008 60008
+     839   849 60008   834   845 60008   810 60006 60008 60008 60008
+     818   817 60009 60010   834 60010 60007 60007   787 60009 60009
+   60008   813 60009   832   801   832 60010 60007 60009 60010   960
+   60009 60008   819   969 60008 60008 60010 60010 60009 60009   812
+   60010 60009 60010 60009 60009 60008]]]
+unstable
+ 
+ err: 
+done running mariposa 364.2
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[db87f2aab055ab189a6c47cd9e2c4216fc65cf3f] separate rewriter used by smt context from asserted formulas to avoid term substitution, exposed by #2370
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.u2b__inverse__b2u.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  661   817   830   824   812   824   817   815   819   818   815
+     825   819   820   819   815   818   816   815   812   826   818
+     812   821   815   814   818   815   816   816   820   809   821
+     813   824   819   817   811   827   820   815   819   820   810
+     816   818   812   812   818   811   813   819   807   823   815
+     815   815   821   809   807   810]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  661   817   823   829   834   843   837   830   833   836   830
+     826   827   818   825   819   815   813   815   817   816   818
+     813   823   814   811   816   818   811   810   820   811   821
+     826   816   817   817   821   812   815   815   814   816   810
+     817   824   811   815   823   817   815   820   814   813   816
+     809   811   820   812   814   821]]
+
+ [[    2     2     2     2     3     3     3     3     2     3     3
+       2     2     3     2     2     3     2     3     3     3     3
+       2     2     3     3     2     3     3     3     2     3     3
+       3     2     3     2     2     2     3     3     3     3     2
+       3     3     2     2     3     3     3     3     3     3     2
+       3     3     3     3     3     3]
+  [  661   822   832   845 60008 60008 60007 60009   824 60008 60007
+     836   839 60008   833   831 60007   812 60009 60008 60009 60009
+     815   809 60009 60009   838 60008 60008 60006   784 60008 60009
+   60009   812 60009   838   794   829 60009 60008 60009 60010   966
+   60008 60010   830   970 60009 60008 60008 60010 60009 60008   816
+   60008 60008 60009 60010 60008 60009]]]
+unstable
+ 
+ err: 
+done running mariposa 364.2
+db87f2aab055ab189a6c47cd9e2c4216fc65cf3f is the first bad commit
+commit db87f2aab055ab189a6c47cd9e2c4216fc65cf3f
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Tue Jul 2 15:28:21 2019 +0700
+
+    separate rewriter used by smt context from asserted formulas to avoid term substitution, exposed by #2370
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+ src/smt/asserted_formulas.h | 2 +-
+ src/smt/smt_context.cpp     | 2 ++
+ src/smt/smt_context.h       | 3 ++-
+ src/smt/theory_arith_core.h | 1 +
+ 4 files changed, 6 insertions(+), 2 deletions(-)
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# good: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect good b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# good: [60c504f4ef64eaf085b1fec2773704cd1102c611] make a few helpers static
+git bisect good 60c504f4ef64eaf085b1fec2773704cd1102c611
+# bad: [8e2ad4e461a4469d345a7b93b17f6acb23e64d38] #2379 and #2380
+git bisect bad 8e2ad4e461a4469d345a7b93b17f6acb23e64d38
+# bad: [e0dc05c97edc559ae0d5ce841120bb55ad8e479b] Fixed final alignment step of fp.rem. Fixes #2369 and does not break #2289.
+git bisect bad e0dc05c97edc559ae0d5ce841120bb55ad8e479b
+# bad: [1202554dbcaa67b18e507206ee6f0e6f2a5c95d5] Merge branch 'master' of https://github.com/z3prover/z3
+git bisect bad 1202554dbcaa67b18e507206ee6f0e6f2a5c95d5
+# bad: [db87f2aab055ab189a6c47cd9e2c4216fc65cf3f] separate rewriter used by smt context from asserted formulas to avoid term substitution, exposed by #2370
+git bisect bad db87f2aab055ab189a6c47cd9e2c4216fc65cf3f
+# first bad commit: [db87f2aab055ab189a6c47cd9e2c4216fc65cf3f] separate rewriter used by smt context from asserted formulas to avoid term substitution, exposed by #2370
