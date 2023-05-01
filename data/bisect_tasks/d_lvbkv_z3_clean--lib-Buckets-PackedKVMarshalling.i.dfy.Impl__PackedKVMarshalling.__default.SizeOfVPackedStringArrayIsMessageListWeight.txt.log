@@ -1,0 +1,1232 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    3     2     2     2     2     2     2     2     3     2     2
+       3     2     2     2     3     2     2     3     2     3     2
+       2     2     2     2     3     2     2     2     2     2     2
+       2     2     2     2     3     2     2     2     2     2     2
+       3     2     3     2     2     2     2     3     3     2     2
+       2     3     3     3     3     3]
+  [60030  6160  2547  6393  5971  6543  2448  3488 60058  6309  2192
+   60042  2466  2291  3138 60047  2600  6650 60031  2134 60043  5769
+    3095  3884  3498  5224 60057  2456  2177  5716  4382  5953  2734
+    2521  7217  2540  7076 60065  4703  2184  3100  4678 11910  2286
+   60040  2489 60044  3864  9490  3924  2921 60033 60051  2263  1691
+    9832 60042 60041 60029 60035 60023]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     3     2
+       2     3     2     2     2     3     2     2     2     2     2
+       3     3     3     3     3     3]
+  [60030  1793  1473  1482  3756  2121  4196  2222  3925  2229  3501
+    4391  1362  3426  2870  2413  1952  1733  2912  3130  1086 17696
+    7701  4456  8509  1840  2941  2643  1064  2632  1499  1553  2035
+    5595  5461  3646  2390  1046  5230  2827  1422 60038 60039  1538
+    1976 60040  2664  2424  1244 60022  2861  1471  2707  1560  2360
+   60057 60022 60059 60041 60041 60048]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     3     2
+       3     2     3     2     2     2     2     2     2     3     2
+       2     2     3     2     2     2     2     3     2     3     3
+       2     3     3     3     3     3]
+  [60030  1174  1225  1769  1842  1371  3302  1742  4182  4905  6536
+    1560  1923 10864  2748  3299  3275  2756 11922  2898  2208  1476
+    4725  6251  1512  1811  1352  5748  4794  2788 60020 60019  2907
+   60026  1536 60016  5219  2174  2583  3606  2321  1437 60019  1542
+    1565  3069 60031  4476  5739  5183  2580 60040  2310 60020 60047
+    4175 60041 60025 60036 60039 60025]]]
+unstable
+ 
+ err: 
+done running mariposa 516.4
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     3     2     2     2
+       3     2     2     2     2     3     2     2     2     2     2
+       2     2     2     2     2     3     2     3     2     2     3
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [  901  1545  2319  1585  1412  1363  1540  1459  1133  1336  3370
+    1709  1689  1886  1951  2556  1791  2636 60020  1921  1549  1612
+   60020  1829  2486  2345  2225 60033  1174  2226  1895  1382  2138
+    1383  1701  2280  1638  2229 60027  1743 60019  3917  2749 60019
+    1408  1935  1692  1812  5188  1187  1355  1715  1261  1864  1280
+    2641  4758 60018 60036 60015 60019]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     3     3     3     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       3     2     2     2     3     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [  901  8189  2270  1429  1806  1974  2261  1694  2559  5062  1052
+    1814  2928  1510  1301  2377  1220  6692  1659  4948  1347 60036
+    2501 60039 60038 60063  1515  1365  2683  2101  1722  4920  1119
+    2153 49266  3239  3752  1181  2419  1710  2838  2223  4023  2279
+   60027  1354  1934  1607 60034  5159  1244  1300  4338  2282  2280
+    2092  4782 60047 60056 60041 60036]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     3     2     3     2     2     3     2     3
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     3     2     2     2     2     2     2     2
+       3     3     3     3     3     3]
+  [  901  1151  1392  1583  1303  2409  1432  6210  3795  7946  4039
+    2870  2243  5204  3331  1825  3749  3315 10994  3048  5885  1564
+    1338  3145 60029 60022  1411 60029  2286  2149 60034  5246 60029
+    1630  3519  3251  4534  1631  1532  2230  7698  3499  1622 60033
+    1565  3932  1820 60032  1126  1626  1842  2342  1482  2490  2423
+   60037 60036 60036 60029 60034 60027]]]
+unstable
+ 
+ err: 
+done running mariposa 377.9
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     3     3
+       2     3     2     2     3     2     2     2     2     2     2
+       2     3     2     3     3     3]
+  [ 1943  1930  2448  2202  3829  1563  3044  1810  1647  1255  2391
+    1259  1296  1789  1466  2517  1351  1010  3519   999  2503  2521
+    1966  4968  1835  1928  1155  3996  2290  1265  1916  2751  2464
+    2500  3557 60068  1257  2812  3370  4052  2832  1664 60025 60060
+    1362 60059  1032  2579 60031  2341  2210  1368 11453  2159  2483
+    3721 60031  5448 60061 60076 60019]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     3     2     2     2     2     2     2     3
+       2     3     3     3     2     3     3     2     2     2     2
+       2     2     3     3     3     3]
+  [ 1943  3112  3802  2137  3238  3588  2224  4047  1496  1968  1424
+    1391  3442  2467  2585  4915  2464  5200  2887  1888  3427  1433
+    1508  3459  3974  3353 11061  1638  4022  1314  1652  4524  1464
+    1531  2249 60028 60029  1910  6072  3759  2553  2158  3717 60032
+    4234 60036 60032 60032  3397 60030 60026  2170  4051  1440  1682
+    2043  6815 60028 60031 60031 60040]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     3     2     2     2     3     3
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     3     3     3     3]
+  [ 1943  1170  1263  1446  1457  1154  2650  1526  3032  2055  1385
+    2342  1696  2951  1385  5193  1377  2554   978  6673  3767  5347
+    4567  8038  6740  2766 31216 10662  2645  1704  6221  1792  2615
+    2540 60018  1005  2367  2777 60020  1160  3610  1652 60025 60019
+    1476  1145  3146  2327  1612  1978  2414  2127  1800  3212  2051
+   10909 60018 60030 60019 60020 60022]]]
+unstable
+ 
+ err: 
+done running mariposa 366.2
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3     2     2     3     2     2
+       3     2     2     2     2     2     2     2     2     3     2
+       2     2     2     3     2     2     2     2     2     2     2
+       3     3     3     3     3     3]
+  [ 1268  1689  4868  1993  2104  6481  5804  6701  6656 10427  5036
+    1769  1968  1980  1809  6539  2845  2912  2976  3448  2423  2268
+    3268 10193  2203  2867  1881 60030  5427  3407 60032  2234  6252
+   60054  2177  1660  2188  7113  4056  3345  6418  2227 60020  2399
+    4643  2563  3801 60031  1983  5536  2245 11889  2065  1738  1973
+   60039 60035 60032 60029 60046 60029]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     3     3     3     2     2     2     2     2     3     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1268  3052  1743  6208  3403  2726  1421  1371  1337  1250  2016
+    1232  4367  1479  1969  1158  2185 60021  3615  4029  3397  2343
+    1395 60032  2146  2950  3883  2455  5926  1598  3257  6104  6991
+    2277 60034 60033 60021  1672  1708  1729  1502  2416 60027  1203
+    1968  4836  5447  1727  2512  1988 60032  1233  1045  5344  2616
+    2654  3166  4905 60034 60035 60035]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       3     3     2     2     3     2     2     2     2     3     2
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     3     3     3     3     3]
+  [ 1268  1554  1693  2325  2537  2930  1514  3283  1972  2984  2693
+    1297  5304  1790  4416  2269  1233  4733  3506  1734  1721 60030
+   60023 60018  2467  1777 60027  2307  4012  1448  1466 60018  1533
+    1426  4755 60027  1583  2735  2169  2736  2721  1928  1169  2017
+    1328  1640  1691  2614  1194  2948  3459  4069 12470 60016  2125
+    1858 60035 60056 60022 60044 60028]]]
+unstable
+ 
+ err: 
+done running mariposa 379.0
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  853  1507  1339  1358  1364  1348  1532  1680  1357  1442  2132
+    1449  1406  2286  1456  2131  2021  1438  1518  1481  1408  2400
+    1477  2338  2250  1278  1377  1416  1878  1373  2542 12104  1277
+    1903  2208  1904  2193  1286  1910  1285  1291  1249  1780  1313
+    1406  2183  1289  1284  2456  1280  1616  1270  1376  1909  2099
+    1372  1921  1147  1139  1056  1603]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  853  1631  1745  1780  2280  1352  2036  1750  2073  1642  1617
+    1807  1810  2654  1818  1714  1476  1420  1601  1589  1384  1396
+    1417  1416  1386  2082  1513  1558  1582  1619  1521  1392  1391
+    1435  1569  2154  1346  1540  1938  1874  1527  1459  1542  1377
+    1577  1325  1465  1563  1687  1493  1366  1835  1522  1416  1354
+    2158  1469  1408  1543  1369  1465]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [  853  1093  1410  1663  2027  2169  1216  1560  2652  4296  2280
+    1554  1484  1921  2274  1757  1993  1508  2612  1881  1459  2848
+    1548  4402  1831  1858  2706  1669  1848  1862  2809  2290  2360
+    2350  2363  1409  1463  1719  1412  1782  1482  1347  1693  2776
+    1452  1598  2334  2388  1956  1709  2395  2207  4252  2630  1578
+    1567  1897  1686  2436 60039 60034]]]
+stable
+ 
+ err: 
+done running mariposa 74.5
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  859  1519  1341  1385  1526  1378  1346  1670  1427  1363  2172
+    1446  1405  2302  1447  2151  2018  1436  1505  1470  1380  2466
+    1464  2344  2281  1288  1368  1871  1403  1368  2581 12306  1288
+    1898  1869  2215  2173  1313  1930  1304  1292  1248  1783  1303
+    1395  2146  1270  1283  1308  2486  1621  1274  2100  1894  1343
+    1934  1356  1169  1153  1080  1633]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  859  1653  1795  1772  2281  1295  2008  1750  2134  1694  1674
+    1736  1741  2537  1698  1609  1381  1371  1554  1522  1396  1377
+    1402  1430  1404  2106  1488  1543  1595  1634  1520  1369  1380
+    1553  1447  1338  2201  1538  1918  1907  1567  1489  1335  1542
+    1473  1331  1470  1545  1706  1489  1385  1842  1514  1430  1360
+    2178  1466  1553  1420  1357  1480]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [  859  1105  1439  1666  2064  2228  1278  1594  2723  4375  2294
+    1552  1511  1956  2329  1803  2028  1542  2639  1874  1479  2890
+    1548  4438  1841  1859  1655  2710  1775  1774  2633  2300  2372
+    2355  2376  1454  1480  1759  1448  1776  1477  1309  2726  1681
+    1427  1626  2360  1966  2452  1733  2449  2261  4302  2640  1592
+    1600  1913  1693  2448 60041 60033]]]
+stable
+ 
+ err: 
+done running mariposa 74.5
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     3     2
+       2     2     3     3     3     3]
+  [  845  1444  1854  1413  2428  4964  3579  1476  8097  5219  1887
+    1603  3345  3844  1679  2859  1478  2638  1514  1367  4093  1412
+    2311  1322  2363  2359  1531  8227 12647  4697  6028  4320  1406
+    6274  2464 60034  2648  1558  5430  1505  1556  1586  3412  1525
+    8291  4799 60018  1853  1432  6080  8103  1382  4489 60045  4675
+    6521  2834 60028 60035 60032 60021]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     2
+       2     2     2     3     2     2     2     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     3
+       2     2     2     3     2     2     2     2     2     2     2
+       3     3     3     3     3     3]
+  [  845  2609  3696  1372  6339  3093  4178  7173  2769  2785  2364
+    1580  1686  9385  2725  1322  2213  3747  2297 60029  3343  2286
+    9245  2355  2522 60038 14060  1785  3108 60037  3987  1695  3002
+    2499  4271  2840 22514  5088  2151  2623  4427  6067 60037 60028
+    3547  1825  1781 60040  4673  5054  4562  3137  4886  2887  2340
+   60033 60029 60033 60040 60025 60028]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     3     3     2     2
+       2     2     2     3     3     3     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [  845  1284  2847  2909  3089  1347  1732  5487  4592  3875  2331
+    1446  3397  1383  1586  1994  6346  2092  4302 15561  1937  7779
+    2733  3560  6658  1537  5721  3131  1870 60027 60032  3023  2221
+    1789  6680  5257 60034 60018 60026  1866  1609  3645  3101 12028
+    1468  3894 60022 11496  2438  2546  1534  3934  4542  5533  2200
+    3473  3967 60022 60030 60030 60034]]]
+unstable
+ 
+ err: 
+done running mariposa 369.8
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     3]
+  [ 1610  3398  3204  3376  3661  2984  3455  6161  3220  3383  3294
+    3335  3140  3069  3242  3180  3361  3332  5393  3277  3449  2695
+    3299  3691  2855  4778  3183  3090  3605  3867  4419  5478  3637
+    3330  3657  3481  3233  2908  3137  5190  3180  3698  7080  4364
+    2721  2920  3196  3622  2350  6979  3224  3949  2667  5460 60046
+    2497  2575  4696  5301  6415 60068]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1610  2256  2767  4590  3807  7480  5981  3628  2149  5628  1971
+    2018  6609  4143  4322  4885  3157  5121  2995  3525  4676  3994
+    6116  5264  3990  8840  3323  7117  4911  3224 11253  4962 11540
+    3980  3525  3120  6270  2819  3025  2378  3314  2646  1858 60035
+   10058  2563  7618  2430  7209  9442 60031  2550  3590  9234  3818
+    6511  9412  9889 60039 60036 60033]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1610  2080  2363  3565  3632  3760  4398  4562  3160  2531  2936
+    3108  6201  2598  4223  2337  2227  2213  4399  7245  3382  2342
+    2982  4017  1776  2676  3524  2741  3585  2565  3141  1466  1534
+    2218  2208  2571  2308  2489  2430  2836  3121  2112  4833  8563
+    2923  2358  4928  3178  4715  2291  3265  2131  4784  2309  5242
+   12194  2728  3861  3737 60040 60066]]]
+inconclusive
+ 
+ err: 
+done running mariposa 205.1
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[2fd579bdd2385bbb7c448646e64d5d1310c0a4b6] Fix typo in ForAll Doc
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 20.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  845  1512  1330  1364  1360  1554  1342  1668  1431  1369  2161
+    1449  1406  2299  1454  2157  2022  1438  1515  1473  1405  2403
+    1507  2319  2268  1302  1385  1408  1356  1920  2572 12065  1274
+    1912  1870  2220  2221  1286  1911  1287  1288  1231  1790  1304
+    1397  2164  1263  1285  2497  1297  1635  1281  2085  1357  1894
+    1377  1920  1146  1155  1069  1617]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  845  1626  1747  1782  2298  1347  2038  1752  2123  1661  1617
+    1783  2579  1813  1811  1760  1583  1695  1676  1493  1462  1334
+    1370  1381  1356  2063  1490  1549  1580  1608  1524  1363  1387
+    1563  1432  1354  2181  1537  1925  1896  1462  1545  1523  1343
+    1491  1322  1461  1569  1686  1493  1387  1830  1528  1432  1361
+    2152  1473  1416  1547  1372  1461]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [  845  1078  1411  1644  2017  2179  1228  1561  2653  4300  1566
+    2274  1491  1959  2248  1748  1981  1539  2622  1858  1469  2848
+    1548  4418  1816  1846  1668  2688  1844  1844  2792  2321  2376
+    2370  2359  1376  1435  1756  1409  1784  1489  1349  1719  2747
+    1445  1614  2347  1954  2418  1702  2390  2192  4194  2608  1574
+    1605  1909  1685  2453 60040 60032]]]
+stable
+ 
+ err: 
+done running mariposa 74.5
+Bisecting: 10 revisions left to test after this (roughly 4 steps)
+[7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     3]
+  [ 1624  3403  3194  3384  3755  2966  3484  6036  3314  3447  3298
+    3377  3137  3046  3214  3123  3341  3448  5498  3217  3462  2669
+    3147  3524  4539  2747  3167  3075  3553  3883  4361  5488  3618
+    3302  3622  3457  3185  2909  3136  7104  3118  5117  4292  3619
+    2607  2794  3117  3601  2334  6932  3251  3957  2624  5398 60043
+    2481  2537  4698  5277  6360 60069]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1624  2235  2762  4558  3814  5996  7481  3623  2183  5672  2005
+    2006  6460  4190  4309  4780  3160  5095  3005  3575  4064  4772
+    6016  5256  3945  8769  7198  3266  4922  3192 11277  4963 11499
+    4265  3919  3460  6353  2528  2746  2394  3480  2814 60036  1952
+   10205  2544  7888  2431  7233  9590 60030  2537  3612  9203  3752
+    9401  6620  9742 60041 60035 60033]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1624  2069  2350  3535  3675  3682  4398  4533  3150  2501  2883
+    3120  6162  2613  4225  2329  2201  4348  2208  2339  3385  7363
+    2971  4023  1740  2703  3581  2791  3518  2529  3146  1525  1496
+    2264  2234  2547  2328  2519  2452  2810  3179  2138  4847  8266
+    2899  2345  3213  4905  4768  2224  3318  2093  4732  2286  5274
+   12260  2724  3858  3730 60040 60063]]]
+inconclusive
+ 
+ err: 
+done running mariposa 205.5
+Bisecting: 10 revisions left to test after this (roughly 4 steps)
+[1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       3     2     2     2     2     3]
+  [ 1595  3388  3280  3387  3671  3049  3514  6053  3255  3454  3234
+    3335  3148  3067  3223  3151  3397  3399  5475  3268  3529  2696
+    3264  3713  4705  2796  3165  3106  3576  3893  4337  5484  3611
+    3283  3643  3487  3176  2947  3139  5166  3145  7056  3668  4272
+    2654  2829  3172  3571  2343  7021  3246  3961  2644  5385  2511
+   60044  2587  4774  5326  6335 60068]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1595  2242  2748  4534  3834  7448  6061  3563  2145  5651  1982
+    2016  6593  4103  4329  4862  3137  5126  2985  3543  3960  4795
+    6059  5182  3973  8672  7032  3259  4877  3209 11293  4829 11537
+    4156  3948  3535  6585  2752  2725  2224  3295  2848 60035  2049
+    9885  2575  7933  2471  7319  9605 60029  2611  9060  3608  3936
+    6551  9399  9793 60035 60034 60034]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1595  2116  2339  3560  3674  3665  4393  4548  3125  2533  2864
+    3122  2613  6314  4204  2327  2208  4334  2179  7193  2338  2958
+    3414  4005  1773  2674  3536  2758  3502  2589  3128  1523  1464
+    2215  2228  2549  2301  2475  2438  2817  3190  2135  4828  8520
+    2921  2396  4937  3225  4790  2262  3240  2113  4888  2313  5302
+   12258  2782  3832  3750 60036 60060]]]
+inconclusive
+ 
+ err: 
+done running mariposa 205.3
+Bisecting: 10 revisions left to test after this (roughly 4 steps)
+[333b32b0d2c829e771f2e9c9d632f00632220b44] disable adding redundant ite clauses as lemma. Add as non-redundant
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 36.2
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     3     2
+       2     2     3     3     3     3]
+  [  855  1513  1874  2443  1401  4985  3588  1461  8094  5176  1865
+    1599  3265  3732  1649  2832  1502  2616  1473  1438  4145  1453
+    2402  1386  2509  2487  1605  8492 13016  4702  6034  4253  1358
+    6153  2474 60035  2627  1588  5563  1529  1536  1569  3442  1588
+    8392  4721 60019  1869  1445  6172  8128  1390  4542 60045  4667
+    6602  2814 60028 60036 60033 60021]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     2
+       2     2     2     3     2     2     2     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     3
+       2     2     2     3     2     2     2     2     2     2     2
+       3     3     3     3     3     3]
+  [  855  2640  3743  1420  6321  3138  4214  7199  2846  2873  2369
+    1593  9290  1759  2865  1354  2399  3958  2296 60027  3272  2286
+    9088  2346  2490 60036 14109  1803  3142 60036  4086  1647  3023
+    2547  4390  2830 22312  5041  2147  2659  4457  6091 60038 60032
+    3579  1835  1768 60039  4690  5100  4473  3150  4929  2914  2340
+   60034 60032 60037 60042 60027 60028]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     3     3     2     2
+       2     2     2     3     3     3     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [  855  1317  2844  2853  3082  1363  1704  5426  4737  3843  1445
+    2361  3427  1411  1595  6417  1964  2089  4243 15401  1910  7837
+    2706  3539  6729  1546  5650  3156  1902 60033 60025  3046  2199
+    1795  6666  5224 60034 60018 60026  1888  1608  3659  3076 12099
+    3942  1428 60023 11502  2556  2449  1539  3933  4596  5543  2209
+    3503  4008 60021 60036 60027 60037]]]
+unstable
+ 
+ err: 
+done running mariposa 370.2
+Bisecting: 9 revisions left to test after this (roughly 3 steps)
+[e603bc1ea1ba2b710372dd01dddba705a0e5cb96] remove suport for VS 2013
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 7.0
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     3]
+  [ 1594  3378  3200  3450  3703  3007  3482  6022  3294  3419  3265
+    3412  3144  3006  3284  3149  3336  3391  5475  3254  3421  2703
+    3195  3402  4543  2822  3197  3149  3572  3883  4349  5575  3619
+    3233  3459  3664  3178  2944  3154  5092  4270  3642  7009  3148
+    2624  2794  3123  3563  2359  7024  3225  3952  2629  5416 60044
+    2495  2542  4668  5308  6297 60068]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1594  2233  2756  4638  3858  7523  6011  3597  2135  5641  1982
+    2018  6439  4082  4385  4794  3131  5053  2970  3518  3997  4846
+    6081  5220  3923  8761  7094  3359  4799  3173 11277  4957 11535
+    4098  3936  3493  6645  2973  3066  2300  3196  2682 60037  1984
+   10055  2568  7791  2438  7291  9660 60033  2578  9016  3670  3840
+    6661  9430  9932 60040 60036 60035]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1594  2078  2357  3547  3700  3710  4385  4593  3136  2562  2871
+    3093  6228  2600  4220  2368  2207  4357  2210  7179  2373  3394
+    2969  4004  1752  2669  3544  2759  2561  3610  3145  1527  1470
+    2231  2236  2541  2314  2500  2469  2772  3120  2132  4844  8476
+    2909  2361  4925  3209  4699  2238  3217  2117  4729  2282  5286
+   12250  2721  3838  3729 60044 60065]]]
+inconclusive
+ 
+ err: 
+done running mariposa 205.9
+Bisecting: 9 revisions left to test after this (roughly 3 steps)
+[017680898aa57c4d9c36ccf2df20aa3befbc5ecb] update doctest
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 82.7
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     3     2
+       2     2     3     3     3     3]
+  [  858  1473  1895  2516  1459  5092  3616  1514  8183  5269  1940
+    1609  3382  3884  1681  2883  1518  2674  1537  4198  1436  2414
+    1498  1338  2386  2418  1555  8303 12728  4689  6039  4314  1379
+    6266 60039  2499  2640  1563  5563  1543  1564  1594  3488  1594
+    8433  4867 60019  1879  1459  6105  8107  1402  4480 60045  4719
+    6543  2838 60027 60036 60034 60021]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     2
+       2     2     2     3     2     2     2     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     3
+       2     2     2     3     2     2     2     2     2     2     2
+       3     3     3     3     3     3]
+  [  858  2689  3734  1423  6450  3149  4252  7192  2811  2892  2413
+    1583  9587  1775  2856  1388  2401  4120  2503 60029  3440  2251
+    9289  2297  2521 60036 14026  1797  3168 60036  4168  1714  2626
+    3136  4497  2881 23016  5082  2158  2646  4436  6120 60033 60030
+    3536  1847  1774 60038  4635  5038  4536  3147  4899  2919  2352
+   60035 60029 60036 60042 60026 60028]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     3     3     2     2
+       2     2     2     3     3     3     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [  858  1313  2847  2923  3133  1385  1732  5491  4728  3929  1487
+    2366  3470  1429  1612  2014  6449  2154  4258 15309  1905  7515
+    2789  3425  6671  1565  5718  3098  1911 60027 60031  3069  2246
+    1784  5214  6710 60034 60018 60025  1880  1618  3665  3179 12071
+    1457  3894 60022 11601  2620  2479  1577  3990  4612  5593  2235
+    3513  3947 60022 60028 60030 60036]]]
+unstable
+ 
+ err: 
+done running mariposa 370.6
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[88d51d33770bc74cff91d6c0d7ea784cb80d3a50] fix python doc regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     3]
+  [ 1599  3367  3226  3404  3726  2943  3486  5980  3267  3475  3267
+    3341  3167  3022  3258  3170  3294  3414  5436  3238  2713  3428
+    3177  3466  4501  2811  3230  3099  3557  3928  4350  5466  3622
+    3343  3639  3448  3240  2926  3211  7027  5120  4250  3582  3063
+    2611  2754  3161  3566  2353  7039  3229  3952  2657  5369 60047
+    2511  2601  4712  5404  6272 60067]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1599  2260  2824  4526  3815  6024  7512  3591  2149  5790  1998
+    2052  6520  4126  4343  4824  3205  2955  5116  3565  3921  4707
+    6186  5301  4026  8719  7130  3257  4860  3180 11286  4976 11518
+    4157  3653  3102  6261  2659  3000  2429  3346  2698 60039  1918
+   10121  2619  7693  2427  7220  9512 60030  2552  3616  9049  3845
+    6599  9556  9784 60041 60037 60035]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1599  2122  2368  3526  3671  3654  4455  4545  3141  2507  2881
+    3101  2618  6335  4237  2345  2200  4359  2212  7197  2335  2984
+    3388  4084  1775  2670  2728  3529  3553  2591  3180  1482  1550
+    2217  2215  2631  2376  2500  2455  2931  3139  2117  4954  8349
+    2915  4967  2326  3216  4812  2236  3294  2137  4734  2321  5293
+   12155  2740  3821  3746 60039 60065]]]
+inconclusive
+ 
+ err: 
+done running mariposa 205.4
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 4.5
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     3]
+  [ 1600  3485  3182  3441  3730  3002  3540  3346  6139  3517  3300
+    3372  3159  3062  3246  3149  3346  3424  5479  3310  2822  3563
+    3317  3529  4822  3036  3198  3148  3585  3907  4382  5494  3677
+    3255  3626  3350  3192  2951  3281  4275  5129  3604  7030  2897
+    2583  3083  2759  3608  2388  6956  3283  3977  2694 60044  5408
+    2428  2553  4648  5284  6231 60064]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3     2     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1600  2254  2772  4606  3833  3312  6265  3525  3612  5658  3851
+    1993  2054  6540  4180  4455  4981  4810  2973  5150  3487  3875
+    4631  6021  5143  3914  8696  9334  4516  4845 11246 11731  3061
+    4743  4102  3810  2873  2845  6523  3095  2422  2665  2046  3058
+    2876  2810 10461  8612  3075 60028  8134  2593  9630  3610  3695
+    9221  6592  9760 60043 60035 60034]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1600  2090  2390  3556  3650  3823  3831  4575  3217  2571  2602
+    2922  3135  6184  2598  2328  2212  3429  2171  4456  2325  7221
+    3003  4062  1779  2649  3516  2724  2544  3606  3181  1497  1581
+    2213  2235  2325  2583  2495  2499  2870  3130  2124  4864  8550
+    2908  4915  2299  3219  4734  2254  3316  3184  2064  2310  5251
+    2747  3803 12206  3733 60043 60063]]]
+inconclusive
+ 
+ err: 
+done running mariposa 196.5
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[3985cfa33c86f47a34797579c166eb2a9a1dc846] ensure parameters are passed to local search
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     3]
+  [ 1613  3435  3243  3406  3772  2943  3433  6024  3333  3425  3208
+    3313  3189  2986  3236  3111  3337  3394  5400  3289  2738  3449
+    3304  3512  4640  2939  3247  3124  3598  3893  5447  4320  3654
+    3297  3616  3444  3254  3026  3181  7152  5199  4272  3663  3165
+    3087  3680  3306  4149  2591  7620  3278  4011  2584  5573 60045
+    2443  2541  4673  5244  6306 60069]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1613  2271  2769  4527  3839  7527  3587  6110  2143  5714  1998
+    2018  6513  4175  4343  4808  3151  2905  5120  3509  3935  4701
+    6137  5292  3992  8778  7095  3263  4886  3193 11249  4913 11735
+    4102  3655  3185  6296  2692  3004  2420  3342  2691 60038  1913
+    9981  2596  7702  2432  7226  9433 60031  2564  9075  3610  3926
+    6533  9399  9834 60044 60037 60033]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1613  2083  2349  3509  3686  3764  4393  4570  3137  2513  2882
+    3160  6235  2619  4292  2330  2190  4340  2183  7287  2337  3019
+    3453  3992  1748  2684  3536  2727  3600  2536  3196  1537  1463
+    2231  2273  2556  2307  2479  2474  2799  3128  2121  4905  8440
+    2904  2346  4913  3192  4799  2245  3286  2112  4764  2298  5354
+   12187  2728  3809  3787 60042 60067]]]
+inconclusive
+ 
+ err: 
+done running mariposa 205.2
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[b1dbea328a714feb3cbacf141cd5e4c7683587e9] remove unreferenced
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     3
+       2     2     3     3     3     3]
+  [  849  1442  1853  1411  2426  5029  3613  1476  8122  5242  1878
+    1596  3317  3832  1657  2831  1492  2658  1478  1415  4140  2364
+    1454  1394  2494  2460  1557  8396 12815  4699  6045  4266  1359
+    6265 60036  2462  2633  1594  5674  1538  1563  1591  3453  1511
+    8343  4857 60020  1861  1452  6180  8174  1399  4590  4699 60043
+    6650  2828 60028 60035 60032 60022]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     3     2     2     2     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     3
+       2     2     2     3     2     2     2     2     2     2     2
+       3     3     3     3     3     3]
+  [  849  2637  3705  1389  6443  3161  4237  7180  2783  2829  2385
+    1576  9423  1782  2835  1331  2305  3915  2257  3379 60025  2277
+    9213  2336  2495 60034 14142  1821  3147 60032  4066  1629  2509
+    3046  4391  2845 22981  5061  2160  2690  4492  6193 60036 60028
+    3552  1851  1754 60035  4673  5054  4563  3123  4979  2901  2369
+   60031 60029 60032 60039 60025 60028]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     3     3     2     2
+       2     2     2     3     3     3     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [  849  1282  2859  2852  3148  1356  1706  5554  4611  3868  1454
+    2335  3478  1386  1956  1600  6532  2097  4220 15316  1917  7742
+    2704  3518  6602  1546  5675  3063  1830 60029 60019  3038  2230
+    1789  6690  5229 60029 60017 60022  1902  1637  3747  3192 12158
+    3949  1463 60020 11702  2451  2593  1542  3932  4605  5497  2203
+    3925  3471 60021 60034 60024 60033]]]
+unstable
+ 
+ err: 
+done running mariposa 370.2
+Bisecting: 6 revisions left to test after this (roughly 3 steps)
+[262acc0556d0890c06dc2828c1fe62838ac3cd4f] guard insertion into enode vector @Nils-Becker, produces overflow during heavy quantifier instantiation
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     2
+       2     2     2     2     2     3]
+  [ 1615  3481  3259  3422  3707  3028  3521  3383  6109  3464  3278
+    3363  3138  3049  3241  3126  3340  3403  5412  3249  2727  3457
+    3265  3533  4621  2950  3245  3173  3690  3898  4389  5475  3588
+    3219  3549  3385  3229  2959  3191  5146  7144  4361  3739  3143
+    2933  3649  3262  4163  2786  7902  3561  4369 60031  2834  5748
+    2421  2573  4634  5317  6394 60065]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1615  2234  2851  4576  3740  3254  6218  3579  3552  5623  3867
+    2000  2028  6654  4213  4435  4954  4867  2973  5130  3483  3871
+    4724  5878  5153  3970  8632  9394  4543  4794 11343 11719  3113
+    4773  4075  3852  2872  2818  6537  3075  2374  2700  3089  2042
+    2916  2840 10412  8489  2746  7637 60032  2673  9350  3598  3709
+    9379  6499  9711 60039 60032 60033]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1615  2102  2371  3510  3620  3700  3784  4507  3159  2514  2875
+    2670  3105  2600  6303  2324  2230  3415  2157  4343  2310  7186
+    2960  4106  1803  2643  3527  2698  3526  2567  1559  1492  3194
+    2221  2216  2331  2577  2532  2467  2917  3102  2133  4868  8407
+    2972  4900  2288  3242  4753  2277  3329  3228  2068  2303  5282
+    2773  3847 12206  3727 60039 60062]]]
+inconclusive
+ 
+ err: 
+done running mariposa 196.0
+Bisecting: 6 revisions left to test after this (roughly 3 steps)
+[1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     3]
+  [ 1604  3430  3236  3436  3714  3053  3535  3414  6126  3488  3330
+    3368  3175  3088  3258  3139  3369  3395  5475  3225  2744  3536
+    3305  3481  4651  2942  3231  3090  3635  3884  4324  5504  3656
+    3336  3628  3390  3301  3038  3157  5166  3733  7253  4409  3190
+    2948  3116  3461  3957  2376  7310  3148  3862  2670 60042  5366
+    2411  2512  4625  5293  6390 60068]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1604  2269  2731  4556  3820  3254  6289  3542  3583  5669  3908
+    1985  2047  6545  4219  4448  4947  2945  4835  5139  3491  3943
+    4658  5959  5223  4009  8655  9450  4571  4837 11184 11695  3110
+    4763  4074  3790  2842  2899  6730  3073  2405  2711  2028  3158
+    2880  2636 10223  8156  3067  7706 60034  2613  3589  9533  3771
+    9267  6478  9717 60039 60034 60033]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1604  2083  2365  3574  3631  3724  3789  4563  3238  2520  2600
+    2915  3118  6164  2635  2325  2247  3441  4358  2222  2322  7184
+    2953  4009  1795  2701  3547  2716  3566  2575  3158  1561  1486
+    2245  2257  2327  2564  2486  2556  2896  3119  2152  4849  8389
+    2898  4945  2330  3226  4811  2258  3274  3205  2106  2352  5378
+    2769  3868 12327  3810 60039 60059]]]
+inconclusive
+ 
+ err: 
+done running mariposa 196.3
+Bisecting: 6 revisions left to test after this (roughly 3 steps)
+[b1893f2a58b44106c32c05ea64d4fe6552d763dd] fix build issue for debug mode
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 125 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     3]
+  [ 1607  3359  3229  3428  3699  2966  3510  6024  3240  3460  3212
+    3320  3156  2986  3228  3137  3278  3433  5409  3238  2667  3422
+    3148  3515  4543  2867  3159  3093  3617  3910  5439  4371  3603
+    3269  3584  3413  3256  2892  3113  7102  4336  5170  3708  3049
+    2784  3261  2859  3692  2305  6994  3192  3932  2624  5447 60046
+    2494  2564  4688  5318  6224 60069]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [ 1607  2259  2760  4600  3780  6073  7506  3661  5625  2170  1966
+    2006  6557  4221  4375  4835  3208  5080  2973  3549  3945  4729
+    6244  5321  4002  8723  3262  7079  4801  3179 11390  4910 11699
+    3978  3549  3061  6236  2734  3090  2306  3216  2606 60038  1953
+    9914  2652  7643  2470  7334  9449 60030  2585  9072  3621  3858
+    6532  9521  9922 60039 60035 60031]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1607  2110  2346  3521  3616  3726  4365  4562  3149  2517  2861
+    3076  2611  6300  4205  2342  2174  2160  4348  2367  7278  2982
+    3368  4006  1759  3534  2730  2755  2542  3527  3137  1472  1537
+    2223  2208  2540  2331  2490  2437  2836  3118  2159  4904  8326
+    2921  2343  3240  4937  4801  2214  3244  2085  4739  2308  5341
+    2724 12406  3796  3740 60036 60061]]]
+inconclusive
+ 
+ err: 
+done running mariposa 205.3
+Bisecting: 6 revisions left to test after this (roughly 3 steps)
+[5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     3     2
+       2     2     3     3     3     3]
+  [  848  1463  1856  2439  1400  3596  5056  1479  8066  5149  1877
+    1590  3293  3809  1652  2850  1486  1493  2611  1419  1458  4184
+    2367  1381  2472  2450  1579  8423 12912  4789  6230  4424  1369
+    6221 60033  2394  2656  1573  5526  1526  1534  1561  3437  1520
+    8163  4761 60020  1908  1435  6084  8127  1386  4486 60042  4659
+    6547  2785 60026 60033 60034 60022]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     2
+       2     2     2     3     2     2     2     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     3
+       2     2     2     3     2     2     2     2     2     2     2
+       3     3     3     3     3     3]
+  [  848  2680  3725  1438  6447  3220  4195  7309  2810  2822  2395
+    1578  9543  1755  2822  1344  2397  4103  2469 60024  3417  2250
+    9211  2299  2496 60033 13938  1785  3167 60034  4077  1736  3122
+    2617  4455  2937 22456  5153  2130  2662  4459  6132 60032 60028
+    3628  1842  1782 60035  4666  5193  4547  3191  5014  2903  2368
+   60032 60028 60032 60038 60026 60027]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     3     3     2     2
+       2     2     2     3     3     3     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [  848  1295  2803  2859  3121  1347  1698  5412  4666  3891  1454
+    2387  3425  1402  1588  1994  6441  2079  4237 15355  1908  7644
+    2697  3524  6643  1548  5681  3112  1886 60027 60022  3021  2212
+    1798  6666  5214 60029 60015 60021  1889  1620  3760  3133 12020
+    3931  1461 60021 11632  2575  2482  1550  3901  4626  5643  2246
+    3917  3523 60021 60025 60025 60033]]]
+unstable
+ 
+ err: 
+done running mariposa 370.3
+Bisecting: 5 revisions left to test after this (roughly 3 steps)
+[ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  862  1617  1460  1467  2372  2288  2357  2915  2512  2405  2345
+    3452  1645  1499  2572  2242  1463  2072  1426  1421  1315  2304
+    2287  1403  2238  1925  1327  1439  1468  1446  2709  1377  2440
+    2117  2026 14869  2397  2057  1366  1379  1393  1340  1896  1363
+    1511  2294  1314  1368  1357  2527  1624  1305  1389  1388  1900
+    1934  2138  1160  1166  1099  1688]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  862  1660  1759  1805  2284  1316  1990  1753  2078  1704  1654
+    1769  1774  2646  1758  1669  1523  1449  1624  1601  1478  1514
+    1530  1513  1503  2236  1605  1631  1682  1753  1641  1443  1419
+    1613  1483  2258  1411  1586  2000  1997  1573  1496  1367  1573
+    1508  1414  1715  1607  1730  1514  1414  1926  1592  1476  2376
+    1396  1535  1450  1640  1415  1617]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [  862  1098  1409  1648  2008  2200  1240  1582  2743  4380  1572
+    2285  1553  1984  2271  1794  2018  1591  1857  2683  1470  2844
+    1534  4423  1851  1857  2631  1630  1762  1730  2667  2255  2331
+    2399  2378  1468  1458  1748  1435  1762  1443  1305  1689  2751
+    1420  1620  2352  2409  1975  1755  2431  2238  4347  2628  1596
+    1572  1904  1722  2445 60037 60031]]]
+stable
+ 
+ err: 
+done running mariposa 77.4
+There are only 'skip'ped commits left to test.
+The first bad commit could be any of:
+3985cfa33c86f47a34797579c166eb2a9a1dc846
+88d51d33770bc74cff91d6c0d7ea784cb80d3a50
+0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+e603bc1ea1ba2b710372dd01dddba705a0e5cb96
+1827f98851e1866187abe743afd2d80bc786412f
+262acc0556d0890c06dc2828c1fe62838ac3cd4f
+b1893f2a58b44106c32c05ea64d4fe6552d763dd
+f3b79087eef389011fa90eefcf64b987bed54a9d
+1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+7c9d2e0d75757ed6aa535f72c7dec70d5a527fed
+5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+We cannot bisect more!
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# skip: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect skip 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# good: [2fd579bdd2385bbb7c448646e64d5d1310c0a4b6] Fix typo in ForAll Doc
+git bisect good 2fd579bdd2385bbb7c448646e64d5d1310c0a4b6
+# skip: [7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+git bisect skip 7c9d2e0d75757ed6aa535f72c7dec70d5a527fed
+# skip: [1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+git bisect skip 1827f98851e1866187abe743afd2d80bc786412f
+# bad: [333b32b0d2c829e771f2e9c9d632f00632220b44] disable adding redundant ite clauses as lemma. Add as non-redundant
+git bisect bad 333b32b0d2c829e771f2e9c9d632f00632220b44
+# skip: [e603bc1ea1ba2b710372dd01dddba705a0e5cb96] remove suport for VS 2013
+git bisect skip e603bc1ea1ba2b710372dd01dddba705a0e5cb96
+# bad: [017680898aa57c4d9c36ccf2df20aa3befbc5ecb] update doctest
+git bisect bad 017680898aa57c4d9c36ccf2df20aa3befbc5ecb
+# skip: [88d51d33770bc74cff91d6c0d7ea784cb80d3a50] fix python doc regression
+git bisect skip 88d51d33770bc74cff91d6c0d7ea784cb80d3a50
+# skip: [f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+git bisect skip f3b79087eef389011fa90eefcf64b987bed54a9d
+# skip: [3985cfa33c86f47a34797579c166eb2a9a1dc846] ensure parameters are passed to local search
+git bisect skip 3985cfa33c86f47a34797579c166eb2a9a1dc846
+# bad: [b1dbea328a714feb3cbacf141cd5e4c7683587e9] remove unreferenced
+git bisect bad b1dbea328a714feb3cbacf141cd5e4c7683587e9
+# skip: [262acc0556d0890c06dc2828c1fe62838ac3cd4f] guard insertion into enode vector @Nils-Becker, produces overflow during heavy quantifier instantiation
+git bisect skip 262acc0556d0890c06dc2828c1fe62838ac3cd4f
+# skip: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+git bisect skip 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+# skip: [b1893f2a58b44106c32c05ea64d4fe6552d763dd] fix build issue for debug mode
+git bisect skip b1893f2a58b44106c32c05ea64d4fe6552d763dd
+# bad: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+git bisect bad 5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+# good: [ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+git bisect good ec1653fdff146ff8d1b3b2281e875494f4fc3a96
+# only skipped commits left to test
+# possible first bad commit: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+# possible first bad commit: [7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+# possible first bad commit: [b1893f2a58b44106c32c05ea64d4fe6552d763dd] fix build issue for debug mode
+# possible first bad commit: [1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+# possible first bad commit: [e603bc1ea1ba2b710372dd01dddba705a0e5cb96] remove suport for VS 2013
+# possible first bad commit: [88d51d33770bc74cff91d6c0d7ea784cb80d3a50] fix python doc regression
+# possible first bad commit: [3985cfa33c86f47a34797579c166eb2a9a1dc846] ensure parameters are passed to local search
+# possible first bad commit: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+# possible first bad commit: [262acc0556d0890c06dc2828c1fe62838ac3cd4f] guard insertion into enode vector @Nils-Becker, produces overflow during heavy quantifier instantiation
+# possible first bad commit: [f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+# possible first bad commit: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
