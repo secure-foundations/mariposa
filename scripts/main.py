@@ -34,18 +34,14 @@ if __name__ == '__main__':
 
     # entropy_test()
     # create_benchmark()
-    # v_test()
     # dump_all()
-    # do_stuff(D_FVBKV_CFG)
     cfg = D_KOMODO_CFG
     # plot_ext_cutoff(cfg)
     # plot_vbkv_ext_cutoff()
     # plot_pert_diff(cfg)
     # plot_time_std(cfg)
     # plot_sr_cdf(cfg)
-    do_stuff(cfg)
-    # plot_vbkv_ext_cutoff()
-
+    do_stuff(FS_VWASM_CFG)
     # plot_query_sizes(ALL_CFGS)
     # compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
 
