@@ -34,9 +34,10 @@ if __name__ == '__main__':
 
     # entropy_test()
     # create_benchmark()
-    create_benchmark()
+    # create_benchmark()
     # v_test()
-    dump_all()
+    # dump_all()
+    do_stuff(D_FVBKV_CFG)
 
     # cfg = D_KOMODO_CFG
     # plot_ext_cutoff(cfg)

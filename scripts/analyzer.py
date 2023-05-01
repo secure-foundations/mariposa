@@ -997,54 +997,74 @@ def compare_vbkvs(linear, dynamic):
     plt.tight_layout()
     plt.savefig("fig/compare.pdf")
 
+from scipy.stats import gaussian_kde
+
 def do_stuff(cfg):
     summaries = load_solver_summaries(cfg)
     # perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
 
-    solver_count = len(cfg.samples.keys())
-    cut_figure, cut_aixs = setup_fig(solver_count, 1)
-    xs = [i for i in range(5, 62, 1)]
-    perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
-    skip = get_unknowns(cfg)
+    # cut_figure, cut_aixs = setup_fig(solver_count, 1)
+    # xs = [i for i in range(5, 62, 1)]
+    # perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+    # sps = cut_aixs[j] if solver_count != 1 else cut_aixs
 
-    for j, solver in enumerate(cfg.samples.keys()):
-        sps = cut_aixs
-        if solver_count != 1:
-            sps = cut_aixs[j]
+    rows = summaries[Z3_4_12_1]
+    pf, cfs = 0, 0
+    ps, css = 0, 0
 
-        rows = summaries[solver]
-        pts = [[], [], []]
-        for query_row in rows:
-            group_blobs = query_row[2]
-            t = min(group_blobs[0][1][0], 60000)
-            for j in range(3):
-                times = group_blobs[:,1][j]
-                times = np.clip(times, 0, 60000)
-                pts[j].append((t, np.median(times), np.min(times), np.max(times)))
+    scatters = []
+    for query_row in rows:
+        group_blobs = query_row[2]
 
-        for pt in pts:
-            pt.sort(key=lambda x: x[0])
-
-        xs = np.arange(start=0, stop=len(pts[0])*3, step=3)
-
-        sps.scatter([p[0] for p in pts[0]], [p[1] for p in pts[0]], label="shuffle", marker='.')
-        sps.scatter([p[0] for p in pts[1]], [p[1] for p in pts[1]], label="rename", marker='.')
-        sps.scatter([p[0] for p in pts[2]], [p[2] for p in pts[1]], label="rseed", marker='.')
-        x = np.linspace(0, 60000, 100)
-        y = 2*x
-        sps.plot(x, y)
-        y = x/2
-        sps.plot(x, y)
+        plain_res = group_blobs[0][0][0]
+        plain_time = group_blobs[0][1][0]
         
-        sps.set_ylim(0, 60000)
-        sps.set_xlim(0, 60000)
+        mutants = np.hstack((group_blobs[0,:,1:], group_blobs[1,:,1:], group_blobs[2,:,1:]))
+        # mress = mutants[0]
+        # mtimes = mutants[0]
+        
+        valid_indices = mutants[0] == RCode.UNSAT.value
+        success = np.sum(valid_indices)
+        # if success == 0:
+        #     ts = plain_time
+        # else:
+        ts = np.median(mutants[1])
+    
+        if plain_res != RCode.UNSAT.value:
+            pf += 1
+            if success == 0:
+                cfs += 1
+        else:
+            ps += 1
+            if success == 180:
+                css += 1
+        scatters.append((plain_time, ts))
+    print(pf, cfs, ps, css)
+    
+    x = [s[0]/1000 for s in scatters]
+    y = [s[1]/1000 for s in scatters]
+    xy = np.vstack([x,y])
+    # z = gaussian_kde(xy)(xy)
+    # scatter(, s=4, color="red", alpha=0.5)
+    plt.scatter(x, y, s=2)
 
-        sps.set_aspect('equal', adjustable='box')
-        sps.legend()
-        plt.tight_layout()
-        name = cfg.qcfg.name
-        plt.savefig(f"fig/time_scatter/{name}.pdf")
-
+    # plt.plot([0.01, 1000], [0.01 * 1.25, 1000 * 1.25], color="black")
+    plt.loglog([0.01, 1000], [0.01 * 1.5, 1000 * 1.5], color="black", linestyle="--", label="y=1.5x",  linewidth=1)
+    plt.loglog([0.01, 1000], [0.01, 1000], color="black", linestyle="-.", label="y=x", linewidth=1)
+    plt.loglog([0.01, 1000], [0.01 / 1.5, 1000 / 1.5], color="black", linestyle=":", label="1.5y=x",  linewidth=1)
+    # plt.xscale("log")
+    # plt.yscale("log")
+    plt.xlim(left=.1, right=150)
+    plt.ylim(bottom=.1, top=150)
+    plt.legend()
+    ax = plt.gca()
+    ax.set_aspect('equal', adjustable='box')
+    name = cfg.qcfg.name
+    plt.xlabel("plain query time (s)")
+    plt.ylabel("median mutant time (s)")
+    
+    plt.savefig(f"fig/time_scatter/{name}.png", dpi=300)
+    
 def create_benchmark(cfgs=ALL_CFGS):
     project_names = [cfg.get_project_name() for cfg in cfgs]
 
