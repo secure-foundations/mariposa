@@ -1,0 +1,585 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[    2     2     4     4     4     2     2     4     4     2     2
+       4     4     2     4     2     2     2     4     2     4     2
+       4     4     2     4     4     2     2     4     4     2     4
+       4     2     2     4     2     2     4     2     4     2     4
+       4     4     2     2     2     4     4     2     2     2     4
+       2     2     2     2     4     4]
+  [  198   317   267   265   268   325   281   280   286   304   274
+     256   252   296   274   266   269   266   274   271   269   300
+     256   273   280   277   281   306   283   262   260   301   289
+     266   304   283   275   280   305   263   278   259   318   277
+     263   263   288   289   281   264   280   282   277   302   292
+     288   285   287   285   256   255]]
+
+ [[    2     2     4     2     2     2     2     4     2     2     2
+       2     2     2     2     2     2     2     2     4     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       4     4     2     2     4     2     2     2     2     2     2
+       2     4     2     2     2     2     2     2     2     4     2
+       2     2     2     2     2     2]
+  [  198   286   266   299   347   327   293   274   298   305   310
+     318   292   318   309   289   311   296   291   270   303   295
+     298   304   295   306   304   309   298   311   309   308   295
+     278   271   290   317   271   297   288   291   300   291   313
+     296   346   294   289   290   290   298   296   292   289   303
+     317   305   317   294   323   311]]
+
+ [[    2     4     2     2     2     2     2     2     2     4     2
+       2     2     2     4     2     2     2     2     2     2     2
+       2     4     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     4     4     2     2     4
+       2     2     2     4     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [  198   259   265   267   275   288   312   329   269   252   269
+     268   285   295   267   264   270   310   292   297   287   330
+     264   277   282   295   286   282   276   269   269   266   264
+     274   278   272   274   263   268   277   255   288   286   268
+     273   266   263   278   266   282   275   279   274   276   284
+     268   270   282   299 60038 60029]]]
+unstable
+ 
+ err: 
+done running mariposa 64.8
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.8
+running mariposa
+res: 1 
+ out: [[[  2   2   4   4   4   2   2   4   4   2   2   4   4   2   4   2   2
+     2   4   2   4   4   2   4   4   2   4   2   4   4   2   2   4   4
+     2   4   2   2   2   2   4   4   4   2   2   4   2   4   2   4   4
+     2   2   2   4   2   2   2   4   2   4]
+  [193 238 235 226 260 260 238 242 227 259 239 226 237 236 249 264 240
+   270 225 267 226 224 283 250 226 241 247 244 247 228 259 240 249 246
+   243 230 239 258 259 239 246 230 222 237 260 226 238 246 263 225 257
+   267 262 261 227 239 236 238 218 232 211]]
+
+ [[  2   2   2   4   2   2   2   2   4   4   2   4   2   2   2   4   4
+     2   4   2   2   2   2   2   4   4   2   2   2   2   2   2   2   2
+     2   2   2   2   4   4   2   2   2   2   4   2   2   4   4   2   2
+     2   2   4   4   4   2   2   2   2   2]
+  [193 251 268 232 248 248 289 298 247 263 255 241 263 244 247 270 256
+   280 235 245 245 249 263 261 264 280 243 267 292 285 281 279 273 247
+   242 252 290 270 230 302 244 248 249 267 254 269 244 260 236 265 256
+   254 244 233 300 236 274 249 245 251 244]]
+
+ [[  2   4   2   4   2   2   2   2   2   2   2   2   2   2   2   2   2
+     4   2   2   2   2   4   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   4   2   2   2   2   2   2   2   4   2   4   2   2
+     2   2   2   4   4   2   4   2   2   2]
+  [193 251 267 250 263 267 264 276 270 266 269 273 297 296 283 287 264
+   298 277 294 281 290 259 274 279 273 268 274 278 284 265 280 270 285
+   283 308 266 275 254 273 279 277 283 265 274 267 255 314 254 321 265
+   265 277 281 269 292 264 250 282 282 299]]]
+unstable
+ 
+ err: 
+done running mariposa 13.1
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     2     4     4     4     4     2     4     2     2     4
+       2     2     4     2     2     2     4     2     2     4     2
+       2     2     4     4     2     4     2     4     2     4     2
+       4     2     4     2     4     2     2     2     4     4     4
+       2     4     4     4     2     2     4     2     2     2     4
+       4     4     2     2     4     4]
+  [  188   278   235   260   235   265   248   234   279   276   248
+     271   260   235   260   279   248   234   268   263   244   250
+     322   250   235   234   273   243   273   234   246   255   258
+     257   244   221   304   255   246   250   225   215   273   253
+     227   219   218   220   235   234   232   238   236   259   224
+     224   225   290   242   217   217]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       4     4     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     4     2     4     2
+       2     2     2     4     4     2     2     2     4     2     2
+       4     2     4     2     2     4     4     2     4     2     4
+       4     2     2     2     4     3]
+  [  188   236   232   244   235   246   247   243   239   233   263
+     218   217   230   228   239   236   242   228   251   261   230
+     247   256   235   264   267   238   269   240   271   241   264
+     251   254   275   241   257   246   256   267   242   263   253
+     305   251   243   255   271   288   242   255   244   263   258
+     241   261   279   271   252 60045]]
+
+ [[    2     2     4     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     4     2     4     2     2
+       2     2     2     2     4     2     4     2     2     2     4
+       2     2     2     2     2     4     2     2     2     4     2
+       2     2     2     2     4     2     2     2     2     2     2
+       4     2     2     4     2     2]
+  [  188   252   237   250   255   256   254   249   263   246   258
+     254   270   261   260   255   266   234   249   264   288   278
+     244   253   256   243   311   254   309   253   272   283   263
+     256   258   248   269   244   256   256   265   274   257   245
+     272   274   249   255   238   274   267   277   250   247   275
+     283   267   246   243   247   301]]]
+unstable
+ 
+ err: 
+done running mariposa 66.3
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  176   223   234   225   250   247   225   243   253   231   230
+     244   228   227   247   227   227   227   246   228   261   304
+     224   224   230   228   227   224   227   228   244   243   231
+     227   230   230   227   244   232   253   233   231   230   229
+     227   229   227   249   226   257   233   226   233   227   228
+     243   228   223   221   223   232]]
+
+ [[    2     2     2     4     2     2     2     2     2     2     2
+       2     4     2     4     2     2     2     2     2     4     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     4     2     2     2     2     2     2     2     4     4
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     4     2     2     3]
+  [  176   227   255   239   239   250   254   233   235   234   230
+     231   213   250   235   289   261   265   274   251   238   261
+     247   255   243   273   264   293   245   249   281   279   251
+     252   287   279   247   251   256   250   253   273   297   234
+     255   260   258   250   253   245   251   249   257   253   249
+     244   227   213   226   239 60048]]
+
+ [[    2     2     2     2     4     2     2     4     2     4     4
+       2     2     2     2     2     4     2     2     2     2     2
+       4     2     4     2     2     2     2     2     2     4     2
+       2     2     4     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     4     4
+       2     2     2     2     2     2]
+  [  176   241   252   239   249   250   266   280   247   230   249
+     243   280   264   303   242   230   239   240   249   310   268
+     226   246   248   236   261   268   261   237   241   227   277
+     297   271   253   237   241   284   250   238   244   308   238
+     262   269   281   239   278   241   282   246   287   270   227
+     269   262   248   242   251   257]]]
+unstable
+ 
+ err: 
+done running mariposa 65.2
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [174 212 218 213 263 211 253 218 231 239 224 273 241 213 211 236 247
+   210 213 224 210 225 230 251 213 210 265 260 214 231 219 213 232 210
+   236 215 214 212 211 225 235 227 210 213 209 212 213 213 216 212 230
+   256 210 260 249 212 235 209 203 199 195]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [174 219 217 238 220 223 221 220 219 221 219 221 228 235 220 239 245
+   218 216 218 229 220 217 224 223 218 221 219 219 219 217 243 216 218
+   235 218 217 269 227 220 225 217 218 217 238 217 218 219 224 219 239
+   229 273 218 217 217 234 220 237 216 217]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [174 237 232 259 234 266 271 271 231 232 252 248 252 240 257 231 231
+   231 260 273 283 234 232 232 260 248 261 239 233 234 235 233 240 246
+   236 258 233 230 252 234 235 259 232 230 231 231 233 300 232 282 234
+   263 232 233 232 266 235 230 256 271 249]]]
+stable
+ 
+ err: 
+done running mariposa 12.5
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [173 212 212 221 215 224 212 232 244 214 213 213 250 210 211 244 252
+   221 243 213 232 258 211 245 272 212 227 304 219 212 309 315 214 213
+   223 213 213 212 226 212 212 220 214 266 233 214 216 214 236 214 231
+   211 212 255 225 210 261 210 207 198 197]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [173 226 247 220 220 218 221 260 219 219 248 218 217 265 254 220 241
+   219 219 221 219 218 219 220 223 221 219 235 268 222 219 219 219 219
+   232 219 238 260 226 219 218 238 219 219 250 250 220 220 217 239 233
+   221 218 220 233 220 219 222 220 218 245]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [173 234 273 273 246 237 237 236 230 231 232 251 235 254 251 235 234
+   232 243 243 236 235 231 234 233 250 242 260 265 234 234 267 252 250
+   234 235 233 240 233 237 239 242 240 230 232 232 246 237 304 281 231
+   255 247 235 250 244 236 233 234 234 234]]]
+stable
+ 
+ err: 
+done running mariposa 12.5
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     4     2     2     2     2     4     4     4     2     2
+       2     4     2     4     2     2     2     2     2     2     2
+       2     2     2     4     2     2     2     2     2     4     2
+       2     4     2     2     4     4     2     4     2     2     2
+       2     2     2     2     4     2     2     2     2     2     4
+       2     2     4     2     2     3]
+  [  192   336   307   312   290   297   311   320   335   289   292
+     280   296   293   298   289   292   287   296   274   303   297
+     294   284   294   302   318   287   291   286   288   283   303
+     288   300   289   294   308   288   291   299   295   297   290
+     314   306   297   287   282   277   273   285   310   299   320
+     302   301   304   281   291 60021]]
+
+ [[    2     2     2     2     4     2     2     2     2     2     2
+       4     2     2     2     4     2     2     2     2     2     2
+       2     4     2     2     4     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     4     2     4     2     2     2     2     2
+       2     2     2     4     3     3]
+  [  192   284   295   286   292   285   272   268   325   282   284
+     269   292   323   275   250   285   277   271   274   315   281
+     302   300   281   301   289   270   316   302   317   290   292
+     287   288   317   312   292   290   296   302   307   288   275
+     277   292   289   281   288   304   291   292   298   293   289
+     291   315   310   315 60013 60013]]
+
+ [[    2     2     2     2     4     2     2     4     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     4     2     2     2     2     2     2     2     2
+       2     2     2     4     2     2     2     2     4     2     2
+       2     2     2     2     2     2     2     2     2     2     4
+       2     2     2     2     3     3]
+  [  192   248   246   264   231   243   254   235   253   248   275
+     289   251   249   249   267   251   277   278   280   302   258
+     267   272   270   265   258   266   261   299   325   257   265
+     258   273   290   251   270   288   287   296   252   283   296
+     301   297   295   299   300   317   348   306   333   342   294
+     316   301   323   342 60011 60040]]]
+unstable
+ 
+ err: 
+done running mariposa 82.0
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [171 211 211 221 276 227 210 225 229 231 210 212 214 211 217 234 214
+   231 210 211 224 255 230 249 211 212 211 248 235 264 217 210 209 230
+   211 240 207 235 250 238 217 211 211 210 211 248 225 210 232 234 210
+   208 232 211 235 212 226 205 206 206 206]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [171 218 218 240 216 216 250 241 217 218 245 221 216 216 241 220 235
+   220 219 217 218 266 215 225 218 218 218 218 219 220 216 241 219 218
+   219 219 274 261 218 217 219 218 217 218 218 216 217 232 241 218 261
+   216 232 239 221 219 219 244 237 240 238]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [171 234 244 239 236 231 232 246 239 247 229 233 249 240 260 230 230
+   249 249 234 247 232 231 253 231 231 229 283 233 231 230 267 230 234
+   270 247 232 249 228 261 237 232 238 252 258 232 243 231 252 269 230
+   231 233 232 250 263 232 231 232 241 240]]]
+stable
+ 
+ err: 
+done running mariposa 12.4
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1] na
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     4     2     2     2     2     4     4     4     2     2
+       2     4     2     4     2     2     2     2     2     2     2
+       2     2     2     4     2     2     2     2     2     4     2
+       2     4     2     2     4     4     2     4     2     2     2
+       2     2     2     2     4     2     2     2     2     2     4
+       2     2     4     2     2     3]
+  [  194   306   307   308   298   311   315   323   326   303   296
+     287   295   286   308   290   290   289   286   272   296   296
+     292   286   294   307   299   281   287   287   286   312   305
+     285   304   289   296   305   277   282   292   288   294   293
+     318   300   298   289   287   289   282   275   310   298   316
+     300   300   306   289   293 60019]]
+
+ [[    2     2     2     2     4     2     2     2     2     2     4
+       2     2     2     2     4     2     2     2     2     2     2
+       2     4     2     2     4     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     4     2     4     2     2     2     2     2
+       2     2     2     4     3     3]
+  [  194   282   297   314   291   304   284   270   339   288   269
+     291   290   328   280   258   276   278   267   273   294   279
+     303   308   285   296   264   285   311   304   318   290   293
+     297   295   319   307   293   296   300   307   307   306   303
+     303   310   291   286   293   305   295   293   296   291   289
+     292   312   312   323 60013 60013]]
+
+ [[    2     2     4     2     2     2     2     4     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     4     2     2     2     2     2     2     2     2     2
+       2     2     4     2     2     2     2     2     4     2     2
+       2     2     2     2     2     2     2     2     2     4     2
+       2     2     2     2     3     3]
+  [  194   245   232   255   247   273   284   239   265   251   265
+     256   276   268   256   247   273   259   285   265   259   281
+     285   240   289   283   280   275   276   301   284   260   252
+     290   270   251   270   267   293   282   272   270   299   280
+     294   315   289   312   298   323   319   310   309   291   337
+     332   314   318   360 60011 60040]]]
+unstable
+ 
+ err: 
+done running mariposa 82.1
+Bisecting: 4 revisions left to test after this (roughly 2 steps)
+[1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [173 212 214 210 240 247 213 211 212 209 216 220 231 212 214 239 236
+   211 243 231 238 214 210 209 238 211 236 212 210 211 246 211 253 251
+   212 212 210 275 210 245 211 260 211 230 211 212 229 209 266 213 244
+   210 212 211 262 218 212 203 206 197 197]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [173 218 219 234 219 242 221 217 239 241 218 219 218 218 218 242 242
+   219 219 235 240 218 240 218 219 218 246 268 218 218 216 233 218 220
+   220 218 260 216 243 218 245 241 260 226 218 219 219 258 221 218 215
+   226 217 219 218 269 234 218 238 220 233]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [173 229 238 236 254 233 231 263 253 231 257 231 236 255 232 231 229
+   246 248 245 233 249 230 251 231 231 249 264 241 232 232 231 231 261
+   259 238 232 233 236 239 236 234 231 230 232 238 246 242 250 309 230
+   233 230 273 253 234 233 234 233 247 271]]]
+stable
+ 
+ err: 
+done running mariposa 12.4
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     4     2     2     2     2     4     4     4     2     2
+       2     4     4     2     2     2     2     2     2     2     2
+       2     2     2     4     2     2     2     2     2     4     2
+       2     4     2     2     4     4     2     4     2     2     2
+       2     2     2     4     2     2     2     2     2     2     4
+       2     2     4     2     2     3]
+  [  194   309   303   310   291   300   317   323   321   292   298
+     300   298   298   290   289   288   296   292   279   299   297
+     299   292   302   306   301   288   296   290   284   281   301
+     287   302   289   289   277   297   292   293   290   295   293
+     316   295   289   281   281   286   286   277   317   301   331
+     298   294   304   286   291 60022]]
+
+ [[    2     2     2     2     4     2     2     2     2     2     2
+       4     2     2     2     4     2     2     2     2     2     2
+       2     4     2     2     4     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     4     2     4     2     2     2     2     2
+       2     2     2     4     3     3]
+  [  194   279   289   295   295   292   296   270   333   282   280
+     274   281   300   266   251   269   271   266   269   286   275
+     311   304   277   289   266   279   304   300   313   296   296
+     313   304   310   307   299   296   296   297   299   295   291
+     309   295   286   282   280   305   295   300   289   288   287
+     305   310   326   316 60012 60012]]
+
+ [[    2     2     2     4     2     2     2     2     2     4     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     4     2     2     2     2     2     2     2     2
+       2     2     2     4     2     2     2     2     4     2     2
+       2     2     2     2     2     2     2     2     2     2     4
+       2     2     2     2     3     3]
+  [  194   244   250   229   246   268   284   247   256   237   255
+     291   250   272   263   249   255   251   287   258   263   277
+     276   262   257   267   254   268   272   263   285   264   286
+     251   311   270   307   272   269   268   277   253   318   296
+     282   299   278   300   342   350   350   308   306   346   293
+     336   304   320   349 60012 60039]]]
+unstable
+ 
+ err: 
+done running mariposa 82.1
+Bisecting: 0 revisions left to test after this (roughly 1 step)
+[7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_komodo_z3_clean--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [171 234 244 258 212 234 221 214 210 214 227 230 210 244 242 226 215
+   230 244 235 240 207 249 214 264 230 210 255 211 230 234 236 211 237
+   212 211 234 213 214 210 230 265 210 217 211 232 211 213 228 213 212
+   212 209 227 210 218 219 217 224 212 195]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [171 223 219 248 218 218 219 267 218 230 264 220 221 218 219 232 218
+   217 240 272 217 243 218 218 245 218 225 250 217 241 220 277 218 216
+   244 243 218 219 229 219 216 219 232 218 221 218 219 217 219 239 222
+   242 218 222 219 220 221 217 226 270 238]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [171 229 229 230 256 265 271 277 231 230 232 236 239 275 290 252 232
+   272 233 234 253 234 230 230 243 248 269 231 237 232 229 230 257 263
+   253 246 230 230 256 244 253 234 232 229 233 233 249 232 254 234 232
+   231 231 285 264 235 231 232 230 234 240]]]
+stable
+ 
+ err: 
+done running mariposa 12.4
+5177cc4a9a58df192c6a844ca13abf7e7cd3be15 is the first bad commit
+commit 5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Fri Jun 21 09:08:20 2019 +0200
+
+    change lt
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+:040000 040000 bba0b3898c697bc6efeb66752253b42641d4a606 dc4029a365361041d58c5e9f581973ad21a69ecd M	src
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# good: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect good 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# bad: [89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1] na
+git bisect bad 89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1
+# good: [1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+git bisect good 1827f98851e1866187abe743afd2d80bc786412f
+# bad: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+git bisect bad 5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+# good: [7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+git bisect good 7c9d2e0d75757ed6aa535f72c7dec70d5a527fed
+# first bad commit: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
