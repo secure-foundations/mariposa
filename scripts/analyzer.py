@@ -1,6 +1,5 @@
 from db_utils import *
 import numpy as np
-from tqdm import tqdm
 import ast
 import scipy.stats
 from enum import Enum
