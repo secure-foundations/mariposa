@@ -1,0 +1,634 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60024 60024 60027 60027 60028 60027 60025 60032 60027 60025 60030
+   60026 60026 60024 60031 60028 60026 60027 60026 60026 60024 60030
+   60026 60026 60027 60026 60025 60023 60032 60026 60025 60025 60024
+   60025 60025 60032 60026 60025 60027 60027 60025 60022 60032 60031
+   60027 60027 60025 60021 60024 60029 60024 60023 60028 60023 60023
+   60020 60028 60027 60023 60025 60024]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60024 60029 60026 60025 60030 60028 60026 60027 60028 60028 60026
+   60028 60029 60032 60026 60024 60026 60024 60029 60031 60029 60025
+   60029 60030 60029 60023 60029 60030 60026 60028 60028 60027 60022
+   60021 60024 60029 60028 60028 60028 60029 60028 60025 60025 60025
+   60029 60025 60029 60029 60027 60030 60027 60028 60023 60031 60027
+   60028 60025 60025 60025 60022 60028]]
+
+ [[    3     3     3     3     3     3     3     3     2     3     3
+       3     3     3     3     2     3     3     3     3     3     3
+       3     2     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60024 60023 60024 60027 60026 60031 60026 60023 26439 60026 60030
+   60021 60022 60023 60029 22297 60033 60030 60020 60031 60027 60019
+   60020 24621 60024 60032 60031 60029 60020 60030 60022 60024 60020
+   60022 60030 60022 60036 60022 60022 60021 60031 60025 60020 60031
+   60024 60027 60026 60022 60022 60023 60030 60021 60027 60026 60023
+   60021 60023 60024 60023 60030 60031]]]
+unstable
+ 
+ err: 
+done running mariposa 1644.0
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60023 60031 60026 60028 60032 60026 60027 60030 60024 60022 60023
+   60027 60025 60025 60026 60027 60024 60028 60028 60027 60023 60027
+   60027 60022 60026 60028 60026 60024 60026 60030 60031 60030 60025
+   60028 60024 60025 60028 60033 60028 60025 60030 60025 60026 60030
+   60024 60027 60025 60028 60024 60025 60028 60022 60027 60027 60025
+   60023 60030 60027 60026 60028 60027]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60023 60029 60027 60025 60030 60028 60026 60026 60027 60025 60020
+   60026 60030 60027 60024 60025 60028 60023 60031 60027 60026 60029
+   60028 60028 60026 60026 60028 60030 60026 60027 60027 60024 60028
+   60021 60024 60028 60028 60030 60027 60033 60030 60023 60028 60029
+   60024 60027 60032 60028 60026 60028 60026 60027 60026 60029 60029
+   60030 60031 60031 60027 60030 60029]]
+
+ [[    3     2     3     3     3     3     3     3     3     3     3
+       3     3     3     3     2     2     3     3     3     3     3
+       3     3     3     3     3     3     3     3     2     3     3
+       3     3     3     3     2     2     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60023 50432 60018 60023 60018 60023 60021 60016 60027 60020 60024
+   60019 60016 60020 60023 25219 60022 60021 60029 60016 60021 60017
+   60021 60025 60028 60019 60024 60023 60022 60023 43119 60021 60019
+   60020 60025 60017 60026 30249 50135 60023 60024 60023 60023 60025
+   60022 60025 60023 60024 60021 60023 60025 60025 60026 60024 60023
+   60029 60023 60031 60028 60025 60030]]]
+unstable
+ 
+ err: 
+done running mariposa 1644.8
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60025 60028 60028 60028 60028 60029 60026 60028 60028 60026 60029
+   60028 60028 60024 60026 60024 60024 60028 60026 60026 60023 60028
+   60028 60022 60028 60028 60027 60024 60029 60028 60023 60028 60025
+   60026 60023 60029 60029 60025 60030 60024 60025 60023 60031 60027
+   60026 60031 60027 60023 60023 60031 60028 60028 60032 60028 60025
+   60025 60029 60026 60024 60028 60029]]
+
+ [[    3     2     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60025 53310 60027 60031 60027 60026 60029 60024 60030 60030 60023
+   60024 60029 60028 60027 60031 60028 60024 60028 60026 60027 60028
+   60022 60027 60027 60030 60022 60022 60029 60028 60026 60026 60024
+   60027 60024 60026 60027 60022 60024 60027 60024 60029 60026 60027
+   60024 60019 60029 60026 60029 60027 60026 60022 60023 60029 60026
+   60026 60030 60028 60026 60028 60028]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     2     3     3     3     3     3     3
+       3     2     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     2
+       3     3     3     3     3     3     3     3     2     3     3
+       3     3     2     3     3     3]
+  [60025 60028 60025 60022 60022 60019 60017 60024 60021 60027 60023
+   60020 60023 60021 60024 27897 60019 60022 60022 60019 60023 60022
+   60023 37291 60023 60020 60028 60024 60020 60029 60026 60021 60029
+   60020 60023 60020 60024 60022 60022 60024 60027 60023 60022 45269
+   60020 60023 60022 60027 60023 60022 60030 60021 28963 60027 60022
+   60023 60022 51245 60022 60027 60029]]]
+unstable
+ 
+ err: 
+done running mariposa 1644.4
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.0
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60020 60032 60027 60027 60025 60024 60023 60026 60025 60026 60031
+   60029 60027 60026 60027 60027 60025 60028 60027 60025 60022 60028
+   60025 60027 60026 60024 60024 60022 60027 60026 60025 60025 60028
+   60027 60025 60025 60026 60024 60026 60025 60023 60024 60027 60025
+   60025 60027 60025 60026 60024 60026 60024 60024 60026 60025 60023
+   60023 60023 60021 60023 60023 60025]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     2     3
+       3     3     3     3     3     3]
+  [60020 60025 60023 60025 60028 60027 60028 60024 60023 60025 60021
+   60031 60028 60032 60027 60026 60026 60022 60025 60028 60030 60025
+   60027 60023 60023 60029 60026 60030 60027 60026 60027 60024 60029
+   60027 60024 60025 60031 60025 60025 60029 60030 60025 60027 60027
+   60024 60024 60031 60029 60031 60025 60027 60025 60022 28265 60027
+   60034 60028 60029 60028 60024 60027]]
+
+ [[    3     3     3     3     3     3     3     3     2     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       2     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       2     3     3     3     3     3     3     3     2     3     3
+       3     3     3     3     3     3]
+  [60020 60029 60020 60022 60021 60017 60022 60021 41139 60023 60026
+   60021 60021 60019 60022 60027 60028 60023 60024 60018 60019 60022
+   49691 60022 60019 60027 60024 60020 60017 60026 60031 60020 60028
+   60022 60020 60021 60024 60021 60025 60023 60021 60019 60019 60021
+   36855 60023 60024 60021 60020 60018 60024 60027 46548 60026 60022
+   60019 60023 60026 60023 60028 60027]]]
+unstable
+ 
+ err: 
+done running mariposa 1644.5
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.0
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1789 2429 2426 2444 2494 2470 2474 2430 2414 2428 2462 2499 2475 2477
+   2427 2430 2425 2449 2498 2487 2460 2431 2424 2421 2447 2492 2464 2479
+   2450 2426 2417 2433 2490 2490 2460 2445 2433 2415 2425 2509 2502 2450
+   2471 2433 2419 2420 2490 2471 2447 2476 2447 2431 2423 2466 2495 2468
+   2423 2370 2295 2220 2045]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1789 2486 2460 2460 2380 2440 2456 2460 2501 2475 2451 2388 2391 2495
+   2457 2490 2472 2431 2422 2378 2447 2504 2514 2488 2442 2419 2404 2437
+   2489 2465 2494 2464 2409 2412 2431 2450 2447 2492 2486 2421 2422 2430
+   2462 2453 2466 2461 2427 2466 2410 2470 2467 2456 2491 2401 2404 2420
+   2458 2503 2473 2443 2418]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1789 2647 2673 2775 3295 3379 3667 4426 2507 3279 3327 3692 2842 3409
+   3182 2824 2695 3203 2734 2771 2716 2595 2809 2671 2696 3263 2851 3361
+   2821 2604 2616 2781 3052 3515 2845 3605 3133 3255 3365 3028 2756 3329
+   3437 2622 2674 2609 2698 3266 2513 2612 2564 3273 2711 3517 2623 2834
+   2666 2592 2622 3184 2769]]]
+stable
+ 
+ err: 
+done running mariposa 93.6
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.0
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1802 2453 2445 2478 2471 2501 2469 2498 2447 2461 2434 2493 2493 2510
+   2462 2457 2450 2420 2475 2510 2511 2463 2473 2445 2418 2475 2464 2501
+   2488 2451 2428 2416 2473 2467 2495 2474 2448 2448 2431 2464 2464 2505
+   2474 2447 2426 2445 2462 2454 2452 2451 2480 2417 2442 2494 2469 2440
+   2428 2421 2273 2272 2010]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1802 2480 2464 2457 2372 2370 2498 2485 2468 2474 2454 2408 2452 2469
+   2476 2457 2458 2451 2412 2376 2505 2482 2558 2469 2449 2416 2357 2460
+   2469 2517 2494 2452 2413 2370 2462 2467 2507 2497 2467 2416 2354 2435
+   2498 2514 2495 2492 2442 2443 2429 2454 2497 2469 2523 2429 2382 2440
+   2426 2463 2503 2513 2450]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1802 2667 2660 2810 3260 3337 3666 4460 2520 3295 3386 3687 2898 3371
+   3187 2869 2746 3187 2755 2759 2722 2576 2838 2695 2714 2811 3304 3329
+   2820 2617 2651 2739 3069 3524 2827 3602 3153 3233 3322 2757 3051 3335
+   3446 2620 2673 2606 2688 3330 2534 2599 2567 3214 2709 3542 2622 2824
+   2678 2589 2557 2797 3194]]]
+stable
+ 
+ err: 
+done running mariposa 93.7
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.0
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60017 60023 60024 60022 60023 60021 60020 60024 60026 60023 60022
+   60023 60021 60020 60024 60023 60023 60022 60024 60021 60020 60024
+   60024 60024 60021 60022 60021 60020 60023 60022 60022 60021 60022
+   60021 60019 60024 60022 60025 60023 60022 60021 60020 60023 60024
+   60025 60021 60023 60022 60020 60024 60023 60025 60023 60022 60021
+   60019 60021 60023 60022 60021 60020]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     2     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     2     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60017 60025 60019 60022 60028 60026 60029 60019 60024 60025 60024
+   60027 60027 47093 60018 60027 60026 60023 60024 60028 60026 60029
+   60024 60024 60023 60030 60030 60022 60027 60030 60027 60023 60031
+   60031 60027 60022 60032 60021 60018 60023 60028 60030 60029 60024
+   60026 60025 60029 60023 60029 60030 60023 60019 60026 60030 60024
+   60029 60021 60028 60018 60024 60025]]
+
+ [[    3     3     3     3     3     3     3     3     2     2     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     2     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60017 60025 60020 60017 60020 60025 60021 60022 31941 55018 60020
+   60018 60024 60022 60024 60027 60020 60026 60028 60019 60024 60016
+   60029 60028 60024 60025 60024 60017 60023 60029 60025 60027 60019
+   60024 60023 60020 20681 60027 60027 60024 60018 60024 60019 60027
+   60025 60029 60027 60025 60019 60025 60029 60026 60021 60021 60029
+   60023 60022 60022 60022 60020 60019]]]
+unstable
+ 
+ err: 
+done running mariposa 1644.4
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.0
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60022 60028 60025 60026 60022 60022 60019 60024 60024 60023 60022
+   60020 60021 60020 60026 60025 60025 60022 60020 60019 60018 60026
+   60023 60024 60021 60020 60020 60021 60023 60022 60023 60022 60020
+   60020 60021 60025 60023 60023 60022 60021 60020 60021 60025 60026
+   60024 60024 60020 60019 60018 60027 60024 60024 60024 60021 60020
+   60021 60024 60023 60022 60022 60020]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60022 60021 60020 60020 60025 60023 60023 60023 60022 60020 60021
+   60028 60027 60027 60025 60022 60021 60021 60023 60023 60022 60022
+   60020 60020 60019 60024 60023 60023 60021 60021 60022 60021 60027
+   60024 60025 60022 60021 60021 60020 60027 60026 60025 60024 60021
+   60021 60020 60026 60025 60024 60023 60022 60021 60019 60027 60025
+   60024 60023 60021 60020 60019 60023]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60022 60028 60029 60027 60025 60023 60022 60020 60024 60025 60023
+   60023 60023 60023 60020 60025 60027 60024 60022 60022 60022 60021
+   60024 60025 60024 60024 60023 60023 60021 60029 60027 60026 60025
+   60025 60023 60021 60028 60029 60026 60021 60023 60021 60018 60024
+   60027 60026 60023 60022 60021 60021 60025 60026 60026 60023 60022
+   60021 60021 60025 60024 60022 60022]]]
+unsolvable
+ 
+ err: 
+done running mariposa 1643.8
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.0
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1785 2457 2431 2466 2468 2445 2442 2454 2424 2477 2449 2479 2476 2451
+   2436 2430 2463 2450 2432 2469 2500 2436 2432 2458 2446 2437 2465 2454
+   2438 2480 2459 2443 2429 2475 2439 2485 2433 2464 2443 2419 2478 2455
+   2433 2488 2429 2437 2424 2468 2471 2429 2474 2424 2439 2427 2479 2436
+   2406 2425 2281 2220 2169]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1785 2476 2437 2427 2434 2424 2427 2428 2450 2459 2430 2443 2398 2463
+   2459 2443 2435 2404 2442 2403 2479 2449 2516 2445 2430 2381 2385 2466
+   2485 2438 2442 2442 2387 2394 2457 2477 2438 2440 2450 2387 2380 2454
+   2482 2441 2440 2458 2399 2439 2431 2477 2464 2447 2457 2381 2383 2414
+   2469 2454 2458 2445 2434]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1785 2673 2650 2781 3230 3335 3653 4503 2491 3297 3306 2813 3699 3369
+   3226 2688 2864 3133 2723 2740 2708 2546 2646 2793 2672 2778 3302 3315
+   2786 2586 2636 2709 3012 3514 2813 3582 3177 3197 3304 2990 2742 3337
+   3443 2668 2666 2574 2652 3247 2518 2636 2618 3209 2697 3434 2606 2842
+   2629 2627 2553 2733 3168]]]
+stable
+ 
+ err: 
+done running mariposa 93.0
+Bisecting: 3 revisions left to test after this (roughly 2 steps)
+[ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.0
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1821 2450 2478 2446 2439 2458 2449 2417 2447 2489 2454 2442 2459 2437
+   2421 2443 2482 2460 2464 2465 2443 2419 2446 2468 2457 2440 2498 2445
+   2427 2424 2446 2466 2443 2506 2457 2432 2423 2449 2465 2473 2511 2464
+   2430 2423 2441 2447 2461 2465 2449 2440 2422 2423 2478 2463 2459 2451
+   2426 2361 2268 2190 2164]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1821 2469 2454 2462 2388 2414 2433 2469 2457 2472 2456 2441 2401 2436
+   2445 2444 2454 2434 2416 2400 2432 2462 2507 2442 2482 2425 2392 2427
+   2437 2450 2444 2490 2432 2388 2431 2448 2468 2463 2436 2421 2425 2423
+   2448 2470 2452 2436 2436 2486 2446 2441 2446 2487 2449 2421 2391 2481
+   2442 2446 2446 2451 2444]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1821 2777 2688 2726 3225 3343 3643 4405 2493 3288 3345 3724 2853 3384
+   3250 2677 2825 3127 2735 2767 2731 2595 2634 2793 2689 3272 2832 3317
+   2806 2579 2631 2734 3014 3512 2837 3624 3122 3198 3428 3023 2735 3305
+   3452 2633 2704 2590 2667 3239 2504 2629 2585 3250 2703 3485 2659 2808
+   2623 2622 2586 3165 2787]]]
+stable
+ 
+ err: 
+done running mariposa 93.3
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.0
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60100 60080 60097 60088 60108 60076 60076 60097 60087 60105 60104
+   60086 60086 60074 60096 60091 60101 60087 60105 60082 60081 60095
+   60093 60105 60080 60077 60080 60075 60105 60122 60100 60090 60087
+   60077 60075 60096 60109 60094 60106 60098 60087 60080 60087 60086
+   60088 60099 60089 60079 60080 60094 60092 60083 60083 60078 60076
+   60088 60084 60102 60092 60092 60091]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60100 60073 60073 60086 60124 60123 60105 60112 60083 60092 60093
+   60096 60087 60090 60084 60067 60076 60088 60099 60096 60099 60106
+   60078 60079 60079 60095 60087 60090 60105 60080 60081 60090 60096
+   60080 60093 60086 60080 60092 60074 60100 60092 60089 60087 60083
+   60078 60098 60098 60078 60076 60101 60074 60080 60074 60099 60094
+   60100 60080 60074 60078 60075 60076]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60100 60091 60119 60108 60085 60095 60108 60107 60081 60087 60074
+   60076 60080 60082 60084 60063 60096 60076 60074 60077 60073 60078
+   60059 60075 60073 60073 60066 60071 60081 60099 60085 60085 60079
+   60138 60078 60079 60088 60081 60067 60082 60083 60061 60084 60090
+   60096 60057 60069 60074 60060 60072 60058 60094 60088 60062 60078
+   60074 60075 60099 60089 60097 60089]]]
+unsolvable
+ 
+ err: 
+done running mariposa 1645.9
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.NoDiskOpStepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60132 60116 60093 60102 60106 60073 60072 60097 60118 60105 60091
+   60074 60074 60069 60103 60101 60098 60096 60079 60080 60074 60103
+   60107 60099 60112 60091 60079 60080 60087 60088 60098 60093 60094
+   60079 60087 60104 60097 60099 60087 60098 60096 60073 60093 60092
+   60123 60088 60090 60083 60086 60105 60091 60108 60108 60086 60089
+   60091 60092 60090 60087 60089 60100]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60132 60072 60076 60092 60086 60112 60095 60084 60072 60079 60078
+   60103 60098 60096 60078 60082 60084 60085 60099 60127 60114 60097
+   60082 60086 60081 60103 60115 60090 60097 60075 60073 60094 60083
+   60077 60081 60082 60092 60078 60079 60085 60102 60091 60086 60075
+   60083 60075 60101 60077 60091 60078 60078 60081 60075 60095 60097
+   60097 60090 60081 60090 60101 60079]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60132 60104 60111 60107 60106 60102 60111 60098 60086 60085 60092
+   60095 60091 60092 60092 60082 60071 60078 60092 60087 60082 60086
+   60063 60080 60076 60070 60076 60087 60077 60107 60078 60076 60142
+   60080 60076 60086 60097 60099 60084 60067 60060 60094 60087 60075
+   60095 60061 60078 60082 60067 60073 60058 60101 60094 60064 60086
+   60084 60076 60118 60089 60085 60082]]]
+unsolvable
+ 
+ err: 
+done running mariposa 1646.1
+1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8 is the first bad commit
+commit 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Fri Jun 14 09:29:41 2019 -0700
+
+    local sort
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+ src/ast/rewriter/bool_rewriter.cpp | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# bad: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect bad 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# good: [d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+git bisect good d17248821ad047f889237ce20b6bdaa1465ceff9
+# good: [ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+git bisect good ec1653fdff146ff8d1b3b2281e875494f4fc3a96
+# bad: [f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+git bisect bad f3b79087eef389011fa90eefcf64b987bed54a9d
+# bad: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+git bisect bad 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+# first bad commit: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
