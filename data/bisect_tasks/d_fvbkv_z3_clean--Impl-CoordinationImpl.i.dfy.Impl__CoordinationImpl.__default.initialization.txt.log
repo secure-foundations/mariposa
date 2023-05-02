@@ -1,0 +1,639 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[    4     4     4     4     2     2     4     2     2     4     4
+       4     2     4     2     4     2     4     4     2     4     2
+       2     2     4     4     2     4     4     4     2     2     4
+       2     4     4     2     3     2     2     4     2     4     2
+       4     2     4     2     2     4     2     2     2     4     2
+       4     4     2     2     2     2]
+  [19692 22765 24927 26220 51953 41706 23484 45405 48536 33872 24400
+   29198 34778 25289 55816 28623 39594 40811 23127 37538 28946 42036
+   47245 42131 30915 25708 47701 28837 37033 50244 51074 48369 24650
+   48537 39973 31782 57972 60015 41067 49532 24800 54709 29513 40789
+   28992 43450 28928 47542 42547 24102 39226 37223 47096 28365 39541
+   28605 23607 35659 51429 53957 39963]]
+
+ [[    4     4     4     4     2     2     4     3     3     4     4
+       4     4     2     2     2     3     4     2     4     4     4
+       3     4     2     4     2     2     4     2     4     4     4
+       4     2     4     2     4     4     2     4     4     4     4
+       4     2     4     2     4     4     4     4     4     2     4
+       4     2     2     4     2     2]
+  [19692 15405 28740 46813 42738 39640 32404 60015 60016 27661 16525
+   30291 23649 43629 44487 48627 60014 27145 36035 27626 22423 25097
+   60016 23140 31558 28146 40548 37690 16471 39357 22734 21486 54111
+   21544 39350 49896 41124 28286 19544 41801 26519 15909 15865 26669
+   27512 44931 23157 47961 16566 26206 31130 39536 26317 35254 20795
+   23064 46903 49748 28213 50242 44273]]
+
+ [[    4     4     4     4     2     2     3     3     4     2     2
+       4     2     2     2     2     2     4     4     2     4     4
+       2     2     4     2     4     2     4     2     4     2     4
+       4     4     4     2     4     4     4     4     2     3     4
+       2     2     4     4     4     3     4     2     4     4     4
+       2     2     4     2     2     2]
+  [19692 17189 23815 31473 38650 41702 60015 60013 29347 47567 46042
+   47789 52430 35333 42008 41731 40137 53836 19650 33921 24236 21317
+   48372 43162 28233 56041 26819 41300 15751 50283 21403 46605 16641
+   26439 37701 30946 47780 16399 21421 21069 17897 52517 60014 31532
+   46386 54833 18138 16786 13923 60015 29111 52963 21974 23915 31647
+   38007 47726 18068 36947 46381 40846]]]
+unstable
+ 
+ err: 
+done running mariposa 987.4
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[    4     4     4     4     2     2     2     4     4     4     4
+       4     2     3     4     4     2     2     2     2     4     2
+       2     4     4     2     2     4     4     4     2     4     4
+       2     4     4     2     4     2     4     2     4     4     2
+       4     2     4     4     4     4     4     4     3     2     4
+       4     4     2     4     2     4]
+  [21590 30712 32300 31276 52160 45918 52750 28970 33971 31186 34372
+   28754 59764 60015 34277 29674 51689 46481 49490 53195 28956 44246
+   48920 31453 29780 47828 57197 24418 34922 27949 54143 29220 29729
+   52014 32362 30455 49606 29517 58759 30520 56204 35111 32690 52250
+   28883 45324 30119 31108 30911 31996 25488 29254 60017 50301 28457
+   34037 32981 46032 25806 36812 27419]]
+
+ [[    4     4     4     4     4     2     2     4     4     4     4
+       4     2     2     2     2     2     3     4     4     2     4
+       2     4     2     4     2     2     4     4     2     2     4
+       4     4     2     4     2     2     4     2     2     4     4
+       4     4     4     4     2     2     4     4     4     4     4
+       2     4     4     4     2     2]
+  [21590 16993 24457 30862 32536 34033 49656 18396 30314 17596 13794
+   24934 38032 54311 38813 44072 36994 60015 32389 17196 46813 25684
+   47287 36164 43195 20358 39770 41778 25394 15231 43317 45634 15342
+   21841 35592 42686 16219 56912 58139 28496 34754 42237 37523 30668
+   16671 30165 29155 13313 37919 53781 21642 28971 30485 34335 23424
+   38583 23002 52510 18706 49233 47260]]
+
+ [[    4     4     4     4     4     4     4     4     4     3     4
+       2     2     2     2     4     4     4     4     4     4     2
+       2     4     2     2     4     2     4     2     4     4     4
+       4     4     4     4     4     2     4     2     2     2     2
+       4     3     3     4     4     4     3     2     2     2     4
+       2     4     2     4     2     2]
+  [21590 15426 17493 17937 19698 20094 30045 13968 15152 60016 30855
+   43977 45105 47895 50203 26159 23165 27246 20929 27869 18342 40968
+   54652 17537 58851 45498 24459 46393 16494 59532 25333 25182 13882
+   24004 25863 23830 24615 13497 41670 28533 50497 42115 58151 47376
+   25433 60014 60016 18811 28602 27884 60017 57980 48142 48263 24671
+   51843 15364 44137 23826 42366 44373]]]
+unstable
+ 
+ err: 
+done running mariposa 983.1
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    4     4     4     4     4     4     4     2     4     2     4
+       4     4     4     4     2     2     4     4     4     4     4
+       4     4     4     4     4     2     4     4     4     4     4
+       4     4     4     4     4     2     4     3     4     2     4
+       2     4     4     4     4     4     2     4     4     2     4
+       2     4     4     4     4     2]
+  [13390 22467 28683 30164 31447 28663 30781 59523 28448 47485 32732
+   25799 31156 25679 30252 51642 45550 28156 25804 32210 29918 23097
+   30589 27296 27755 25761 27014 55242 26689 29261 25879 23438 31634
+   30148 26880 31826 24883 29861 37875 30109 60015 21858 44294 29720
+   54978 31317 28878 24038 30239 29089 45874 25825 22732 44650 31721
+   47678 27679 29845 33246 22194 53291]]
+
+ [[    4     4     4     4     2     4     4     2     4     4     4
+       4     4     4     4     2     4     4     2     2     4     4
+       2     2     2     3     4     2     4     4     4     2     4
+       4     4     2     2     2     4     4     4     2     4     2
+       4     4     4     4     2     2     4     2     4     4     4
+       2     2     4     2     4     4]
+  [13390 28427 24821 25605 45160 20525 30812 39006 28243 26232 22520
+   32590 20848 27796 24249 48416 15644 27027 47956 36900 17079 26736
+   42513 41953 47177 60015 16091 33808 23273 15258 16750 43632 17451
+   22553 26190 43285 36067 56418 34461 25676 17006 43839 19199 29120
+   29483 16468 31914 17300 43298 32881 26070 37612 30431 30017 13086
+   48273 35565 22466 53517 19813 34621]]
+
+ [[    4     4     4     4     4     4     2     2     2     4     2
+       2     4     2     4     2     2     2     3     4     2     4
+       2     4     4     4     4     4     4     2     2     2     4
+       2     2     2     2     2     4     4     2     2     2     2
+       2     2     2     4     2     3     2     3     4     2     2
+       2     4     2     2     2     2]
+  [13390 19167 20222 21930 34950 24534 47098 50743 51614 16252 36256
+   45305 28232 44408 32422 50142 54870 37745 60015 25948 36102 23318
+   36208 22202 33922 15093 26070 19974 58172 48285 50474 45065 16007
+   48475 33861 54893 41137 43650 27978 17536 44149 45858 53574 44678
+   56822 46407 34580 21813 51098 60017 42368 60015 19106 34498 45959
+   41004 16364 48711 36653 57933 52175]]]
+unstable
+ 
+ err: 
+done running mariposa 946.9
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     4     2     4     2     4     4     4     4     4     4
+       4     2     4     4     2     4     2     2     2     2     4
+       2     4     2     4     4     4     2     4     4     4     4
+       2     4     4     4     4     2     4     2     2     2     4
+       4     4     4     4     2     2     4     4     4     4     4
+       4     4     2     2     2     2]
+  [23989 24747 38716 33134 40492 23768 48347 20184 23380 23904 24322
+   30232 59603 24690 24832 40272 25776 38728 46858 36955 52380 33250
+   38987 28130 39912 28981 30790 21676 43159 30915 23927 28553 38734
+   42027 24535 23796 22073 29805 43468 25257 41582 44668 40339 42440
+   24476 22374 24057 25827 58977 51180 23329 30674 30325 22559 30165
+   23595 26447 42495 30295 39198 42154]]
+
+ [[    2     4     4     4     2     2     4     4     2     2     4
+       4     4     2     4     2     4     2     2     2     2     4
+       2     4     2     4     4     2     2     4     4     4     4
+       4     4     4     2     2     2     2     4     2     4     4
+       2     4     2     4     4     2     2     4     2     4     2
+       2     4     4     4     2     2]
+  [23989 21270 28762 29150 35195 48553 28125 25142 44635 53426 25347
+   16391 21226 34420 25298 35731 34600 48915 44766 38655 47348 25317
+   38754 25617 38589 32020 32095 44828 50742 14935 19630 20934 21606
+   15000 33204 31216 45945 49250 46124 45285 30127 42466 17598 23706
+   39129 44085 42913 31645 28362 46516 44074 17181 36416 28351 49413
+   44771 22428 21552 29302 39337 56607]]
+
+ [[    2     4     4     4     4     4     2     2     4     2     2
+       2     3     2     4     2     3     4     3     4     2     2
+       4     2     2     2     2     2     3     2     4     4     4
+       4     2     2     4     4     4     4     3     2     2     4
+       2     2     2     2     3     2     2     4     2     2     2
+       3     4     2     4     3     3]
+  [23989 24870 25308 25603 27408 27844 48732 51542 29093 34054 38948
+   50809 60016 40063 23771 50772 60016 29262 60015 28000 34317 51624
+   15699 44045 60016 60016 54384 58581 60015 40315 23202 24999 25811
+   16489 41051 55292 31227 23847 28618 16742 60015 36515 59912 17350
+   39978 44786 40515 54022 60015 36119 57339 25348 56005 57912 55474
+   60014 31871 53553 28782 60015 60016]]]
+unstable
+ 
+ err: 
+done running mariposa 1011.0
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [21313 35392 36243 35715 36641 37650 37103 35493 35317 35604 36507
+   35272 37814 38028 35430 36327 35343 41618 36108 35299 35371 35532
+   36812 36696 40104 35901 36021 39472 37382 38267 35862 37053 35925
+   35570 37730 35002 34695 36763 35712 35525 37364 39002 35640 34803
+   35360 38465 35484 35868 34820 36394 36514 37260 35438 36331 36544
+   39274 38912 35049 34947 34123 32187]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [21313 36182 38216 36923 35396 44529 35314 36298 40257 36303 39159
+   36719 35209 39824 40333 40241 38368 37211 40338 40328 36327 35500
+   40384 40196 41100 35241 40042 37315 35435 35523 39067 36594 37777
+   36102 36972 35518 38131 38505 36480 35943 35446 36217 36634 35371
+   40468 40551 36597 35543 40050 36182 35715 36373 37142 36284 36120
+   37255 37231 35744 35814 44431 37376]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [21313 34891 35288 35858 35861 38018 38964 42121 34702 36037 38578
+   38817 36351 44571 41274 37095 34193 34196 34223 37010 36224 42739
+   32147 34877 38250 34510 41401 33447 35598 34263 40088 37373 37087
+   44549 38386 38500 33054 36584 36239 39231 36068 42769 39575 37815
+   38883 35586 43378 35369 33966 35428 35877 34780 37610 41242 39756
+   41001 38411 35310 33827 32397 41943]]]
+stable
+ 
+ err: 
+done running mariposa 1017.9
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [21726 35760 35566 35516 37282 37401 37207 35507 35987 35524 36397
+   35678 37454 37906 35706 36356 34989 41684 36456 35868 36041 35575
+   36593 36041 40906 35605 40211 35229 37950 35547 38950 36281 35830
+   37215 36506 35131 34850 37066 35939 35784 36388 39008 35467 34491
+   36033 38584 36094 35760 34789 37348 36208 36525 35764 36431 40062
+   36248 35157 38738 34239 33953 32158]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [21726 35691 38177 37058 35766 44208 35781 36431 40567 35365 39306
+   35427 36926 40304 40533 37914 40183 36733 40367 40860 36041 36205
+   40280 40451 40391 35773 40092 36947 35607 36417 39405 36310 37979
+   35531 36242 35418 38438 36863 39097 35482 36293 36347 36106 35813
+   40366 40176 37214 36231 40081 35483 35663 36401 36264 36109 36466
+   37133 37691 36040 35432 44857 37620]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [21726 35181 35147 36278 36557 37273 39039 42079 34399 35967 38547
+   39260 37243 44509 40458 37735 34288 34154 33973 37331 35949 41880
+   31979 34930 39268 34742 41404 34039 35124 39591 34696 36438 37153
+   44655 38184 39541 33080 37298 35415 38966 36324 42209 39482 38084
+   39236 35650 43003 35750 33831 35358 35677 34970 37824 41269 39680
+   41532 38460 35032 33813 32404 42926]]]
+stable
+ 
+ err: 
+done running mariposa 1020.7
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    5     5     5     5     5     5     5     5     5     5     5
+       5     5     5     5     5     5     5     5     5     5     5
+       5     5     5     5     5     5     5     5     5     5     5
+       5     5     5     5     5     5     5     5     5     5     5
+       5     5     5     5     5     5     5     5     5     5     5
+       5     5     5     5     5     5]
+  [ 1319  1983  2040  1855  1910  1780  1765  1801  1868  1837  1806
+    1939  1838  1876  1872  1851  1890  1762  1883  1768  1867  1905
+    1812  1764  1879  1769  1831  1845  1815  1687  1689  1753  1687
+    1834  1674  1739  1827  1836  1767  1700  1742  1682  1788  1764
+    1685  1771  1793  1849  1732  1753  1702  1747  1607  1658  1704
+    1699  1643  1675  1631  1505  1493]]
+
+ [[    5     5     5     5     5     5     5     5     5     5     5
+       5     5     5     5     5     5     5     5     5     5     5
+       5     5     5     5     5     5     5     5     5     5     5
+       4     5     5     2     5     5     2     5     5     5     5
+       5     5     5     5     2     5     5     5     5     5     5
+       5     4     4     2     2     2]
+  [ 1319  1865  1422  1648  1400  1710  1506  2569  1595  2838  1526
+    1848  1571  1824  1786  1698  1542  1438  1692  1534  1516  1684
+    1780  1502  1630  1590  1698  1608  1497  1775  1551  2370  1989
+   36577  1993  1793 41418  1484  1692 39328  1576  1757  1762  1613
+    1622  2834  1806  1564 32487  1572  1550  1475  1594  1900  1804
+    1702 22739 19715 44935 54897 37502]]
+
+ [[    5     5     5     5     5     5     5     5     5     5     5
+       5     5     5     5     5     5     5     5     5     5     5
+       5     5     5     5     5     5     5     5     5     5     4
+       5     4     5     5     5     5     5     5     5     4     5
+       5     2     5     4     2     5     2     5     5     5     5
+       5     5     5     5     2     4]
+  [ 1319  1648  1918  1876  2122  1939  2410  2768  1929  2071  2026
+    2266  1819  1660  1889  2037  1934  2129  1903  2015  2118  2001
+    1794  2075  2429  2211  2194  1761  1741  2207  2246  2342 26070
+    2299 19719  2112  2274  2150  2207  2225  2188  2947 29975  2243
+    2080 57591  2168 20150 53183  1933 57013  2571  2242  1890  2162
+    2458  2133  1849  1910 56788 23179]]]
+unstable
+ 
+ err: 
+done running mariposa 173.9
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[   5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5]
+  [1134 1417 1339 1369 1380 1390 1403 1384 1392 1421 1437 1372 1391 1383
+   1397 1393 1381 1330 1371 1386 1379 1395 1419 1414 1391 1392 1394 1367
+   1406 1404 1393 1388 1401 1407 1378 1371 1392 1391 1397 1434 1394 1408
+   1387 1385 1384 1388 1411 1387 1392 1400 1427 1383 1380 1385 1385 1371
+   1363 1346 1340 1298 1250]]
+
+ [[   5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5]
+  [1134 1665 1781 1755 1606 1501 1493 1483 1345 1645 1773 1463 1593 1368
+   1809 1515 1473 1507 1510 1516 1803 2199 1659 1364 1763 1410 1432 1377
+   2014 1352 1722 1388 1414 1364 1340 1694 1835 1509 1821 1361 1566 1349
+   1519 1371 1739 1514 1372 1550 1536 1673 1606 1348 1585 1511 1696 1563
+   1731 1829 1589 1616 1364]]
+
+ [[   5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5]
+  [1134 1627 1556 1628 1645 1647 1651 1667 1541 1632 1589 1642 1676 1640
+   1936 1590 1595 1605 1595 1556 1581 1636 1585 1573 1657 1629 1618 1654
+   1942 1587 1568 1570 1568 1540 1636 1919 1573 1543 1539 1630 1969 1584
+   1545 1603 1571 1605 1621 1645 1621 1596 1553 1554 1532 1601 1624 1632
+   1554 1598 1586 1592 1639]]]
+unsolvable
+ 
+ err: 
+done running mariposa 72.8
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [21254 35867 35495 36267 36150 36648 37721 36006 35534 35400 36468
+   34482 37384 37720 36082 36262 34976 42421 35285 35765 35985 35542
+   35624 36674 40966 35876 40035 36059 37708 35562 38116 36962 35830
+   36929 36125 35873 34881 36151 35759 35469 36364 34605 36405 39400
+   35389 38248 35881 35723 35137 36370 36748 37139 35081 36533 36618
+   39756 35956 38934 34993 34573 32767]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [21254 35191 37604 38912 35556 35558 43961 35456 39984 35793 39836
+   36827 35736 40607 39592 40188 38147 36915 40322 40241 35474 35552
+   41324 40429 40929 35279 36439 40562 35285 35676 39317 37080 37739
+   35373 36125 35531 38214 39107 36823 36079 35803 35383 36386 35887
+   40441 41305 36750 35714 40186 35273 35173 36711 36569 36321 36438
+   36678 38091 35107 35459 45363 37253]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [21254 35232 35211 35817 36242 37138 39449 41816 34412 35715 39218
+   39407 36205 44515 40427 36787 34293 34409 34763 36661 35958 41927
+   31954 38750 35701 34475 41188 34063 34903 35146 39839 36644 37163
+   44814 38403 38604 33708 36408 35518 38845 36586 42411 39656 38868
+   39270 35053 42459 35465 34035 35331 35447 34455 38028 40208 40801
+   41468 38527 34999 34032 31950 41621]]]
+stable
+ 
+ err: 
+done running mariposa 1016.9
+Bisecting: 3 revisions left to test after this (roughly 2 steps)
+[ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [22070 35497 35516 35746 36657 37227 38009 35790 35669 35819 36195
+   34548 37676 38224 35770 36381 35099 42113 35886 35551 35438 36477
+   36523 35808 40798 35886 40041 35755 37500 35477 38259 36668 37004
+   35981 37255 35235 34715 36456 36076 36391 36840 38887 34374 36162
+   35705 38369 36474 35850 34788 36493 36798 36311 35205 37013 36546
+   39655 36351 38820 34963 33971 31382]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [22070 36022 37888 36781 36309 35582 44399 35992 40291 35360 39074
+   37423 35559 39612 40452 37922 40259 37274 40219 35776 40535 35739
+   40230 41375 41260 35467 36406 40009 35617 35917 40144 36137 36234
+   37862 36256 35529 38353 39030 36493 35646 37152 35486 36003 35641
+   41095 40718 36382 36556 40075 35491 35993 36360 36943 36295 36378
+   37183 37163 35374 35733 45871 37578]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [22070 35441 35894 36074 36106 37110 38931 41860 34832 36425 38828
+   38876 36404 44961 40136 34335 37322 34072 34506 36804 35215 43172
+   32140 34876 34232 38469 41528 34090 35852 39545 35146 36675 37096
+   44607 38216 38933 32817 35864 37642 39060 36130 42077 39434 38767
+   38651 35190 35786 43220 34074 35546 36134 37484 34484 40047 40613
+   41005 38550 35730 34105 32239 41987]]]
+stable
+ 
+ err: 
+done running mariposa 1021.1
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[   5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5]
+  [1152 1419 1344 1408 1398 1419 1402 1426 1397 1392 1391 1394 1393 1409
+   1401 1399 1386 1339 1398 1398 1416 1436 1412 1406 1418 1397 1397 1390
+   1410 1429 1402 1409 1420 1394 1407 1411 1419 1411 1410 1422 1404 1401
+   1404 1405 1400 1404 1418 1413 1420 1407 1406 1397 1399 1395 1400 1410
+   1378 1367 1367 1305 1252]]
+
+ [[   5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5]
+  [1152 1703 1775 1741 1616 1490 1511 1520 1348 1679 1788 1600 1473 1372
+   1804 1524 1551 1485 1517 1817 1522 2172 1671 1369 1797 1435 1455 1378
+   1368 2023 1739 1363 1436 1380 1346 1708 1830 1520 1815 1374 1595 1386
+   1502 1366 1796 1517 1354 1573 1554 1693 1605 1361 1585 1521 1683 1577
+   1759 1863 1597 1637 1383]]
+
+ [[   5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5]
+  [1152 1638 1572 1636 1645 1646 1670 1665 1624 1543 1675 1657 1656 1684
+   1997 1558 1607 1639 1620 1582 1590 1674 1620 1606 1628 1973 1601 1656
+   1676 1607 1581 1548 1571 1569 1636 1935 1556 1636 1556 1549 1989 1625
+   1570 1610 1581 1630 1654 1641 1634 1639 1564 1570 1550 1645 1592 1622
+   1578 1631 1609 1604 1616]]]
+unsolvable
+ 
+ err: 
+done running mariposa 73.2
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[   5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5]
+  [1135 1410 1333 1390 1406 1399 1389 1379 1406 1395 1369 1397 1391 1387
+   1392 1439 1421 1319 1386 1388 1381 1430 1402 1395 1399 1404 1389 1371
+   1406 1400 1398 1389 1418 1406 1385 1387 1392 1400 1388 1397 1397 1392
+   1386 1393 1435 1387 1398 1391 1393 1398 1415 1383 1395 1394 1382 1394
+   1362 1378 1369 1308 1223]]
+
+ [[   5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5]
+  [1135 1705 1752 1735 1604 1497 1477 1462 1376 1755 1678 1588 1440 1358
+   1805 1484 1507 1487 1509 1805 1520 2198 1654 1364 1761 1405 1430 1372
+   2004 1349 1731 1360 1425 1356 1340 1678 1798 1499 1817 1351 1567 1359
+   1488 1382 1732 1509 1354 1543 1527 1674 1613 1345 1575 1508 1678 1563
+   1723 1823 1576 1623 1374]]
+
+ [[   5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5    5    5    5    5    5    5    5    5    5
+      5    5    5    5    5]
+  [1135 1654 1582 1628 1632 1636 1642 1657 1612 1550 1952 1590 1619 1627
+   1677 1590 1594 1627 1544 1565 1669 1638 1593 1578 1622 1590 1643 1945
+   1665 1577 1563 1540 1538 1566 1680 1939 1588 1627 1534 1582 1987 1574
+   1553 1603 1566 1598 1637 1630 1605 1628 1554 1537 1544 1569 1625 1617
+   1565 1607 1593 1601 1604]]]
+unsolvable
+ 
+ err: 
+done running mariposa 72.9
+1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8 is the first bad commit
+commit 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Fri Jun 14 09:29:41 2019 -0700
+
+    local sort
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+:040000 040000 0a3c7d7a39c8bafde7c0d96e40f38d5126f0b425 d2abe755e1f95482eb3e83cc96b729db2bab8fda M	src
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# bad: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect bad 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# good: [d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+git bisect good d17248821ad047f889237ce20b6bdaa1465ceff9
+# good: [ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+git bisect good ec1653fdff146ff8d1b3b2281e875494f4fc3a96
+# bad: [f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+git bisect bad f3b79087eef389011fa90eefcf64b987bed54a9d
+# bad: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+git bisect bad 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+# first bad commit: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort

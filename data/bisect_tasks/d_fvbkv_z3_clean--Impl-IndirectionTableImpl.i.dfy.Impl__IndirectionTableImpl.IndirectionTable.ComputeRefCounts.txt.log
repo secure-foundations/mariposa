@@ -1,0 +1,657 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[    3     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3     2     2     2     2     3
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     3     2     2     2     2     2
+       2     2     2     2     2     3]
+  [60014 19600 16255 14898 34335 28679 31886 20576 26829 20872 22204
+   23702 28189 15108 33154 17088 19367 26054 24192 28828 16665 16928
+   31357 24825 23286 17681 25875 60017 27508 28405 20939 23808 60019
+   25335 28076 31586 20510 25170 21361 18960 23993 57300 13463 60018
+   37279 25031 21389 48826 26779 60018 16977 24215 21548 36728 22070
+   26665 30423 21276 26911 40342 60017]]
+
+ [[    3     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     3     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     3     2     2
+       2     3     2     3     2     2     2     2     3     2     2
+       3     2     2     2     2     3]
+  [60014 10795 17991 15154 46260 27058 50899 31687 22416 60018 24656
+   35828 19549 34406 24783 60018 18359 15800 28023 18620 14967 23030
+   19191 24019 24566 20441 30258 21451 10824 13347 30709 19572 20134
+   51328 60017 27995 14654 18174 46651 13066 21865 60018 35093 50599
+   29243 60019 22661 60019 15933 18960 30508 19906 60019 24523 19786
+   60018 13201 32081 16765 22076 60018]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     3     2     2     2     3
+       2     2     2     2     2     3     2     3     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3]
+  [60014 12588 13004 15877 16789 17402 24139 16866 17808 25083 27029
+   21207 47407 21924 17800 34286 41808 60019 17503 34553 31912 60020
+   58387 31631 15495 24053 20437 60018 14332 60018 36666 33934 20791
+   21782 14274 30957 23861 28058 36423 16794 19472 24242 60018 33545
+   16304 59882 29908 25037 26515 33710 29625 24233 31203 26726 55607
+   27596 20138 19163 18405 41988 60019]]]
+unstable
+ 
+ err: 
+done running mariposa 853.5
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     2
+       3     2     2     2     3     2     2     2     2     2     3
+       2     2     2     2     3     3]
+  [ 8433 19019 13159 17810 23954 20892 49339 53625 21285 47149 16978
+   31153 60018 49826 17815 13300 18971 19294 22753 24141 19972 22937
+   23140 33220 60018 24133 28605 28799 30797 12325 18861 27790 39779
+   14259 32028 60018 18204 58177 34765 22144 26943 25917 15088 22276
+   60019 43187 26357 19358 60018 20252 26446 21854 29124 42542 60019
+   32710 25302 29031 33606 60018 60020]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       3     2     2     3     2     2     2     2     2     3     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3]
+  [ 8433 26140 21981 21608 22509 25142 29810 31538 37375 40291 24103
+   60016 23642 25452 60020 14502 26311 28051 20436 24425 60017 35550
+   12682 20566 30888 16089 12836 20279 14499 38958 27351 21110 21345
+   22144 22344 28428 22326 14974 13582  8629 46691 18816 21509 30057
+   28661 60017 21069 18029 21271 24270 23190 28635 24578 29712 25261
+   31778 28774 32533 59113 21403 60019]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       3     2     2     3     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     3     2     2     2     2     2     3     2     2
+       2     2     3     2     2     2]
+  [ 8433 15419 18886 19192 27918 28566 36830 25774 14416 27464 29971
+   24411 60019 27020 20846 25016 15309 15630 15760 15754 21116 21960
+   60019 19633 32643 60019 27229 25077 32778 21837 19281 12472 21731
+   25458 16752 36046 26644 30264 22172 17465 18241 18161 60018 20363
+   42334 22440 60014 12143 24352 46122 29745 48862 60019 34323 10594
+   21690 46253 60017 22484 27541 46497]]]
+unstable
+ 
+ err: 
+done running mariposa 808.1
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       3     2     2     3     3     2     2     2     2     2     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     2     2     2     2     2     2     2
+       2     2     2     2     3     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [18677 16863 27493 29777 28411 24699 35108 44470 23264 18481 32312
+   60019 33937 20734 60018 60019 23754 18761 28533 26134 22692 25598
+   59132 31333 30144 22293 26548 33201 60018 30189 23037 17897 35967
+   23745 35886 31197 60020 18962 23527 33388 24176 42938 39160 24078
+   21967 26836 27148 19580 60019 26926 56239 38283 37049 40661 34910
+   35624 39874 33690 46494 40022 49654]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3     2     2     2     2     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     2     3     3]
+  [18677 14201 19610 23072 36405 16217 20353 22317 20043 49561 34707
+   23977 20210 25749 23818 30600 23030 24692 18174 24810 20339 35686
+   20172 60017 26136 24005 16159 26431 27062 21575 24903 24006 20636
+   21039 24042 55737 14973 23982 60019 48130 47551 20697 17744 55862
+   53261 26742 21521 41244 34349 14393 60018 15455 34808 16452 59653
+   33301 19348 29794 23016 60019 60019]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     2     3     2     3]
+  [18677 22687 25583 26691 27495 28565 30977 15417 45786 20409 26506
+   29866 18104 39477 38572 17134 12841 19632 20922 21317 27091 28511
+   14850 23079 31694 58367 26104 14366 20325 37285 29654 12670 36822
+   34778 26434 21592 19426 11092 23462 25692 18567 17938 20473 20109
+   25317 60018 21617 19799 35140 16443 48128 35473 24678 36172 30932
+   15557 26704 45885 60018 39383 60018]]]
+unstable
+ 
+ err: 
+done running mariposa 844.0
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    3     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3]
+  [60018 13184 19836 16411 13462 28840 14359 15618 43933 23176 25228
+   11497 16354 26893 17409 27027 15802 25672 14274 28570 20931 22093
+   27326 16335 19786 23337 60017 14159 44250 16042 40590 17594 22640
+   19257 20890 13272 35398 14558 14891 21992 20370 20914 23689 60018
+   12668 20936 17383 25159 20075 13739 20215 21079 13530 30331 21104
+   25717 11880 25730 14788 25847 60017]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     3     2     2     2     2     2     3
+       2     2     2     3     2     2     2     2     2     2     2
+       2     2     3     2     2     2     2     2     2     2     3
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     2     2     3]
+  [60018 13278 17827 19832 24418 23038 34553 26568 30964 19164 13136
+   39543 60017 32793 23488 60018 24413 13231 20919 20055 25353 60017
+   25187 17339 19685 60018 26882 16671 25630 22774 32404 30695 23832
+   41149 24176 60016 31486 46761 18530 22474 16067 14670 26508 60021
+   26078 22339 24937 23751 15805 27050 60018 16516 22123 21700 37228
+   48907 16495 42494 44113 25152 60018]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     2     3     2     3     2     2     2     2
+       2     2     2     2     2     2     3     2     2     2     2
+       2     3     2     2     2     2     3     2     3     2     2
+       3     2     2     2     2     2]
+  [60018 15562 16212 18272 20577 24023 28392 32386 20201 22765 25846
+   27699 18734 31703 19812 28785 42631 60016 53031 15442 22774 26206
+   25819 30902 16133 20399 60019 16687 60021 32432 38898 19277 23695
+   36991 23776 51343 52495 51100 22733 60016 23085 20184 14152 17331
+   41218 60018 29501 32899 38204 58176 60016 13296 60019 17475 25148
+   60016 17672 28423 24059 28674 23055]]]
+unstable
+ 
+ err: 
+done running mariposa 851.9
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12405 22409 24486 21398 23049 23052 21424 22845 20249 26076 22192
+   19912 23158 27135 21777 22049 20123 18358 21577 20222 22104 20453
+   25795 21547 24365 21356 23546 18271 19392 20218 20008 19193 20646
+   17629 19429 23970 23254 22053 20869 20526 19143 25817 21115 20754
+   22490 29533 23881 21465 28016 21480 24525 22491 19985 25591 24044
+   19296 20352 20975 15033 15482 16784]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12405 18123 22691 19734 20240 20382 20179 19156 20600 22235 23147
+   21353 20210 21633 22891 19953 20201 19002 26633 18096 20515 20603
+   21735 24600 17658 21368 23206 18420 17585 19781 22107 26347 18266
+   21556 22998 22341 19598 25104 23328 19673 21707 17874 18684 20908
+   21854 20523 19448 18417 22394 23508 22053 18774 26578 23905 20250
+   20432 21767 21896 20197 26007 34976]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12405 22394 23775 27409 30054 30383 34859 36064 18319 27947 24368
+   22181 34573 26659 19685 21143 37965 19614 35453 25614 29384 27048
+   51897 28787 59308 41042 22611 26973 31750 19096 23455 20765 20497
+   26362 60023 27811 31421 33063 30751 32295 21319 32838 22387 25196
+   32427 31056 28384 51641 36549 22213 26921 23868 18577 22376 23206
+   23045 20042 23433 28922 37213 25316]]]
+stable
+ 
+ err: 
+done running mariposa 658.3
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12416 22679 24675 20884 22972 22992 21796 22860 20421 26124 21710
+   19964 23410 21828 27225 22194 19962 18438 21803 20170 22101 20974
+   25586 21417 21795 24426 18212 23355 19513 19991 19955 19441 20734
+   17520 19209 23987 23153 22493 20600 20647 19207 26362 21174 20658
+   22601 29913 23994 21940 27458 21094 24584 22896 25863 20160 23816
+   19230 21067 20032 14838 15471 16533]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12416 17991 22482 19710 20429 20743 19228 20137 20099 22636 23291
+   21399 19799 21632 23125 19841 19983 19430 26903 18134 20767 20572
+   21802 24270 18035 20971 22828 18440 19691 17837 22495 26353 17808
+   21701 22637 22336 19771 25135 23333 19691 21279 18634 18154 20625
+   21638 20919 19633 18641 21943 23531 21929 19291 26307 23858 20118
+   20487 21835 22020 19713 26294 35135]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12416 22832 23762 27717 29778 30172 34870 35978 18394 27724 21829
+   24488 35150 26704 19797 21143 38044 20007 35166 25138 29492 27124
+   52540 28553 58901 41918 22842 26664 31831 18760 23242 20643 21326
+   26383 60023 27326 30824 33218 30579 32312 21723 33221 22744 32578
+   24572 30972 28870 50753 36717 22084 27029 23938 18505 22765 23147
+   23624 20116 23423 28969 36490 25615]]]
+stable
+ 
+ err: 
+done running mariposa 659.0
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     2     2     2     2     2     3
+       2     2     2     2     2     2     3     2     2     2     2
+       2     2     2     2     3     3]
+  [23977 29681 26233 33461 21438 29542 22295 29464 31311 21666 33166
+   21295 38033 27667 32202 60019 28166 28227 30091 26219 33049 33258
+   39776 26591 30002 37309 24956 19595 43968 20264 35253 26089 53865
+   22986 36482 22744 23582 60019 18799 28519 36090 23052 34268 60018
+   23398 30820 17977 24142 30067 29544 60019 27731 36429 31031 55180
+   40533 21448 43627 26430 60016 60016]]
+
+ [[    2     2     2     2     2     3     2     2     3     2     2
+       2     2     2     2     3     2     2     2     2     2     2
+       2     2     3     2     3     3     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     3     2     2     2     2     2     2
+       2     2     2     3     2     3]
+  [23977 22942 14051 37361 15369 60021 22513 29671 60019 35815 27024
+   23745 36799 21259 30312 60018 52868 20430 31148 45966 31853 31309
+   29908 23934 60017 34010 60019 60019 22840 21437 15850 46971 22514
+   25208 45767 18428 49830 25913 13500 25651 30534 33884 60018 31090
+   16940 18700 27838 53210 60016 33406 19727 17450 17543 18216 31823
+   20397 15306 20413 60018 26676 60019]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       2     2     2     3     2     2     2     2     2     2     2
+       2     2     2     2     3     3     3     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [23977 20712 29375 29726 30236 33562 20536 45940 16048 19109 53197
+   22984 36512 30310 19562 31206 41540 18423 18910 56686 23047 60019
+   22489 21431 28934 60018 18101 15432 19470 40051 45755 17778 18719
+   34489 34588 17650 35007 60015 60019 60017 21159 21454 14791 21172
+   31419 29377 27905 31475 18098 58838 25958 17889 49439 25627 18930
+   26221 13006 31981 28974 60021 60019]]]
+unstable
+ 
+ err: 
+done running mariposa 921.5
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60018 60017 60018 60017 60016 60018 60016 60020 60017 60017 60017
+   60017 60015 60017 60018 60018 60022 60021 60019 60015 60018 60018
+   60020 60020 60019 60017 60015 60017 60022 60020 60016 60019 60016
+   60018 60018 60022 60017 60021 60016 60017 60016 60017 60020 60018
+   60019 60019 60017 60019 60014 60018 60020 60016 60019 60019 60024
+   60017 60022 60019 60018 60015 60016]]
+
+ [[    3     2     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     2     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60018 54669 60018 60015 60020 60020 60016 60016 60017 60015 60017
+   60021 60019 60017 60018 60017 60016 60014 60022 60021 60018 60021
+   60014 60015 60024 60019 60017 60019 60017 60016 60025 60016 60019
+   60020 60024 60015 60017 60014 60017 60020 60019 60017 60017 60016
+   60017 60018 53936 60018 60021 60019 60022 60016 60017 60020 60018
+   60021 60018 60017 60017 60018 60018]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60018 60018 60018 60017 60021 60017 60025 60022 60019 60016 60016
+   60015 60015 60018 60015 60019 60017 60016 60023 60017 60019 60023
+   60016 60018 60019 60016 60016 60015 60017 60017 60019 60019 60016
+   60016 60016 60014 60016 60016 60017 60018 60016 60018 60019 60017
+   60016 60018 60016 60018 60017 60014 60018 60018 60018 60019 60017
+   60020 60017 60019 60017 60017 60015]]]
+unsolvable
+ 
+ err: 
+done running mariposa 1640.3
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12295 22197 24464 21243 22889 21499 23564 20081 22953 25852 19928
+   21931 23163 21751 21926 27564 19923 18775 21733 20269 20574 22070
+   25298 21412 21415 24685 18167 23982 19583 19919 19763 19534 20523
+   17551 19680 23879 23101 22136 20836 20505 19123 25917 21598 20645
+   22598 29521 23845 21454 27847 21111 25020 22544 20072 25544 23953
+   19449 21080 19962 15601 14923 17388]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12295 18023 22859 19696 20274 20412 20069 19180 20540 22494 23018
+   21443 20180 21625 22623 20235 19973 19015 26640 18337 20273 24393
+   22020 20610 17796 22945 20791 17583 19680 18688 26377 22399 17982
+   21873 22526 22357 19943 25134 23375 19734 21452 17794 18560 21154
+   21703 20503 19419 22016 18363 23488 21963 19136 26708 23860 19924
+   20397 22006 19784 22356 25917 35169]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12295 22404 23927 27460 29740 30944 34549 35881 18435 27871 21872
+   24341 34763 26633 19890 21010 38657 19955 35087 25566 29542 27403
+   52273 28487 57682 41222 26634 22769 19029 31822 23314 20836 20537
+   26380 60021 27554 30701 33178 30529 32793 21062 33021 22612 32579
+   24583 30866 28808 51785 36434 21798 26922 23891 18507 22706 23762
+   22986 20024 23358 29025 36652 25716]]]
+stable
+ 
+ err: 
+done running mariposa 657.4
+Bisecting: 3 revisions left to test after this (roughly 2 steps)
+[ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12068 22223 24760 21104 22992 23006 21476 20119 23279 26384 21933
+   19876 22984 27262 22175 21795 20251 18574 21825 20110 20554 22056
+   25399 21834 24551 21524 18279 23352 19416 19987 19952 19318 20865
+   18000 19180 23751 23086 22032 20577 20625 19345 26060 21089 20874
+   22613 30085 23988 21694 27680 21167 24408 22453 25824 20318 19395
+   23889 20593 19994 15378 14925 16528]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12068 18252 22504 19949 20707 20246 20141 19487 20055 22363 23210
+   21896 19850 21855 22848 19808 19971 19297 26572 18579 20420 21859
+   20678 24361 17588 20897 23129 18399 19891 17425 22210 26765 18153
+   21718 22569 22446 19901 25106 23050 19898 21384 17808 18702 20968
+   21606 20630 19522 18265 21993 23967 21997 18829 26644 23998 20169
+   20118 19941 21734 22235 25889 35655]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [12068 22493 24260 27399 29439 30313 34169 36264 18566 27763 21813
+   24357 35015 26168 19770 21226 38877 19509 35437 25203 29582 27459
+   51929 28801 57802 40968 27225 22581 32211 18804 23855 20771 20543
+   26472 60023 27392 31103 30565 32899 32301 21643 33026 22521 25062
+   32970 31006 28327 51051 36434 22335 26903 24053 18487 22414 23546
+   22839 20171 23870 28911 36582 25165]]]
+stable
+ 
+ err: 
+done running mariposa 658.2
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60020 60020 60019 60018 60018 60018 60020 60020 60020 60019 60019
+   60019 60018 60018 60019 60020 60023 60028 60019 60017 60020 60019
+   60022 60022 60021 60017 60018 60019 60023 60022 60018 60020 60020
+   60017 60019 60023 60020 60022 60017 60018 60017 60020 60022 60019
+   60021 60020 60018 60017 60019 60021 60022 60018 60022 60020 60025
+   60019 60023 60021 60020 60016 60016]]
+
+ [[    3     2     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     2     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60020 54872 60018 60017 60021 60020 60018 60018 60024 60017 60019
+   60020 60020 60017 60019 60020 60017 60016 60021 60022 60020 60018
+   60017 60016 60024 60022 60020 60017 60018 60017 60026 60018 60019
+   60020 60025 60016 60019 60016 60017 60020 60019 60020 60017 60016
+   60018 60019 53154 60018 60023 60019 60016 60018 60019 60023 60019
+   60022 60019 60017 60026 60020 60019]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60020 60017 60021 60019 60018 60022 60022 60020 60020 60019 60018
+   60018 60023 60022 60017 60020 60018 60019 60017 60019 60017 60017
+   60018 60018 60020 60015 60016 60015 60018 60018 60025 60021 60015
+   60016 60019 60016 60018 60018 60017 60018 60017 60016 60018 60018
+   60017 60019 60017 60017 60020 60015 60021 60019 60020 60019 60017
+   60018 60018 60021 60020 60017 60016]]]
+unsolvable
+ 
+ err: 
+done running mariposa 1640.4
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60019 60020 60019 60018 60017 60019 60019 60020 60018 60019 60018
+   60018 60018 60020 60019 60021 60022 60023 60022 60016 60019 60019
+   60022 60021 60019 60021 60016 60018 60022 60022 60017 60021 60020
+   60016 60019 60022 60020 60022 60019 60017 60018 60018 60021 60019
+   60020 60019 60018 60018 60018 60018 60022 60018 60019 60032 60023
+   60019 60023 60021 60019 60017 60016]]
+
+ [[    3     2     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     2     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60019 55785 60019 60016 60022 60020 60017 60017 60018 60016 60019
+   60022 60020 60017 60019 60020 60016 60015 60023 60021 60021 60019
+   60017 60016 60023 60022 60020 60018 60016 60017 60025 60024 60020
+   60019 60017 60025 60020 60016 60017 60021 60020 60019 60018 60016
+   60018 60018 53708 60019 60022 60019 60017 60018 60018 60021 60019
+   60022 60019 60017 60019 60021 60018]]
+
+ [[    3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60019 60017 60018 60018 60023 60017 60025 60025 60021 60017 60017
+   60026 60016 60017 60016 60019 60018 60017 60019 60019 60017 60018
+   60018 60022 60019 60017 60015 60016 60018 60018 60019 60020 60017
+   60015 60018 60015 60018 60017 60019 60024 60017 60019 60017 60017
+   60018 60020 60018 60019 60020 60020 60019 60019 60019 60020 60019
+   60015 60018 60019 60020 60016 60017]]]
+unsolvable
+ 
+ err: 
+done running mariposa 1640.5
+1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8 is the first bad commit
+commit 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Fri Jun 14 09:29:41 2019 -0700
+
+    local sort
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+:040000 040000 0a3c7d7a39c8bafde7c0d96e40f38d5126f0b425 d2abe755e1f95482eb3e83cc96b729db2bab8fda M	src
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# bad: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect bad 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# good: [d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+git bisect good d17248821ad047f889237ce20b6bdaa1465ceff9
+# good: [ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+git bisect good ec1653fdff146ff8d1b3b2281e875494f4fc3a96
+# bad: [f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+git bisect bad f3b79087eef389011fa90eefcf64b987bed54a9d
+# bad: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+git bisect bad 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+# first bad commit: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
