@@ -17,6 +17,8 @@ FSIZE = 16
 FNAME ="times new roman"
 import random
 
+plt.rcParams['text.usetex'] = True
+
 COLORS = [
     "#803E75", # Strong Purple
     "#FF6800", # Vivid Orange
@@ -489,15 +491,11 @@ def _plot_ext_cutoff(cfg, sp):
         print("diffs = ", diffs)
         print("untables = ", untables)
         print("unsolvables = ", unsolvables)
-            
-    # handles = []
 
     sp.plot(cutoffs, unsolvables,
             label="unsolvable",color=PERTURBATION_COLORS["unsolvable"], linewidth=1.5)
-    # handles.append(h)
     sp.plot(cutoffs, untables,
             label="unstable (+0s)", color=PERTURBATION_COLORS["unstable"], linewidth=1.5)
-    # handles.append(h)
     
     step_colors = ["#A6BDD7", "#817066", "#F6768E"]
 
@@ -521,7 +519,7 @@ def plot_ext_cutoff(cfg):
     axis.legend(loc='lower left')
     axis.set_ylim(bottom=0)
     name = cfg.qcfg.name
-    plt.ylabel("proportion of queries (%)", fontsize=FSIZE, fontname=FNAME)
+    plt.ylabel(r"proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
     plt.xlabel("time limit threshold (second)", fontsize=FSIZE, fontname=FNAME) 
     plt.tight_layout()
     plt.savefig(f"fig/time_cutoff/{name}_ext.pdf")
@@ -538,13 +536,19 @@ def plot_vbkv_ext_cutoff():
         axis[i].set_ylim(bottom=0, top=4)
     axis[0].legend(loc='lower left')
     
-    figure.supylabel("proportion of queries (%)", fontsize=FSIZE, fontname=FNAME)
+    figure.supylabel(r"proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
     figure.supxlabel("time limit threshold (second)", fontsize=FSIZE, fontname=FNAME) 
     plt.tight_layout()
     
     # sp.legend(loc='upper center', ncol=3, fancybox=True, shadow=True,bbox_to_anchor=(0.5, 1.15))
     plt.savefig(f"fig/time_cutoff/VBKV_ext.pdf")
     plt.close()
+
+pert_map = {
+    "shuffle": "shuffling",
+    "rseed": "reseeding",
+    "rename": "renaming",
+}
 
 def plot_pert_diff(cfg):
     perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
@@ -575,14 +579,7 @@ def plot_pert_diff(cfg):
         for k in points:
             if k == "unsolvable":
                 continue
-            if k == "shuffle":
-                l = "shuffling"
-            elif k == "rseed":
-                l = "reseeding"
-            elif k == "rename":
-                l == "renaming"
-            else:
-                l = k
+            l = pert_map[k] if k in pert_map else k
             sp.plot(cutoffs, points[k], label=l, color=PERTURBATION_COLORS[k], linewidth=1.5)
             top = max(top, max(points[k]))
 
@@ -595,7 +592,7 @@ def plot_pert_diff(cfg):
     # axis[i].set_xticks([min(cutoffs)] + np.arange(30, 6, 30).tolist() + [max(cutoffs)])
     axis[0].legend()
 
-    figure.supylabel("proportion of unstable queries (%)", fontsize=FSIZE, fontname=FNAME)
+    figure.supylabel(r"proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
     figure.supxlabel("time limit threshold (second)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
 
@@ -632,10 +629,10 @@ def plot_sr_cdf(cfg):
         xs, ys = get_cdf_pts(dps[:,0])
         plt.scatter(xs, ys, label=solver.pstr(), marker=".", s=8)
     plt.ylim(bottom=0, top=12)
-    plt.xlim(left=0, right=100)
+    plt.xlim(left=0, right=100)    
     plt.title(f"{name}", fontsize=FSIZE, fontname=FNAME)
-    plt.xlabel("success rate (%)", fontsize=FSIZE, fontname=FNAME)
-    plt.ylabel("cumulative proportion of queries (%)", fontsize=FSIZE, fontname=FNAME)
+    plt.xlabel(r"success rate ($\%$)", fontsize=FSIZE, fontname=FNAME)
+    plt.ylabel(r"cumulative proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.legend(ncols=2)
 
@@ -669,7 +666,7 @@ def plot_time_std(cfg):
 
             for k, p in enumerate(perturbs):
                 ts = group_blobs[k][1] 
-                bs = np.clip(ts, 0, 61e3) / 1000
+                bs = np.clip(ts, 0, 60e3) / 1000
                 dps[k].append(np.std(bs))
 
         for i in range(3):
@@ -681,13 +678,7 @@ def plot_time_std(cfg):
                 start = 0
             y_bound = max(ys[start], y_bound)
             std_max = max(std_max, max(xs))
-            k = perturbs[i]
-            if k == "shuffle":
-                l = "shuffling"
-            elif k == "rseed":
-                l = "reseeding"
-            elif k == "rename":
-                l == "renaming"
+            l = pert_map[perturbs[i]]
             sp.plot(xs, ys, label=l, color=PERTURBATION_COLORS[perturbs[i]])
         sp.set_title(f"{name} {solver.pstr()}", fontsize=FSIZE, fontname=FNAME)
 
@@ -698,7 +689,7 @@ def plot_time_std(cfg):
         axis[i].set_xticks([1] + [i for i in range(5, int(std_max), 5)])
         axis[i].set_ylim(bottom=0, top=y_bound)
 
-    figure.supylabel("proportion of queries above threshold (%)", fontsize=FSIZE, fontname=FNAME)
+    figure.supylabel("proportion of stable queries above threshold " + r"($\%$)", fontsize=FSIZE, fontname=FNAME)
     figure.supxlabel("time standard deviation threshold (second)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.savefig(f"fig/time_stable/{name}.pdf")
@@ -800,10 +791,6 @@ def mp_categorize_projects(cfgs, classifier, solver_names):
 
     return data
 
-# def mp_get_all_categories(classifier, solver_names, perturbs):
-#     for cfg in cfgs:
-#         pool.apply_async(categorize_project, args=(ratios, classifier, solver_names, classifier, rows, perturbs,))
-
 def dump_all(cfgs=ALL_CFGS):
     project_names = [cfg.get_project_name() for cfg in cfgs]
     solver_names = [str(s) for s in Z3_SOLVERS_ALL]
@@ -815,7 +802,6 @@ def dump_all(cfgs=ALL_CFGS):
     # data = mp_categorize_projects(cfgs, classifier, solver_names)
 
     data = [[[0.0, 0.48685491723466406, 0.43816942551119764, 0.7789678675754625, 98.29600778967868], [0.0, 0.5842259006815969, 0.5842259006815969, 0.6329113924050633, 98.19863680623175], [0.0, 0.6329113924050633, 0.24342745861733203, 0.5842259006815969, 98.539435248296], [0.0, 0.5355404089581305, 0.3894839337877313, 0.24342745861733203, 98.83154819863681], [0.0, 1.7526777020447906, 2.4342745861733204, 1.071080817916261, 94.74196689386562], [0.0, 2.5803310613437196, 4.771178188899708, 1.2171372930866602, 91.43135345666991], [0.0, 2.4342745861733204, 4.576436222005842, 1.071080817916261, 91.91820837390458], [0.0, 2.5316455696202533, 5.111976630963973, 0.9737098344693281, 91.38266796494645]], [[0.0, 0.5755395683453237, 0.28776978417266186, 0.1618705035971223, 98.9748201438849], [0.0, 0.5575539568345323, 0.3237410071942446, 0.12589928057553956, 98.99280575539568], [0.0, 0.3597122302158273, 0.8812949640287769, 0.0539568345323741, 98.70503597122303], [0.0, 0.3057553956834532, 0.4856115107913669, 0.0539568345323741, 99.15467625899281], [0.0, 0.39568345323741005, 2.9676258992805757, 0.1079136690647482, 96.52877697841727], [0.0, 0.539568345323741, 3.2194244604316546, 0.17985611510791366, 96.06115107913669], [0.0, 0.5215827338129496, 3.3633093525179856, 0.1618705035971223, 95.95323741007195], [0.0, 0.5215827338129496, 3.183453237410072, 0.14388489208633093, 96.15107913669065]], [[0.0, 0.6011647567161376, 0.7138831486004134, 0.3569415743002067, 98.32801052038324], [0.0, 0.6011647567161376, 0.7890287431899304, 0.1502911891790344, 98.4595153109149], [0.0, 0.1690775878264137, 0.6387375540108962, 0.1502911891790344, 99.04189366898366], [0.0, 0.3381551756528274, 0.7138831486004134, 0.1502911891790344, 98.79767048656772], [0.0, 0.375727972947586, 2.536163817396205, 0.5072327634792411, 96.58087544617696], [0.0, 0.6763103513056548, 3.1373285741123427, 0.3381551756528274, 95.84820589892918], [0.0, 0.563591959421379, 3.118542175464963, 0.3381551756528274, 95.97971068946083], [0.0, 0.563591959421379, 2.911891790343791, 0.3381551756528274, 96.18636107458201]], [[0.0, 1.2541254125412542, 0.39603960396039606, 0.132013201320132, 98.21782178217822], [0.0, 1.2541254125412542, 0.33003300330033003, 0.132013201320132, 98.28382838283828], [0.0, 1.1221122112211221, 0.46204620462046203, 0.132013201320132, 98.28382838283828], [0.0, 0.594059405940594, 0.594059405940594, 0.132013201320132, 98.67986798679868], [0.0, 0.9240924092409241, 0.528052805280528, 0.264026402640264, 98.28382838283828], [0.0, 1.386138613861386, 0.6600660066006601, 0.0, 97.95379537953795], [0.0, 1.056105610561056, 0.594059405940594, 0.264026402640264, 98.08580858085809], [0.0, 0.9240924092409241, 0.7920792079207921, 0.132013201320132, 98.15181518151815]], [[0.0, 0.3462204270051933, 0.17311021350259664, 0.0, 99.48066935949221], [0.0, 0.3462204270051933, 0.17311021350259664, 0.0, 99.48066935949221], [0.0, 0.05770340450086555, 0.1154068090017311, 0.0, 99.8268897864974], [0.0, 0.0, 0.05770340450086555, 0.0, 99.94229659549913], [0.0, 0.17311021350259664, 0.4039238315060589, 0.0, 99.42296595499134], [0.0, 0.1154068090017311, 0.3462204270051933, 0.0, 99.53837276399308], [0.0, 0.0, 0.28851702250432776, 0.0, 99.71148297749568], [0.0, 0.05770340450086555, 0.2308136180034622, 0.0, 99.71148297749568]], [[0.0, 0.258732212160414, 0.6468305304010349, 0.0, 99.09443725743856], [0.0, 0.258732212160414, 0.6468305304010349, 0.0, 99.09443725743856], [0.0, 0.129366106080207, 0.6468305304010349, 0.0, 99.22380336351875], [0.0, 0.0, 0.38809831824062097, 0.0, 99.61190168175938], [0.0, 0.0, 0.129366106080207, 0.0, 99.87063389391979], [0.0, 0.258732212160414, 0.258732212160414, 0.0, 99.48253557567917], [0.0, 0.258732212160414, 0.258732212160414, 0.0, 99.48253557567917], [0.0, 0.129366106080207, 0.38809831824062097, 0.0, 99.48253557567917]]]
-
     data = np.array(data)
     print(data.tolist())
 
@@ -849,25 +835,16 @@ def dump_all(cfgs=ALL_CFGS):
         for i in range(len(solver_names)):
             if solver_names[i] == str(cfgs[pi].qcfg.project.orig_solver):
                 plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=10)
-                # plt.bar(br[i], height=pcs[1][i], width=bar_width,
-                #         color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.2, hatch='////')
-                # plt.bar(br[i], height=pcs[2][i]-pcs[1][i], bottom=pcs[1][i], width=bar_width,
-                #         color=pcolor, edgecolor='black', linewidth=0.2, hatch='////')
-                # plt.bar(br[i], height=pcs[3][i]-pcs[2][i], bottom=pcs[2][i], width=bar_width,
-                #     color="w", edgecolor='black', linewidth=0.2, hatch='////')
 
-    # plt.ylim(bottom=0, top=8)
-    # plt.xlabel('solvers', fontsize = 12)
-    plt.ylabel('query proportions (%)', fontsize=FSIZE, fontname=FNAME)
+    plt.ylabel(r'query proportions ($\%$)', fontsize=FSIZE)
     solver_lables = [f"{s.pstr()}\n{s.data[:-3]}" for s in Z3_SOLVERS_ALL]
     ax.tick_params(axis='both', which='major')
     plt.xticks([r + 2 * bar_width for r in range(len(solver_names))], solver_lables, rotation=30, ha='right')
-    # red_patch = mpatches.Patch(facecolor="w", marker="*", edgecolor='black', linewidth=0.2, label='default solver')
     from matplotlib.lines import Line2D
     woot = Line2D([0], [0], marker="*", color='black', linestyle='None', label='default solver'),
     project_names = [p.upper() for p in project_names]
     plt.legend(handles + [woot], project_names + ['default solver'])
-    plt.xlabel('solver versions and release dates', fontsize=FSIZE, fontname=FNAME)
+    plt.xlabel('solver versions and release dates', fontsize=FSIZE)
     plt.tight_layout()
     plt.savefig("fig/all.pdf")
     plt.close()
@@ -994,107 +971,81 @@ def compare_vbkvs(linear, dynamic):
     plt.tight_layout()
     plt.savefig("fig/compare.pdf")
 
+from scipy.stats import gaussian_kde
+from statsmodels.stats import weightstats
+
 def do_stuff(cfg):
     summaries = load_solver_summaries(cfg)
-    # perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
-    solvers = [Z3_4_5_0, Z3_4_12_1]
 
-    solver_count = len(solvers )
-    cut_figure, cut_aixs = setup_fig(solver_count, 1)
-    xs = [i for i in range(5, 62, 1)]
-    perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
-    skip = get_unknowns(cfg)
+    solver = Z3_4_12_1
+    rows = summaries[solver]
+    pf, cfs = 0, 0
+    ps, css = 0, 0
 
-    for j, solver in enumerate(solvers):
-        fcs = []
-        scs = []
-        blah = []
-        percentiles = []
+    scatters = []
+    for query_row in rows:
+        group_blobs = query_row[2]
 
-        sps = cut_aixs
-        if solver_count != 1:
-            sps = cut_aixs[j]
-
-        rows = summaries[solver]
-        pts = [[], [], []]
-        for query_row in rows:
-            group_blobs = query_row[2]
-
-            plain_res = group_blobs[0][0][0]
-            plain_time = group_blobs[0][1][0]
-            
-            if plain_time > 6e4:
-                plain_res = RCode.TIMEOUT.value
-
-            mutants = np.hstack((group_blobs[0,:,1:], group_blobs[1,:,1:], group_blobs[2,:,1:]))
-            success = mutants[0] == RCode.UNSAT.value
-            none_timeout = mutants[1] < 6e4
-            valid = np.logical_and(success, none_timeout)
-            cs = np.sum(valid)
-            ts = np.median(np.clip(mutants[1], 0, 6e4))
-            
-            # cs = count_within_timeout(mutants, RCode.UNSAT, timeout=6e4)
-
-            # if plain_res != RCode.UNSAT.value:
-            #     fcs.append(cs)
-            # else:
-            sorted_times = np.sort(mutants[1])[::-1]
-            place = np.argmax(sorted_times <= plain_time)
-            
-            percentiles.append(place/len(sorted_times) * 100)
-            blah.append((plain_time, ts))
-            scs.append(cs)
-
-        percentiles = np.sort(percentiles)
-        # xs, ys = get_cdf_pts(percentiles)
-        # sps.plot(xs, ys)
-        # sps.scatter([0, 100], percentiles, s=2, alpha=0.5)
-        sps.hist(percentiles, bins=300)
-
-        # CDF
-        # fcs = np.array(fcs)
-        # scs = np.array(scs)
-        # blah = np.array(blah)
-        # print(percentage(len(scs), len(fcs) + len(scs)))
-        # print(percentage(np.sum(fcs <= 0), len(fcs)))
-        # print(percentage(np.sum(scs >= 180), len(scs)))
-        # print("")
-        # # print(blah)
+        plain_res = group_blobs[0][0][0]
+        plain_time = group_blobs[0][1][0]
         
-        # blah2 = []
-        # ratios = []
-        # for i in range(len(blah)):
-        #     plain, mean = blah[i]
-        #     # if plain > 1e4 and mean > 1e4:
-        #     blah2.append((plain, mean))
-        #     ratios.append(mean / plain)
-
-        # blah = np.array(blah2)
+        mutants = np.hstack((group_blobs[0,:,1:], group_blobs[1,:,1:], group_blobs[2,:,1:]))
+        # mress = mutants[0]
+        # mtimes = mutants[0]
         
-        # count = 0        
-        # for i in range(len(blah)):
-        #     plain, mean = blah[i]
-        #     if mean / plain > 1:
-        #         count += 1
-        # print(count, len(blah))
-        # print("")
-        # xs, ys = get_cdf_pts(ratios)
-        # sps.plot(xs, ys)
-        # sps.set_xlim(left=0, right=2)
-        
-        # sps.scatter(blah[:,0], blah[:,1])
-        
-        # # draw a line at x = y
-        # sps.plot([0, 6e4], [0, 6e4], color="black", linestyle="dashed")
-        # sps.plot([0, 6e4], [0, 1.25 * 6e4], color="black", linestyle="dashed")
-        # sps.plot([0, 6e4], [0,  6e4 / 1.25], color="black", linestyle="dashed")
-        # sps.set_xlim(left=0, right=6e4)
-        # sps.set_ylim(bottom=0, top=6e4)
-        # sps.set_aspect('equal', adjustable='box')
-        
-    name = cfg.qcfg.name
+        valid_indices = mutants[0] == RCode.UNSAT.value
+        success = np.sum(valid_indices)
+        # if success == 0:
+        #     ts = plain_time
+        # else:
+        ts = np.median(mutants[1])
     
-    plt.savefig(f"fig/time_scatter/{name}.png")
+        if plain_res != RCode.UNSAT.value:
+            pf += 1
+            if success == 0:
+                cfs += 1
+        else:
+            ps += 1
+            if success == 180:
+                css += 1
+        scatters.append((plain_time/1000, ts/1000))
+    print(pf, cfs, ps, css)
+    
+    xs = [s[0] for s in scatters]
+    ys = [s[1] for s in scatters]
+    # xy = np.vstack([x,y])
+
+    bounded = 0
+    mworse = 0
+    for pts in scatters:
+        x, y = pts
+        if x / y < 1.5 and y / x < 1.5:
+        # if abs(x - y) < 0.2:
+            bounded += 1
+        # else:
+        #     print(x - y)
+        # if x * 1.05 < y:
+        #    mworse += 1 
+
+    print(weightstats.ttost_paired(np.array(ys), np.array(xs), -0.57, -0.03))
+    print(weightstats.ttost_paired(np.array(ys), np.array(xs), 1.002, 1.015, transform=np.log))
+    print(percentage(bounded, len(scatters)), mworse, len(scatters))
+    # plt.plot([0.01, 1000], [0.01 * 1.25, 1000 * 1.25], color="black")
+    # plt.loglog([0.01, 1000], [0.01 * 1.5, 1000 * 1.5], color="black", linestyle="--", label="y=1.5x",  linewidth=1)
+    plt.fill_between([0.01, 1000],  [0.01 * 1.5, 1000 * 1.5], [0.01 / 1.5, 1000 / 1.5], alpha=0.1, color="green", label=r"$\frac{x}{1.5} < y < 1.5x$")
+    plt.loglog([0.01, 1000], [0.01, 1000], color="black", label=r"$x=y$", linewidth=1)
+    plt.scatter(xs, ys, s=2)
+    plt.xlim(left=.1, right=155)
+    plt.ylim(bottom=.1, top=155)
+    plt.legend()
+    ax = plt.gca()
+    ax.set_aspect('equal', adjustable='box')
+    name = cfg.qcfg.name
+    plt.title(f"{name} {solver.pstr()}", fontsize=FSIZE, fontname=FNAME)
+    plt.xlabel("plain query time (second)", fontsize=FSIZE, fontname=FNAME)
+    plt.ylabel("median mutant time (second)", fontsize=FSIZE, fontname=FNAME)
+    plt.tight_layout()
+    plt.savefig(f"fig/time_scatter/{name}.pdf")
 
 def create_benchmark(cfgs=ALL_CFGS):
     project_names = [cfg.get_project_name() for cfg in cfgs]

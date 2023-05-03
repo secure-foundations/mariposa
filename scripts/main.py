@@ -122,50 +122,14 @@ if __name__ == '__main__':
     # dump_all()
 
     # cfg = D_KOMODO_CFG
-    # plot_ext_cutoff(cfg)
-    # plot_time_std(cfg)
-    # plot_pert_diff(cfg)
-    # plot_sr_cdf(cfg)
-    # plot_vbkv_ext_cutoff()
-    
-    # do_stuff(D_KOMODO_CFG)
-    
-    # gen_bisec_tasks()
-    parse_bisect()
-
-    # plot_pert_diff(D_LVBKV_CFG)
-    # plot_pert_diff(D_FVBKV_CFG)
-    # plot_pert_diff(FS_DICE_CFG)
-
-    # plot_query_sizes(ALL_CFGS)
-    # compare_vbkvs(D_LVBKV_CFG, D_FVBKV_CFG)
-
-    # export_timeouts(D_LVBKV_CFG, Z3_4_12_1)
-
-    # cfg = ExpConfig("FS_DICE", FS_DICE, [Z3_4_12_1], DB_PATH)
-    
-    # for cfg in [D_KOMODO_CFG, D_LVBKV_CFG, D_FVBKV_CFG, FS_DICE_CFG]:
-    #     summaries = load_solver_summaries(cfg, skip_unknowns=False)
-    #     th = Thresholds("strict")
-    #     th.timeout = 6e4
-    #     categories1 = categorize_qeuries(summaries[Z3_4_8_5], th)
-    #     categories2 = categorize_qeuries(summaries[Z3_4_8_8], th)
-
-    #     stable_1 = categories1[Stablity.STABLE.value]
-    #     stable_2 = categories2[Stablity.STABLE.value]
-
-    #     unstable_1 = categories1[Stablity.RES_UNSTABLE]
-    #     unstable_2 = categories2[Stablity.RES_UNSTABLE]
-        
-    #     # print(len(unstable_1.intersection(stable_2)))
-    #     for i in stable_1.intersection(unstable_2):
-    #         print(i)
-        
-    # diff = categories2[Stablity.RES_UNSTABLE.value] - categories1[Stablity.RES_UNSTABLE.value]
-    # diff2 = categories1[Stablity.RES_UNSTABLE.value] - categories2[Stablity.RES_UNSTABLE.value]
-        # print(len(diff), len(diff2))
-
-
+    # dump_all()
+    cfg = D_KOMODO_CFG
+    plot_ext_cutoff(cfg)
+    plot_vbkv_ext_cutoff()
+    plot_pert_diff(cfg)
+    plot_time_std(cfg)
+    plot_sr_cdf(cfg)
+    do_stuff(cfg)
 
     # # get_diff_mutants()
     # for cfg in tqdm(ALL_CFGS):
