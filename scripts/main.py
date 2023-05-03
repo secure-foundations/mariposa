@@ -83,11 +83,14 @@ def parse_bisect():
     commit_re = re.compile("\[([a-z0-9]+)\]")
     blames = dict()
     logs = os.listdir("data/bisect_tasks")
+    all = set()
     for log in logs:
         if log.endswith(".txt"):
+            all.add(log)
             continue
         f = open(f"data/bisect_tasks/{log}")
         lines = f.readlines()
+        log = log[:-4]
         blames[log] = set()
         for l in lines:
             if "# first bad commit:" in l:
@@ -95,14 +98,25 @@ def parse_bisect():
                 break
             if "# possible first bad commit:" in l:
                 blames[log].add(commit_re.search(l).group(1))
+        assert blames[log] != set()
+
+    # for i in all - blames.keys():
+    #     print(i)
+    scores = {"inconclusive": 0}
+    
     for log in blames:
         count = len(blames[log])
-        if count > 2:
-            pass
+        if count >= 2:
+            scores["inconclusive"] += 1
             # print(log, count)
             # print("../mariposa/scripts/bisect-metascript.sh", log)
         else:
-            print(blames[log])
+            # score = 1.0 / len(blames[log])
+            for commit in blames[log]:
+                scores[commit] = scores.get(commit, 0) + 1
+    scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    for commit in scores:
+        print(commit[0], commit[1])
 
 if __name__ == '__main__':
     print("building mariposa...")
@@ -118,24 +132,25 @@ if __name__ == '__main__':
     # entropy_test()
     # create_benchmark()
 
+    parse_bisect()
     # v_test()
-    # dump_all()
 
+    cfg = D_KOMODO_CFG
+    # dump_all()
     # cfg = D_KOMODO_CFG
     # dump_all()
-    cfg = D_KOMODO_CFG
-    plot_ext_cutoff(cfg)
-    plot_vbkv_ext_cutoff()
-    plot_pert_diff(cfg)
-    plot_time_std(cfg)
-    plot_sr_cdf(cfg)
-    do_stuff(cfg)
+    # plot_ext_cutoff(cfg)
+    # plot_vbkv_ext_cutoff()
+    # plot_pert_diff(cfg)
+    # plot_time_std(cfg)
+    # plot_sr_cdf(cfg)
+    # plot_time_scatter(cfg)
+    # plot_time_scatter(D_FVBKV_CFG)
 
-    # # get_diff_mutants()
+    # get_diff_mutants()
     # for cfg in tqdm(ALL_CFGS):
     #     do_stuff(cfg)
 
-    # plot_ext_cutoff(D_LVBKV_CFG)
     # import_database("s1905")
 
     # extend_solver_summary_table(D_LVBKV_CFG, D_LVBKV_TO_CFG, Z3_4_12_1)

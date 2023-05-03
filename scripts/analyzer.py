@@ -14,10 +14,11 @@ from statsmodels.stats.proportion import proportions_ztest
 # import seaborn as sns
 
 FSIZE = 16
-FNAME ="times new roman"
+FNAME ='Phetsarath OT'
 import random
 
 plt.rcParams['text.usetex'] = True
+plt.rcParams["font.family"] = "serif"
 
 COLORS = [
     "#803E75", # Strong Purple
@@ -635,8 +636,8 @@ def plot_sr_cdf(cfg):
     plt.ylabel(r"cumulative proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.legend(ncols=2)
-
     plt.savefig(f"fig/sr_cdf/{name}.pdf")
+    plt.close()
 
 def plot_time_std(cfg):
     perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
@@ -689,7 +690,7 @@ def plot_time_std(cfg):
         axis[i].set_xticks([1] + [i for i in range(5, int(std_max), 5)])
         axis[i].set_ylim(bottom=0, top=y_bound)
 
-    figure.supylabel("proportion of stable queries above threshold " + r"($\%$)", fontsize=FSIZE, fontname=FNAME)
+    figure.supylabel(r"proportion of queries" "\n" r"above threshold ($\%$)", fontsize=FSIZE, fontname=FNAME)
     figure.supxlabel("time standard deviation threshold (second)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.savefig(f"fig/time_stable/{name}.pdf")
@@ -836,7 +837,6 @@ def dump_all(cfgs=ALL_CFGS):
             if solver_names[i] == str(cfgs[pi].qcfg.project.orig_solver):
                 plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=10)
 
-    plt.ylabel(r'query proportions ($\%$)', fontsize=FSIZE)
     solver_lables = [f"{s.pstr()}\n{s.data[:-3]}" for s in Z3_SOLVERS_ALL]
     ax.tick_params(axis='both', which='major')
     plt.xticks([r + 2 * bar_width for r in range(len(solver_names))], solver_lables, rotation=30, ha='right')
@@ -844,7 +844,8 @@ def dump_all(cfgs=ALL_CFGS):
     woot = Line2D([0], [0], marker="*", color='black', linestyle='None', label='default solver'),
     project_names = [p.upper() for p in project_names]
     plt.legend(handles + [woot], project_names + ['default solver'])
-    plt.xlabel('solver versions and release dates', fontsize=FSIZE)
+    plt.ylabel(r'query proportion ($\%$)', fontsize=FSIZE, fontname=FNAME)
+    plt.xlabel('solver versions and release dates', fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.savefig("fig/all.pdf")
     plt.close()
@@ -974,7 +975,7 @@ def compare_vbkvs(linear, dynamic):
 from scipy.stats import gaussian_kde
 from statsmodels.stats import weightstats
 
-def do_stuff(cfg):
+def plot_time_scatter(cfg):
     summaries = load_solver_summaries(cfg)
 
     solver = Z3_4_12_1
@@ -1046,6 +1047,7 @@ def do_stuff(cfg):
     plt.ylabel("median mutant time (second)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.savefig(f"fig/time_scatter/{name}.pdf")
+    plt.close()
 
 def create_benchmark(cfgs=ALL_CFGS):
     project_names = [cfg.get_project_name() for cfg in cfgs]
@@ -1168,5 +1170,4 @@ def entropy_test():
             if max_ent >= 0.5:
                 counts.add(row[0]) 
         print(len(counts), len(counts2), len(counts.intersection(counts2)))
-    # pk = np.array([1/2, 1/2])
-    # print(entropy(pk, base=2))
+
