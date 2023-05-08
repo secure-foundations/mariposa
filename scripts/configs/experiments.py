@@ -131,3 +131,20 @@ TO_CFGS = [D_KOMODO_TO_CFG, D_FVBKV_TO_CFG, D_LVBKV_TO_CFG, FS_DICE_TO_CFG]
 for cfg in TO_CFGS:
     cfg.qcfg.timeout = 150
     cfg.qcfg.max_mutants = 0
+
+stable_core = ProjectConfig("stable_core", FrameworkName.DAFNY, Z3_4_12_1)
+stable_core.assign_z3_dirs("data/benchmarks/stable_core/")
+
+stable_ext = ProjectConfig("stable_ext", FrameworkName.DAFNY, Z3_4_12_1)
+stable_ext.assign_z3_dirs("data/benchmarks/stable_ext/")
+
+unstable_core = ProjectConfig("unstable_core", FrameworkName.DAFNY, Z3_4_12_1)
+unstable_core.assign_z3_dirs("data/benchmarks/unstable_core/")
+
+unstable_ext = ProjectConfig("unstable_ext", FrameworkName.DAFNY, Z3_4_12_1)
+unstable_ext.assign_z3_dirs("data/benchmarks/unstable_ext/")
+
+STABLE_CORE_CFG = ExpConfig("STABLE_CORE", stable_core, [Z3_4_12_1], "data/benchmarks.db")
+STABLE_EXT_CFG = ExpConfig("STABLE_EXT", stable_ext, [Z3_4_12_1], "data/benchmarks.db")
+UNSTABLE_CORE_CFG = ExpConfig("UNSTABLE_CORE", unstable_core, [Z3_4_12_1], "data/benchmarks.db")
+UNSTABLE_EXT_CFG = ExpConfig("UNSTABLE_EXT", unstable_ext, [Z3_4_12_1], "data/benchmarks.db")

@@ -1200,7 +1200,7 @@ def plot_time_scatter_paper():
     plt.close()
 
 def create_benchmark(cfgs=ALL_CFGS):
-    benchmark_path = "data/benchmarks"
+    benchmark_path = "data/benchmark/"
     
     unstable_core_path = f"{benchmark_path}/unstable_core"
     unstable_ext_path = f"{benchmark_path}/unstable_ext"

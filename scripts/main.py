@@ -154,6 +154,8 @@ if __name__ == '__main__':
 
     cfg = D_KOMODO_CFG
     # create_benchmark()
+    # cfg = D_KOMODO_CFG
+    
     # dump_all()
     # plot_vbkv_ext_cutoff()
     # plot_pert_diff(cfg)
