@@ -1052,7 +1052,7 @@ def plot_time_scatter(cfg):
 def create_benchmark(cfgs=ALL_CFGS):
     project_names = [cfg.get_project_name() for cfg in cfgs]
 
-    benchmark_path = "data/benchmarklefts"
+    benchmark_path = "data/benchmark/"
     
     unstable_core_path = f"{benchmark_path}/unstable_core"
     unstable_ext_path = f"{benchmark_path}/unstable_ext"

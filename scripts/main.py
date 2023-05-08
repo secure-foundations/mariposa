@@ -132,10 +132,11 @@ if __name__ == '__main__':
     # entropy_test()
     # create_benchmark()
 
-    parse_bisect()
+    # parse_bisect()
     # v_test()
 
-    cfg = D_KOMODO_CFG
+    # cfg = D_KOMODO_CFG
+    
     # dump_all()
     # cfg = D_KOMODO_CFG
     # dump_all()
