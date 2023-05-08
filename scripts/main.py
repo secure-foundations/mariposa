@@ -114,9 +114,27 @@ def parse_bisect():
             # score = 1.0 / len(blames[log])
             for commit in blames[log]:
                 scores[commit] = scores.get(commit, 0) + 1
+    incs = scores["inconclusive"]
     scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    for commit in scores:
-        print(commit[0], commit[1])
+    os.chdir('../z3')
+    commits = dict()
+    
+    for commit, score in scores:
+        if commit == "inconclusive":
+            continue
+        res = subprocess_run(f"git show -s --format=%ct {commit}", 0)
+        commits[commit] = (score, int(res[0]))
+    os.chdir('../mariposa')
+    
+    commits = sorted(commits.items(), key=lambda x: x[1][1])
+    
+    start = 0
+
+    # print(start)
+    for commit, (count, date) in commits:
+        # print(commit, count,  datetime.fromtimestamp(date))
+        start += count
+        print(start)
 
 if __name__ == '__main__':
     print("building mariposa...")
@@ -127,29 +145,35 @@ if __name__ == '__main__':
     print("checking scaling_governor...")
     stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
     assert stdout == "performance"
-    
+
     # get_runtime()
     # entropy_test()
-    # create_benchmark()
 
-    parse_bisect()
+    # parse_bisect()
     # v_test()
 
     cfg = D_KOMODO_CFG
+    # create_benchmark()
     # dump_all()
-    # cfg = D_KOMODO_CFG
-    # dump_all()
-    # plot_ext_cutoff(cfg)
     # plot_vbkv_ext_cutoff()
     # plot_pert_diff(cfg)
     # plot_time_std(cfg)
     # plot_sr_cdf(cfg)
+    # cfg = D_FVBKV_CFG
     # plot_time_scatter(cfg)
-    # plot_time_scatter(D_FVBKV_CFG)
+    # plot_time_scatter_paper()
+
+    # plot_ext_cutoff(cfg)
+    
+    # project = ProjectConfig("core_benchmark_unstable", FrameworkName.DAFNY, Z3_4_12_1)
+    # cfg = ExpConfig("core_benchmark_test", project, [Z3_4_12_1], "data/benchmarks.db")
+
+    # r = Runner([cfg])
 
     # get_diff_mutants()
-    # for cfg in tqdm(ALL_CFGS):
-    #     do_stuff(cfg)
+    # for cfg in ALL_CFGS:
+    #     print(cfg.qcfg.name)
+    #     count_timeouts(cfg)
 
     # import_database("s1905")
 
