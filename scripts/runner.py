@@ -86,14 +86,14 @@ class SolverTaskGroup:
         if rcode == "error":
             print(out, err)
 
-        # con = sqlite3.connect(self.cfg.db_path)
-        # cur = con.cursor()
-        # cur.execute(f"""INSERT INTO {self.table_name}
-        #     (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
-        #     VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
-        #     (query_path, self.vanilla_path, perturb, command, out, err, rcode, elapsed))
-        # con.commit()
-        # con.close()
+        con = sqlite3.connect(self.cfg.db_path)
+        cur = con.cursor()
+        cur.execute(f"""INSERT INTO {self.table_name}
+            (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
+            (query_path, self.vanilla_path, perturb, command, out, err, rcode, elapsed))
+        con.commit()
+        con.close()
         return elapsed, rcode
 
     def run_pert_group(self, gen_path_pre, perturb):

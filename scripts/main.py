@@ -131,6 +131,9 @@ if __name__ == '__main__':
     # get_runtime()
     # entropy_test()
     # create_benchmark()
+    
+    r = Runner([UNSTABLE_CORE_CFG], override=True)
+    # build_solver_summary_table(UNSTABLE_CORE_CFG, Z3_4_12_1)
 
     # parse_bisect()
     # v_test()
