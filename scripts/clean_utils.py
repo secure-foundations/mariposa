@@ -200,18 +200,3 @@ def split_queries(file_path):
                 out_f.writelines(item)
     return cmds
 
-split_queries("top_sort_dfs.smt2")
-
-# FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
-# clean_fs_project(FS_DICE, None, None)
-# def subprocess_run(command, time_limit, debug=False, cwd=None):
-#     command = f"timeout {time_limit} " + command
-#     if debug:
-#         print(command)
-#     start_time = time.time()
-#     res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-#     # milliseconds
-#     elapsed = round((time.time() - start_time) * 1000)
-#     stdout = res.stdout.decode("utf-8").strip()
-#     stderr = res.stderr.decode("utf-8").strip()
-#     return stdout, stderr, elapsed

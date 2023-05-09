@@ -15,126 +15,35 @@ def clean_queries(cfg):
     from clean_utils import clean_fs_project
     clean_dfy_project(cfg, cfg.clean_dirs[Z3_4_11_2])
 
-def send_project_queries(project, other_server):
-    pass
-
 def sample_projects(projects):
     for proj in projects:
         print(proj)
 
-def gen_bisec_tasks():
-    for cfg in ALL_CFGS:
-        summaries = load_solver_summaries(cfg, skip_unknowns=False)
-        classifier = Classifier("z_test")
-        classifier.timeout = 6e4
-        categories1 = categorize_queries(summaries[Z3_4_8_5], classifier)
-        categories2 = categorize_queries(summaries[Z3_4_8_8], classifier)
-        diff = categories1[Stablity.STABLE.value].intersection(categories2[Stablity.UNSTABLE.value])
-        # print(len(diff))
-        for l in diff:
-            solver_table = cfg.qcfg.get_solver_table_name(Z3_4_8_8)
-            con, cur = get_cursor(cfg.qcfg.db_path)
-            res = cur.execute(f"""SELECT query_path FROM {solver_table}
-                WHERE vanilla_path = '{l}'
-                AND perturbation != ''
-                """)
-            assert(l.startswith("data/"))
-            assert(l.endswith(".smt2"))
-            p = l[5:-5]
-            tsk = open("data/bisect_tasks/" + p.replace("/", "--") + ".txt", "w+")
-            tsk.write(f"{l}\n")
-            for row in res.fetchall():
-                mpath = row[0]
-                assert mpath.find(p) != -1
-                args = mpath.split(".")[-3:]
-                assert args[-1] == "smt2"
-                command = f"./target/release/mariposa -i {l} -p {args[1]} -o {row[0]} -s {args[0]}\n"
-                tsk.write(command)
+# from datetime import datetime
 
-from datetime import datetime
-
-def get_runtime():
-    con, cur = get_cursor()
-    total = 0
-    for cfg in ALL_CFGS:
-        for solver in cfg.samples:
-            solver_table = cfg.qcfg.get_solver_table_name(solver)
-            res = cur.execute(f"""
-                SELECT SUM(elapsed_milli)
-                FROM {solver_table}""")
-            time = res.fetchone()[0] / 1000 / 3600
-            # start, end = res.fetchone()
-            # date from string 
-            # start = datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
-            # end = datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
-            # diff = end - start
-            # convert into hours
-            total += time
-            print(cfg.qcfg.name, solver, time)
-    print(total)
-            # diff = diff.total_seconds() / 3600
-            # print(cfg.qcfg.name, solver, round(diff, 2))
-        # print(solver_df["time"].mean())
-    # solver_table = cfg.qcfg.get_solver_table_name(solver)
-
-import re
-
-def parse_bisect():
-    commit_re = re.compile("\[([a-z0-9]+)\]")
-    blames = dict()
-    logs = os.listdir("data/bisect_tasks")
-    all = set()
-    for log in logs:
-        if log.endswith(".txt"):
-            all.add(log)
-            continue
-        f = open(f"data/bisect_tasks/{log}")
-        lines = f.readlines()
-        log = log[:-4]
-        blames[log] = set()
-        for l in lines:
-            if "# first bad commit:" in l:
-                blames[log].add(commit_re.search(l).group(1))
-                break
-            if "# possible first bad commit:" in l:
-                blames[log].add(commit_re.search(l).group(1))
-        assert blames[log] != set()
-
-    # for i in all - blames.keys():
-    #     print(i)
-    scores = {"inconclusive": 0}
-    
-    for log in blames:
-        count = len(blames[log])
-        if count >= 2:
-            scores["inconclusive"] += 1
-            # print(log, count)
-            # print("../mariposa/scripts/bisect-metascript.sh", log)
-        else:
-            # score = 1.0 / len(blames[log])
-            for commit in blames[log]:
-                scores[commit] = scores.get(commit, 0) + 1
-    incs = scores["inconclusive"]
-    scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    os.chdir('../z3')
-    commits = dict()
-    
-    for commit, score in scores:
-        if commit == "inconclusive":
-            continue
-        res = subprocess_run(f"git show -s --format=%ct {commit}", 0)
-        commits[commit] = (score, int(res[0]))
-    os.chdir('../mariposa')
-    
-    commits = sorted(commits.items(), key=lambda x: x[1][1])
-    
-    start = 0
-
-    # print(start)
-    for commit, (count, date) in commits:
-        # print(commit, count,  datetime.fromtimestamp(date))
-        start += count
-        print(start)
+# def get_runtime():
+#     con, cur = get_cursor()
+#     total = 0
+#     for cfg in ALL_CFGS:
+#         for solver in cfg.samples:
+#             solver_table = cfg.qcfg.get_solver_table_name(solver)
+#             res = cur.execute(f"""
+#                 SELECT SUM(elapsed_milli)
+#                 FROM {solver_table}""")
+#             time = res.fetchone()[0] / 1000 / 3600
+#             # start, end = res.fetchone()
+#             # date from string 
+#             # start = datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
+#             # end = datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
+#             # diff = end - start
+#             # convert into hours
+#             total += time
+#             print(cfg.qcfg.name, solver, time)
+#     print(total)
+#             # diff = diff.total_seconds() / 3600
+#             # print(cfg.qcfg.name, solver, round(diff, 2))
+#         # print(solver_df["time"].mean())
+#     # solver_table = cfg.qcfg.get_solver_table_name(solver)
 
 if __name__ == '__main__':
     print("building mariposa...")
@@ -154,30 +63,21 @@ if __name__ == '__main__':
 
     cfg = D_KOMODO_CFG
     # create_benchmark()
-    # cfg = D_KOMODO_CFG
-    
-    # dump_all()
-    # plot_vbkv_ext_cutoff()
-    # plot_pert_diff(cfg)
-    # plot_time_std(cfg)
-    # plot_sr_cdf(cfg)
-    # cfg = D_FVBKV_CFG
-    # plot_time_scatter(cfg)
-    # plot_time_scatter_paper()
+    # plot_paper_overall()
+    # plot_paper_pert_diff()
+    # plot_paper_time_std()
+    # plot_paper_ext_cutoff()
 
+    # plot_appendix_time_scatter()
+    # plot_appendix_time_std()
+    # plot_appendix_pert_diff()
+    # plot_appendix_ext_cutoff()
+
+    # cfg = D_FVBKV_CFG
+    # plot_time_scatter_paper()
     # plot_ext_cutoff(cfg)
     
     # project = ProjectConfig("core_benchmark_unstable", FrameworkName.DAFNY, Z3_4_12_1)
     # cfg = ExpConfig("core_benchmark_test", project, [Z3_4_12_1], "data/benchmarks.db")
 
     # r = Runner([cfg])
-
-    # get_diff_mutants()
-    # for cfg in ALL_CFGS:
-    #     print(cfg.qcfg.name)
-    #     count_timeouts(cfg)
-
-    # import_database("s1905")
-
-    # extend_solver_summary_table(D_LVBKV_CFG, D_LVBKV_TO_CFG, Z3_4_12_1)
-    # build_solver_summary_table(S_CERTIKOS_CFG, Z3_4_12_1)
