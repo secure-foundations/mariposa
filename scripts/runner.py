@@ -217,7 +217,7 @@ class Runner:
 
 from analyzer import RCode 
 from analyzer import Classifier
-from analyzer import Stablity
+from analyzer import Stability
 from runner import parse_basic_output_z3
 from runner import subprocess_run
 import numpy as np
@@ -280,9 +280,9 @@ def mariposa(task_file):
     print(blob)
     print(cat)
 
-    if cat == Stablity.STABLE:
+    if cat == Stability.STABLE:
         exit(0) # good
-    if cat == Stablity.INCONCLUSIVE:
+    if cat == Stability.INCONCLUSIVE:
         exit(125) # skip
     exit(1) # bad 
 
