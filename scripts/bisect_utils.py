@@ -46,59 +46,101 @@ Z3_PATH = "./build/z3"
 #                 command = f"./target/release/mariposa -i {l} -p {args[1]} -o {row[0]} -s {args[0]}\n"
 #                 tsk.write(command)
 
-# def parse_bisect():
-#     commit_re = re.compile("\[([a-z0-9]+)\]")
-#     blames = dict()
-#     logs = os.listdir("data/bisect_tasks")
-#     all = set()
-#     for log in logs:
-#         if log.endswith(".txt"):
-#             all.add(log)
-#             continue
-#         f = open(f"data/bisect_tasks/{log}")
-#         lines = f.readlines()
-#         log = log[:-4]
-#         blames[log] = set()
-#         for l in lines:
-#             if "# first bad commit:" in l:
-#                 blames[log].add(commit_re.search(l).group(1))
-#                 break
-#             if "# possible first bad commit:" in l:
-#                 blames[log].add(commit_re.search(l).group(1))
-#         assert blames[log] != set()
+import re
 
-#     scores = {"inconclusive": 0}
-    
-#     for log in blames:
-#         count = len(blames[log])
-#         if count >= 2:
-#             scores["inconclusive"] += 1
-#             # print(log, count)
-#             # print("../mariposa/scripts/bisect-metascript.sh", log)
-#         else:
-#             # score = 1.0 / len(blames[log])
-#             for commit in blames[log]:
-#                 scores[commit] = scores.get(commit, 0) + 1
-#     incs = scores["inconclusive"]
-#     scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-#     os.chdir('../z3')
-#     commits = dict()
-    
-#     for commit, score in scores:
-#         if commit == "inconclusive":
-#             continue
-#         res = subprocess_run(f"git show -s --format=%ct {commit}", 0)
-#         commits[commit] = (score, int(res[0]))
-#     os.chdir('../mariposa')
-    
-#     commits = sorted(commits.items(), key=lambda x: x[1][1])
-    
-#     start = 0
+def tex_escape(text):
+    """
+        :param text: a plain text message
+        :return: the message escaped to appear correctly in LaTeX
+    """
+    conv = {
+        '&': r'\&',
+        '%': r'\%',
+        '$': r'\$',
+        '#': r'\#',
+        '_': r'\_',
+        '{': r'\{',
+        '}': r'\}',
+        '~': r'\textasciitilde{}',
+        '^': r'\^{}',
+        '\\': r'\textbackslash{}',
+        '<': r'\textless{}',
+        '>': r'\textgreater{}',
+    }
+    regex = re.compile('|'.join(re.escape(str(key)) for key in sorted(conv.keys(), key = lambda item: - len(item))))
+    return regex.sub(lambda match: conv[match.group()], text)
 
-#     # print(start)
-#     for commit, (count, date) in commits:
-#         start += count
-#         print(start)
+def parse_bisect():
+    import os, subprocess
+    commit_re = re.compile("\[([a-z0-9]+)\]")
+    blames = dict()
+    logs = os.listdir("data/bisect_tasks")
+    all = set()
+    for log in logs:
+        if log.endswith(".txt"):
+            all.add(log)
+            continue
+        f = open(f"data/bisect_tasks/{log}")
+        lines = f.readlines()
+        log = log[:-4]
+        blames[log] = set()
+        for l in lines:
+            if "# first bad commit:" in l:
+                blames[log].add(commit_re.search(l).group(1))
+                break
+            if "# possible first bad commit:" in l:
+                blames[log].add(commit_re.search(l).group(1))
+                # break
+        assert blames[log] != set()
+
+    scores = {"inconclusive": 0}
+    
+    for log in blames:
+        count = len(blames[log])
+        if count >= 2:
+            scores["inconclusive"] += 1
+            # print(log, count)
+            # print("../mariposa/scripts/bisect-metascript.sh", log)
+        else:
+            # score = 1.0 / len(blames[log])
+            for commit in blames[log]:
+                scores[commit] = scores.get(commit, 0) + 1
+    # incs = scores["inconclusive"]
+    # print(scores)
+    scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    os.chdir('../z3')
+    commits = dict()
+    # print(scores)
+    count = 0
+
+    # print("".join([CHARS.get(char, char) for char in "&%$#_{}~^\\"]))
+    
+    for commit, score in scores:
+        count += score
+        if commit == "inconclusive":
+            print( r"\texttt{inconclusive} & " + str(score) + r" \\")
+            continue
+        res = subprocess.run(f"git log --format=%B {commit} -n 1 ", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        res = res.stdout.decode("utf-8").strip()
+        commits[commit] = (score, res)
+        commit = r"\texttt{" + commit[:7] + "}"
+        message = tex_escape(res.split("\n")[0])
+        if len(message) > 17:
+            message = message[:17] + "..."
+        message = r"\texttt{" + message + "}"
+        print(f"{commit} & {score} & {message} \\\\")
+        # print( r"\texttt{" + commit[:7] + "} & " + str(score) + " & " +  + r" \\")
+    print(count)
+    os.chdir('../mariposa')
+    
+    # commits = sorted(commits.items(), key=lambda x: x[1][1])
+    
+    # start = 0
+
+    # # print(start)
+    # for commit, (count, date) in commits:
+    #     start += count
+    #     print(start)
 
 def compile_z3() -> bool:
     """Compiles Z3. Use short circuit to quit early if the build

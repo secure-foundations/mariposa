@@ -3,6 +3,7 @@ from configs.experiments import *
 from runner import Runner, subprocess_run
 from db_utils import *
 from analyzer import *
+from bisect_utils import *
 
 def import_database(other_server):
     other_db_path = "data/mariposa2.db"
@@ -57,31 +58,36 @@ if __name__ == '__main__':
 
     # get_runtime()
     # entropy_test()
-    # create_benchmark()
     
-    r = Runner([UNSTABLE_CORE_CFG], override=True)
+    # r = Runner([UNSTABLE_CORE_CFG], override=True)
     # build_solver_summary_table(UNSTABLE_CORE_CFG, Z3_4_12_1)
 
     # parse_bisect()
-    # v_test()
-
-    cfg = D_KOMODO_CFG
+    
     # create_benchmark()
+
+    # cfg = D_KOMODO_CFG
+    # locality_analysis(cfg)
+
     # plot_paper_overall()
+    # plot_paper_ext_cutoff()
     # plot_paper_pert_diff()
     # plot_paper_time_std()
-    # plot_paper_ext_cutoff()
+    # plot_time_scatter_paper()
 
-    # plot_appendix_time_scatter()
-    # plot_appendix_time_std()
-    # plot_appendix_pert_diff()
     # plot_appendix_ext_cutoff()
+    # plot_appendix_pert_diff()
+    # plot_appendix_time_std()
+    # plot_appendix_time_scatter()
+    # plot_appendix_sizes()
+    plot_appendix_srs()
 
     # cfg = D_FVBKV_CFG
-    # plot_time_scatter_paper()
     # plot_ext_cutoff(cfg)
     
     # project = ProjectConfig("core_benchmark_unstable", FrameworkName.DAFNY, Z3_4_12_1)
     # cfg = ExpConfig("core_benchmark_test", project, [Z3_4_12_1], "data/benchmarks.db")
 
     # r = Runner([cfg])
+
+
