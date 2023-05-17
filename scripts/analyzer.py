@@ -25,15 +25,18 @@ COLORS = [
 ]
 
 PROJECT_LABELS = {
-    "D_KOMODO": "Komodo(D)",
-    "D_FVBKV": "VeriBetrKV(D)",
-    "D_LVBKV": "VeriBetrKV(L)",
-    "FS_DICE": r"DICE$^{\star}$(F)",
-    "FS_VWASM": "vWasm(F)",
-    "S_KOMODO": "Komodo(S)",
+    "D_KOMODO": r"Komodo$_{d}$",
+    "S_KOMODO": r"Komodo$_s$",
+    "D_FVBKV": r"VeriBetrKV$_{d}$",
+    "D_LVBKV": r"VeriBetrKV$_{l}$",
+    "FS_DICE": r"DICE$^\star_f$",
+    "FS_VWASM": r"vWasm$_f$",
 } 
 
 def make_title(cfg, solver):
+    # star = ""
+    # if cfg.qcfg.project.orig_solver == solver:
+    #     star = r"$\star$"
     return f"{PROJECT_LABELS[cfg.qcfg.name]} {solver.pstr()}"
 
 def get_color_map(keys):
@@ -133,36 +136,36 @@ def plot_paper_overall(cfgs=ALL_CFGS):
     # data = _mp_categorize_projects(cfgs, solver_names)
     data = [[[0.0, 0.48685491723466406, 0.43816942551119764, 0.7789678675754625, 98.29600778967868], [0.0, 0.5842259006815969, 0.5842259006815969, 0.6329113924050633, 98.19863680623175], [0.0, 0.6329113924050633, 0.2921129503407984, 0.5842259006815969, 98.49074975657254], [0.0, 0.5355404089581305, 0.3894839337877313, 0.2921129503407984, 98.78286270691333], [0.0, 1.7526777020447906, 2.288218111002921, 1.2171372930866602, 94.74196689386562], [0.0, 2.5803310613437196, 4.625121713729309, 1.3631937682570594, 91.43135345666991], [0.0, 2.4342745861733204, 4.430379746835443, 1.2171372930866602, 91.91820837390458], [0.0, 2.5316455696202533, 5.0146056475170395, 1.071080817916261, 91.38266796494645]], [[0.0, 0.258732212160414, 0.6468305304010349, 0.0, 99.09443725743856], [0.0, 0.258732212160414, 0.6468305304010349, 0.0, 99.09443725743856], [0.0, 0.129366106080207, 0.6468305304010349, 0.0, 99.22380336351875], [0.0, 0.0, 0.38809831824062097, 0.0, 99.61190168175938], [0.0, 0.0, 0.129366106080207, 0.0, 99.87063389391979], [0.0, 0.258732212160414, 0.258732212160414, 0.0, 99.48253557567917], [0.0, 0.258732212160414, 0.258732212160414, 0.0, 99.48253557567917], [0.0, 0.129366106080207, 0.517464424320828, 0.0, 99.35316946959897]], [[0.0, 0.6011647567161376, 0.7138831486004134, 0.3569415743002067, 98.32801052038324], [0.0, 0.6011647567161376, 0.7702423445425511, 0.1690775878264137, 98.4595153109149], [0.0, 0.1690775878264137, 0.6199511553635169, 0.1690775878264137, 99.04189366898366], [0.0, 0.3381551756528274, 0.7138831486004134, 0.1502911891790344, 98.79767048656772], [0.0, 0.375727972947586, 2.536163817396205, 0.5072327634792411, 96.58087544617696], [0.0, 0.6763103513056548, 3.1373285741123427, 0.3381551756528274, 95.84820589892918], [0.0, 0.563591959421379, 3.118542175464963, 0.3381551756528274, 95.97971068946083], [0.0, 0.563591959421379, 2.911891790343791, 0.3381551756528274, 96.18636107458201]], [[0.0, 0.5755395683453237, 0.28776978417266186, 0.1618705035971223, 98.9748201438849], [0.0, 0.5575539568345323, 0.3237410071942446, 0.12589928057553956, 98.99280575539568], [0.0, 0.3597122302158273, 0.8812949640287769, 0.0539568345323741, 98.70503597122303], [0.0, 0.3057553956834532, 0.4856115107913669, 0.0539568345323741, 99.15467625899281], [0.0, 0.4136690647482014, 2.949640287769784, 0.1079136690647482, 96.52877697841727], [0.0, 0.5575539568345323, 3.2014388489208634, 0.17985611510791366, 96.06115107913669], [0.0, 0.5215827338129496, 3.3633093525179856, 0.1618705035971223, 95.95323741007195], [0.0, 0.539568345323741, 3.147482014388489, 0.1618705035971223, 96.15107913669065]], [[0.0, 1.3201320132013201, 0.33003300330033003, 0.132013201320132, 98.21782178217822], [0.0, 1.2541254125412542, 0.33003300330033003, 0.132013201320132, 98.28382838283828], [0.0, 1.1221122112211221, 0.39603960396039606, 0.132013201320132, 98.34983498349835], [0.0, 0.594059405940594, 0.528052805280528, 0.132013201320132, 98.74587458745874], [0.0, 0.9240924092409241, 0.528052805280528, 0.264026402640264, 98.28382838283828], [0.0, 1.386138613861386, 0.6600660066006601, 0.0, 97.95379537953795], [0.0, 1.056105610561056, 0.594059405940594, 0.264026402640264, 98.08580858085809], [0.0, 0.9240924092409241, 0.7920792079207921, 0.132013201320132, 98.15181518151815]], [[0.0, 0.3462204270051933, 0.17311021350259664, 0.0, 99.48066935949221], [0.0, 0.3462204270051933, 0.17311021350259664, 0.0, 99.48066935949221], [0.0, 0.05770340450086555, 0.1154068090017311, 0.0, 99.8268897864974], [0.0, 0.0, 0.05770340450086555, 0.0, 99.94229659549913], [0.0, 0.17311021350259664, 0.4039238315060589, 0.0, 99.42296595499134], [0.0, 0.1154068090017311, 0.3462204270051933, 0.0, 99.53837276399308], [0.0, 0.0, 0.28851702250432776, 0.0, 99.71148297749568], [0.0, 0.05770340450086555, 0.2308136180034622, 0.0, 99.71148297749568]]]
     
-    splits = [[0, 1], [2, 3], [4, 5]]
+    # splits = [[0, 1], [2, 3], [4, 5]]
     
-    print(r"\toprule")
+    # print(r"\toprule")
     
-    for split in splits:
-        for j in range(len(solver_names)):
-            if j == 0:
-                plabels = [PROJECT_LABELS[project_names[i]] for i in split]
-                plabels = [r"\multicolumn{4}{c|}{" +  p + "}" for p in plabels]
-                plabels = [""] + plabels
-                print(" & ".join(plabels), end=" ")
-                print(r" \\ ")
-                cats = [r"\unsolvable", r"\unstable", r"\inconclusive", r"\stable"]
-                cats = [""] + cats * 2
-                print(" & ".join(cats), end=r"\\")
-                print("")
-                # print("\unsolvable & \unstable & \inconclusive & \stable", end=" ")
-            print(Z3_SOLVERS_ALL[j].pstr(), end=" & ")
-            for i in split:
-                project = data[i][j]
-                entry = np.round(project[1:], 2).tolist()
-                entry = r" & ".join(["%.2f" % e + r"\%"  for e in entry])
-                if i == split[-1]:
-                    print(entry, end=r" \\ ")
-                    print("")
-                else:
-                    print(entry, end=" & ")    
-        print("\hline")
-    print(r"\bottomrule")
-    return
+    # for split in splits:
+    #     for j in range(len(solver_names)):
+    #         if j == 0:
+    #             plabels = [PROJECT_LABELS[project_names[i]] for i in split]
+    #             plabels = [r"\multicolumn{4}{c|}{" +  p + "}" for p in plabels]
+    #             plabels = [""] + plabels
+    #             print(" & ".join(plabels), end=" ")
+    #             print(r" \\ ")
+    #             cats = [r"\unsolvable", r"\unstable", r"\inconclusive", r"\stable"]
+    #             cats = [""] + cats * 2
+    #             print(" & ".join(cats), end=r"\\")
+    #             print("")
+    #             # print("\unsolvable & \unstable & \inconclusive & \stable", end=" ")
+    #         print(Z3_SOLVERS_ALL[j].pstr(), end=" & ")
+    #         for i in split:
+    #             project = data[i][j]
+    #             entry = np.round(project[1:], 2).tolist()
+    #             entry = r" & ".join(["%.2f" % e + r"\%"  for e in entry])
+    #             if i == split[-1]:
+    #                 print(entry, end=r" \\ ")
+    #                 print("")
+    #             else:
+    #                 print(entry, end=" & ")    
+    #     print("\hline")
+    # print(r"\bottomrule")
+
     data = np.array(data)
     print(data.tolist())
 
@@ -195,7 +198,7 @@ def plot_paper_overall(cfgs=ALL_CFGS):
 
         for i in range(len(solver_names)):
             if solver_names[i] == str(cfgs[pi].qcfg.project.orig_solver):
-                plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=10)
+                plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=20)
             # if i == 4 and pi == 0:
             #     plt.bar(br[i], height=20, bottom=pcs[3][i], width=bar_width, 
             #             color='white', edgecolor='black', linewidth=0.3, linestyle=(0, (1, 5)))
@@ -383,7 +386,7 @@ def plot_appendix_time_std():
             _plot_time_std(rows, sp)
             sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
             sp.legend()
-        figure.supylabel(r"proportions of queries exceding ($\%$)", fontsize=FSIZE, fontname=FNAME)
+        figure.supylabel(r"proportion of queries exceding ($\%$)", fontsize=FSIZE, fontname=FNAME)
         figure.supxlabel("time standard deviation (seconds)", fontsize=FSIZE, fontname=FNAME)
         plt.tight_layout()
         plt.savefig(f"fig/time_stable/{cfg.qcfg.name}.pdf")
@@ -418,7 +421,7 @@ def plot_paper_time_std():
         sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
         sp.legend()
 
-    figure.supylabel(r"proportions of queries exceding ($\%$)", fontsize=FSIZE, fontname=FNAME)
+    figure.supylabel(r"proportion of queries exceding ($\%$)", fontsize=FSIZE, fontname=FNAME)
     figure.supxlabel("time standard deviation (seconds)", fontsize=FSIZE, fontname=FNAME)
     plt.tight_layout()
     plt.savefig(f"fig/time_stable/std_paper.pdf")
@@ -711,23 +714,31 @@ def create_benchmark(cfgs=ALL_CFGS):
             shutil.copyfile(filename, f"{stable_ext_path}/{cfg.get_project_name()}-{filename.split('/')[2]}")
 
 
-skip = {"sha/sha-hmac.vad",
-    "sha/sha-memory-helpers.i.dfy",
-    "sha/sha-sha256-api.vad",
-    "sha/sha-sha256-block-data-order.vad",
-    "sha/sha-sha256-one-block.vad",
-    "sha/sha-sha256.s.dfy",
-    "attest_helpers.vad",
-    "attest.vad",
-    "sha/sha-sha256-body-16-xx.vad",
-    "sha/sha-sha256-body-00-15.vad",
-    "sha/sha-sha256.i.dfy",
-    "verify.vad",
-    "attest_input.vad",
-    "verify_input.vad"}
-    # "secprop/conf_ni.i.dfy", 
-    # "secprop/integ_ni_entry.i.dfy", 
-    # "secprop/conf_ni_entry.i.dfy"}
+skip = {"attest.vad",
+"attest_helpers.vad",
+"attest_input.vad",
+"sha/sha-Seqs.s.dfy",
+"sha/sha-bit-vector-lemmas.i.dfy",
+"sha/sha-hmac-helpers.i.dfy",
+"sha/sha-hmac.vad",
+"sha/sha-hmac_common.s.dfy",
+"sha/sha-memory-helpers.i.dfy",
+"sha/sha-sha256-api.vad",
+"sha/sha-sha256-block-data-order.vad",
+"sha/sha-sha256-body-00-15.vad",
+"sha/sha-sha256-body-16-xx.vad",
+"sha/sha-sha256-body-helpers.vad",
+"sha/sha-sha256-helpers.i.dfy",
+"sha/sha-sha256-invariants.i.dfy",
+"sha/sha-sha256-one-block.vad",
+"sha/sha-sha256.i.dfy",
+"sha/sha-sha256.s.dfy",
+"sha/sha-sha_common.s.dfy",
+"verify.vad",
+"verify_input.vad",
+"words_and_bytes.i.dfy",
+"words_and_bytes.s.dfy",
+"words_and_bytes_isolated.i.dfy"}
 
 def locality_analysis(cfg):
     summaries = load_exp_results(cfg, solvers=[Z3_4_12_1])
@@ -735,6 +746,7 @@ def locality_analysis(cfg):
     c.timeout = 6e4
     counts = {}
     summary = summaries[Z3_4_12_1]
+    fnames = set()
     for row in summary:
         group_blobs = row[2]
         fname = row[0].split(".dfy")[0][32:]
@@ -748,8 +760,8 @@ def locality_analysis(cfg):
             fname = fname.replace(".gen", ".vad")
         else:
             fname = fname + ".dfy"
-
-        if fname in skip or "sha/" in fname or "attest" in fname or "verify" in fname:
+        fnames.add(fname)
+        if fname in skip :
             continue
 
         if fname not in counts:
@@ -758,7 +770,6 @@ def locality_analysis(cfg):
         counts[fname][0] += 1
         if c.categorize_query(group_blobs)[0] == Stability.UNSTABLE:
             counts[fname][1] += 1
-        
     total, us = 0, 0
     for fname in counts:
         # print(fname, counts[fname][0])
@@ -770,69 +781,75 @@ def locality_analysis(cfg):
 def plot_appendix_sizes():
     # figure, axis = setup_fig(1, 2)
     x_max = 0
-    for cfg in ALL_CFGS:
+    for cfg in [D_LVBKV_CFG, D_FVBKV_CFG, D_KOMODO_CFG, FS_DICE_CFG, FS_VWASM_CFG, S_KOMODO_CFG]:
         clean_dir = cfg.qcfg.project.clean_dirs[Z3_4_11_2]
         paths = list_smt2_files(clean_dir)
         sizes = [] 
         for path in paths:
-            sizes.append(os.path.getsize(path) / 1024)
+            sizes.append(os.path.getsize(path) / 1024 / 1024)
         n = len(sizes)
         label = PROJECT_LABELS[cfg.qcfg.name]
         color = PROJECT_COLORS[cfg.qcfg.name]
         x_max = max(x_max, np.max(sizes))
         plt.plot(np.sort(sizes), np.arange(n), label=label, color=color, linewidth=1.5)
         plt.plot(np.max(sizes), n, marker="o", color=color, markersize=5)
+        align = "left"
+        if cfg == D_FVBKV_CFG:
+            align = "right"
+        plt.text(np.max(sizes)-0.2, n+80, label,  fontname=FNAME, horizontalalignment=align)
 
-    plt.legend()
+    # plt.legend()
     # plt.xscale("log")
     plt.ylim(bottom=0)
     plt.xlim(left=0, right=x_max)
     plt.ylabel("cumulative query count",  fontsize=FSIZE, fontname=FNAME)
-    plt.xlabel("size (KB)",  fontsize=FSIZE, fontname=FNAME) 
+    plt.xlabel("size (MB)",  fontsize=FSIZE, fontname=FNAME) 
 
     plt.tight_layout()
     plt.savefig("fig/sizes.pdf")    
 
+def _plot_srs(rows, sp):
+    dps = np.zeros((len(rows), 3))
+    for query_row in rows:
+        group_blobs = query_row[2]
+
+        for k in range(len(group_blobs)):
+            success = count_within_timeout(group_blobs[k], RCode.UNSAT, timeout=6e4)
+            dps[rows.index(query_row), k] = percentage(success, 61)
+    end = 0
+    perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+    
+    for i, m in enumerate(perturbs):
+        label = MUTATION_LABELS[m]
+        color = MUTATION_COLORS[m]
+        xs, ys = get_cdf_pts(dps[:,i])
+        end = max(ys[np.argmax(xs > 99)], end)
+        sp.plot(xs, ys, label=label, color=color)
+    sp.legend()
+    sp.set_xlim(left=0, right=100)
+    sp.set_ylim(bottom=0, top=end)
+
 def plot_appendix_srs():
-    figure, axis = plt.subplots(3, 2)
-    figure.set_size_inches(7, 12) 
-    
-    for index, cfg in enumerate(ALL_CFGS):
-        sp = axis[int(index/2)][int(index%2)]
-        summaries = load_exp_results(cfg)
+    # cc = 2
+    # figure, axis = plt.subplots(6, 1, figsize=(7, 24))
+    # figure.set_size_inches(7, 4)
+    rc, cc = 2, 4
 
-        for solver in Z3_SOLVERS_ALL:
+    for cfg in tqdm(ALL_CFGS):
+        figure, axis = plt.subplots(rc, cc)
+        figure.set_size_inches(15, 8)
+        summaries = load_exp_results(cfg, True)
+        for index, solver in enumerate(Z3_SOLVERS_ALL):
+            sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
-            dps = np.zeros((len(rows), 3))
-            for query_row in rows:
-                group_blobs = query_row[2]
-                plain_res = group_blobs[0][0][0]
-
-                success = 0
-                # for k in range(len(group_blobs)):
-                success += count_within_timeout(group_blobs[0], RCode.UNSAT, timeout=6e4)
-
-                # if plain_res == RCode.UNSAT.value:
-                #     # do not double count
-                #     success -= 2
-
-                # msr2 = min(msr2, sr2)
-                dps[rows.index(query_row), 0] = percentage(success, 61)
-                # dps[rows.index(query_row), 1] = percentage(msr2, 61)
-            xs, ys = get_cdf_pts(dps[:,0])
-            sp.plot(xs, ys, label=solver.pstr())
-            name = f"{PROJECT_LABELS[cfg.qcfg.name]}"
-            sp.set_title(name, fontsize=FSIZE, fontname=FNAME)
-            # sp.legend()
-            sp.set_xlim(left=0, right=100)
-            sp.set_ylim(bottom=0)
-    
-    figure.supxlabel(r"success rate ($\%$)", fontsize=FSIZE, fontname=FNAME)
-    figure.supylabel(r"cumulative proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
-
-    # plt.legend(ncols=2)
-    plt.savefig(f"fig/sr_cdf.pdf")
-    plt.close()
+            _plot_srs(rows, sp)
+            sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+        figure.supxlabel(r"mutant success rate ($\%$)", fontsize=FSIZE, fontname=FNAME)
+        figure.supylabel(r"cumulative proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
+        
+        plt.tight_layout()
+        plt.savefig(f"fig/sr_cdf/{cfg.qcfg.name}.pdf")
+        plt.close()
 
 # def count_timeouts(cfg):
 #     summaries = load_solver_summaries(cfg, skip_unknowns=True)
