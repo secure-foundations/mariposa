@@ -118,6 +118,62 @@ fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concre
     commands.into_iter().map(|c| c.accept(&mut normalizer).unwrap()).collect()
 }
 
+fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
+    let mut i = 0;
+    while i < commands.len() {
+        let command = &commands[i];
+        if let concrete::Command::SetOption { keyword: concrete::Keyword(k) , value: _ } = command {
+            if k == "rlimit" || k == "echo" || k == "RLIMIT" || k == "timeout" || k == "TIMEOUT" || k == "fixedpoint.TIMEOUT" {
+                commands.remove(i);
+                continue;
+            }
+        }
+        i += 1;
+    }
+}
+
+fn split_commands(commands: &mut Vec<concrete::Command>, in_file_path: String) {
+    // remove target commands
+    remove_target_cmds(commands);
+    let mut depth = 0;
+    let mut stack = Vec::new();
+    stack.push(Vec::new());
+    let mut splits = 0;
+
+    let stripsmt2 = in_file_path.strip_suffix(".smt2");
+    let out_file_name;
+    if stripsmt2.is_none() {
+        out_file_name = in_file_path.clone();
+    }
+    else {
+        out_file_name = stripsmt2.unwrap().to_string();
+    }
+    for command in commands {
+        if let concrete::Command::Push{ level:_ } = command {
+            depth += 1;
+            stack.push(Vec::new());
+        } else if let concrete::Command::Pop{ level:_ } = command {
+            depth -= 1;
+            stack.pop();
+        } else {
+            stack[depth].push(command.clone());
+        }
+        if let concrete::Command::CheckSat = command {
+            splits += 1;
+            // write out to file
+            let out_file_path = format!("{}-{}.smt2", out_file_name, splits);
+            let mut manager = Manager::new(Some(out_file_path.clone()), 0);
+            manager.dump_non_info_commands(&stack.concat());
+        }
+    }
+    println!("Successfully split into {} files:", splits);
+    let mut i = 0;
+    while i < splits {
+        println!("\t{}-{}.smt2", out_file_name, i+1);
+        i += 1;
+    }
+}
+
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -195,8 +251,11 @@ fn main() {
             desc: "output file path";
         opt seed:u64=DEFAULT_SEED,
         desc: "seed for randomness";
+        opt split:bool=false,
+            desc: "split the input file into multiple files based on check-sats";
     }.parse_or_exit();
 
+    let infilepath = args.in_file_path.clone();
     let mut commands :Vec<concrete::Command> = parse_commands_from_file(args.in_file_path);
 
     if let Some(file_path) = args.model_file_path {
@@ -206,8 +265,15 @@ fn main() {
     } else {
         let mut manager = Manager::new(args.out_file_path, args.seed);
 
-        if args.perturbation == "none" {
-            return; // parse then exit
+        if args.split && args.perturbation != "none" {
+            panic!("split and perturbation are incompatible");
+        } else if args.split {
+            split_commands(&mut commands, infilepath);
+            return;
+        } 
+            
+        if args.perturbation == "none"{
+            return; 
         }
 
         if args.perturbation  == "shuffle" {
@@ -226,7 +292,7 @@ fn main() {
             manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
         } else if args.perturbation  == "lower_shuffle" {
             commands = lower_shuffle_asserts(commands, manager.seed);
-        }
+        } 
         manager.dump_non_info_commands(&commands);
     }
 }
