@@ -66,21 +66,21 @@ if __name__ == '__main__':
     
     # create_benchmark()
 
-    # cfg = D_KOMODO_CFG
+    cfg = D_KOMODO_CFG
     # locality_analysis(cfg)
 
     # plot_paper_overall()
     # plot_paper_ext_cutoff()
     # plot_paper_pert_diff()
     # plot_paper_time_std()
-    # plot_time_scatter_paper()
+    # plot_paper_time_scatter()
 
     # plot_appendix_ext_cutoff()
     # plot_appendix_pert_diff()
     # plot_appendix_time_std()
     # plot_appendix_time_scatter()
-    # plot_appendix_sizes()
-    plot_appendix_srs()
+    plot_appendix_sizes()
+    # plot_appendix_srs()
 
     # cfg = D_FVBKV_CFG
     # plot_ext_cutoff(cfg)
