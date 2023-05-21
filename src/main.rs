@@ -12,17 +12,16 @@ const DEFAULT_SEED: u64 = 1234567890;
 fn parse_commands_from_file(file_path: String) -> Vec<concrete::Command> {
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
-    let builder = renaming::TesterModernizer::new(concrete::SyntaxBuilder);
 
     let stream = CommandStream::new(
         reader,
-//      concrete::SyntaxBuilder,
-        builder,
+        concrete::SyntaxBuilder,
         None,
     );
 
-    stream.collect::<Result<Vec<_>, _>>().unwrap()
-
+    let mut builder = renaming::TesterModernizer::new(concrete::SyntaxBuilder);
+    let commands = stream.collect::<Result<Vec<_>, _>>().unwrap();
+    commands.into_iter().map(|c| c.accept(&mut builder).unwrap()).collect()
 }
 
 fn get_assert_intervals(commands: &Vec<concrete::Command>) -> Vec<usize> {
@@ -273,7 +272,7 @@ fn main() {
         } 
             
         if args.perturbation == "none"{
-            return; 
+//          return; 
         }
 
         if args.perturbation  == "shuffle" {

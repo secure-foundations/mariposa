@@ -3,6 +3,7 @@
 
 //! Utilities for name resolution and renaming of bound symbols.
 
+use std::collections::HashSet;
 use crate::{
     concrete::*,
     rewriter::Rewriter,
@@ -13,33 +14,63 @@ use std::collections::{BTreeMap, BTreeSet};
 
 /// A [`Rewriter`] implementation that converts old-style testers `is-Foo` into a proper indexed identifier `(_ is Foo)`.
 #[derive(Debug, Default)]
-pub struct TesterModernizer<V>(V);
+pub struct TesterModernizer<V> {
+    /// The underlying syntax visitor.
+    visitor: V,
+    current_bound_symbols: Vec<HashSet<String>>,
+    curr_index: usize,
+}
 
 impl<V> TesterModernizer<V> {
     pub fn new(visitor: V) -> Self {
-        Self(visitor)
+        let mut current_bound_symbols = Vec::new();
+        current_bound_symbols.push(HashSet::new());
+        Self{visitor, current_bound_symbols, curr_index: 0}
+    }
+
+    pub fn current_bound_symbols(&self) -> &Vec<HashSet<String>> {
+        &self.current_bound_symbols
+    }
+    
+    pub fn get_bound_in_scope(&self) -> HashSet<&String> {
+        // concat all sets
+        self.current_bound_symbols.iter().flatten().collect::<HashSet<_>>()
+    }
+
+    fn push_scope(&mut self) {
+        self.current_bound_symbols.push(HashSet::new());
+        self.curr_index += 1;
+    }
+
+    fn pop_scope(&mut self) {
+        self.current_bound_symbols.pop();
+        if self.curr_index > 0 {
+            self.curr_index -= 1;
+        }
     }
 }
 
 impl<V, Error> Rewriter for TesterModernizer<V>
 where
-    V: Smt2Visitor<QualIdentifier = QualIdentifier, Symbol = Symbol, Error = Error>,
+    V: Smt2Visitor<Command = Command, QualIdentifier = QualIdentifier, Symbol = Symbol, Error = Error>,
 {
     type V = V;
     type Error = Error;
 
     fn visitor(&mut self) -> &mut V {
-        &mut self.0
+        &mut self.visitor
     }
 
+    // rewrite
     fn visit_simple_identifier(
         &mut self,
         value: Identifier<Symbol>,
     ) -> Result<QualIdentifier, Error> {
         let value = match value {
-            Identifier::Simple { symbol } if symbol.0.starts_with("is-") => {
-                let is = self.0.visit_bound_symbol("is".to_string())?;
-                let name = self.0.visit_bound_symbol(symbol.0[3..].to_string())?;
+            Identifier::Simple { symbol } if (symbol.0.starts_with("is-") && 
+                                              !self.get_bound_in_scope().contains(&symbol.0.to_string() as &String)) => {
+                let is = self.visitor.visit_bound_symbol("is".to_string())?;
+                let name = self.visitor.visit_bound_symbol(symbol.0[3..].to_string())?;
                 Identifier::Indexed {
                     symbol: is,
                     indices: vec![Index::Symbol(name)],
@@ -47,7 +78,47 @@ where
             }
             v => v,
         };
-        self.0.visit_simple_identifier(value)
+        self.visitor.visit_simple_identifier(value)
+    }
+    
+    fn bind_symbol(&mut self, symbol: &Symbol) {
+        let symbol_string = symbol.0.to_string();
+        self.current_bound_symbols[self.curr_index].insert(symbol_string);
+    }
+
+    fn unbind_symbol(&mut self, symbol: &Symbol) {
+        let symbol_string = symbol.0.to_string();
+        self.current_bound_symbols[self.curr_index].remove(&symbol_string);
+    }
+
+    fn visit_push(&mut self, level: crate::Numeral) -> Result<Command, Error> {
+        for _ in 0..level.to_usize().expect("too many levels") {
+            self.push_scope();
+        }
+        let value = self.visitor().visit_push(level)?;
+        self.process_command(value)
+    }
+
+    fn visit_pop(&mut self, level: crate::Numeral) -> Result<Command, Error> {
+        for _ in 0..level.to_usize().expect("too many levels") {
+            self.pop_scope();
+        }
+        let value = self.visitor().visit_pop(level)?;
+        self.process_command(value)
+    }
+
+    fn visit_bound_symbol(&mut self, symbol: String) -> Result<Symbol, Error> {
+//      println!("visited bound symbol: {}", symbol);
+        // print currently bound symbols
+//      println!("currently bound symbols: {:?}", self.get_bound_in_scope());
+        Ok(Symbol(symbol))
+    }
+
+    fn visit_fresh_symbol(&mut self, value: String, _kind: SymbolKind) -> Result<Symbol, Error> {
+//      println!("visited fresh symbol: {}", value);
+        // print currently bound symbols
+//      println!("currently bound symbols: {:?}", self.get_bound_in_scope());
+        Ok(Symbol(value))
     }
 }
 
@@ -596,3 +667,4 @@ fn test_random_renaming() {
         5
     );
 }
+
