@@ -25,12 +25,12 @@ COLORS = [
 ]
 
 PROJECT_LABELS = {
-    "D_KOMODO": r"Komodo$_{d}$",
-    "S_KOMODO": r"Komodo$_s$",
-    "D_FVBKV": r"VeriBetrKV$_{d}$",
-    "D_LVBKV": r"VeriBetrKV$_{l}$",
-    "FS_DICE": r"DICE$^\star_f$",
-    "FS_VWASM": r"vWasm$_f$",
+    "D_KOMODO": r"Komodo$_{D}$",
+    "S_KOMODO": r"Komodo$_S$",
+    "D_FVBKV": r"VeriBetrKV$_{D}$",
+    "D_LVBKV": r"VeriBetrKV$_{L}$",
+    "FS_DICE": r"DICE$^\star_F$",
+    "FS_VWASM": r"vWasm$_F$",
 } 
 
 def make_title(cfg, solver):
@@ -171,7 +171,7 @@ def plot_paper_overall(cfgs=ALL_CFGS):
 
     bar_width = len(solver_names)/70
     fig, ax = plt.subplots()
-    fig.set_size_inches(7, 4.5)
+    fig.set_size_inches(15, 5)
 
     br = np.arange(len(solver_names))
     br = [x - 2 * bar_width for x in br]
@@ -198,7 +198,7 @@ def plot_paper_overall(cfgs=ALL_CFGS):
 
         for i in range(len(solver_names)):
             if solver_names[i] == str(cfgs[pi].qcfg.project.orig_solver):
-                plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=20)
+                plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=40)
             # if i == 4 and pi == 0:
             #     plt.bar(br[i], height=20, bottom=pcs[3][i], width=bar_width, 
             #             color='white', edgecolor='black', linewidth=0.3, linestyle=(0, (1, 5)))
@@ -207,25 +207,25 @@ def plot_paper_overall(cfgs=ALL_CFGS):
     leable_y = 5
     ls = (0, (1, 5))
     
-    plt.text(label_x, leable_y, r'\texttt{unsolvable}', horizontalalignment='right')
+    plt.text(label_x, leable_y, r'\texttt{unsolvable}', horizontalalignment='right', fontsize=FSIZE)
     plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 1.0], 
              'o', ls=ls, color='black', linewidth=0.5, ms=1)
     leable_y += 0.8
-    plt.text(label_x, leable_y, r'\texttt{unstable}', horizontalalignment='right')
+    plt.text(label_x, leable_y, r'\texttt{unstable}', horizontalalignment='right', fontsize=FSIZE)
     plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 2.7],
              'o', ls=ls, color='black', linewidth=0.5, ms=1)
     leable_y += 0.8
-    plt.text(label_x, leable_y, r'\texttt{inconclusive}', horizontalalignment='right')
+    plt.text(label_x, leable_y, r'\texttt{inconclusive}', horizontalalignment='right', fontsize=FSIZE)
     plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 4.7],
              'o', ls=ls, color='black', linewidth=0.5, ms=1)
     # plt.text(3.5, 5.45, r'\texttt{stable}' + "\n" + r"stack up to 100\%" + "\n" + "(unplotted)", horizontalalignment='right')
     # plt.plot([3.55, 3.88], [6.40, 6.75], 'o', ls='-', color='black', linewidth=0.2, ms=2)
 
     ax.tick_params(axis='both', which='major')
-    plt.xticks([r + 2 * bar_width for r in range(len(solver_names))], solver_labels, rotation=30, ha='right')
+    plt.xticks([r + 2 * bar_width for r in range(len(solver_names))], solver_labels, rotation=30, ha='right', fontsize=FSIZE)
     from matplotlib.lines import Line2D
     woot = Line2D([0], [0], marker="*", color='black', linestyle='None', label='artifact solver'),
-    plt.legend(handles + [woot],  [PROJECT_LABELS[p] for p in project_names] + ['artifact solver'])
+    plt.legend(handles + [woot],  [PROJECT_LABELS[p] for p in project_names] + ['artifact solver'], loc='upper left', fontsize=FSIZE)
     plt.ylabel(r'query proportion ($\%$)', fontsize=FSIZE, fontname=FNAME)
     plt.xlabel('solver versions and release dates', fontsize=FSIZE, fontname=FNAME)
     plt.ylim(bottom=0, top=9)
