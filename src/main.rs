@@ -1,14 +1,13 @@
-use rand::seq::SliceRandom;
-use rand::SeedableRng;
-use rand::Rng;
-use rand_chacha::ChaCha8Rng;
-use rustop::opts;
-use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
-use std::path::Path;
-use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
+use std::io::{BufReader, BufWriter, Write, stdout};
+use rand::seq::SliceRandom;
+use rand::SeedableRng;
+use rand_chacha::ChaCha8Rng;
+use smt2parser::{CommandStream, concrete, renaming, visitors};
+use rustop::opts;
 use std::mem;
+use std::io::BufRead;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -16,28 +15,35 @@ fn parse_commands_from_file(file_path: String) -> Vec<concrete::Command> {
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
 
-    let stream = CommandStream::new(reader, concrete::SyntaxBuilder, None);
+    let stream = CommandStream::new(
+        reader,
+        concrete::SyntaxBuilder,
+        None,
+    );
 
-    stream.collect::<Result<Vec<_>, _>>().unwrap()
+    let mut builder = renaming::TesterModernizer::new(concrete::SyntaxBuilder);
+    let commands = stream.collect::<Result<Vec<_>, _>>().unwrap();
+    commands.into_iter().map(|c| c.accept(&mut builder).unwrap()).collect()
 }
 
 fn get_assert_intervals(commands: &Vec<concrete::Command>) -> Vec<usize> {
     let mut indices = Vec::new();
     for (pos, command) in commands.iter().enumerate() {
-        if let concrete::Command::Assert { .. } = command {
+        if let concrete::Command::Assert {..} = command {
             indices.push(pos);
         }
     }
 
     let mut i = 0;
-    let mut prev = usize::MAX - 1;
+    let mut prev = usize::MAX-1;
     let mut inter = false;
 
     // sentinel index
     indices.push(prev);
     let mut intervals = Vec::new();
 
-    while i < indices.len() {
+    while i < indices.len()
+    {
         let cur = indices[i];
         let con = prev + 1 == cur;
         if !inter && con {
@@ -59,16 +65,39 @@ fn shuffle_asserts(commands: &mut Vec<concrete::Command>, seed: u64) {
 
     let intervals = get_assert_intervals(&commands);
     let mut i = 0;
-    while i < intervals.len() {
+    while i < intervals.len()
+    {
         let start = intervals[i];
-        let end = intervals[i + 1] + 1;
+        let end = intervals[i+1] + 1;
         // sanity check the interval
         for j in start..end {
-            assert!(matches!(commands[j], concrete::Command::Assert { .. }));
+            assert!(matches!(commands[j], concrete::Command::Assert{..}));
         }
         (&mut (*commands)[start..end]).shuffle(&mut rng);
         i += 2;
     }
+}
+
+fn lower_shuffle_asserts(mut commands: Vec<concrete::Command>, seed: u64) -> Vec<concrete::Command> 
+{
+    let mut rng = ChaCha8Rng::seed_from_u64(seed);
+    let check_sat_index = &commands.iter().position(|x| 
+        matches!(x, concrete::Command::CheckSat { .. })).unwrap();
+
+    // truncate at the first check-sat
+    commands.truncate(*check_sat_index);
+
+    let (mut asserts, mut others): (_,Vec<_>) = commands
+        .into_iter()
+        .partition(|x|
+            matches!(x, concrete::Command::Assert { .. }));
+
+    (&mut asserts).shuffle(&mut rng);
+    others.append(&mut asserts);
+
+    // append a check-sat (the one above was truncated)
+    others.push(concrete::Command::CheckSat);
+    others
 }
 
 fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concrete::Command> {
@@ -87,46 +116,64 @@ fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concre
         randomization_seed: seed,
     };
     let mut normalizer = renaming::SymbolNormalizer::new(concrete::SyntaxBuilder, config);
-    commands
-        .into_iter()
-        .map(|c| c.accept(&mut normalizer).unwrap())
-        .collect()
+    commands.into_iter().map(|c| c.accept(&mut normalizer).unwrap()).collect()
 }
 
-fn remove_pattern_rec_helper(curr_term: &mut concrete::Term, rng: &mut ChaCha8Rng, threshold: u64) {
-    match curr_term {
-        concrete::Term::Application { qual_identifier:_, arguments } => 
-            for argument in arguments.iter_mut(){
-                remove_pattern_rec_helper(argument, rng, threshold)
-            },
-        concrete::Term::Let { var_bindings:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
-        concrete::Term::Forall { vars:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
-        concrete::Term::Exists { vars:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
-        concrete::Term::Match { term, cases:_ } => remove_pattern_rec_helper(&mut *term, rng, threshold),
-        concrete::Term::Attributes { term, attributes } => {
-            remove_pattern_rec_helper(term, rng, threshold);
-            let random = rng.gen_range(1..101);
-            if random <= threshold {
-                attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()))
+fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
+    let mut i = 0;
+    while i < commands.len() {
+        let command = &commands[i];
+        if let concrete::Command::SetOption { keyword: concrete::Keyword(k) , value: _ } = command {
+            if k == "rlimit" || k == "echo" || k == "RLIMIT" || k == "timeout" || k == "TIMEOUT" || k == "fixedpoint.TIMEOUT" {
+                commands.remove(i);
+                continue;
             }
         }
-        concrete::Term::Constant(_) => (),
-        concrete::Term::QualIdentifier(_) => (),
+        i += 1;
     }
 }
 
-fn remove_pattern_rec(command: &mut concrete::Command, rng: &mut ChaCha8Rng, threshold: u64) {
-    if let concrete::Command::Assert { term } = command {
-        remove_pattern_rec_helper(term, rng, threshold);
+fn split_commands(commands: &mut Vec<concrete::Command>, in_file_path: String) {
+    // remove target commands
+    remove_target_cmds(commands);
+    let mut depth = 0;
+    let mut stack = Vec::new();
+    stack.push(Vec::new());
+    let mut splits = 0;
+
+    let stripsmt2 = in_file_path.strip_suffix(".smt2");
+    let out_file_name;
+    if stripsmt2.is_none() {
+        out_file_name = in_file_path.clone();
+    }
+    else {
+        out_file_name = stripsmt2.unwrap().to_string();
+    }
+    for command in commands {
+        if let concrete::Command::Push{ level:_ } = command {
+            depth += 1;
+            stack.push(Vec::new());
+        } else if let concrete::Command::Pop{ level:_ } = command {
+            depth -= 1;
+            stack.pop();
+        } else {
+            stack[depth].push(command.clone());
+        }
+        if let concrete::Command::CheckSat = command {
+            splits += 1;
+            // write out to file
+            let out_file_path = format!("{}-{}.smt2", out_file_name, splits);
+            let mut manager = Manager::new(Some(out_file_path.clone()), 0);
+            manager.dump_non_info_commands(&stack.concat());
+        }
+    }
+    println!("Successfully split into {} files:", splits);
+    let mut i = 0;
+    while i < splits {
+        println!("\t{}-{}.smt2", out_file_name, i+1);
+        i += 1;
     }
 }
-
-// patterns
-fn remove_patterns(commands: &mut Vec<concrete::Command>, seed: u64, threshold: u64) {
-    let mut rng = ChaCha8Rng::seed_from_u64(seed);
-    commands.iter_mut().for_each(|x| remove_pattern_rec(x, &mut rng, threshold));
-}
-
 
 fn name_assert(command: &mut concrete::Command, ct: usize) {
     let concrete::Command::Assert { term } = command else { return; };
@@ -146,6 +193,18 @@ fn name_assert(command: &mut concrete::Command, ct: usize) {
 fn name_asserts(commands: &mut Vec<concrete::Command>) {
     commands.iter_mut().enumerate().for_each(|(i, x)| name_assert(x, i));
     commands.insert(0, concrete::Command::SetOption { keyword: concrete::Keyword("produce-unsat-cores".to_owned()), value: visitors::AttributeValue::Symbol(concrete::Symbol("true".to_owned())) });
+    // if (set-option :produce-unsat-cores false) is present, remove it
+    let mut i = 0;
+    while i < commands.len() {
+        let command = &commands[i];
+        if let concrete::Command::SetOption { keyword: concrete::Keyword(k) , value: visitors::AttributeValue::Symbol(concrete::Symbol(v)) } = command {
+            if k == "produce-unsat-cores" && v == "false"{
+                commands.remove(i);
+                continue;
+            }
+        }
+        i += 1;
+    }
     commands.push(concrete::Command::GetUnsatCore)
 }
 
@@ -225,6 +284,7 @@ fn clean_names(commands: &mut Vec<concrete::Command>) {
     commands.iter_mut().for_each(|x| clean_name(x));
 }
 
+
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -239,10 +299,12 @@ impl Manager {
                 std::fs::create_dir_all(prefix).unwrap();
                 let file = File::create(path).unwrap();
                 BufWriter::new(Box::new(file))
+            },
+            None => {
+                BufWriter::new(Box::new(stdout().lock()))
             }
-            None => BufWriter::new(Box::new(stdout().lock())),
         };
-        Manager { writer, seed }
+        Manager {writer, seed}
     }
 
     fn dump(&mut self, s: &String) {
@@ -251,18 +313,18 @@ impl Manager {
 
     fn dump_non_info_commands(&mut self, commands: &Vec<concrete::Command>) {
         for command in commands {
-            if let concrete::Command::SetInfo { .. } = command {
+            if let concrete::Command::SetInfo {..} = command {
             } else {
                 writeln!(self.writer, "{}", command).unwrap();
             }
         }
     }
 
-    fn dump_model_test(&mut self, model: &Vec<concrete::Command>, query: &Vec<concrete::Command>) {
-        let mut defined: HashMap<String, &concrete::Command> = HashMap::new();
+    fn dump_model_test(&mut self, model: &Vec<concrete::Command>, query: &Vec<concrete::Command>) {    
+        let mut defined:HashMap<String, &concrete::Command> = HashMap::new();
 
         for command in model {
-            if let concrete::Command::DefineFun { sig, .. } = command {
+            if let concrete::Command::DefineFun { sig,..} = command {
                 defined.insert(sig.name.0.clone(), command);
             } else {
                 // panic!("unhandled command in model {}", command);
@@ -270,13 +332,13 @@ impl Manager {
         }
 
         for command in query {
-            if let concrete::Command::DeclareFun { symbol, .. } = command {
+            if let concrete::Command::DeclareFun { symbol,..} = command {
                 let name = &symbol.0;
                 if defined.contains_key(name) {
                     let command = defined.get(name).unwrap();
                     writeln!(self.writer, "{}", command).unwrap();
                 }
-            } else if let concrete::Command::SetInfo { .. } = command {
+            } else if let concrete::Command::SetInfo {..} = command {
                 // skip
             } else {
                 writeln!(self.writer, "{}", command).unwrap();
@@ -299,15 +361,15 @@ fn main() {
         opt out_file_path:Option<String>,
             desc: "output file path";
         opt seed:u64=DEFAULT_SEED,
-            desc: "seed for randomness";
-        opt threshold:u64=100,
-            desc: "threshold for pattern removal";
+        desc: "seed for randomness";
+        opt split:bool=false,
+            desc: "split the input file into multiple files based on check-sats";
         opt core_file:Option<String>,
             desc: "file containing unsat cores";
-    }
-    .parse_or_exit();
+    }.parse_or_exit();
 
-    let mut commands: Vec<concrete::Command> = parse_commands_from_file(args.in_file_path);
+    let infilepath = args.in_file_path.clone();
+    let mut commands :Vec<concrete::Command> = parse_commands_from_file(args.in_file_path);
 
     if let Some(file_path) = args.model_file_path {
         let model = parse_commands_from_file(file_path);
@@ -316,11 +378,18 @@ fn main() {
     } else {
         let mut manager = Manager::new(args.out_file_path, args.seed);
 
-        if args.perturbation == "none" {
-            return; // parse then exit
+        if args.split && args.perturbation != "none" {
+            panic!("split and perturbation are incompatible");
+        } else if args.split {
+            split_commands(&mut commands, infilepath);
+            return;
+        } 
+            
+        if args.perturbation == "none"{
+//          return; 
         }
 
-        if args.perturbation == "shuffle" {
+        if args.perturbation  == "shuffle" {
             shuffle_asserts(&mut commands, manager.seed);
         } else if args.perturbation == "rename" {
             commands = normalize_commands(commands, manager.seed);
@@ -329,14 +398,22 @@ fn main() {
                 let solver_seed = manager.seed as u32;
                 manager.dump(&format!("(set-option :random-seed {solver_seed})\n"));
             };
-        } else if args.perturbation == "patterns" {
-            remove_patterns(&mut commands, manager.seed, args.threshold);
+        } else if args.perturbation == "rseed" {
+            let smt_seed = manager.seed as u32;
+            let sat_seed = (manager.seed >> 32) as u32;
+            manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
+            manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
+        } else if args.perturbation  == "lower_shuffle" {
+            commands = lower_shuffle_asserts(commands, manager.seed);
         } else if args.perturbation == "unsat-core" {
             name_asserts(&mut commands);
         } else if args.perturbation == "minimize-query" {
             commands = parse_core_from_file(commands, args.core_file.unwrap());
             // minimize-query will now also clean names by default
+            // cleans names that were put in by mariposa
             clean_names(&mut commands);
+            // remove produce unsat core at top and get-unsat-core from the bottom
+            commands = commands[1..commands.len()-1].to_vec();
         } else if args.perturbation == "clean-names" {
             clean_names(&mut commands);
         }

@@ -30,7 +30,18 @@ def subprocess_run(command, time_limit, debug=False, cwd=None):
     stderr = res.stderr.decode("utf-8").strip()
     return stdout, stderr, elapsed
 
-def parse_basic_output_z3(output):
+def parse_basic_output_z3(output, core=False):
+    if core:
+        output = output.split("\n")
+        if "unsat" in output:
+            return "unsat"
+        elif "sat" in output:
+            return "sat"
+        elif "timeout" in output:
+            return "timeout"
+        elif "unknown" in output:
+            return "unknown"
+        return "error"
     if "unsat" in output:
         return "unsat"
     elif "sat" in output:
@@ -53,7 +64,7 @@ def parse_basic_output_cvc(output, error):
     return "error"
 
 class SolverTaskGroup:
-    def __init__(self, cfg, vanilla_path, solver, remove_mut):
+    def __init__(self, cfg, vanilla_path, solver, remove_mut, core = False):
         self.vanilla_path = vanilla_path
         self.mutant_paths = []
         self.solver = solver
@@ -61,6 +72,8 @@ class SolverTaskGroup:
         self.cfg = cfg
         self.table_name = cfg.get_solver_table_name(self.solver)
         self.remove_mut = remove_mut
+        self.early_return = False
+        self.core = core
 
     def _run_single(self, query_path, perturb):
         assert (self.cfg.trials == 1)
@@ -78,7 +91,12 @@ class SolverTaskGroup:
         # parse_basic_output_cvc
 
         if self.solver.brand == SolverBrand.Z3:
-            rcode = parse_basic_output_z3(out)
+            rcode = parse_basic_output_z3(out, self.core)
+            # write out to core file if core
+            if self.core and rcode == "unsat":
+                core_file = query_path.replace(".smt2", ".core").replace("/inst/", "/core/")
+                with open(core_file, "w") as f:
+                    f.write(out)
         else:
             rcode = parse_basic_output_cvc(out, err)
 
@@ -107,13 +125,17 @@ class SolverTaskGroup:
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
             if result.returncode != 0:
                 print("[WARN] MARIPOSA failed: " + command)
-                return
+                return "stable"
 
             elapsed, rcode = self._run_single(mutant_path, perturb)
 
             if self.remove_mut:
                 # remove mutant
                 os.system(f"rm {mutant_path}")
+                
+            if rcode != "unsat" and self.early_return:
+                return "unstable"
+        return "stable"
  
     def run(self):
         elapsed, rcode = self._run_single(self.vanilla_path, None)
@@ -123,7 +145,10 @@ class SolverTaskGroup:
         gen_path_pre = "gen/" + self.table_name + "/" + self.vanilla_path[5::]
 
         for perturb in self.cfg.enabled_muts:
-            self.run_pert_group(gen_path_pre, perturb)
+            stability = self.run_pert_group(gen_path_pre, perturb)
+            if stability != "stable" and self.early_return:
+                return "unstable"
+        return "stable"
 
 def run_group_tasks(queue, start_time):
     from datetime import timedelta
@@ -144,7 +169,7 @@ def run_group_tasks(queue, start_time):
     print("worker exit")
 
 class Runner:
-    def __init__(self, cfgs, override=False, remove_mut=True):
+    def __init__(self, cfgs, override=False, remove_mut=True, core=False):
         for cfg in cfgs:
             assert isinstance(cfg, ExpConfig)
             self.__setup_tables(cfg, override)
@@ -164,7 +189,7 @@ class Runner:
             for solver, queries in cfg.samples.items():
                 print(f"loading tasks {str(solver)}")
                 for query in tqdm(queries):
-                    task = SolverTaskGroup(cfg.qcfg, query, solver, remove_mut)
+                    task = SolverTaskGroup(cfg.qcfg, query, solver, remove_mut, core)
                     tasks.append(task)
         con.close()
         print("shuffling tasks")
@@ -206,3 +231,77 @@ class Runner:
                 create_experiment_table(cur, table_name)
         con.commit()
         con.close()
+
+from analyzer import RCode 
+from analyzer import Classifier
+from analyzer import Stability
+from runner import parse_basic_output_z3
+from runner import subprocess_run
+import numpy as np
+
+timeout = 60
+
+def async_run_single_mutant(results, command):
+    items = command.split(" ")
+    os.system(command)
+    items = command.split(" ")
+    command = f"./solvers/z3_place_holder {items[6]} -T:{timeout}"
+    out, err, elapsed = subprocess_run(command, timeout + 1)
+    rcode = parse_basic_output_z3(out)
+    # os.system(f"rm {items[6]}")
+    results.append((elapsed, rcode))
+
+def mariposa(task_file):
+    commands = [t.strip() for t in open(task_file, "r").readlines()]
+    plain = commands[0]
+    commands = commands[1:]
+
+    import multiprocessing as mp
+    manager = mp.Manager()
+    pool = mp.Pool(processes=7)
+
+    command = f"./solvers/z3_place_holder {plain} -T:{timeout}"
+    out, err, elapsed = subprocess_run(command, timeout + 1)
+    rcode = parse_basic_output_z3(out)
+    pr = (elapsed, rcode)
+    classifier = Classifier("z_test")
+    classifier.timeout = 6e4 # 1 min
+
+    reseeds = manager.list([pr])
+    renames = manager.list([pr])
+    shuffles = manager.list([pr])
+
+    for command in commands:
+        if "rseed" in command:
+            pool.apply_async(async_run_single_mutant, args=(reseeds, command))
+        elif "rename" in command:
+            pool.apply_async(async_run_single_mutant, args=(renames, command))
+        elif "shuffle" in command:
+            pool.apply_async(async_run_single_mutant, args=(shuffles, command))
+        else:
+            assert False
+    
+    pool.close()
+    pool.join()
+
+    assert len(reseeds) == len(renames) == len(shuffles) == 61
+
+    blob = np.zeros((3, 2, 61), dtype=int)
+    for i, things in enumerate([reseeds, renames, shuffles]):
+        for j, (veri_times, veri_res) in enumerate(things):
+            blob[i, 0, j] = RCode.from_str(veri_res).value
+            blob[i, 1, j] = veri_times
+
+    cat = classifier.categorize_query(blob)
+
+    print(blob)
+    print(cat)
+
+    if cat == Stability.STABLE:
+        exit(0) # good
+    if cat == Stability.INCONCLUSIVE:
+        exit(125) # skip
+    exit(1) # bad 
+
+if __name__ == "__main__":
+    mariposa(sys.argv[1])
