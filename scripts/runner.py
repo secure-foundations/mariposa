@@ -12,13 +12,6 @@ from configs.experiments import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
-# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-entry.i.dfyImpl___module.__default.lemma__userExecutionModel__sufficiency.smt2 1
-# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-mapping.s.dfyCheckWellformed___module.__default.updateL2Pte.smt2 2
-# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-secprop-conf_ni_entry.i.dfyImpl___module.__default.lemma__validEnclaveEx__conf.smt2 3
-# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-secprop-sec_prop_util.i.dfyImpl___module.__default.lemma__user__regs__domain.smt2 4
-# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-sha-sha256-body-16-xx.gen.dfyCheckWellformed___module.__default.va__refined__Body__16__XX.smt2 5
-# ./run-script-smtcomp-current example/data/d_komodo_cvc5_clean/verified-valesupp.i.dfyCheckWellformed___module.__default.va__get__osp.smt2 6
-
 def subprocess_run(command, time_limit, debug=False, cwd=None):
     if debug:
         print(command)
@@ -52,33 +45,43 @@ def parse_basic_output_cvc(output, error):
         return "timeout"
     return "error"
 
-class SolverTaskGroup:
-    def __init__(self, cfg, vanilla_path, solver, remove_mut):
-        self.vanilla_path = vanilla_path
-        self.mutant_paths = []
+class Task:
+    def __init__(self, qcfg, original_query, perturb, solver):
+        self.qcfg = qcfg
         self.solver = solver
-        assert isinstance(cfg, QueryExpConfig)
-        self.cfg = cfg
-        self.table_name = cfg.get_solver_table_name(self.solver)
-        self.remove_mut = remove_mut
-        self.early_return = False
+        self.original_query = original_query
+        self.perturb = perturb
 
-    def _run_single(self, query_path, perturb):
-        assert (self.cfg.trials == 1)
+    def run(self):
+        seed = random.randint(0, 0xffffffffffffffff)
+        solver = self.solver
+        qcfg = self.qcfg
+        
+        table_name = qcfg.get_solver_table_name(self.solver)
+        if self.perturb is not None:
+            gen_path_pre = "gen/" + table_name + "/" + self.original_query[5::]
+            file_name = f"{str(seed)}.{self.perturb}.smt2"
+            mutant_path = gen_path_pre.replace("smt2", file_name)
 
-        if self.solver.brand == SolverBrand.Z3:
-            # -st
-            command = f"{self.solver.path} {query_path} -T:{self.cfg.timeout}"
+            command = f"{MARIPOSA_BIN_PATH} -i {self.original_query} -p {self.perturb} -o {mutant_path} -s {seed}"
+
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+
+            if result.returncode != 0:
+                print("[ERROR] MARIPOSA failed: " + command)
+                return
         else:
-            assert (self.solver.brand == SolverBrand.CVC5)
-            # --stats
-            command = f"{self.solver.path} {query_path} -i --tlimit={self.cfg.timeout * 1000} --no-nl-cov --nl-ext=none --fmf-mbqi=none --no-mbqi --no-cbqi --no-cegqi"
+            mutant_path = self.original_query
 
-        out, err, elapsed = subprocess_run(command, self.cfg.timeout + 1)
+        if solver.brand == SolverBrand.Z3:
+            command = f"{solver.path} {mutant_path} -T:{qcfg.timeout}"
+        else:
+            assert (solver.brand == SolverBrand.CVC5)
+            command = f"{solver.path} {mutant_path} -i --tlimit={qcfg.timeout * 1000} --no-nl-cov --nl-ext=none --fmf-mbqi=none --no-mbqi --no-cbqi --no-cegqi"
 
-        # parse_basic_output_cvc
+        out, err, elapsed = subprocess_run(command, qcfg.timeout + 1)
 
-        if self.solver.brand == SolverBrand.Z3:
+        if solver.brand == SolverBrand.Z3:
             rcode = parse_basic_output_z3(out)
         else:
             rcode = parse_basic_output_cvc(out, err)
@@ -86,54 +89,21 @@ class SolverTaskGroup:
         if rcode == "error":
             print(out, err)
 
-        con = sqlite3.connect(self.cfg.db_path)
+        if qcfg.remove_mut and self.perturb is not None:
+            # remove mutant
+            os.system(f"rm {mutant_path}")
+        
+        con = sqlite3.connect(qcfg.db_path)
         cur = con.cursor()
-        cur.execute(f"""INSERT INTO {self.table_name}
+        cur.execute(f"""INSERT INTO {table_name}
             (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
             VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
-            (query_path, self.vanilla_path, perturb, command, out, err, rcode, elapsed))
+            (mutant_path, self.original_query, self.perturb, command, out, err, rcode, elapsed))
         con.commit()
         con.close()
-        return elapsed, rcode
+        # print(rcode, elapsed)
 
-    def run_pert_group(self, gen_path_pre, perturb):
-        for _ in range(self.cfg.max_mutants):
-            seed = random.randint(0, 0xffffffffffffffff)
-
-            file_name = f"{str(seed)}.{perturb}.smt2"
-            mutant_path = gen_path_pre.replace("smt2", file_name)
-            command = f"{MARIPOSA_BIN_PATH} -i {self.vanilla_path} -p {perturb} -o {mutant_path} -s {seed}"
-
-            # generate mutant
-            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-            if result.returncode != 0:
-                print("[WARN] MARIPOSA failed: " + command)
-                return "stable"
-
-            elapsed, rcode = self._run_single(mutant_path, perturb)
-
-            if self.remove_mut:
-                # remove mutant
-                os.system(f"rm {mutant_path}")
-                
-            if rcode != "unsat" and self.early_return:
-                return "unstable"
-        return "stable"
- 
-    def run(self):
-        elapsed, rcode = self._run_single(self.vanilla_path, None)
-        if rcode != "unsat":
-            print("[WARN] vanilla not unsat: " + self.vanilla_path + " " + str(elapsed) + " milliseconds " + rcode)
-
-        gen_path_pre = "gen/" + self.table_name + "/" + self.vanilla_path[5::]
-
-        for perturb in self.cfg.enabled_muts:
-            stability = self.run_pert_group(gen_path_pre, perturb)
-            if stability != "stable" and self.early_return:
-                return "unstable"
-        return "stable"
-
-def run_group_tasks(queue, start_time):
+def run_tasks(queue, start_time):
     from datetime import timedelta
     from datetime import datetime
     init_size = queue.qsize()
@@ -142,149 +112,189 @@ def run_group_tasks(queue, start_time):
         task = queue.get()
         cur_size = queue.qsize()
         done_size = init_size - cur_size
-        elapsed = round((time.time() - start_time) / 3600, 2)
-        estimated = round(queue.qsize() * (elapsed / done_size), 2)
-
-        print(f"finished: {done_size}/{init_size}, elapsed: {elapsed}, estimated: {datetime.now() + timedelta(hours=estimated)}")
+        if done_size % 100 == 0:
+            elapsed = round((time.time() - start_time) / 3600, 2)
+            estimated = round(cur_size * (elapsed / done_size), 2)
+            print(f"finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {datetime.now() + timedelta(hours=estimated)}")
         if task is None:
             break
         task.run()
-    print("worker exit")
+    print("[INFO] worker exit")
+
+def setup_table(qcfg, solver):
+    con, cur = get_cursor(qcfg.db_path)
+    table_name = qcfg.get_solver_table_name(solver)
+    if check_table_exists(cur, table_name):
+        if qcfg.overwrite:
+            ok = confirm_drop_table(cur, table_name)
+            if not ok:
+                print(f"[INFO] keep existing table {table_name}")
+                sys.exit()
+    create_experiment_table(cur, table_name)
+    con.commit()
+    con.close()
+
+def print_single_status(summary_table):
+    classifier = Classifier("z_test")
+    classifier.timeout = 6e4 # 1 min
+
+    con, cur = get_cursor(qcfg.db_path)
+    res = cur.execute(f"""SELECT * FROM {summary_table}""")
+    rows = res.fetchall()
+    con.close()
+
+    assert len(rows) == 1
+    row = rows[0]
+    
+    mut_size = qcfg.max_mutants
+    perturbs = ast.literal_eval(row[1])
+    blob = np.frombuffer(row[2], dtype=int)
+    blob = blob.reshape((len(perturbs), 2, mut_size + 1))
+    status, votes = classifier.categorize_query(blob)
+
+    print("")
+    print("overall:", status)
+    print("original:")
+    print("\tresult:", RCode(blob[0][0][0]))
+    print("\ttime:", round(blob[0][1][0]/1000, 2), "(s)")
+    for i in range(len(perturbs)):
+        count = count_within_timeout(blob[i], RCode.UNSAT, timeout=classifier.timeout)
+        times = np.clip(blob[i][1], 0, classifier.timeout) / 1000
+        print(f"{perturbs[i]}: {votes[i]}")
+        print("\tsuccess:", f"{count}/{mut_size+1}")
+        print("\tmean:", round(np.mean(times), 2), "(s)")
+        print("\tstd:", round(np.std(times), 2), "(s)")
 
 class Runner:
-    def __init__(self, cfgs, override=False, remove_mut=True):
-        for cfg in cfgs:
-            assert isinstance(cfg, ExpConfig)
-            self.__setup_tables(cfg, override)
-
-        con = get_connection()
-        con, cur = get_cursor()
-
+    def __init__(self) -> None:
         mp.set_start_method('spawn')
         self.task_queue = mp.Queue()
 
-        if not remove_mut:
-            print("[WARN] not removing generated mutant files!")
+    def _add_single_exp(self, qcfg, original_query, solver):
+        task = Task(qcfg, original_query, None, solver)
+        self.task_queue.put(task)
 
-        print("loading tasks")
-        tasks = []
-        for cfg in cfgs:
-            for solver, queries in cfg.samples.items():
-                print(f"loading tasks {str(solver)}")
-                for query in tqdm(queries):
-                    task = SolverTaskGroup(cfg.qcfg, query, solver, remove_mut)
-                    tasks.append(task)
-        con.close()
-        print("shuffling tasks")
-        random.shuffle(tasks)
-        for task in tasks:
-            self.task_queue.put(task)
+        for perturb in qcfg.enabled_muts:
+            for _ in range(qcfg.max_mutants):
+                task = Task(qcfg, original_query, perturb, solver)
+                self.task_queue.put(task)
 
-        # for proc exit
-        for _ in range(cfg.num_procs):
-            self.task_queue.put(None)
+    def _setup_tables(self, qcfgs, solvers):
+        for qcfg in qcfgs:
+            for solver in solvers:
+                setup_table(qcfg, solver)
+
+    def _run_workers(self, num_procs):
+        start_time = time.time()
         processes = []
-
-        print("starting solvers")
-
-        for _ in range(cfg.num_procs):
-            start_time = time.time()
-            p = mp.Process(target=run_group_tasks, args=(self.task_queue, start_time, ))
+        for _ in range(num_procs):
+            p = mp.Process(target=run_tasks, args=(self.task_queue, start_time,))
             p.start()
             processes.append(p)
+            self.task_queue.put(None)
 
         for p in processes:
             p.join()
 
-    def __setup_tables(self, cfg, override):
-        con, cur = get_cursor(cfg.qcfg.db_path)
-        ok = True
+    def run_single_exp(self, qcfg, original_query, solver):
+        self._setup_tables(self, [qcfg], [solver])
+        self._add_single_exp(original_query, solver)
+        self._run_workers(qcfg.num_procs)
+        summary_table = build_solver_summary_table(qcfg, Z3_4_12_1)
+        print_single_status(summary_table)
+        
+    def run_multi_exps(self, qcfgs, solvers):
+        import itertools
+        self._setup_tables(qcfgs, solvers)
 
-        for solver in cfg.samples:
-            table_name = cfg.qcfg.get_solver_table_name(solver)
-            if check_table_exists(cur, table_name):
-                if override:
-                    ok = confirm_drop_table(cur, table_name)
-                    if not ok:
-                        sys.exit()
-                    create_experiment_table(cur, table_name)
-                else:
-                    print(f"[INFO] keep existing table {table_name}")
-            else:
-                create_experiment_table(cur, table_name)
-        con.commit()
-        con.close()
+        for qcfg, solver in itertools.product(qcfgs, solvers):
+            for original_query in qcfg.project.list_queries(10):
+                self._add_single_exp(qcfg, original_query, solver)
+        print(f"[INFO] total tasks: {self.task_queue.qsize()}")
+        self._run_workers(qcfg.num_procs)
+        print(f"[INFO] start post processing")
+        for qcfg, solver in itertools.product(qcfgs, solvers):
+            build_solver_summary_table(qcfg, Z3_4_12_1)
 
-from analyzer import RCode 
-from analyzer import Classifier
-from analyzer import Stability
-from runner import parse_basic_output_z3
-from runner import subprocess_run
-import numpy as np
+if __name__ == '__main__':
+    # qcfg = QueryExpConfig("test", S_KOMODO, "./data/test.db")
+    # qcfg.overwrite = True
+    # r = Runner()
+    # r.run_multi_exps([qcfg], [Z3_4_12_1])
+    # qcfg.overwrite = True
+    # run_single_exp(qcfg, "data/d_komodo_z3_clean/verified-words_and_bytes.s.dfyCheckWellformed___module.__default.BEUintToSeqByte.smt2", Z3_4_12_1)
+    pass
 
-timeout = 60
+# from analyzer import RCode 
+# from analyzer import Classifier
+# from analyzer import Stability
+# from runner import parse_basic_output_z3
+# from runner import subprocess_run
+# import numpy as np
 
-def async_run_single_mutant(results, command):
-    items = command.split(" ")
-    os.system(command)
-    items = command.split(" ")
-    command = f"./solvers/z3_place_holder {items[6]} -T:{timeout}"
-    out, err, elapsed = subprocess_run(command, timeout + 1)
-    rcode = parse_basic_output_z3(out)
-    # os.system(f"rm {items[6]}")
-    results.append((elapsed, rcode))
+# timeout = 60
 
-def mariposa(task_file):
-    commands = [t.strip() for t in open(task_file, "r").readlines()]
-    plain = commands[0]
-    commands = commands[1:]
+# def async_run_single_mutant(results, command):
+#     items = command.split(" ")
+#     os.system(command)
+#     items = command.split(" ")
+#     command = f"./solvers/z3_place_holder {items[6]} -T:{timeout}"
+#     out, err, elapsed = subprocess_run(command, timeout + 1)
+#     rcode = parse_basic_output_z3(out)
+#     # os.system(f"rm {items[6]}")
+#     results.append((elapsed, rcode))
 
-    import multiprocessing as mp
-    manager = mp.Manager()
-    pool = mp.Pool(processes=7)
+# def mariposa(task_file):
+#     commands = [t.strip() for t in open(task_file, "r").readlines()]
+#     plain = commands[0]
+#     commands = commands[1:]
 
-    command = f"./solvers/z3_place_holder {plain} -T:{timeout}"
-    out, err, elapsed = subprocess_run(command, timeout + 1)
-    rcode = parse_basic_output_z3(out)
-    pr = (elapsed, rcode)
-    classifier = Classifier("z_test")
-    classifier.timeout = 6e4 # 1 min
+#     import multiprocessing as mp
+#     manager = mp.Manager()
+#     pool = mp.Pool(processes=7)
 
-    reseeds = manager.list([pr])
-    renames = manager.list([pr])
-    shuffles = manager.list([pr])
+#     command = f"./solvers/z3_place_holder {plain} -T:{timeout}"
+#     out, err, elapsed = subprocess_run(command, timeout + 1)
+#     rcode = parse_basic_output_z3(out)
+#     pr = (elapsed, rcode)
+#     classifier = Classifier("z_test")
+#     classifier.timeout = 6e4 # 1 min
 
-    for command in commands:
-        if "rseed" in command:
-            pool.apply_async(async_run_single_mutant, args=(reseeds, command))
-        elif "rename" in command:
-            pool.apply_async(async_run_single_mutant, args=(renames, command))
-        elif "shuffle" in command:
-            pool.apply_async(async_run_single_mutant, args=(shuffles, command))
-        else:
-            assert False
+#     reseeds = manager.list([pr])
+#     renames = manager.list([pr])
+#     shuffles = manager.list([pr])
+
+#     for command in commands:
+#         if "rseed" in command:
+#             pool.apply_async(async_run_single_mutant, args=(reseeds, command))
+#         elif "rename" in command:
+#             pool.apply_async(async_run_single_mutant, args=(renames, command))
+#         elif "shuffle" in command:
+#             pool.apply_async(async_run_single_mutant, args=(shuffles, command))
+#         else:
+#             assert False
     
-    pool.close()
-    pool.join()
+#     pool.close()
+#     pool.join()
 
-    assert len(reseeds) == len(renames) == len(shuffles) == 61
+#     assert len(reseeds) == len(renames) == len(shuffles) == 61
 
-    blob = np.zeros((3, 2, 61), dtype=int)
-    for i, things in enumerate([reseeds, renames, shuffles]):
-        for j, (veri_times, veri_res) in enumerate(things):
-            blob[i, 0, j] = RCode.from_str(veri_res).value
-            blob[i, 1, j] = veri_times
+#     blob = np.zeros((3, 2, 61), dtype=int)
+#     for i, things in enumerate([reseeds, renames, shuffles]):
+#         for j, (veri_times, veri_res) in enumerate(things):
+#             blob[i, 0, j] = RCode.from_str(veri_res).value
+#             blob[i, 1, j] = veri_times
 
-    cat = classifier.categorize_query(blob)
+#     cat = classifier.categorize_query(blob)
 
-    print(blob)
-    print(cat)
+#     print(blob)
+#     print(cat)
 
-    if cat == Stability.STABLE:
-        exit(0) # good
-    if cat == Stability.INCONCLUSIVE:
-        exit(125) # skip
-    exit(1) # bad 
+#     if cat == Stability.STABLE:
+#         exit(0) # good
+#     if cat == Stability.INCONCLUSIVE:
+#         exit(125) # skip
+#     exit(1) # bad 
 
-if __name__ == "__main__":
-    mariposa(sys.argv[1])
+# if __name__ == "__main__":
+#     mariposa(sys.argv[1])

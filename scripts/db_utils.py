@@ -103,10 +103,10 @@ def import_tables(other_db_path):
     con.commit()
     con.close()
 
-def build_solver_summary_table(cfg, solver):
-    con, cur = get_cursor(cfg.qcfg.db_path)
-    solver_table = cfg.qcfg.get_solver_table_name(solver)
-    summary_table = cfg.get_solver_summary_table_name(solver)
+def build_solver_summary_table(qcfg, solver):
+    con, cur = get_cursor(qcfg.db_path)
+    solver_table = qcfg.get_solver_table_name(solver)
+    summary_table = qcfg.get_solver_summary_table_name(solver)
 
     if not check_table_exists(cur, solver_table):
         print(f"[WARN] table {solver_table} does not exist")
@@ -132,7 +132,7 @@ def build_solver_summary_table(cfg, solver):
             WHERE vanilla_path = "{vanilla_path}"
             AND perturbation IS NOT NULL""")
 
-        perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+        perturbs = [str(p) for p in qcfg.enabled_muts]
         v_rcode = RCode.from_str(v_rcode).value
         results = {p: [[v_rcode], [v_time]] for p in perturbs}
 
@@ -140,7 +140,7 @@ def build_solver_summary_table(cfg, solver):
             results[row[2]][0].append(RCode.from_str(row[0]).value)
             results[row[2]][1].append(row[1])
 
-        mut_size = cfg.qcfg.max_mutants
+        mut_size = qcfg.max_mutants
         blob = np.zeros((len(perturbs), 2, mut_size + 1), dtype=int)
         for pi, perturb in enumerate(perturbs):
             (veri_res, veri_times) = results[perturb]
@@ -153,6 +153,8 @@ def build_solver_summary_table(cfg, solver):
 
     con.commit()
     con.close()
+
+    return summary_table
 
 def export_timeouts(cfg, solver):
     con, cur = get_cursor(cfg.qcfg.db_path)
@@ -238,9 +240,9 @@ def extend_solver_summary_table(cfg, ext_cfg, solver):
 
     build_solver_summary_table(cfg, solver)
 
-def load_solver_summary_table(cfg, solver, skip=set()):
-    con, cur = get_cursor(cfg.qcfg.db_path)
-    new_table_name = cfg.qcfg.get_solver_table_name(solver) + "_summary"
+def load_solver_summary_table(qcfg, solver, skip=set()):
+    con, cur = get_cursor(qcfg.db_path)
+    new_table_name = qcfg.get_solver_table_name(solver) + "_summary"
     if not check_table_exists(cur, new_table_name):
         print(f"[INFO] skipping {new_table_name}")
         return None
@@ -250,7 +252,7 @@ def load_solver_summary_table(cfg, solver, skip=set()):
     rows = res.fetchall()
 
     nrows = []
-    mut_size = cfg.qcfg.max_mutants
+    mut_size = qcfg.max_mutants
     for row in rows:
         if row[0] in skip:
             continue
