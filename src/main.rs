@@ -131,7 +131,7 @@ fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
     }
 }
 
-fn split_commands(commands: &mut Vec<concrete::Command>, in_file_path: String) {
+fn split_commands(commands: &mut Vec<concrete::Command>, in_file_path: String, out_dir: String) {
     // remove target commands
     remove_target_cmds(commands);
     let mut depth = 0;
@@ -139,14 +139,15 @@ fn split_commands(commands: &mut Vec<concrete::Command>, in_file_path: String) {
     stack.push(Vec::new());
     let mut splits = 0;
 
-    let stripsmt2 = in_file_path.strip_suffix(".smt2");
-    let out_file_name;
-    if stripsmt2.is_none() {
-        out_file_name = in_file_path.clone();
-    }
-    else {
-        out_file_name = stripsmt2.unwrap().to_string();
-    }
+    let file_name = in_file_path.split("/").last().unwrap();
+    // make sure out_dir ends with a slash
+    let out_dir = if out_dir.ends_with("/") { out_dir } else { out_dir + "/" };
+    // remove .smt2 suffix if it exists
+    let out_file_name = match file_name.strip_suffix(".smt2") {
+        Some(s) => out_dir + s,
+        None => out_dir + file_name,
+    };
+
     for command in commands {
         if let concrete::Command::Push{ level:_ } = command {
             depth += 1;
@@ -252,6 +253,8 @@ fn main() {
         desc: "seed for randomness";
         opt split:bool=false,
             desc: "split the input file into multiple files based on check-sats";
+        opt split_dir:Option<String>,
+            desc: "directory to put split files in";
     }.parse_or_exit();
 
     let infilepath = args.in_file_path.clone();
@@ -267,7 +270,7 @@ fn main() {
         if args.split && args.perturbation != "none" {
             panic!("split and perturbation are incompatible");
         } else if args.split {
-            split_commands(&mut commands, infilepath);
+            split_commands(&mut commands, infilepath, args.split_dir.unwrap_or_default());
             return;
         } 
             
