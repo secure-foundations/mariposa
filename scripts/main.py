@@ -3,7 +3,7 @@ from configs.experiments import *
 from runner import Runner, subprocess_run
 from db_utils import *
 from analyzer import *
-from bisect_utils import *
+# from bisect_utils import *
 
 def import_database(other_server):
     other_db_path = "data/mariposa2.db"
@@ -59,17 +59,17 @@ if __name__ == '__main__':
     # get_runtime()
     # entropy_test()
     
-#   for unsat_core in UNSAT_CORE_CFGS:
-#       print(unsat_core.name)
-#       if unsat_core.name != "D_LVBKV_Z3_UNSAT_CORE":
-#           continue
-#       r = Runner([unsat_core], override=True, core=True)
-    
-    for min_asserts in MIN_ASSERTS_CFGS:
-        print(min_asserts.name)
-        if min_asserts.name != "D_LVBKV_Z3_MIN_ASSERTS":
+    for unsat_core in UNSAT_CORE_CFGS:
+        print(unsat_core.name)
+        if unsat_core.name != "D_KOMODO_Z3_UNSAT_CORE":
             continue
-        r = Runner([min_asserts], override=True)
+        r = Runner([unsat_core], override=True, core=True)
+    
+#   for min_asserts in MIN_ASSERTS_CFGS:
+#       print(min_asserts.name)
+#       if min_asserts.name != "D_LVBKV_Z3_MIN_ASSERTS":
+#           continue
+#       r = Runner([min_asserts], override=True)
 
 
 #   r = Runner([D_KOMODO_UNSAT_CORE_CFG], override=True, core=True)
