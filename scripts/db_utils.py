@@ -1,7 +1,7 @@
 import sqlite3
 import sys, os
 from tqdm import tqdm
-from configs.experiments import DB_PATH
+from configs.experiments import DB_PATH, DBMode
 import numpy as np
 from rcode import RCode
 from classifier import *
@@ -103,36 +103,44 @@ def import_tables(other_db_path):
     con.commit()
     con.close()
 
-def build_solver_summary_table(qcfg, solver):
-    con, cur = get_cursor(qcfg.db_path)
-    solver_table = qcfg.get_solver_table_name(solver)
-    summary_table = qcfg.get_solver_summary_table_name(solver)
+def create_sum_table(cfg, exp_table_name, sum_table_name):
+    con, cur = get_cursor(cfg.db_path)
 
-    if not check_table_exists(cur, solver_table):
-        print(f"[WARN] table {solver_table} does not exist")
+    if not check_table_exists(cur, exp_table_name):
+        print(f"[WARN] table {exp_table_name} does not exist")
         con.close()
         return
 
-    cur.execute(f"""DROP TABLE IF EXISTS {summary_table}""")
+    cur.execute(f"""DROP TABLE IF EXISTS {sum_table_name}""")
 
-    cur.execute(f"""CREATE TABLE {summary_table} (
+    cur.execute(f"""CREATE TABLE {sum_table_name} (
         vanilla_path TEXT,
-        pretubrations TEXT,
-        summaries BLOB)""")
+        mutations TEXT,
+        summaries BLOB,
+        PRIMARY KEY (vanilla_path, mutations)
+        )""")
 
     res = cur.execute(f"""
-        SELECT DISTINCT(query_path), result_code, elapsed_milli
-        FROM {solver_table}
+        SELECT query_path, result_code, elapsed_milli
+        FROM {exp_table_name}
         WHERE query_path = vanilla_path""")
 
     vanilla_rows = res.fetchall()
-    for (vanilla_path, v_rcode, v_time) in tqdm(vanilla_rows):
+    dup_warn = True
+
+    processed = set()
+    print(f"[INFO] post processing exp data")
+
+    for (vanilla_path, v_rcode, v_time) in vanilla_rows:
+        if vanilla_path in processed:
+            continue
+        processed.add(vanilla_path)
+
         res = cur.execute(f"""
-            SELECT result_code, elapsed_milli, perturbation FROM {solver_table}
+            SELECT result_code, elapsed_milli, perturbation FROM {exp_table_name}
             WHERE vanilla_path = "{vanilla_path}"
             AND perturbation IS NOT NULL""")
-
-        perturbs = [str(p) for p in qcfg.enabled_muts]
+        perturbs = [str(p) for p in cfg.enabled_muts]
         v_rcode = RCode.from_str(v_rcode).value
         results = {p: [[v_rcode], [v_time]] for p in perturbs}
 
@@ -140,21 +148,39 @@ def build_solver_summary_table(qcfg, solver):
             results[row[2]][0].append(RCode.from_str(row[0]).value)
             results[row[2]][1].append(row[1])
 
-        mut_size = qcfg.max_mutants
-        blob = np.zeros((len(perturbs), 2, mut_size + 1), dtype=int)
+        mut_size = cfg.max_mutants
+        expected_size = mut_size + 1
+        
+        blob = np.zeros((len(perturbs), 2, expected_size), dtype=int)
         for pi, perturb in enumerate(perturbs):
             (veri_res, veri_times) = results[perturb]
+
+            if len(veri_res) > expected_size:
+                if dup_warn:
+                    print(f"[WARN] {vanilla_path} has more than {mut_size} mutants, truncating")
+                    print(f"[WARN] this may be caused by multiple runs of the same experiment. remove duplicate rows from {exp_table_name} if necessary")
+                dup_warn = False
+                veri_res = veri_res[:expected_size]
+                veri_times = veri_times[:expected_size]
+            elif len(veri_res) < expected_size:
+                print(f"[ERROR] {vanilla_path} has less than {mut_size} mutants, aborting")
+                con.close()
+                sys.exit(1)
+
             blob[pi][0] = veri_res
             blob[pi][1] = veri_times
 
-        cur.execute(f"""INSERT INTO {summary_table}
-            VALUES(?, ?, ?);""", 
-            (vanilla_path, str(perturbs), blob))
+        if cfg.db_mode == DBMode.UPDATE:
+            cur.execute(f"""REPLACE INTO {sum_table_name}
+                VALUES(?, ?, ?);""", 
+                (vanilla_path, str(perturbs), blob))
+        else:
+            cur.execute(f"""INSERT INTO {sum_table_name}
+                VALUES(?, ?, ?);""", 
+                (vanilla_path, str(perturbs), blob))
 
     con.commit()
     con.close()
-
-    return summary_table
 
 def export_timeouts(cfg, solver):
     con, cur = get_cursor(cfg.qcfg.db_path)
@@ -197,48 +223,47 @@ def export_timeouts(cfg, solver):
         print(command)
     con.close()
 
-def extend_solver_summary_table(cfg, ext_cfg, solver):
-    con, cur = get_cursor(cfg.qcfg.db_path)
-    solver_table = cfg.qcfg.get_solver_table_name(solver)
-    solver_ext_table = ext_cfg.qcfg.get_solver_table_name(solver)
-    # summary_table = cfg.get_solver_summary_table_name(solver)
+# def extend_solver_summary_table(cfg, ext_cfg, solver):
+#     con, cur = get_cursor(cfg.qcfg.db_path)
+#     solver_table = cfg.qcfg.get_solver_table_name(solver)
+#     solver_ext_table = ext_cfg.qcfg.get_solver_table_name(solver)
+#     # summary_table = cfg.get_solver_summary_table_name(solver)
 
-    if not check_table_exists(cur, solver_table):
-        con.close()
-        return
+#     if not check_table_exists(cur, solver_table):
+#         con.close()
+#         return
     
-    solver_table = cfg.qcfg.get_solver_table_name(solver)
+#     solver_table = cfg.qcfg.get_solver_table_name(solver)
 
-    res = cur.execute(f"""
-        SELECT query_path, result_code, elapsed_milli, command FROM {solver_ext_table} """)
+#     res = cur.execute(f"""
+#         SELECT query_path, result_code, elapsed_milli, command FROM {solver_ext_table} """)
 
-    ext_results = dict()
-    rows = res.fetchall()
+#     ext_results = dict()
+#     rows = res.fetchall()
 
-    for (query_path, rcode, time, command) in tqdm(rows):
-        stem = query_path.split("/")[-1]
-        ext_results[stem] = (rcode, time, command)
-        # print(stem, time, rcode)
+#     for (query_path, rcode, time, command) in tqdm(rows):
+#         stem = query_path.split("/")[-1]
+#         ext_results[stem] = (rcode, time, command)
+#         # print(stem, time, rcode)
 
-    res = cur.execute(f"""
-        SELECT query_path, rowid FROM {solver_table}
-        WHERE result_code = "timeout" """)
+#     res = cur.execute(f"""
+#         SELECT query_path, rowid FROM {solver_table}
+#         WHERE result_code = "timeout" """)
 
-    rows = res.fetchall()
+#     rows = res.fetchall()
 
-    for (query_path, row_id) in tqdm(rows):
-        stem = query_path.split("/")[-1]
-        (rcode, time, command) = ext_results[stem]
-        cur.execute(f"""UPDATE {solver_table}
-            SET result_code = "{rcode}",
-            elapsed_milli = {time},
-            command = "{command}"
-            WHERE rowid = {row_id}""")
+#     for (query_path, row_id) in tqdm(rows):
+#         stem = query_path.split("/")[-1]
+#         (rcode, time, command) = ext_results[stem]
+#         cur.execute(f"""UPDATE {solver_table}
+#             SET result_code = "{rcode}",
+#             elapsed_milli = {time},
+#             command = "{command}"
+#             WHERE rowid = {row_id}""")
 
-    con.commit()
-    con.close()
-
-    build_solver_summary_table(cfg, solver)
+#     con.commit()
+#     con.close()
+#     create_summary_table(cfg, solver)
 
 def load_solver_summary_table(qcfg, solver, skip=set()):
     con, cur = get_cursor(qcfg.db_path)

@@ -68,13 +68,11 @@ class FrameworkName(str, Enum):
     VERUS = "verus"
     OTHER = "other"
 
-class ProjectConfig:
+class ProjectInfo:
     def __init__(self, name, framework, orig_solver):
         self.name = name
         self.framework = framework
         self._plain_dir = f"data/{name}_plain/"
-        # if not os.path.exists(self._plain_dir):
-            # print(f"[WARN] project {self.name} plain dir {self._plain_dir} does not exist")
         self.orig_solver = orig_solver
         self.clean_root_dir = f"data/{name}_z3_clean/"
 
@@ -85,19 +83,18 @@ class ProjectConfig:
             return queries
         return random.sample(queries, size)
 
-    def get_solver_table_name(self, solver):
-        # assert (solver in self.samples)
-        return f"{self.name}_{str(solver)}"
+    # def get_partial_exp_name(self, solver):
+    #     return f"{self.name}_{str(solver)}"
 
-    def get_solver_summary_table_name(self, solver):
-        return self.get_solver_table_name(solver) + "_summary"
+    # def get_partial_sum_name(self, solver):
+    #     self.get_partial_raw_name(solver) + "_sum"
 
-S_KOMODO = ProjectConfig("s_komodo", FrameworkName.SERVAL, Z3_4_4_2)
-D_KOMODO = ProjectConfig("d_komodo", FrameworkName.DAFNY, Z3_4_5_0)
-D_FVBKV = ProjectConfig("d_fvbkv", FrameworkName.DAFNY, Z3_4_6_0)
-D_LVBKV = ProjectConfig("d_lvbkv", FrameworkName.DAFNY, Z3_4_8_5)
-FS_VWASM = ProjectConfig("fs_vwasm", FrameworkName.FSTAR, Z3_4_8_5)
-FS_DICE = ProjectConfig("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
-OTHER = ProjectConfig("other", FrameworkName.OTHER, Z3_4_12_1)
+S_KOMODO = ProjectInfo("s_komodo", FrameworkName.SERVAL, Z3_4_4_2)
+D_KOMODO = ProjectInfo("d_komodo", FrameworkName.DAFNY, Z3_4_5_0)
+D_FVBKV = ProjectInfo("d_fvbkv", FrameworkName.DAFNY, Z3_4_6_0)
+D_LVBKV = ProjectInfo("d_lvbkv", FrameworkName.DAFNY, Z3_4_8_5)
+FS_VWASM = ProjectInfo("fs_vwasm", FrameworkName.FSTAR, Z3_4_8_5)
+FS_DICE = ProjectInfo("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
+MISC = ProjectInfo("misc", FrameworkName.OTHER, Z3_4_12_1)
 
-ALL_CFGS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]
+# ALL_CFGS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]

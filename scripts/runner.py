@@ -5,6 +5,7 @@ import random
 import scipy.stats as stats
 import numpy as np
 import math
+import itertools
 
 from db_utils import *
 from configs.projects import *
@@ -46,24 +47,24 @@ def parse_basic_output_cvc(output, error):
     return "error"
 
 class Task:
-    def __init__(self, qcfg, original_query, perturb, solver):
-        self.qcfg = qcfg
+    def __init__(self, cfg, exp_name, origin_path, perturb, mut_seed, solver):
+        self.cfg = cfg
+        self.exp_name = exp_name
         self.solver = solver
-        self.original_query = original_query
+        self.origin_path = origin_path
         self.perturb = perturb
+        self.mut_seed = mut_seed
 
     def run(self):
-        seed = random.randint(0, 0xffffffffffffffff)
         solver = self.solver
-        qcfg = self.qcfg
-        
-        table_name = qcfg.get_solver_table_name(self.solver)
+        cfg = self.cfg
+
         if self.perturb is not None:
-            gen_path_pre = "gen/" + table_name + "/" + self.original_query[5::]
-            file_name = f"{str(seed)}.{self.perturb}.smt2"
+            gen_path_pre = "gen/" + self.exp_name + "/" + self.origin_path[5::]
+            file_name = f"{str(self.mut_seed)}.{self.perturb}.smt2"
             mutant_path = gen_path_pre.replace("smt2", file_name)
 
-            command = f"{MARIPOSA_BIN_PATH} -i {self.original_query} -p {self.perturb} -o {mutant_path} -s {seed}"
+            command = f"{MARIPOSA_BIN_PATH} -i {self.origin_path} -p {self.perturb} -o {mutant_path} -s {self.mut_seed}"
 
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
 
@@ -71,37 +72,30 @@ class Task:
                 print("[ERROR] MARIPOSA failed: " + command)
                 return
         else:
-            mutant_path = self.original_query
+            mutant_path = self.origin_path
 
-        if solver.brand == SolverBrand.Z3:
-            command = f"{solver.path} {mutant_path} -T:{qcfg.timeout}"
-        else:
-            assert (solver.brand == SolverBrand.CVC5)
-            command = f"{solver.path} {mutant_path} -i --tlimit={qcfg.timeout * 1000} --no-nl-cov --nl-ext=none --fmf-mbqi=none --no-mbqi --no-cbqi --no-cegqi"
+        assert solver.brand == SolverBrand.Z3
 
-        out, err, elapsed = subprocess_run(command, qcfg.timeout + 1)
+        command = f"{solver.path} {mutant_path} -T:{cfg.timeout}"
+        out, err, elapsed = subprocess_run(command, cfg.timeout + 1)
 
-        if solver.brand == SolverBrand.Z3:
-            rcode = parse_basic_output_z3(out)
-        else:
-            rcode = parse_basic_output_cvc(out, err)
+        rcode = parse_basic_output_z3(out)
 
         if rcode == "error":
-            print(out, err)
+            print("[INFO] z3 error: ", out, err)
 
-        if qcfg.remove_mut and self.perturb is not None:
+        if cfg.remove_mut and self.perturb is not None:
             # remove mutant
             os.system(f"rm {mutant_path}")
         
-        con = sqlite3.connect(qcfg.db_path)
+        con = sqlite3.connect(cfg.db_path)
         cur = con.cursor()
-        cur.execute(f"""INSERT INTO {table_name}
+        cur.execute(f"""INSERT INTO {self.exp_name}
             (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
             VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
-            (mutant_path, self.original_query, self.perturb, command, out, err, rcode, elapsed))
+            (mutant_path, self.origin_path, self.perturb, command, out, err, rcode, elapsed))
         con.commit()
         con.close()
-        # print(rcode, elapsed)
 
 def run_tasks(queue, start_time):
     from datetime import timedelta
@@ -112,82 +106,90 @@ def run_tasks(queue, start_time):
         task = queue.get()
         cur_size = queue.qsize()
         done_size = init_size - cur_size
-        if done_size % 100 == 0:
+        if done_size % 200 == 0:
             elapsed = round((time.time() - start_time) / 3600, 2)
             estimated = round(cur_size * (elapsed / done_size), 2)
             print(f"finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {datetime.now() + timedelta(hours=estimated)}")
         if task is None:
             break
         task.run()
-    print("[INFO] worker exit")
 
-def setup_table(qcfg, solver):
-    con, cur = get_cursor(qcfg.db_path)
-    table_name = qcfg.get_solver_table_name(solver)
-    if check_table_exists(cur, table_name):
-        if qcfg.overwrite:
-            ok = confirm_drop_table(cur, table_name)
-            if not ok:
-                print(f"[INFO] keep existing table {table_name}")
-                sys.exit()
-    create_experiment_table(cur, table_name)
-    con.commit()
-    con.close()
-
-def print_single_status(summary_table):
+def print_single_status(cfg, origin_path, sum_name):
     classifier = Classifier("z_test")
-    classifier.timeout = 6e4 # 1 min
+    classifier.timeout = cfg.timeout * 1000
 
-    con, cur = get_cursor(qcfg.db_path)
-    res = cur.execute(f"""SELECT * FROM {summary_table}""")
+    con, cur = get_cursor(cfg.db_path)
+    res = cur.execute(f"""SELECT * FROM {sum_name}
+                    WHERE vanilla_path = ?;""", (origin_path,))
     rows = res.fetchall()
     con.close()
-
     assert len(rows) == 1
     row = rows[0]
-    
-    mut_size = qcfg.max_mutants
+
+    mut_size = cfg.max_mutants
     perturbs = ast.literal_eval(row[1])
     blob = np.frombuffer(row[2], dtype=int)
     blob = blob.reshape((len(perturbs), 2, mut_size + 1))
     status, votes = classifier.categorize_query(blob)
 
     print("")
-    print("overall:", status)
-    print("original:")
-    print("\tresult:", RCode(blob[0][0][0]))
-    print("\ttime:", round(blob[0][1][0]/1000, 2), "(s)")
+    print("--- overall ---")
+    print("status:", status)
+    print("")
+    print("--- original ---")
+    print("result:", RCode(blob[0][0][0]))
+    print("time:", round(blob[0][1][0]/1000, 2), "(s)")
+    print("")
     for i in range(len(perturbs)):
+        print(f"--- {perturbs[i]} ---")
         count = count_within_timeout(blob[i], RCode.UNSAT, timeout=classifier.timeout)
         times = np.clip(blob[i][1], 0, classifier.timeout) / 1000
-        print(f"{perturbs[i]}: {votes[i]}")
-        print("\tsuccess:", f"{count}/{mut_size+1}")
-        print("\tmean:", round(np.mean(times), 2), "(s)")
-        print("\tstd:", round(np.std(times), 2), "(s)")
+        print(f"status: {votes[i]}")
+        print("success:", f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%")
+        print("time mean:", f"{round(np.mean(times), 2)}(s)")
+        print("time std:", f"{round(np.std(times), 2)}(s)")
+        print("")
 
 class Runner:
-    def __init__(self) -> None:
+    def _set_up_table(self):
+        con, cur = get_cursor(self.cfg.db_path)
+        exists = check_table_exists(cur, self.exp_name)
+        if not exists:
+            create_experiment_table(cur, self.exp_name)
+        elif cfg.db_mode == DBMode.CREATE and exists:
+            ok = confirm_drop_table(cur, self.exp_name)
+            if not ok:
+                print(f"[INFO] keep existing table {self.exp_name}")
+                sys.exit()
+            create_experiment_table(cur, self.exp_name)
+        con.commit()
+        con.close()
+
+    def __init__(self, cfg):
         mp.set_start_method('spawn')
         self.task_queue = mp.Queue()
+        self.cfg = cfg
+    
+        if cfg.init_seed is not None:
+            print(f"[INFO] using initial seed: {cfg.init_seed}")
+            random.seed(cfg.init_seed)
 
-    def _add_single_exp(self, qcfg, original_query, solver):
-        task = Task(qcfg, original_query, None, solver)
+    def _add_exp(self, origin_path, solver):
+        task = Task(self.cfg, self.exp_name, origin_path, None, None, solver)
         self.task_queue.put(task)
 
-        for perturb in qcfg.enabled_muts:
-            for _ in range(qcfg.max_mutants):
-                task = Task(qcfg, original_query, perturb, solver)
+        for perturb in self.cfg.enabled_muts:            
+            for _ in range(self.cfg.max_mutants):
+                mut_seed = random.randint(0, 0xffffffffffffffff)
+                task = Task(self.cfg, self.exp_name, origin_path, perturb, mut_seed, solver)
                 self.task_queue.put(task)
 
-    def _setup_tables(self, qcfgs, solvers):
-        for qcfg in qcfgs:
-            for solver in solvers:
-                setup_table(qcfg, solver)
-
-    def _run_workers(self, num_procs):
+    def _run_workers(self):
         start_time = time.time()
         processes = []
-        for _ in range(num_procs):
+        print(f"[INFO] total tasks: {self.task_queue.qsize()}")
+        
+        for _ in range(self.cfg.num_procs):
             p = mp.Process(target=run_tasks, args=(self.task_queue, start_time,))
             p.start()
             processes.append(p)
@@ -196,34 +198,35 @@ class Runner:
         for p in processes:
             p.join()
 
-    def run_single_exp(self, qcfg, original_query, solver):
-        self._setup_tables(self, [qcfg], [solver])
-        self._add_single_exp(original_query, solver)
-        self._run_workers(qcfg.num_procs)
-        summary_table = build_solver_summary_table(qcfg, Z3_4_12_1)
-        print_single_status(summary_table)
-        
-    def run_multi_exps(self, qcfgs, solvers):
-        import itertools
-        self._setup_tables(qcfgs, solvers)
+        print("[INFO] experiment finished, workers exit")
 
-        for qcfg, solver in itertools.product(qcfgs, solvers):
-            for original_query in qcfg.project.list_queries(10):
-                self._add_single_exp(qcfg, original_query, solver)
-        print(f"[INFO] total tasks: {self.task_queue.qsize()}")
-        self._run_workers(qcfg.num_procs)
-        print(f"[INFO] start post processing")
-        for qcfg, solver in itertools.product(qcfgs, solvers):
-            build_solver_summary_table(qcfg, Z3_4_12_1)
+    def run_project_exps(self, project, solver):
+        self.exp_name = self.cfg.get_exp_name(project, solver)
+        self._set_up_table()
+        for origin_path in project.list_queries():
+            self._add_exp(origin_path, solver)
+        sum_name = self.cfg.get_sum_name(project, solver)
+        create_sum_table(cfg, self.exp_name, sum_name)
+
+    def run_single_exp(self, origin_path, solver):
+        self.exp_name = self.cfg.get_exp_name(MISC, solver)
+        self._set_up_table()       
+        self._add_exp(origin_path, solver)
+        self._run_workers()
+        sum_name = self.cfg.get_sum_name(MISC, solver)
+        create_sum_table(self.cfg, self.exp_name, sum_name)
+        print_single_status(self.cfg, origin_path, sum_name)
+
+def run_multi_exps(cfg, projects, solvers):
+    for project, solver in itertools.product(projects, solvers):
+        r = Runner(cfg)
+        r.run_project_exps(project, solver)
 
 if __name__ == '__main__':
-    # qcfg = QueryExpConfig("test", S_KOMODO, "./data/test.db")
-    # qcfg.overwrite = True
-    # r = Runner()
-    # r.run_multi_exps([qcfg], [Z3_4_12_1])
-    # qcfg.overwrite = True
-    # run_single_exp(qcfg, "data/d_komodo_z3_clean/verified-words_and_bytes.s.dfyCheckWellformed___module.__default.BEUintToSeqByte.smt2", Z3_4_12_1)
-    pass
+    cfg = ExpConfig("test", ".mariposa/test.db")
+    cfg.init_seed = 0xdeadbeef
+    r = Runner(cfg)
+    r.run_single_exp("data/d_komodo_z3_clean/verified-words_and_bytes.s.dfyCheckWellformed___module.__default.BEUintToSeqByte.smt2", Z3_4_12_1)
 
 # from analyzer import RCode 
 # from analyzer import Classifier

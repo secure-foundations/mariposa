@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # cfg = D_FVBKV_CFG
     # plot_ext_cutoff(cfg)
     
-    # project = ProjectConfig("core_benchmark_unstable", FrameworkName.DAFNY, Z3_4_12_1)
+    # project = ProjectInfo("core_benchmark_unstable", FrameworkName.DAFNY, Z3_4_12_1)
     # cfg = ExpConfig("core_benchmark_test", project, [Z3_4_12_1], "data/benchmarks.db")
 
     # r = Runner([cfg])
