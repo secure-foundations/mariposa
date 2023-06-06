@@ -20,7 +20,7 @@ Z3_PATH = "./build/z3"
 # def gen_bisec_tasks():
 #     for cfg in ALL_CFGS:
 #         summaries = load_solver_summaries(cfg, skip_unknowns=False)
-#         classifier = Classifier("z_test")
+#         classifier = Analyzer("z_test")
 #         classifier.timeout = 6e4
 #         categories1 = categorize_queries(summaries[Z3_4_8_5], classifier)
 #         categories2 = categorize_queries(summaries[Z3_4_8_8], classifier)

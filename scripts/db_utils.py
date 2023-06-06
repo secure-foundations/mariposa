@@ -78,7 +78,7 @@ def create_experiment_table(cur, table_name):
         elapsed_milli INTEGER, 
         timestamp DEFAULT CURRENT_TIMESTAMP
         )""")
-    print(f"[INFO] created new table {table_name}")
+    print(f"[INFO] created table {table_name}")
 
 def import_tables(other_db_path):
     ts0 = get_tables(DB_PATH)
@@ -144,7 +144,7 @@ def create_sum_table(cfg, exp_table_name, sum_table_name):
         v_rcode = RCode.from_str(v_rcode).value
         results = {p: [[v_rcode], [v_time]] for p in perturbs}
 
-        for row in res.fetchall():
+        for row in reversed(res.fetchall()):
             results[row[2]][0].append(RCode.from_str(row[0]).value)
             results[row[2]][1].append(row[1])
 
@@ -157,8 +157,8 @@ def create_sum_table(cfg, exp_table_name, sum_table_name):
 
             if len(veri_res) > expected_size:
                 if dup_warn:
-                    print(f"[WARN] {vanilla_path} has more than {mut_size} mutants, truncating")
-                    print(f"[WARN] this may be caused by multiple runs of the same experiment. remove duplicate rows from {exp_table_name} if necessary")
+                    print(f"[WARN] {vanilla_path} has more than {mut_size} mutants with {perturb}, truncating")
+                    print(f"[WARN] this may be caused by multiple runs of the same experiment. remove duplicate rows from table {exp_table_name} in {cfg.db_path} if necessary")
                 dup_warn = False
                 veri_res = veri_res[:expected_size]
                 veri_times = veri_times[:expected_size]

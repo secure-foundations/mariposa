@@ -35,7 +35,7 @@ def count_within_timeout(blob, rcode, timeout=1e6):
     #     if T > scipy.stats.chi2.ppf(1-self.confidence, df=size-1):
     #         return Stability.TIME_UNSTABLE
 
-class Classifier:
+class Analyzer:
     def __init__(self, method):
         self.confidence = 0.05
         self.timeout = 1e6

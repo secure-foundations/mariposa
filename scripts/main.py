@@ -4,6 +4,8 @@ from runner import Runner, subprocess_run
 from db_utils import *
 from analyzer import *
 from bisect_utils import *
+import argparse
+
 
 def import_database(other_server):
     other_db_path = "data/mariposa2.db"
@@ -47,65 +49,7 @@ def sample_projects(projects):
 #     # solver_table = cfg.qcfg.get_solver_table_name(solver)
 
 if __name__ == '__main__':
-    print("building mariposa...")
-    stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
-    # assert stdout == "master"
-    os.system("cargo build --release")
-
-    print("checking scaling_governor...")
-    stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
-    assert stdout == "performance"
-
-    qcfg = QueryExpConfig("test", S_KOMODO, "./data/test.db")
-    rows = load_solver_summary_table(qcfg, Z3_4_12_1)
-    # print(rows)
-    classifier = Classifier("z_test")
-    classifier.timeout = 6e4
-    res = classifier.categorize_queries(rows)
-
-    # get_runtime()
-    # entropy_test()
-    
-    # r = Runner([UNSTABLE_CORE_CFG], override=True)
-    # build_solver_summary_table(UNSTABLE_CORE_CFG, Z3_4_12_1)
-
-    # parse_bisect()
-    
-    # # create_benchmark()
-
-    # cfg = D_KOMODO_CFG
-    # # locality_analysis(cfg)
-    # solver = Z3_4_12_1
-    # rows = load_exp_results(cfg, True, [solver])[solver]
-    # classifier = Classifier("z_test")
-    # classifier.timeout = 6e4
-    # perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
-    
-    # cur = {p: set() for p in perturbs + ["unsolvable", "unstable", "intersect"]}
-
-    # for query_row in rows:
-    #     plain_path = query_row[0]
-    #     group_blobs = query_row[2]
-    #     cat, votes = classifier.categorize_query(group_blobs)
-    #     if cat == Stability.UNSTABLE:
-    #         cur["unstable"].add(plain_path)
-    #     elif cat == Stability.UNSOLVABLE:
-    #         cur["unsolvable"].add(plain_path)
-    #     for k, p in enumerate(perturbs):
-    #         if votes[k] == Stability.UNSTABLE:
-    #             cur[p].add(plain_path)
-    #     if set(votes.values()) == {Stability.UNSTABLE}:
-    #         # if all of the perturbations is unstable
-    #         cur["intersect"].add(plain_path)
-
-    # a = len(cur["shuffle"] - (cur["rename"] | cur["rseed"]))
-    # b = len(cur["rename"] - (cur["shuffle"] | cur["rseed"]))
-    # c = len(cur["rseed"] - (cur["shuffle"] | cur["rename"]))
-    # d = len(cur["intersect"])
-    # print(len(cur["shuffle"] | cur["rename"] | cur["rseed"]))
-    # e = len(cur["unstable"] - (cur["shuffle"] | cur["rename"] | cur["rseed"]))
-    # print(a, b, c, d, e, a + b + c + d + e, len(cur["unstable"]))
-    
+    pass        
     # plot_paper_overall()
     # plot_paper_ext_cutoff()
     # plot_paper_pert_diff()

@@ -6,6 +6,7 @@ from enum import Enum
 class SolverBrand(Enum):
     Z3 = "z3"
     CVC5 = "cvc5"
+    CUSTOM = "custom"
 
 SOLVER_BINS_DIR = "solvers/"
 
@@ -15,12 +16,11 @@ class SolverInfo:
         self.data = date
         assert (os.path.exists(self.path))
 
-        self.brand = None
+        self.brand = SolverBrand.CUSTOM
         for e in SolverBrand:
             if e.value in bin_name:
                 self.brand = e
                 break
-        assert (self.brand)
         self.ver = bin_name[len(self.brand.value)+1::]
 
     def __str__(self):
@@ -35,6 +35,12 @@ class SolverInfo:
     def pstr(self):
         assert self.brand.value == "z3"
         return "Z3 " + self.ver
+
+    def from_path(path):
+        s = SolverInfo("", "")
+        s.ver = ""
+        s.path = path
+        return s
 
 Z3_4_4_2 = SolverInfo("z3-4.4.2", "2015/10/05")
 Z3_4_5_0 = SolverInfo("z3-4.5.0", "2016/11/07")
@@ -97,4 +103,5 @@ FS_VWASM = ProjectInfo("fs_vwasm", FrameworkName.FSTAR, Z3_4_8_5)
 FS_DICE = ProjectInfo("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
 MISC = ProjectInfo("misc", FrameworkName.OTHER, Z3_4_12_1)
 
+ALL_PROJS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]
 # ALL_CFGS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]

@@ -72,7 +72,7 @@ def get_category_percentages(categories):
     return percentages, total
 
 def get_unknowns(cfg):
-    th = Classifier("strict")
+    th = Analyzer("strict")
     th.timeout = 6e4
     summary = load_solver_summary_table(cfg, cfg.qcfg.project.orig_solver)
     assert summary is not None
@@ -98,7 +98,7 @@ def load_exp_results(cfg, skip_unknowns=True, solvers=None):
     return summaries
 
 def _async_categorize_project(ratios, key, rows):
-    classifier = Classifier("z_test")
+    classifier = Analyzer("z_test")
     classifier.timeout = 6e4 # 1 min
     items = classifier.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
@@ -128,7 +128,7 @@ def _mp_categorize_projects(cfgs, solver_names):
 
     return data
 
-def plot_paper_overall(cfgs=ALL_CFGS):
+def plot_paper_overall(cfgs=ALL_PROJS):
     project_names = [cfg.qcfg.name for cfg in cfgs]
     solver_names = [str(s) for s in Z3_SOLVERS_ALL]
     solver_labels = [f"{s.pstr()}\n{s.data[:-3]}" for s in Z3_SOLVERS_ALL]
@@ -237,7 +237,7 @@ def _get_data_time_scatter(rows):
     pf, cfs = 0, 0
     ps, css = 0, 0
 
-    classifier = Classifier("z_test")
+    classifier = Analyzer("z_test")
     cats = {i: [] for i in Stability }
 
     scatters = np.zeros((len(rows), 2))
@@ -314,7 +314,7 @@ def plot_paper_time_scatter():
 
 def plot_appendix_time_scatter():
     rc, cc = 2, 4
-    for cfg in tqdm(ALL_CFGS):
+    for cfg in tqdm(ALL_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
 
@@ -331,7 +331,7 @@ def plot_appendix_time_scatter():
         plt.close()
 
 def _get_data_time_std(rows):
-    classifier = Classifier("z_test")
+    classifier = Analyzer("z_test")
     classifier.timeout = 6e4 # 1 min
 
     items = classifier.categorize_queries(rows)
@@ -376,7 +376,7 @@ def _plot_time_std(rows, sp):
 def plot_appendix_time_std():
     rc, cc = 2, 4
 
-    for cfg in tqdm(ALL_CFGS):
+    for cfg in tqdm(ALL_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
         summaries = load_exp_results(cfg, True)
@@ -429,7 +429,7 @@ def plot_paper_time_std():
     
 
 def _async_cutoff_categories(categories, i, rows, perturbs):
-    classifier = Classifier("z_test")
+    classifier = Analyzer("z_test")
     classifier.timeout = i * 1e3
     cur = {p: set() for p in perturbs + ["unsolvable", "unstable", "intersect"]}
 
@@ -496,7 +496,7 @@ def _plot_pert_diff(rows, sp):
 def plot_appendix_pert_diff():
     rc, cc = 2, 4
 
-    for cfg in tqdm(ALL_CFGS):
+    for cfg in tqdm(ALL_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
         summaries = load_exp_results(cfg, True)
@@ -594,7 +594,7 @@ def plot_appendix_ext_cutoff():
     index = 0
     figure.set_size_inches(15, 12)
 
-    for cfg in tqdm(ALL_CFGS):
+    for cfg in tqdm(ALL_PROJS):
         summaries = load_exp_results(cfg, True)
         sp = axis[int(index/cc)][int(index%cc)]
         rows = summaries[solver]
@@ -628,7 +628,7 @@ def plot_paper_ext_cutoff():
     plt.savefig(f"fig/time_cutoff/cutoff_paper.pdf")
     plt.close()
 
-def create_benchmark(cfgs=ALL_CFGS):
+def create_benchmark(cfgs=ALL_PROJS):
     benchmark_path = "data/benchmark"
     
     unstable_core_path = f"{benchmark_path}/unstable_core"
@@ -641,7 +641,7 @@ def create_benchmark(cfgs=ALL_CFGS):
     os.system(f"mkdir -p {stable_core_path}")
     os.system(f"mkdir -p {stable_ext_path}")
         
-    classifier = Classifier("z_test")
+    classifier = Analyzer("z_test")
     classifier.timeout = 6e4 # 1 min
     # classifier.res_stable = 80
 
@@ -742,7 +742,7 @@ skip = {"attest.vad",
 
 def locality_analysis(cfg):
     summaries = load_exp_results(cfg, solvers=[Z3_4_12_1])
-    c = Classifier("z_test")
+    c = Analyzer("z_test")
     c.timeout = 6e4
     counts = {}
     summary = summaries[Z3_4_12_1]
@@ -835,7 +835,7 @@ def plot_appendix_srs():
     # figure.set_size_inches(7, 4)
     rc, cc = 2, 4
 
-    for cfg in tqdm(ALL_CFGS):
+    for cfg in tqdm(ALL_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
         summaries = load_exp_results(cfg, True)
@@ -853,7 +853,7 @@ def plot_appendix_srs():
 
 # def count_timeouts(cfg):
 #     summaries = load_solver_summaries(cfg, skip_unknowns=True)
-#     c = Classifier("z_test")
+#     c = Analyzer("z_test")
 #     c.timeout = 15e4
 
 #     summary = summaries[Z3_4_12_1]
@@ -895,7 +895,7 @@ def plot_appendix_srs():
 #     # print(len(lfiles))
 #     # print(len(dfiles))
 
-#     classifier = Classifier("z_test")
+#     classifier = Analyzer("z_test")
 #     classifier.timeout = 61e4
 #     # th.unsolvable = 20
 #     # th.res_stable = 80

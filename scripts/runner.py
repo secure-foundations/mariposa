@@ -1,10 +1,8 @@
-import sys, os, subprocess
+import sys, os, argparse
+import time, random
+import subprocess
 import multiprocessing as mp
-import time
-import random
-import scipy.stats as stats
 import numpy as np
-import math
 import itertools
 
 from db_utils import *
@@ -74,15 +72,14 @@ class Task:
         else:
             mutant_path = self.origin_path
 
-        assert solver.brand == SolverBrand.Z3
-
         command = f"{solver.path} {mutant_path} -T:{cfg.timeout}"
         out, err, elapsed = subprocess_run(command, cfg.timeout + 1)
 
+        # TODO: handle other solvers
         rcode = parse_basic_output_z3(out)
 
         if rcode == "error":
-            print("[INFO] z3 error: ", out, err)
+            print("[INFO] solver error: ", out, err)
 
         if cfg.remove_mut and self.perturb is not None:
             # remove mutant
@@ -114,10 +111,7 @@ def run_tasks(queue, start_time):
             break
         task.run()
 
-def print_single_status(cfg, origin_path, sum_name):
-    classifier = Classifier("z_test")
-    classifier.timeout = cfg.timeout * 1000
-
+def print_single_status(cfg, origin_path, solver, sum_name, ana):
     con, cur = get_cursor(cfg.db_path)
     res = cur.execute(f"""SELECT * FROM {sum_name}
                     WHERE vanilla_path = ?;""", (origin_path,))
@@ -130,10 +124,12 @@ def print_single_status(cfg, origin_path, sum_name):
     perturbs = ast.literal_eval(row[1])
     blob = np.frombuffer(row[2], dtype=int)
     blob = blob.reshape((len(perturbs), 2, mut_size + 1))
-    status, votes = classifier.categorize_query(blob)
+    status, votes = ana.categorize_query(blob)
 
     print("")
     print("--- overall ---")
+    print("query:", origin_path)
+    print("solver:", solver.path)
     print("status:", status)
     print("")
     print("--- original ---")
@@ -142,8 +138,8 @@ def print_single_status(cfg, origin_path, sum_name):
     print("")
     for i in range(len(perturbs)):
         print(f"--- {perturbs[i]} ---")
-        count = count_within_timeout(blob[i], RCode.UNSAT, timeout=classifier.timeout)
-        times = np.clip(blob[i][1], 0, classifier.timeout) / 1000
+        count = count_within_timeout(blob[i], RCode.UNSAT, timeout=ana.timeout)
+        times = np.clip(blob[i][1], 0, ana.timeout) / 1000
         print(f"status: {votes[i]}")
         print("success:", f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%")
         print("time mean:", f"{round(np.mean(times), 2)}(s)")
@@ -187,7 +183,7 @@ class Runner:
     def _run_workers(self):
         start_time = time.time()
         processes = []
-        print(f"[INFO] total tasks: {self.task_queue.qsize()}")
+        print(f"[INFO] {self.task_queue.qsize()} tasks queued")
         
         for _ in range(self.cfg.num_procs):
             p = mp.Process(target=run_tasks, args=(self.task_queue, start_time,))
@@ -198,7 +194,7 @@ class Runner:
         for p in processes:
             p.join()
 
-        print("[INFO] experiment finished, workers exit")
+        print("[INFO] workers finished")
 
     def run_project_exps(self, project, solver):
         self.exp_name = self.cfg.get_exp_name(project, solver)
@@ -213,24 +209,53 @@ class Runner:
         self._set_up_table()       
         self._add_exp(origin_path, solver)
         self._run_workers()
-        sum_name = self.cfg.get_sum_name(MISC, solver)
-        create_sum_table(self.cfg, self.exp_name, sum_name)
-        print_single_status(self.cfg, origin_path, sum_name)
 
 def run_multi_exps(cfg, projects, solvers):
     for project, solver in itertools.product(projects, solvers):
         r = Runner(cfg)
         r.run_project_exps(project, solver)
 
-if __name__ == '__main__':
-    cfg = ExpConfig("test", ".mariposa/test.db")
-    cfg.init_seed = 0xdeadbeef
-    r = Runner(cfg)
-    r.run_single_exp("data/d_komodo_z3_clean/verified-words_and_bytes.s.dfyCheckWellformed___module.__default.BEUintToSeqByte.smt2", Z3_4_12_1)
+def check_serenity_status():
+    print("checking scaling_governor...")
+    stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
+    assert stdout == "performance"
 
-# from analyzer import RCode 
-# from analyzer import Classifier
-# from analyzer import Stability
+    print("[INFO] building mariposa...")
+    stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
+    # assert stdout == "master"
+    os.system("cargo build --release")
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='mariposa is a tool for testing stability')
+
+    parser.add_argument("-q", "--query", required=True, help="the input query (multiple check-sat will be split)")
+    parser.add_argument("-s", "--solver", required=True, help="the solver to use")
+    parser.add_argument("-c", "--clear", default=False, action='store_true', help="clear data from previous experiments")
+    args = parser.parse_args()
+
+    origin_path = args.query
+    solver = SolverInfo.from_path(args.solver)
+
+    if args.clear:
+        os.system(f"rm -rf gen/*")
+        print("[INFO] cleared data from past experiment")
+
+    cfg = ExpConfig("test", "gen/test.db")
+    cfg.init_seed = 0xdeadbeef
+
+    ana = Analyzer("z_test")
+    ana.timeout = cfg.timeout * 1000
+
+    r = Runner(cfg)
+    r.run_single_exp(args.query, solver)
+
+    sum_name = cfg.get_sum_name(MISC, solver)
+    create_sum_table(cfg, r.exp_name, sum_name)
+    print_single_status(cfg, origin_path, solver, sum_name, ana)
+
+# from ana import RCode 
+# from ana import Analyzer
+# from ana import Stability
 # from runner import parse_basic_output_z3
 # from runner import subprocess_run
 # import numpy as np
@@ -260,8 +285,8 @@ if __name__ == '__main__':
 #     out, err, elapsed = subprocess_run(command, timeout + 1)
 #     rcode = parse_basic_output_z3(out)
 #     pr = (elapsed, rcode)
-#     classifier = Classifier("z_test")
-#     classifier.timeout = 6e4 # 1 min
+#     ana = Analyzer("z_test")
+#     ana.timeout = 6e4 # 1 min
 
 #     reseeds = manager.list([pr])
 #     renames = manager.list([pr])
@@ -288,7 +313,7 @@ if __name__ == '__main__':
 #             blob[i, 0, j] = RCode.from_str(veri_res).value
 #             blob[i, 1, j] = veri_times
 
-#     cat = classifier.categorize_query(blob)
+#     cat = ana.categorize_query(blob)
 
 #     print(blob)
 #     print(cat)
