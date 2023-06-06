@@ -59,11 +59,11 @@ if __name__ == '__main__':
     # get_runtime()
     # entropy_test()
     
-    for unsat_core in UNSAT_CORE_CFGS:
-        print(unsat_core.name)
-        if unsat_core.name != "D_KOMODO_Z3_UNSAT_CORE":
-            continue
-        r = Runner([unsat_core], override=True, core=True)
+#   for unsat_core in UNSAT_CORE_CFGS:
+#       print(unsat_core.name)
+#       if unsat_core.name != "D_KOMODO_Z3_UNSAT_CORE":
+#           continue
+#       r = Runner([unsat_core], override=True, core=True)
     
 #   for min_asserts in MIN_ASSERTS_CFGS:
 #       print(min_asserts.name)
@@ -103,4 +103,9 @@ if __name__ == '__main__':
 
     # r = Runner([cfg])
 
-
+#   plot_size_reduction_graph()
+#   plot_time_reduction_graph()                                                                                                                                                                                                 
+#   plot_time_reduction_graph_zoomed()
+#   plot_size_vs_time_correlations()
+    plot_pie_chart()
+#   generate_table()
