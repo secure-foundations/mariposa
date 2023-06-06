@@ -83,7 +83,6 @@ class ProjectInfo:
         self.clean_root_dir = f"data/{name}_z3_clean/"
 
     def list_queries(self, size=None):
-        print(f"list queries from {self.clean_root_dir}")
         queries = list_smt2_files(self.clean_root_dir)
         if size is None:
             return queries
@@ -101,7 +100,5 @@ D_FVBKV = ProjectInfo("d_fvbkv", FrameworkName.DAFNY, Z3_4_6_0)
 D_LVBKV = ProjectInfo("d_lvbkv", FrameworkName.DAFNY, Z3_4_8_5)
 FS_VWASM = ProjectInfo("fs_vwasm", FrameworkName.FSTAR, Z3_4_8_5)
 FS_DICE = ProjectInfo("fs_dice", FrameworkName.FSTAR, Z3_4_8_5)
-MISC = ProjectInfo("misc", FrameworkName.OTHER, Z3_4_12_1)
 
 ALL_PROJS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]
-# ALL_CFGS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]

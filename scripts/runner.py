@@ -8,6 +8,7 @@ import itertools
 from db_utils import *
 from configs.projects import *
 from configs.experiments import *
+from tabulate import tabulate
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
@@ -58,15 +59,17 @@ class Task:
         cfg = self.cfg
 
         if self.perturb is not None:
-            gen_path_pre = "gen/" + self.exp_name + "/" + self.origin_path[5::]
-            file_name = f"{str(self.mut_seed)}.{self.perturb}.smt2"
-            mutant_path = gen_path_pre.replace("smt2", file_name)
+            query_name = os.path.basename(self.origin_path)
+            assert query_name.endswith(".smt2")
+            query_name.replace(".smt2", "")
+            gen_path_pre = "gen/" + self.exp_name + "/" + query_name
+            mutant_path = f"{gen_path_pre}.{str(self.mut_seed)}.{self.perturb}.smt2"
 
-            command = f"{MARIPOSA_BIN_PATH} -i {self.origin_path} -p {self.perturb} -o {mutant_path} -s {self.mut_seed}"
+            command = f"{MARIPOSA_BIN_PATH} -i {self.origin_path} -m {self.perturb} -o {mutant_path} -s {self.mut_seed}"
 
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
 
-            if result.returncode != 0:
+            if result.returncode != 0 or not os.path.exists(mutant_path):
                 print("[ERROR] MARIPOSA failed: " + command)
                 return
         else:
@@ -111,40 +114,32 @@ def run_tasks(queue, start_time):
             break
         task.run()
 
-def print_single_status(cfg, origin_path, solver, sum_name, ana):
+def dump_status(cfg, solver, sum_name, ana):
     con, cur = get_cursor(cfg.db_path)
-    res = cur.execute(f"""SELECT * FROM {sum_name}
-                    WHERE vanilla_path = ?;""", (origin_path,))
+    res = cur.execute(f"""SELECT * FROM {sum_name}""")
     rows = res.fetchall()
     con.close()
-    assert len(rows) == 1
-    row = rows[0]
 
-    mut_size = cfg.max_mutants
-    perturbs = ast.literal_eval(row[1])
-    blob = np.frombuffer(row[2], dtype=int)
-    blob = blob.reshape((len(perturbs), 2, mut_size + 1))
-    status, votes = ana.categorize_query(blob)
-
-    print("")
-    print("--- overall ---")
-    print("query:", origin_path)
+    # print("solver:", solver.path)
     print("solver:", solver.path)
-    print("status:", status)
     print("")
-    print("--- original ---")
-    print("result:", RCode(blob[0][0][0]))
-    print("time:", round(blob[0][1][0]/1000, 2), "(s)")
-    print("")
-    for i in range(len(perturbs)):
-        print(f"--- {perturbs[i]} ---")
-        count = count_within_timeout(blob[i], RCode.UNSAT, timeout=ana.timeout)
-        times = np.clip(blob[i][1], 0, ana.timeout) / 1000
-        print(f"status: {votes[i]}")
-        print("success:", f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%")
-        print("time mean:", f"{round(np.mean(times), 2)}(s)")
-        print("time std:", f"{round(np.std(times), 2)}(s)")
-        print("")
+
+    for row in rows:
+        mut_size = cfg.max_mutants
+        perturbs = ast.literal_eval(row[1])
+        blob = np.frombuffer(row[2], dtype=int)
+        blob = blob.reshape((len(perturbs), 2, mut_size + 1))
+        status, votes = ana.categorize_query(blob)
+
+        print("query:", row[0])
+        table = [["overall", status, "x", "x", "x"]]
+        
+        for i in range(len(perturbs)):
+            count = count_within_timeout(blob[i], RCode.UNSAT, timeout=ana.timeout)
+            times = np.clip(blob[i][1], 0, ana.timeout) / 1000
+            item = [perturbs[i], votes[i], f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%", f"{round(np.mean(times), 2)}(s)", f"{round(np.std(times), 2)}(s)"]
+            table.append(item)
+        print(tabulate(table, headers=["mutation", "status", "success", "mean", "std"]))
 
 class Runner:
     def _set_up_table(self):
@@ -201,14 +196,9 @@ class Runner:
         self._set_up_table()
         for origin_path in project.list_queries():
             self._add_exp(origin_path, solver)
-        sum_name = self.cfg.get_sum_name(project, solver)
-        create_sum_table(cfg, self.exp_name, sum_name)
-
-    def run_single_exp(self, origin_path, solver):
-        self.exp_name = self.cfg.get_exp_name(MISC, solver)
-        self._set_up_table()       
-        self._add_exp(origin_path, solver)
         self._run_workers()
+        self.sum_name = self.cfg.get_sum_name(project, solver)
+        create_sum_table(cfg, self.exp_name, self.sum_name)
 
 def run_multi_exps(cfg, projects, solvers):
     for project, solver in itertools.product(projects, solvers):
@@ -234,24 +224,49 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     origin_path = args.query
+    query_name = os.path.basename(origin_path)
+    assert query_name.endswith(".smt2")
+    query_name.replace(".smt2", "")
+    
     solver = SolverInfo.from_path(args.solver)
 
     if args.clear:
         os.system(f"rm -rf gen/*")
-        print("[INFO] cleared data from past experiment")
+        print("[INFO] cleared all data from past experiments")
+        
+    gen_split_subdir = f"gen/{query_name}_split"
 
-    cfg = ExpConfig("test", "gen/test.db")
-    cfg.init_seed = 0xdeadbeef
+    if not os.path.exists(gen_split_subdir):
+        os.makedirs(gen_split_subdir)
+        cfg = ExpConfig("test", gen_split_subdir + "/test.db")
+        # cfg.max_mutants = 1
+        # cfg.num_procs = 1
 
-    ana = Analyzer("z_test")
-    ana.timeout = cfg.timeout * 1000
+        cfg.init_seed = 0xdeadbeef
+        project = ProjectInfo("misc", FrameworkName.OTHER, solver)
+        project.clean_root_dir = gen_split_subdir
 
-    r = Runner(cfg)
-    r.run_single_exp(args.query, solver)
+        command = f"./target/release/mariposa -i {origin_path} --chop --o {gen_split_subdir}/split.smt2"
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+        print(result.stdout.decode('utf-8'), end="")
+        # if result.returncode != 0:
+        #     print("[ERROR] split failed: " + command)
+        #     os._exit(1)
 
-    sum_name = cfg.get_sum_name(MISC, solver)
-    create_sum_table(cfg, r.exp_name, sum_name)
-    print_single_status(cfg, origin_path, solver, sum_name, ana)
+        r = Runner(cfg)
+        r.run_project_exps(project, solver)
+        ana = Analyzer("z_test")
+        ana.timeout = cfg.timeout * 1000
+        dump_status(cfg, solver, r.sum_name, ana)
+    else:
+        print("[INFO] reading existing data from past experiment")
+
+    # r.run_project_exps(project, solver)
+    # r.run_single_exp(args.query, solver)
+
+    # sum_name = cfg.get_sum_name(MISC, solver)
+    # create_sum_table(cfg, r.exp_name, sum_name)
+    # print_single_status(cfg, origin_path, solver, sum_name, ana)
 
 # from ana import RCode 
 # from ana import Analyzer
@@ -293,7 +308,7 @@ if __name__ == '__main__':
 #     shuffles = manager.list([pr])
 
 #     for command in commands:
-#         if "rseed" in command:
+#         if "reseed" in command:
 #             pool.apply_async(async_run_single_mutant, args=(reseeds, command))
 #         elif "rename" in command:
 #             pool.apply_async(async_run_single_mutant, args=(renames, command))

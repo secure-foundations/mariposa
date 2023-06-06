@@ -5,7 +5,7 @@ DB_PATH = "data/mariposa.db"
 class Mutation(str, Enum):
     SHUFFLE = "shuffle"
     RENAME = "rename"
-    RSEED = "rseed"
+    RSEED = "reseed"
     # LOWER_SHUFFLE = "lower_shuffle"
 
     def __str__(self):

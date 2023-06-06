@@ -4,7 +4,7 @@ from tqdm import tqdm
 from configs.experiments import DB_PATH, DBMode
 import numpy as np
 from rcode import RCode
-from classifier import *
+from analyzer import *
 import ast
 
 def zip_db():
