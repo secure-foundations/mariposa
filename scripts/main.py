@@ -103,9 +103,9 @@ if __name__ == '__main__':
 
     # r = Runner([cfg])
 
-#   plot_size_reduction_graph()
-#   plot_time_reduction_graph()                                                                                                                                                                                                 
-#   plot_time_reduction_graph_zoomed()
-#   plot_size_vs_time_correlations()
-#   plot_pie_chart()
+    plot_size_reduction_graph()
+    plot_time_reduction_graph()                                                                                                                                                                                                 
+    plot_time_reduction_graph_zoomed()
+    plot_size_vs_time_correlations()
+    plot_pie_chart()
     plot_pie_chart_plotly()

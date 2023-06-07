@@ -1048,15 +1048,15 @@ def get_unsat_core_stats(project):
         original_time = time_dict[original_path]
         time_res.append(unsat_time / original_time)
 
-    # return a tuple of lists ([size ratio list], [time ratio list]) for time and size reduction graphs
+    # return a tuple of lists ([size ratio list], [time ratio list]) for time and size ratio graphs
     return [size_res, time_res]
 
 def plot_size_reduction_graph():
     fig, ax = plt.subplots()
     ax.set_xlim(left=0.0, right=1.0)
-    ax.set_title('all projects size reduction cdf')
+    ax.set_title('all projects size ratio cdf')
     ax.set_ylabel("cumulative proportion of queries (\%)")
-    ax.set_xlabel("size reduction (minimized asserts query filesize / original query filesize)")
+    ax.set_xlabel("size ratio (minimized asserts query filesize / original query filesize)")
     for project in PROJECTS:
         project_name_caps = ""
         if "_z3" in project.name:
@@ -1070,7 +1070,7 @@ def plot_size_reduction_graph():
         ax.plot(xs, ys, label=label, color=color, linewidth=0.5)
         ax.plot(np.max(xs), np.max(ys), marker="o", color=color, markersize=2)
     plt.legend(loc='best')
-#   plt.savefig(f"fig/unsat_core/all_size.pdf")
+    plt.savefig(f"fig/unsat_core/all_size.pdf")
     plt.close()
     
 
@@ -1096,13 +1096,13 @@ def plot_time_reduction_graph_zoomed():
         ax.plot(xs, ys, label=label, color=color, linewidth=0.5)
         ax.plot(np.max(xs), np.max(ys), marker="o", color=color, markersize=2)
     plt.legend(loc='best')
-#   plt.savefig(f"fig/unsat_core/all_time_zoomed.pdf")
+    plt.savefig(f"fig/unsat_core/all_time_zoomed.pdf")
     plt.close()
 
 
 def plot_time_reduction_graph():
     fig, ax = plt.subplots()
-    ax.set_title('all projects runtime reduction cdf')
+    ax.set_title('all projects runtime ratio cdf')
     ax.set_ylabel("cumulative proportion of queries (\%)")
     ax.set_xlabel("runtime ratio (minimized asserts query runtime / original query runtime)")
     ax.set_xscale("log")
@@ -1119,7 +1119,7 @@ def plot_time_reduction_graph():
         ax.plot(xs, ys, label=label, color=color, linewidth=0.5)
         ax.plot(np.max(xs), np.max(ys), marker="o", color=color, markersize=2)
     plt.legend(loc='best')
-#   plt.savefig(f"fig/unsat_core/all_time.pdf")
+    plt.savefig(f"fig/unsat_core/all_time.pdf")
     plt.close()
     
 
@@ -1137,7 +1137,7 @@ def get_size_vs_time_data(db_path, table_name, query_root=""):
 def plot_size_vs_time_correlations():
     fig, ax = plt.subplots()
     ax.set_title('all projects size vs time correlations')
-    ax.set_xlabel("file size (mb)")
+    ax.set_xlabel("file size (MB)")
     ax.set_ylabel("time (seconds)")
     for i, project in enumerate(PROJECTS):
         project_name_caps = ""
@@ -1155,7 +1155,7 @@ def plot_size_vs_time_correlations():
         # scatter plot xs and ys
         ax.scatter(xs, ys, label=label, color=color, s=1)
     ax.legend(loc="best")
-#   plt.savefig(f"fig/unsat_core/size_vs_time.pdf")
+    plt.savefig(f"fig/unsat_core/size_vs_time.pdf")
     plt.close()
 
 def plot_pie_chart():
@@ -1279,7 +1279,9 @@ def plot_pie_chart_plotly():
                 values.pop(j)
 #               explode.pop(j)
                 colors.pop(j)
-            else: j+=1
+            else: 
+                labels[j] += f" ({values[j]})"
+                j+=1
         fig.add_trace(go.Pie(labels=labels, values=values, textinfo='label+percent', 
                               showlegend=False, 
                              marker=dict(colors=colors)), row=(i)//3+1, col=(i)%3+1)
