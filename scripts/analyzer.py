@@ -1159,7 +1159,8 @@ def plot_size_vs_time_correlations():
     plt.close()
 
 def plot_pie_chart():
-    for project in PROJECTS:
+    fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(30,10))
+    for i, project in enumerate(PROJECTS):
         og_unsat = set()
         og_timeout = set()
         og_unknown = set()
@@ -1198,17 +1199,16 @@ def plot_pie_chart():
             "#817066", # Medium Gray
         ]
         # exclude labels[i], percs[i], explode[i], and values[i] if values[i] == 0
-        i = 0
-        while i < len(values):
-            if values[i] == 0:
-                labels.pop(i)
-                percs.pop(i)
-                values.pop(i)
-                explode.pop(i)
-                colors.pop(i)
-            else: i+=1
-        
-        fig, ax = plt.subplots(figsize=(10,5))
+        j = 0
+        while j < len(values):
+            if values[j] == 0:
+                labels.pop(j)
+                percs.pop(j)
+                values.pop(j)
+                explode.pop(j)
+                colors.pop(j)
+            else: j+=1
+        ax = axs[i//3][i%3]
         ax.set_title(f"{project.name} original and min query results distribution")
 
         kw = dict(arrowprops=dict(arrowstyle="-"),
@@ -1225,7 +1225,73 @@ def plot_pie_chart():
 #                       horizontalalignment=horizontalalignment, **kw, fontsize=9)
 
         ax.pie(values, labels = labels, explode = explode, textprops={'fontsize': 6}, labeldistance=1.25, colors=colors)
-        plt.savefig(f"fig/unsat_core/{project.name}_pie.pdf")
+    plt.savefig(f"fig/unsat_core/all_pie.pdf")
+
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
+def plot_pie_chart_plotly():
+    fig = make_subplots(rows=2,cols=3, specs=[[{"type":"domain"} for _ in range(3)] for _ in range(2)], subplot_titles=[project.name for project in PROJECTS])
+    for i, project in enumerate(PROJECTS):
+        og_unsat = set()
+        og_timeout = set()
+        og_unknown = set()
+        min_unsat = set()
+        min_timeout = set()
+        min_unknown = set()
+        original_queries_table = f"{project.name.upper()}_UNSAT_CORE_z3_4_8_5"
+        min_queries_table = f"{project.name.upper()}_MIN_ASSERTS_z3_4_8_5"
+        con, cur = get_cursor("data/unsat_core.db")
+        res = cur.execute(f"SELECT query_path, result_code FROM {original_queries_table}")
+        for query_path, result in res:
+            query = query_path.split("/")[-1]
+            if result == "unsat": og_unsat.add(query)
+            elif result == "timeout": og_timeout.add(query)
+            elif result == "unknown": og_unknown.add(query)
+        res = cur.execute(f"SELECT query_path, result_code FROM {min_queries_table}")
+        for query_path, result in res:
+            query = query_path.split("/")[-1]
+            if result == "unsat": min_unsat.add(query)
+            elif result == "timeout": min_timeout.add(query)
+            elif result == "unknown": min_unknown.add(query)
+        print(project.name)
+        values = [len(og_timeout), len(og_unknown), len(min_timeout), len(min_unknown), len(min_unsat)]
+        val_sum = np.sum(values)
+        percs = [ "{:.1%}".format(x / val_sum ) for x in values]
+        print(percs)
+        labels = ["original query timeout", "original query unknown", "original query unsat and min query timeout", "original query unsat and min query unknown", "original query unsat and min query unsat"]
+#       explode = [0.2,0.2,0,0,0]
+        colors = [
+            "#803E75", # Strong Purple
+            "#FF6800", # Vivid Orange
+            "#A6BDD7", # Very Light Blue
+            "#FFB300", # Vivid Yellow
+            "#C10020", # Vivid Red
+            "#817066", # Medium Gray
+        ]
+        # exclude labels[i], percs[i], explode[i], and values[i] if values[i] == 0
+        j = 0
+        while j < len(values):
+            if values[j] == 0:
+                labels.pop(j)
+                percs.pop(j)
+                values.pop(j)
+#               explode.pop(j)
+                colors.pop(j)
+            else: j+=1
+        fig.add_trace(go.Pie(labels=labels, values=values, textinfo='label+percent', 
+                              showlegend=False, 
+                             marker=dict(colors=colors)), row=(i)//3+1, col=(i)%3+1)
+    # move titles down
+    fig.update_annotations(yshift=-300)
+    fig.update_layout(height=900, width=1350)
+    # following 3 lines are to avoid "Loading Mathjax" issue
+    fig.write_image("fig/unsat_core/all_pie_plotly.pdf")
+    import time
+    time.sleep(2)
+    fig.write_image("fig/unsat_core/all_pie_plotly.pdf")
+
 
 def generate_table():
     for project in PROJECTS:

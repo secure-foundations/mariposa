@@ -107,5 +107,5 @@ if __name__ == '__main__':
 #   plot_time_reduction_graph()                                                                                                                                                                                                 
 #   plot_time_reduction_graph_zoomed()
 #   plot_size_vs_time_correlations()
-    plot_pie_chart()
-#   generate_table()
+#   plot_pie_chart()
+    plot_pie_chart_plotly()
