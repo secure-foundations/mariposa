@@ -1,0 +1,15 @@
+{
+    "exp_name": "test",
+    "mutations": ["shuffle", "rename", "reseed"],
+    "num_mutant": 60,
+    "keep_mutant": false,
+    "exp_timeout": 60,
+    "num_procs": 7,
+    "db_mode": "update",
+
+    "ana_timeout": 60,
+    "confidence": 0.05,
+    "r-unsolvable": 5,
+    "r-stable": 95,
+    "discount": 0.8
+}

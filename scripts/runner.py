@@ -6,8 +6,8 @@ import numpy as np
 import itertools
 
 from db_utils import *
-from configs.projects import *
-from configs.experiments import *
+from projects import *
+from experiments import *
 from tabulate import tabulate
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
@@ -84,7 +84,7 @@ class Task:
         if rcode == "error":
             print("[INFO] solver error: ", out, err)
 
-        if cfg.remove_mut and self.perturb is not None:
+        if not cfg.keep_mutants and self.perturb is not None:
             # remove mutant
             os.system(f"rm {mutant_path}")
         
@@ -97,49 +97,51 @@ class Task:
         con.commit()
         con.close()
 
-def run_tasks(queue, start_time):
+def print_eta(elapsed, cur_size, init_size):
     from datetime import timedelta
     from datetime import datetime
+
+    elapsed = round(elapsed/3600, 2)
+    done_size = init_size - cur_size
+    estimated = round(cur_size * (elapsed / done_size), 2)
+    estimated = datetime.now() + timedelta(hours=estimated)
+    print(f"[INFO] finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {estimated.strftime('%Y-%m-%d %H:%M')}")
+
+def run_tasks(queue, start_time, id):
     init_size = queue.qsize()
+    pelapsed = 0
 
     while True:
         task = queue.get()
-        cur_size = queue.qsize()
-        done_size = init_size - cur_size
-        if done_size % 200 == 0:
-            elapsed = round((time.time() - start_time) / 3600, 2)
-            estimated = round(cur_size * (elapsed / done_size), 2)
-            print(f"finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {datetime.now() + timedelta(hours=estimated)}")
+        if id == 0:
+            elapsed = time.time() - start_time
+            if elapsed > pelapsed + 60:
+                print_eta(elapsed, queue.qsize(), init_size)
+                pelapsed = elapsed
         if task is None:
             break
         task.run()
 
-def dump_status(cfg, solver, sum_name, ana):
-    con, cur = get_cursor(cfg.db_path)
-    res = cur.execute(f"""SELECT * FROM {sum_name}""")
-    rows = res.fetchall()
-    con.close()
-
+def dump_status(project, solver, cfg, ana):
+    rows = load_sum_table(project, solver, cfg)
     # print("solver:", solver.path)
     print("solver:", solver.path)
     print("")
+    mut_size = cfg.num_mutant
 
     for row in rows:
-        mut_size = cfg.max_mutants
-        perturbs = ast.literal_eval(row[1])
-        blob = np.frombuffer(row[2], dtype=int)
-        blob = blob.reshape((len(perturbs), 2, mut_size + 1))
+        mutations, blob = row[1], row[2]
         status, votes = ana.categorize_query(blob)
 
         print("query:", row[0])
         table = [["overall", status, "x", "x", "x"]]
         
-        for i in range(len(perturbs)):
+        for i in range(len(mutations)):
             count = count_within_timeout(blob[i], RCode.UNSAT, timeout=ana.timeout)
             times = np.clip(blob[i][1], 0, ana.timeout) / 1000
-            item = [perturbs[i], votes[i], f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%", f"{round(np.mean(times), 2)}(s)", f"{round(np.std(times), 2)}(s)"]
+            item = [mutations[i], votes[i], f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%", f"{round(np.mean(times), 2)}(s)", f"{round(np.std(times), 2)}(s)"]
             table.append(item)
-        print(tabulate(table, headers=["mutation", "status", "success", "mean", "std"]))
+        print(tabulate(table, headers=["mutation", "status", "success", "mean", "std"], tablefmt="simple_grid"))
 
 class Runner:
     def _set_up_table(self):
@@ -147,7 +149,7 @@ class Runner:
         exists = check_table_exists(cur, self.exp_name)
         if not exists:
             create_experiment_table(cur, self.exp_name)
-        elif cfg.db_mode == DBMode.CREATE and exists:
+        elif self.cfg.db_mode == DBMode.CREATE and exists:
             ok = confirm_drop_table(cur, self.exp_name)
             if not ok:
                 print(f"[INFO] keep existing table {self.exp_name}")
@@ -170,7 +172,7 @@ class Runner:
         self.task_queue.put(task)
 
         for perturb in self.cfg.enabled_muts:            
-            for _ in range(self.cfg.max_mutants):
+            for _ in range(self.cfg.num_mutant):
                 mut_seed = random.randint(0, 0xffffffffffffffff)
                 task = Task(self.cfg, self.exp_name, origin_path, perturb, mut_seed, solver)
                 self.task_queue.put(task)
@@ -178,10 +180,10 @@ class Runner:
     def _run_workers(self):
         start_time = time.time()
         processes = []
-        print(f"[INFO] {self.task_queue.qsize()} tasks queued")
-        
-        for _ in range(self.cfg.num_procs):
-            p = mp.Process(target=run_tasks, args=(self.task_queue, start_time,))
+        print(f"[INFO] {self.task_queue.qsize() + self.cfg.num_procs} tasks queued")
+
+        for i in range(self.cfg.num_procs):
+            p = mp.Process(target=run_tasks, args=(self.task_queue, start_time, i,))
             p.start()
             processes.append(p)
             self.task_queue.put(None)
@@ -198,7 +200,7 @@ class Runner:
             self._add_exp(origin_path, solver)
         self._run_workers()
         self.sum_name = self.cfg.get_sum_name(project, solver)
-        create_sum_table(cfg, self.exp_name, self.sum_name)
+        create_sum_table(self.cfg, self.exp_name, self.sum_name)
 
 def run_multi_exps(cfg, projects, solvers):
     for project, solver in itertools.product(projects, solvers):
@@ -215,58 +217,13 @@ def check_serenity_status():
     # assert stdout == "master"
     os.system("cargo build --release")
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='mariposa is a tool for testing stability')
+# if __name__ == '__main__':
+    # parser = argparse.ArgumentParser(description='mariposa is a tool for testing stability')
+    # args = parser.parse_args()
+    # cpu_count = os.cpu_count() // 2
+    # cfg.num_procs = 1
+    # cfg.init_seed = 0xdeadbeef
 
-    parser.add_argument("-q", "--query", required=True, help="the input query (multiple check-sat will be split)")
-    parser.add_argument("-s", "--solver", required=True, help="the solver to use")
-    parser.add_argument("-c", "--clear", default=False, action='store_true', help="clear data from previous experiments")
-    args = parser.parse_args()
-
-    origin_path = args.query
-    query_name = os.path.basename(origin_path)
-    assert query_name.endswith(".smt2")
-    query_name.replace(".smt2", "")
-    
-    solver = SolverInfo.from_path(args.solver)
-
-    if args.clear:
-        os.system(f"rm -rf gen/*")
-        print("[INFO] cleared all data from past experiments")
-        
-    gen_split_subdir = f"gen/{query_name}_split"
-
-    if not os.path.exists(gen_split_subdir):
-        os.makedirs(gen_split_subdir)
-        cfg = ExpConfig("test", gen_split_subdir + "/test.db")
-        # cfg.max_mutants = 1
-        # cfg.num_procs = 1
-
-        cfg.init_seed = 0xdeadbeef
-        project = ProjectInfo("misc", FrameworkName.OTHER, solver)
-        project.clean_root_dir = gen_split_subdir
-
-        command = f"./target/release/mariposa -i {origin_path} --chop --o {gen_split_subdir}/split.smt2"
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-        print(result.stdout.decode('utf-8'), end="")
-        # if result.returncode != 0:
-        #     print("[ERROR] split failed: " + command)
-        #     os._exit(1)
-
-        r = Runner(cfg)
-        r.run_project_exps(project, solver)
-        ana = Analyzer("z_test")
-        ana.timeout = cfg.timeout * 1000
-        dump_status(cfg, solver, r.sum_name, ana)
-    else:
-        print("[INFO] reading existing data from past experiment")
-
-    # r.run_project_exps(project, solver)
-    # r.run_single_exp(args.query, solver)
-
-    # sum_name = cfg.get_sum_name(MISC, solver)
-    # create_sum_table(cfg, r.exp_name, sum_name)
-    # print_single_status(cfg, origin_path, solver, sum_name, ana)
 
 # from ana import RCode 
 # from ana import Analyzer

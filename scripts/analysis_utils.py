@@ -2,8 +2,8 @@ from db_utils import *
 from vbkv_filemap import *
 import shutil
 
-from configs.projects import *
-from configs.experiments import *
+from projects import *
+from experiments import *
 from plot_utils import *
 import matplotlib.pyplot as plt
 import multiprocessing as mp
@@ -25,19 +25,19 @@ COLORS = [
 ]
 
 PROJECT_LABELS = {
-    "D_KOMODO": r"Komodo$_{D}$",
-    "S_KOMODO": r"Komodo$_S$",
-    "D_FVBKV": r"VeriBetrKV$_{D}$",
-    "D_LVBKV": r"VeriBetrKV$_{L}$",
-    "FS_DICE": r"DICE$^\star_F$",
-    "FS_VWASM": r"vWasm$_F$",
+    "d_komodo": r"Komodo$_{D}$",
+    "s_komodo": r"Komodo$_S$",
+    "d_fvbkv": r"VeriBetrKV$_{D}$",
+    "d_lvbkv": r"VeriBetrKV$_{L}$",
+    "fs_dice": r"DICE$^\star_F$",
+    "fs_vwasm": r"vWasm$_F$",
 } 
 
-def make_title(cfg, solver):
+def make_title(proj, solver):
     # star = ""
-    # if cfg.qcfg.project.orig_solver == solver:
+    # if proj.orig_solver == solver:
     #     star = r"$\star$"
-    return f"{PROJECT_LABELS[cfg.qcfg.name]} {solver.pstr()}"
+    return f"{PROJECT_LABELS[proj.name]} {solver.pstr()}"
 
 def get_color_map(keys):
     assert len(keys) <= len(COLORS)
@@ -71,48 +71,48 @@ def get_category_percentages(categories):
         percentages[c] = percentage(len(i), total)
     return percentages, total
 
-def get_unknowns(cfg):
+def get_unknowns(proj):
     th = Analyzer("strict")
     th.timeout = 6e4
-    summary = load_solver_summary_table(cfg, cfg.qcfg.project.orig_solver)
+    summary = load_sum_table(proj, proj.orig_solver)
     assert summary is not None
     categories = th.categorize_queries(summary)
     return categories[Stability.UNKNOWN]
 
-def load_exp_results(cfg, skip_unknowns=True, solvers=None):
+def load_exp_sums(proj, skip_unknowns=True, solvers=None):
     summaries = dict()
 
     if skip_unknowns:
-        unknowns = get_unknowns(cfg)
+        unknowns = get_unknowns(proj)
     else:
         unknowns = set()
-        
-    if solvers is None:
-        solvers = cfg.samples
 
-    for solver in cfg.samples:
-        nrows = load_solver_summary_table(cfg, solver, unknowns)
+    if solvers == None:
+        solvers = Z3_SOLVERS_ALL
+
+    for solver in solvers:
+        nrows = load_sum_table(proj, solver, skip=unknowns)
         if nrows is None:
             continue
         summaries[solver] = nrows
     return summaries
 
 def _async_categorize_project(ratios, key, rows):
-    classifier = Analyzer("z_test")
-    classifier.timeout = 6e4 # 1 min
-    items = classifier.categorize_queries(rows)
+    ana = Analyzer("z_test")
+    ana.timeout = 6e4 # 1 min
+    items = ana.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
     ratios[key] = ps
 
-def _mp_categorize_projects(cfgs, solver_names):
+def _mp_categorize_projects(projs, solver_names):
     manager = mp.Manager()
     ratios = manager.dict()
 
-    for cfg in cfgs:
-        summaries = load_exp_results(cfg)
+    for proj in projs:
+        summaries = load_exp_sums(proj)
         pool = mp.Pool(processes=8)
         for solver in solver_names:
-            key = (cfgs.index(cfg), solver_names.index(solver))
+            key = (projs.index(proj), solver_names.index(solver))
             rows = summaries[solver]
             pool.apply_async(_async_categorize_project, 
                             args=(ratios, key, rows,))
@@ -120,7 +120,7 @@ def _mp_categorize_projects(cfgs, solver_names):
         pool.join()
 
     category_count = len(Stability)
-    data = np.zeros((len(cfgs), len(solver_names), category_count))
+    data = np.zeros((len(projs), len(solver_names), category_count))
 
     for key in ratios:
         i, j = key
@@ -128,13 +128,12 @@ def _mp_categorize_projects(cfgs, solver_names):
 
     return data
 
-def plot_paper_overall(cfgs=ALL_PROJS):
-    project_names = [cfg.qcfg.name for cfg in cfgs]
+def plot_paper_overall(projs=ALL_PROJS):
+    project_names = [proj.name for proj in projs]
     solver_names = [str(s) for s in Z3_SOLVERS_ALL]
     solver_labels = [f"{s.pstr()}\n{s.data[:-3]}" for s in Z3_SOLVERS_ALL]
 
-    # data = _mp_categorize_projects(cfgs, solver_names)
-    data = [[[0.0, 0.48685491723466406, 0.43816942551119764, 0.7789678675754625, 98.29600778967868], [0.0, 0.5842259006815969, 0.5842259006815969, 0.6329113924050633, 98.19863680623175], [0.0, 0.6329113924050633, 0.2921129503407984, 0.5842259006815969, 98.49074975657254], [0.0, 0.5355404089581305, 0.3894839337877313, 0.2921129503407984, 98.78286270691333], [0.0, 1.7526777020447906, 2.288218111002921, 1.2171372930866602, 94.74196689386562], [0.0, 2.5803310613437196, 4.625121713729309, 1.3631937682570594, 91.43135345666991], [0.0, 2.4342745861733204, 4.430379746835443, 1.2171372930866602, 91.91820837390458], [0.0, 2.5316455696202533, 5.0146056475170395, 1.071080817916261, 91.38266796494645]], [[0.0, 0.258732212160414, 0.6468305304010349, 0.0, 99.09443725743856], [0.0, 0.258732212160414, 0.6468305304010349, 0.0, 99.09443725743856], [0.0, 0.129366106080207, 0.6468305304010349, 0.0, 99.22380336351875], [0.0, 0.0, 0.38809831824062097, 0.0, 99.61190168175938], [0.0, 0.0, 0.129366106080207, 0.0, 99.87063389391979], [0.0, 0.258732212160414, 0.258732212160414, 0.0, 99.48253557567917], [0.0, 0.258732212160414, 0.258732212160414, 0.0, 99.48253557567917], [0.0, 0.129366106080207, 0.517464424320828, 0.0, 99.35316946959897]], [[0.0, 0.6011647567161376, 0.7138831486004134, 0.3569415743002067, 98.32801052038324], [0.0, 0.6011647567161376, 0.7702423445425511, 0.1690775878264137, 98.4595153109149], [0.0, 0.1690775878264137, 0.6199511553635169, 0.1690775878264137, 99.04189366898366], [0.0, 0.3381551756528274, 0.7138831486004134, 0.1502911891790344, 98.79767048656772], [0.0, 0.375727972947586, 2.536163817396205, 0.5072327634792411, 96.58087544617696], [0.0, 0.6763103513056548, 3.1373285741123427, 0.3381551756528274, 95.84820589892918], [0.0, 0.563591959421379, 3.118542175464963, 0.3381551756528274, 95.97971068946083], [0.0, 0.563591959421379, 2.911891790343791, 0.3381551756528274, 96.18636107458201]], [[0.0, 0.5755395683453237, 0.28776978417266186, 0.1618705035971223, 98.9748201438849], [0.0, 0.5575539568345323, 0.3237410071942446, 0.12589928057553956, 98.99280575539568], [0.0, 0.3597122302158273, 0.8812949640287769, 0.0539568345323741, 98.70503597122303], [0.0, 0.3057553956834532, 0.4856115107913669, 0.0539568345323741, 99.15467625899281], [0.0, 0.4136690647482014, 2.949640287769784, 0.1079136690647482, 96.52877697841727], [0.0, 0.5575539568345323, 3.2014388489208634, 0.17985611510791366, 96.06115107913669], [0.0, 0.5215827338129496, 3.3633093525179856, 0.1618705035971223, 95.95323741007195], [0.0, 0.539568345323741, 3.147482014388489, 0.1618705035971223, 96.15107913669065]], [[0.0, 1.3201320132013201, 0.33003300330033003, 0.132013201320132, 98.21782178217822], [0.0, 1.2541254125412542, 0.33003300330033003, 0.132013201320132, 98.28382838283828], [0.0, 1.1221122112211221, 0.39603960396039606, 0.132013201320132, 98.34983498349835], [0.0, 0.594059405940594, 0.528052805280528, 0.132013201320132, 98.74587458745874], [0.0, 0.9240924092409241, 0.528052805280528, 0.264026402640264, 98.28382838283828], [0.0, 1.386138613861386, 0.6600660066006601, 0.0, 97.95379537953795], [0.0, 1.056105610561056, 0.594059405940594, 0.264026402640264, 98.08580858085809], [0.0, 0.9240924092409241, 0.7920792079207921, 0.132013201320132, 98.15181518151815]], [[0.0, 0.3462204270051933, 0.17311021350259664, 0.0, 99.48066935949221], [0.0, 0.3462204270051933, 0.17311021350259664, 0.0, 99.48066935949221], [0.0, 0.05770340450086555, 0.1154068090017311, 0.0, 99.8268897864974], [0.0, 0.0, 0.05770340450086555, 0.0, 99.94229659549913], [0.0, 0.17311021350259664, 0.4039238315060589, 0.0, 99.42296595499134], [0.0, 0.1154068090017311, 0.3462204270051933, 0.0, 99.53837276399308], [0.0, 0.0, 0.28851702250432776, 0.0, 99.71148297749568], [0.0, 0.05770340450086555, 0.2308136180034622, 0.0, 99.71148297749568]]]
+    data = _mp_categorize_projects(projs, solver_names)
     
     # splits = [[0, 1], [2, 3], [4, 5]]
     
@@ -197,7 +196,7 @@ def plot_paper_overall(cfgs=ALL_PROJS):
                 color="w", edgecolor='black', linewidth=0.2)
 
         for i in range(len(solver_names)):
-            if solver_names[i] == str(cfgs[pi].qcfg.project.orig_solver):
+            if solver_names[i] == str(projs[pi].orig_solver):
                 plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=40)
             # if i == 4 and pi == 0:
             #     plt.bar(br[i], height=20, bottom=pcs[3][i], width=bar_width, 
@@ -237,7 +236,7 @@ def _get_data_time_scatter(rows):
     pf, cfs = 0, 0
     ps, css = 0, 0
 
-    classifier = Analyzer("z_test")
+    ana = Analyzer("z_test")
     cats = {i: [] for i in Stability }
 
     scatters = np.zeros((len(rows), 2))
@@ -248,7 +247,7 @@ def _get_data_time_scatter(rows):
         plain_time = group_blobs[0][1][0]
         mutants = np.hstack((group_blobs[0,:,1:], group_blobs[1,:,1:], group_blobs[2,:,1:]))
 
-        cat = classifier.categorize_query(group_blobs)[0]
+        cat = ana.categorize_query(group_blobs)[0]
         cats[cat].append(i)
 
         valid_indices = mutants[0] == RCode.UNSAT.value
@@ -302,9 +301,9 @@ def plot_paper_time_scatter():
     figure, axis = plt.subplots(1, 2)
     figure.set_size_inches(7, 4)
     solver = Z3_4_12_1
-    for i, cfg in enumerate([D_KOMODO_CFG, FS_VWASM_CFG]):
-        rows = load_exp_results(cfg, True, [solver])[solver]
-        axis[i].set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+    for i, proj in enumerate([D_KOMODO, FS_VWASM]):
+        rows = load_exp_sums(proj, True, [solver])[solver]
+        axis[i].set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         _plot_time_scatter(rows, axis[i])
     figure.supxlabel("original time (seconds)", fontsize=FSIZE, fontname=FNAME)
     figure.supylabel("median mutant time (seconds)", fontsize=FSIZE, fontname=FNAME)
@@ -314,27 +313,27 @@ def plot_paper_time_scatter():
 
 def plot_appendix_time_scatter():
     rc, cc = 2, 4
-    for cfg in tqdm(ALL_PROJS):
+    for proj in tqdm(ALL_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
 
-        summaries = load_exp_results(cfg, True)
+        summaries = load_exp_sums(proj, True)
         for index, solver in enumerate(Z3_SOLVERS_ALL):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
             _plot_time_scatter(rows, sp)
-            sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+            sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         figure.supxlabel("original time (seconds)", fontsize=FSIZE, fontname=FNAME)
         figure.supylabel("median mutant time (seconds)", fontsize=FSIZE, fontname=FNAME)
         plt.tight_layout()
-        plt.savefig(f"fig/time_scatter/{cfg.qcfg.name}.pdf")
+        plt.savefig(f"fig/time_scatter/{proj.name}.pdf")
         plt.close()
 
 def _get_data_time_std(rows):
-    classifier = Analyzer("z_test")
-    classifier.timeout = 6e4 # 1 min
+    ana = Analyzer("z_test")
+    ana.timeout = 6e4 # 1 min
 
-    items = classifier.categorize_queries(rows)
+    items = ana.categorize_queries(rows)
     stables = items['stable']
 
     dps = [[], [], []]
@@ -350,13 +349,13 @@ def _get_data_time_std(rows):
             dps[k].append(np.std(bs))
     return dps
 
-def _plot_time_std(rows, sp):
+def _plot_time_std(cfg, rows, sp):
     y_bound = 0
     x_bound = 0
     dps = _get_data_time_std(rows)
-    perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+    mutations = [str(p) for p in cfg.enabled_muts]
 
-    for i in range(len(perturbs)):
+    for i in range(len(mutations)):
         xs, ys = get_cdf_pts(dps[i])
         ys = np.flip(ys)
         try:
@@ -365,8 +364,8 @@ def _plot_time_std(rows, sp):
             start = -1
         y_bound = max(ys[start-1], y_bound)
         x_bound = max(np.max(xs), x_bound)
-        label = MUTATION_LABELS[perturbs[i]]
-        color = MUTATION_COLORS[perturbs[i]]
+        label = MUTATION_LABELS[mutations[i]]
+        color = MUTATION_COLORS[mutations[i]]
         sp.plot(xs, ys, label=label, color=color)
     sp.set_xlim(left=1)
     ticks = [1, 5, 10, 15, 20]
@@ -376,49 +375,31 @@ def _plot_time_std(rows, sp):
 def plot_appendix_time_std():
     rc, cc = 2, 4
 
-    for cfg in tqdm(ALL_PROJS):
+    for proj in tqdm(ALL_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
-        summaries = load_exp_results(cfg, True)
+        summaries = load_exp_sums(proj, True)
         for index, solver in enumerate(Z3_SOLVERS_ALL):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
-            _plot_time_std(rows, sp)
-            sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+            _plot_time_std(MAIN_EXP, rows, sp)
+            sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
             sp.legend()
         figure.supylabel(r"proportion of queries exceding ($\%$)", fontsize=FSIZE, fontname=FNAME)
         figure.supxlabel("time standard deviation (seconds)", fontsize=FSIZE, fontname=FNAME)
         plt.tight_layout()
-        plt.savefig(f"fig/time_stable/{cfg.qcfg.name}.pdf")
+        plt.savefig(f"fig/time_stable/{proj.name}.pdf")
         plt.close()    
 
 def plot_paper_time_std():
-    # figure, axis = plt.subplots(1, 2)
-    # figure.set_size_inches(7, 4)
-    # cfg = D_KOMODO_CFG
-    # summaries = load_exp_results(cfg, True)
-    
-    # for index, solver in enumerate([cfg.qcfg.project.orig_solver, Z3_4_12_1]):
-    #     rows = summaries[solver]
-    #     axis[index].set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
-    #     _plot_time_std(rows, axis[index])
-    #     axis[index].set_ylim(bottom=0, top=12)
-    # axis[0].legend()
-    # figure.supylabel(r"proportion of queries" "\n" r"above threshold ($\%$)", fontsize=FSIZE, fontname=FNAME)
-    # figure.supxlabel("time standard deviation (seconds)", fontsize=FSIZE, fontname=FNAME)
-    # plt.tight_layout()
-    # plt.savefig(f"fig/time_stable/std_paper.pdf")
-    # plt.close()
     figure, axis = plt.subplots(1, 2, figsize=(7, 4))
     # figure.set_size_inches(7, 4.2)
-    cfg = D_KOMODO_CFG
-    
     solver = Z3_4_12_1
-    for index, cfg in enumerate([D_KOMODO_CFG, FS_DICE_CFG]):
+    for index, proj in enumerate([D_KOMODO, FS_DICE]):
         sp = axis[index]
-        rows = load_exp_results(cfg, True, [solver])[solver]
-        _plot_time_std(rows, sp)
-        sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+        rows = load_exp_sums(proj, True, [solver])[solver]
+        _plot_time_std(MAIN_EXP, rows, sp)
+        sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         sp.legend()
 
     figure.supylabel(r"proportion of queries exceding ($\%$)", fontsize=FSIZE, fontname=FNAME)
@@ -427,21 +408,20 @@ def plot_paper_time_std():
     plt.savefig(f"fig/time_stable/std_paper.pdf")
     plt.close()    
     
-
-def _async_cutoff_categories(categories, i, rows, perturbs):
-    classifier = Analyzer("z_test")
-    classifier.timeout = i * 1e3
-    cur = {p: set() for p in perturbs + ["unsolvable", "unstable", "intersect"]}
+def _async_cutoff_categories(categories, i, rows, mutations):
+    ana = Analyzer("z_test")
+    ana.timeout = i * 1e3
+    cur = {p: set() for p in mutations + ["unsolvable", "unstable", "intersect"]}
 
     for query_row in rows:
         plain_path = query_row[0]
         group_blobs = query_row[2]
-        cat, votes = classifier.categorize_query(group_blobs)
+        cat, votes = ana.categorize_query(group_blobs)
         if cat == Stability.UNSTABLE:
             cur["unstable"].add(plain_path)
         elif cat == Stability.UNSOLVABLE:
             cur["unsolvable"].add(plain_path)
-        for k, p in enumerate(perturbs):
+        for k, p in enumerate(mutations):
             if votes[k] == Stability.UNSTABLE:
                 cur[p].add(plain_path)
         if set(votes.values()) == {Stability.UNSTABLE}:
@@ -451,29 +431,29 @@ def _async_cutoff_categories(categories, i, rows, perturbs):
     assert(len(cur["intersect"]) <= len(cur["reseed"]))
     categories[i] = cur
 
-def _mp_get_all_cutoff_categories(rows, cutoffs, perturbs):
+def _mp_get_all_cutoff_categories(rows, cutoffs, mutations):
     manager = mp.Manager()
     pool = mp.Pool(processes=8)
     categories = manager.dict()
 
     for i in cutoffs:
         # print(i)
-        # _async_cutoff_categories(categories, i, rows, perturbs)
+        # _async_cutoff_categories(categories, i, rows, mutations)
         pool.apply_async(_async_cutoff_categories, 
-                         args=(categories, i, rows, perturbs,))
+                         args=(categories, i, rows, mutations,))
     pool.close()
     pool.join()
     return categories
 
 def _plot_pert_diff(rows, sp):
-    perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+    mutations = [str(p) for p in MAIN_EXP.enabled_muts]
     cutoffs = np.arange(10, 61, 0.5)
 
     top = 0
     total = len(rows)
 
-    categories = _mp_get_all_cutoff_categories(rows, cutoffs, perturbs)
-    keys = ["unstable"] + perturbs + ["unsolvable", "intersect"]
+    categories = _mp_get_all_cutoff_categories(rows, cutoffs, mutations)
+    keys = ["unstable"] + mutations + ["unsolvable", "intersect"]
     points = {p:[] for p in keys}
 
     for j in cutoffs:
@@ -496,21 +476,21 @@ def _plot_pert_diff(rows, sp):
 def plot_appendix_pert_diff():
     rc, cc = 2, 4
 
-    for cfg in tqdm(ALL_PROJS):
+    for proj in tqdm(ALL_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
-        summaries = load_exp_results(cfg, True)
+        summaries = load_exp_sums(proj, True)
         for index, solver in enumerate(Z3_SOLVERS_ALL):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
             _plot_pert_diff(rows, sp)
             sp.legend()
-            sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+            sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         figure.supylabel(r"proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
         figure.supxlabel("time limit (seconds)", fontsize=FSIZE, fontname=FNAME)
         plt.tight_layout()
 
-        plt.savefig(f"fig/pert_diff/{cfg.qcfg.name}.pdf")
+        plt.savefig(f"fig/pert_diff/{proj.name}.pdf")
         plt.close()
 
 def plot_paper_pert_diff():
@@ -518,21 +498,21 @@ def plot_paper_pert_diff():
     figure.set_size_inches(7, 4)
     
     solver = Z3_4_12_1
-    for index, cfg in enumerate([D_KOMODO_CFG, D_FVBKV_CFG]):
+    for index, proj in enumerate([D_KOMODO, D_FVBKV]):
         sp = axis[index]
-        rows = load_exp_results(cfg, True, [solver])[solver]
+        rows = load_exp_sums(proj, True, [solver])[solver]
         _plot_pert_diff(rows, sp)
-        sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+        sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         sp.legend()
 
-    # cfg = D_FVBKV_CFG
-    # summaries = load_exp_results(cfg, True)
-    # for index, solver in enumerate([cfg.qcfg.project.orig_solver, Z3_4_12_1]):
+    # proj = D_FVBKV
+    # summaries = load_exp_sums(proj, True)
+    # for index, solver in enumerate([proj.orig_solver, Z3_4_12_1]):
     #     sp = axis[1][index]
     #     rows = summaries[solver]
     #     _plot_pert_diff(rows, sp)
     #     sp.set_ylim(top=3.5)
-    #     sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+    #     sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
     # axis[1][0].legend()
 
     figure.supylabel(r"proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
@@ -541,11 +521,11 @@ def plot_paper_pert_diff():
     plt.savefig(f"fig/pert_diff/pert_paper.pdf")
     plt.close()
 
-# def _pert_cutoff(cfg, sp):
+# def _pert_cutoff(proj, sp):
 def _get_data_time_cutoff(rows, cutoffs, steps):
-    perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+    mutations = [str(p) for p in MAIN_EXP.enabled_muts]
 
-    categories = _mp_get_all_cutoff_categories(rows, cutoffs, perturbs)
+    categories = _mp_get_all_cutoff_categories(rows, cutoffs, mutations)
     total = len(rows)
     unstables = [percentage(len(categories[i]["unstable"]), total) for i in cutoffs]
     unsolvables = [percentage(len(categories[i]["unsolvable"]), total) for i in cutoffs]
@@ -569,7 +549,7 @@ def _get_data_time_cutoff(rows, cutoffs, steps):
 def _plot_ext_cutoff(rows, sp, max_time, steps=[]):
     cutoffs = [i for i in range(10, max_time+1, 1)]
 
-    # name = cfg.qcfg.name
+    # name = proj.name
     diffs, unstables, unsolvables = _get_data_time_cutoff(rows, cutoffs, steps)
     sp.plot(cutoffs, unsolvables,
             label=r"\texttt{unsolvable}",color=MUTATION_COLORS["unsolvable"], linewidth=1.5)
@@ -594,12 +574,12 @@ def plot_appendix_ext_cutoff():
     index = 0
     figure.set_size_inches(15, 12)
 
-    for cfg in tqdm(ALL_PROJS):
-        summaries = load_exp_results(cfg, True)
+    for proj in tqdm(ALL_PROJS):
+        summaries = load_exp_sums(proj, True)
         sp = axis[int(index/cc)][int(index%cc)]
         rows = summaries[solver]
         _plot_ext_cutoff(rows, sp, 150, [10, 30, 60])
-        sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+        sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         sp.legend(ncol=3)
         index += 1
 
@@ -608,17 +588,17 @@ def plot_appendix_ext_cutoff():
         
     plt.tight_layout()
     plt.savefig(f"fig/time_cutoff/time_ext.pdf")
-    plt.close()    
+    plt.close()
 
 def plot_paper_ext_cutoff():
     figure, axis = plt.subplots(2, 1)
     figure.set_size_inches(7, 6)
     solver = Z3_4_12_1
-    for index, cfg in enumerate([D_KOMODO_CFG, D_FVBKV_CFG]):
+    for index, proj in enumerate([D_KOMODO, D_FVBKV]):
         sp = axis[index]
-        rows = load_exp_results(cfg, True)[solver]
+        rows = load_exp_sums(proj, True)[solver]
         _plot_ext_cutoff(rows, sp, 150, [10, 30, 60])
-        sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+        sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         sp.set_ylim(bottom=0, top=8)
     
     axis[1].legend()
@@ -628,7 +608,7 @@ def plot_paper_ext_cutoff():
     plt.savefig(f"fig/time_cutoff/cutoff_paper.pdf")
     plt.close()
 
-def create_benchmark(cfgs=ALL_PROJS):
+def create_benchmark(projs=ALL_PROJS):
     benchmark_path = "data/benchmark"
     
     unstable_core_path = f"{benchmark_path}/unstable_core"
@@ -641,17 +621,17 @@ def create_benchmark(cfgs=ALL_PROJS):
     os.system(f"mkdir -p {stable_core_path}")
     os.system(f"mkdir -p {stable_ext_path}")
         
-    classifier = Analyzer("z_test")
-    classifier.timeout = 6e4 # 1 min
-    # classifier.res_stable = 80
+    ana = Analyzer("z_test")
+    ana.timeout = 6e4 # 1 min
+    # ana.res_stable = 80
 
-    for cfg in cfgs:
-        print(cfg.get_project_name())
+    for proj in projs:
+        print(proj.get_project_name())
         unss = []
-        summaries = load_exp_results(cfg, solvers=[cfg.qcfg.project.orig_solver, Z3_4_12_1])
-        for solver in [cfg.qcfg.project.orig_solver, Z3_4_12_1]:
+        summaries = load_exp_sums(proj, solvers=[proj.orig_solver, Z3_4_12_1])
+        for solver in [proj.orig_solver, Z3_4_12_1]:
             rows = summaries[solver]
-            items = classifier.categorize_queries(rows)
+            items = ana.categorize_queries(rows)
             unss.append(items)
         core = unss[0]['unstable'].intersection(unss[1]['unstable'])
         ext = unss[1]['unstable'] - core
@@ -698,20 +678,20 @@ def create_benchmark(cfgs=ALL_PROJS):
         
         # add all unstable core 
         for filename in core:
-            shutil.copyfile(filename, f"{unstable_core_path}/{cfg.get_project_name()}-{filename.split('/')[2]}")
+            shutil.copyfile(filename, f"{unstable_core_path}/{proj.get_project_name()}-{filename.split('/')[2]}")
 #           print("added: ", filename)
 
         # add all unstable ext
         for filename in ext:
-            shutil.copyfile(filename, f"{unstable_ext_path}/{cfg.get_project_name()}-{filename.split('/')[2]}")
+            shutil.copyfile(filename, f"{unstable_ext_path}/{proj.get_project_name()}-{filename.split('/')[2]}")
 
         # add all stable core
         for filename in sampled_core:
-            shutil.copyfile(filename, f"{stable_core_path}/{cfg.get_project_name()}-{filename.split('/')[2]}")
+            shutil.copyfile(filename, f"{stable_core_path}/{proj.get_project_name()}-{filename.split('/')[2]}")
 
         # add all stable ext
         for filename in maybes:
-            shutil.copyfile(filename, f"{stable_ext_path}/{cfg.get_project_name()}-{filename.split('/')[2]}")
+            shutil.copyfile(filename, f"{stable_ext_path}/{proj.get_project_name()}-{filename.split('/')[2]}")
 
 
 skip = {"attest.vad",
@@ -740,8 +720,8 @@ skip = {"attest.vad",
 "words_and_bytes.s.dfy",
 "words_and_bytes_isolated.i.dfy"}
 
-def locality_analysis(cfg):
-    summaries = load_exp_results(cfg, solvers=[Z3_4_12_1])
+def locality_analysis(proj):
+    summaries = load_exp_sums(proj, solvers=[Z3_4_12_1])
     c = Analyzer("z_test")
     c.timeout = 6e4
     counts = {}
@@ -781,20 +761,20 @@ def locality_analysis(cfg):
 def plot_appendix_sizes():
     # figure, axis = setup_fig(1, 2)
     x_max = 0
-    for cfg in [D_LVBKV_CFG, D_FVBKV_CFG, D_KOMODO_CFG, FS_DICE_CFG, FS_VWASM_CFG, S_KOMODO_CFG]:
-        clean_dir = cfg.qcfg.project.clean_dirs[Z3_4_11_2]
+    for proj in [D_LVBKV, D_FVBKV, D_KOMODO, FS_DICE, FS_VWASM, S_KOMODO]:
+        clean_dir = proj.clean_root_dir
         paths = list_smt2_files(clean_dir)
-        sizes = [] 
+        sizes = []
         for path in paths:
             sizes.append(os.path.getsize(path) / 1024 / 1024)
         n = len(sizes)
-        label = PROJECT_LABELS[cfg.qcfg.name]
-        color = PROJECT_COLORS[cfg.qcfg.name]
+        label = PROJECT_LABELS[proj.name]
+        color = PROJECT_COLORS[proj.name]
         x_max = max(x_max, np.max(sizes))
         plt.plot(np.sort(sizes), np.arange(n), label=label, color=color, linewidth=1.5)
         plt.plot(np.max(sizes), n, marker="o", color=color, markersize=5)
         align = "left"
-        if cfg == D_FVBKV_CFG:
+        if proj == D_FVBKV:
             align = "right"
         plt.text(np.max(sizes)-0.2, n+80, label,  fontname=FNAME, horizontalalignment=align)
 
@@ -806,9 +786,9 @@ def plot_appendix_sizes():
     plt.xlabel("size (MB)",  fontsize=FSIZE, fontname=FNAME) 
 
     plt.tight_layout()
-    plt.savefig("fig/sizes.pdf")    
+    plt.savefig("fig/sizes.pdf")
 
-def _plot_srs(rows, sp):
+def _plot_srs(cfg, rows, sp):
     dps = np.zeros((len(rows), 3))
     for query_row in rows:
         group_blobs = query_row[2]
@@ -817,9 +797,9 @@ def _plot_srs(rows, sp):
             success = count_within_timeout(group_blobs[k], RCode.UNSAT, timeout=6e4)
             dps[rows.index(query_row), k] = percentage(success, 61)
     end = 0
-    perturbs = [str(p) for p in cfg.qcfg.enabled_muts]
+    mutations = [str(p) for p in cfg.enabled_muts]
     
-    for i, m in enumerate(perturbs):
+    for i, m in enumerate(mutations):
         label = MUTATION_LABELS[m]
         color = MUTATION_COLORS[m]
         xs, ys = get_cdf_pts(dps[:,i])
@@ -835,24 +815,24 @@ def plot_appendix_srs():
     # figure.set_size_inches(7, 4)
     rc, cc = 2, 4
 
-    for cfg in tqdm(ALL_PROJS):
+    for proj in tqdm(ALL_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
-        summaries = load_exp_results(cfg, True)
+        summaries = load_exp_sums(proj, True)
         for index, solver in enumerate(Z3_SOLVERS_ALL):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
-            _plot_srs(rows, sp)
-            sp.set_title(make_title(cfg, solver), fontsize=FSIZE, fontname=FNAME)
+            _plot_srs(MAIN_EXP, rows, sp)
+            sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         figure.supxlabel(r"mutant success rate ($\%$)", fontsize=FSIZE, fontname=FNAME)
         figure.supylabel(r"cumulative proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
         
         plt.tight_layout()
-        plt.savefig(f"fig/sr_cdf/{cfg.qcfg.name}.pdf")
+        plt.savefig(f"fig/sr_cdf/{proj.name}.pdf")
         plt.close()
 
-# def count_timeouts(cfg):
-#     summaries = load_solver_summaries(cfg, skip_unknowns=True)
+# def count_timeouts(proj):
+#     summaries = load_solver_summaries(proj, skip_unknowns=True)
 #     c = Analyzer("z_test")
 #     c.timeout = 15e4
 
@@ -895,8 +875,8 @@ def plot_appendix_srs():
 #     # print(len(lfiles))
 #     # print(len(dfiles))
 
-#     classifier = Analyzer("z_test")
-#     classifier.timeout = 61e4
+#     ana = Analyzer("z_test")
+#     ana.timeout = 61e4
 #     # th.unsolvable = 20
 #     # th.res_stable = 80
 
@@ -918,7 +898,7 @@ def plot_appendix_srs():
 #     # data = np.zeros((4, len(Stability)))
 
 #     l_summary = load_solver_summary(linear, Z3_4_12_1, get_unknowns(linear))
-#     # l_categories = categorize_queries(l_summary, classifier)
+#     # l_categories = categorize_queries(l_summary, ana)
 #     pts = []
 #     xs = []
 #     ys = []
@@ -928,7 +908,7 @@ def plot_appendix_srs():
 #         # if query_row[0] not in l_filtered:
 #         #     continue
 #         group_blobs = query_row[2]
-#         res = classifier.categorize_query(group_blobs, None)
+#         res = ana.categorize_query(group_blobs, None)
 
 #         if res != Stability.STABLE:
 #             continue
@@ -963,7 +943,7 @@ def plot_appendix_srs():
 #         # if query_row[0] not in d_filtered:
 #         #     continue
 #         group_blobs = query_row[2]
-#         res = classifier.categorize_query(group_blobs, None)
+#         res = ana.categorize_query(group_blobs, None)
 
 #         if res != Stability.STABLE:
 #             continue
@@ -991,7 +971,7 @@ def plot_appendix_srs():
     
 #     # print(len(d_summary))
 #     # pts = []
-#     # # d_categories = categorize_queries(d_summary, classifier)
+#     # # d_categories = categorize_queries(d_summary, ana)
 #     # for query_row in d_summary:
 #     #     if query_row[0] not in d_filtered:
 #     #         continue

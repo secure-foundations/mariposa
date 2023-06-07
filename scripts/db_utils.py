@@ -1,7 +1,7 @@
 import sqlite3
 import sys, os
 from tqdm import tqdm
-from configs.experiments import DB_PATH, DBMode
+from experiments import DB_PATH, DBMode, MAIN_EXP
 import numpy as np
 from rcode import RCode
 from analyzer import *
@@ -93,7 +93,7 @@ def import_tables(other_db_path):
     cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
 
     for table_name in tn1 - tn0:
-        print(f"confirm importing table {table_name} [Y]")
+        print(f"[INPUT] confirm importing table {table_name} [Y]")
         if input() != "Y":
             print(f"[INFO] skip importing table {table_name}")
         else:
@@ -140,19 +140,19 @@ def create_sum_table(cfg, exp_table_name, sum_table_name):
             SELECT result_code, elapsed_milli, perturbation FROM {exp_table_name}
             WHERE vanilla_path = "{vanilla_path}"
             AND perturbation IS NOT NULL""")
-        perturbs = [str(p) for p in cfg.enabled_muts]
+        mutations = [str(p) for p in cfg.enabled_muts]
         v_rcode = RCode.from_str(v_rcode).value
-        results = {p: [[v_rcode], [v_time]] for p in perturbs}
+        results = {p: [[v_rcode], [v_time]] for p in mutations}
 
         for row in reversed(res.fetchall()):
             results[row[2]][0].append(RCode.from_str(row[0]).value)
             results[row[2]][1].append(row[1])
 
-        mut_size = cfg.max_mutants
+        mut_size = cfg.num_mutant
         expected_size = mut_size + 1
         
-        blob = np.zeros((len(perturbs), 2, expected_size), dtype=int)
-        for pi, perturb in enumerate(perturbs):
+        blob = np.zeros((len(mutations), 2, expected_size), dtype=int)
+        for pi, perturb in enumerate(mutations):
             (veri_res, veri_times) = results[perturb]
 
             if len(veri_res) > expected_size:
@@ -173,11 +173,11 @@ def create_sum_table(cfg, exp_table_name, sum_table_name):
         if cfg.db_mode == DBMode.UPDATE:
             cur.execute(f"""REPLACE INTO {sum_table_name}
                 VALUES(?, ?, ?);""", 
-                (vanilla_path, str(perturbs), blob))
+                (vanilla_path, str(mutations), blob))
         else:
             cur.execute(f"""INSERT INTO {sum_table_name}
                 VALUES(?, ?, ?);""", 
-                (vanilla_path, str(perturbs), blob))
+                (vanilla_path, str(mutations), blob))
 
     con.commit()
     con.close()
@@ -265,37 +265,56 @@ def export_timeouts(cfg, solver):
 #     con.close()
 #     create_summary_table(cfg, solver)
 
-def load_solver_summary_table(qcfg, solver, skip=set()):
-    con, cur = get_cursor(qcfg.db_path)
-    new_table_name = qcfg.get_solver_table_name(solver) + "_summary"
-    if not check_table_exists(cur, new_table_name):
-        print(f"[INFO] skipping {new_table_name}")
+def load_sum_table(project, solver, cfg=MAIN_EXP, skip=set()):
+    con, cur = get_cursor(cfg.db_path)
+    sum_name = cfg.get_sum_name(project, solver)
+
+    if not check_table_exists(cur, sum_name):
+        print(f"[INFO] skipping {sum_name}")
         return None
+
     solver = str(solver)
 
-    res = cur.execute(f"""SELECT * FROM {new_table_name}""")
+    res = cur.execute(f"""SELECT * FROM {sum_name}""")
     rows = res.fetchall()
 
     nrows = []
-    mut_size = qcfg.max_mutants
+    mut_size = cfg.num_mutant
     for row in rows:
         if row[0] in skip:
             continue
-        perturbs = ast.literal_eval(row[1])
+        mutations = ast.literal_eval(row[1])
         blob = np.frombuffer(row[2], dtype=int)
-        blob = blob.reshape((len(perturbs), 2, mut_size + 1))
-        nrow = [row[0], perturbs, blob]
+        blob = blob.reshape((len(mutations), 2, mut_size + 1))
+        nrow = [row[0], mutations, blob]
         nrows.append(nrow)
+
     con.close()
     return nrows
 
 if __name__ == "__main__":
     # import_tables()
+    # tables = get_tables("./data/mariposa.db")
+    # con, cur = get_cursor("./data/mariposa.db")
+    
+    # for table in tables:
+    #     old_table = table
+    #     table = table.lower()
+    #     if table.endswith("_summary"):
+    #         # main_d_komodo_z3_4_5_0_sum
+    #         table = "main_" + table.replace("_summary", "_sum")
+    #         rename_table(cur, old_table, table)
+    #     else:
+    #         table = "main_" + table + "_exp"
+    #         rename_table(cur, old_table, table)
+    # con.commit()
+    # con.close()
+
     if len(sys.argv) <= 1:
         show_tables()
-    else:
-        cmd = sys.argv[1]
-        if cmd == "zip_db":
-            zip_db()
-        elif cmd == "unzip_db":
-            unzip_db()
+    # else:
+    #     cmd = sys.argv[1]
+    #     if cmd == "zip_db":
+    #         zip_db()
+    #     elif cmd == "unzip_db":
+    #         unzip_db()

@@ -29,12 +29,6 @@ def count_within_timeout(blob, rcode, timeout=1e6):
     success = np.sum(np.logical_and(success, none_timeout))
     return success
 
-    # if self.time_std is not None:
-    #     std = np.std(times)
-    #     T = (size - 1) * ((std / self.time_std) ** 2)
-    #     if T > scipy.stats.chi2.ppf(1-self.confidence, df=size-1):
-    #         return Stability.TIME_UNSTABLE
-
 class Analyzer:
     def __init__(self, method):
         self.confidence = 0.05
@@ -53,6 +47,24 @@ class Analyzer:
             self.categorize_group = self._categorize_z_test
         else:
             assert False
+
+    def load(self, obj):
+        assert isinstance(obj, dict)
+
+        if "confidence" in obj:
+            self.confidence = obj["confidence"]
+
+        if "ana_timeout" in obj:
+            self.timeout = obj["ana_timeout"] * 1000
+
+        if "r-unsolvable" in obj:
+            self.unsolvable = obj["r-unsolvable"]            
+
+        if "r-stable" in obj:
+            self.res_stable = obj["r-stable"]
+            
+        if "discount" in obj:
+            self.discount = obj["discount"]
 
     # def _categorize_group_regression(self, group_blob):
     #     pres = group_blob[0][0]

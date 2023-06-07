@@ -226,7 +226,7 @@ fn main() {
         }
         let out_file_path = args.out_file_path.unwrap();
         let splits = split_commands(&mut commands, &out_file_path);
-        println!("[INFO] {} is split into {} files", &in_file_path, splits);
+        println!("[INFO] {} is split into {} file(s)", &in_file_path, splits);
         return;
     }
 
