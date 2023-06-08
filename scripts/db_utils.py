@@ -317,8 +317,11 @@ if __name__ == "__main__":
     # con.commit()
     # con.close()
 
-    if len(sys.argv) <= 1:
-        show_tables()
+    # if len(sys.argv) <= 1:
+    #     show_tables()
+
+    zip_db()
+
     # else:
     #     cmd = sys.argv[1]
     #     if cmd == "zip_db":
