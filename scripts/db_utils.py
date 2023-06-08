@@ -1,10 +1,11 @@
 import sqlite3
 import sys, os
 from tqdm import tqdm
-from experiments import DB_PATH, DBMode, MAIN_EXP
+from experiments import *
 import numpy as np
 from rcode import RCode
 from analyzer import *
+from basic_utils import *
 import ast
 
 def zip_db():
@@ -30,17 +31,23 @@ def get_cursor(db_path=DB_PATH):
     cur = con.cursor()
     return con, cur
 
-def confirm_drop_table(cur, table_name):
-    if check_table_exists(cur, table_name):
-        print(f"confirm to drop existing experiment table {table_name} [Y]")
-        if input() != "Y":
-            print(f"[WARN] abort dropping table {table_name}")
-            return False
-        cur.execute(f"""DROP TABLE {table_name}""")
-        print(f"[INFO] dropped existing table {table_name}")
-        return True
-    print(f"[INFO] ignored non-existing table {table_name}")
-    return True
+def check_existing_tables(cfg, project, solver):
+    exp_table = cfg.get_exp_name(project, solver)
+    sum_name = cfg.get_sum_name(project, solver)
+    con, cur = get_cursor(cfg.db_path)
+
+    if check_table_exists(cur, sum_name):
+        print(f"[INFO] {sum_name} already exists, remove it? [Y]")
+        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+        cur.execute(f"""DROP TABLE {sum_name}""")
+    
+    if check_table_exists(cur, exp_table):
+        print(f"[INFO] {exp_table} already exists, remove it? [Y]")
+        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+        cur.execute(f"""DROP TABLE {exp_table}""")
+
+    con.commit()
+    con.close()
 
 def rename_table(cur, old_name, new_name):
     q = f"""ALTER TABLE {old_name} RENAME TO {new_name}"""

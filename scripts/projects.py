@@ -1,12 +1,13 @@
-import os, sys
+import os
 import random
 from enum import Enum
+from basic_utils import *
 
 # solver related
 class SolverBrand(Enum):
     Z3 = "z3"
     CVC5 = "cvc5"
-    CUSTOM = "custom"
+    CUSTOM = "custom_solver"
 
 SOLVER_BINS_DIR = "solvers/"
 
@@ -36,12 +37,6 @@ class SolverInfo:
         assert self.brand.value == "z3"
         return "Z3 " + self.ver
 
-    def from_path(path):
-        s = SolverInfo("", "")
-        s.ver = ""
-        s.path = path
-        return s
-
 Z3_4_4_2 = SolverInfo("z3-4.4.2", "2015/10/05")
 Z3_4_5_0 = SolverInfo("z3-4.5.0", "2016/11/07")
 Z3_4_6_0 = SolverInfo("z3-4.6.0", "2017/12/18")
@@ -57,24 +52,19 @@ Z3_4_12_1 = SolverInfo("z3-4.12.1", "2023/01/18")
 CVC5_1_0_3 = SolverInfo("cvc5-1.0.3", "2022/12/12")
 
 Z3_SOLVERS_ALL = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8, Z3_4_8_11, Z3_4_11_2, Z3_4_12_1]
+
+def solver_from_path(spath):
+    path = os.path.abspath(spath)
+    for s in Z3_SOLVERS_ALL:
+        if os.path.abspath(s.path) == path:
+            print(f"[INFO] { spath } matches a known solver {s.pstr()}")
+            return s
+    s = SolverInfo("", "")
+    s.ver = ""
+    s.path = path
+    return s
+
 # ALL_SOLVERS = [SolverInfo(p) for p in os.listdir(SOLVER_BINS_DIR)]
-
-def exit_with(msg):
-    print(msg)
-    sys.exit(1)
-
-def exit_with_on_fail(cond, msg):
-    if not cond:
-        exit_with(msg)
-
-def list_smt2_files(sub_root):
-    exit_with_on_fail(os.path.isdir(sub_root), f"[ERROR] {sub_root} is not a directory")
-    file_paths = []
-    for root, _, files in os.walk(sub_root):
-        for file in files:
-            if file.endswith(".smt2"):
-                file_paths.append(os.path.join(root, file))
-    return file_paths
 
 class FrameworkName(str, Enum):
     DAFNY = "dafny"

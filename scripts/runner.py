@@ -122,27 +122,6 @@ def run_tasks(queue, start_time, id):
             break
         task.run()
 
-def dump_status(project, solver, cfg, ana):
-    rows = load_sum_table(project, solver, cfg)
-    # print("solver:", solver.path)
-    print("solver:", solver.path)
-    print("")
-    mut_size = cfg.num_mutant
-
-    for row in rows:
-        mutations, blob = row[1], row[2]
-        status, votes = ana.categorize_query(blob)
-
-        print("query:", row[0])
-        table = [["overall", status, "x", "x", "x"]]
-        
-        for i in range(len(mutations)):
-            count = count_within_timeout(blob[i], RCode.UNSAT, timeout=ana.timeout)
-            times = np.clip(blob[i][1], 0, ana.timeout) / 1000
-            item = [mutations[i], votes[i], f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%", f"{round(np.mean(times), 2)}(s)", f"{round(np.std(times), 2)}(s)"]
-            table.append(item)
-        print(tabulate(table, headers=["mutation", "status", "success", "mean", "std"], tablefmt="simple_grid"))
-
 class Runner:
     def _set_up_table(self):
         con, cur = get_cursor(self.cfg.db_path)

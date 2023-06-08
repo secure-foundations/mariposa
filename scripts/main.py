@@ -4,7 +4,7 @@ from runner import *
 from db_utils import *
 from analysis_utils import *
 import shutil
-import ast
+from basic_utils import *
 # from bisect_utils import *
 import argparse
 
@@ -42,11 +42,32 @@ def create_single_mode_project(args):
     query_name = os.path.basename(origin_path)
     exit_with_on_fail(query_name.endswith(".smt2"), '[ERROR] query must end with ".smt2"')
     query_name.replace(".smt2", "")
-    solver = SolverInfo.from_path(args.solver)
+    solver = solver_from_path(args.solver)
     project = ProjectInfo("misc", FrameworkName.OTHER, solver)
     gen_split_subdir = f"gen/{query_name}_"
     project.clean_root_dir = gen_split_subdir
     return project
+
+def dump_status(project, solver, cfg, ana):
+    rows = load_sum_table(project, solver, cfg)
+    # print("solver:", solver.path)
+    print("solver:", solver.path)
+    print("")
+    mut_size = cfg.num_mutant
+
+    for row in rows:
+        mutations, blob = row[1], row[2]
+        status, votes = ana.categorize_query(blob)
+
+        print("query:", row[0])
+        table = [["overall", status, "x", "x", "x"]]
+
+        for i in range(len(mutations)):
+            count = count_within_timeout(blob[i], RCode.UNSAT, timeout=ana.timeout)
+            times = np.clip(blob[i][1], 0, ana.timeout) / 1000
+            item = [mutations[i], votes[i], f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%", f"{round(np.mean(times), 2)}(s)", f"{round(np.std(times), 2)}(s)"]
+            table.append(item)
+        print(tabulate(table, headers=["mutation", "status", "success", "mean", "std"], tablefmt="simple_grid"))
 
 def single_mode(args):
     cfg, ana = load_config(args.config)
@@ -90,15 +111,23 @@ def multi_mode(args):
     except:
         exit_with(f"[ERROR] not an existing project {args.project}")
 
-    solver = SolverInfo.from_path(args.solver)
+    solver = solver_from_path(args.solver)
 
     if not args.analysis_only:
+        check_existing_tables(cfg, project, solver)
         r = Runner(cfg)
         r.run_project_exps(project, solver)
 
-    tb = load_sum_table(project, solver, cfg=cfg)
-    print(tb)
-            
+    rows = load_sum_table(project, solver, cfg=cfg)
+    items = ana.categorize_queries(rows)
+    ps, _ = get_category_percentages(items)
+
+    pp_table = [["category", "count", "percentage"]]
+    for cat in {Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE}:
+        pp_table.append([cat.value, len(items[cat]), ps[cat]])
+
+    print(tabulate(pp_table, tablefmt="simple_grid"))
+
 def flatten_path(base_dir, path):
     assert base_dir in path
     if not base_dir.endswith("/"):
