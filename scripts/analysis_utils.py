@@ -10,6 +10,30 @@ import multiprocessing as mp
 
 MAIN_EXP, _ = load_known_experiment("main")
 
+KNOWN_PROJECTS = load_known_projects()
+
+S_KOMODO = KNOWN_PROJECTS["s_komodo"]
+D_KOMODO = KNOWN_PROJECTS["d_komodo"]
+D_FVBKV = KNOWN_PROJECTS["d_fvbkv"]
+D_LVBKV = KNOWN_PROJECTS["d_lvbkv"]
+FS_VWASM = KNOWN_PROJECTS["fs_vwasm"]
+FS_DICE = KNOWN_PROJECTS["fs_dice"]
+
+MAIN_PROJS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]
+
+KNOWN_SOLVERS = load_known_solvers()
+
+Z3_4_4_2 = KNOWN_SOLVERS["solvers/z3-4.4.2"]
+Z3_4_5_0 = KNOWN_SOLVERS["solvers/z3-4.5.0"]
+Z3_4_6_0 = KNOWN_SOLVERS["solvers/z3-4.6.0"]
+Z3_4_8_5 = KNOWN_SOLVERS["solvers/z3-4.8.5"]
+Z3_4_8_8 = KNOWN_SOLVERS["solvers/z3-4.8.8"]
+Z3_4_8_11 = KNOWN_SOLVERS["solvers/z3-4.8.11"]
+Z3_4_11_2 = KNOWN_SOLVERS["solvers/z3-4.11.2"]
+Z3_4_12_1 = KNOWN_SOLVERS["solvers/z3-4.12.1"]
+
+MAIN_Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8, Z3_4_8_11, Z3_4_11_2, Z3_4_12_1]
+
 plt.rcParams['text.usetex'] = True
 plt.rcParams["font.family"] = "serif"
 
@@ -62,16 +86,6 @@ MUTATION_LABELS = {
     "reseed": r"reseeding",
     "rename": r"renaming",
 }
-
-def percentage(a, b):
-    return a * 100 / b
-
-def get_category_percentages(categories):
-    percentages = dict()
-    total = sum([len(i) for i in categories.values()])
-    for c, i in categories.items():
-        percentages[c] = percentage(len(i), total)
-    return percentages, total
 
 def get_unknowns(proj):
     th = Analyzer(method="strict")
@@ -348,11 +362,11 @@ def _get_data_time_std(rows):
             dps[k].append(np.std(bs))
     return dps
 
-def _plot_time_std(cfg, rows, sp):
+def _plot_time_std(exp, rows, sp):
     y_bound = 0
     x_bound = 0
     dps = _get_data_time_std(rows)
-    mutations = [str(p) for p in cfg.enabled_muts]
+    mutations = [str(p) for p in exp.enabled_muts]
 
     for i in range(len(mutations)):
         xs, ys = get_cdf_pts(dps[i])
@@ -784,7 +798,7 @@ def plot_appendix_sizes():
     plt.tight_layout()
     plt.savefig("fig/sizes.pdf")
 
-def _plot_srs(cfg, rows, sp):
+def _plot_srs(exp, rows, sp):
     dps = np.zeros((len(rows), 3))
     for query_row in rows:
         group_blobs = query_row[2]
@@ -793,7 +807,7 @@ def _plot_srs(cfg, rows, sp):
             success = count_within_timeout(group_blobs[k], RCode.UNSAT, timeout=6e4)
             dps[rows.index(query_row), k] = percentage(success, 61)
     end = 0
-    mutations = [str(p) for p in cfg.enabled_muts]
+    mutations = [str(p) for p in exp.enabled_muts]
     
     for i, m in enumerate(mutations):
         label = MUTATION_LABELS[m]

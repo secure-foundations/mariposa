@@ -8,6 +8,16 @@ from tabulate import tabulate
 def is_ratio(x):
     return type(x) == float and 0 < x < 1
 
+def percentage(a, b):
+    return a * 100 / b
+
+def get_category_percentages(categories):
+    percentages = dict()
+    total = sum([len(i) for i in categories.values()])
+    for c, i in categories.items():
+        percentages[c] = percentage(len(i), total)
+    return percentages, total
+
 class Stability(str, Enum):
     UNKNOWN = "unknown"
     UNSOLVABLE = "unsolvable"

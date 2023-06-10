@@ -5,8 +5,7 @@ import multiprocessing as mp
 import itertools
 
 from db_utils import *
-# from projects import *
-from experiment import *
+# from configer import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
@@ -44,8 +43,8 @@ def parse_basic_output_cvc(output, error):
     return "error"
 
 class Task:
-    def __init__(self, cfg, exp_name, origin_path, perturb, mut_seed, solver):
-        self.cfg = cfg
+    def __init__(self, exp, exp_name, origin_path, perturb, mut_seed, solver):
+        self.exp = exp
         self.exp_name = exp_name
         self.solver = solver
         self.origin_path = origin_path
@@ -54,7 +53,7 @@ class Task:
 
     def run(self):
         solver = self.solver
-        cfg = self.cfg
+        exp = self.exp
 
         if self.perturb is not None:
             query_name = os.path.basename(self.origin_path)
@@ -73,8 +72,8 @@ class Task:
         else:
             mutant_path = self.origin_path
 
-        command = f"{solver.path} {mutant_path} -T:{cfg.timeout}"
-        out, err, elapsed = subprocess_run(command, cfg.timeout + 1)
+        command = f"{solver.path} {mutant_path} -T:{exp.timeout}"
+        out, err, elapsed = subprocess_run(command, exp.timeout + 1)
 
         # TODO: handle other solvers
         rcode = parse_basic_output_z3(out)
@@ -82,11 +81,11 @@ class Task:
         if rcode == "error":
             print("[INFO] solver error: ", out, err)
 
-        if not cfg.keep_mutants and self.perturb is not None:
+        if not exp.keep_mutants and self.perturb is not None:
             # remove mutant
             os.system(f"rm {mutant_path}")
         
-        con = sqlite3.connect(cfg.db_path)
+        con = sqlite3.connect(exp.db_path)
         cur = con.cursor()
         cur.execute(f"""INSERT INTO {self.exp_name}
             (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
@@ -122,44 +121,38 @@ def run_tasks(queue, start_time, id):
 
 class Runner:
     def _set_up_table(self):
-        con, cur = get_cursor(self.cfg.db_path)
+        con, cur = get_cursor(self.exp.db_path)
         exists = check_table_exists(cur, self.exp_name)
-        if not exists:
-            create_experiment_table(cur, self.exp_name)
-        elif self.cfg.db_mode == DBMode.CREATE and exists:
-            ok = confirm_drop_table(cur, self.exp_name)
-            if not ok:
-                print(f"[INFO] keep existing table {self.exp_name}")
-                sys.exit()
-            create_experiment_table(cur, self.exp_name)
+        exit_with_on_fail(not exists, f"[ERROR] table {self.exp_name} already exists")
+        create_experiment_table(cur, self.exp_name)
         con.commit()
         con.close()
 
-    def __init__(self, cfg):
+    def __init__(self, exp):
         mp.set_start_method('spawn')
         self.task_queue = mp.Queue()
-        self.cfg = cfg
+        self.exp = exp
     
-        if cfg.init_seed is not None:
-            print(f"[INFO] using initial seed: {cfg.init_seed}")
-            random.seed(cfg.init_seed)
+        if exp.init_seed is not None:
+            print(f"[INFO] using initial seed: {exp.init_seed}")
+            random.seed(exp.init_seed)
 
     def _add_exp(self, origin_path, solver):
-        task = Task(self.cfg, self.exp_name, origin_path, None, None, solver)
+        task = Task(self.exp, self.exp_name, origin_path, None, None, solver)
         self.task_queue.put(task)
 
-        for perturb in self.cfg.enabled_muts:            
-            for _ in range(self.cfg.num_mutant):
+        for perturb in self.exp.enabled_muts:            
+            for _ in range(self.exp.num_mutant):
                 mut_seed = random.randint(0, 0xffffffffffffffff)
-                task = Task(self.cfg, self.exp_name, origin_path, perturb, mut_seed, solver)
+                task = Task(self.exp, self.exp_name, origin_path, perturb, mut_seed, solver)
                 self.task_queue.put(task)
 
     def _run_workers(self):
         start_time = time.time()
         processes = []
-        print(f"[INFO] {self.task_queue.qsize() + self.cfg.num_procs} tasks queued")
+        print(f"[INFO] {self.task_queue.qsize() + self.exp.num_procs} tasks queued")
 
-        for i in range(self.cfg.num_procs):
+        for i in range(self.exp.num_procs):
             p = mp.Process(target=run_tasks, args=(self.task_queue, start_time, i,))
             p.start()
             processes.append(p)
@@ -170,19 +163,19 @@ class Runner:
 
         print("[INFO] workers finished")
 
-    def run_project_exps(self, project, solver):
-        self.exp_name = self.cfg.get_exp_name(project, solver)
+    def run_single_project(self, project, solver):
+        self.exp_name = self.exp.get_exp_tname(project, solver)
         self._set_up_table()
         for origin_path in project.list_queries():
             self._add_exp(origin_path, solver)
         self._run_workers()
-        self.sum_name = self.cfg.get_sum_name(project, solver)
-        create_sum_table(self.cfg, self.exp_name, self.sum_name)
+        self.sum_name = self.exp.get_sum_tname(project, solver)
+        create_sum_table(self.exp, self.exp_name, self.sum_name)
 
-def run_multi_exps(cfg, projects, solvers):
+def run_projects_solvers(exp, projects, solvers):
     for project, solver in itertools.product(projects, solvers):
-        r = Runner(cfg)
-        r.run_project_exps(project, solver)
+        r = Runner(exp)
+        r.run_single_project(project, solver)
 
 def check_serenity_status():
     print("checking scaling_governor...")

@@ -1,49 +1,38 @@
-from project import *
-from experiment import *
 from runner import *
 from db_utils import *
-from analysis_utils import *
+# from analysis_utils import *
 import shutil
 from basic_utils import *
-# from bisect_utils import *
 import argparse
 from tabulate import tabulate
+from configer import *
 
-def import_database(other_server):
-    other_db_path = "data/mariposa2.db"
-    os.system(f"rm {other_db_path}")
-    os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {other_db_path}")
-    import_tables(other_db_path)
+# def import_database(other_server):
+#     other_db_path = "data/mariposa2.db"
+#     os.system(f"rm {other_db_path}")
+#     os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {other_db_path}")
+#     import_tables(other_db_path)
 
-def plot_paper_figs():
-    plot_paper_overall()
-    plot_paper_ext_cutoff()
-    plot_paper_pert_diff()
-    plot_paper_time_std()
-    plot_paper_time_scatter()
+# def plot_paper_figs():
+#     plot_paper_overall()
+#     plot_paper_ext_cutoff()
+#     plot_paper_pert_diff()
+#     plot_paper_time_std()
+#     plot_paper_time_scatter()
 
-def plot_appendix_figs():
-    plot_appendix_ext_cutoff()
-    plot_appendix_pert_diff()
-    plot_appendix_time_std()
-    plot_appendix_time_scatter()
-    plot_appendix_sizes()
-    plot_appendix_srs()
+# def plot_appendix_figs():
+#     plot_appendix_ext_cutoff()
+#     plot_appendix_pert_diff()
+#     plot_appendix_time_std()
+#     plot_appendix_time_scatter()
+#     plot_appendix_sizes()
+#     plot_appendix_srs()
 
-# def load_config(config_path):
-#     cfg = ExpConfig()
-#     config = json.loads(open(config_path, "r").read())
-#     cfg.load(config)
-#     ana = Analyzer("z_test")
-#     ana.load(config)
-#     return cfg, ana
-
-def create_single_mode_project(args):
+def create_single_mode_project(args, solver):
     origin_path = args.query
     query_name = os.path.basename(origin_path)
     exit_with_on_fail(query_name.endswith(".smt2"), '[ERROR] query must end with ".smt2"')
     query_name.replace(".smt2", "")
-    solver = solver_from_path(args.solver)
     gen_split_subdir = f"gen/{query_name}_"
     project = ProjectInfo("misc", gen_split_subdir, solver)
     return project
@@ -51,7 +40,7 @@ def create_single_mode_project(args):
 def dump_status(project, solver, cfg, ana):
     rows = load_sum_table(project, solver, cfg)
     # print("solver:", solver.path)
-    print("solver:", solver.path)
+    print("solver used:", solver.path)
     print("")
 
     for row in rows:
@@ -60,13 +49,16 @@ def dump_status(project, solver, cfg, ana):
         ana.dump_query_status(mutations, blob)
 
 def single_mode(args):
-    cfg, ana = load_known_experiment(args.config)
-    project = create_single_mode_project(args)
+    c = Configer()
+    exp = c.load_known_experiment(args.experiment)
+    solver = c.load_known_solver(args.solver)
+    project = create_single_mode_project(args, solver)
+    ana = c.load_known_analyzer(args.analyzer)
 
-    if cfg.db_path == "":
-        cfg.db_path = f"{project.clean_dir}/test.db"
+    if exp.db_path == "":
+        exp.db_path = f"{project.clean_dir}/test.db"
 
-    print(f"[INFO] single mode will use db {cfg.db_path}")
+    print(f"[INFO] single mode will use db {exp.db_path}")
 
     if args.clear:
         os.system(f"rm -rf gen/*")
@@ -89,34 +81,30 @@ def single_mode(args):
         print(result.stdout.decode('utf-8'), end="")
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
 
-        r = Runner(cfg)
-        r.run_project_exps(project, project.artifact_solver)
+        r = Runner(exp)
+        r.run_single_project(project, project.artifact_solver)
 
-    dump_status(project, project.artifact_solver, cfg, ana)
+    dump_status(project, project.artifact_solver, exp, ana)
 
 def multi_mode(args):
-    cfg, ana = load_known_experiment(args.config)
-
-    try:
-        project = eval(args.project)
-        assert isinstance(project, ProjectInfo)
-    except:
-        exit_with(f"[ERROR] not an existing project {args.project}")
-
-    solver = solver_from_path(args.solver)
+    c = Configer()
+    exp = c.load_known_experiment(args.experiment)
+    solver = c.load_known_solver(args.solver)
+    project = c.load_known_project(args.project)
+    ana = c.load_known_analyzer(args.analyzer)
 
     if not args.analysis_only:
-        check_existing_tables(cfg, project, solver)
-        r = Runner(cfg)
-        r.run_project_exps(project, solver)
+        check_existing_tables(exp, project, solver)
+        r = Runner(exp)
+        r.run_single_project(project, solver)
 
-    rows = load_sum_table(project, solver, cfg=cfg)
+    rows = load_sum_table(project, solver, cfg=exp)
     items = ana.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
 
     pp_table = [["category", "count", "percentage"]]
     for cat in {Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE}:
-        pp_table.append([cat.value, len(items[cat]), ps[cat]])
+        pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
 
     print(tabulate(pp_table, tablefmt="simple_grid"))
 
@@ -157,16 +145,16 @@ if __name__ == '__main__':
 
     single_parser.add_argument("-q", "--query", required=True, help="the input query")
     single_parser.add_argument("--clear", default=False, action='store_true', help="clear past data from single mode experiments")
-
-    single_parser.add_argument("--config", default="single", help="the configuration name in configs/experiments.json")
+    single_parser.add_argument("-e", "--experiment", default="single", help="the experiment configuration name in configs.json")
 
     multi_parser = subparsers.add_parser('multiple', help='multiple query mode. test an existing (preprocessed) project using the specified solver. the project is specified by a python expression that evaluates to a ProjectInfo object. ')
-    multi_parser.add_argument("-p", "--project", required=True, help="the project to run mariposa on")
-    multi_parser.add_argument("--config", required=True, help="the configuration file")
+    multi_parser.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")
+    multi_parser.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from configs.json)")
 
     for sp in [single_parser, multi_parser]:
-        sp.add_argument("-s", "--solver", required=True, help="the solver to use")
+        sp.add_argument("-s", "--solver", required=True, help="the solver name (from configs.json) to use")
         sp.add_argument("--analysis-only", default=False, action='store_true', help="do not perform experiments, only analyze existing data")
+        sp.add_argument("--analyzer", default="default", help="the analyzer name (from configs.json) to use")
 
     preprocess_parser = subparsers.add_parser('preprocess', help='preprocess mode. (recursively) traverse the input directory and split all queries with ".smt2" file extension, the split queries will be stored under the output directory.')
     preprocess_parser.add_argument("--in-dir", required=True, help='the input directory with ".smt2" files')

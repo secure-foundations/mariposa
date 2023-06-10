@@ -1,11 +1,11 @@
 import sqlite3
 import sys, os
 from tqdm import tqdm
-from experiment import *
 import numpy as np
 from rcode import RCode
 from analyzer import *
 from basic_utils import *
+from configer import DBMode
 import ast
 
 def zip_db():
@@ -23,17 +23,14 @@ def check_table_exists(cur, table_name):
     res = cur.fetchone() != None
     return res
 
-def get_connection(db_path=DB_PATH):
-    return sqlite3.connect(db_path)
-
-def get_cursor(db_path=DB_PATH):
+def get_cursor(db_path):
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     return con, cur
 
 def check_existing_tables(cfg, project, solver):
-    exp_table = cfg.get_exp_name(project, solver)
-    sum_name = cfg.get_sum_name(project, solver)
+    exp_table = cfg.get_exp_tname(project, solver)
+    sum_name = cfg.get_sum_tname(project, solver)
     con, cur = get_cursor(cfg.db_path)
 
     if check_table_exists(cur, sum_name):
@@ -68,7 +65,7 @@ def get_tables(db_path):
     con.close()
     return tables
 
-def show_tables(db_path=DB_PATH):
+def show_tables(db_path):
     tables = get_tables(db_path)
     for table, count in tables.items():
         print(table, count)
@@ -87,28 +84,28 @@ def create_experiment_table(cur, table_name):
         )""")
     print(f"[INFO] created table {table_name}")
 
-def import_tables(other_db_path):
-    ts0 = get_tables(DB_PATH)
-    ts1 = get_tables(other_db_path)
-    tn0 = set(ts0.keys())
-    tn1 = set(ts1.keys())
-    for t in tn0.intersection(tn1):
-        if ts0[t] != ts1[t]:
-            print(f"[WARN] table row count mismatch {t} {ts0[t]} vs {ts1[t]}")
+# def import_tables(other_db_path):
+#     ts0 = get_tables(DB_PATH)
+#     ts1 = get_tables(other_db_path)
+#     tn0 = set(ts0.keys())
+#     tn1 = set(ts1.keys())
+#     for t in tn0.intersection(tn1):
+#         if ts0[t] != ts1[t]:
+#             print(f"[WARN] table row count mismatch {t} {ts0[t]} vs {ts1[t]}")
 
-    con, cur = get_cursor()
-    cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
+#     con, cur = get_cursor()
+#     cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
 
-    for table_name in tn1 - tn0:
-        print(f"[INPUT] confirm importing table {table_name} [Y]")
-        if input() != "Y":
-            print(f"[INFO] skip importing table {table_name}")
-        else:
-            create_experiment_table(cur, table_name)
-            cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
-            print(f"[INFO] done importing table {table_name}")
-    con.commit()
-    con.close()
+#     for table_name in tn1 - tn0:
+#         print(f"[INPUT] confirm importing table {table_name} [Y]")
+#         if input() != "Y":
+#             print(f"[INFO] skip importing table {table_name}")
+#         else:
+#             create_experiment_table(cur, table_name)
+#             cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
+#             print(f"[INFO] done importing table {table_name}")
+#     con.commit()
+#     con.close()
 
 def create_sum_table(cfg, exp_table_name, sum_table_name):
     con, cur = get_cursor(cfg.db_path)
@@ -274,7 +271,7 @@ def export_timeouts(cfg, solver):
 
 def load_sum_table(project, solver, cfg, skip=set()):
     con, cur = get_cursor(cfg.db_path)
-    sum_name = cfg.get_sum_name(project, solver)
+    sum_name = cfg.get_sum_tname(project, solver)
 
     if not check_table_exists(cur, sum_name):
         print(f"[INFO] skipping {sum_name}")
@@ -319,8 +316,8 @@ if __name__ == "__main__":
 
     # if len(sys.argv) <= 1:
     #     show_tables()
-
-    zip_db()
+    pass
+    # zip_db()
 
     # else:
     #     cmd = sys.argv[1]
