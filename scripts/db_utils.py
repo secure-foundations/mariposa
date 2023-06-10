@@ -1,7 +1,7 @@
 import sqlite3
 import sys, os
 from tqdm import tqdm
-from experiments import *
+from experiment import *
 import numpy as np
 from rcode import RCode
 from analyzer import *
@@ -272,7 +272,7 @@ def export_timeouts(cfg, solver):
 #     con.close()
 #     create_summary_table(cfg, solver)
 
-def load_sum_table(project, solver, cfg=MAIN_EXP, skip=set()):
+def load_sum_table(project, solver, cfg, skip=set()):
     con, cur = get_cursor(cfg.db_path)
     sum_name = cfg.get_sum_name(project, solver)
 

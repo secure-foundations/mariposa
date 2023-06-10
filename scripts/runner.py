@@ -1,14 +1,12 @@
-import sys, os, argparse
+import sys, os
 import time, random
 import subprocess
 import multiprocessing as mp
-import numpy as np
 import itertools
 
 from db_utils import *
-from projects import *
-from experiments import *
-from tabulate import tabulate
+# from projects import *
+from experiment import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
@@ -195,14 +193,6 @@ def check_serenity_status():
     stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
     # assert stdout == "master"
     os.system("cargo build --release")
-
-# if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(description='mariposa is a tool for testing stability')
-    # args = parser.parse_args()
-    # cpu_count = os.cpu_count() // 2
-    # cfg.num_procs = 1
-    # cfg.init_seed = 0xdeadbeef
-
 
 # from ana import RCode 
 # from ana import Analyzer

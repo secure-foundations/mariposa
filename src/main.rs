@@ -10,6 +10,10 @@ use rustop::opts;
 const DEFAULT_SEED: u64 = 1234567890;
 
 fn parse_commands_from_file(file_path: &String) -> Vec<concrete::Command> {
+    if std::path::Path::new(file_path).exists() == false {
+        panic!("[ERROR] input {} does not exist", file_path);
+    }
+
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
 

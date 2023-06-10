@@ -1,0 +1,54 @@
+[
+    {
+        "name": "single",
+        "mutations": ["shuffle", "rename", "reseed"],
+        "keep_mutants": false,
+        "num_mutants": 60,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "",
+        "db_mode": "update",
+
+        "ana_timeout": 60,
+        "confidence": 0.05,
+        "r_solvable": 0.05,
+        "r_stable": 0.95,
+        "discount": 0.8
+    },
+    {
+        "name": "main",
+        "mutations": ["shuffle", "rename", "reseed"],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/mariposa.db",
+        "db_mode": "update",
+
+        "ana_timeout": 60,
+        "confidence": 0.05,
+        "r_solvable": 0.05,
+        "r_stable": 0.95,
+        "discount": 0.8
+    },
+    {
+        "name": "debug",
+        "mutations": ["shuffle", "rename", "reseed"],
+        "num_mutants": 1,
+        "keep_mutants": true,
+        "init_seed": "",
+        "exp_timeout": 10,
+        "num_procs": 2,
+        "db_path": "./data/test.db",
+        "db_mode": "update",
+
+        "ana_timeout": 10,
+        "confidence": 0.05,
+        "r_solvable": 0.05,
+        "r_stable": 0.95,
+        "discount": 0.8
+    }
+]
+

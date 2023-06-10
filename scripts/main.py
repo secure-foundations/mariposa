@@ -1,5 +1,5 @@
-from projects import *
-from experiments import *
+from project import *
+from experiment import *
 from runner import *
 from db_utils import *
 from analysis_utils import *
@@ -7,6 +7,7 @@ import shutil
 from basic_utils import *
 # from bisect_utils import *
 import argparse
+from tabulate import tabulate
 
 def import_database(other_server):
     other_db_path = "data/mariposa2.db"
@@ -29,13 +30,13 @@ def plot_appendix_figs():
     plot_appendix_sizes()
     plot_appendix_srs()
 
-def load_config(config_path):
-    cfg = ExpConfig()
-    config = json.loads(open(config_path, "r").read())
-    cfg.load(config)
-    ana = Analyzer("z_test")
-    ana.load(config)
-    return cfg, ana
+# def load_config(config_path):
+#     cfg = ExpConfig()
+#     config = json.loads(open(config_path, "r").read())
+#     cfg.load(config)
+#     ana = Analyzer("z_test")
+#     ana.load(config)
+#     return cfg, ana
 
 def create_single_mode_project(args):
     origin_path = args.query
@@ -43,9 +44,8 @@ def create_single_mode_project(args):
     exit_with_on_fail(query_name.endswith(".smt2"), '[ERROR] query must end with ".smt2"')
     query_name.replace(".smt2", "")
     solver = solver_from_path(args.solver)
-    project = ProjectInfo("misc", FrameworkName.OTHER, solver)
     gen_split_subdir = f"gen/{query_name}_"
-    project.clean_root_dir = gen_split_subdir
+    project = ProjectInfo("misc", gen_split_subdir, solver)
     return project
 
 def dump_status(project, solver, cfg, ana):
@@ -53,57 +53,49 @@ def dump_status(project, solver, cfg, ana):
     # print("solver:", solver.path)
     print("solver:", solver.path)
     print("")
-    mut_size = cfg.num_mutant
 
     for row in rows:
-        mutations, blob = row[1], row[2]
-        status, votes = ana.categorize_query(blob)
-
         print("query:", row[0])
-        table = [["overall", status, "x", "x", "x"]]
-
-        for i in range(len(mutations)):
-            count = count_within_timeout(blob[i], RCode.UNSAT, timeout=ana.timeout)
-            times = np.clip(blob[i][1], 0, ana.timeout) / 1000
-            item = [mutations[i], votes[i], f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%", f"{round(np.mean(times), 2)}(s)", f"{round(np.std(times), 2)}(s)"]
-            table.append(item)
-        print(tabulate(table, headers=["mutation", "status", "success", "mean", "std"], tablefmt="simple_grid"))
+        mutations, blob = row[1], row[2]
+        ana.dump_query_status(mutations, blob)
 
 def single_mode(args):
-    cfg, ana = load_config(args.config)
+    cfg, ana = load_known_experiment(args.config)
     project = create_single_mode_project(args)
-    if cfg.db_path is None:
-        cfg.db_path = f"{project.clean_root_dir}/test.db"
 
-    print(f"[INFO] single mode using db {cfg.db_path}")
+    if cfg.db_path == "":
+        cfg.db_path = f"{project.clean_dir}/test.db"
+
+    print(f"[INFO] single mode will use db {cfg.db_path}")
 
     if args.clear:
         os.system(f"rm -rf gen/*")
         print("[INFO] cleared all data from past experiments")
 
-    dir_exists = os.path.exists(project.clean_root_dir)
+    dir_exists = os.path.exists(project.clean_dir)
 
     if args.analysis_only:
-        exit_with_on_fail(dir_exists, f"[ERROR] experiment dir {project.clean_root_dir} does not exist")
+        exit_with_on_fail(dir_exists, f"[ERROR] experiment dir {project.clean_dir} does not exist")
     else:
         if dir_exists:
-            print(f"[INFO] experiment dir {project.clean_root_dir} exists, remove it? [Y]")
+            print(f"[INFO] experiment dir {project.clean_dir} exists, remove it? [Y]")
             exit_with_on_fail(input() == "Y", f"[INFO] aborting")
-            shutil.rmtree(project.clean_root_dir, ignore_errors=True)
-        os.makedirs(project.clean_root_dir)
+            shutil.rmtree(project.clean_dir, ignore_errors=True)
+        os.makedirs(project.clean_dir)
 
-        command = f"./target/release/mariposa -i {args.query} --chop --o {project.clean_root_dir}/split.smt2"
+        command = f"./target/release/mariposa -i {args.query} --chop --o {project.clean_dir}/split.smt2"
+        print(command)
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
         print(result.stdout.decode('utf-8'), end="")
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
 
         r = Runner(cfg)
-        r.run_project_exps(project, project.orig_solver)
+        r.run_project_exps(project, project.artifact_solver)
 
-    dump_status(project, project.orig_solver, cfg, ana)
+    dump_status(project, project.artifact_solver, cfg, ana)
 
 def multi_mode(args):
-    cfg, ana = load_config(args.config)
+    cfg, ana = load_known_experiment(args.config)
 
     try:
         project = eval(args.project)
@@ -166,7 +158,7 @@ if __name__ == '__main__':
     single_parser.add_argument("-q", "--query", required=True, help="the input query")
     single_parser.add_argument("--clear", default=False, action='store_true', help="clear past data from single mode experiments")
 
-    single_parser.add_argument("--config", default="configs/single_cfg.json", help="the configuration file")
+    single_parser.add_argument("--config", default="single", help="the configuration name in configs/experiments.json")
 
     multi_parser = subparsers.add_parser('multiple', help='multiple query mode. test an existing (preprocessed) project using the specified solver. the project is specified by a python expression that evaluates to a ProjectInfo object. ')
     multi_parser.add_argument("-p", "--project", required=True, help="the project to run mariposa on")

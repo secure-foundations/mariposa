@@ -16,3 +16,6 @@ def list_smt2_files(sub_root):
             if file.endswith(".smt2"):
                 file_paths.append(os.path.join(root, file))
     return file_paths
+
+def scrub(name):
+    return ''.join([c if c.isalnum() else "_" for c in name])

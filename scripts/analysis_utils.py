@@ -2,11 +2,13 @@ from db_utils import *
 from vbkv_filemap import *
 import shutil
 
-from projects import *
-from experiments import *
+from project import *
+from experiment import *
 from plot_utils import *
 import matplotlib.pyplot as plt
 import multiprocessing as mp
+
+MAIN_EXP, _ = load_known_experiment("main")
 
 plt.rcParams['text.usetex'] = True
 plt.rcParams["font.family"] = "serif"
@@ -35,9 +37,9 @@ PROJECT_LABELS = {
 
 def make_title(proj, solver):
     # star = ""
-    # if proj.orig_solver == solver:
+    # if proj.artifact_solver == solver:
     #     star = r"$\star$"
-    return f"{PROJECT_LABELS[proj.name]} {solver.pstr()}"
+    return f"{PROJECT_LABELS[proj.name]} {solver.name}"
 
 def get_color_map(keys):
     assert len(keys) <= len(COLORS)
@@ -72,9 +74,8 @@ def get_category_percentages(categories):
     return percentages, total
 
 def get_unknowns(proj):
-    th = Analyzer("strict")
-    th.timeout = 6e4
-    summary = load_sum_table(proj, proj.orig_solver)
+    th = Analyzer(method="strict")
+    summary = load_sum_table(proj, proj.artifact_solver)
     assert summary is not None
     categories = th.categorize_queries(summary)
     return categories[Stability.UNKNOWN]
@@ -88,7 +89,7 @@ def load_exp_sums(proj, skip_unknowns=True, solvers=None):
         unknowns = set()
 
     if solvers == None:
-        solvers = Z3_SOLVERS_ALL
+        solvers = MAIN_Z3_SOLVERS
 
     for solver in solvers:
         nrows = load_sum_table(proj, solver, skip=unknowns)
@@ -99,7 +100,6 @@ def load_exp_sums(proj, skip_unknowns=True, solvers=None):
 
 def _async_categorize_project(ratios, key, rows):
     ana = Analyzer("z_test")
-    ana.timeout = 6e4 # 1 min
     items = ana.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
     ratios[key] = ps
@@ -128,10 +128,10 @@ def _mp_categorize_projects(projs, solver_names):
 
     return data
 
-def plot_paper_overall(projs=ALL_PROJS):
+def plot_paper_overall(projs=MAIN_PROJS):
     project_names = [proj.name for proj in projs]
-    solver_names = [str(s) for s in Z3_SOLVERS_ALL]
-    solver_labels = [f"{s.pstr()}\n{s.data[:-3]}" for s in Z3_SOLVERS_ALL]
+    solver_names = [str(s) for s in MAIN_Z3_SOLVERS]
+    solver_labels = [f"{s.name}\n{s.data[:-3]}" for s in MAIN_Z3_SOLVERS]
 
     data = _mp_categorize_projects(projs, solver_names)
     
@@ -152,7 +152,7 @@ def plot_paper_overall(projs=ALL_PROJS):
     #             print(" & ".join(cats), end=r"\\")
     #             print("")
     #             # print("\unsolvable & \unstable & \inconclusive & \stable", end=" ")
-    #         print(Z3_SOLVERS_ALL[j].pstr(), end=" & ")
+    #         print(MAIN_Z3_SOLVERS[j].name, end=" & ")
     #         for i in split:
     #             project = data[i][j]
     #             entry = np.round(project[1:], 2).tolist()
@@ -196,7 +196,7 @@ def plot_paper_overall(projs=ALL_PROJS):
                 color="w", edgecolor='black', linewidth=0.2)
 
         for i in range(len(solver_names)):
-            if solver_names[i] == str(projs[pi].orig_solver):
+            if solver_names[i] == str(projs[pi].artifact_solver):
                 plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=40)
             # if i == 4 and pi == 0:
             #     plt.bar(br[i], height=20, bottom=pcs[3][i], width=bar_width, 
@@ -313,12 +313,12 @@ def plot_paper_time_scatter():
 
 def plot_appendix_time_scatter():
     rc, cc = 2, 4
-    for proj in tqdm(ALL_PROJS):
+    for proj in tqdm(MAIN_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
 
         summaries = load_exp_sums(proj, True)
-        for index, solver in enumerate(Z3_SOLVERS_ALL):
+        for index, solver in enumerate(MAIN_Z3_SOLVERS):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
             _plot_time_scatter(rows, sp)
@@ -330,8 +330,7 @@ def plot_appendix_time_scatter():
         plt.close()
 
 def _get_data_time_std(rows):
-    ana = Analyzer("z_test")
-    ana.timeout = 6e4 # 1 min
+    ana = Analyzer()
 
     items = ana.categorize_queries(rows)
     stables = items['stable']
@@ -375,11 +374,11 @@ def _plot_time_std(cfg, rows, sp):
 def plot_appendix_time_std():
     rc, cc = 2, 4
 
-    for proj in tqdm(ALL_PROJS):
+    for proj in tqdm(MAIN_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
         summaries = load_exp_sums(proj, True)
-        for index, solver in enumerate(Z3_SOLVERS_ALL):
+        for index, solver in enumerate(MAIN_Z3_SOLVERS):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
             _plot_time_std(MAIN_EXP, rows, sp)
@@ -407,10 +406,10 @@ def plot_paper_time_std():
     plt.tight_layout()
     plt.savefig(f"fig/time_stable/std_paper.pdf")
     plt.close()    
-    
+
 def _async_cutoff_categories(categories, i, rows, mutations):
-    ana = Analyzer("z_test")
-    ana.timeout = i * 1e3
+    ana = Analyzer()
+    ana._timeout = i * 1e3
     cur = {p: set() for p in mutations + ["unsolvable", "unstable", "intersect"]}
 
     for query_row in rows:
@@ -476,11 +475,11 @@ def _plot_pert_diff(rows, sp):
 def plot_appendix_pert_diff():
     rc, cc = 2, 4
 
-    for proj in tqdm(ALL_PROJS):
+    for proj in tqdm(MAIN_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
         summaries = load_exp_sums(proj, True)
-        for index, solver in enumerate(Z3_SOLVERS_ALL):
+        for index, solver in enumerate(MAIN_Z3_SOLVERS):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
             _plot_pert_diff(rows, sp)
@@ -507,7 +506,7 @@ def plot_paper_pert_diff():
 
     # proj = D_FVBKV
     # summaries = load_exp_sums(proj, True)
-    # for index, solver in enumerate([proj.orig_solver, Z3_4_12_1]):
+    # for index, solver in enumerate([proj.artifact_solver, Z3_4_12_1]):
     #     sp = axis[1][index]
     #     rows = summaries[solver]
     #     _plot_pert_diff(rows, sp)
@@ -574,7 +573,7 @@ def plot_appendix_ext_cutoff():
     index = 0
     figure.set_size_inches(15, 12)
 
-    for proj in tqdm(ALL_PROJS):
+    for proj in tqdm(MAIN_PROJS):
         summaries = load_exp_sums(proj, True)
         sp = axis[int(index/cc)][int(index%cc)]
         rows = summaries[solver]
@@ -608,7 +607,7 @@ def plot_paper_ext_cutoff():
     plt.savefig(f"fig/time_cutoff/cutoff_paper.pdf")
     plt.close()
 
-def create_benchmark(projs=ALL_PROJS):
+def create_benchmark(projs=MAIN_PROJS):
     benchmark_path = "data/benchmark"
     
     unstable_core_path = f"{benchmark_path}/unstable_core"
@@ -621,15 +620,13 @@ def create_benchmark(projs=ALL_PROJS):
     os.system(f"mkdir -p {stable_core_path}")
     os.system(f"mkdir -p {stable_ext_path}")
         
-    ana = Analyzer("z_test")
-    ana.timeout = 6e4 # 1 min
-    # ana.res_stable = 80
+    ana = Analyzer()
 
     for proj in projs:
         print(proj.get_project_name())
         unss = []
-        summaries = load_exp_sums(proj, solvers=[proj.orig_solver, Z3_4_12_1])
-        for solver in [proj.orig_solver, Z3_4_12_1]:
+        summaries = load_exp_sums(proj, solvers=[proj.artifact_solver, Z3_4_12_1])
+        for solver in [proj.artifact_solver, Z3_4_12_1]:
             rows = summaries[solver]
             items = ana.categorize_queries(rows)
             unss.append(items)
@@ -722,8 +719,7 @@ skip = {"attest.vad",
 
 def locality_analysis(proj):
     summaries = load_exp_sums(proj, solvers=[Z3_4_12_1])
-    c = Analyzer("z_test")
-    c.timeout = 6e4
+    c = Analyzer()
     counts = {}
     summary = summaries[Z3_4_12_1]
     fnames = set()
@@ -762,7 +758,7 @@ def plot_appendix_sizes():
     # figure, axis = setup_fig(1, 2)
     x_max = 0
     for proj in [D_LVBKV, D_FVBKV, D_KOMODO, FS_DICE, FS_VWASM, S_KOMODO]:
-        clean_dir = proj.clean_root_dir
+        clean_dir = proj.clean_dir
         paths = list_smt2_files(clean_dir)
         sizes = []
         for path in paths:
@@ -815,11 +811,11 @@ def plot_appendix_srs():
     # figure.set_size_inches(7, 4)
     rc, cc = 2, 4
 
-    for proj in tqdm(ALL_PROJS):
+    for proj in tqdm(MAIN_PROJS):
         figure, axis = plt.subplots(rc, cc)
         figure.set_size_inches(15, 8)
         summaries = load_exp_sums(proj, True)
-        for index, solver in enumerate(Z3_SOLVERS_ALL):
+        for index, solver in enumerate(MAIN_Z3_SOLVERS):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
             _plot_srs(MAIN_EXP, rows, sp)
@@ -877,8 +873,8 @@ def plot_appendix_srs():
 
 #     ana = Analyzer("z_test")
 #     ana.timeout = 61e4
-#     # th.unsolvable = 20
-#     # th.res_stable = 80
+#     # th.r_solvable = 20
+#     # th.r_stable = 80
 
 #     l_filtered = set()
 #     for query in linear.samples[Z3_4_12_1]:

@@ -1,7 +1,12 @@
 import numpy as np
+from basic_utils import *
 from enum import Enum
 from rcode import RCode
 from statsmodels.stats.proportion import proportions_ztest
+from tabulate import tabulate
+
+def is_ratio(x):
+    return type(x) == float and 0 < x < 1
 
 class Stability(str, Enum):
     UNKNOWN = "unknown"
@@ -18,11 +23,6 @@ class Stability(str, Enum):
         em = {c: set() for c in Stability}
         return em
 
-# miliseconds
-# def indices_within_timeout(blob, timeout):
-#     none_timeout = blob[1] < timeout 
-#     return np.where(none_timeout)[0]
-
 def count_within_timeout(blob, rcode, timeout=1e6):
     success = blob[0] == rcode.value
     none_timeout = blob[1] < timeout
@@ -30,46 +30,28 @@ def count_within_timeout(blob, rcode, timeout=1e6):
     return success
 
 class Analyzer:
-    def __init__(self, method):
-        self.confidence = 0.05
-        self.timeout = 1e6
+    def __init__(self, confidence=0.95, timeout=60, r_solvable=0.05, r_stable=0.95, discount=0.8, method="z_test"):
+        self.confidence = confidence
+        self._timeout = timeout * 1000
+        self.r_solvable = r_solvable * 100
+        self.r_stable = r_stable * 100
+        self.discount = discount
 
-        self.unsolvable = 5
-        self.res_stable = 95
-        self.discount = 0.8
+        exit_with_on_fail(timeout > 0, "[ERROR] timeout (seconds) must be positive")
+        exit_with_on_fail(is_ratio(confidence), "[ERROR] confidence must be a value between 0 and 1")
+        exit_with_on_fail(is_ratio(r_solvable), "[ERROR] r-solvable must be a value between 0 and 1")
+        exit_with_on_fail(is_ratio(r_stable), "[ERROR] r-stable must be a value between 0 and 1")
+        exit_with_on_fail(is_ratio(discount), "[ERROR] discount must be a value between 0 and 1")
 
-        if method == "regression":
-            assert False
-            # self.categorize_group = self._categorize_group_regression
-        elif method == "strict":
+        if method == "strict":
             self.categorize_group = self._categorize_strict
         elif method == "z_test":
             self.categorize_group = self._categorize_z_test
-        else:
-            assert False
-
-    def load(self, obj):
-        assert isinstance(obj, dict)
-
-        if "confidence" in obj:
-            self.confidence = obj["confidence"]
-
-        if "ana_timeout" in obj:
-            self.timeout = obj["ana_timeout"] * 1000
-
-        if "r-unsolvable" in obj:
-            self.unsolvable = obj["r-unsolvable"]            
-
-        if "r-stable" in obj:
-            self.res_stable = obj["r-stable"]
-            
-        if "discount" in obj:
-            self.discount = obj["discount"]
 
     # def _categorize_group_regression(self, group_blob):
     #     pres = group_blob[0][0]
     #     ptime = group_blob[1][0]
-    #     if pres != RCode.UNSAT.value or ptime > self.timeout:
+    #     if pres != RCode.UNSAT.value or ptime > self._timeout:
     #         return Stability.UNSOLVABLE
 
     #     timeout = max(ptime * 1.5, ptime + 50000)
@@ -85,17 +67,17 @@ class Analyzer:
 
     def _categorize_strict(self, group_blob):
         size = len(group_blob[0])
-        success = count_within_timeout(group_blob, RCode.UNSAT, self.timeout)
+        success = count_within_timeout(group_blob, RCode.UNSAT, self._timeout)
 
         if success == 0:
-            if count_within_timeout(group_blob, RCode.UNKNOWN, self.timeout) == size:
+            if count_within_timeout(group_blob, RCode.UNKNOWN, self._timeout) == size:
                 return Stability.UNKNOWN
             return Stability.UNSOLVABLE
 
         if success == size:
             return Stability.STABLE
 
-        # if m > self.timeout * self.discount:
+        # if m > self._timeout * self.discount:
         #     return Stability.STABLE
         return Stability.UNSTABLE
 
@@ -103,16 +85,16 @@ class Analyzer:
         size =  group_blob.shape[1]
 
         unsat_indices = group_blob[0] == RCode.UNSAT.value
-        nto_indices = group_blob[1] < self.timeout
+        nto_indices = group_blob[1] < self._timeout
         valid_indices = np.logical_and(unsat_indices, nto_indices)
         success = np.sum(valid_indices)
 
-        # success = count_within_timeout(group_blob, RCode.UNSAT, self.timeout)
+        # success = count_within_timeout(group_blob, RCode.UNSAT, self._timeout)
         # if success == 0:
-        #     if count_within_timeout(group_blob, RCode.UNKNOWN, self.timeout) == size:
+        #     if count_within_timeout(group_blob, RCode.UNKNOWN, self._timeout) == size:
         #         return Stability.UNKNOWN
 
-        value = self.unsolvable/100
+        value = self.r_solvable/100
         _, p_value = proportions_ztest(count=success,
                                         nobs=size,
                                         value=value, 
@@ -121,7 +103,7 @@ class Analyzer:
         if p_value <= self.confidence:
             return Stability.UNSOLVABLE
 
-        value = self.res_stable/100
+        value = self.r_stable/100
         _, p_value = proportions_ztest(count=success, 
                                         nobs=size,
                                         value=value,
@@ -129,7 +111,7 @@ class Analyzer:
                                         prop_var=value)
 
         if p_value <= self.confidence and \
-            np.mean(group_blob[1][valid_indices]) < self.timeout * self.discount:
+            np.mean(group_blob[1][valid_indices]) < self._timeout * self.discount:
             return Stability.UNSTABLE
     
         _, p_value = proportions_ztest(count=success, 
@@ -162,3 +144,16 @@ class Analyzer:
             res = self.categorize_query(query_row[2], perturbs)[0]
             categories[res].add(plain_path)
         return categories 
+
+    def dump_query_status(self, mutations, blob):
+        status, votes = self.categorize_query(blob)
+
+        table = [["overall", status, "x", "x", "x"]]
+        mut_size = blob.shape[1]
+
+        for i in range(len(mutations)):
+            count = count_within_timeout(blob[i], RCode.UNSAT, timeout=self._timeout)
+            times = np.clip(blob[i][1], 0, self._timeout) / 1000
+            item = [mutations[i], votes[i].value, f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%", f"{round(np.mean(times), 2)}(s)", f"{round(np.std(times), 2)}(s)"]
+            table.append(item)
+        print(tabulate(table, headers=["mutation", "status", "success", "mean", "std"], tablefmt="simple_grid"))
