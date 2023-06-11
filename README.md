@@ -24,7 +24,7 @@ We have some python code that performs the experiments and analysis. This part w
 ```
 pip3 install -r requirements.txt
 ```
-### Quick Start
+## Quick Start
 
 To perform a basic sanity check:
 ```
@@ -99,7 +99,6 @@ Under the key `analyzers`, there are a few predefined settings on how to run the
     "discount": 0.8
 }
 ```
-
 ### Solvers
 
 Under the key `solvers`. there are a few predefined solvers. 
@@ -114,7 +113,6 @@ Under the key `solvers`. there are a few predefined solvers.
     "date": "2015/10/05"
 }
 ```
-
 ### Projects
 
 Under the key `projects`, there are a few predefined projects. A project specifies a collection of **preprocessed** queries in a directory. The directory contains only `*.smt2` files and no nested directories. Each `.smt2` file contains one `(check-sat)` command and is parsable by Mariposa. `preprocess` mode can be used to produce such directory (explained later). 
@@ -210,4 +208,4 @@ The above will load the temporary database.
 
 ### Multiple Mode 
 
-`multiple` mode can be used for larger scale stability testing. 
+`multiple` mode can be used for larger scale stability testing over a project. 
