@@ -7,7 +7,8 @@ Mariposa is a tool for testing SMT proof stability.  Given a query and a solver,
 
 ## Prerequisites
 
-In the current setup, the compressed database files from past experiments are all part of the commit history. Therefore, we recommend avoid fetching the full history when cloning this repository:
+In the current setup, the compressed database files from past experiments are all part of the commit history.
+Therefore, we recommend avoid fetching the full history when cloning this repository:
 
 ```
 git clone --filter=blob:none git@github.com:secure-foundations/mariposa.git
@@ -19,7 +20,9 @@ We have some rust code that parses and mutates queries, to compile this part:
 cargo build --release
 ```
 
-We have some python code that performs the experiments and analysis. This part was written using `python 3.8.10` (and not well tested on other versions). To install the required packages:
+We have some python code that performs the experiments and analysis.
+This part was written using `python 3.8.10` (and not well tested on other versions).
+To install the required packages:
 
 ```
 pip3 install -r requirements.txt
@@ -42,19 +45,25 @@ query: gen/single_check.smt2_/split.1.smt2
 | rename     | stable   | 61/61 100.0% | 0.02           | 0.0           |
 | reseed     | stable   | 61/61 100.0% | 0.02           | 0.0           |
 ```
-This solver and query pair is expected to be stable. The first row is the overall status, which should be `stable`. Each row that follows is a summary of results from a mutation method, which includes the success rate, mean of response times, and standard deviation of response times. The success count is also given. Using the default configuration, in addition to the original query, `60` mutants are generated for each mutation method, `61/61` means all the mutants succeeded. 
+The solver and query pair is expected to be stable, as shown above.
+The first row is the overall status, which considers the status from different mutation methods.
+Each row that follows is a summary of results from a mutation method, which includes the success rate, mean of response times, and standard deviation of response times.
+The success count is also given.
+Using the default configuration,`60` mutants are generated for each mutation method in addition to the original query.
+Therefore `61/61` means all the mutants (and the original) succeeded for a mutation method. 
 
 ## Configurations
 
-The experiment or analysis results could differ drastically based on the specific 
-configurations. Since there are many configuration parameters and easy to lose track, the parameters are loaded from `configs.json`, which provides several predefined settings. If one wishes to use a different setting, we recommend extending the `configs.json`, which contains 4 parts.
+The experiment or analysis results could differ drastically based on the specific configurations.
+Since there are many configuration parameters and easy to lose track, the parameters are loaded from `configs.json`, which provides several predefined settings.
+If one wishes to use a different setting, we recommend extending the `configs.json`, which contains 4 parts.
 
 ### Experiments
 
 Under the key `experiments`, there are a few predefined settings on how to run the experiments. 
 
-* `mutations` is the enabled mutation methods, where currently only `shuffle`, `rename`, `reseed` are supported.
-* `num_mutants` is the number of mutants to generate for each mutation method. It is set to `60` In the following example, so `shuffle`, `rename`, `reseed` will each generate `60` mutants, `180` in total.
+* `mutations` is the enabled mutation methods, where currently `shuffle`, `rename`, `reseed` are supported.
+* `num_mutants` is the number of mutants to generate for each mutation method. It is set to `60` In the previous example, so `shuffle`, `rename`, `reseed` each generated `60` mutants, `180` in total.
 * `keep_mutants` controls whether the mutant will be removed after the experiment. Usually only set to `true` for debugging, since mutants can occupy a lot of space.
 * `init_seed` TBD.
 * `exp_timeout` is the time limit in seconds for the solver to run on each mutant.
@@ -190,7 +199,12 @@ The above will load the temporary database.
 
 ### Preprocess Mode 
 
-`preprocess` mode can be used to cleanup a directory that contains  `*.smt2` files (potentially under nested directories). This mode will traverse the given directory, flatten the file path, and split any `*.smt2` files that has multiple `(check-sat)`. The two required arguments are:
+`preprocess` mode can be used to preprocess a directory that contains  `*.smt2` files (potentially under nested directories).
+For example, maybe some verification tool, say Dafny, exports SMT queries of a project, say IronFleet, into some directory. 
+Then this mode will traverse the given directory, flatten the file path, split any `*.smt2` files that has multiple `(check-sat)` commands, and place the resultant query files in the output directory.
+This also serves as a sanity check that the queries are accepted by Mariposa's parser.
+
+. The two required arguments are:
 * `--in-dir` is the input directory
 * `--out-dir` is the output directory, should **not** exist when calling the script.
 
@@ -235,3 +249,10 @@ query: data/dummy_clean/verified-sha-sha256.i.dfyImpl___module.__default.lemma__
 | rename     | unstable | 53/61 86.9%  | 0.76           | 0.23          |
 | reseed     | stable   | 61/61 100.0% | 0.49           | 0.01          |
 ```
+
+## Caveats
+
+* A project must be **preprocessed** and added to `configs.json` before it is used.
+* A solver must be added to `configs.json` before it is used.
+* Each spinoff  process is expected to be CPU bound, setting  `num_procs` to a large value that overloads the machine will negatively impact the results.
+
