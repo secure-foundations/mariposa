@@ -166,7 +166,7 @@
       {
         "name": "dummy",
         "frame_work": "unknown",
-        "clean_dir": "verus_basic_clean",
+        "clean_dir": "data/dummy_clean",
         "artifact_solver_name": "z3_4_12_1"
       }
     ]

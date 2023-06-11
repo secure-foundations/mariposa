@@ -158,7 +158,6 @@ query: gen/single_check.smt2_/split.1.smt2
 ```
 This solver and query pair is expected to be stable. The first row is the overall status, which should be `stable`. Each row that follows is a summary of results from a mutation method, which includes the success rate, mean of response times, and standard deviation of response times. The success count is also given. Using the default configuration, in addition to the original query, `60` mutants are generated for each mutation method, `61/61` means all the mutants succeeded. 
 
-
 ### Single Mode 
 
 `single` is generally used for a "quick" stability test of a single query and a solver. The two required arguments for this mode are:
@@ -206,6 +205,44 @@ python3 scripts/main.py single -s z3_4_12_1 -q data/samples/multiple_checks.smt2
 ```
 The above will load the temporary database. 
 
+### Preprocess Mode 
+
+
 ### Multiple Mode 
 
-`multiple` mode can be used for larger scale stability testing over a project. 
+`multiple` mode can be used for larger scale stability testing over a project. A project must be already defined in the `configs.json` and gone through the `preprocess`. To run a project named `dummy`:
+
+```
+python3 scripts/main.py multiple -p dummy -s z3_4_12_1 -e test 
+```
+`dummy` contains 4 queries, 2 of which are unstable.
+```
+project directory: data/dummy_clean
+solver used: solvers/z3-4.12.1
+total queries: 4
+|--------------|-------|------------|
+| category     | count | percentage |
+| stable       | 2     | 50.0       |
+| unstable     | 2     | 50.0       |
+| inconclusive | 0     | 0.0        |
+| unsolvable   | 0     | 0.0        |
+
+listing unstable queries...
+
+query: data/dummy_clean/lib-Lang-LinearSequence.i.dfy.Impl__LinearSequence__i.__default.AllocAndMoveLseq.smt2
+| mutation   | status   | success     | mean(second)   | std(second)   |
+|------------|----------|-------------|----------------|---------------|
+| overall    | unstable | x           | x              | x             |
+| shuffle    | unstable | 38/61 62.3% | 0.16           | 0.01          |
+| rename     | unstable | 44/61 72.1% | 0.16           | 0.01          |
+| reseed     | unstable | 52/61 85.2% | 0.16           | 0.01          |
+
+query: data/dummy_clean/verified-sha-sha256.i.dfyImpl___module.__default.lemma__SHA256FinalHelper1.smt2
+| mutation   | status   | success      | mean(second)   | std(second)   |
+|------------|----------|--------------|----------------|---------------|
+| overall    | unstable | x            | x              | x             |
+| shuffle    | unstable | 55/61 90.2%  | 0.72           | 0.15          |
+| rename     | unstable | 53/61 86.9%  | 0.76           | 0.23          |
+| reseed     | stable   | 61/61 100.0% | 0.49           | 0.01          |
+
+```

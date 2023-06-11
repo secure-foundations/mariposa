@@ -85,11 +85,26 @@ def multi_mode(args):
     items = ana.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
 
+    print("project directory:", project.clean_dir)
+    print("solver used:", solver.path)
+    print("total queries:", len(rows))
+
     pp_table = [["category", "count", "percentage"]]
     for cat in {Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE}:
         pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
 
-    print(tabulate(pp_table, tablefmt="simple_grid"))
+    print(tabulate(pp_table, tablefmt="github"))
+    print("")
+    print("listing unstable queries...")
+
+    for row in rows:
+        query = row[0]
+        if query not in items[Stability.UNSTABLE]:
+            continue
+        print("")
+        print("query:", row[0])
+        mutations, blob = row[1], row[2]
+        ana.dump_query_status(mutations, blob)
 
 def flatten_path(base_dir, path):
     assert base_dir in path
