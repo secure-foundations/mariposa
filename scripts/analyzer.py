@@ -159,11 +159,11 @@ class Analyzer:
         status, votes = self.categorize_query(blob)
 
         table = [["overall", status, "x", "x", "x"]]
-        mut_size = blob.shape[1]
+        mut_size = blob.shape[2]
 
         for i in range(len(mutations)):
             count = count_within_timeout(blob[i], RCode.UNSAT, timeout=self._timeout)
             times = np.clip(blob[i][1], 0, self._timeout) / 1000
-            item = [mutations[i], votes[i].value, f"{count}/{mut_size+1} {round(count / (mut_size+1) * 100, 1)}%", f"{round(np.mean(times), 2)}(s)", f"{round(np.std(times), 2)}(s)"]
+            item = [mutations[i], votes[i].value, f"{count}/{mut_size} {round(count / (mut_size) * 100, 1)}%", f"{round(np.mean(times), 2)}", f"{round(np.std(times), 2)}"]
             table.append(item)
-        print(tabulate(table, headers=["mutation", "status", "success", "mean", "std"], tablefmt="simple_grid"))
+        print(tabulate(table, headers=["mutation", "status", "success", "mean(second)", "std(second)"], tablefmt="github"))

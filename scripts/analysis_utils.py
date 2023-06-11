@@ -2,35 +2,32 @@ from db_utils import *
 from vbkv_filemap import *
 import shutil
 
-from project import *
-from experiment import *
 from plot_utils import *
 import matplotlib.pyplot as plt
 import multiprocessing as mp
+from configer import Configer
 
-MAIN_EXP, _ = load_known_experiment("main")
+c = Configer()
 
-KNOWN_PROJECTS = load_known_projects()
+MAIN_EXP = c.load_known_experiment("main")
 
-S_KOMODO = KNOWN_PROJECTS["s_komodo"]
-D_KOMODO = KNOWN_PROJECTS["d_komodo"]
-D_FVBKV = KNOWN_PROJECTS["d_fvbkv"]
-D_LVBKV = KNOWN_PROJECTS["d_lvbkv"]
-FS_VWASM = KNOWN_PROJECTS["fs_vwasm"]
-FS_DICE = KNOWN_PROJECTS["fs_dice"]
+S_KOMODO = c.load_known_project("s_komodo")
+D_KOMODO = c.load_known_project("d_komodo")
+D_FVBKV = c.load_known_project("d_fvbkv")
+D_LVBKV = c.load_known_project("d_lvbkv")
+FS_VWASM = c.load_known_project("fs_vwasm")
+FS_DICE = c.load_known_project("fs_dice")
 
 MAIN_PROJS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]
 
-KNOWN_SOLVERS = load_known_solvers()
-
-Z3_4_4_2 = KNOWN_SOLVERS["solvers/z3-4.4.2"]
-Z3_4_5_0 = KNOWN_SOLVERS["solvers/z3-4.5.0"]
-Z3_4_6_0 = KNOWN_SOLVERS["solvers/z3-4.6.0"]
-Z3_4_8_5 = KNOWN_SOLVERS["solvers/z3-4.8.5"]
-Z3_4_8_8 = KNOWN_SOLVERS["solvers/z3-4.8.8"]
-Z3_4_8_11 = KNOWN_SOLVERS["solvers/z3-4.8.11"]
-Z3_4_11_2 = KNOWN_SOLVERS["solvers/z3-4.11.2"]
-Z3_4_12_1 = KNOWN_SOLVERS["solvers/z3-4.12.1"]
+Z3_4_4_2 = c.load_known_solver("z3_4_4_2")
+Z3_4_5_0 = c.load_known_solver("z3_4_5_0")
+Z3_4_6_0 = c.load_known_solver("z3_4_6_0")
+Z3_4_8_5 = c.load_known_solver("z3_4_8_5")
+Z3_4_8_8 = c.load_known_solver("z3_4_8_8")
+Z3_4_8_11 = c.load_known_solver("z3_4_8_11")
+Z3_4_11_2 = c.load_known_solver("z3_4_11_2")
+Z3_4_12_1 = c.load_known_solver("z3_4_12_1")
 
 MAIN_Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8, Z3_4_8_11, Z3_4_11_2, Z3_4_12_1]
 
@@ -58,6 +55,17 @@ PROJECT_LABELS = {
     "fs_dice": r"DICE$^\star_F$",
     "fs_vwasm": r"vWasm$_F$",
 } 
+
+SOLVER_LABELS = {
+    "z3_4_4_2": r"Z3 4.4.2",
+    "z3_4_5_0": r"Z3 4.5.0",
+    "z3_4_6_0": r"Z3 4.6.0",
+    "z3_4_8_5": r"Z3 4.8.5",
+    "z3_4_8_8": r"Z3 4.8.8",
+    "z3_4_8_11": r"Z3 4.8.11",
+    "z3_4_11_2": r"Z3 4.11.2",
+    "z3_4_12_1": r"Z3 4.12.1",
+}
 
 def make_title(proj, solver):
     # star = ""
@@ -89,7 +97,7 @@ MUTATION_LABELS = {
 
 def get_unknowns(proj):
     th = Analyzer(method="strict")
-    summary = load_sum_table(proj, proj.artifact_solver)
+    summary = load_sum_table(proj, proj.artifact_solver, MAIN_EXP)
     assert summary is not None
     categories = th.categorize_queries(summary)
     return categories[Stability.UNKNOWN]
@@ -106,27 +114,27 @@ def load_exp_sums(proj, skip_unknowns=True, solvers=None):
         solvers = MAIN_Z3_SOLVERS
 
     for solver in solvers:
-        nrows = load_sum_table(proj, solver, skip=unknowns)
+        nrows = load_sum_table(proj, solver, MAIN_EXP, skip=unknowns)
         if nrows is None:
             continue
         summaries[solver] = nrows
     return summaries
 
 def _async_categorize_project(ratios, key, rows):
-    ana = Analyzer("z_test")
+    ana = Analyzer()
     items = ana.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
     ratios[key] = ps
 
-def _mp_categorize_projects(projs, solver_names):
+def _mp_categorize_projects(projs, solvers):
     manager = mp.Manager()
     ratios = manager.dict()
 
     for proj in projs:
         summaries = load_exp_sums(proj)
         pool = mp.Pool(processes=8)
-        for solver in solver_names:
-            key = (projs.index(proj), solver_names.index(solver))
+        for solver in solvers:
+            key = (projs.index(proj), solvers.index(solver))
             rows = summaries[solver]
             pool.apply_async(_async_categorize_project, 
                             args=(ratios, key, rows,))
@@ -134,7 +142,7 @@ def _mp_categorize_projects(projs, solver_names):
         pool.join()
 
     category_count = len(Stability)
-    data = np.zeros((len(projs), len(solver_names), category_count))
+    data = np.zeros((len(projs), len(solvers), category_count))
 
     for key in ratios:
         i, j = key
@@ -142,12 +150,15 @@ def _mp_categorize_projects(projs, solver_names):
 
     return data
 
-def plot_paper_overall(projs=MAIN_PROJS):
+def plot_paper_overall():
+    projs = MAIN_PROJS
+    solvers = MAIN_Z3_SOLVERS
+    
     project_names = [proj.name for proj in projs]
-    solver_names = [str(s) for s in MAIN_Z3_SOLVERS]
-    solver_labels = [f"{s.name}\n{s.data[:-3]}" for s in MAIN_Z3_SOLVERS]
+    solver_names = [SOLVER_LABELS[s] for s in MAIN_Z3_SOLVERS]
+    solver_labels = [f"{SOLVER_LABELS[s]}\n{s.date[:-3]}" for s in MAIN_Z3_SOLVERS]
 
-    data = _mp_categorize_projects(projs, solver_names)
+    data = _mp_categorize_projects(projs, solvers)
     
     # splits = [[0, 1], [2, 3], [4, 5]]
     
@@ -622,6 +633,8 @@ def plot_paper_ext_cutoff():
     plt.close()
 
 def create_benchmark(projs=MAIN_PROJS):
+    import random
+
     benchmark_path = "data/benchmark"
     
     unstable_core_path = f"{benchmark_path}/unstable_core"
@@ -998,3 +1011,18 @@ def plot_appendix_srs():
 #     plt.legend()
 #     plt.tight_layout()
 #     plt.savefig("fig/compare.pdf")
+
+# def plot_paper_figs():
+plot_paper_overall()
+#     plot_paper_ext_cutoff()
+#     plot_paper_pert_diff()
+#     plot_paper_time_std()
+#     plot_paper_time_scatter()
+
+# def plot_appendix_figs():
+#     plot_appendix_ext_cutoff()
+#     plot_appendix_pert_diff()
+#     plot_appendix_time_std()
+#     plot_appendix_time_scatter()
+#     plot_appendix_sizes()
+#     plot_appendix_srs()

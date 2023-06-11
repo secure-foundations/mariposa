@@ -13,21 +13,6 @@ from configer import *
 #     os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {other_db_path}")
 #     import_tables(other_db_path)
 
-# def plot_paper_figs():
-#     plot_paper_overall()
-#     plot_paper_ext_cutoff()
-#     plot_paper_pert_diff()
-#     plot_paper_time_std()
-#     plot_paper_time_scatter()
-
-# def plot_appendix_figs():
-#     plot_appendix_ext_cutoff()
-#     plot_appendix_pert_diff()
-#     plot_appendix_time_std()
-#     plot_appendix_time_scatter()
-#     plot_appendix_sizes()
-#     plot_appendix_srs()
-
 def create_single_mode_project(args, solver):
     origin_path = args.query
     query_name = os.path.basename(origin_path)
@@ -41,7 +26,6 @@ def dump_status(project, solver, cfg, ana):
     rows = load_sum_table(project, solver, cfg)
     # print("solver:", solver.path)
     print("solver used:", solver.path)
-    print("")
 
     for row in rows:
         print("query:", row[0])
@@ -76,7 +60,6 @@ def single_mode(args):
         os.makedirs(project.clean_dir)
 
         command = f"./target/release/mariposa -i {args.query} --chop --o {project.clean_dir}/split.smt2"
-        print(command)
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
         print(result.stdout.decode('utf-8'), end="")
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")

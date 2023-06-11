@@ -120,5 +120,3 @@ class Configer:
     def load_known_analyzer(self, name):
         exit_with_on_fail(name in self.analyzers, f"[ERROR] unknown analyzer {name}")
         return self.analyzers[name]
-
-# c = Configer()
