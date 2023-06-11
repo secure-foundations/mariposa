@@ -28,6 +28,7 @@ def dump_status(project, solver, cfg, ana):
     print("solver used:", solver.path)
 
     for row in rows:
+        print("")
         print("query:", row[0])
         mutations, blob = row[1], row[2]
         ana.dump_query_status(mutations, blob)

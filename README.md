@@ -138,26 +138,6 @@ The python script `scripts/main.py` is the main interface of Mariposa. It has a 
 * `multiple` mode performs experiments on a predefined project (in the `configs.json`), which can contain many queries that is already *preprocessed*. 
 * `preprocess` gathers and cleans the queries so that they can be ran in the `multiple` mode. 
 
-### Sanity Check
-
-To perform a basic sanity check:
-```
-python3 scripts/main.py single -s z3_4_12_1 -q data/samples/single_check.smt2
-```
-This will test the stability of `Z3 4.12.1` on the query `data/samples/single_check.smt2`, using the default settings. The result should be something like this:
-
-```
-solver used: solvers/z3-4.12.1
-query: gen/single_check.smt2_/split.1.smt2
-| mutation   | status   | success      | mean(second)   | std(second)   |
-|------------|----------|--------------|----------------|---------------|
-| overall    | stable   | x            | x              | x             |
-| shuffle    | stable   | 61/61 100.0% | 0.02           | 0.0           |
-| rename     | stable   | 61/61 100.0% | 0.02           | 0.0           |
-| reseed     | stable   | 61/61 100.0% | 0.02           | 0.0           |
-```
-This solver and query pair is expected to be stable. The first row is the overall status, which should be `stable`. Each row that follows is a summary of results from a mutation method, which includes the success rate, mean of response times, and standard deviation of response times. The success count is also given. Using the default configuration, in addition to the original query, `60` mutants are generated for each mutation method, `61/61` means all the mutants succeeded. 
-
 ### Single Mode 
 
 `single` is generally used for a "quick" stability test of a single query and a solver. The two required arguments for this mode are:
@@ -177,6 +157,7 @@ The query file actually contains 3 `(check-sat)` commands. The split queries are
 [INFO] workers finished
 [INFO] post processing exp data
 solver used: solvers/z3-4.12.1
+
 query: gen/multiple_checks.smt2_/split.3.smt2
 | mutation   | status   | success      | mean(second)   | std(second)   |
 |------------|----------|--------------|----------------|---------------|
@@ -184,6 +165,7 @@ query: gen/multiple_checks.smt2_/split.3.smt2
 | shuffle    | stable   | 61/61 100.0% | 0.02           | 0.0           |
 | rename     | stable   | 61/61 100.0% | 0.02           | 0.0           |
 | reseed     | stable   | 61/61 100.0% | 0.02           | 0.0           |
+
 query: gen/multiple_checks.smt2_/split.2.smt2
 | mutation   | status   | success      | mean(second)   | std(second)   |
 |------------|----------|--------------|----------------|---------------|
@@ -191,6 +173,7 @@ query: gen/multiple_checks.smt2_/split.2.smt2
 | shuffle    | stable   | 61/61 100.0% | 0.02           | 0.0           |
 | rename     | stable   | 61/61 100.0% | 0.02           | 0.0           |
 | reseed     | stable   | 61/61 100.0% | 0.02           | 0.0           |
+
 query: gen/multiple_checks.smt2_/split.1.smt2
 | mutation   | status   | success      | mean(second)   | std(second)   |
 |------------|----------|--------------|----------------|---------------|
@@ -207,15 +190,22 @@ The above will load the temporary database.
 
 ### Preprocess Mode 
 
+`preprocess` mode can be used to cleanup a directory that contains  `*.smt2` files (potentially under nested directories). This mode will traverse the given directory, flatten the file path, and split any `*.smt2` files that has multiple `(check-sat)`. The two required arguments are:
+* `--in-dir` is the input directory
+* `--out-dir` is the output directory, should **not** exist when calling the script.
 
 ### Multiple Mode 
 
-`multiple` mode can be used for larger scale stability testing over a project. A project must be already defined in the `configs.json` and gone through the `preprocess`. To run a project named `dummy`:
+`multiple` mode can be used for larger scale stability testing over a project. The three required arguments for this mode are:
+* `-p/--project`, a project must be already defined in the `configs.json` and gone through the `preprocess`. 
+* `-s/--solver`, the name of the solver (see `configs.json`)
+* `-e/--experiment`, the name of the experiment configuration. 
 
+The `dummy` project contains 4 queries, 2 of which are unstable. To run `dummy` using `test` configuration:
 ```
 python3 scripts/main.py multiple -p dummy -s z3_4_12_1 -e test 
 ```
-`dummy` contains 4 queries, 2 of which are unstable.
+The output should look something like the following:
 ```
 project directory: data/dummy_clean
 solver used: solvers/z3-4.12.1
@@ -244,5 +234,4 @@ query: data/dummy_clean/verified-sha-sha256.i.dfyImpl___module.__default.lemma__
 | shuffle    | unstable | 55/61 90.2%  | 0.72           | 0.15          |
 | rename     | unstable | 53/61 86.9%  | 0.76           | 0.23          |
 | reseed     | stable   | 61/61 100.0% | 0.49           | 0.01          |
-
 ```
