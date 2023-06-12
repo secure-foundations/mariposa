@@ -76,10 +76,10 @@ class ExpConfig:
         self.init_seed = None if init_seed == "" else int(init_seed)
 
     def get_exp_tname(self, project, solver):
-        return f"{self.name}_{project.name}_{str(solver)}_exp"
+        return scrub(f"{self.name}_{project.name}_{str(solver)}_exp")
 
     def get_sum_tname(self, project, solver):
-        return f"{self.name}_{project.name}_{str(solver)}_sum"
+        return scrub(f"{self.name}_{project.name}_{str(solver)}_sum")
 
 class Configer:
     def __init__(self, path="configs.json"):
