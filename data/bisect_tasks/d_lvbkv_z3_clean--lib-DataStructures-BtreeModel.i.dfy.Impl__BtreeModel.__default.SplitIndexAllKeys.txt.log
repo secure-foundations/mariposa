@@ -1,0 +1,719 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[   2    2    2    2    4    2    2    2    2    2    4    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    4    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    4    2    2    4    2    2    2    2    2
+      4    2    2    2    2]
+  [2067 2440 2470 2571 2115 2458 2618 2394 2439 2897 2115 3131 2380 2377
+   2583 4155 2714 2434 2192 2841 2476 3074 2826 3461 2520 3064 2486 2461
+   2433 2087 2377 2616 3059 2187 2337 3172 2323 2419 2685 3218 4056 2332
+   2188 2714 2569 2489 3179 1927 2603 2518 2277 2805 3035 2837 2790 3003
+   2262 2222 2527 2093 2463]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    4    2
+      4    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    4    2    2    2    2
+      2    2    2    2    2]
+  [2067 1255 1840 2006 2298 2194 1990 1775 2461 2898 2019 2819 3482 2455
+   3790 1317 2131 2201 2503 2863 2587 2790 1264 2786 2086 1754 2007 2794
+   1949 3126 1584 3566 3146 2823 2197 1873 3291 3893 2770 3020 1437 3375
+   2917 1105 2387 2358 2257 2608 3047 3915 1354 2086 2682 1992 1593 2483
+   2307 3023 2590 3490 3885]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    4    2    2    2]
+  [2067 1336 1971 2660 2841 2907 3013 3049 2062 3344 2173 2148 2318 2761
+   1577 3650 2044 2834 2530 2796 2585 3958 1974 3329 1468 2342 2349 1283
+   3623 1740 2410 2977 3361 3416 3141 1827 2838 3060 2986 2542 3652 2437
+   2652 2197 1667 1571 2300 2616 3061 3069 2799 2222 2577 2226 3386 1939
+   2825 1407 2666 2685 3481]]]
+unstable
+ 
+ err: 
+done running mariposa 74.5
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 125 
+ out: [[[   2    2    2    2    2    2    2    4    2    2    4    2    2    2
+      2    2    2    2    2    2    2    2    4    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1733 2537 2195 2860 2391 2230 3084 1478 2984 2118 2592 2375 2585 2461
+   2654 2625 2337 2485 2880 2527 2560 3153 2588 2732 2489 2757 2566 2567
+   2508 2710 2148 2497 2500 3037 2397 2358 2526 2705 2499 2894 2687 2421
+   2485 2573 2481 2369 1775 2387 2601 2582 2562 2386 3785 2054 2560 2481
+   2395 2443 2657 2028 2761]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      4    2    2    2    2    2    2    2    2    2    4    4    2    2
+      2    2    2    2    2    2    2    2    4    2    2    2    2    2
+      2    2    2    2    2]
+  [1733 1734 1948 2873 2670 1791 1465 2299 2258 3129 2455 3242 2856 3089
+   3008 2875 1750 1542 2132 2894 1316 2697 3540 1532 2771 1996 1644 1772
+   1976 2208 3277 1838 1855 3015 3192 1861 1997 2389 1246 2734 2808 2803
+   2454 1274 2231 4624 2705 2976 2262 2069 1950 1497 2306 2536 3247 2755
+   2370 2387 2562 2114 3205]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1733 1135 1969 1977 2551 2773 2890 2930 1774 1894 1820 2680 1920 1977
+   2206 3215 2270 2260 1903 3087 2776 4292 2932 3193 2118 2836 3310 4025
+   1444 8343 2775 2219 3044 3762 1790 3205 2824 2511 2824 1763 3090 1880
+   4553 2323 2909 2504 1574 2997 3199 2292 4018 3007 3125 2531 4571 2699
+   1188 1729 2270 3812 4595]]]
+inconclusive
+ 
+ err: 
+done running mariposa 74.0
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[2b11ed241e7cef6bc58eff4761977c1ec3bef1ed] fix lemma generation for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[2989d9c241b607ba8d14ecf133f8ce091ebb1276] fix #3124
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 98.1
+running mariposa
+res: 125 
+ out: [[[   2    2    2    2    2    2    2    4    2    2    4    2    2    2
+      2    2    2    2    2    2    2    2    4    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1679 2573 2166 2856 2399 2239 3068 1465 3006 2111 2639 2389 2518 2440
+   2622 2612 2334 2539 2886 2495 2515 3136 2590 2730 2535 2753 2512 2720
+   2476 2137 2560 2538 2505 3038 2308 2410 2509 2690 2528 2888 2677 2400
+   2480 2575 2473 2375 1762 2381 2632 2590 2521 2380 3780 2071 2550 2459
+   2342 2673 2391 2104 2776]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      4    2    2    2    2    2    2    2    2    2    4    4    2    2
+      2    2    2    2    2    2    2    2    2    4    2    2    2    2
+      2    2    2    2    2]
+  [1679 1685 1929 2917 2639 1794 1462 2288 2249 3094 2429 2830 3249 3058
+   3006 2846 1754 1539 2172 2864 1323 2689 3540 2725 1986 1547 1625 1780
+   1985 2209 1826 3279 1849 3009 3188 1873 1974 2399 1253 2745 2829 2785
+   2441 1276 2262 4578 2640 3008 2249 2083 1459 1948 2286 2547 3247 2741
+   2368 2417 2561 2136 3149]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1679 1137 1964 1974 2560 2787 2860 2932 1762 1857 1819 2666 1977 1941
+   2225 3219 2271 2283 1884 3082 4187 2808 3199 2959 2112 2762 3292 3942
+   1420 8366 2789 2240 3033 3796 1767 3181 2759 2547 2791 1761 1876 3124
+   4574 2356 2868 2489 1570 2995 3183 2281 4010 3079 3024 2522 4563 2679
+   1185 1719 2257 3805 4590]]]
+inconclusive
+ 
+ err: 
+done running mariposa 73.8
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[3b9b4d973ba87914fa23a4da1bf05922dbc03f29] do not print external names in nla_solver
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0713d1cdb1ffc6d612dd961d5ff158d22faa99ad] More finders.
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 90.6
+running mariposa
+res: 125 
+ out: [[[   2    2    2    2    2    2    2    4    2    2    4    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1719 2529 2194 2881 2413 2229 3070 1462 3004 2140 2605 2408 2522 2447
+   2651 2613 2345 2498 2921 2474 2553 2578 3161 2740 2498 2481 2804 2491
+   2716 2551 2135 2499 2540 3022 2317 2409 2484 2691 2543 2870 2674 2388
+   2487 2544 2465 2416 1770 2423 2618 2550 2527 2382 3774 2096 2581 2478
+   2337 2662 2442 2805 2055]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      4    2    2    2    2    2    2    2    2    2    4    4    2    2
+      2    2    2    2    2    2    2    2    2    4    2    2    2    2
+      2    2    2    2    2]
+  [1719 1701 1920 2867 2635 1819 1447 2323 2267 3070 2468 2795 3199 3065
+   3029 2875 1736 1530 2133 1330 2915 2710 3546 2718 1992 1519 1631 1796
+   1981 2196 1821 3303 1876 3017 3156 1842 1987 2397 1243 2790 2851 2807
+   1293 2449 2235 4577 2660 3029 2239 1458 2086 1955 2294 2491 2733 3271
+   2384 2424 2558 2113 3139]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1719 1165 1969 2009 2530 2752 2860 2930 1771 1849 1813 2731 1955 1904
+   2231 3206 2268 2247 1878 3069 4213 2766 2907 3204 2108 2765 3340 3943
+   1429 2773 8518 2219 3035 3769 1778 3239 2782 2493 2854 1753 3101 1879
+   4570 2298 2858 1559 2532 2993 3193 2281 4063 3051 3101 2520 4496 2685
+   1163 1735 2293 3798 4592]]]
+inconclusive
+ 
+ err: 
+done running mariposa 73.8
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[e9a4a60fbc4a2437427bd682d047b1e908a9136a] call do_canonize() in is_canonised
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[a1b690032ad6689a43373837a4b0f27e8d03dfdf] fix #2629
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 84.9
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1492 2135 2243 2187 2231 2229 2255 2287 2067 2149 2401 1975 2218 2218
+   2191 2104 2250 2195 2262 2189 2275 2114 2136 2160 2158 1890 1579 2112
+   2134 2172 2229 2140 2289 2111 2131 2201 2231 2187 2131 2227 2227 2247
+   2163 1797 2197 2199 2222 2184 2163 2313 2697 2284 2136 2159 2180 2118
+   2153 2062 2099 1898 1771]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    4
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    4    2]
+  [1492 1514 1832 2230 1314 1532 3607 2388 1999 2252 3116 2847 2639 2139
+   2635 1646 2624 1863 1997 2684 2492 3072 1201 1359 1696 2510 2706 2490
+   1926 3105 2523 3018 2894 1832 2322 1801 2890 1984 2956 2554 2982 2881
+   2480 2409 1234 2384 2543 3480 2016 2021 1886 3074 2319 3519 3326 2130
+   2389 2586 2689 1716 3181]]
+
+ [[   2    2    2    2    2    2    4    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    4    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1492 1762 1770 1805 2027 2213 2465 3288 1627 1762 3108 2975 1750 3773
+   3529 2733 3424 2569 2461 3065 3078 4096 3853 1490 3678 3218 1795 3632
+   3612 1621 1766 3852 3104 2316 3313 2811 3430 2785 2220 2113 2607 3183
+   1859 2724 2408 2602 2781 1298 2445 1712 2966 2356 3277 3524 3178 1535
+   2195 3810 2486 4369 3807]]]
+stable
+ 
+ err: 
+done running mariposa 70.1
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[f9beef19ce3e2b17f693c4117cbc345ed2b6f64e] fixes in nex expressions
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[2a02d042598a48a271d0b35fb968c9569facf961] fixes in the interval processing in horner
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[974541e24482574f7784218c46296aa8d7e6b4e0] fix #3299
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 59.2
+running mariposa
+res: 125 
+ out: [[[   2    2    2    2    2    2    2    4    2    2    4    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1681 2169 2870 2562 2376 2256 3141 1466 3000 2154 2592 2395 2512 2457
+   2679 2632 2369 2490 2876 2505 2529 2602 3140 2781 2551 2760 2503 2553
+   2699 2476 2150 2561 2509 3038 2311 2403 2491 2719 2548 2930 2719 2382
+   2474 2544 2493 2407 1769 2423 2613 2550 2544 2403 3793 2105 2554 2461
+   2346 2695 2404 2106 2771]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      4    2    2    2    2    2    2    2    2    2    4    4    2    2
+      2    2    2    2    2    2    2    2    2    4    2    2    2    2
+      2    2    2    2    2]
+  [1681 1709 1976 2908 2653 1799 1446 2292 2279 3140 2428 2853 3200 3111
+   3001 2899 1788 1548 2157 2849 1342 2707 3520 1547 2719 2017 1628 1762
+   1968 2204 1822 3310 1878 3049 3200 1863 1999 2394 1261 2743 2806 2812
+   1278 2468 2236 2667 4662 2987 2277 2053 1493 1961 2316 2531 3238 2779
+   2361 2422 2598 2129 3163]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1681 1160 1993 2018 2555 2739 2866 2920 1772 1867 1832 2735 1916 1965
+   2231 3234 2281 2245 1894 3136 2784 4256 2953 3210 2111 2787 3314 3936
+   1431 8329 2772 2224 3116 3832 1776 3200 2787 2502 2826 1747 1893 3171
+   4593 2326 2905 1555 2501 3021 3202 2282 4048 2988 3103 2542 4529 2741
+   1176 1734 2265 3787 4611]]]
+inconclusive
+ 
+ err: 
+done running mariposa 74.0
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[7cd90537c368e6e557d18453d382ae8dd88b11bc] look expressions in terms at the beginning
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[dd4eb7f97c82e12b3d66e0942850a9b16b60b5bf] fix #3230 fix #3231 - make rmodel converter additive
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 7.4
+running mariposa
+res: 125 
+ out: [[[   2    2    2    2    2    2    4    2    2    2    4    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1702 2514 2165 2862 2397 2274 1469 3139 3030 2140 2595 2354 2561 2459
+   2671 2625 2350 2492 2878 2505 2573 2595 3128 2754 2512 2756 2536 2156
+   2711 2593 2480 2493 2492 3044 2350 2418 2500 2711 2521 2874 2671 2403
+   2488 2560 2480 2387 2425 1767 2645 2555 2526 2406 3777 2065 2607 2490
+   2354 2660 2489 2089 2779]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      4    2    2    2    2    2    2    2    2    2    4    4    2    2
+      2    2    2    2    2    2    2    2    2    4    2    2    2    2
+      2    2    2    2    2]
+  [1702 1699 1928 2911 2641 1794 1458 2307 2259 3126 2427 2810 3199 3090
+   3044 2868 1770 1548 2125 2839 1328 2748 3511 2723 1532 2003 1623 1757
+   1982 2207 1830 3340 1840 3030 3165 1868 2405 1997 1247 2752 2800 2817
+   1295 2472 2227 4622 2659 2989 2241 1468 2101 1963 2315 2504 3225 2749
+   2370 2417 2591 2144 3156]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1702 1138 1984 2012 2543 2760 2891 2902 1774 1892 1828 2686 1902 1979
+   2210 3204 2263 2255 1877 3108 2782 4263 2916 3245 2111 3287 2802 3967
+   1424 8354 2802 2213 3061 3768 1763 3214 2817 2512 2820 1771 3097 1867
+   4560 2339 2883 2498 1550 3021 3197 2299 4012 3007 3114 2562 4555 2701
+   1171 1731 2256 3830 4632]]]
+inconclusive
+ 
+ err: 
+done running mariposa 73.9
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[41064f2b25cbf279a789be0f3e2b81e6029421d1] add normalize and sort to nex
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[de4a2b3ea782e99a6f539bd6378a72bec9c697cc] compiles and runs, need to restore niil_solver.cpp later
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[6f40ee2f9473eb5b28190c9c487a83b7815eb76e] fix the test build
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[771cbb31bb52ccea84b803e589433bd47a78d82d] test nla_solver
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[490672a5baa5af64b7e3e61b7939f2af377adfd8] start porting grobner basis functionality
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[ced2a0281b196f030ff9f72b51ad00348cce0597] add ml
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 4.4
+running mariposa
+res: 125 
+ out: [[[   2    2    2    2    2    2    2    4    2    2    4    2    2    2
+      2    2    2    2    2    2    2    2    4    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1717 2208 2530 2870 2382 2249 3064 1479 3021 2136 2603 2382 2532 2455
+   2615 2634 2346 2495 2891 2528 2516 3143 2618 2726 2513 2492 2762 2731
+   2542 2472 2134 2530 2524 3036 2406 2301 2476 2699 2530 2926 2683 2376
+   2503 2526 2479 2394 1762 2380 2593 2567 2529 2406 3840 2065 2552 2453
+   2344 2671 2442 2080 2729]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      4    2    2    2    2    2    2    2    2    2    4    4    2    2
+      2    2    2    2    2    2    2    2    2    4    2    2    2    2
+      2    2    2    2    2]
+  [1717 1738 1951 2872 2650 1799 2304 1462 2257 3113 2475 3176 2808 3075
+   3004 2882 1742 1552 2150 2846 1314 2699 3568 2721 1547 2001 1637 1762
+   1958 2229 3304 1851 1846 2999 3140 1843 2023 2393 1236 2759 2801 2793
+   1269 2467 2245 4613 2644 2983 2246 2046 1471 1948 2330 2491 3247 2755
+   2357 2377 2564 2113 3183]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1717 1147 1988 1981 2539 2737 2890 2906 1774 1864 1801 2681 1924 1995
+   2210 3194 2264 2268 1922 3070 4198 2777 3204 2938 2110 2763 3368 3942
+   1432 8365 2770 2208 3094 3762 1766 3200 2830 2502 2832 1746 3133 1875
+   4575 2351 2863 1552 2506 2981 3230 2284 4010 3087 3003 2518 4562 2714
+   1170 1724 2268 3806 4568]]]
+inconclusive
+ 
+ err: 
+done running mariposa 73.8
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[fbdc28f2ae198989ef08f5f0f7131f333ea81a8d] fix interval calculations to accomodate changes in nex expressions
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[d63c051d2007021e4253352f7d96eb31f892ca43] work on order lemma
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[9f8f6dee9ea75597306e77a167b4db7ebe5caa4c] fix mk_div
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[e016979ff6dad133c459e2b4ddfd2f146a5e46ce] ull
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 69.2
+running mariposa
+res: 125 
+ out: [[[   2    2    2    2    2    2    4    2    2    2    4    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1727 2509 2165 2852 2381 2276 1473 3109 2984 2113 2601 2362 2575 2464
+   2635 2606 2350 2486 2845 2491 2520 2632 3208 2720 2488 2749 2490 2137
+   2699 2548 2516 2488 2495 3046 2396 2481 2343 2747 2494 2865 2693 2395
+   2510 2543 2370 2482 1773 2370 2624 2534 2413 2534 3837 2053 2557 2459
+   2374 2657 2449 2045 2814]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      4    2    2    2    2    2    2    2    2    2    4    4    2    2
+      2    2    2    2    2    2    2    2    2    4    2    2    2    2
+      2    2    2    2    2]
+  [1727 1692 1975 2862 2658 1447 2301 1824 2261 3133 2419 2787 3187 3073
+   3062 2858 1772 1535 2141 2841 1312 2715 3514 1532 1982 2726 1653 1763
+   1950 2221 1815 3327 1842 3025 3141 1887 1992 2379 1253 2744 2805 2787
+   1278 2439 2258 2685 4591 2976 2240 2063 1452 1940 2321 2528 3232 2737
+   2350 2374 2614 2146 3171]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1727 1136 1987 2006 2533 2745 2890 2889 1770 1852 1823 2724 1891 1963
+   2207 3202 2264 2235 1879 3101 2781 4291 2892 3176 2117 3294 2799 4020
+   1438 2771 8360 2211 3036 3751 1787 3183 2833 2506 2803 1749 3084 1877
+   4593 2337 2899 2491 1555 2980 3199 2304 4024 2983 3141 2512 4468 2695
+   1184 1748 2267 3851 4546]]]
+inconclusive
+ 
+ err: 
+done running mariposa 73.8
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[e81318f8fd1873f7ead4e1c05e5ccd54a9de0b92] simplify nex_creator
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[b94809166588a5bc2bc97f3b7302526e0f2b0a64] implement order lemma
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+Bisecting: 968 revisions left to test after this (roughly 10 steps)
+[45c17dc256842d54c16f61eb7417375d9af564cf] Examples are still failing.
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 7.8
+running mariposa
+res: 1 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    4    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    4    4    2
+      2    2    2    2    2    4    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [2257 3135 3712 3760 3598 3395 3485 2977 3704 3355 3542 3594 3335 3356
+   3704 3298 3588 3391 3374 4012 3891 3495 3172 3409 3588 3404 3645 3740
+   3106 3291 3336 3353 3345 3475 3367 3336 3499 3349 3355 3471 3481 3694
+   3628 3361 3641 3355 3350 3590 3577 3656 3441 3727 3489 3619 3695 3643
+   3403 3426 3361 3152 2862]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    4    2
+      2    2    2    2    2]
+  [2257 2058 2362 2655 2746 1813 2398 2055 1148 2213 2150 3067 3513 3822
+   1987 1890 2086 1538 1848 2096 2756 2462 1017 2183 2284 2225 2487 2460
+   1718 1957 2989 1795 2326 2753 2180 2269 4205 2771 2639 2315 2254 3537
+   2518 3047 2765 3575 2069 2535 2726 2558 2417 3405 2355 2418 1548 2023
+   1871 1868 3294 2180 3387]]
+
+ [[   2    2    4    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    4    2    2    2    2
+      2    2    4    2    2    2    2    2    4    2    2    2    2    2
+      2    2    2    2    2    2    2    2    4    2    2    2    2    2
+      2    2    2    2    2]
+  [2257 1121 1715 2088 2436 2451 2803 3450 1591 3108 1885 2220 1356 3044
+   3835 2759 3712 2925 3114 1500 4952 3837 3343 1200 3544 2758 4459 2642
+   3834 2210 2495 3168 2841 3743 2358 2935 2073 3821 2373 3583 1839 1928
+   1980 3405 1749 2850 1951 1054 2051 2832 3060 1712 2185 3827 2188 3033
+   4765 2074 3546 2399 4129]]]
+unstable
+ 
+ err: 
+done running mariposa 82.3
+Bisecting: 2 revisions left to test after this (roughly 2 steps)
+[3dc898384ff859b21d7ea8fd9eb7843c6b0e9e99] Fixing a chmod issue.
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    4    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    4    4    2
+      2    2    2    2    2    4    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [2237 3125 3801 3649 3708 3339 3491 2969 3662 3385 3501 3359 3637 3371
+   3707 3555 3336 3334 3382 3986 3950 3468 3170 3435 3345 3645 3606 3753
+   3139 3271 3358 3331 3414 3418 3332 3338 3488 3360 3377 3451 3478 3723
+   3620 3540 3364 3343 3377 3516 3648 3657 3429 3745 3441 3596 3664 3695
+   3390 3456 3129 3338 2839]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      2    2    2    2    2]
+  [2237 2089 2344 2604 2684 1816 2079 2408 1165 2219 2126 3067 3479 1984
+   3864 1926 2053 1532 1841 2732 2084 2478 1003 2205 2260 2239 2520 2466
+   1714 1950 2955 1831 2336 2756 2211 4115 2276 2766 2635 2358 2253 3483
+   2502 3086 2761 3505 2105 2518 2705 2573 3390 2406 2320 2478 2004 1563
+   1879 1883 2136 3281 3395]]
+
+ [[   2    2    4    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    4    2    2    2    2
+      2    4    2    2    2    2    2    2    4    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    4    2    2    2    2
+      2    2    2    2    2]
+  [2237 1124 1740 2063 2426 2455 2799 3414 1602 3139 2212 1872 1367 3045
+   3863 3658 2800 2891 3133 1495 3850 4980 3336 1185 3503 2817 4439 2644
+   3844 2496 2177 3175 2894 3740 2338 2980 2059 3829 2430 3517 1857 1971
+   3399 1903 1785 2883 1948 1036 2046 1679 2854 3080 2196 3771 2188 3081
+   2044 4799 3565 2361 4108]]]
+unstable
+ 
+ err: 
+done running mariposa 82.3
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[ed29e1ffa5f7d468dd5e87dd2da0a1528aa09da7] Second pass at getting MSAN working with azure pipelines
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    4    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    4    4    2
+      2    2    2    2    2    4    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [2260 3139 3715 3618 3769 3380 3469 2983 3685 3328 3510 3659 3382 3341
+   3715 3310 3560 3368 3385 3893 4047 3492 3202 3405 3350 3628 3597 3741
+   3120 3337 3323 3358 3354 3453 3326 3322 3505 3407 3361 3454 3439 3706
+   3630 3422 3558 3335 3336 3547 3579 3663 3461 3782 3493 3608 3710 3630
+   3349 3417 2865 3357 3131]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    4
+      2    2    2    2    2]
+  [2260 2083 2374 2602 2702 1840 2397 2025 1161 2275 2142 3126 3513 2001
+   3819 1883 2064 1560 1868 2091 2699 2466 2170 1003 2261 2272 2513 2467
+   1717 1936 2995 1807 2321 2804 2189 2265 4115 2760 2641 2360 2249 3467
+   2530 3042 2770 3534 2071 2515 2744 2593 3358 2416 2308 2443 2016 1550
+   1902 1859 2171 3282 3401]]
+
+ [[   2    2    4    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    4    2    2    2    2
+      2    4    2    2    2    2    2    2    4    2    2    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2]
+  [2260 1120 1720 2106 2413 2468 2800 3436 1590 3108 1864 2263 1367 3033
+   3836 3669 2774 2892 3211 1494 3830 4960 3352 1187 3496 2753 4487 2658
+   3838 2496 2172 3152 2854 3774 2343 2940 2104 3846 2384 3491 1840 3412
+   2017 1921 1755 2883 1949 1032 2075 3061 1682 2871 2204 3771 2206 2049
+   3037 4767 2362 3629 4115]]]
+unstable
+ 
+ err: 
+done running mariposa 82.3
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[9cccfb97ac4b2db15936ef18ab585bbb76af771f] Take one on adding MSAN
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    4    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    4    4    2
+      2    2    2    2    2    4    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [2227 3132 3733 3699 3680 3346 3485 2962 3697 3334 3476 3388 3658 3357
+   3728 3581 3279 3335 3434 3960 3926 3492 3183 3408 3587 3406 3593 3738
+   3142 3310 3336 3334 3349 3392 3393 3320 3534 3367 3347 3470 3406 3709
+   3692 3392 3574 3342 3362 3530 3579 3719 3444 3454 3776 3596 3673 3608
+   3331 3405 3168 2832 3395]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    4    2
+      2    2    2    2    2]
+  [2227 2075 2357 2631 2692 1803 2030 2431 1143 2220 2094 3100 3498 1975
+   3831 1898 2058 1546 1850 2090 2773 2468 2174 1010 2265 2258 2485 2449
+   1713 1956 1808 3026 2299 2781 2195 2275 4138 2751 2656 2363 3494 2248
+   2541 3069 2766 3500 2069 2558 2760 2550 2425 3361 2312 2449 1551 2041
+   1873 1863 2175 3292 3386]]
+
+ [[   2    2    4    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    4    2    2    2    2    4    2    2    2    2
+      2    2    4    2    2    2    2    4    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    4    2    2    2    2
+      2    2    2    2    2]
+  [2227 1115 1728 2065 2419 2489 2833 3406 1587 3092 2236 1862 1352 3039
+   3895 2747 3715 2907 3122 1510 4921 3860 3329 1189 3546 2764 4445 2628
+   3852 2164 2493 3193 2840 3808 2380 2056 2984 3810 2403 3512 1865 1902
+   1973 3451 1748 2853 1973 1037 2052 1682 2850 3091 2218 3771 3032 2207
+   2031 4759 3614 2358 4104]]]
+unstable
+ 
+ err: 
+done running mariposa 82.3
+9cccfb97ac4b2db15936ef18ab585bbb76af771f is the first bad commit
+commit 9cccfb97ac4b2db15936ef18ab585bbb76af771f
+Author: Everett Maus <evmaus@google.com>
+Date:   Thu Aug 8 09:16:54 2019 -0700
+
+    Take one on adding MSAN
+
+ azure-pipelines.yml | 4 ++++
+ 1 file changed, 4 insertions(+)
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# skip: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect skip f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [2b11ed241e7cef6bc58eff4761977c1ec3bef1ed] fix lemma generation for intervals
+git bisect skip 2b11ed241e7cef6bc58eff4761977c1ec3bef1ed
+# skip: [2989d9c241b607ba8d14ecf133f8ce091ebb1276] fix #3124
+git bisect skip 2989d9c241b607ba8d14ecf133f8ce091ebb1276
+# skip: [3b9b4d973ba87914fa23a4da1bf05922dbc03f29] do not print external names in nla_solver
+git bisect skip 3b9b4d973ba87914fa23a4da1bf05922dbc03f29
+# skip: [0713d1cdb1ffc6d612dd961d5ff158d22faa99ad] More finders.
+git bisect skip 0713d1cdb1ffc6d612dd961d5ff158d22faa99ad
+# skip: [e9a4a60fbc4a2437427bd682d047b1e908a9136a] call do_canonize() in is_canonised
+git bisect skip e9a4a60fbc4a2437427bd682d047b1e908a9136a
+# good: [a1b690032ad6689a43373837a4b0f27e8d03dfdf] fix #2629
+git bisect good a1b690032ad6689a43373837a4b0f27e8d03dfdf
+# skip: [f9beef19ce3e2b17f693c4117cbc345ed2b6f64e] fixes in nex expressions
+git bisect skip f9beef19ce3e2b17f693c4117cbc345ed2b6f64e
+# skip: [2a02d042598a48a271d0b35fb968c9569facf961] fixes in the interval processing in horner
+git bisect skip 2a02d042598a48a271d0b35fb968c9569facf961
+# skip: [974541e24482574f7784218c46296aa8d7e6b4e0] fix #3299
+git bisect skip 974541e24482574f7784218c46296aa8d7e6b4e0
+# skip: [7cd90537c368e6e557d18453d382ae8dd88b11bc] look expressions in terms at the beginning
+git bisect skip 7cd90537c368e6e557d18453d382ae8dd88b11bc
+# skip: [dd4eb7f97c82e12b3d66e0942850a9b16b60b5bf] fix #3230 fix #3231 - make rmodel converter additive
+git bisect skip dd4eb7f97c82e12b3d66e0942850a9b16b60b5bf
+# skip: [41064f2b25cbf279a789be0f3e2b81e6029421d1] add normalize and sort to nex
+git bisect skip 41064f2b25cbf279a789be0f3e2b81e6029421d1
+# skip: [de4a2b3ea782e99a6f539bd6378a72bec9c697cc] compiles and runs, need to restore niil_solver.cpp later
+git bisect skip de4a2b3ea782e99a6f539bd6378a72bec9c697cc
+# skip: [6f40ee2f9473eb5b28190c9c487a83b7815eb76e] fix the test build
+git bisect skip 6f40ee2f9473eb5b28190c9c487a83b7815eb76e
+# skip: [771cbb31bb52ccea84b803e589433bd47a78d82d] test nla_solver
+git bisect skip 771cbb31bb52ccea84b803e589433bd47a78d82d
+# skip: [490672a5baa5af64b7e3e61b7939f2af377adfd8] start porting grobner basis functionality
+git bisect skip 490672a5baa5af64b7e3e61b7939f2af377adfd8
+# skip: [ced2a0281b196f030ff9f72b51ad00348cce0597] add ml
+git bisect skip ced2a0281b196f030ff9f72b51ad00348cce0597
+# skip: [fbdc28f2ae198989ef08f5f0f7131f333ea81a8d] fix interval calculations to accomodate changes in nex expressions
+git bisect skip fbdc28f2ae198989ef08f5f0f7131f333ea81a8d
+# skip: [d63c051d2007021e4253352f7d96eb31f892ca43] work on order lemma
+git bisect skip d63c051d2007021e4253352f7d96eb31f892ca43
+# skip: [9f8f6dee9ea75597306e77a167b4db7ebe5caa4c] fix mk_div
+git bisect skip 9f8f6dee9ea75597306e77a167b4db7ebe5caa4c
+# skip: [e016979ff6dad133c459e2b4ddfd2f146a5e46ce] ull
+git bisect skip e016979ff6dad133c459e2b4ddfd2f146a5e46ce
+# skip: [e81318f8fd1873f7ead4e1c05e5ccd54a9de0b92] simplify nex_creator
+git bisect skip e81318f8fd1873f7ead4e1c05e5ccd54a9de0b92
+# skip: [b94809166588a5bc2bc97f3b7302526e0f2b0a64] implement order lemma
+git bisect skip b94809166588a5bc2bc97f3b7302526e0f2b0a64
+# bad: [45c17dc256842d54c16f61eb7417375d9af564cf] Examples are still failing.
+git bisect bad 45c17dc256842d54c16f61eb7417375d9af564cf
+# bad: [3dc898384ff859b21d7ea8fd9eb7843c6b0e9e99] Fixing a chmod issue.
+git bisect bad 3dc898384ff859b21d7ea8fd9eb7843c6b0e9e99
+# bad: [ed29e1ffa5f7d468dd5e87dd2da0a1528aa09da7] Second pass at getting MSAN working with azure pipelines
+git bisect bad ed29e1ffa5f7d468dd5e87dd2da0a1528aa09da7
+# bad: [9cccfb97ac4b2db15936ef18ab585bbb76af771f] Take one on adding MSAN
+git bisect bad 9cccfb97ac4b2db15936ef18ab585bbb76af771f
+# first bad commit: [9cccfb97ac4b2db15936ef18ab585bbb76af771f] Take one on adding MSAN

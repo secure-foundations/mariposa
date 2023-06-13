@@ -1,167 +1,172 @@
-from configs.projects import *
-from configs.experiments import *
-from runner import Runner, subprocess_run
+from runner import *
 from db_utils import *
-from analyzer import *
 # from bisect_utils import *
+# from analysis_utils import *
+import shutil
+from basic_utils import *
+import argparse
+from tabulate import tabulate
+from configer import *
 
-def import_database(other_server):
-    other_db_path = "data/mariposa2.db"
-    os.system(f"rm {other_db_path}")
-    os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {other_db_path}")
-    import_tables(other_db_path)
+# def import_database(other_server):
+#     other_db_path = "data/mariposa2.db"
+#     os.system(f"rm {other_db_path}")
+#     os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {other_db_path}")
+#     import_tables(other_db_path)
 
-def clean_queries(cfg):
-    from clean_utils import clean_dfy_project
-    from clean_utils import clean_fs_project
-    clean_dfy_project(cfg, cfg.clean_dirs[Z3_4_11_2])
+def create_single_mode_project(args, solver):
+    origin_path = args.query
+    query_name = os.path.basename(origin_path)
+    exit_with_on_fail(query_name.endswith(".smt2"), '[ERROR] query must end with ".smt2"')
+    query_name.replace(".smt2", "")
+    gen_split_subdir = f"gen/{query_name}_"
+    project = ProjectInfo("misc", gen_split_subdir, solver)
+    return project
 
-def sample_projects(projects):
-    for proj in projects:
-        print(proj)
+def dump_status(project, solver, cfg, ana):
+    rows = load_sum_table(project, solver, cfg)
+    # print("solver:", solver.path)
+    print("solver used:", solver.path)
+
+    for row in rows:
+        print("")
+        print("query:", row[0])
+        mutations, blob = row[1], row[2]
+        ana.dump_query_status(mutations, blob)
+
+def single_mode(args):
+    c = Configer()
+    exp = c.load_known_experiment(args.experiment)
+    solver = c.load_known_solver(args.solver)
+    project = create_single_mode_project(args, solver)
+    ana = c.load_known_analyzer(args.analyzer)
+
+    if exp.db_path == "":
+        exp.db_path = f"{project.clean_dir}/test.db"
+
+    print(f"[INFO] single mode will use db {exp.db_path}")
+
+    if args.clear:
+        os.system(f"rm -rf gen/*")
+        print("[INFO] cleared all data from past experiments")
+
+    dir_exists = os.path.exists(project.clean_dir)
+
+    if args.analysis_only:
+        exit_with_on_fail(dir_exists, f"[ERROR] experiment dir {project.clean_dir} does not exist")
+    else:
+        if dir_exists:
+            print(f"[INFO] experiment dir {project.clean_dir} exists, remove it? [Y]")
+            exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+            shutil.rmtree(project.clean_dir, ignore_errors=True)
+        os.makedirs(project.clean_dir)
+
+        command = f"./target/release/mariposa -i '{args.query}' --chop --o '{project.clean_dir}/split.smt2'"
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+        print(result.stdout.decode('utf-8'), end="")
+        exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
+
+        r = Runner(exp)
+        r.run_single_project(project, project.artifact_solver)
+
+    dump_status(project, project.artifact_solver, exp, ana)
+
+def multi_mode(args):
+    c = Configer()
+    exp = c.load_known_experiment(args.experiment)
+    solver = c.load_known_solver(args.solver)
+    project = c.load_known_project(args.project)
+    ana = c.load_known_analyzer(args.analyzer)
+
+    if not args.analysis_only:
+        check_existing_tables(exp, project, solver)
+        r = Runner(exp)
+        r.run_single_project(project, solver)
+
+    rows = load_sum_table(project, solver, cfg=exp)
+    items = ana.categorize_queries(rows)
+    ps, _ = get_category_percentages(items)
+
+    print("project directory:", project.clean_dir)
+    print("solver used:", solver.path)
+    print("total queries:", len(rows))
+
+    pp_table = [["category", "count", "percentage"]]
+    for cat in {Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE}:
+        pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
+
+    print(tabulate(pp_table, tablefmt="github"))
+    print("")
+    print("listing unstable queries...")
+
+    for row in rows:
+        query = row[0]
+        if query not in items[Stability.UNSTABLE]:
+            continue
+        print("")
+        print("query:", row[0])
+        mutations, blob = row[1], row[2]
+        ana.dump_query_status(mutations, blob)
+
+def flatten_path(base_dir, path):
+    assert base_dir in path
+    if not base_dir.endswith("/"):
+        base_dir += "/"
+    rest = path[len(base_dir):]
+    rest = rest.replace("/", "-")
+    return base_dir + rest
+
+def convert_path(src_path, src_dir, dst_dir):
+    dst_path = flatten_path(src_dir, src_path)
+    dst_path = dst_path.replace(src_dir, dst_dir)
+    return dst_path
+
+def preprocess_mode(args):
+    queries = list_smt2_files(args.in_dir)
+    exit_with_on_fail(not os.path.exists(args.out_dir), f"[ERROR] output directory {args.out_dir} exists")
+    os.makedirs(args.out_dir)
+
+    print(f'[INFO] found {len(queries)} files with ".smt2" extension under {args.in_dir}')
+    for in_path in queries:
+        out_path = convert_path(in_path, args.in_dir, args.out_dir)
+        command = f"./target/release/mariposa -i '{in_path}' --chop --o '{out_path}'"
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+        print(result.stdout.decode('utf-8'), end="")
+        exit_with_on_fail(result.returncode == 0, "[ERROR] query split failed")
+    queries = list_smt2_files(args.out_dir)
+    print(f'[INFO] generated {len(queries)} split queries under {args.out_dir}')
 
 # from datetime import datetime
 
-# def get_runtime():
-#     con, cur = get_cursor()
-#     total = 0
-#     for cfg in ALL_CFGS:
-#         for solver in cfg.samples:
-#             solver_table = cfg.qcfg.get_solver_ORIGINAL_CFGStable_name(solver)
-#             res = cur.execute(f"""
-#                 SELECT SUM(elapsed_milli)
-#                 FROM {solver_table}""")
-#             time = res.fetchone()[0] / 1000 / 3600
-#             # start, end = res.fetchone()
-#             # date from string 
-#             # start = datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
-#             # end = datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
-#             # diff = end - start
-#             # convert into hours
-#             total += time
-#             print(cfg.qcfg.name, solver, time)
-#     print(total)
-#             # diff = diff.total_seconds() / 3600
-#             # print(cfg.qcfg.name, solver, round(diff, 2))
-#         # print(solver_df["time"].mean())
-#     # solver_table = cfg.qcfg.get_solver_table_name(solver)
-
 if __name__ == '__main__':
-    print("building mariposa...")
-    stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
-    # assert stdout == "master"
-    os.system("cargo build --release")
+    parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")
 
-    print("checking scaling_governor...")
-    stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
-    assert stdout == "performance"
+    subparsers = parser.add_subparsers(dest='sub_command', help="mode to run mariposa in")
 
+    single_parser = subparsers.add_parser('single', help='single query mode. run mariposa on a single query with ".smt2" file extension, which will be split into multiple ".smt2" files based on check-sat(s), the split queries will be stored under the "gen/" directory and tested using the specified solver.')
 
-    # get_runtime()
-    # entropy_test()
-    
-#   for unsat_core in UNSAT_CORE_CFGS:
-#       print(unsat_core.name)
-#       if unsat_core.name != "D_LVBKV_Z3_UNSAT_CORE":
-#           continue
-#       r = Runner([unsat_core], override=True, core=True)
-    
-#   for min_asserts in MIN_ASSERTS_CFGS:
-#       print(min_asserts.name)
-#       if min_asserts.name != "D_LVBKV_Z3_MIN_ASSERTS":
-#           continue
-#       r = Runner([min_asserts], override=True)
+    single_parser.add_argument("-q", "--query", required=True, help="the input query")
+    single_parser.add_argument("--clear", default=False, action='store_true', help="clear past data from single mode experiments")
+    single_parser.add_argument("-e", "--experiment", default="single", help="the experiment configuration name in configs.json")
 
-#   print(f"""rule move
-#            command = cp $in $out
-#   """)
+    multi_parser = subparsers.add_parser('multiple', help='multiple query mode. test an existing (preprocessed) project using the specified solver. the project is specified by a python expression that evaluates to a ProjectInfo object. ')
+    multi_parser.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")
+    multi_parser.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from configs.json)")
 
-#   ## create pairs of original and unsat core queries
-#   for project in PROJECTS:
-#       # query mariposa database for all unsat queries
-#       original_con, original_cur = get_cursor("data/mariposa.db")
-#       unsat_con, unsat_cur = get_cursor("data/unsat_core.db")
-#       project_name_caps = ""
-#       if "_z3" in project.name:
-#           project_name_caps = project.name[:-3].upper()
-#       else:
-#           project_name_caps = project.name.upper()
-#       project_name = project_name_caps.lower()
-#       original_table_name = f"{project_name_caps}_z3_4_8_5"
-#       inst_table_name = f"{project.name.upper()}_UNSAT_CORE_z3_4_8_5"
-#       unsat_core_table_name = f"{project.name.upper()}_MIN_ASSERTS_z3_4_8_5"
+    for sp in [single_parser, multi_parser]:
+        sp.add_argument("-s", "--solver", required=True, help="the solver name (from configs.json) to use")
+        sp.add_argument("--analysis-only", default=False, action='store_true', help="do not perform experiments, only analyze existing data")
+        sp.add_argument("--analyzer", default="default", help="the analyzer name (from configs.json) to use")
 
-#       print(original_table_name)
-#       print(inst_table_name)
-#       print(unsat_core_table_name)
+    preprocess_parser = subparsers.add_parser('preprocess', help='preprocess mode. (recursively) traverse the input directory and split all queries with ".smt2" file extension, the split queries will be stored under the output directory.')
+    preprocess_parser.add_argument("--in-dir", required=True, help='the input directory with ".smt2" files')
+    preprocess_parser.add_argument("--out-dir", required=True, help="the output directory to store preprocessed files, flattened and split")
 
-#       num_original_queries = original_cur.execute(f"""
-#           SELECT count(*) FROM {original_table_name} WHERE query_path like 'data%' """)
-#       print("number of original queries: ", num_original_queries.fetchall())
+    args = parser.parse_args()
 
-#       num_inst_queries = unsat_cur.execute(f"""
-#           SELECT count(*) FROM {inst_table_name} """)
-#       print("number of inst queries: ", num_inst_queries.fetchall())
-
-#       unsat_inst_queries = unsat_cur.execute(f"""
-#           SELECT count(*) FROM {inst_table_name} WHERE result_code = 'unsat' """)
-#       print("number of unsat inst queries: ", unsat_inst_queries.fetchall())
-
-#       unsat_unsat_core_queries = unsat_cur.execute(f"""
-#           SELECT count(*) FROM {unsat_core_table_name} WHERE result_code = 'unsat' """)
-#       print("number of unsat unsat core queries: ", unsat_unsat_core_queries.fetchall())
-
-#       if project.name != "s_komodo":
-#           continue
-
-        # loop over all unsat unsat core queries and find the corresponding original query
-#       unsat_unsat_core_queries = unsat_cur.execute(f"""
-#           SELECT query_path FROM {unsat_core_table_name} WHERE result_code = 'unsat' """)
-#       unsat_unsat_core_queries = unsat_unsat_core_queries.fetchall()
-#       print(unsat_unsat_core_queries)
-
-        
-#       for unsatcore_path in unsat_unsat_core_queries:
-#           unsatcore_path = unsatcore_path[0]
-#           query_name = unsatcore_path.split("/")[-1]
-#           print(unsatcore_path)
-
-#           original_query_path = f"/home/yizhou7/mariposa/data/{project.name}_clean/{query_name}"
-#           print(original_query_path)
-#           print(f"build data/unsat_pairs/original/{project_name}/{query_name} : move {original_query_path}")
-#           print(f"build data/unsat_pairs/unsat_core/{project_name}/{query_name} : move {unsatcore_path}")
-
-#           os.system(f"mkdir -p data/unsat_pairs/original/{project_name}")
-#           os.system(f"mkdir -p data/unsat_pairs/unsat_core/{project_name}")
-#           os.system(f"cp {original_query_path} data/unsat_pairs/original/{project_name}")
-#           os.system(f"cp {unsatcore_path} data/unsat_pairs/unsat_core/{project_name}")
-    
-    # plot_paper_overall()
-    # plot_paper_ext_cutoff()
-    # plot_paper_pert_diff()
-    # plot_paper_time_std()
-    # plot_paper_time_scatter()
-
-    # plot_appendix_ext_cutoff()
-    # plot_appendix_pert_diff()
-    # plot_appendix_time_std()
-    # plot_appendix_time_scatter()
-    # plot_appendix_sizes()
-    # plot_appendix_srs()
-
-    # cfg = D_FVBKV_CFG
-    # plot_ext_cutoff(cfg)
-    
-    # project = ProjectConfig("core_benchmark_unstable", FrameworkName.DAFNY, Z3_4_12_1)
-    # cfg = ExpConfig("core_benchmark_test", project, [Z3_4_12_1], "data/benchmarks.db")
-
-    # r = Runner([cfg])
-
-#   plot_size_reduction_graph()
-#   plot_time_reduction_graph()
-#   plot_time_reduction_graph_zoomed()
-#   plot_size_vs_time_correlations()
-#   plot_pie_chart()
-#   plot_pie_chart_plotly()
-    plot_size_vs_time_regression()
-    plot_size_vs_time_regression_unsat_core()
+    if args.sub_command == "preprocess":
+        preprocess_mode(args)
+    elif args.sub_command == "single":
+        single_mode(args)
+    elif args.sub_command == "multiple":
+        multi_mode(args)

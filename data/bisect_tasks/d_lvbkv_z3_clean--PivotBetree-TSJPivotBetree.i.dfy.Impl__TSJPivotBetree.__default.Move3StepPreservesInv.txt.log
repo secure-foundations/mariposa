@@ -1,0 +1,637 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [53125 60022 60023 60024 60023 60024 60023 60023 60022 60024 60024
+   60020 60024 60024 60023 60025 60024 60024 60024 60025 60025 60023
+   60024 60023 60025 60024 60024 60023 60023 60024 60022 60024 60023
+   60026 60024 60026 60024 60023 60024 60023 60024 60023 60024 60024
+   60025 60025 60022 60027 60025 60025 60022 60025 60023 60023 60025
+   60025 60023 60024 60027 60027 60026]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     3     2     2     3
+       3     2     2     2     3     2     2     2     2     2     2
+       2     2     2     2     2     2     3     2     3     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       3     2     3     3     3     3]
+  [53125   757   855   836  2452   856   839   824  2034   838   825
+     792   834  5376   835   736   787   715 60023   734   711 60022
+   60024   850   855   862 60023   637   704   818   809   816 59551
+    1480   807   838   673  4357   732 60023  2785 60023   665   725
+     755   861   717   845  5363   859   843   771   862   816   794
+   60022 56238 60021 60024 60021 60020]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     3     2     2]
+  [53125   730   766   772   828   834   689   856   853   854   767
+     822   754   823  5335  1076   861   857  2036   959  1078   784
+     928   849  2794   921   744   932 20165   798   899  1126  1050
+     917  2149   955  8671   917   871   859   830   753  1004  1008
+     874  1024   762 41435   843   962  1031   836 40394   994  1001
+     852 60019 58857 60024 50098 47337]]]
+unstable
+ 
+ err: 
+done running mariposa 788.2
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  630   847   851   842   855   848   862   846   845   858   848
+     849   851   865   835   845   823   836   815   821   815   812
+     814   818   811   806   825   817   814   814   812   807   810
+     825   836   816   805   813   817   815   810   804   808   812
+     807   848   794   808   812   807   792   804   804   802   788
+     804   803   802   786   782   783]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       3     2     2     2     2     2     3     3     2     2     2
+       2     3     2     2     3     2     2     2     2     3     3
+       3     2     3     2     2     2     2     2     2     3     3
+       3     3     3     2     2     3]
+  [  630   841   861   839   866   728   784   855   877   709  3580
+     845   773   846   842   844   710   782   728   725   716 60025
+   60025   864 56528   761   713  3478 60025 60025   697 57535   846
+    4339 60021   665 24565 60024   710   789 54074   720 60026 60027
+   60023   744 60022  2037   644   839   767   757   813 60030 60023
+   60023 60027 60026 55354 50847 60027]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     3     3     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     2
+       3     3     3     3     3     3]
+  [  630   662   756   768   887   868   872  2777   826  3234   803
+    5762   826   903  1052   939  3645   918 13045  1078  7731  2681
+     933  8651   867   929  1879   992   806  3902   917  1182  1052
+   50170  2533 60021 60022 60020   860 42244   814   817   757   958
+    3373  1004   797 11789   814  6613   923   864 60024   938   875
+   60023 60027 60019 60021 60021 60022]]]
+unstable
+ 
+ err: 
+done running mariposa 334.5
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1662  2472  2500  2480  2494  2457  2463  2472  2475  2446  2433
+    2438  2472  2425  2437  2499  2421  2421  2480  2447  2437  2492
+    2436  2435  2444  2414  2493  2446  2420  2447  2410  2416  2414
+    2451  2395  2353  2333  2323  2342  2359  2307  2311  2334  2322
+    2320  2365  2305  2338  2326  2321  2314  2357  2306  2320  2330
+    2350  2319  2310  2229  2187  2085]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3     3     2     2     2     2
+       2     2     2     2     3     3     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     2
+       2     2     3     3     3     3]
+  [ 1662   642   658   658   641   758   793   680  2159   782   736
+     670   811  2116   946  2023   683   671   787  4167  4167   683
+     815   820   672   682   694 60025 60020   689   783   657   663
+     800   674   672   674 60021 60023   656   671  2100   804  5817
+     669   802   805   798   649  6150   670   677 60025   592   828
+     800 54957 60030 60025 60023 60023]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3]
+  [ 1662   682   729   684   718   825   939   626   613   691   688
+     900   684   738   701   772   701   655   977  4376  1585   939
+    1130   878   705   705   654   912   727  3523   670   716   724
+     810   788   874   818  8954   864   734   845  4572  1365  4555
+     716   844  1086   841   977   710   839   720   741   842   990
+     669   743   988 27233 60025 60023]]]
+unstable
+ 
+ err: 
+done running mariposa 168.4
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  572   777   784   784   790   780   780   787   783   779   794
+     798   793   791   792   802   779   781   784   797   767   767
+     769   759   766   766   774   768   765   763   766   776   761
+     763   771   760   776   766   757   762   770   767   771   779
+     761   767   771   761   764   778   765   775   770   758   752
+     758   746   765   755   752   703]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       3     2     2     2     2     2     2     2     3     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     3     3     3]
+  [  572   748   640   720   680   620  2096   726  4719   779   798
+     838   807   759   791   668  2651   735   748   802   716 41602
+     805   822   604   809   826 39768  4130   802   824  4893 60024
+   60024   747   785   654   740   803   807   669 60025  5400   742
+     764   784   806   800   782   795  3415   783   783   741   791
+     798 60023 57881 60024 60023 60021]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3]
+  [  572   713   660   801   796   802   934   833   712  2877   730
+     814   810  2972   736   737  3788   777   789   780   814   787
+     703   705   790   949   667   793   740   756   686   676   850
+     700   744   782   704   749   781   817   773   733   828  1305
+     840   717   720  4166   775   820   712   876   704   705   707
+     719   782   955  4324 38902 60024]]]
+unstable
+ 
+ err: 
+done running mariposa 152.5
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [498 620 622 622 608 628 622 618 622 621 623 609 625 624 616 636 620
+   621 606 622 621 623 620 622 621 605 629 624 615 617 622 622 612 621
+   618 615 616 620 621 610 621 627 628 617 621 626 609 619 630 623 618
+   621 625 610 620 619 607 603 602 597 574]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [498 632 627 629 626 629 623 616 631 633 629 622 619 625 621 632 629
+   629 655 640 642 632 635 636 633 623 629 626 617 627 631 627 624 633
+   622 620 621 626 625 626 626 625 620 621 630 626 623 633 623 625 621
+   627 628 619 629 625 626 623 635 625 626]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [498 600 596 635 721 703 704 698 628 618 631 693 625 636 691 609 621
+   620 625 623 636 613 616 593 685 640 622 698 681 621 613 714 697 695
+   634 626 613 681 625 621 693 689 695 591 694 692 632 642 698 698 607
+   687 625 708 699 694 719 684 591 691 681]]]
+stable
+ 
+ err: 
+done running mariposa 28.2
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [501 616 621 619 625 621 617 609 624 616 623 622 621 621 620 616 617
+   621 622 621 616 618 614 616 620 622 620 617 616 621 617 619 621 622
+   616 611 622 614 616 624 621 614 615 617 621 616 624 619 621 612 619
+   615 623 620 620 619 600 594 589 590 559]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [501 631 631 631 624 621 626 619 635 632 634 623 620 623 616 628 631
+   633 621 622 626 626 625 627 631 618 620 624 623 625 628 632 620 624
+   621 626 630 628 629 636 629 628 627 635 628 630 621 625 626 618 631
+   626 629 625 625 626 620 632 629 622 622]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [501 601 606 701 638 695 719 702 645 625 630 632 630 704 698 618 625
+   620 627 638 630 620 614 641 689 599 625 690 698 623 620 695 722 696
+   633 683 615 685 633 696 623 693 695 591 707 692 632 641 704 689 610
+   629 699 702 700 701 720 692 585 694 677]]]
+stable
+ 
+ err: 
+done running mariposa 28.3
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  487   667   660   659   652   652   661   648   652   662   658
+     654   653   652   653   654   652   650   652   648   642   638
+     623   646   638   633   630   620   622   620   623   623   625
+     624   620   619   619   620   620   624   623   620   621   618
+     621   625   625   617   619   622   625   626   617   618   618
+     626   619   619   614   608   594]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     2]
+  [  487   675   660   710  3790  3033   811  2415  3551   658   846
+     659   669  1770  2590   957  1279   688  2700  1815 16295   666
+     669   661  1047   670   664  1223   662  1075   664   832   660
+     655   662   686  2549   694  3159  1247   849 15044   658  2696
+     809   672 36909   693  3862  3361   651   832   844   665   674
+     669   678  3164 13130 60024 38731]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [  487   753   818   853   919   892   980   982   769  4946  4961
+    5475   944   672   974   968   658   694   721   726   880   654
+     735   744  1007   788   746   841  6161  1260   916   729   964
+     863  5439  5366   739  1134   747   909 13760  5393   874   681
+     882   955  1390  1018   761   993  1011   752  4485  4403   990
+   12745 15522 60020 60023 60024 60020]]]
+stable
+ 
+ err: 
+done running mariposa 120.4
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[60c504f4ef64eaf085b1fec2773704cd1102c611] make a few helpers static
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  486   672   664   667   652   653   653   654   654   662   650
+     661   652   647   648   657   653   649   654   647   651   654
+     633   641   635   635   632   636   631   637   636   612   644
+     646   629   636   616   622   624   626   629   618   623   626
+     634   649   613   623   616   626   624   619   618   623   629
+     620   618   617   621   625   612]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     2]
+  [  486   671   656   695  3862  3082  3628   652   664  2372   847
+     657   840  1877  2575   941  1286   686  2731  1816 15975   671
+     655   650  1041   658   654   664  1392  1066   657   813   659
+     657   656   680  2515   677  3172  1276   842 15264   661  2633
+     810   673 36907  3854   678  3637   644   839   845   665   667
+     675   676  3388 13257 60026 38563]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [  486   765   850   821   916   881   993   998   775  4985  5115
+    5417   959   680   975   961   659   694   727   725   877   661
+     724   749   994   789   738   851  1275  7111   737  4651   985
+    5369   848  5377  1127   734   739 13937   895   883   684   918
+    5249   970  1408  1019   766   982  1028   751  4652  4517 12702
+     980 13873 60026 60022 60025 60020]]]
+stable
+ 
+ err: 
+done running mariposa 120.4
+Bisecting: 8 revisions left to test after this (roughly 3 steps)
+[8e2ad4e461a4469d345a7b93b17f6acb23e64d38] #2379 and #2380
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  566   777   779   781   783   782   780   783   781   788   793
+     794   777   781   779   779   782   786   774   777   762   769
+     769   763   761   761   766   767   766   759   766   761   763
+     766   773   766   768   771   753   770   766   759   775   771
+     749   767   761   765   770   764   760   761   773   740   742
+     753   748   745   745   739   724]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       3     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     3     3     3]
+  [  566   746   625   716   679   616  2078   743  4766   769   798
+     822   805   768   786   659  2626   722   741   802   714 41539
+     795   820   599   803   815 40582  4156   790   809  4979 60026
+   60024   774   781   651   735   802   801   665  5315 60024   746
+     771   782   802   785   770   780  3469   774   782   737   782
+     781 60026 57294 60022 60025 60021]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3]
+  [  566   717   657   794   788   800   935   808   694  2854   724
+     792   809  2922   724   725  3797   784   798   771   812   794
+     697   697   776   926   668   799   734   747   688   673   704
+     835   771   744   752   698   779   803   764   730   830  1291
+     828   724   715  4215   764   827   713   873   702   700   703
+     721   774   958  4316 38373 60025]]]
+unstable
+ 
+ err: 
+done running mariposa 152.5
+Bisecting: 3 revisions left to test after this (roughly 2 steps)
+[e0dc05c97edc559ae0d5ce841120bb55ad8e479b] Fixed final alignment step of fp.rem. Fixes #2369 and does not break #2289.
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  569   778   784   781   777   785   782   786   779   780   792
+     790   789   777   781   780   781   785   774   775   751   768
+     767   758   768   764   754   769   769   750   768   768   754
+     767   764   756   764   767   745   772   765   757   776   775
+     752   765   763   752   772   767   757   768   768   737   751
+     748   749   737   744   742   732]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       3     2     2     2     2     2     2     2     3     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     3     3     3]
+  [  569   741   632   718   682   613  2061   750  4667   765   789
+     822   791   764   774   656  2617   714   757   802   720 41048
+     796   822   605   808   816 39788  4097   793   802  4932 60026
+   60023   758   787   653   730   804   802   663 60024  5430   742
+     769   784   795   789   781   778  3422   776   781   738   787
+     793 60025 57658 60024 60023 60022]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3]
+  [  569   659   786   721   794   796   930   809   693  2844   720
+     800   805  2858   721   723  3743   777   786   766   812   782
+     694   778   702   930   664   797   736   742   687   684   696
+     846   742   772   762   715   822   818   773   728   833  1301
+     717   837   714  4203   759   819   713   872   693   704   696
+     709   770   958  4294 38107 60026]]]
+unstable
+ 
+ err: 
+done running mariposa 152.5
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[1202554dbcaa67b18e507206ee6f0e6f2a5c95d5] Merge branch 'master' of https://github.com/z3prover/z3
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  570   778   796   786   784   777   787   783   797   779   796
+     790   770   779   784   823   782   778   779   772   762   773
+     767   756   764   773   761   768   767   769   765   763   769
+     767   762   771   763   758   764   763   762   770   771   776
+     753   763   758   766   764   764   773   765   762   745   742
+     754   746   741   741   739   733]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       3     2     2     2     2     2     2     2     2     2     3
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     3     3     3]
+  [  570   741   633   718   685   610  2100   744  4680   796   800
+     820   806   752   779   665  2612   713   741   804   723 41244
+     799   815   602   805   817 39784  4105   803   812  4869 60026
+   60025   751   786   645   738   807   805   663  5338   755 60022
+     756   771   794   785   771   782  3493   772   782   737   789
+     786 60028 57601 60022 60023 60023]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3]
+  [  570   660   724   790   793   794   930   811   694  2870   720
+     795  2874   808   723   720  3804   776   790   768   812   792
+     699   782   702   924   669   792   737   744   686   678   702
+     836   773   739   699   748   779   801   762   727   826  1294
+     827   714   715  4276   765   823   757   899   707   707   705
+     735   779   955  4328 38068 60024]]]
+unstable
+ 
+ err: 
+done running mariposa 152.6
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[db87f2aab055ab189a6c47cd9e2c4216fc65cf3f] separate rewriter used by smt context from asserted formulas to avoid term substitution, exposed by #2370
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_lvbkv_z3_clean--PivotBetree-TSJPivotBetree.i.dfy.Impl__TSJPivotBetree.__default.Move3StepPreservesInv.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [  570   776   794   786   782   792   787   791   779   786   790
+     799   779   780   782   787   773   783   773   780   756   763
+     769   754   759   780   758   765   775   754   759   771   761
+     762   770   758   759   769   759   764   774   763   767   781
+     753   758   774   760   760   772   764   757   768   740   742
+     759   750   738   733   744   738]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     3
+       3     2     2     2     2     2     2     2     2     3     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     3     3     3]
+  [  570   751   630   724   679   615  2089   742  4654   787   795
+     827   793   753   777   658  2608   718   739   812   720 41269
+     807   820   609   806   818 39179  4110   807   815  4837 60025
+   60025   749   789   655   744   811   807   672  5325 60026   744
+     760   782   803   798   774  3395   793   769   782   745   780
+     793 60025 57444 60024 60024 60023]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3]
+  [  570   660   731   800   796   793   933   805   694  2913   797
+     732  2864   810   723   722  3751   774   794   772   820   786
+     693   697   782   937   666   803   738   741   684   676   696
+     840   771   739   698   750   790   805   766   729   830  1305
+     836   723   717  4334   770   819   715   879   703   701   700
+     724   783   956  4386 38223 60024]]]
+unstable
+ 
+ err: 
+done running mariposa 152.6
+db87f2aab055ab189a6c47cd9e2c4216fc65cf3f is the first bad commit
+commit db87f2aab055ab189a6c47cd9e2c4216fc65cf3f
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Tue Jul 2 15:28:21 2019 +0700
+
+    separate rewriter used by smt context from asserted formulas to avoid term substitution, exposed by #2370
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+ src/smt/asserted_formulas.h | 2 +-
+ src/smt/smt_context.cpp     | 2 ++
+ src/smt/smt_context.h       | 3 ++-
+ src/smt/theory_arith_core.h | 1 +
+ 4 files changed, 6 insertions(+), 2 deletions(-)
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# good: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect good b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# good: [60c504f4ef64eaf085b1fec2773704cd1102c611] make a few helpers static
+git bisect good 60c504f4ef64eaf085b1fec2773704cd1102c611
+# bad: [8e2ad4e461a4469d345a7b93b17f6acb23e64d38] #2379 and #2380
+git bisect bad 8e2ad4e461a4469d345a7b93b17f6acb23e64d38
+# bad: [e0dc05c97edc559ae0d5ce841120bb55ad8e479b] Fixed final alignment step of fp.rem. Fixes #2369 and does not break #2289.
+git bisect bad e0dc05c97edc559ae0d5ce841120bb55ad8e479b
+# bad: [1202554dbcaa67b18e507206ee6f0e6f2a5c95d5] Merge branch 'master' of https://github.com/z3prover/z3
+git bisect bad 1202554dbcaa67b18e507206ee6f0e6f2a5c95d5
+# bad: [db87f2aab055ab189a6c47cd9e2c4216fc65cf3f] separate rewriter used by smt context from asserted formulas to avoid term substitution, exposed by #2370
+git bisect bad db87f2aab055ab189a6c47cd9e2c4216fc65cf3f
+# first bad commit: [db87f2aab055ab189a6c47cd9e2c4216fc65cf3f] separate rewriter used by smt context from asserted formulas to avoid term substitution, exposed by #2370

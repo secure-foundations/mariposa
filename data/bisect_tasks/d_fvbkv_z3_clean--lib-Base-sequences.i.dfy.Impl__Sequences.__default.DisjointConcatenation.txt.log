@@ -1,0 +1,513 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 84  99  97 138  99 110  98 152 100 118  98 116 134 141 108  98 119
+    97 115 115 110 102 137  98 123 100  96 121  99 123  96 121 145 120
+   144 127 120 111 118  99  98 129 117  99  99 100  97 103 127 100 102
+   133  98 110 111 111 126 109  95  94  92]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   4   2
+     2   2   2   2   2   2   2   4   2   2   2   2   2   2   2   2   2
+     4   2   2   4   2   2   2   2   2   4   4   2   2   2   4   2   2
+     2   4   4   2   2   2   2   2   2   4]
+  [ 84 102 128 100 112 143 121 114  99 102 125 112 102 115 154  95 142
+   109 109 103 102  99 129 100 115 118  99 101  99  98 108 119 153 100
+   123  99 100 125 104 109 102 100 112  96 108  99 103 114 115 120 139
+    99 142  98 101 101 101 109 114 125 147]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   4   2   2   4
+     2   2   2   4   4   2   2   2   2   2   2   2   2   4   4   2   4
+     2   2   2   2   4   2   2   2   2   2   2   2   2   2   2   2   4
+     2   4   2   2   4   2   4   2   2   4]
+  [ 84 106 106 107 106 130 121 148 106 114 119 117 124 110 110 107 104
+   107 150 107 103 147 110 123 103 113 108 107 162 107 103 120 120 137
+   124 111 110 113 108 108 109 123 128 113 105 105 117 124 151 119 111
+   115 103 108 170 164 107 105 107 106 145]]]
+unstable
+ 
+ err: 
+done running mariposa 6.2
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 82  98  98 100  98  98 117  95  96 123 112  96  95 133  97 109  95
+   141  98  95  95  98 125 130 157 111 108 110 102  96  96 148 127  98
+   102 127 126  99 119 117 102  95  97 129 112 129  98  97 128 124  96
+    98 103  96 100  97  95  96  95  91  90]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   4   2   2   4   2   2   2   2   2   2   2   2   2   4   2
+     2   2   2   4   2   2   2   2   2   4   2   2   2   4   4   2   2
+     4   2   2   4   2   2   2   2   2   4]
+  [ 82 100 110 101 135 114  99 122 102 116 110 109  99 125 142  98  99
+   102 131 100  98 151 130 112 104 102  98 121  97 119 100 123  96 138
+   101 140  98  97 102 100 103 102 112  98 106  98  98 136 135 145 103
+   118 102 102 100 100 129 100 102 106 106]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   4   2   2   4
+     2   2   4   4   2   2   2   2   2   2   2   2   2   2   4   4   2
+     4   2   2   2   2   4   2   2   2   2   2   2   2   2   2   2   4
+     2   4   2   2   2   4   4   4   2   2]
+  [ 82 104 107 111 106 113 123 127 113 115 114 105 146 116 150 112 103
+   125 126 124 105 151 106 105 110 107 129 129 108 105 109 104 111 106
+   151 122 127 140 104 148 117 110 106 116 109 142 108 104 109 110 119
+   108 106 125 110 125 141 105 104 132 107]]]
+unstable
+ 
+ err: 
+done running mariposa 6.2
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 77 105  91  90 107 115 115  92  93 119 113  91 100  98  90  91 124
+   110 101 122  91 117  90 102  90 112 146 148 119 103 114  91 134  90
+    99  93  91 115 119 113 101 115  99 131  95 120 101 104 117 119  90
+   101 130 126 131  92 106 122  89  87  86]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     4   2   2   2   2   4   2   2   2   2   2   2   2   2   2   2   2
+     4   2   4   2   2   2   2   2   2   4   4   2   2   2   2   2   4
+     4   2   4   2   2   2   2   2   2   4]
+  [ 77  96  93  94 114  98 146 102 130 108  97  94  96  97  99 113 137
+   115  94 108  96  95 111  95 114 107  95 108  95  98  95 131  98 132
+   132  95  93 150  92  94 115  95  95 101  92  94  95  97 139  92 128
+    92  95  96  96  98 119  95  99 121 115]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   4   2   4   4
+     2   2   2   2   4   2   2   2   2   2   2   2   2   2   4   4   4
+     2   2   2   4   2   2   2   2   2   2   2   2   2   2   2   2   4
+     2   2   4   2   4   4   2   4   2   2]
+  [ 77  96 102  97 118 118 131 124 103  97 101 114  98 115 121  98 100
+    99 104 100 130 133  99  98 136 157 120 142 123  99 114 137  98 141
+   102 101 105  96 131  98 110 152 106 135 105 115 115 140 136 147 104
+    99 119 110 106 103  98 131  98 111 100]]]
+unstable
+ 
+ err: 
+done running mariposa 5.9
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 74  96 124  88 115 134 110 111 137 133  88  91 128  92  89 131 110
+   115  89  98 129 127  88  98 108 119  91  92  94  94  87  91 123  87
+   115 122 125  88  88 104  87  96  89  89 116 114 127  89  88  87 109
+    98 102  89  89 110  88  87 119 117  83]]
+
+ [[  2   2   2   2   2   2   2   2   2   4   2   2   4   4   4   4   2
+     4   2   2   2   2   2   2   2   2   2   2   4   2   2   2   4   2
+     2   2   2   2   2   2   2   2   2   2   2   4   2   2   2   4   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 74  95 121  91  91  90  94 117  92 125  90  90 109 105 133  88  91
+   105  96 106 113  88 116 102 111 100 134 106 115  94 108 100  91 109
+    91  94  95  89  93 114  92 101  93  96  91 104 108  92  90  90 135
+    91  95  92  89 129  90  92  90 101 101]]
+
+ [[  2   2   2   4   4   2   2   2   4   2   2   2   2   2   2   2   2
+     4   2   4   2   4   2   2   2   2   2   2   2   4   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   4   4   2
+     4   2   2   2   2   2   4   2   4   4]
+  [ 74  94  99  93 116 117 106 107 112 102 136  97  95  97 153 117  97
+    94 105  95 114 137  96  98  96  97 115  98 108  94 113 112 107 102
+    97 131 100 101  97 105 106 130  98 122  96 139 111  97 112 119 111
+    93 103  99 115 103 145  91  97  94 119]]]
+unstable
+ 
+ err: 
+done running mariposa 5.9
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75  94  91 114  88 129 108 104 115  92 107 108 128 110  89  90 135
+   130  89  90 136  90 100 133 132  96  91  91 130 102 110 100  91 107
+   114 115 108  92  91 109 130  89  89 131 108 106 135 108 107 119  90
+   118 116 110 105 127  96 104  97  97  87]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75 104  91 135  90 119  96 120 102  90 129 113  89  91 133  92 112
+    95  89 115  91 111 141  91 120  90 102  91 111  90 117  90  92  94
+    90 117  90  90 123  89 131 129 110  98  96  91  93  90  90  99  90
+    93 117  93  90  90 150  92  90 126  99]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75  94  98  94 117 115 129 132  98  97  95  95  99  97  97  94  94
+    97  99  98 143 146  96  98  96  98 126 123 113 113  96 114 125 132
+   105 111 149  96 142  94 112  98 122 136 118  95 100 118 113 125  97
+   114 100 115 121 136 104  95  98 118  96]]]
+stable
+ 
+ err: 
+done running mariposa 5.9
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75 113  92  87 109 109  89  91 101  91  91 111 113  91  90 114  89
+   118  89 119 129  89 106  97 102  91 101 107  90 112  86  95 131 112
+    88 103 107 143  91  94 132  90  91 103  90  89 103  97  88 125  91
+   125 112  97 113  88 109  87  87  88 106]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75  92  91  91  91  91 104  91 146 106 100  91 115 112 116  91  98
+   103  91  93  91  91  93  98  92  99  91  96 105 125 103 103  90  89
+   103 106 132 128 125  94 109  97 109 108  92  99  90 113 104  99  88
+   128 101  91  99 104 101 112  90 120 119]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75  96  96  96  97  96 117 118  95  96  98 132 115  97 129  95  95
+   135 102  96 151  98  97  98 110 116  97 117 104  98  97  96  96 102
+   103  99  98  96 117  97 116 128 126  95  97  97 150  97  97 136  96
+   113  97  97  97 111  99  98  99 104  96]]]
+stable
+ 
+ err: 
+done running mariposa 5.9
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75  87 139 131  92  89  90 104  98  87  88 118 139  90 120 119  89
+    89  90 105  87 131 109 111  90  89  89 118 121  91  90 112  99  88
+   110 127  97  88 121  96  91  91 111  90  86  88  87 142 144  88 120
+    96  91  89 105  86  88  87 125 123  83]]
+
+ [[  2   2   2   2   2   2   4   4   2   2   2   2   2   2   2   2   4
+     2   4   2   2   4   4   4   2   2   4   2   2   2   2   2   2   4
+     2   2   2   2   2   2   4   2   2   2   2   2   2   2   4   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75  90  97 121  94 110 130 118  92  90 115  91  90 121  91  90  89
+    92  88 106 124 101  89 115  90  94 120  97  92 123  91 138 137  98
+   122  94  92  93  91 114  89  96  90  89 112  90 122  96  89 113  91
+   103 103 104  93  92 113  92  91 104 123]]
+
+ [[  2   4   2   4   4   2   2   2   4   2   2   4   4   2   4   4   4
+     4   2   2   4   2   2   4   2   2   4   4   2   4   2   2   2   2
+     2   2   2   2   2   2   2   4   2   2   4   4   2   4   4   2   2
+     2   2   2   2   2   2   4   4   2   2]
+  [ 75  91  99  92 124 156 158 149 101 111 101 102  96 114 103  96 115
+   105 118 115  95  99  94 105  96  96  93  96 131  92  96  97 131 111
+   154 101  97 100  95  95 119 108 101 104  96  94  95 122 102 122  99
+    97 100 106 101 106 114  92 112 121 134]]]
+unstable
+ 
+ err: 
+done running mariposa 5.9
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 72  87  97 100  89  87  99  86  86  94  99  86  83 114 113 129  85
+   103 116 102  85 122  86  86  84  95  88  83  85  86 106  87 116  84
+    83  94  84 112 128  97  85 102 100 103 123  93  89  88  84  85 111
+    86  96 116  86  86  85  85 104  95  82]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 72  88  99  89  94  96 107 139  88  88  89  86  88 115 117  87  92
+    90  93 104 128  87  87  88 129  88  87  90 108 125 101  88  95 111
+    88  88  94  87 101  89  98  89 140  88 110  89 128 106  87  86  87
+    89 116  92  90 108 116  89  87  88 102]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 72  97  90  92 123 124 148 148  93 108 102 100  94 110 122  93  92
+    97 109 108 134 122  93 109  94 119  92 116  94 114  93 146  94 122
+   117 102 122  94  93  92 110 138 110 112 113  93 103 103 137  93  94
+   101 110  94 101 124 119 123  92  98  94]]]
+unsolvable
+ 
+ err: 
+done running mariposa 5.8
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 74  91  91  92  91 138 139 115  93 128  89 128  95 107 126  99  90
+    90  99  97 132  91 129 133 125 125 109  88  95  89 131 113  90  89
+   108 113  92 114 125  89 103 126 113  93  98  89 112  98  95 128 112
+   106 109 103 114 127  88  86  86  85  87]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 74 122 111  90 122 123 106 107  91  88  91  90 109 103  93  90  99
+   115  89 109 112  89 119 112 130  91  95  90  89 119 138  91  89 109
+   112  99 110 127  92  90 132  90 119 118 125  91 126 127 107  90 105
+   107 122  89 117  90  91  93 117  92 105]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 74  94  95  95  96 126 110 144 127 117 103 109 126 123 125 115  98
+    94 133  96 135 115 130  96 141 135 142  98 117  95  98  97  99  97
+   118 127  95  97 125 111 112 107  97 129 108 134 103  98 130 128  98
+    99 100 112 121 111 115  96  97 124 118]]]
+stable
+ 
+ err: 
+done running mariposa 6.0
+Bisecting: 3 revisions left to test after this (roughly 2 steps)
+[ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75  90 118 116 104 103  90  88  88 115  94 137  89 105  90  89 147
+   110 145 112 115  96  91  89  97 106  92  95  92  93  92 128 125  90
+   120 109  93  93  95 101  95  90  90 118 113  90 119  91 115  89 121
+    94 113  90  93  87 137 136  88 108  83]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75  95  91 135  96  91  90  91  98  92  96  94  92 111  94 116  94
+    91 122 101  95  93  95 125 104  93 114 104 128 128  92  91  92  95
+   108  89  89 147  94  92  94 108 107  94  94  92  91  91  91  90 104
+   110  92 104 104  89  91 106 102 109 115]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [ 75  96  94  96 123 122  97  98  93  95  95 142 125 124 134  98  99
+   101 104  96  96 122  99  97 114 137  97 125 124  98 109 130 100  97
+    99 106 100 109  97 109 105 100 119  99 121 122  97  98  99 132  98
+   104 124 124 105 101 104 110 101  97 103]]]
+stable
+ 
+ err: 
+done running mariposa 5.9
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 72  86 113  95 103  99 104 100  87 107  86  87 120  85  84  99  87
+   104  89 109  85 121 107 112 109 114 104 111  86 135 106 111  88  86
+    95 114 104 132 129 110  84 129 109 106 126  86 104  86  85  87  88
+    88 135  86 132 111 115  88  81 106 105]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 72  90  87  88 116 113  86 111  89  87  89 136 105 114  88  88  92
+    88 120  87  92  89  88  89 117  90 106  88  96  88  89  87  88 107
+   133 132  90  90  86 108  89  89 106 125  89  89  92 128  94  90  88
+    92 130 109 108  92  92 107 115 100 101]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 72  91  91  92 109 110 109 124  95 122 107  96 122 126 121 109  96
+   112  93 109 108  96  95  93 118 129 117 115 135 104  94  94 124  94
+   124 138  97  94  98  95 133 147  92 122 121  94 129  95 113 130  96
+   132 110  94 124  94  94  95 102 141  95]]]
+unsolvable
+ 
+ err: 
+done running mariposa 5.8
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 72 102 108  85  86 102  99  95  87  86  86  88  84 103  86 103  89
+    87  87  84  85  84  87 127 110  86  85 107 110 118  86 127  86  87
+    86 110  85  86  85  88 137 142 117  86  98  88  89 101  87  86  87
+   118  87  88 106  85 131 126  83  82  81]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 72 105  89 112  91  88 122  88  88 143  86 123 121  87  88  88  88
+    99  99 109  88 118  87  89  98  87  99 109  98 115  88  98  88 106
+   113 113 125 109 100 109  90  99  89  89  88  90  89  87 138 110 107
+    97  89  88  86 123 110 108  90  90  87]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 72  92  92  92  93  94  93  93 103 110  91  96 100  95 137  92  92
+   114 113 110 108 141 111 105 137 103  98 125  94  94 131 101 107  92
+   139 141 101 102  96 130 121  92  93 106  92 119 102 101 108 123 111
+   113 111 144 122 138 109 107  93  92 106]]]
+unsolvable
+ 
+ err: 
+done running mariposa 5.9
+1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8 is the first bad commit
+commit 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Fri Jun 14 09:29:41 2019 -0700
+
+    local sort
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+:040000 040000 0a3c7d7a39c8bafde7c0d96e40f38d5126f0b425 d2abe755e1f95482eb3e83cc96b729db2bab8fda M	src
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# bad: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect bad 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# good: [d17248821ad047f889237ce20b6bdaa1465ceff9] include chronological backtracking, two-phase sat, xor inprocessing, probsat, ddfw
+git bisect good d17248821ad047f889237ce20b6bdaa1465ceff9
+# good: [ec1653fdff146ff8d1b3b2281e875494f4fc3a96] Merge pull request #2345 from schedutron/master
+git bisect good ec1653fdff146ff8d1b3b2281e875494f4fc3a96
+# bad: [f3b79087eef389011fa90eefcf64b987bed54a9d] add default tactic as option to overwrite the behavior of strategic solver factory
+git bisect bad f3b79087eef389011fa90eefcf64b987bed54a9d
+# bad: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort
+git bisect bad 1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8
+# first bad commit: [1e770af1cc04f85a8d7a990ba0c9c4e433b83fa8] local sort

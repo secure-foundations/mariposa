@@ -1,0 +1,953 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     2     4     4     4     4     4
+       4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     2     4     4     4     2
+       4     4     4     4     4     4     4     4     4     4     4
+       4     2     2     4     4     3]
+  [ 7622  2259  4596  5321  5245  6312  5173  5819  7112  4062  4943
+    4820  9338  6909  7114  4428  3464 10170  5685 10539 13398  4700
+    5498  3014  4614  4398  7886 13080  6179  9292  5588  9184  3984
+    6499  6404  5055  7060  4826 10035  1962  4334  8845  3151  2594
+    9970  5920 24786  4452  5694  5039  8944  9255  8446  7240  5150
+   10384 15367  2855 13903 56386 60013]]
+
+ [[    4     2     2     4     2     2     2     2     2     4     2
+       4     4     2     2     2     2     4     2     4     4     4
+       4     4     2     4     4     4     4     2     4     2     4
+       2     2     4     2     4     4     2     2     2     2     2
+       4     2     2     2     4     2     2     4     2     4     4
+       2     2     4     4     4     3]
+  [ 7622  3806  2410  7254  2350  2361  2618  9037  1978  6595  2144
+    6289  6148  2651  2427  2724  2960  5905  2285 13478  5118  5549
+    5810  3835  2312  8816  5820  6569 10696  3075  5764  2789  6142
+    2292  2342  4963  2497 19052  6495  2040  1942  3513  2340  2167
+    7206  2659  2981  2080 10305  2361  2413  3040 10742  5681  7293
+    2346  2635 10059 26460 36645 60015]]
+
+ [[    4     2     2     2     4     2     2     4     4     2     4
+       4     4     2     2     4     4     4     2     4     4     2
+       2     2     4     4     4     2     4     4     4     4     2
+       2     2     4     4     4     4     4     2     2     4     2
+       4     2     2     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4]
+  [ 7622  2227  2521  3153  4288  2842  2699  7580  5265  5171  7087
+    5493 14262  1842  8447  4414 18563  5176  6790  3568  7519  2220
+    2435  2754 11462  6355 16521  2267 25673  7231  5944  3766  5995
+    1919  3606 13726 22297  4032  8003  5308  2590  2618  7625  2038
+    5049  1947  2831 18463 10385 43053 12113  4967 20627  6183  7715
+   16299 11208  6718  8106 10499 53648]]]
+unstable
+ 
+ err: 
+done running mariposa 289.7
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[    4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     2     4     4     4     4     4
+       4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     2     4     4     4     2
+       4     4     4     4     4     4     4     4     4     4     4
+       4     2     2     4     4     3]
+  [ 7745  2271  4532  5314  5307  6225  5205  5750  7159  4012  5004
+    4874  9315  6844  7031  4488  3461 10033  5615 10624 13381  4744
+    5465  2998  4603  4449  8089 13039  6099  9240  9055  5563  3952
+    6353  6469  5029  7037  4748 10019  1923  4339  8853  3133  2613
+    9861  5882 25089  4455  5697  5045  8825  8425  9416  7173  5096
+   10260 15396  2847 13764 56055 60014]]
+
+ [[    4     2     2     2     4     2     2     2     2     4     2
+       4     4     2     2     2     2     4     2     4     4     4
+       4     4     2     4     4     4     4     2     2     4     4
+       2     4     2     2     4     4     2     2     2     2     2
+       4     2     2     2     4     2     2     4     4     2     4
+       2     2     4     4     4     3]
+  [ 7745  2459  3802  2310  7187  2331  2600  9042  1963  6504  2168
+    6303  6193  2423  2665  2724  2970  5919  2354 13442  5036  5489
+    5792  3811  2336  8911  5824  6613 10586  3095  2794  5830  6169
+    2306  4960  2337  2480 18825  6593  2010  1941  3500  2311  2135
+    7219  2663  2042  2953 10398  2355  2395  3018  5657 10987  7267
+    2344  2627 10043 26370 36885 60015]]
+
+ [[    4     2     2     2     4     2     2     4     4     2     4
+       4     4     2     2     4     4     4     2     4     4     2
+       2     2     4     4     4     2     4     4     4     4     2
+       2     4     2     4     4     4     4     2     2     4     2
+       4     2     2     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4]
+  [ 7745  2159  2500  3131  4356  2839  2696  7640  5226  5221  7048
+    5474 14340  1823  8413  4404 18591  5162  6765  3550  7484  2421
+    2183  2707 11510  5161 16393  2288 25879  7282  3753  5988  1905
+    6065 13582  3627 22182  4060  8086  5400  2598  2598  7582  2024
+    5084  1935  2841 18705 10342 43623 12022  4912 20653  6289  7666
+   16411 11168  6837  8019 10612 53464]]]
+unstable
+ 
+ err: 
+done running mariposa 291.1
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1525  2045  1859  1876  1920  1838  1847  1829  1859  2350  1836
+    1844  1836  1825  1852  1862  1946  1837  1852  1846  1840  1849
+    1858  1860  1812  1869  1873  1905  1854  1858  1852  1851  1867
+    1944  1876  1892  1868  1864  1861  1844  1902  1862  1857  1848
+    1857  1860  1875  1850  1873  1878  1850  1919  1854  1867  1861
+    1860  1841  1769  1708  1751  1759]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     4]
+  [ 1525  1924  2413  2030  1981  1985  2283  2053  1951  1924  2196
+    2048  1969  2141  2373  1964  1923  2191  2454  1960  2281  1981
+    1973  2206  2030  2017  1979  2041  2421  2242  1949  1985  1980
+    1978  2188  2400  2189  1960  1957  1990  2232  1996  1956  2812
+    2311  2006  2029  2004  1979  1983  2042  1988  1962  1986  1985
+    1988  2191  2189  1968  2253 13003]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1525  1839  1890  1875  1888  1922  2331  2533  1799  1841  1931
+    1903  2222  1812  1831  1791  1846  1840  1847  1917  2263  2194
+    1844  1830  1827  1937  1850  1869  1863  1842  1845  1871  1817
+    1860  2145  3307  1897  1860  2036  1888  1959  1818  1805  2438
+    1819  1884  2289  1866  1850  1792  1823  2263  1873  1960  1839
+    1873  1825  1847  1846  1825  1851]]]
+stable
+ 
+ err: 
+done running mariposa 87.2
+Bisecting: 771 revisions left to test after this (roughly 10 steps)
+[c9e989ae853667faaa04c98e128e48130e05b07f] fix build of lp_tst
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 771 revisions left to test after this (roughly 10 steps)
+[73662ad60d26755b7cd4c65c88766298125ee6a5] fix #3016
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[    4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     2     4     4     4     4     4
+       4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4     2     4     4     4     2
+       4     4     4     4     4     4     4     4     4     4     4
+       4     2     2     4     4     3]
+  [ 7628  2253  4533  5302  5312  6249  5168  5715  7189  3989  4943
+    4828  9368  6830  7036  4463  3451 10182  5627 10575  4707 13317
+    5454  2996  4652  4385  7831 13200  6127  9155  5581  9035  4007
+    6419  6388  5040  7019  4790 10024  1915  4356  8755  3123  2610
+    9822  5968 25035  4414  5665  5014  8859  8357  9381  7193  5158
+   10218 15484  2833 13821 57001 60013]]
+
+ [[    4     2     2     2     4     2     2     2     2     4     4
+       2     4     2     2     2     2     4     2     4     4     4
+       4     4     2     4     4     4     4     2     2     4     4
+       2     2     4     2     4     2     4     2     2     2     2
+       2     4     2     2     4     2     2     4     2     4     2
+       4     2     4     4     4     3]
+  [ 7628  2417  3848  2335  7240  2315  9037  2633  1959  6582  6346
+    2162  6113  2403  2629  2734  2926  5972  2290 13380  5556  5015
+    5754  3868  2319  8814  5870  6543 10612  3057  2786  5745  6057
+    2296  2351  5065  2454 18963  2001  6509  1927  3515  2323  2133
+    2641  7262  2048  3093 10307  2400  2406  3018 10797  5608  2326
+    7346  2603 10024 26344 36649 60013]]
+
+ [[    4     2     2     2     4     2     2     4     4     2     4
+       4     4     2     2     4     4     4     2     4     4     2
+       2     2     4     4     4     2     4     4     4     4     2
+       2     4     2     4     4     4     4     2     2     4     2
+       4     2     2     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4]
+  [ 7628  2169  2494  3083  4273  2811  2691  7693  5202  5162  7035
+    5491 14336  1812  8375  4421 18547  5108  6803  3630  7594  2174
+    2396  2718 11552  5166 16546  2255 25575  7332  3744  5978  1902
+    6005 13627  3632 22461  3992  7983  5320  2608  2577  7572  2013
+    5001  1943  2811 18609 10314 43428 12084  4911 20787  6209  7710
+   16287 11179  6719  8082 10431 53882]]]
+unstable
+ 
+ err: 
+done running mariposa 290.7
+Bisecting: 685 revisions left to test after this (roughly 10 steps)
+[403743cb30a07a99ef035f647993229b2960d9d6] switch to constraint based sign lemma
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 685 revisions left to test after this (roughly 10 steps)
+[130995a3db793cefb402d85431fa66b0fa8165ab] print terms as monomials
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 685 revisions left to test after this (roughly 10 steps)
+[bfc30440ac040d58fa05d76612fd766f512c0c5a] update nightly
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1533  2078  1892  1847  1946  1842  1887  1855  2374  1867  1852
+    1831  1827  1859  1841  1848  1955  1828  1851  1872  1839  1856
+    1879  1835  1834  1877  1881  1894  1878  1835  1873  1854  1864
+    1945  1879  1867  1869  1886  1851  1858  1857  1917  1871  1831
+    1877  1867  1866  1846  1887  1860  1870  1921  1860  1855  1845
+    1863  1818  1803  1711  1751  1760]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     4]
+  [ 1533  1942  2467  2033  1999  1981  2291  2077  1935  1914  2197
+    2050  1961  2141  2402  1962  1930  2418  2151  2250  1955  2000
+    2002  2200  1996  2042  1977  2421  2026  2283  1944  1959  1979
+    1992  2413  2222  2200  1948  1976  1990  2236  1983  1971  2844
+    2285  1988  2006  1971  1977  1964  2037  1981  1950  1996  1991
+    1977  2182  2195  1940  2262 13033]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1533  1874  1851  1890  1872  1927  2317  2536  1831  1844  1913
+    1895  1817  2225  1851  1818  1821  1865  1842  1923  2255  2218
+    1860  1826  1854  1841  1951  1871  1867  1832  1827  1850  1848
+    1850  2146  3293  1873  1837  2015  1876  1927  1804  2479  1805
+    1833  2279  1900  1861  1868  1786  1839  2271  1950  1878  1834
+    1890  1801  1855  1914  1821  1862]]]
+stable
+ 
+ err: 
+done running mariposa 87.2
+Bisecting: 644 revisions left to test after this (roughly 9 steps)
+[754656212d592947af3994df09d668aeca2000b7] allow more sign lemmas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 644 revisions left to test after this (roughly 9 steps)
+[4a94abe7d7f3996cbdfac69e08836b3233f8efce] Update nightly.yaml
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 2052  1880  1865  1840  1853  1883  1881  1857  1907  1856  1832
+    1851  1870  1918  1942  1899  1924  1841  1862  1863  1863  2382
+    1871  1859  1820  1888  1861  1853  1962  1883  1856  1855  1876
+    1847  1841  1843  1878  1874  1868  1855  1872  1871  1864  1855
+    1862  1836  1848  1866  1873  1855  1856  2083  1813  1858  1872
+    1849  1896  1832  1790  1707  1580]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       4     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 2052  1962  2128  2268  2024  1994  2039  1927  1942  1971  5726
+    1990  1963  2002  1930  2299  1972  1993  2249  2018  1957  1952
+    2022  1990  2044  1965  2005  1954  1939  1957  2134  2084  1949
+   12158  2045  2012  1969  2020  2079  1985  2131  1969  2018  2016
+    2004  2008  2019  1958  1953  1965  1994  1980  1985  2022  1991
+    1956  1953  1987  1956  2078  1990]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 2052  1877  1909  1896  1915  1935  1990  2345  1842  1870  1853
+    2023  1890  1897  1853  1810  1847  1838  1854  1884  1871  1868
+    1812  1867  1955  1875  1877  2031  1890  1807  1828  1848  1882
+    1869  1939  1974  1818  1884  1902  1855  2307  2278  2352  1819
+    1817  1820  1952  1874  1850  1962  1825  1828  1859  1854  1807
+    1873  1850  1855  1825  1834  1853]]]
+stable
+ 
+ err: 
+done running mariposa 87.6
+Bisecting: 530 revisions left to test after this (roughly 9 steps)
+[40cc8c31e5a623136156065c4fe98a1bb43cd514] generate simple_sign_lemma
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 530 revisions left to test after this (roughly 9 steps)
+[2b5e8e965257d234562b9cf32bee580b96588370] change in a comment
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 530 revisions left to test after this (roughly 9 steps)
+[882dd06df93514ae17066688e63104f453f33588] small changes
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 530 revisions left to test after this (roughly 9 steps)
+[33cbd29ed0e0ef9224a79b035617404a1b604b5c] mv util/lp to math/lp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 530 revisions left to test after this (roughly 9 steps)
+[b43a0e184ce158b4457b2bb989deb686813a53ac] introduce rooted monomial table
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 530 revisions left to test after this (roughly 9 steps)
+[d3bd55d0cfb2cfccf55a57d9c0c4532406a0874c] remove m_mons_to_rehash, fix a bug in emonomials::after_merge_eh(), generate order and tangent lemmas on any monomial
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 530 revisions left to test after this (roughly 9 steps)
+[5e40d64a8272c1d0ef0945751fb76966f5dd36a1] port Grobner
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 530 revisions left to test after this (roughly 9 steps)
+[0146259ea402a8bf3996f1ca0d2d37ed69fddd35] z3str3: fix control flow and return paths in regex model construction
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 6.9
+running mariposa
+res: 1 
+ out: [[[    4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     2     4     4     4     4     4
+       4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     2     4     4     4     4     2
+       4     4     4     4     4     4     4     4     4     4     4
+       4     2     2     4     4     3]
+  [ 7617  2257  4555  5323  5249  6348  5184  5853  7162  3988  4958
+    4866  9402  6953  7065  4418  3499 10015  5687 10555  4744 13425
+    5461  3000  4606  4415  7827 13038  6124  9237  5590  9050  3964
+    6453  6447  5065  7080  4831  1941 10042  4368  8840  3129  2569
+    9814  5973 25128  4419  5711  5067  8814  7212  9358  8371  5098
+   10289  2858 15443 13988 56951 60015]]
+
+ [[    4     2     2     2     4     2     2     2     2     4     4
+       2     4     2     2     2     2     4     2     4     4     4
+       4     4     2     4     4     4     4     2     4     2     4
+       2     2     4     2     4     4     2     2     2     2     2
+       4     2     2     2     4     2     2     4     4     2     4
+       2     2     4     4     4     3]
+  [ 7617  3809  2455  2334  7281  2316  2628  9155  1995  6601  6312
+    2159  6088  2398  2671  2714  2930  5979  2304 13479  5539  5747
+    5027  3851  2352  8802  5847  6601 10766  3055  5763  2770  6170
+    2294  2342  5108  2493 18869  6459  2018  1947  3528  2354  2137
+    7260  2657  2049  2995 10276  2349  2421  3069  5632 10836  7237
+    2338  2635 10182 26608 36788 60015]]
+
+ [[    4     2     2     2     4     2     2     4     4     2     4
+       4     4     2     2     4     4     4     2     4     4     2
+       2     2     4     4     4     2     4     4     4     4     2
+       2     4     2     4     4     4     4     2     2     4     2
+       4     2     2     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4]
+  [ 7617  2189  2485  3111  4327  2804  2704  7751  5217  5168  7073
+    5549 14272  1812  8295  4431 18526  5159  6866  3574  7493  2173
+    2432  2751 11598  5106 16395  2266 25684  7367  5939  3739  1907
+    5984 13698  3675 22550  3990  7987  5350  2591  2607  7671  1991
+    5089  1937  2820 10339 18826 43216 12171 20469  4983  6222  7637
+   16386 11203  6809  8027 10531 53231]]]
+unstable
+ 
+ err: 
+done running mariposa 290.9
+Bisecting: 523 revisions left to test after this (roughly 9 steps)
+[50d3e67e6187cbffd2e4c1df3206633ad0bb5c61] adding commments
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 523 revisions left to test after this (roughly 9 steps)
+[3f9229a6989a405264f8ce4b623a8fefe3843e4f] stop keying monomials by abs values
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 523 revisions left to test after this (roughly 9 steps)
+[ee62f83131c3ead740729aac99ea48de797fdb06] fix #2892
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1513  1834  1779  1826  1801  1818  1841  1817  1808  1781  1794
+    1836  1818  1833  1840  1812  1866  1803  1835  1837  1830  1834
+    2089  1781  1841  1827  1854  1950  1832  1903  1795  1802  1859
+    1824  1833  1856  1812  1840  1803  1805  1830  1921  1835  1810
+    1816  1800  1869  1831  1828  1833  1820  1794  1797  1799  1818
+    1850  1827  1749  1734  1644  1622]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1513  2243  2023  1982  1942  1960  1960  1895  1913  1932  1963
+    1916  1946  1887  1883  1979  2027  2040  1960  4254  2000  1986
+   13434  1982  1985  1994  2009  2040  2082  2055  1965  1970  1985
+    2004  2061  2068  2164  2025  2101  2070  2206  1960 20832  4698
+    1989  1980  1981  1920  1974  2111  1938  1974  1913  1960  1940
+    1923  1953  1974  1938  1980  1998]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 1513  1840  1814  1868  1900  1898  1901  3110  1783  1785  1809
+    1833  1829  1766  3150  1792  1780  1784  1791  1789  1794  1793
+    1839  1827  1854  1818  1805  1789  1783  1804  1810  1861  1834
+    1873  1825  1763  1768  1867  1857  1828  1851  1820  1804  1762
+    1991  1789  1794  1805  1838  1803  1843  1808  1829  1817  1799
+    1827  1812  1816  1835  1861  1824]]]
+stable
+ 
+ err: 
+done running mariposa 89.0
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[5cc3812aa93346ae6fd8fdc263a476b60c680492] fixes in nla_expr comparison and in cross_nested related to common factors
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[f84a06b4c5d3028050ef1e7a2fa792453e463a4c] starting the horner heuristic
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[b5364b787cb76d002b129489caa73f8fb782a428] set level2var for m_pdd_manager of pdd_grobner
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[8d05894db716eae90408037b9dca2d4836f1afdc] cleanup and some changes in TRACE statements
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[3441f565b231f3ad0a9db958add658771f95f41d] before changes is basic_sign_lemma
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[b9483d0aff074924abf074b4828d58a262c097bc] improve tracing
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[d08f8a251218cc04ca6411247e6d0c89df17b195] fix test_basic_lemma_for_mon_zero_from_monomial_to_factors
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[bab5c2f0784268036140fea11e99584b912abaa5] add some testing to cross nested expessions
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[882b8ee63b37e0f26f7c0aeab01433f19f6b6e81] NB's review
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[24d70abfd8dbf15fc29735511d01a02789945ea3] persist
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[e6d134b9fa3ead23d052074d390da624b50e924b] a stronger zero lemma when the signs are known
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[46f8159926c1edc43985a95831c1fabe4a049ba3] memory management in cross_nested is broken
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[f5c8ead995a1b448d8f57011fd80e221a07a4380] port Grobner
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[8ed865e447fab4b7aa6d465c3253acb185f124f3] add compare() to nla_expr
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[8744d987a3dbd9db8f7bf634922b1688a867d46a] port Grobner: address memory issues
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 447 revisions left to test after this (roughly 9 steps)
+[13715260626946275632bfdb21e025b9f6470f94] fix build break
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 51.8
+running mariposa
+res: 1 
+ out: [[[    4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     2     4     4     4     4     4
+       4     2     4     4     4     4     4     4     4     4     4
+       4     4     4     4     4     2     4     4     4     4     2
+       4     4     4     4     4     4     4     4     4     4     4
+       4     2     2     4     4     3]
+  [ 7635  2263  4632  5284  5278  6355  5173  5791  7171  4052  4950
+    4925  9402  6952  7158  4426  3448 10081  5690 10575  4786 13473
+    5505  3020  4607  4424  7829 13204  6161  9172  5581  9107  3964
+    6361  5070  6463  7074  4828  1937 10102  4365  3136  8843  2582
+    9970  5880 25245  4462  5687  5064  8870  8633  9243  7239  5126
+   10337 15498  2847 13799 56351 60014]]
+
+ [[    4     2     2     2     4     2     2     2     4     2     4
+       4     2     2     2     2     2     4     2     4     4     4
+       4     4     2     4     4     4     4     2     4     2     4
+       2     2     4     2     4     4     2     2     2     2     2
+       4     2     2     2     4     2     2     4     4     2     4
+       2     2     4     4     4     3]
+  [ 7635  3783  2432  2332  7224  2344  2643  9217  6502  1954  6361
+    6124  2167  2421  2652  2724  2976  6059  2300 13497  5109  5747
+    5591  3830  2324  8878  5958  6662 10673  3062  5902  2791  6113
+    2314  2351  4989  2475 19058  6463  1989  1942  3567  2328  2148
+    7221  2669  2043  2958 10478  2365  2384  3023  5678 10957  7308
+    2337  2644 10327 26453 36661 60016]]
+
+ [[    4     2     2     2     4     2     2     4     4     4     2
+       4     4     2     2     4     4     4     2     4     4     2
+       2     2     4     4     4     2     4     4     4     4     2
+       2     2     4     4     4     4     4     2     2     4     2
+       4     2     2     4     4     4     4     4     4     4     4
+       4     4     4     4     4     4]
+  [ 7635  2173  2535  3145  4341  2821  2768  7715  5273  7157  5231
+   14142  5553  8344  1842  4518 18725  5136  6905  3551  7583  2428
+    2180  2748 11526  5163 16589  2280 25788  7276  3788  6016  1893
+    6015  3613 13927 22368  4034  8085  5361  2604  2635  7618  2019
+    5045  1922  2826 18728 10463 43429 12041  5010 20844  6253  7691
+   16617 11258  6830  8154 10585 53298]]]
+unstable
+ 
+ err: 
+done running mariposa 291.9
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[ca5666cabdda8b90581add3dbaad7c170c12c2fc] add diagnostics for registering vars in lar_solver
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[6cd495979d34ddedf5a970d6d9b6415bd831028f] fix the test build
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[0e86c567ccce4a1ac0825288c47e7cfe9bf000bb] prepare the mixed case
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[81a9edae7ec30dc16755505b6a54be382ef04fcd] simplify more aggressively in horner scheme, imlement is_linear
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[254a40535eddf100b956535ffb375d81b9a38c78] call order_lemma_on_ac_and_bd
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[9266ab7ed19763f8500033b607d246840b1aebaf] rewrite horner scheme on top of nex_expr as a pointer
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[70612fb1092f9dc172bc4e405ac9417e36b82145] more tests and fixes in order lemma
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[e46de3bc3d87d97db90232cf8a257327c45642f3] fixes in horner's heuristic
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[3192db64a12974c0a623bbc65906a7c525210913] Nikolaj's changes is mk_eq
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[82115e69acba3ba68fbdd6e952eced76a3e28eaa] filter rows for horner's scheme earlier
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[4f2eb0b4eb43086555ba16f07e0eb73daa4cf59b] remove an unused field
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[86a086b698bac936b68ca728665a77ead58b5305] toward horner lemma
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[0535e24dd1e710480889ed4af37f9fa898a8af37] consolidate parameters, add comment (#102)
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[2181c982e89109e8fd551a77f9a946972786ecf1] progress with horner's heuristic
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[d06182d1991d28a06f158b4d11cb55a1c4129cef] split between derived and model based lemma generation
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[13a93e24460a0e412a641e4f0138ccaca0244533] debug horner
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[63e62ec1bbf80a067d4623c9f63254b15e41cc63] stronger lemmas to avoid branching
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[9cba261a9c50d4bb3dce647b8edea76d447a97c1] simplify and order nla_expr
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[4a87ca8b924ae7f5cc7e52d1addf432b5ec8e276] remove m_lc field from equation
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[92769469df0d6fe7f59dd4186a4e737d5383ce2b] work on horner - does not compile
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[1810d7e77d00d63e8d7a6ec1ec2680b2c57deb2f] cleanup mostly, more asserts in tangent lemma
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 441 revisions left to test after this (roughly 9 steps)
+[e2514a2b19088b29a26a5e93183fb7d3a6d76c36] make nla_solver the default
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 52.5
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 4182  3215  2438  3388  7685  8055  2074  2431  3397  1932  4363
+    7519  3014  2996 10463  2148  2137 20155  4890  1877  5544  1956
+    2682  5191  2691  6075  2136  2651  3834  2885  2755  2874 18932
+    2805  5164  2135 33558  4760  2325  5740  7071  4631  2720  4711
+    2543  3743  6070  9568 30913  2401  2420  6382  6815  2370 14287
+    9922  5476  1721 36911 24168  7580]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 4182  2426  4825  2324  4324  4187  2974  5050  3504  2048  4493
+    4066  6311  3001 17883 12727  4972  2505  4364  2065 10886 13080
+    5390  9860  4360  3962  2794  3984  2461  3540 25127  2257  4051
+   15505  6475  5910 21334  4865  4566  5826  5115  4060  2608  4281
+   14624  7874  4743 43841  3278  2167 28133  4283 11950 24176 21526
+    4946  5581 22109 25088 13845 39606]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     3]
+  [ 4182  2073  2476  3699  3970  4324  5227  2711  2624  3173  1997
+    3152  9955  5532  8457  1903  4234  3072  4612  2393  3211  3949
+    5932  3183  2184 10373  3197  1914  7718  4237  4908  2661  2475
+   17529  5835  4472  5545 12735  6082  3279  5551  8996  2368  8989
+    1898  2157  6207  5007  2238  4055  8139 14032  6735  3036 23019
+    3830 60017 44255 30619 24638 60018]]]
+stable
+ 
+ err: 
+done running mariposa 249.9
+Bisecting: 2 revisions left to test after this (roughly 1 step)
+[26eb23c05b382ea9f687700e9f6f0a6ec26a178a] move lp_params to smt_params_helper
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 45.0
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 4117  3218  2459  3373  7690  8098  2055  2419  3362  1914  4371
+    7440  3014  3007 10353  2134  2132 20255  4902  1884  5487  2010
+    2724  5207  2652  2157  6071  2652  3827  2750  2879  2866  2840
+   18932  5145  2113 33680  4751  2298  5742  7087  2685  4668  4679
+    2532  3742  6006  9589  2394 30990  2411  6350  2360  6802  9957
+   14383  5522  1730 36913 24347  7617]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 4117  2413  4862  4306  2336  4126  2942  5069  3479  2054  4542
+    4043  6318  3032 17806 12521  4995  2506  4375 10292  2109  5365
+   13089  9899  4405  2799  3950  3999  2405  3544 24934  2258  4088
+   15505  5902  6542 21339  4873  4528  5058  5862  4085  2586  4247
+   14747  7816  4724 43507  3251  2165 28148 11945  4250 24132 21589
+    4953  5589 22107 25110 13917 39398]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     3]
+  [ 4117  2110  2469  3743  3970  4288  5234  2706  2626  3175  2004
+    3153 10032  5583  8483  1909  3146  4285  4647  2411  3214  4003
+    5921  3185  2154 10318  3230  1931  7683  4236  4917  2711  2446
+   17561  5779  4492  5484 12734  6067  3263  5539  9050  2384  9001
+    1918  2178  6205  5033  2263  4091  8129 13983  6779  3045 23028
+    3827 60019 44358 30554 24774 60017]]]
+stable
+ 
+ err: 
+done running mariposa 250.0
+Bisecting: 0 revisions left to test after this (roughly 1 step)
+[ad55f61580eec586dd7aa8a60b98df992659508f] roll back the defaults of invoking the nla_solver
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+Bisecting: 0 revisions left to test after this (roughly 1 step)
+[f1abc71c3543ed1daa36aa892dc8156e08402e6f] fix #2962
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-45.txt
+building z3
+done building z3 20.1
+running mariposa
+res: 0 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 4119  3265  2437  3405  7691  8062  2087  2438  3387  1931  4373
+    7528  3027  3024 10355  2158  2140 20134  4983  1896  5546  1979
+    2722  5206  2705  6099  2168  2686  3856  2768  2890  2804  2894
+   18902  5183  2134 33569  4780  2298  5764  7131  4675  2695  4716
+    2546  3758  5998  9558  2432 30859  2409  6342  6858  2346 14294
+    9999  5497  1759 36898 24393  7674]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2]
+  [ 4119  2424  4833  4310  2302  4102  2954  5050  3489  2038  4553
+    6281  4084  3038 17828 12481  5010  2501  4341 10264  2117 13102
+    5361  9962  4394  2802  3951  3996  2442  3541 25011  4061  2252
+   15472  5942 21173  6523  4906  4526  5065  5852  4092  2578  4304
+   14638  7799  4689 43569  3293  2158 28088 11828  4238 24166 21656
+    4919  5568 22125 25191 13797 39358]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     3]
+  [ 4119  2083  2505  3725  3960  4323  5228  2764  2630  3187  2017
+    3140  9958  5556  8469  1940  4232  3092  4622  2394  3255  3990
+    5902  3209  2147 10286  3239  1927  7732  4195  4911  2684  2431
+   17498  5827  4478  5485 12788  6052  3306  5538  9028  2404  9010
+    2166  1936  5021  6176  2246  4095  8071 14038  6737  3036 22969
+    3829 60017 44347 30554 24787 60018]]]
+stable
+ 
+ err: 
+done running mariposa 249.7
+There are only 'skip'ped commits left to test.
+The first bad commit could be any of:
+ad55f61580eec586dd7aa8a60b98df992659508f
+13715260626946275632bfdb21e025b9f6470f94
+We cannot bisect more!
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# good: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect good 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# skip: [c9e989ae853667faaa04c98e128e48130e05b07f] fix build of lp_tst
+git bisect skip c9e989ae853667faaa04c98e128e48130e05b07f
+# bad: [73662ad60d26755b7cd4c65c88766298125ee6a5] fix #3016
+git bisect bad 73662ad60d26755b7cd4c65c88766298125ee6a5
+# skip: [403743cb30a07a99ef035f647993229b2960d9d6] switch to constraint based sign lemma
+git bisect skip 403743cb30a07a99ef035f647993229b2960d9d6
+# skip: [130995a3db793cefb402d85431fa66b0fa8165ab] print terms as monomials
+git bisect skip 130995a3db793cefb402d85431fa66b0fa8165ab
+# good: [bfc30440ac040d58fa05d76612fd766f512c0c5a] update nightly
+git bisect good bfc30440ac040d58fa05d76612fd766f512c0c5a
+# skip: [754656212d592947af3994df09d668aeca2000b7] allow more sign lemmas
+git bisect skip 754656212d592947af3994df09d668aeca2000b7
+# good: [4a94abe7d7f3996cbdfac69e08836b3233f8efce] Update nightly.yaml
+git bisect good 4a94abe7d7f3996cbdfac69e08836b3233f8efce
+# skip: [40cc8c31e5a623136156065c4fe98a1bb43cd514] generate simple_sign_lemma
+git bisect skip 40cc8c31e5a623136156065c4fe98a1bb43cd514
+# skip: [2b5e8e965257d234562b9cf32bee580b96588370] change in a comment
+git bisect skip 2b5e8e965257d234562b9cf32bee580b96588370
+# skip: [882dd06df93514ae17066688e63104f453f33588] small changes
+git bisect skip 882dd06df93514ae17066688e63104f453f33588
+# skip: [33cbd29ed0e0ef9224a79b035617404a1b604b5c] mv util/lp to math/lp
+git bisect skip 33cbd29ed0e0ef9224a79b035617404a1b604b5c
+# skip: [b43a0e184ce158b4457b2bb989deb686813a53ac] introduce rooted monomial table
+git bisect skip b43a0e184ce158b4457b2bb989deb686813a53ac
+# skip: [d3bd55d0cfb2cfccf55a57d9c0c4532406a0874c] remove m_mons_to_rehash, fix a bug in emonomials::after_merge_eh(), generate order and tangent lemmas on any monomial
+git bisect skip d3bd55d0cfb2cfccf55a57d9c0c4532406a0874c
+# skip: [5e40d64a8272c1d0ef0945751fb76966f5dd36a1] port Grobner
+git bisect skip 5e40d64a8272c1d0ef0945751fb76966f5dd36a1
+# bad: [0146259ea402a8bf3996f1ca0d2d37ed69fddd35] z3str3: fix control flow and return paths in regex model construction
+git bisect bad 0146259ea402a8bf3996f1ca0d2d37ed69fddd35
+# skip: [50d3e67e6187cbffd2e4c1df3206633ad0bb5c61] adding commments
+git bisect skip 50d3e67e6187cbffd2e4c1df3206633ad0bb5c61
+# skip: [3f9229a6989a405264f8ce4b623a8fefe3843e4f] stop keying monomials by abs values
+git bisect skip 3f9229a6989a405264f8ce4b623a8fefe3843e4f
+# good: [ee62f83131c3ead740729aac99ea48de797fdb06] fix #2892
+git bisect good ee62f83131c3ead740729aac99ea48de797fdb06
+# skip: [5cc3812aa93346ae6fd8fdc263a476b60c680492] fixes in nla_expr comparison and in cross_nested related to common factors
+git bisect skip 5cc3812aa93346ae6fd8fdc263a476b60c680492
+# skip: [f84a06b4c5d3028050ef1e7a2fa792453e463a4c] starting the horner heuristic
+git bisect skip f84a06b4c5d3028050ef1e7a2fa792453e463a4c
+# skip: [b5364b787cb76d002b129489caa73f8fb782a428] set level2var for m_pdd_manager of pdd_grobner
+git bisect skip b5364b787cb76d002b129489caa73f8fb782a428
+# skip: [8d05894db716eae90408037b9dca2d4836f1afdc] cleanup and some changes in TRACE statements
+git bisect skip 8d05894db716eae90408037b9dca2d4836f1afdc
+# skip: [3441f565b231f3ad0a9db958add658771f95f41d] before changes is basic_sign_lemma
+git bisect skip 3441f565b231f3ad0a9db958add658771f95f41d
+# skip: [b9483d0aff074924abf074b4828d58a262c097bc] improve tracing
+git bisect skip b9483d0aff074924abf074b4828d58a262c097bc
+# skip: [d08f8a251218cc04ca6411247e6d0c89df17b195] fix test_basic_lemma_for_mon_zero_from_monomial_to_factors
+git bisect skip d08f8a251218cc04ca6411247e6d0c89df17b195
+# skip: [bab5c2f0784268036140fea11e99584b912abaa5] add some testing to cross nested expessions
+git bisect skip bab5c2f0784268036140fea11e99584b912abaa5
+# skip: [882b8ee63b37e0f26f7c0aeab01433f19f6b6e81] NB's review
+git bisect skip 882b8ee63b37e0f26f7c0aeab01433f19f6b6e81
+# skip: [24d70abfd8dbf15fc29735511d01a02789945ea3] persist
+git bisect skip 24d70abfd8dbf15fc29735511d01a02789945ea3
+# skip: [e6d134b9fa3ead23d052074d390da624b50e924b] a stronger zero lemma when the signs are known
+git bisect skip e6d134b9fa3ead23d052074d390da624b50e924b
+# skip: [46f8159926c1edc43985a95831c1fabe4a049ba3] memory management in cross_nested is broken
+git bisect skip 46f8159926c1edc43985a95831c1fabe4a049ba3
+# skip: [f5c8ead995a1b448d8f57011fd80e221a07a4380] port Grobner
+git bisect skip f5c8ead995a1b448d8f57011fd80e221a07a4380
+# skip: [8ed865e447fab4b7aa6d465c3253acb185f124f3] add compare() to nla_expr
+git bisect skip 8ed865e447fab4b7aa6d465c3253acb185f124f3
+# skip: [8744d987a3dbd9db8f7bf634922b1688a867d46a] port Grobner: address memory issues
+git bisect skip 8744d987a3dbd9db8f7bf634922b1688a867d46a
+# bad: [13715260626946275632bfdb21e025b9f6470f94] fix build break
+git bisect bad 13715260626946275632bfdb21e025b9f6470f94
+# skip: [ca5666cabdda8b90581add3dbaad7c170c12c2fc] add diagnostics for registering vars in lar_solver
+git bisect skip ca5666cabdda8b90581add3dbaad7c170c12c2fc
+# skip: [6cd495979d34ddedf5a970d6d9b6415bd831028f] fix the test build
+git bisect skip 6cd495979d34ddedf5a970d6d9b6415bd831028f
+# skip: [0e86c567ccce4a1ac0825288c47e7cfe9bf000bb] prepare the mixed case
+git bisect skip 0e86c567ccce4a1ac0825288c47e7cfe9bf000bb
+# skip: [81a9edae7ec30dc16755505b6a54be382ef04fcd] simplify more aggressively in horner scheme, imlement is_linear
+git bisect skip 81a9edae7ec30dc16755505b6a54be382ef04fcd
+# skip: [254a40535eddf100b956535ffb375d81b9a38c78] call order_lemma_on_ac_and_bd
+git bisect skip 254a40535eddf100b956535ffb375d81b9a38c78
+# skip: [9266ab7ed19763f8500033b607d246840b1aebaf] rewrite horner scheme on top of nex_expr as a pointer
+git bisect skip 9266ab7ed19763f8500033b607d246840b1aebaf
+# skip: [70612fb1092f9dc172bc4e405ac9417e36b82145] more tests and fixes in order lemma
+git bisect skip 70612fb1092f9dc172bc4e405ac9417e36b82145
+# skip: [e46de3bc3d87d97db90232cf8a257327c45642f3] fixes in horner's heuristic
+git bisect skip e46de3bc3d87d97db90232cf8a257327c45642f3
+# skip: [3192db64a12974c0a623bbc65906a7c525210913] Nikolaj's changes is mk_eq
+git bisect skip 3192db64a12974c0a623bbc65906a7c525210913
+# skip: [82115e69acba3ba68fbdd6e952eced76a3e28eaa] filter rows for horner's scheme earlier
+git bisect skip 82115e69acba3ba68fbdd6e952eced76a3e28eaa
+# skip: [4f2eb0b4eb43086555ba16f07e0eb73daa4cf59b] remove an unused field
+git bisect skip 4f2eb0b4eb43086555ba16f07e0eb73daa4cf59b
+# skip: [86a086b698bac936b68ca728665a77ead58b5305] toward horner lemma
+git bisect skip 86a086b698bac936b68ca728665a77ead58b5305
+# skip: [0535e24dd1e710480889ed4af37f9fa898a8af37] consolidate parameters, add comment (#102)
+git bisect skip 0535e24dd1e710480889ed4af37f9fa898a8af37
+# skip: [2181c982e89109e8fd551a77f9a946972786ecf1] progress with horner's heuristic
+git bisect skip 2181c982e89109e8fd551a77f9a946972786ecf1
+# skip: [d06182d1991d28a06f158b4d11cb55a1c4129cef] split between derived and model based lemma generation
+git bisect skip d06182d1991d28a06f158b4d11cb55a1c4129cef
+# skip: [13a93e24460a0e412a641e4f0138ccaca0244533] debug horner
+git bisect skip 13a93e24460a0e412a641e4f0138ccaca0244533
+# skip: [63e62ec1bbf80a067d4623c9f63254b15e41cc63] stronger lemmas to avoid branching
+git bisect skip 63e62ec1bbf80a067d4623c9f63254b15e41cc63
+# skip: [9cba261a9c50d4bb3dce647b8edea76d447a97c1] simplify and order nla_expr
+git bisect skip 9cba261a9c50d4bb3dce647b8edea76d447a97c1
+# skip: [4a87ca8b924ae7f5cc7e52d1addf432b5ec8e276] remove m_lc field from equation
+git bisect skip 4a87ca8b924ae7f5cc7e52d1addf432b5ec8e276
+# skip: [92769469df0d6fe7f59dd4186a4e737d5383ce2b] work on horner - does not compile
+git bisect skip 92769469df0d6fe7f59dd4186a4e737d5383ce2b
+# skip: [1810d7e77d00d63e8d7a6ec1ec2680b2c57deb2f] cleanup mostly, more asserts in tangent lemma
+git bisect skip 1810d7e77d00d63e8d7a6ec1ec2680b2c57deb2f
+# good: [e2514a2b19088b29a26a5e93183fb7d3a6d76c36] make nla_solver the default
+git bisect good e2514a2b19088b29a26a5e93183fb7d3a6d76c36
+# good: [26eb23c05b382ea9f687700e9f6f0a6ec26a178a] move lp_params to smt_params_helper
+git bisect good 26eb23c05b382ea9f687700e9f6f0a6ec26a178a
+# skip: [ad55f61580eec586dd7aa8a60b98df992659508f] roll back the defaults of invoking the nla_solver
+git bisect skip ad55f61580eec586dd7aa8a60b98df992659508f
+# good: [f1abc71c3543ed1daa36aa892dc8156e08402e6f] fix #2962
+git bisect good f1abc71c3543ed1daa36aa892dc8156e08402e6f
+# only skipped commits left to test
+# possible first bad commit: [13715260626946275632bfdb21e025b9f6470f94] fix build break
+# possible first bad commit: [ad55f61580eec586dd7aa8a60b98df992659508f] roll back the defaults of invoking the nla_solver

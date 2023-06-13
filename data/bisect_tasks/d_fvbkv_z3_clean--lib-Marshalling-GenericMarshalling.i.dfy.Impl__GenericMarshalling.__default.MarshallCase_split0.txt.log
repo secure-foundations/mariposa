@@ -1,0 +1,513 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   4   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [200 261 233 270 257 222 231 228 235 232 234 254 224 287 277 222 249
+   300 212 215 227 243 226 232 250 235 217 228 284 242 205 208 270 224
+   205 227 222 220 225 287 228 213 205 224 243 240 267 267 210 208 202
+   253 263 246 231 225 213 219 245 198 206]]
+
+ [[  2   2   2   2   2   2   2   2   4   2   4   4   2   4   4   2   4
+     2   2   4   2   2   2   2   4   2   2   2   4   4   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   4   2   4   2   2   2   4
+     2   4   2   4   4   2   2   2   2   2]
+  [200 224 278 310 231 270 221 273 216 242 227 201 231 214 254 253 206
+   246 283 202 240 231 262 231 195 210 247 211 226 200 226 255 271 242
+   241 213 228 228 226 258 228 225 240 264 212 254 238 228 264 241 255
+   262 205 274 208 248 263 251 228 265 223]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   4   2   2   4   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [200 222 240 243 232 258 232 278 238 227 238 255 245 247 248 257 260
+   255 249 250 273 251 264 238 279 311 260 248 297 221 233 217 233 230
+   253 292 212 221 240 222 246 266 251 230 258 232 305 257 232 272 236
+   240 234 214 233 272 239 262 262 285 242]]]
+unstable
+ 
+ err: 
+done running mariposa 10.7
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   4   2   2   2   2   2   2   2   4   2   2   2
+     2   2   2   4   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [203 224 240 234 245 266 221 231 225 290 255 256 238 233 238 224 247
+   269 201 216 237 266 215 218 250 251 248 226 261 204 264 261 211 214
+   226 203 211 240 229 205 220 208 266 210 232 263 246 231 207 220 252
+   229 198 247 234 212 213 225 214 259 204]]
+
+ [[  2   2   4   2   2   2   2   4   2   2   2   4   2   4   2   2   2
+     4   2   4   4   2   2   2   2   2   2   4   2   4   2   2   2   2
+     2   4   2   2   2   2   2   2   2   2   4   2   2   2   4   2   2
+     2   4   4   4   2   4   2   2   2   2]
+  [203 237 310 226 223 228 274 233 221 225 287 206 220 212 232 265 216
+   249 226 226 206 210 283 239 254 287 215 198 207 213 250 221 210 265
+   237 242 219 231 241 220 233 290 214 272 218 215 216 217 260 218 246
+   241 211 207 221 245 212 253 235 308 270]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   4   4   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [203 223 223 241 243 258 252 255 231 227 239 232 270 247 300 238 231
+   250 226 230 277 260 242 250 284 241 301 237 243 238 210 223 237 235
+   257 255 212 270 226 228 256 270 261 218 263 230 245 281 238 292 237
+   255 236 245 298 211 225 303 218 269 335]]]
+unstable
+ 
+ err: 
+done running mariposa 10.6
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [202 254 234 220 239 221 223 238 228 280 249 265 256 227 231 255 248
+   253 232 226 245 232 233 263 233 236 246 243 270 272 277 236 234 308
+   238 233 232 267 269 248 239 230 298 217 232 237 295 225 240 234 225
+   289 238 240 254 239 273 260 276 211 247]]
+
+ [[  2   4   4   2   2   2   2   2   4   2   2   4   4   2   4   2   4
+     2   2   2   2   2   2   2   4   2   2   4   2   2   2   2   2   2
+     2   2   4   2   2   2   2   2   2   2   4   4   4   2   2   2   2
+     2   2   2   4   2   4   2   2   2   2]
+  [202 203 256 313 214 218 263 256 197 229 235 231 174 274 247 265 201
+   263 272 238 219 236 259 230 192 256 267 222 234 230 225 313 219 216
+   249 278 250 245 228 276 263 286 239 271 204 219 249 221 214 214 231
+   261 272 234 219 233 218 246 254 254 249]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   4   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [202 236 245 248 245 253 255 262 233 252 245 240 269 292 317 250 243
+   230 262 286 265 228 241 220 234 225 249 257 255 248 238 231 282 237
+   264 314 220 280 284 229 337 245 300 266 213 215 285 287 263 316 251
+   235 274 268 249 259 283 241 216 290 295]]]
+unstable
+ 
+ err: 
+done running mariposa 10.8
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [166 210 232 238 249 206 216 211 212 228 215 244 202 231 252 265 204
+   216 218 223 254 227 236 229 256 207 206 237 239 242 221 255 220 239
+   205 211 234 251 209 206 208 206 249 224 208 258 230 202 215 235 221
+   199 239 247 223 227 204 219 206 207 204]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [166 206 246 258 214 232 214 259 202 243 214 236 203 242 251 213 213
+   244 230 284 205 259 230 235 203 226 215 225 202 257 301 245 213 222
+   223 214 233 210 211 230 234 232 217 199 207 231 235 239 221 224 266
+   218 235 219 230 219 228 225 257 233 238]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [166 227 241 238 259 273 284 277 223 232 256 228 258 248 298 220 251
+   239 223 224 273 291 245 219 231 284 312 270 294 225 249 213 280 225
+   241 236 247 264 259 227 302 257 271 218 242 238 261 263 248 259 242
+   222 258 286 241 224 226 235 234 245 260]]]
+stable
+ 
+ err: 
+done running mariposa 10.4
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[892aa126605d8cf9a1696af1add6cb30435fb1e0] Fix for fp.rem. Fixes #2381.
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.6
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   4   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [237 236 270 218 235 223 242 216 213 240 213 250 281 244 260 260 242
+   227 250 213 223 244 320 224 256 282 282 294 227 228 268 204 219 350
+   283 222 280 232 223 260 246 283 275 250 286 282 291 220 259 214 236
+   246 293 273 264 264 255 257 243 248 238]]
+
+ [[  2   2   2   4   4   2   2   2   2   2   4   4   4   2   4   2   4
+     2   2   2   2   4   2   2   2   2   2   4   2   2   2   4   2   2
+     2   4   2   2   2   4   2   2   2   2   2   4   2   2   2   4   2
+     2   2   2   4   2   2   2   4   4   2]
+  [237 229 226 221 210 230 273 271 239 250 244 214 219 225 241 230 280
+   231 253 244 243 226 234 247 276 254 221 210 291 222 246 206 210 264
+   289 236 201 230 218 204 208 254 248 252 222 201 286 234 282 218 221
+   217 284 227 267 279 292 260 198 175 293]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [237 253 267 246 252 255 284 298 220 225 252 258 266 276 257 227 233
+   305 230 262 249 311 255 223 220 262 229 324 249 231 266 268 285 250
+   252 251 229 232 265 238 240 231 331 248 266 287 256 246 272 249 240
+   229 259 231 271 258 253 251 234 242 248]]]
+unstable
+ 
+ err: 
+done running mariposa 10.8
+Bisecting: 64 revisions left to test after this (roughly 6 steps)
+[2eea7709e06c357fb84798ae52a6690231e74e7b] Merge pull request #2438 from agurfinkel/issue_2430
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [166 219 212 229 200 208 216 224 221 205 226 229 229 211 239 227 240
+   236 247 218 204 226 234 228 239 232 238 220 223 222 241 236 221 219
+   237 225 234 223 242 203 208 202 206 253 224 262 234 198 240 242 199
+   253 241 241 223 214 218 216 207 207 211]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [166 208 253 264 206 225 214 201 230 271 200 265 235 238 213 229 217
+   228 276 244 235 222 251 255 199 223 220 290 232 241 215 280 224 218
+   231 214 246 212 212 231 233 233 210 199 212 228 205 230 242 234 244
+   234 219 219 249 218 226 252 236 207 248]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [166 217 231 255 254 252 267 274 223 210 231 228 265 278 298 207 244
+   256 245 282 270 253 245 238 305 220 263 271 274 221 259 230 272 257
+   285 256 259 227 240 273 243 259 287 216 212 261 251 291 235 260 219
+   269 270 232 231 245 244 236 230 253 244]]]
+stable
+ 
+ err: 
+done running mariposa 10.4
+Bisecting: 31 revisions left to test after this (roughly 5 steps)
+[90415a18d330d3a6066e589aaf20f1c2cc9435f6] fix build of test
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   4   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [231 221 235 232 275 243 215 260 240 208 236 210 242 231 333 234 222
+   274 209 224 214 244 227 276 251 312 248 283 250 285 270 236 215 237
+   230 226 297 252 261 237 264 253 262 259 239 289 294 221 224 216 230
+   275 258 253 225 237 258 259 247 258 216]]
+
+ [[  2   2   2   4   4   2   2   2   2   2   4   4   4   2   4   2   4
+     2   2   2   4   2   2   2   2   2   4   2   2   2   2   4   2   2
+     2   4   2   2   4   2   2   2   2   2   2   4   2   2   2   4   2
+     2   2   2   4   2   2   2   4   2   4]
+  [231 219 251 228 233 276 230 260 220 227 237 244 194 238 253 220 309
+   224 219 228 213 313 234 237 254 264 204 266 272 220 242 219 249 233
+   224 214 200 228 199 230 236 243 274 250 260 203 241 243 234 214 225
+   205 283 254 221 225 254 306 201 240 244]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [231 217 258 259 252 257 277 320 236 250 259 255 262 271 236 298 262
+   224 223 262 249 313 247 229 234 330 246 305 234 247 233 276 268 313
+   270 241 266 235 219 235 244 248 321 258 241 235 245 284 237 305 250
+   233 271 260 269 270 273 225 270 259 240]]]
+unstable
+ 
+ err: 
+done running mariposa 10.9
+Bisecting: 15 revisions left to test after this (roughly 4 steps)
+[3f032e85e0339ca73718db431d91849d1fe8c530] remove include of thread
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   4   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [231 224 281 215 232 222 256 215 256 235 268 245 258 240 335 246 260
+   204 221 222 253 250 273 281 281 271 250 264 270 303 227 212 216 260
+   286 295 244 250 232 272 280 269 267 260 258 254 229 291 223 240 246
+   235 242 223 255 226 234 278 239 245 219]]
+
+ [[  2   2   2   4   4   2   2   2   2   2   4   4   2   4   2   4   4
+     2   2   2   2   2   4   2   2   2   2   4   2   2   2   2   2   4
+     2   4   2   2   4   2   2   2   2   2   2   2   4   2   2   4   2
+     2   2   2   4   2   4   2   2   4   2]
+  [231 222 226 235 207 258 264 258 246 224 280 213 220 192 224 262 305
+   264 252 212 226 254 275 236 254 255 222 202 228 270 262 230 236 202
+   208 212 203 240 201 253 248 207 231 251 243 286 202 235 246 239 219
+   237 262 234 230 301 220 288 271 176 306]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [231 220 245 271 272 255 282 298 222 226 236 282 273 268 246 241 242
+   224 304 241 243 291 227 269 240 268 246 328 253 260 252 249 252 298
+   252 247 228 233 255 225 226 225 310 248 253 261 268 234 274 252 215
+   239 233 256 234 229 284 230 229 243 277]]]
+unstable
+ 
+ err: 
+done running mariposa 10.8
+Bisecting: 8 revisions left to test after this (roughly 3 steps)
+[2bd8d3b4852765cdd92abd7db6331fc5bac8fb5d] fixes for input4/5 #2416
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [165 206 213 264 202 203 236 225 229 216 243 262 220 210 246 235 209
+   263 243 219 291 246 232 233 208 224 233 218 241 238 238 256 222 220
+   203 212 220 297 230 231 253 220 214 260 232 253 282 200 203 212 244
+   201 225 281 257 227 214 204 208 205 210]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [165 222 285 209 215 289 215 227 215 223 202 215 235 239 240 234 222
+   227 247 255 227 223 254 237 224 218 219 238 231 203 287 215 217 233
+   222 213 251 208 272 242 229 208 265 197 209 243 231 223 242 226 262
+   220 236 216 218 231 252 226 231 237 257]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [165 215 270 238 258 260 250 328 234 225 241 274 272 334 281 228 234
+   208 226 223 242 294 257 231 214 311 281 272 252 223 261 259 245 250
+   239 243 246 223 233 278 255 233 282 237 242 228 239 248 301 310 242
+   224 259 279 230 227 236 234 249 250 248]]]
+stable
+ 
+ err: 
+done running mariposa 10.5
+Bisecting: 3 revisions left to test after this (roughly 2 steps)
+[04e0b767c300aec525493d4ab1a8dd5d8e3407f9] Fix sudoku Java example
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [164 207 259 224 202 211 216 229 216 205 238 242 237 198 229 239 216
+   233 234 240 205 240 234 235 205 226 221 243 264 251 222 235 220 208
+   256 217 207 248 205 207 231 225 244 206 218 288 228 224 212 219 216
+   218 274 219 237 226 233 259 233 201 210]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [164 210 286 249 213 231 215 203 235 219 252 265 201 243 210 246 215
+   242 247 267 227 210 238 236 218 240 235 220 212 264 266 226 209 219
+   227 279 245 237 211 249 275 209 252 250 241 222 205 228 238 247 240
+   257 219 216 213 251 231 226 233 228 236]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [164 244 256 237 238 291 267 280 209 227 241 258 251 268 286 219 235
+   215 241 226 224 274 260 231 219 312 294 289 252 226 257 259 215 222
+   240 277 242 248 232 246 251 245 269 215 256 241 240 301 244 239 275
+   222 260 233 241 224 245 232 231 231 266]]]
+stable
+ 
+ err: 
+done running mariposa 10.5
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[7f073a0585168821adbc8a4603a8e5964542a60f] fix #2452 fix #2451
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   4   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [234 222 240 218 250 266 241 224 212 206 212 238 318 244 252 251 241
+   237 237 212 238 222 286 275 239 282 249 263 238 252 305 218 219 237
+   260 245 235 230 262 232 300 250 249 276 274 286 295 220 224 230 223
+   235 241 256 244 268 242 232 261 217 239]]
+
+ [[  2   2   2   4   4   2   2   2   2   2   4   4   4   2   4   2   2
+     4   2   4   2   2   2   2   2   2   4   2   2   2   2   2   2   4
+     2   4   2   2   2   4   2   2   2   2   2   2   4   2   2   4   2
+     2   2   2   4   2   2   4   2   4   2]
+  [234 239 233 203 207 229 279 276 219 228 225 248 211 238 243 225 228
+   278 220 213 263 229 240 239 259 217 204 281 279 266 257 229 229 239
+   258 228 244 238 253 231 203 246 231 252 238 315 224 258 263 212 238
+   217 266 293 250 262 287 201 254 176 238]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [234 243 248 250 241 247 287 329 223 223 264 247 276 237 323 236 240
+   222 226 322 256 292 217 264 232 267 302 256 255 230 296 251 259 260
+   274 244 255 236 241 249 223 250 346 249 232 237 247 245 230 274 232
+   243 237 247 228 302 238 222 272 258 271]]]
+unstable
+ 
+ err: 
+done running mariposa 10.9
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[b7a27ca4bd25792208a77dae7e6023fce2a01291] Merge pull request #2454 from RichardBradley/java_sudoku_example_fix
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [164 229 221 260 197 237 217 227 226 216 213 257 205 231 238 249 209
+   205 232 216 264 211 230 244 235 218 232 219 242 222 248 254 225 256
+   242 212 253 204 205 210 248 209 200 241 198 242 219 232 197 252 223
+   222 247 230 212 224 219 208 212 195 199]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [164 232 223 291 204 238 276 206 273 240 235 215 264 224 211 241 261
+   245 229 225 246 235 228 222 199 252 222 219 232 202 229 228 268 220
+   210 213 227 211 209 231 255 249 218 197 209 222 207 234 220 272 242
+   230 218 211 269 216 257 227 217 220 225]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [164 217 271 274 278 277 268 262 212 227 234 231 268 269 250 231 239
+   227 266 251 235 272 248 246 241 293 290 290 282 228 275 264 256 250
+   314 244 280 284 240 238 263 247 272 240 230 237 235 265 253 250 304
+   257 269 224 229 291 284 226 245 224 285]]]
+stable
+ 
+ err: 
+done running mariposa 10.6
+7f073a0585168821adbc8a4603a8e5964542a60f is the first bad commit
+commit 7f073a0585168821adbc8a4603a8e5964542a60f
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Thu Aug 1 16:28:05 2019 +0800
+
+    fix #2452 fix #2451
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+:040000 040000 7edd2afa0135ed084fba01bbd127f03046eb08c3 3aeb20e3aec8be7291f9f3c9bd67a3892f3d7a01 M	src
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# good: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect good 6e637348826f0725ba8a01c455448023ca2889e4
+# bad: [892aa126605d8cf9a1696af1add6cb30435fb1e0] Fix for fp.rem. Fixes #2381.
+git bisect bad 892aa126605d8cf9a1696af1add6cb30435fb1e0
+# good: [2eea7709e06c357fb84798ae52a6690231e74e7b] Merge pull request #2438 from agurfinkel/issue_2430
+git bisect good 2eea7709e06c357fb84798ae52a6690231e74e7b
+# bad: [90415a18d330d3a6066e589aaf20f1c2cc9435f6] fix build of test
+git bisect bad 90415a18d330d3a6066e589aaf20f1c2cc9435f6
+# bad: [3f032e85e0339ca73718db431d91849d1fe8c530] remove include of thread
+git bisect bad 3f032e85e0339ca73718db431d91849d1fe8c530
+# good: [2bd8d3b4852765cdd92abd7db6331fc5bac8fb5d] fixes for input4/5 #2416
+git bisect good 2bd8d3b4852765cdd92abd7db6331fc5bac8fb5d
+# good: [04e0b767c300aec525493d4ab1a8dd5d8e3407f9] Fix sudoku Java example
+git bisect good 04e0b767c300aec525493d4ab1a8dd5d8e3407f9
+# bad: [7f073a0585168821adbc8a4603a8e5964542a60f] fix #2452 fix #2451
+git bisect bad 7f073a0585168821adbc8a4603a8e5964542a60f
+# good: [b7a27ca4bd25792208a77dae7e6023fce2a01291] Merge pull request #2454 from RichardBradley/java_sudoku_example_fix
+git bisect good b7a27ca4bd25792208a77dae7e6023fce2a01291
+# first bad commit: [7f073a0585168821adbc8a4603a8e5964542a60f] fix #2452 fix #2451

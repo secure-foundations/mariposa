@@ -1,0 +1,627 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     3     3
+       2     2     3     2     2     2     3     2     2     2     2
+       2     3     2     2     2     2     2     3     2     3     2
+       3     3     3     3     3     3]
+  [ 1016   799  2397  4524  3658  1161  1159  1233  4141  2939   453
+    2509  5518   482  5192  3265  2398  7474  4792   770  2227  1467
+    2666  4450  2782  1439   658  1661  4258  3044  3088 60020 60015
+    4297  8703 60035  3837  1727  3570 60018  3197  2815  1475  1261
+    4524 60037  3419  1941  2590  1914  1990 60016  5410 60018   722
+   60032 60018 60019 60020 60022 60033]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       3     2     2     2     3     2     3     2     3     2     2
+       3     2     2     3     3     3     3     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     3     3     3     3]
+  [ 1016   867  3866  1377  2021  4706  4096  2308   443  1177  3485
+    4790  1267  3411  4214   442  1954  1065  1397  5085  2173  5390
+   60018  3011  4151  2230 60035  4804 60025  2030 60014  2251   760
+   60037  3760  2240 60018 60029 60019 60033  1938  4279   504  3450
+    3932  1975   347  1385  2295  1926  1877  1535  6527  1901  2311
+    3024  5236 60032 60024 60021 60014]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     3     2     3     3     3
+       2     2     3     2     3     2     2     2     2     2     2
+       2     2     2     2     2     2     2     3     3     3     3
+       2     2     3     3     3     3]
+  [ 1016   412  1620  1692  2173  1736  2289  2387   892  1115  2002
+    2691  2595  3645  2510  2469  2083   338  4161  2254  4526  3693
+    3683  2579  2197  1925 39143  1492 60011  1560 60027 60030 60023
+    1709  1665 60034 10230 60035   986  1866  1291  2244   781 10907
+    7644  9740  1387  1719  1902  2464  6364 60038 60038 60022 60016
+    1698  4972 60016 60034 60028 60016]]]
+unstable
+ 
+ err: 
+done running mariposa 441.4
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     3     2     2     2     2     2     2     2     2     2
+       3     2     3     2     2     2     2     3     2     2     2
+       2     3     3     2     2     2     2     2     2     2     3
+       3     3     3     3     3     3]
+  [  811   750  2955  1967  6034  1169  2034  1643  1979  3899   437
+    3309  4530   447  1495  5502  3384  3264  2340  4949  1304  2785
+     484 60034  3088  3207   682  1278  3959  5029  3047  1854  1538
+   60032  8359 60017  2863  1127  2737  1269 60025  4411  2237  1837
+    2587 60037 60036  2418  2217  3787   458  5751   443   695 60034
+   60038 60034 60027 60017 60043 60037]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     3     3     2     3     2     2
+       3     2     2     2     3     3     2     3     2     3     2
+       3     2     2     2     2     3     2     2     3     2     2
+       2     2     2     2     3     2     3     2     2     2     3
+       3     3     3     3     3     3]
+  [  811   812  2406  1125  1782  3506  2667  3907   508  2468  3766
+    5556  1288  1821  2235  1400 60023 60035  4080 60034  3958  4520
+   60039  2214  3344  1108 60015 60025  2248 60036  6523 60040   743
+   60027  7701  3785  2190  3349 60031  2289  4329 60030  1073  3827
+     394  3081  1963   990 60020  1590 60027  2270  9016  3512 60036
+   60037 60015 60035 60015 60018 60037]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3     2     3     3     3     2
+       2     2     2     2     2     2     2     2     2     2     2
+       3     2     2     2     2     2     3     2     2     2     2
+       2     2     2     3     3     3]
+  [  811   405   803  1415  1433  1710  1999   802  2388  1197  1207
+    1038  2486  2410  5156  1692  4170   352  1405  2588  3900  2877
+    3067  1534  2313  3222 60012 60029  1797 60014 60027 60016  3324
+    4785  1430  1373  2332  2455  1592  1529  1621  2701  3901  3002
+   60035  8359   797  1449  1743  4886 60033  2142  2170  5573  1135
+    1308  3351  5539 60020 60022 60029]]]
+unstable
+ 
+ err: 
+done running mariposa 461.4
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     2     2
+       2     3     3     3     3     2     2     2     2     3     2
+       3     2     2     3     3     3     2     2     2     2     2
+       3     3     2     2     3     2     3     3     2     2     2
+       3     3     3     3     3     3]
+  [  250  2771  1585   855  3319   856   948  3702  1522   773  1302
+    3345   946  2862  2718  4037   885  1905  3037 60033  2346  4294
+    1388 60038 60037 60034 60033  2137  2441  1354  2127 60038  2533
+   60035  4849  1318 60041 60040 60017  3573  4409  3539  1537   497
+   60039 60037  2045   559 60035  1978 60031 60039  1409  1357  2688
+   60036 60033 60033 60036 60033 60029]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     3     2
+       2     3     2     3     2     2     2     3     3     3     3
+       2     2     2     2     2     3     2     3     2     2     3
+       3     3     3     2     2     2     2     2     2     3     3
+       3     3     3     3     3     3]
+  [  250  1312  1590  3073  3131  1257  1073  1386  2402  3064  5706
+     310  2607  2599  2112 12114  3501  7402  1560 60037 60022  2392
+    1128 60020  3103 60039   655  3278  1164 60036 60034 60035 60038
+    6936  1754  3484  1289  3603 60038  1995 60017  2725  2199 60039
+   60020 60036 60037  2961   985  1366  4549  3526  3997 60017 60040
+   60033 60037 60035 60035 60042 60018]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     3
+       3     3     3     2     3     2     2     3     2     2     3
+       2     2     2     2     3     3     3     2     2     2     2
+       2     3     2     2     3     2     2     3     3     2     3
+       3     2     3     2     2     2     2     2     3     3     2
+       2     3     3     3     3     3]
+  [  250   836  1738  1085  2528  2864  5919  3744  4715 25314 60032
+   60030 60030 60028  1986 60026  3567  4380 60035  3451  2594 60020
+    5862  1606  3373 40488 60037 60019 60032  2045  2429  1629  2278
+    4202 60018  1175  4294 60034   741  2246 60018 60033  2014 60019
+   60044  1954 60035   879  2152  5364   932  1682 60023 60017  5285
+    3561 60040 60034 60036 60019 60017]]]
+unstable
+ 
+ err: 
+done running mariposa 648.5
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[    3     2     2     2     2     2     2     2     2     2     3
+       2     2     3     2     2     2     3     2     2     2     2
+       2     2     3     3     2     3     2     2     2     3     2
+       2     2     3     3     2     3     3     2     2     2     2
+       2     2     3     3     3     2     3     2     2     2     3
+       2     3     3     3     3     3]
+  [60036  2525   302  2595   325  2989  1669  2104   363  3869 60037
+     337   337 60033  5083  2188   417 60034  1006   343  2938  8656
+    3335   394 60030 60033   394 60016  2044  2617  1120 60031  3982
+    1544  6110 60036 60024  3234 60035 60039   365   342   712  1134
+    3752  3487 60019 60033 60018  5440 60035  6731  6340  2977 60026
+    3066 60050 60018 60015 60029 60017]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     2
+       3     2     2     2     2     3     3     2     3     2     2
+       2     2     2     3     3     2     3     3     2     3     3
+       2     2     2     2     2     3     2     2     2     2     2
+       3     3     2     2     3     3     2     3     3     3     2
+       3     3     3     3     3     3]
+  [60036   740  2343  2318  5433  3293  3396   328  4136   753  2419
+   60030  3944   576   577 11281 60030 60032  2518 60029  2158  7451
+    1218  1248   861 60036 60032  1501 60034 60031  2663 60029 60027
+    3316  1149  1905  2985  2925 60029   886   358  5288  4556  4561
+   60035 60033  2958  1523 60033 60037  1392 60016 60032 60033 10862
+   60026 60036 60036 60018 60032 60023]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     3
+       3     3     3     3     2     3     2     2     2     2     2
+       2     2     2     2     2     3     2     2     2     2     3
+       3     3     3     2     2     2     2     2     3     3     2
+       3     2     2     3     3     3     2     2     3     3     2
+       2     3     3     3     3     3]
+  [60036   372  1237  1034  1565  2297  2991  3240  1616  8690 60026
+   60029 60015 60027 60027  1519 60012  3734   378   681  2938  3579
+    2993  2823  1181  2971   975 60030  2026  1112  2652  7746 60036
+   60030 60032 60031  1246  3512  1147  1889  1438 60018 60030 11506
+   60034  1160  2202 60021 60031 60022   671  5753 60034 60018  4283
+    2555 60033 60036 60035 60031 60031]]]
+unstable
+ 
+ err: 
+done running mariposa 732.1
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1039 2482 1339 2943 3135 1117 2436 1920 1891 1716 3076 1354 1720 2122
+   3053 4948 2320 1289 3425 1579 3200 6091 1022 1251 4865 1754 1369 6633
+   3170 2685 6715 1638 2255 3376 1628 1084 3324  797 5238 1653 1027 1239
+   2531 4546 2891 2866 1958 1919  866  883 1678 1490 1408 1692 3134 1225
+   2153 2639 2212 2667 4261]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1039  898  766 2026 1481 1855 1635 2846 3073 2431 1205 2410 1036  784
+   1088 3352 2589 2281 5046 1452 2009 3585 1412 1876 1147 1580 1085 3728
+    915 2526 2411 3636 2382 2749 2340 4633  863 1895 1991 1525 1570 1077
+   1962 1947 3279 4635 1663 4089 3972 1132 2144 1228 2375 1046 1315 2218
+   3089 3583 2594 4400 3448]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1039 2257 2714 3060 3179 3214 3300 3722 1691 1339 1851 2337 2138 2937
+   2648 3304 5333 2912 1773 6943 6236 1530 1884 2147 1465 3060 1867 2886
+   3117 2815 2224 1054 2992 2178 3142 3368 3724 2144 4310 1310 2534 4170
+   2730 2270 2406 2635 2120 1462 3688 3258 2594 1904 1057 2060 2430 5835
+   2568 1346 3454 2116 4092]]]
+stable
+ 
+ err: 
+done running mariposa 72.4
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1064 2461 1353 2964 3166 1117 2440 1931 1950 1699 3099 1360 1764 2150
+   3081 4976 2289 1283 3403 1588 3266 6056 1014 1240 4885 1798 1373 6559
+   3139 2696 6725 1645 2266 3426 3331 1583 1100  801 5278 1674 1044 1252
+   2516 2837 4577 2887 1966 1929  867 1656  898 1492 1407 1682 3176 1226
+   2227 2671 2204 2642 4238]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1064  919  776 2045 1431 1860 1657 2845 3023 2483 1233 2430 1075  795
+   1103 3305 2561 2297 4996 1438 2037 3571 1429 1860 1099 1613 1152 3744
+    939 2502 2390 2400 3686 2751 2361 4567 1977  883 1916 1539 1584 1073
+   1967 1968 3267 4616 1662 4034 4163 1142 2153 1241 1062 2389 1337 2220
+   3123 3563 2610 4362 3501]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [1064 2296 2668 3049 3200 3276 3265 3733 1720 1398 1854 2361 2088 2939
+   3283 2649 5424 2944 6836 1770 6264 1511 1919 2175 1471 2891 3119 1867
+   3101 2788 2212 1062 3004 2189 3084 3422 3665 2172 4363 1313 2547 4122
+   2710 2274 2397 2702 2120 1466 3696 3250 2600 1892 1062 2069 5773 2413
+   2532 3425 1378 2137 4077]]]
+stable
+ 
+ err: 
+done running mariposa 72.5
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[    2     2     2     3     3     3     2     3     2     2     2
+       2     2     3     2     3     3     3     3     3     3     3
+       2     2     2     2     3     3     2     2     2     3     3
+       2     3     2     2     2     2     3     2     2     2     3
+       2     3     3     2     3     2     3     2     2     3     2
+       3     3     3     3     3     3]
+  [  212  4497  1802 60016 60019 60031  2336 60031  1949  4670  3071
+    3602  1687 60027  3196 60015 60016 60020 60016 60021 60034 60021
+    1566  1443  2131  4973 60034 60036  5474  6059   312 60033 60028
+    2212 60032   362  3070  2042   377 60024  2314  3390  2092 60021
+    2644 60032 60019   782 60032  2674 60019  3599  1117 60024  2238
+   60031 60018 60031 60019 60024 60019]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3     2     2     2     3     3
+       3     3     3     2     2     2     2     3     3     3     3
+       3     3     3     2     2     3     2     2     2     3     2
+       3     3     3     3     3     3]
+  [  212   697  4197  4089  3759  3329  4860  7035  1634  2798  4528
+    1067  2947  2836  1391  2321  1866  3234  4215  1426  1535  4318
+    3205  3077  4101   297 60020 60027  3274  1720  2915 60033 60031
+   60029 60031 60033  7488  4129  1978  1272 60025 60024 60018 60035
+   60021 60034 60034  2203  2212 60035   476  2301  2273 60037  3033
+   60027 60031 60019 60022 60025 60034]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     3     3
+       2     3     2     2     2     3     3     3     2     2     2
+       2     2     2     2     3     3     3     3     2     3     3
+       2     2     3     2     2     3     2     2     2     2     2
+       2     3     3     3     3     3]
+  [  212   666   974  1994  2026  2451  2725  2478  3109  4377  2425
+    8158  5609  3071  2975  2835  2500  2188  4085 60029 60017 60031
+    1290 60031  6146  2759  2260 60031 60031 60033  1993  3823  3617
+    1371  5723  4595  3773 60023 60024 60036 60031  1640 60029 60032
+    3953  4186 60035 13332  6040 60038  1019  2116   523  4142  1887
+    1635 60021 60020 60031 60031 60018]]]
+unstable
+ 
+ err: 
+done running mariposa 702.0
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [ 766 1518 1951 2112  785 1839 1516  672  945 1077 1240 1379  662 1261
+   1387 1829 2876 3026 3494 1444 3632 1727  925 1496  927 1409 1987  584
+    996 2029 2527 4331 3144 2644  733 2289 2600 1217 1481 1512 1657 1526
+    754 1212 1907 2362 1339 2209 2797 1084 2384 4028 1789 3568 1501 1260
+   2670 2249 2470 7687 2433]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [ 766 1944 2544 1690 2905 2811 1636 2312 2635 1278 4491 2285 1324 1131
+   1748 1181  881 1227 2644 2267 1211  917 1792 2758 1337 2421 1107 2032
+   1512  993 1268 2652 2425 3019 3827 1877 1006 4157 2961 1208 2052 1274
+   1241 5644  879 2397 1621 2801 1101 2268 1486 1029  874 1563 4876  900
+   1699 1277 1951 2738 2125]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [ 766 1778 1848 1909 2519 2595 2799 3305 1403 1550 2286 1667 1981 1937
+   2704 2737 2268 1920 2966 3879 1249 2229 2411 1821 1897 1596 2014 2495
+   2454 1713 2885 1884 1926 1462 1392 2002 1828 2256 2026 2922 1096 1850
+   3384 3102 1445 1358 4156 1042 2473 2759 2899 1799 1681 1415 2191 1494
+   2751 3622 2624 2459 2490]]]
+stable
+ 
+ err: 
+done running mariposa 60.1
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1] na
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[    2     2     2     3     3     3     3     2     2     2     2
+       2     2     3     2     3     3     3     3     3     3     3
+       2     2     2     2     3     3     2     2     2     3     3
+       2     3     2     2     2     2     3     2     2     2     3
+       2     3     3     2     3     2     3     2     2     3     2
+       3     3     3     3     3     3]
+  [  215  4641  1818 60018 60020 60029 60032  2362  1937  4512  3059
+    3646  1702 60030  3136 60017 60016 60021 60016 60021 60034 60021
+    1562  1415  2154  4971 60034 60035  5531  6177   316 60033 60029
+    2213 60031   364  3123  2071   387 60024  2338  3368  2121 60021
+    2665 60033 60021   774 60032  2673 60019  3599  1108 60025  2202
+   60031 60018 60032 60021 60024 60019]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3     2     2     2     3     3
+       3     3     3     2     2     2     2     3     3     3     3
+       3     3     3     2     2     3     2     2     2     3     2
+       3     3     3     3     3     3]
+  [  215   694  4163  4135  3817  3373  4900  7026  1637  2824  4580
+    1086  2961  2828  1405  2346  1939  3239  4231  1527  1427  4434
+    3275  3107  4177   305 60022 60029  3222  1698  2865 60034 60031
+   60029 60032 60029  7446  4162  2157  1330 60024 60024 60017 60034
+   60023 60033 60033  2226  2260 60036   456  2252  2193 60037  2943
+   60029 60030 60020 60020 60024 60034]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     3     3
+       2     3     2     2     2     3     3     3     2     2     2
+       2     2     2     2     3     3     3     3     2     3     3
+       2     2     3     2     2     3     2     2     2     2     2
+       2     3     3     3     3     3]
+  [  215   670   953  1993  2022  2486  2759  2490  3131  4396  2420
+    8171  5639  3087  3000  2870  2530  2218  4127 60031 60016 60029
+    1301 60031  6174  2723  2212 60030 60031 60031  1979  3821  3624
+    1381  5574  4655  3761 60023 60024 60036 60032  1666 60031 60032
+    4010  4297 60035 13400  6002 60038  1054  2090   520  4139  1887
+    1610 60020 60020 60032 60031 60018]]]
+unstable
+ 
+ err: 
+done running mariposa 701.8
+Bisecting: 4 revisions left to test after this (roughly 2 steps)
+[1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [ 776 1514 1934 2083  795 1816 1525 1035  666  958 1257 1389  657 1269
+   1379 1803 2865 2993 3457 1408 3614 1747  922  924 1408 1508 1956  582
+    965 2056 2535 4291 3116 2644  741 2277 2550 1231 1474 1504 1626 1521
+    761 1207 1925 2280 1338 2204 2834 2383 1037 4013 1781 3560 1490 1264
+   2671 2484 2236 7728 2386]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [ 776 1861 2495 1719 2896 2811 1625 2298 2599 1320 4424 1132 1313 2281
+   1709 1201  861 1251 2685 2252 1217  916 1792 2766 1291 2451 2043 1115
+   1535  957 1255 2673 2480 2986 3806 1887 1018 4072 2951 1184 2000 1241
+   1233 5661  863 2408 1574 2812 1099 2253 1468 1015  871 1553  876 4969
+   1756 1269 1929 2701 2135]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [ 776 1739 1876 1915 2522 2653 2805 3291 1394 1508 2270 1708 1965 1885
+   2724 2751 2194 1897 2997 3892 1241 2220 2448 1796 1897 1593 2014 2443
+   2497 1708 2851 1866 1964 1384 1488 1968 1856 2263 2038 2917 1103 1798
+   3349 3099 1468 4036 1345 1031 2500 2751 2872 1758 1714 1404 1504 2166
+   2725 3637 2457 2662 2485]]]
+stable
+ 
+ err: 
+done running mariposa 60.0
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[    2     2     2     3     3     3     3     2     2     2     2
+       2     2     3     2     3     3     3     3     3     3     3
+       2     2     2     2     3     3     2     2     2     3     3
+       2     3     2     2     2     2     3     2     2     2     3
+       2     3     3     2     3     2     3     2     2     3     2
+       3     3     3     3     3     3]
+  [  216  4553  1812 60017 60021 60030 60031  2372  4492  1941  3106
+    3597  1721 60031  3192 60017 60018 60020 60016 60022 60034 60022
+    1564  1445  2163  5071 60036 60036  5466  6303   354 60031 60028
+    2197 60032   366  3100  2069   383 60024  2332  3398  2127 60022
+    2596 60032 60019   801 60033  2654 60018  3599  1117 60025  2225
+   60033 60020 60032 60020 60023 60019]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     3     3     2     2     2     3     3
+       3     3     3     2     2     2     2     3     3     3     3
+       3     3     3     2     2     3     2     2     2     3     2
+       3     3     3     3     3     3]
+  [  216   685  4279  4134  3726  3338  4938  7049  1659  2813  4541
+    1079  2968  2869  1404  2345  1879  3296  4254  1512  1450  4365
+    3250  3103  4183   306 60021 60027  3275  1722  2902 60033 60031
+   60030 60031 60030  7486  4049  2154  1309 60026 60022 60018 60034
+   60023 60033 60034  2171  2214 60034   489  2299  2222 60037  2910
+   60028 60032 60019 60020 60025 60034]]
+
+ [[    2     2     2     2     2     2     2     2     2     2     2
+       2     2     2     2     2     2     2     2     3     3     3
+       2     3     2     2     2     3     3     3     2     2     2
+       2     2     2     2     3     3     3     3     2     3     3
+       2     2     3     2     2     3     2     2     2     2     2
+       2     3     3     3     3     3]
+  [  216   671   949  1960  2022  2495  2788  2523  3126  4380  2403
+    8204  5662  3098  2981  2859  2491  2227  4064 60030 60017 60030
+    1299 60030  6121  2783  2232 60031 60030 60033  1973  3816  3695
+    1407  5552  4708  3809 60023 60023 60036 60030  1668 60031 60032
+    3997  4241 60035 13297  5969 60037  1017  2090   520  4158  1870
+    1637 60019 60020 60030 60030 60018]]]
+unstable
+ 
+ err: 
+done running mariposa 702.1
+Bisecting: 0 revisions left to test after this (roughly 1 step)
+[7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 0 
+ out: [[[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [ 766 1539 1909  794 2135 1799 1505  938 1066  663 1235 1333  675 1289
+   1370 1786 2947 2958 3460 1386 3720 1759  920 1481 1383  948 1929  581
+    986 2023 2507 3089 2661 4373  745 2572 2280 1203 1460 1545 1652 1512
+    743 1919 1190 2297 1316 2202 2786 1059 2366 4012 1766 3589 1502 1258
+   2739 2197 2485 7742 2356]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [ 766 1886 2499 1691 2888 2857 1622 2284 2616 1296 4450 2226 1142 1311
+   1761 1185  847 1235 2638 2285 1181  922 1757 2675 1313 2030 2546 1102
+   1501  956 1245 2651 2506 3823 2987 1886 1019 4105 1193 2990 1240 2019
+   1241 5583  866 2439 1579 2799 1094 2236 1019 1511  897 1532 4955  872
+   1719 1280 1961 2733 2115]]
+
+ [[   2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2    2    2    2    2    2    2    2    2    2
+      2    2    2    2    2]
+  [ 766 1746 1869 1907 2530 2645 2805 3210 1390 1520 2308 1704 1993 1850
+   2686 2736 2265 1930 2958 2198 3888 1230 2454 1787 1879 1610 1982 2467
+   2458 1666 2877 1878 1942 1433 1488 1963 1830 2252 2015 2885 1090 1786
+   3416 3142 1477 4033 1377 1033 2515 2727 2883 1773 1708 1420 2184 1497
+   2738 3595 2620 2452 2479]]]
+stable
+ 
+ err: 
+done running mariposa 59.9
+5177cc4a9a58df192c6a844ca13abf7e7cd3be15 is the first bad commit
+commit 5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Fri Jun 21 09:08:20 2019 +0200
+
+    change lt
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+:040000 040000 bba0b3898c697bc6efeb66752253b42641d4a606 dc4029a365361041d58c5e9f581973ad21a69ecd M	src
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# good: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect good 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# bad: [89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1] na
+git bisect bad 89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1
+# good: [1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+git bisect good 1827f98851e1866187abe743afd2d80bc786412f
+# bad: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+git bisect bad 5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+# good: [7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+git bisect good 7c9d2e0d75757ed6aa535f72c7dec70d5a527fed
+# first bad commit: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt

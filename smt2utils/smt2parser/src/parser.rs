@@ -290,6 +290,17 @@ pomelo! {
             return Err(extra.0.parsing_error(extra.1.clone(), format!("wrong number of types in `declare-datatypes`: {} instead of {}", datatypes.len(), sorts.len())));
         }
     }
+    //   ( declare-datatypes () ((  ⟨symbol⟩ ⟨constructor_dec⟩+ )) )
+    command ::= LeftParen DeclareDatatypes LeftParen RightParen LeftParen LeftParen fresh_symbol(s) constructor_decs(d) RightParen RightParen RightParen
+    {
+        extra.0.visit_declare_datatype(s, visitors::DatatypeDec  {parameters: Vec::new(), constructors: d} )?
+    }
+    //   ( declare-datatypes () () )
+    command ::= LeftParen DeclareDatatypes LeftParen RightParen LeftParen RightParen RightParen
+    {
+        extra.0.visit_declare_datatypes(Vec::new())?
+    }
+
     //   ( declare-fun ⟨symbol⟩ ( ⟨sort⟩∗ ) ⟨sort⟩ )
     command ::= LeftParen DeclareFun fresh_symbol(x) LeftParen sorts?(xs) RightParen sort(r) RightParen
     {

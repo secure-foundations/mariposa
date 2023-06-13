@@ -1,0 +1,515 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 65  79  80  79  79  79  79  79  78  78  79  80  78  76  76  75  75
+    77  75  77  76  76  75  75  76  77  76  76  75  76  73  77  78  76
+    75  76  75  75  75  76  76  75  76  75  75  76  76  76  75  76  75
+    76  77  76  76  75  75  73  73  73  72]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     2   4   4   2   4   4   4   4   4   4   2   4   4   4   4   4   4
+     4   4   4   2   2   4   2   4   4   4   4   4   4   4   4   2   4
+     2   4   4   4   4   4   2   4   2   2]
+  [ 65  69  71 111  70  70  96 114  77  71 103  71  92  82  72  75  76
+   325  74 103 308  74  84 119  75  75  74 286  73  74  89 100  75  72
+    77  78 119 292 350  79 345  76  77  84  72  87  75  94  77 570  73
+   290  75  74  72  75  75 324  77 322 629]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 65  79  80  78  80  80  80  78  80  79  80  80  79  80  80  80  79
+    79  80  79  80  80  76  77  77  78  78  75  77  77  77  77  77  77
+    78  78  77  76  77  77  78  76  76  77  77  78  76  77  75  75  78
+    77  77  77  77  75  77  75  76  75  76]]]
+unstable
+ 
+ err: 
+done running mariposa 5.8
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.2
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 64  81  80  81  80  80  81  81  78  80  80  79  80  78  77  77  78
+    79  77  78  78  76  79  77  78  78  80  77  79  78  78  77  78  77
+    77  77  78  77  77  78  78  77  78  78  77  78  80  80  77  78  78
+    77  77  80  79  79  76  75  75  75  74]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   2
+     4   4   4   2   4   4   4   4   4   4   2   4   4   4   4   4   4
+     4   4   2   4   2   2   4   4   4   4   4   4   4   4   4   2   4
+     2   4   4   4   4   4   2   4   2   2]
+  [ 64  70  71 111  73 100  74 116  78 104  74  74  94  84  74  78 318
+    76  75 103 304  74  85  75 120  75  75 287  73  73  91 101  75  72
+    79 119 295  78 349 344  81  78  76  85  72  86  79  78  98 572  74
+   285  76  75  75  74  78 332  78 327 626]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 64  77  78  79  78  79  79  80  77  77  80  77  77  78  78  77  78
+    80  78  78  78  79  77  77  78  78  79  79  77  77  77  80  78  76
+    77  77  76  76  80  77  77  77  79  76  76  79  76  78  77  78  77
+    76  78  78  79  78  77  75  76  78  76]]]
+unstable
+ 
+ err: 
+done running mariposa 5.8
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 64  80  80  77  77  79  78  78  77  77  76  76  77  77  78  74  77
+    76  76  77  77  75  76  76  75  74  75  75  76  75  76  75  78  79
+    76  77  76  76  76  76  78  76  77  77  76  76  78  77  76  77  77
+    76  76  76  76  77  74  76  74  74  73]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     2   4   4   2   4   4   4   4   4   4   2   4   4   4   4   4   4
+     4   4   4   2   2   2   4   4   4   4   4   4   4   4   4   2   4
+     4   2   4   4   4   4   2   4   2   2]
+  [ 64  70  72 111  99  72  74 114  78 102  73  72  92  81  72  75  75
+   318  73 103 310  71  82  74 117  75  75 284  73  73  88 100  76  71
+   120  79  78 296 358 329  77  75  77  82  71  85  74  75  97 577  72
+    74 283  73  75  75  76 327  77 343 321]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 64  76  77  77  76  76  78  78  76  77  78  78  77  78  76  76  79
+    78  79  76  78  76  75  78  77  78  77  77  76  75  78  77  78  78
+    77  77  75  77  77  77  78  76  77  76  78  79  78  78  78  77  77
+    78  77  77  76  78  77  73  74  75  75]]]
+unstable
+ 
+ err: 
+done running mariposa 5.7
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 68  83  83  83  82  82  83  81  81  81  81  79  80  80  79  78  80
+    80  79  78  82  81  81  81  80  79  79  81  79  79  80  79  80  79
+    81  80  80  80  80  79  79  81  79  79  80  80  80  81  81  79  80
+    79  80  81  82  80  80  80  79  80  73]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   2   4   4   4   4   4   2
+     4   4   4   4   4   4   4   2   4   2   4   4   2   2   4   4   4
+     4   4   4   4   4   4   4   4   4   4   2   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   2]
+  [ 68  71  84 113  73  73  82  73 118 117 314  97 114  74  72  74 341
+    76  74  75  73  74  77  76 302  75 376  85  86 338 425  72  81  73
+    85 103  74  73 109 116  78 108  75  99 323  74 123 114  75  74  82
+    96 110  74  75 106  75  73  84  84 474]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 68  81  81  81  81  81  81  82  81  81  81  82  82  81  82  82  81
+    81  82  82  81  82  83  82  81  83  82  82  82  82  82  82  82  82
+    82  81  81  83  82  84  84  82  81  81  83  82  82  83  81  81  80
+    82  81  82  82  82  82  79  79  79  79]]]
+unstable
+ 
+ err: 
+done running mariposa 5.8
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [330 463 462 461 448 466 448 458 450 467 452 461 454 445 467 471 476
+   477 457 469 508 456 457 454 463 448 468 460 456 456 451 465 461 467
+   453 444 460 448 464 458 461 465 466 447 462 463 461 458 453 462 463
+   448 461 461 454 458 411 400 412 417 406]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [330 439 438 448 445 447 451 453 446 445 446 446 445 450 447 447 447
+   447 447 457 450 450 447 447 444 446 447 453 453 443 454 443 446 455
+   450 459 446 449 444 448 450 449 459 442 449 445 447 447 459 450 454
+   446 445 447 450 449 453 451 453 444 452]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [330 457 459 456 452 453 456 460 457 451 461 460 455 455 454 458 457
+   454 453 460 466 458 454 449 451 451 459 449 458 453 452 452 453 458
+   456 459 459 454 455 456 454 456 451 456 451 451 463 453 453 450 451
+   455 458 459 462 454 452 445 446 445 448]]]
+stable
+ 
+ err: 
+done running mariposa 15.3
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [338 469 461 466 449 470 454 461 447 452 468 463 451 455 456 462 466
+   466 453 458 467 457 463 466 460 457 465 467 463 463 467 460 460 468
+   461 447 461 455 469 463 469 464 463 448 462 452 465 474 465 460 462
+   450 457 471 465 466 406 412 412 408 410]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [338 450 439 444 450 449 449 454 439 446 449 457 450 456 453 445 443
+   446 450 449 460 455 444 444 445 452 456 450 460 449 442 443 450 448
+   453 452 446 445 453 445 450 454 456 446 448 454 445 450 449 456 447
+   452 449 446 461 451 457 448 448 450 455]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [338 454 454 453 453 465 461 461 453 458 455 453 457 454 460 453 458
+   453 460 460 458 457 450 451 462 454 458 452 453 454 455 454 458 455
+   455 461 456 456 457 456 455 455 459 459 451 457 457 460 457 455 450
+   457 463 455 453 460 456 450 443 450 446]]]
+stable
+ 
+ err: 
+done running mariposa 15.4
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 67  80  81  81  81  79  81  80  81  80  81  82  79  81  80  81  79
+    80  79  79  80  80  79  81  79  80  79  80  81  80  81  79  79  78
+    79  80  80  78  79  78  80  79  80  80  79  80  79  78  79  80  80
+    79  80  80  79  79  79  79  79  74  72]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   2   4   4   4   4
+     4   2   4   4   4   4   4   2   4   4   4   2   2   2   4   4   4
+     4   4   4   4   4   4   4   4   4   4   2   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   2]
+  [ 67  73  89 118  73  89  75  76 133 133 105 123 373  76  74  76  77
+    77 406  78  77  77  77  79 373  82  83  84 476 414 561  77  83  73
+   113  74  88  76 112 117  75 114  78 105 353  78 126 119  74  76  82
+   100 114  73  75  76 118  78  84  83 552]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 67  79  79  79  80  80  80  82  78  80  82  80  79  78  79  80  78
+    80  79  79  78  80  78  79  81  79  79  79  80  79  79  81  77  80
+    79  80  80  80  81  80  80  80  81  78  79  81  80  81  81  81  78
+    77  80  80  79  81  78  78  79  77  80]]]
+unstable
+ 
+ err: 
+done running mariposa 5.8
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [320 404 404 410 402 425 405 394 407 406 410 408 403 404 393 411 403
+   401 400 431 427 398 398 403 436 406 425 428 419 409 405 402 403 428
+   406 397 400 406 401 421 400 404 391 397 403 401 436 406 421 386 397
+   400 403 407 422 402 367 356 347 351 351]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [320 352 353 384 346 352 395 372 359 382 376 372 379 401 390 392 372
+   381 333 352 351 389 358 364 346 369 368 397 359 374 391 383 382 347
+   393 390 374 380 371 345 357 400 402 400 364 393 352 382 393 348 361
+   393 381 358 359 379 358 381 375 387 398]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [320 437 443 436 434 439 443 444 432 437 446 436 435 440 437 429 436
+   435 440 434 435 440 430 433 434 437 436 440 434 438 432 433 442 433
+   441 436 441 433 437 438 434 431 438 440 439 433 435 439 434 435 429
+   439 435 436 440 434 435 417 420 422 427]]]
+stable
+ 
+ err: 
+done running mariposa 14.0
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1] na
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 67  80  81  81  80  79  79  79  80  80  81  80  79  79  80  79  81
+    79  78  76  79  79  80  81  80  77  78  78  79  79  80  79  77  78
+    78  78  78  79  79  77  79  79  79  79  78  80  79  79  78  78  79
+    78  79  77  78  78  78  77  76  74  73]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   2   4   4   4   4
+     4   2   4   4   4   4   4   2   4   4   4   2   2   4   2   4   4
+     4   4   4   4   4   4   4   4   4   4   4   2   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   2]
+  [ 67  73  94 119  77  77  89  73 129 135 106 124 375  76  74  78  77
+    78 397  78  80  75  75  76 374  83  84  84 416 470  78 570  85  74
+   112  73  89  75 112  74 117 112 104  76  78 360 120 127  75  76  81
+    99 113  75  75  76 117  78  86  81 561]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 67  79  79  79  79  81  79  80  79  79  80  80  80  80  80  80  80
+    80  80  79  80  80  79  79  81  79  80  80  81  79  79  81  80  79
+    80  80  80  79  79  79  80  80  80  81  79  79  78  80  80  81  81
+    79  80  79  79  79  80  78  79  79  77]]]
+unstable
+ 
+ err: 
+done running mariposa 5.8
+Bisecting: 4 revisions left to test after this (roughly 2 steps)
+[1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [314 402 406 406 405 413 425 411 406 408 406 400 404 406 405 407 418
+   429 405 408 423 403 408 430 406 406 436 427 404 409 437 407 409 400
+   427 408 405 405 412 427 402 403 408 405 428 408 412 412 426 403 401
+   413 405 405 409 427 364 359 355 358 360]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [314 348 346 390 353 348 364 396 369 376 372 382 378 395 382 398 372
+   380 338 347 349 390 361 360 345 374 366 397 390 355 375 386 386 391
+   351 396 375 383 364 353 392 361 404 401 355 393 360 382 395 363 387
+   387 353 363 359 373 361 384 381 385 399]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [314 436 438 435 435 445 440 440 431 435 436 437 433 440 438 436 439
+   435 434 437 443 439 436 433 435 435 431 439 441 432 433 432 433 443
+   440 434 435 433 431 436 432 440 441 434 435 433 436 435 436 439 431
+   436 430 434 432 434 440 421 425 425 421]]]
+stable
+ 
+ err: 
+done running mariposa 14.0
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.1
+running mariposa
+res: 1 
+ out: [[[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 67  81  81  81  80  80  81  79  80  80  81  80  80  81  79  79  80
+    79  80  78  81  78  78  79  78  82  79  79  79  79  80  79  79  80
+    80  79  79  79  79  80  78  79  80  80  79  79  79  78  79  79  80
+    78  78  79  78  79  81  79  78  74  73]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   2   4   4   4   4
+     4   2   4   4   4   4   4   2   4   4   4   2   2   2   4   4   4
+     4   4   4   4   4   4   4   4   4   4   2   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   2]
+  [ 67  70  89 119  74  74  88  75 131 132 105 120 384  78  75  77  75
+    75 399  79  79  75  78  78 375  81  86  84 474 411 562  76  83  74
+   111  76  91  75 113 120  75  76 106 117 354  78 130 121  74  77  82
+   101 114  75  75  76 117  78  86  80 554]]
+
+ [[  4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4   4
+     4   4   4   4   4   4   4   4   4   4]
+  [ 67  79  79  80  81  80  81  81  82  82  79  80  80  80  81  81  80
+    80  80  80  81  81  80  80  81  80  80  81  79  80  80  79  80  81
+    81  81  80  80  80  79  80  80  80  80  79  79  80  80  79  80  80
+    79  79  80  80  80  81  79  76  76  80]]]
+unstable
+ 
+ err: 
+done running mariposa 5.8
+Bisecting: 0 revisions left to test after this (roughly 1 step)
+[7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/fs_vwasm_z3_clean--compiler-sandbox-queries-Compiler.Sandbox-264.txt
+building z3
+done building z3 3.0
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [314 404 407 413 404 402 427 398 401 406 411 406 406 404 397 401 404
+   406 404 436 428 391 406 427 406 409 429 423 414 406 406 404 405 401
+   423 401 412 408 410 430 407 407 391 399 433 405 410 402 423 390 396
+   405 403 408 421 405 361 356 351 346 354]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [314 355 353 386 350 365 357 399 368 382 378 374 381 399 392 377 395
+   384 337 352 351 396 359 364 349 371 396 374 361 379 398 388 385 357
+   394 375 393 385 369 347 365 393 363 411 401 390 354 379 362 403 356
+   381 389 354 370 359 363 384 379 383 395]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [314 437 437 437 442 434 440 440 434 440 435 440 440 436 443 433 439
+   440 448 437 439 434 438 444 440 437 446 437 439 434 438 435 433 440
+   441 436 435 435 437 436 435 440 442 434 438 445 437 437 435 439 432
+   436 435 438 436 437 442 423 423 423 429]]]
+stable
+ 
+ err: 
+done running mariposa 14.1
+5177cc4a9a58df192c6a844ca13abf7e7cd3be15 is the first bad commit
+commit 5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Fri Jun 21 09:08:20 2019 +0200
+
+    change lt
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+ src/ast/ast_lt.h                   | 4 ++++
+ src/ast/rewriter/bool_rewriter.cpp | 6 ++++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# good: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect good 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# bad: [89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1] na
+git bisect bad 89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1
+# good: [1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+git bisect good 1827f98851e1866187abe743afd2d80bc786412f
+# bad: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+git bisect bad 5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+# good: [7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+git bisect good 7c9d2e0d75757ed6aa535f72c7dec70d5a527fed
+# first bad commit: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt

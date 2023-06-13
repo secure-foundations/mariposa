@@ -34,4 +34,3 @@ class RCode(Enum):
             return "error"
         else:
             assert False
-

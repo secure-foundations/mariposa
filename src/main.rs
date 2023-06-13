@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Write, stdout};
 use rand::seq::SliceRandom;
@@ -11,7 +11,11 @@ use std::io::BufRead;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
-fn parse_commands_from_file(file_path: String) -> Vec<concrete::Command> {
+fn parse_commands_from_file(file_path: &String) -> Vec<concrete::Command> {
+    if std::path::Path::new(file_path).exists() == false {
+        panic!("[ERROR] input {} does not exist", file_path);
+    }
+
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
 
@@ -133,7 +137,7 @@ fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
     }
 }
 
-fn split_commands(commands: &mut Vec<concrete::Command>, in_file_path: String) {
+fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String) -> usize {
     // remove target commands
     remove_target_cmds(commands);
     let mut depth = 0;
@@ -141,14 +145,9 @@ fn split_commands(commands: &mut Vec<concrete::Command>, in_file_path: String) {
     stack.push(Vec::new());
     let mut splits = 0;
 
-    let stripsmt2 = in_file_path.strip_suffix(".smt2");
-    let out_file_name;
-    if stripsmt2.is_none() {
-        out_file_name = in_file_path.clone();
-    }
-    else {
-        out_file_name = stripsmt2.unwrap().to_string();
-    }
+    let out_file_pre = out_file_path.strip_suffix(".smt2").unwrap();
+    // print!("{}", &out_file_pre);
+
     for command in commands {
         if let concrete::Command::Push{ level:_ } = command {
             depth += 1;
@@ -162,18 +161,14 @@ fn split_commands(commands: &mut Vec<concrete::Command>, in_file_path: String) {
         if let concrete::Command::CheckSat = command {
             splits += 1;
             // write out to file
-            let out_file_path = format!("{}-{}.smt2", out_file_name, splits);
-            let mut manager = Manager::new(Some(out_file_path.clone()), 0);
+            let out_file_name = format!("{}.{}.smt2", &out_file_pre, splits);
+            let mut manager = Manager::new(Some(out_file_name), 0);
             manager.dump_non_info_commands(&stack.concat());
         }
     }
-    println!("Successfully split into {} files:", splits);
-    let mut i = 0;
-    while i < splits {
-        println!("\t{}-{}.smt2", out_file_name, i+1);
-        i += 1;
-    }
+    return splits;
 }
+
 
 fn name_assert(command: &mut concrete::Command, ct: usize) {
     let concrete::Command::Assert { term } = command else { return; };
@@ -284,7 +279,6 @@ fn clean_names(commands: &mut Vec<concrete::Command>) {
     commands.iter_mut().for_each(|x| clean_name(x));
 }
 
-
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -319,104 +313,71 @@ impl Manager {
             }
         }
     }
-
-    fn dump_model_test(&mut self, model: &Vec<concrete::Command>, query: &Vec<concrete::Command>) {    
-        let mut defined:HashMap<String, &concrete::Command> = HashMap::new();
-
-        for command in model {
-            if let concrete::Command::DefineFun { sig,..} = command {
-                defined.insert(sig.name.0.clone(), command);
-            } else {
-                // panic!("unhandled command in model {}", command);
-            }
-        }
-
-        for command in query {
-            if let concrete::Command::DeclareFun { symbol,..} = command {
-                let name = &symbol.0;
-                if defined.contains_key(name) {
-                    let command = defined.get(name).unwrap();
-                    writeln!(self.writer, "{}", command).unwrap();
-                }
-            } else if let concrete::Command::SetInfo {..} = command {
-                // skip
-            } else {
-                writeln!(self.writer, "{}", command).unwrap();
-            }
-        }
-    }
 }
 
 fn main() {
     let (args, _rest) = opts! {
-        synopsis "mariposa is a smtlib2 query mutator";
+        synopsis "mariposa query mutator";
         opt in_file_path:String,
             desc: "input file path";
-        opt model_file_path:Option<String>,
-            desc: "model file with the query";
-        opt perturbation:String=String::from("none"),
+        opt mutation:String=String::from("none"),
             desc: "mutation to perform";
-        opt quiet:bool=false,
-            desc: "perturbation without printing";
         opt out_file_path:Option<String>,
             desc: "output file path";
         opt seed:u64=DEFAULT_SEED,
         desc: "seed for randomness";
-        opt split:bool=false,
+        opt chop:bool=false,
             desc: "split the input file into multiple files based on check-sats";
         opt core_file:Option<String>,
             desc: "file containing unsat cores";
     }.parse_or_exit();
 
-    let infilepath = args.in_file_path.clone();
-    let mut commands :Vec<concrete::Command> = parse_commands_from_file(args.in_file_path);
+    let in_file_path = args.in_file_path;
+    let mut commands :Vec<concrete::Command> = parse_commands_from_file(&in_file_path);
 
-    if let Some(file_path) = args.model_file_path {
-        let model = parse_commands_from_file(file_path);
-        let mut manager = Manager::new(args.out_file_path, args.seed);
-        manager.dump_model_test(&model, &commands);
-    } else {
-        let mut manager = Manager::new(args.out_file_path, args.seed);
-
-        if args.split && args.perturbation != "none" {
-            panic!("split and perturbation are incompatible");
-        } else if args.split {
-            split_commands(&mut commands, infilepath);
-            return;
-        } 
-            
-        if args.perturbation == "none"{
-//          return; 
+    if args.chop {
+        if args.mutation != "none" {
+            panic!("[ERROR] chop and mutate are incompatible");
         }
-
-        if args.perturbation  == "shuffle" {
-            shuffle_asserts(&mut commands, manager.seed);
-        } else if args.perturbation == "rename" {
-            commands = normalize_commands(commands, manager.seed);
-        } else if args.perturbation == "sseed" {
-            if manager.seed != DEFAULT_SEED {
-                let solver_seed = manager.seed as u32;
-                manager.dump(&format!("(set-option :random-seed {solver_seed})\n"));
-            };
-        } else if args.perturbation == "rseed" {
-            let smt_seed = manager.seed as u32;
-            let sat_seed = (manager.seed >> 32) as u32;
-            manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
-            manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
-        } else if args.perturbation  == "lower_shuffle" {
-            commands = lower_shuffle_asserts(commands, manager.seed);
-        } else if args.perturbation == "unsat-core" {
-            name_asserts(&mut commands);
-        } else if args.perturbation == "minimize-query" {
-            commands = parse_core_from_file(commands, args.core_file.unwrap());
-            // minimize-query will now also clean names by default
-            // cleans names that were put in by mariposa
-            clean_names(&mut commands);
-            // remove produce unsat core at top and get-unsat-core from the bottom
-            commands = commands[1..commands.len()-1].to_vec();
-        } else if args.perturbation == "clean-names" {
-            clean_names(&mut commands);
+        if (&args.out_file_path).is_none() {
+            panic!("[ERROR] chop requires an output file path");
         }
-        manager.dump_non_info_commands(&commands);
+        let out_file_path = args.out_file_path.unwrap();
+        let splits = split_commands(&mut commands, &out_file_path);
+        println!("[INFO] {} is split into {} file(s)", &in_file_path, splits);
+        return;
     }
+
+    let mut manager = Manager::new(args.out_file_path, args.seed);
+
+    if args.mutation  == "shuffle" {
+        shuffle_asserts(&mut commands, manager.seed);
+    } else if args.mutation == "rename" {
+        commands = normalize_commands(commands, manager.seed);
+    } else if args.mutation == "sseed" {
+        if manager.seed != DEFAULT_SEED {
+            let solver_seed = manager.seed as u32;
+            manager.dump(&format!("(set-option :random-seed {solver_seed})\n"));
+        };
+    } else if args.mutation == "reseed" {
+        let smt_seed = manager.seed as u32;
+        let sat_seed = (manager.seed >> 32) as u32;
+        manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
+        manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
+    } else if args.mutation  == "lower_shuffle" {
+        commands = lower_shuffle_asserts(commands, manager.seed);
+    } else if args.mutation == "unsat-core" {
+            name_asserts(&mut commands);
+    } else if args.mutation == "minimize-query" {
+        commands = parse_core_from_file(commands, args.core_file.unwrap());
+        // minimize-query will now also clean names by default
+        // cleans names that were put in by mariposa
+        clean_names(&mut commands);
+        // remove produce unsat core at top and get-unsat-core from the bottom
+        commands = commands[1..commands.len()-1].to_vec();
+    } else if args.mutation == "clean-names" {
+        clean_names(&mut commands);
+    }
+
+    manager.dump_non_info_commands(&commands);
 }

@@ -1,0 +1,597 @@
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+Bisecting: 1453 revisions left to test after this (roughly 11 steps)
+[8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[    3     2     3     3     3     3     3     3     3     3     3
+       3     2     3     3     3     2     3     3     3     3     3
+       3     3     3     3     3     3     2     3     2     2     3
+       2     3     3     3     3     3     3     2     3     2     2
+       3     3     3     2     3     3     3     2     2     3     3
+       3     3     3     3     3     3]
+  [60010   649 60019 60015 60014 60016 60017 60024 60028 60017 60017
+   60015   598 60015 60016 60018   601 60014 60019 60018 60014 60015
+   60016 60014 60014 60015 60018 60014   590 60014   605   614 60015
+     590 60017 60015 60015 60016 60016 60015   592 60014   581   664
+   60015 60014 60016   656 60020 60014 60016  1412   568 60024 60018
+   60027 60021 60017 60016 60014 60013]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     3
+       3     3     3     3     3     3     2     2     3     3     3
+       2     2     4     2     2     2     2     3     3     2     3
+       3     3     3     2     2     3     3     3     3     3     2
+       3     2     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3]
+  [60010   602   622   622   629   711   548   593   575   577 60017
+   60022 60022 60013 60013 60013 60016   611   647 60015 60013 60013
+     679   707   745   709   681   691   752 60018 60015   608 60021
+   60023 60014 60014   659   712 60024 60015 60015 60015 60014   586
+   60016   618 60024 60023 60015 60017 60015 60016 60013 60015 60015
+   60018 60014 60018 60015 60016 60018]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     2
+       2     3     3     3     3     3     2     2     2     2     2
+       3     2     2     2     2     2     2     3     2     2     3
+       3     2     2     2     3     3     2     2     3     3     3
+       3     3     2     2     3     3     2     3     3     2     2
+       2     3     3     3     3     3]
+  [60010   547   546   563   613   543   674   735   741   745   798
+     812 60014 60027 60012 60013 60017   650   644   715   771   611
+   60013   651   634   747   720   810   798 60013   824   817 60017
+   60015   716   815   689 60014 60012   658   672 60014 60018 60022
+   60016 60018   789   854 60019 60013   741 60015 60013   699   668
+     703 60016 60021 60013 60015 60020]]]
+unstable
+ 
+ err: 
+done running mariposa 1038.3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+Bisecting: 1254 revisions left to test after this (roughly 10 steps)
+[f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.5
+running mariposa
+res: 1 
+ out: [[[    3     2     2     2     2     2     2     3     2     3     3
+       3     2     3     2     3     2     3     3     2     2     3
+       3     3     3     2     3     3     2     3     3     2     3
+       3     3     3     3     3     3     3     3     3     3     3
+       3     3     3     3     3     3     3     2     3     2     2
+       3     3     3     2     3     3]
+  [60012   628   617   598   588   541   566 60017   540 60016 60017
+   60026   623 60018   606 60017   575 60015 60014   553   637 60018
+   60017 60015 60016   592 60017 60014   598 60016 60024   629 60018
+   60028 60016 60015 60014 60024 60027 60016 60019 60016 60021 60017
+   60016 60015 60019 60017 60029 60019 60026   795 60014   573   576
+   60033 60014 60022 29168 60017 60014]]
+
+ [[    3     2     2     2     2     2     2     2     3     3     3
+       2     3     3     3     3     3     3     2     3     3     3
+       2     2     3     2     3     2     3     3     2     3     2
+       3     3     3     3     2     3     3     3     3     3     2
+       2     3     2     2     2     3     2     3     3     3     3
+       3     3     3     3     3     3]
+  [60012   580   534   695   650   606   639   619 60014 60015 60014
+     541 60016 60014 60016 60015 60016 60020   608 60015 60015 60013
+     669   707 60033   633 60017   695 60014 60014   636 60014   542
+   60030 60014 60016 60018   604 60014 60017 60013 60020 60014   641
+     626 60017   620   628   634 60022   656 60019 60013 60013 60023
+   60015 60021 60014 60016 60015 60014]]
+
+ [[    3     2     2     2     2     2     2     2     2     2     3
+       3     3     3     3     2     2     3     2     2     2     2
+       2     2     2     3     2     2     3     3     3     3     3
+       3     2     2     2     3     3     3     3     3     3     2
+       3     2     2     3     2     2     2     2     2     2     3
+       3     3     3     3     3     3]
+  [60012   518   523   540   648   540   561   676   810   781 60023
+   60018 60019 60013 60016   671   722 60012   616   644   601   684
+     710   698   742 60015   814   793 60015 60019 60015 60015 60014
+   60013   704   731   716 60014 60020 60015 60013 60014 60014   787
+   60014   782   746 60014   827   833   809   853   800   710 60017
+   60014 60014 60016 60019 60015 60022]]]
+unstable
+ 
+ err: 
+done running mariposa 1035.2
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+Bisecting: 1034 revisions left to test after this (roughly 10 steps)
+[0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.4
+running mariposa
+res: 1 
+ out: [[[    3     3     3     3     3     3     2     2     3     3     3
+       3     3     3     2     2     3     3     3     3     3     3
+       3     3     2     2     2     3     3     3     2     2     2
+       2     3     3     3     2     3     3     3     3     2     3
+       3     2     3     3     2     2     3     2     2     3     3
+       3     3     3     3     3     3]
+  [60014 60015 60031 60018 60013 60014   613  1433 60016 60014 60015
+   60015 60014 60015   516   575 60018 60019 60014 60016 60026 60013
+   60017 60023   625 22088   566 60014 60018 60024   646   548  1278
+     540 60016 60014 60014   627 60018 60015 60017 60016   584 60017
+   60025   556 60019 60029   598   610 60017   545   578 60028 60015
+   60014 60020 60023 60014 60016 60018]]
+
+ [[    3     2     2     3     3     2     2     3     3     2     3
+       3     3     2     3     2     3     3     2     3     2     3
+       3     2     2     3     2     2     2     3     3     3     3
+       3     2     3     3     3     2     3     2     2     3     2
+       3     3     2     3     3     3     2     3     2     3     3
+       3     3     3     3     3     3]
+  [60014   534   561 60018 60014   590   590 60015 60015   541 60017
+   60019 60016   589 60014   671 60015 60016   588 60017   737 60014
+   60020   547   520 60015   561   566   537 60014 60015 60015 60016
+   60021   545 60014 60015 60021   531 60018   594   580 60024   639
+   60023 60014   600 60014 60020 60015   723 60017   578 60017 60034
+   60016 60018 60016 60026 60017 60021]]
+
+ [[    3     2     3     3     3     3     3     3     2     3     2
+       2     2     3     3     3     3     3     3     2     2     3
+       3     3     3     3     3     2     3     2     3     2     2
+       3     3     3     2     3     3     3     2     2     2     3
+       3     3     3     3     3     3     2     2     3     2     2
+       2     3     3     3     3     3]
+  [60014   529 60019 60021 60018 60017 60012 60010   541 60014   546
+     609   631 60015 60015 60017 60012 60012 60014   593   533 60021
+   60016 60013 60012 60011 60013   593 60014   596 60016   611   672
+   60015 60014 60019   644 60026 60011 60014   611   583   636 60013
+   60028 60015 60015 60025 60024 60015   575   575 60011   614  2202
+   39108 60017 60016 60013 60025 60019]]]
+unstable
+ 
+ err: 
+done running mariposa 1152.8
+Bisecting: 261 revisions left to test after this (roughly 8 steps)
+[6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[    3     2     2     3     3     3     2     3     3     2     3
+       3     2     2     3     3     3     2     3     3     2     2
+       3     3     3     3     3     2     2     2     3     3     3
+       3     3     3     3     3     3     3     2     3     3     3
+       3     3     3     3     2     3     2     2     2     3     3
+       3     3     3     3     3     3]
+  [60010   558   635 60014 60014 60015   513 60016 60020   507 60014
+   60028   549   579 60014 60015 60033   521 60016 60014   510   524
+   60020 60016 60017 60015 60023   539   526   527 60015 60017 60015
+   60017 60016 60022 60014 60015 60013 60013   509 60016 60017 60022
+   60017 60014 60015 60022   572 60016 18060   550   541 60016 60017
+   60024 60014 60013 60014 60020 60015]]
+
+ [[    3     3     3     2     2     3     3     2     3     3     3
+       3     3     2     2     3     3     2     3     2     2     3
+       2     3     3     2     3     2     3     3     2     2     2
+       3     3     3     3     2     2     3     2     3     3     2
+       2     3     2     2     2     2     2     3     3     2     3
+       2     2     3     3     3     3]
+  [60010 60013 60013   506   547 60014 60022   543 60021 60017 60014
+   60015 60014   527   516 60013 60015   533 60023   657   620 60015
+     560 60015 60014   531 60013   582 60028 60013   496   586   535
+   60021 60016 60024 60013   567   529 60012   548 60023 60021   571
+     563 60016   651   678   599   574   593 60017 60016   560 60013
+     532   532 60013 60014 60014 60017]]
+
+ [[    3     2     2     2     2     2     3     3     3     3     3
+       3     2     2     2     3     2     2     3     3     3     3
+       3     2     2     2     3     2     3     2     2     2     3
+       3     2     3     3     2     3     2     3     2     3     2
+       2     3     3     3     2     3     2     2     2     2     3
+       2     3     3     2     3     3]
+  [60010   471   496   483   515   602 60011 60017 60014 60017 60013
+   60016   577   583   515 60013   608   629 60017 60016 60018 60023
+   60019   547   588   554 60012   570 60012   618   638   702 60015
+   60014   661 60013 60014   569 60011   723 60016   653 60014   744
+     700 60026 60018 60015   596 60015   606   607   586   639 60013
+     622 60016 60014 12671 60016 60014]]]
+unstable
+ 
+ err: 
+done running mariposa 1034.8
+Bisecting: 130 revisions left to test after this (roughly 7 steps)
+[9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [359 418 422 496 432 450 417 437 459 443 437 428 418 420 432 427 431
+   400 472 466 501 407 456 409 434 463 433 419 419 466 433 456 401 428
+   459 450 451 412 445 431 420 429 415 440 421 427 432 427 442 419 405
+   452 440 419 427 418 400 413 394 399 415]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [359 466 468 447 433 443 442 459 491 432 447 449 444 435 462 442 428
+   506 440 432 454 433 446 447 433 429 447 441 443 456 454 472 443 456
+   473 454 430 433 463 447 442 440 446 475 439 449 433 441 429 471 430
+   472 451 432 447 432 443 468 432 446 463]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [359 493 480 501 485 496 505 506 459 482 543 475 558 507 502 472 496
+   462 495 493 474 534 494 495 475 488 483 505 483 500 512 528 497 498
+   473 491 468 504 512 487 512 499 527 477 459 513 496 486 503 529 484
+   467 471 455 491 527 525 472 464 482 498]]]
+stable
+ 
+ err: 
+done running mariposa 21.7
+Bisecting: 65 revisions left to test after this (roughly 6 steps)
+[42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [354 413 455 435 420 439 420 427 431 426 467 424 402 412 427 420 450
+   440 413 422 438 412 467 444 408 427 501 413 415 435 442 450 410 430
+   452 427 432 405 425 429 427 428 418 434 422 446 458 422 450 450 399
+   419 444 433 416 455 431 416 388 409 387]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [354 467 445 470 448 444 428 459 441 446 447 451 445 447 425 427 464
+   473 444 428 430 430 441 447 428 426 456 430 482 469 443 427 442 444
+   447 447 431 432 443 457 466 452 439 442 433 471 446 429 428 455 428
+   461 509 428 449 426 445 431 430 424 427]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [354 485 498 465 491 494 481 496 473 485 458 479 483 456 476 486 493
+   503 534 483 537 463 450 501 501 488 467 475 482 467 454 486 496 473
+   488 514 443 465 480 490 486 499 514 476 493 470 454 477 471 554 467
+   463 446 459 482 491 490 482 488 477 494]]]
+stable
+ 
+ err: 
+done running mariposa 21.7
+Bisecting: 32 revisions left to test after this (roughly 5 steps)
+[b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     3     2     3     3     3     2
+       2     2     3     3     2     2     3     3     2     3     3
+       3     3     3     2     2     2     3     3     3     3     3
+       3     2     2     2     2     2     2     3     2     3     2
+       2     3     2     3     3     3     2     3     3     3     3
+       3     3     3     3     3     3]
+  [  351   546   523   525   570 60018 30170 60026 60015 60016   629
+     515   534 60028 60014   493   481 60027 60024   580 60026 60018
+   60021 60020 60025   552   585   572 60017 60027 60025 60014 60016
+   60023   534   548   559   558   568   560 60016   598 60016   597
+     592 60016   599 60020 60015 60017   661 60025 60020 60016 60016
+   60030 60020 60017 60021 60016 60013]]
+
+ [[    2     2     3     3     3     3     2     2     3     3     3
+       2     3     3     3     2     3     3     3     2     3     3
+       2     2     3     2     2     3     3     3     2     3     3
+       2     2     3     3     3     2     3     3     2     3     2
+       2     2     2     3     2     2     3     2     2     2     2
+       3     3     3     3     3     3]
+  [  351   572 60016 60018 60020 60024   595   588 60014 60028 60014
+     556 60017 60027 60016   517 60013 60023 60012   540 60014 60012
+     539   604 60020   545   567 60020 60019 60019   509 60021 60012
+     507   612 60025 60025 60021   599 60018 60013   584 60014   599
+     516   482   576 60016   911   525 60020   547   638   647   786
+   60014 60013 60015 60013 60018 60014]]
+
+ [[    2     2     2     2     3     3     3     3     3     3     2
+       2     2     2     2     3     3     3     3     3     2     3
+       3     3     2     2     2     2     2     2     2     2     2
+       2     2     3     3     3     2     3     3     3     3     2
+       3     3     2     3     2     2     3     3     3     3     2
+       3     3     3     3     3     3]
+  [  351   488   513   611 60013 60020 60014 60011 60009 60012   548
+     533   547   516   533 60019 60015 60014 60020 60013   620 60013
+   60018 60017   547   503   525   577   587   643   606   626   631
+     646   624 60015 60014 60013   623 60015 60013 60024 60014   681
+   60017 60023   623 60019   603   630 60014 60019 60013 60014   704
+   60015 60014 60014 60016 60021 60019]]]
+unstable
+ 
+ err: 
+done running mariposa 921.0
+Bisecting: 16 revisions left to test after this (roughly 4 steps)
+[0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [358 425 453 412 416 447 455 420 420 418 456 430 444 479 419 431 446
+   430 435 488 430 436 434 427 418 436 433 434 441 476 403 445 446 439
+   408 424 434 437 423 416 451 420 428 436 433 437 427 437 460 409 426
+   415 403 442 452 418 429 413 435 393 414]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [358 428 433 435 431 422 432 421 418 437 415 413 419 436 418 426 430
+   424 416 441 471 448 434 433 443 432 437 412 427 427 410 495 419 418
+   426 418 417 437 448 421 436 424 431 451 432 426 416 453 418 434 431
+   511 481 417 479 444 429 420 419 412 417]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [358 450 483 505 479 470 485 514 468 479 508 504 483 499 514 467 465
+   480 510 500 492 535 461 462 475 496 471 498 507 477 457 483 483 506
+   510 523 466 471 495 490 489 529 480 477 477 494 490 475 461 491 472
+   485 505 476 498 489 470 475 465 481 495]]]
+stable
+ 
+ err: 
+done running mariposa 21.5
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1] na
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     3     2     3     3     3     2
+       2     2     3     3     2     2     3     3     2     3     3
+       3     3     3     2     2     2     3     3     3     3     3
+       3     2     2     2     2     2     2     3     2     3     2
+       2     3     2     3     3     3     2     3     3     3     3
+       3     3     3     3     3     3]
+  [  352   555   526   538   580 60017 29865 60027 60015 60014   642
+     536   530 60024 60014   500   497 60027 60025   581 60028 60018
+   60021 60019 60026   557   581   565 60015 60027 60027 60014 60016
+   60023   527   534   535   571   574   545 60016   605 60014   591
+     590 60016   613 60019 60015 60016   672 60024 60020 60015 60016
+   60028 60020 60015 60019 60015 60013]]
+
+ [[    2     2     3     3     3     3     2     2     3     3     3
+       2     3     3     3     2     3     3     3     2     3     3
+       2     2     3     2     2     3     3     3     2     3     3
+       2     2     3     3     3     2     3     3     2     3     2
+       2     2     2     3     2     2     3     2     2     2     2
+       3     3     3     3     3     3]
+  [  352   577 60014 60016 60018 60023   593   603 60014 60026 60014
+     554 60017 60029 60016   527 60014 60023 60013   525 60014 60012
+     535   606 60022   530   566 60021 60019 60020   513 60022 60012
+     495   613 60025 60025 60020   597 60017 60015   583 60013   604
+     512   481   597 60016   943   521 60021   562   647   649   783
+   60014 60014 60014 60013 60019 60015]]
+
+ [[    2     2     2     2     3     3     3     3     3     3     2
+       2     2     2     2     3     3     3     3     3     2     3
+       3     3     2     2     2     2     2     2     2     2     2
+       2     2     3     3     3     2     3     3     3     3     2
+       3     3     2     3     2     2     3     3     3     3     2
+       3     3     3     3     3     3]
+  [  352   503   534   600 60015 60019 60013 60011 60011 60012   560
+     533   551   517   558 60018 60014 60014 60013 60019   619 60013
+   60017 60017   551   516   510   609   582   662   615   634   620
+     667   660 60017 60015 60013   627 60015 60014 60025 60014   700
+   60016 60022   633 60018   609   645 60015 60019 60014 60014   691
+   60016 60014 60014 60016 60019 60020]]]
+unstable
+ 
+ err: 
+done running mariposa 921.0
+Bisecting: 4 revisions left to test after this (roughly 2 steps)
+[1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [356 454 427 413 439 421 448 434 422 451 446 426 456 438 431 438 445
+   457 430 419 433 413 431 433 416 480 447 431 425 447 434 467 425 431
+   427 405 420 423 470 423 421 445 424 430 452 431 426 439 470 424 405
+   423 442 425 454 440 428 429 407 412 390]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [356 430 425 463 437 433 419 471 414 414 458 417 417 434 435 425 423
+   422 414 420 444 426 472 433 416 428 414 423 412 468 408 433 412 418
+   449 417 431 459 426 423 444 424 434 444 424 458 429 419 451 437 439
+   452 434 434 429 423 436 412 420 436 432]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [356 491 457 496 501 493 508 486 480 485 518 483 494 502 529 451 455
+   472 475 497 473 474 456 468 479 466 505 482 494 472 459 522 487 487
+   502 511 466 492 491 501 470 485 484 474 479 469 499 473 504 472 482
+   498 480 470 492 477 480 470 455 490 466]]]
+stable
+ 
+ err: 
+done running mariposa 21.5
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 1 
+ out: [[[    2     2     2     2     2     3     2     3     3     3     2
+       2     3     2     3     2     2     3     3     2     3     3
+       3     3     3     2     2     2     3     3     3     3     3
+       3     2     2     2     2     2     2     3     2     3     2
+       2     3     2     3     3     3     2     3     3     3     3
+       3     3     3     3     3     3]
+  [  351   546   520   536   577 60019 30508 60027 60015 60015   647
+     538 60020   537 60015   499   493 60028 60026   587 60028 60017
+   60021 60019 60027   560   581   568 60017 60028 60026 60015 60014
+   60023   529   548   551   567   573   560 60015   600 60015   591
+     597 60016   596 60020 60015 60018   676 60026 60020 60015 60016
+   60029 60020 60016 60021 60014 60013]]
+
+ [[    2     2     3     3     3     3     2     2     3     3     3
+       2     3     3     3     2     3     3     3     2     3     3
+       2     2     3     2     2     3     3     3     2     3     3
+       2     2     3     3     3     2     3     3     2     3     2
+       2     2     2     3     2     2     3     2     2     2     2
+       3     3     3     3     3     3]
+  [  351   583 60014 60016 60020 60024   589   607 60014 60028 60014
+     547 60019 60028 60016   520 60013 60024 60014   532 60013 60013
+     533   602 60021   532   560 60020 60019 60019   515 60020 60013
+     513   625 60023 60024 60020   601 60017 60015   589 60015   604
+     509   481   584 60014   975   524 60023   569   649   651   786
+   60016 60014 60017 60012 60020 60013]]
+
+ [[    2     2     2     2     3     3     3     3     3     3     2
+       2     2     2     3     2     3     3     3     3     2     3
+       3     3     2     2     2     2     2     2     2     2     2
+       2     2     3     3     3     2     3     3     3     3     2
+       3     3     2     3     2     2     3     3     3     3     2
+       3     3     3     3     3     3]
+  [  351   489   511   598 60014 60012 60012 60018 60013 60012   533
+     557   558   515 60018   523 60014 60014 60019 60013   618 60012
+   60019 60017   533   520   519   571   579   664   613   642   615
+     683   657 60015 60014 60014   625 60015 60016 60024 60016   703
+   60016 60022   630 60019   611   644 60016 60019 60014 60014   695
+   60015 60015 60014 60016 60022 60021]]]
+unstable
+ 
+ err: 
+done running mariposa 921.1
+Bisecting: 0 revisions left to test after this (roughly 1 step)
+[7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+running python3 /home/yizhou7/mariposa/scripts/z3-bisect.py /home/yizhou7/mariposa/data/bisect_tasks/d_fvbkv_z3_clean--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.txt
+building z3
+done building z3 3.3
+running mariposa
+res: 0 
+ out: [[[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [359 448 454 412 416 416 471 420 459 424 418 425 456 455 435 424 444
+   446 451 422 429 459 434 443 438 422 467 430 425 434 418 450 437 450
+   407 405 448 417 462 418 411 448 426 452 451 435 419 436 455 426 411
+   426 444 426 403 429 432 431 416 399 414]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [359 423 457 427 414 494 421 467 415 446 433 423 457 435 416 444 423
+   449 417 418 451 453 427 437 418 432 416 431 441 427 432 442 417 418
+   419 466 437 435 442 423 427 452 455 451 424 417 434 432 428 438 455
+   429 474 430 422 443 425 416 421 415 448]]
+
+ [[  2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2   2
+     2   2   2   2   2   2   2   2   2   2]
+  [359 445 510 483 488 487 515 528 467 478 492 520 482 502 494 451 455
+   471 477 477 507 483 487 457 478 456 475 490 531 482 475 455 498 551
+   532 491 460 489 481 506 472 488 491 482 470 466 467 504 477 480 465
+   487 471 484 490 473 487 474 470 457 465]]]
+stable
+ 
+ err: 
+done running mariposa 21.6
+5177cc4a9a58df192c6a844ca13abf7e7cd3be15 is the first bad commit
+commit 5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+Author: Nikolaj Bjorner <nbjorner@microsoft.com>
+Date:   Fri Jun 21 09:08:20 2019 +0200
+
+    change lt
+    
+    Signed-off-by: Nikolaj Bjorner <nbjorner@microsoft.com>
+
+:040000 040000 bba0b3898c697bc6efeb66752253b42641d4a606 dc4029a365361041d58c5e9f581973ad21a69ecd M	src
+bisect run success
+git bisect start
+# good: [e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70] fix #2309
+git bisect good e79542cc689d52ec4cb34ce4ae3fbe56e7a0bf70
+# bad: [ad55a1f1c617a7f0c3dd735c0780fc758424c7f1] Update release.yml for Azure Pipelines
+git bisect bad ad55a1f1c617a7f0c3dd735c0780fc758424c7f1
+# skip: [e2702f3ae88f5c48a55f4473bb5c29184c182634] fixes in assigning constraints to intervals
+git bisect skip e2702f3ae88f5c48a55f4473bb5c29184c182634
+# skip: [1915812f84cf41a5f232eedf2a695a54d055aa88] add a test for intervals
+git bisect skip 1915812f84cf41a5f232eedf2a695a54d055aa88
+# bad: [8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a] fix #3735
+git bisect bad 8faf35e2e0c8fce99794e71bd3b5de74b95ceb5a
+# skip: [d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f] better model based lemmaas
+git bisect skip d1a5635b4ad7f8632356b380f3a9b1fc83fdb04f
+# skip: [0a86bd14f792ef5fadb8eeb346729a612f7e1588] start on test nla
+git bisect skip 0a86bd14f792ef5fadb8eeb346729a612f7e1588
+# bad: [f7747d9e76bd685a02ce5c5fbda91fc356856b5e] fix parameter collection for tactic-based solvers reported in #3065
+git bisect bad f7747d9e76bd685a02ce5c5fbda91fc356856b5e
+# skip: [0644194fc96a853df44c37f9e4522796aa40add8] work on lemma from product to factors, and some renaming
+git bisect skip 0644194fc96a853df44c37f9e4522796aa40add8
+# bad: [0321312c8db1d3f0edbd23e6e48884fbb7d77d1d] Changed to get_const_interp to match Java and C# bindings
+git bisect bad 0321312c8db1d3f0edbd23e6e48884fbb7d77d1d
+# bad: [6e637348826f0725ba8a01c455448023ca2889e4] Merge pull request #2368 from waywardmonkeys/fix-typo
+git bisect bad 6e637348826f0725ba8a01c455448023ca2889e4
+# good: [9b4f327e29de8eadd112e53af5a8fb9f430fabf7] set upload mode to replace
+git bisect good 9b4f327e29de8eadd112e53af5a8fb9f430fabf7
+# good: [42ac3a536369a7d4a7eafa1fa15b571b146ba594] merge with csp
+git bisect good 42ac3a536369a7d4a7eafa1fa15b571b146ba594
+# bad: [b4290d4b3d7c021965e9ce7ee636caac0f9cac74] python regression
+git bisect bad b4290d4b3d7c021965e9ce7ee636caac0f9cac74
+# good: [0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192] swap
+git bisect good 0f7ff2a3d016ce6cc0dcc2654a6aa0187bc55192
+# bad: [89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1] na
+git bisect bad 89e8a1392c992a6c37b8c5320b9e4b9b506bd4a1
+# good: [1827f98851e1866187abe743afd2d80bc786412f] more fixes for mutexes in shell
+git bisect good 1827f98851e1866187abe743afd2d80bc786412f
+# bad: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
+git bisect bad 5177cc4a9a58df192c6a844ca13abf7e7cd3be15
+# good: [7c9d2e0d75757ed6aa535f72c7dec70d5a527fed] pydoc test
+git bisect good 7c9d2e0d75757ed6aa535f72c7dec70d5a527fed
+# first bad commit: [5177cc4a9a58df192c6a844ca13abf7e7cd3be15] change lt
