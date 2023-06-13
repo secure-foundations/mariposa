@@ -1158,6 +1158,102 @@ def plot_size_vs_time_correlations():
     plt.savefig(f"fig/unsat_core/size_vs_time.pdf")
     plt.close()
 
+import statsmodels.formula.api as smf
+import pandas as pd
+def plot_size_vs_time_regression():
+    fig, ax = plt.subplots()
+    ax.set_title('all projects size vs time correlations w/ regression')
+    ax.set_xlabel("file size (MB)")
+    ax.set_ylabel("time (seconds)")
+    ax.set_xlim(left=-1,right=30)
+    xss = []
+    yss = []
+    for i, project in enumerate(PROJECTS):
+        project_name_caps = ""
+        if "_z3" in project.name:
+            project_name_caps = project.name[:-3].upper()
+        else:
+            project_name_caps = project.name.upper()
+        project_name = project_name_caps.lower()
+        original_table_name = f"{project_name_caps}_z3_4_8_5"
+        xs, ys = get_size_vs_time_data("data/mariposa.db", original_table_name, project.original_root)
+        xs = [x/1000000 for x in xs]
+        ys = [y/1000 for y in ys]
+        xss += xs; yss += ys
+        label = PROJECT_LABELS[project_name_caps]
+        color = PROJECT_COLORS[project_name_caps]
+        # scatter plot xs and ys
+        ax.scatter(xs, ys, label=label, color=color, s=.5, alpha=.5)
+    # regression on xss, yss
+    xss = np.array(xss); yss = np.array(yss)
+    model = smf.quantreg('time ~ size', pd.DataFrame({'size':xss, 'time':yss})).fit(q=.001)
+    y_line = lambda a, b: a + b * xss
+    y = y_line(model.params['Intercept'],
+               model.params['size'])
+    y_another_line = y_line(2+ model.params['Intercept'],
+               model.params['size'])
+    # count number of points falling below y_another_line
+    count = 0
+    for i in range(len(xss)):
+        if yss[i] < y_another_line[i]:
+            count += 1
+    print(f"percentage of queries inside 2 seconds lines: {count} / {len(xss)}:")
+    print(count / len(xss))
+    print(model.summary())
+    ax.plot(xss, y, color="black", lw=.5, label=f".001 (slope = {model.params['size']})")
+    ax.plot(xss, y_another_line, color="red", lw=.5, label=".001 line + 2 secs")
+    ax.legend(loc="best")
+    plt.savefig(f"fig/unsat_core/size_vs_time_regression.pdf")
+    plt.close()
+
+def plot_size_vs_time_regression_unsat_core():
+    fig, ax = plt.subplots()
+    ax.set_title('all projects min asserts size vs time correlations w/ regression')
+    ax.set_xlabel("file size (MB)")
+    ax.set_ylabel("time (seconds)")
+    ax.set_xlim(left=-.5,right=13)
+    xss = []
+    yss = []
+    for i, project in enumerate(PROJECTS):
+        project_name_caps = ""
+        if "_z3" in project.name:
+            project_name_caps = project.name[:-3].upper()
+        else:
+            project_name_caps = project.name.upper()
+        project_name = project_name_caps.lower()
+        original_table_name = f"{project.name.upper()}_MIN_ASSERTS_z3_4_8_5"
+        xs, ys = get_size_vs_time_data("data/unsat_core.db", original_table_name, project.min_assert_root)
+        xs = [x/1000000 for x in xs]
+        ys = [y/1000 for y in ys]
+        xss += xs; yss += ys
+        label = PROJECT_LABELS[project_name_caps]
+        color = PROJECT_COLORS[project_name_caps]
+        # scatter plot xs and ys
+        ax.scatter(xs, ys, label=label, color=color, s=.5, alpha=.5)
+    # regression on xss, yss
+    xss = np.array(xss); yss = np.array(yss)
+    model = smf.quantreg('time ~ size', pd.DataFrame({'size':xss, 'time':yss})).fit(q=.001)
+    y_line = lambda a, b: a + b * xss
+    y = y_line(model.params['Intercept'],
+               model.params['size'])
+    y_another_line = y_line(2+ model.params['Intercept'],
+               model.params['size'])
+    # count number of points falling below y_another_line
+    count = 0
+    for i in range(len(xss)):
+        if yss[i] < y_another_line[i]:
+            count += 1
+    print(f"percentage of queries inside 2 seconds lines: {count} / {len(xss)}:")
+    print(count / len(xss))
+    print(model.summary())
+    ax.plot(xss, y, color="black", lw=.5, label=f".001 (slope = {model.params['size']})")
+    ax.plot(xss, y_another_line, color="red", lw=.5, label=".001 line + 2 secs")
+    ax.legend(loc="best")
+    plt.savefig(f"fig/unsat_core/size_vs_time_regression_unsat_core.pdf")
+    ax.set_ylim(bottom=-1,top=40)
+    plt.savefig(f"fig/unsat_core/size_vs_time_regression_unsat_core_zoomed.pdf")
+    plt.close()
+
 def plot_pie_chart():
     fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(30,10))
     for i, project in enumerate(PROJECTS):

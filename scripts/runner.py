@@ -232,3 +232,76 @@ class Runner:
         con.commit()
         con.close()
 
+# from analyzer import RCode 
+# from analyzer import Classifier
+# from analyzer import Stability
+# from runner import parse_basic_output_z3
+# from runner import subprocess_run
+# import numpy as np
+# 
+# timeout = 60
+# 
+# def async_run_single_mutant(results, command):
+#     items = command.split(" ")
+#     os.system(command)
+#     items = command.split(" ")
+#     command = f"./solvers/z3_place_holder {items[6]} -T:{timeout}"
+#     out, err, elapsed = subprocess_run(command, timeout + 1)
+#     rcode = parse_basic_output_z3(out)
+#     # os.system(f"rm {items[6]}")
+#     results.append((elapsed, rcode))
+# 
+# def mariposa(task_file):
+#     commands = [t.strip() for t in open(task_file, "r").readlines()]
+#     plain = commands[0]
+#     commands = commands[1:]
+# 
+#     import multiprocessing as mp
+#     manager = mp.Manager()
+#     pool = mp.Pool(processes=7)
+# 
+#     command = f"./solvers/z3_place_holder {plain} -T:{timeout}"
+#     out, err, elapsed = subprocess_run(command, timeout + 1)
+#     rcode = parse_basic_output_z3(out)
+#     pr = (elapsed, rcode)
+#     classifier = Classifier("z_test")
+#     classifier.timeout = 6e4 # 1 min
+# 
+#     reseeds = manager.list([pr])
+#     renames = manager.list([pr])
+#     shuffles = manager.list([pr])
+# 
+#     for command in commands:
+#         if "rseed" in command:
+#             pool.apply_async(async_run_single_mutant, args=(reseeds, command))
+#         elif "rename" in command:
+#             pool.apply_async(async_run_single_mutant, args=(renames, command))
+#         elif "shuffle" in command:
+#             pool.apply_async(async_run_single_mutant, args=(shuffles, command))
+#         else:
+#             assert False
+#     
+#     pool.close()
+#     pool.join()
+# 
+#     assert len(reseeds) == len(renames) == len(shuffles) == 61
+# 
+#     blob = np.zeros((3, 2, 61), dtype=int)
+#     for i, things in enumerate([reseeds, renames, shuffles]):
+#         for j, (veri_times, veri_res) in enumerate(things):
+#             blob[i, 0, j] = RCode.from_str(veri_res).value
+#             blob[i, 1, j] = veri_times
+# 
+#     cat = classifier.categorize_query(blob)
+# 
+#     print(blob)
+#     print(cat)
+# 
+#     if cat == Stability.STABLE:
+#         exit(0) # good
+#     if cat == Stability.INCONCLUSIVE:
+#         exit(125) # skip
+#     exit(1) # bad 
+# 
+# if __name__ == "__main__":
+#     mariposa(sys.argv[1])

@@ -25,6 +25,7 @@ class QueryExpConfig:
         # how many times do we run each query? default=1
         self.trials = 1
 
+
         # how many mutants to generate at most
         self.max_mutants = 60
 
@@ -66,6 +67,7 @@ class ExpConfig:
             # print(name, total)
         else:
             self.samples = project.get_samples(solvers, count)
+
 
     def get_solver_summary_table_name(self, solver):
         return self.qcfg.get_solver_table_name(solver) + "_summary"
