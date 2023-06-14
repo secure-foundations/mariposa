@@ -137,16 +137,6 @@ class Runner:
             print(f"[INFO] using initial seed: {exp.init_seed}")
             random.seed(exp.init_seed)
 
-    def _add_exp(self, origin_path, solver):
-        task = Task(self.exp, self.exp_name, origin_path, None, None, solver)
-        self.task_queue.put(task)
-
-        for perturb in self.exp.enabled_muts:            
-            for _ in range(self.exp.num_mutant):
-                mut_seed = random.randint(0, 0xffffffffffffffff)
-                task = Task(self.exp, self.exp_name, origin_path, perturb, mut_seed, solver)
-                self.task_queue.put(task)
-
     def _run_workers(self):
         start_time = time.time()
         processes = []
@@ -166,8 +156,21 @@ class Runner:
     def run_single_project(self, project, solver):
         self.exp_name = self.exp.get_exp_tname(project, solver)
         self._set_up_table()
+        tasks = []
         for origin_path in project.list_queries():
-            self._add_exp(origin_path, solver)
+            task = Task(self.exp, self.exp_name, origin_path, None, None, solver)
+            tasks.append(task)
+
+            for perturb in self.exp.enabled_muts:            
+                for _ in range(self.exp.num_mutant):
+                    mut_seed = random.randint(0, 0xffffffffffffffff)
+                    task = Task(self.exp, self.exp_name, origin_path, perturb, mut_seed, solver)
+                    tasks.append(task)
+
+        random.shuffle(tasks)
+        for task in tasks:
+            self.task_queue.put(task)
+            
         self._run_workers()
         self.sum_name = self.exp.get_sum_tname(project, solver)
         create_sum_table(self.exp, self.exp_name, self.sum_name)
