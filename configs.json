@@ -168,6 +168,12 @@
         "frame_work": "unknown",
         "clean_dir": "data/dummy_clean",
         "artifact_solver_name": "z3_4_12_1"
+      },
+      {
+        "name": "nr",
+        "frame_work": "unknown",
+        "clean_dir": "node_replication",
+        "artifact_solver_name": "z3_4_12_1"
       }
     ]
   }

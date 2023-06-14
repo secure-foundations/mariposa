@@ -1,169 +1,265 @@
-from runner import *
+import sys, os
+import time, random
+import subprocess
+import multiprocessing as mp
+import itertools
+
 from db_utils import *
-# from analysis_utils import *
-import shutil
-from basic_utils import *
-import argparse
-from tabulate import tabulate
-from configer import *
+# from configer import *
 
-# def import_database(other_server):
-#     other_db_path = "data/mariposa2.db"
-#     os.system(f"rm {other_db_path}")
-#     os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {other_db_path}")
-#     import_tables(other_db_path)
+MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
-def create_single_mode_project(args, solver):
-    origin_path = args.query
-    query_name = os.path.basename(origin_path)
-    exit_with_on_fail(query_name.endswith(".smt2"), '[ERROR] query must end with ".smt2"')
-    query_name.replace(".smt2", "")
-    gen_split_subdir = f"gen/{query_name}_"
-    project = ProjectInfo("misc", gen_split_subdir, solver)
-    return project
+def subprocess_run(command, time_limit, debug=False, cwd=None):
+    if debug:
+        print(command)
+    start_time = time.time()
+    res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+    # milliseconds
+    elapsed = round((time.time() - start_time) * 1000)
+    stdout = res.stdout.decode("utf-8").strip()
+    stderr = res.stderr.decode("utf-8").strip()
+    return stdout, stderr, elapsed
 
-def dump_status(project, solver, cfg, ana):
-    rows = load_sum_table(project, solver, cfg)
-    # print("solver:", solver.path)
-    print("solver used:", solver.path)
+def parse_basic_output_z3(output):
+    if "unsat" in output:
+        return "unsat"
+    elif "sat" in output:
+        return "sat"
+    elif "timeout" in output:
+        return "timeout"
+    elif "unknown" in output:
+        return "unknown"
+    return "error"
 
-    for row in rows:
-        print("")
-        print("query:", row[0])
-        mutations, blob = row[1], row[2]
-        ana.dump_query_status(mutations, blob)
+def parse_basic_output_cvc(output, error):
+    if "unsat" in output:
+        return "unsat"
+    elif "sat" in output:
+        return "sat"
+    elif "unknown" in output:
+        return "unknown"
+    elif "interrupted by timeout" in error:
+        return "timeout"
+    return "error"
 
-def single_mode(args):
-    c = Configer()
-    exp = c.load_known_experiment(args.experiment)
-    solver = c.load_known_solver(args.solver)
-    project = create_single_mode_project(args, solver)
-    ana = c.load_known_analyzer(args.analyzer)
+class Task:
+    def __init__(self, exp, exp_name, origin_path, perturb, mut_seed, solver):
+        self.exp = exp
+        self.exp_name = exp_name
+        self.solver = solver
+        self.origin_path = origin_path
+        self.perturb = perturb
+        self.mut_seed = mut_seed
 
-    if exp.db_path == "":
-        exp.db_path = f"{project.clean_dir}/test.db"
+    def run(self):
+        solver = self.solver
+        exp = self.exp
 
-    print(f"[INFO] single mode will use db {exp.db_path}")
+        if self.perturb is not None:
+            query_name = os.path.basename(self.origin_path)
+            assert query_name.endswith(".smt2")
+            query_name.replace(".smt2", "")
+            gen_path_pre = "gen/" + self.exp_name + "/" + query_name
+            mutant_path = f"{gen_path_pre}.{str(self.mut_seed)}.{self.perturb}.smt2"
 
-    if args.clear:
-        os.system(f"rm -rf gen/*")
-        print("[INFO] cleared all data from past experiments")
+            command = f"{MARIPOSA_BIN_PATH} -i '{self.origin_path}' -m {self.perturb} -o '{mutant_path}' -s {self.mut_seed}"
 
-    dir_exists = os.path.exists(project.clean_dir)
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
 
-    if args.analysis_only:
-        exit_with_on_fail(dir_exists, f"[ERROR] experiment dir {project.clean_dir} does not exist")
-    else:
-        if dir_exists:
-            print(f"[INFO] experiment dir {project.clean_dir} exists, remove it? [Y]")
-            exit_with_on_fail(input() == "Y", f"[INFO] aborting")
-            shutil.rmtree(project.clean_dir, ignore_errors=True)
-        os.makedirs(project.clean_dir)
+            if result.returncode != 0 or not os.path.exists(mutant_path):
+                print("[ERROR] MARIPOSA failed: " + command)
+                return
+        else:
+            mutant_path = self.origin_path
 
-        command = f"./target/release/mariposa -i '{args.query}' --chop --o '{project.clean_dir}/split.smt2'"
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-        print(result.stdout.decode('utf-8'), end="")
-        exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
+        command = f"{solver.path} '{mutant_path}' -T:{exp.timeout}"
+        out, err, elapsed = subprocess_run(command, exp.timeout + 1)
 
-        r = Runner(exp)
-        r.run_single_project(project, project.artifact_solver)
+        # TODO: handle other solvers
+        rcode = parse_basic_output_z3(out)
 
-    dump_status(project, project.artifact_solver, exp, ana)
+        if rcode == "error":
+            print("[INFO] solver error: ", out, err)
 
-def multi_mode(args):
-    c = Configer()
-    exp = c.load_known_experiment(args.experiment)
-    solver = c.load_known_solver(args.solver)
-    project = c.load_known_project(args.project)
-    ana = c.load_known_analyzer(args.analyzer)
+        if not exp.keep_mutants and self.perturb is not None:
+            # remove mutant
+            os.system(f"rm '{mutant_path}'")
+        
+        con = sqlite3.connect(exp.db_path)
+        cur = con.cursor()
+        cur.execute(f"""INSERT INTO {self.exp_name}
+            (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
+            (mutant_path, self.origin_path, self.perturb, command, out, err, rcode, elapsed))
+        con.commit()
+        con.close()
 
-    if not args.analysis_only:
-        check_existing_tables(exp, project, solver)
+def print_eta(elapsed, cur_size, init_size):
+    from datetime import timedelta
+    from datetime import datetime
+
+    elapsed = round(elapsed/3600, 2)
+    done_size = init_size - cur_size
+    estimated = round(cur_size * (elapsed / done_size), 2)
+    estimated = datetime.now() + timedelta(hours=estimated)
+    print(f"[INFO] finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {estimated.strftime('%Y-%m-%d %H:%M')}")
+
+def run_tasks(queue, start_time, id):
+    init_size = queue.qsize()
+    pelapsed = 0
+
+    while True:
+        task = queue.get()
+        if id == 0:
+            elapsed = time.time() - start_time
+            if elapsed > pelapsed + 60:
+                print_eta(elapsed, queue.qsize(), init_size)
+                pelapsed = elapsed
+        if task is None:
+            break
+        task.run()
+
+class Runner:
+    def _set_up_table(self):
+        con, cur = get_cursor(self.exp.db_path)
+        exists = check_table_exists(cur, self.exp_name)
+        exit_with_on_fail(not exists, f"[ERROR] table {self.exp_name} already exists")
+        create_experiment_table(cur, self.exp_name)
+        con.commit()
+        con.close()
+
+    def __init__(self, exp):
+        mp.set_start_method('spawn')
+        self.task_queue = mp.Queue()
+        self.exp = exp
+    
+        if exp.init_seed is not None:
+            print(f"[INFO] using initial seed: {exp.init_seed}")
+            random.seed(exp.init_seed)
+
+    def _run_workers(self):
+        start_time = time.time()
+        processes = []
+        print(f"[INFO] {self.task_queue.qsize() + self.exp.num_procs} tasks queued")
+
+        for i in range(self.exp.num_procs):
+            p = mp.Process(target=run_tasks, args=(self.task_queue, start_time, i,))
+            p.start()
+            processes.append(p)
+            self.task_queue.put(None)
+
+        for p in processes:
+            p.join()
+
+        print("[INFO] workers finished")
+
+    def run_single_project(self, project, solver):
+        self.exp_name = self.exp.get_exp_tname(project, solver)
+        self._set_up_table()
+        tasks = []
+        for origin_path in project.list_queries():
+            task = Task(self.exp, self.exp_name, origin_path, None, None, solver)
+            tasks.append(task)
+
+            for perturb in self.exp.enabled_muts:            
+                for _ in range(self.exp.num_mutant):
+                    mut_seed = random.randint(0, 0xffffffffffffffff)
+                    task = Task(self.exp, self.exp_name, origin_path, perturb, mut_seed, solver)
+                    tasks.append(task)
+
+        random.shuffle(tasks)
+        for task in tasks:
+            self.task_queue.put(task)
+            
+        self._run_workers()
+        self.sum_name = self.exp.get_sum_tname(project, solver)
+        create_sum_table(self.exp, self.exp_name, self.sum_name)
+
+def run_projects_solvers(exp, projects, solvers):
+    for project, solver in itertools.product(projects, solvers):
         r = Runner(exp)
         r.run_single_project(project, solver)
 
-    rows = load_sum_table(project, solver, cfg=exp)
-    items = ana.categorize_queries(rows)
-    ps, _ = get_category_percentages(items)
+def check_serenity_status():
+    print("checking scaling_governor...")
+    stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
+    assert stdout == "performance"
 
-    print("project directory:", project.clean_dir)
-    print("solver used:", solver.path)
-    print("total queries:", len(rows))
+    print("[INFO] building mariposa...")
+    stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
+    # assert stdout == "master"
+    os.system("cargo build --release")
 
-    pp_table = [["category", "count", "percentage"]]
-    for cat in {Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE}:
-        pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
+# from ana import RCode 
+# from ana import Analyzer
+# from ana import Stability
+# from runner import parse_basic_output_z3
+# from runner import subprocess_run
+# import numpy as np
 
-    print(tabulate(pp_table, tablefmt="github"))
-    print("")
-    print("listing unstable queries...")
+# timeout = 60
 
-    for row in rows:
-        query = row[0]
-        if query not in items[Stability.UNSTABLE]:
-            continue
-        print("")
-        print("query:", row[0])
-        mutations, blob = row[1], row[2]
-        ana.dump_query_status(mutations, blob)
+# def async_run_single_mutant(results, command):
+#     items = command.split(" ")
+#     os.system(command)
+#     items = command.split(" ")
+#     command = f"./solvers/z3_place_holder {items[6]} -T:{timeout}"
+#     out, err, elapsed = subprocess_run(command, timeout + 1)
+#     rcode = parse_basic_output_z3(out)
+#     # os.system(f"rm {items[6]}")
+#     results.append((elapsed, rcode))
 
-def flatten_path(base_dir, path):
-    assert base_dir in path
-    if not base_dir.endswith("/"):
-        base_dir += "/"
-    rest = path[len(base_dir):]
-    rest = rest.replace("/", "-")
-    return base_dir + rest
+# def mariposa(task_file):
+#     commands = [t.strip() for t in open(task_file, "r").readlines()]
+#     plain = commands[0]
+#     commands = commands[1:]
 
-def convert_path(src_path, src_dir, dst_dir):
-    dst_path = flatten_path(src_dir, src_path)
-    dst_path = dst_path.replace(src_dir, dst_dir)
-    return dst_path
+#     import multiprocessing as mp
+#     manager = mp.Manager()
+#     pool = mp.Pool(processes=7)
 
-def preprocess_mode(args):
-    queries = list_smt2_files(args.in_dir)
-    exit_with_on_fail(not os.path.exists(args.out_dir), f"[ERROR] output directory {args.out_dir} exists")
-    os.makedirs(args.out_dir)
+#     command = f"./solvers/z3_place_holder {plain} -T:{timeout}"
+#     out, err, elapsed = subprocess_run(command, timeout + 1)
+#     rcode = parse_basic_output_z3(out)
+#     pr = (elapsed, rcode)
+#     ana = Analyzer("z_test")
+#     ana.timeout = 6e4 # 1 min
 
-    print(f'[INFO] found {len(queries)} files with ".smt2" extension under {args.in_dir}')
-    for in_path in queries:
-        out_path = convert_path(in_path, args.in_dir, args.out_dir)
-        command = f"./target/release/mariposa -i '{in_path}' --chop --o '{out_path}'"
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-        print(result.stdout.decode('utf-8'), end="")
-        exit_with_on_fail(result.returncode == 0, "[ERROR] query split failed")
-    queries = list_smt2_files(args.out_dir)
-    print(f'[INFO] generated {len(queries)} split queries under {args.out_dir}')
+#     reseeds = manager.list([pr])
+#     renames = manager.list([pr])
+#     shuffles = manager.list([pr])
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")
+#     for command in commands:
+#         if "reseed" in command:
+#             pool.apply_async(async_run_single_mutant, args=(reseeds, command))
+#         elif "rename" in command:
+#             pool.apply_async(async_run_single_mutant, args=(renames, command))
+#         elif "shuffle" in command:
+#             pool.apply_async(async_run_single_mutant, args=(shuffles, command))
+#         else:
+#             assert False
+    
+#     pool.close()
+#     pool.join()
 
-    subparsers = parser.add_subparsers(dest='sub_command', help="mode to run mariposa in")
+#     assert len(reseeds) == len(renames) == len(shuffles) == 61
 
-    single_parser = subparsers.add_parser('single', help='single query mode. run mariposa on a single query with ".smt2" file extension, which will be split into multiple ".smt2" files based on check-sat(s), the split queries will be stored under the "gen/" directory and tested using the specified solver.')
+#     blob = np.zeros((3, 2, 61), dtype=int)
+#     for i, things in enumerate([reseeds, renames, shuffles]):
+#         for j, (veri_times, veri_res) in enumerate(things):
+#             blob[i, 0, j] = RCode.from_str(veri_res).value
+#             blob[i, 1, j] = veri_times
 
-    single_parser.add_argument("-q", "--query", required=True, help="the input query")
-    single_parser.add_argument("--clear", default=False, action='store_true', help="clear past data from single mode experiments")
-    single_parser.add_argument("-e", "--experiment", default="single", help="the experiment configuration name in configs.json")
+#     cat = ana.categorize_query(blob)
 
-    multi_parser = subparsers.add_parser('multiple', help='multiple query mode. test an existing (preprocessed) project using the specified solver. the project is specified by a python expression that evaluates to a ProjectInfo object. ')
-    multi_parser.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")
-    multi_parser.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from configs.json)")
+#     print(blob)
+#     print(cat)
 
-    for sp in [single_parser, multi_parser]:
-        sp.add_argument("-s", "--solver", required=True, help="the solver name (from configs.json) to use")
-        sp.add_argument("--analysis-only", default=False, action='store_true', help="do not perform experiments, only analyze existing data")
-        sp.add_argument("--analyzer", default="default", help="the analyzer name (from configs.json) to use")
+#     if cat == Stability.STABLE:
+#         exit(0) # good
+#     if cat == Stability.INCONCLUSIVE:
+#         exit(125) # skip
+#     exit(1) # bad 
 
-    preprocess_parser = subparsers.add_parser('preprocess', help='preprocess mode. (recursively) traverse the input directory and split all queries with ".smt2" file extension, the split queries will be stored under the output directory.')
-    preprocess_parser.add_argument("--in-dir", required=True, help='the input directory with ".smt2" files')
-    preprocess_parser.add_argument("--out-dir", required=True, help="the output directory to store preprocessed files, flattened and split")
-
-    args = parser.parse_args()
-
-    if args.sub_command == "preprocess":
-        preprocess_mode(args)
-    elif args.sub_command == "single":
-        single_mode(args)
-    elif args.sub_command == "multiple":
-        multi_mode(args)
+# if __name__ == "__main__":
+#     mariposa(sys.argv[1])
