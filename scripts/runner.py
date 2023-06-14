@@ -62,7 +62,7 @@ class Task:
             gen_path_pre = "gen/" + self.exp_name + "/" + query_name
             mutant_path = f"{gen_path_pre}.{str(self.mut_seed)}.{self.perturb}.smt2"
 
-            command = f"{MARIPOSA_BIN_PATH} -i {self.origin_path} -m {self.perturb} -o {mutant_path} -s {self.mut_seed}"
+            command = f"{MARIPOSA_BIN_PATH} -i '{self.origin_path}' -m {self.perturb} -o '{mutant_path}' -s {self.mut_seed}"
 
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
 
@@ -72,7 +72,7 @@ class Task:
         else:
             mutant_path = self.origin_path
 
-        command = f"{solver.path} {mutant_path} -T:{exp.timeout}"
+        command = f"{solver.path} '{mutant_path}' -T:{exp.timeout}"
         out, err, elapsed = subprocess_run(command, exp.timeout + 1)
 
         # TODO: handle other solvers
@@ -83,7 +83,7 @@ class Task:
 
         if not exp.keep_mutants and self.perturb is not None:
             # remove mutant
-            os.system(f"rm {mutant_path}")
+            os.system(f"rm '{mutant_path}'")
         
         con = sqlite3.connect(exp.db_path)
         cur = con.cursor()

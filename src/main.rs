@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Write, stdout, BufRead};
 use rand::seq::SliceRandom;

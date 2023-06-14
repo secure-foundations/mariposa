@@ -46,7 +46,7 @@ query: gen/single_check.smt2_/split.1.smt2
 | reseed     | stable   | 61/61 100.0% | 0.02           | 0.0           |
 ```
 The solver and query pair is expected to be stable, as shown above.
-The first row is the overall status, which considers the status from different mutation methods.
+The first row is the overall status, which considers the results from all the mutation methods.
 Each row that follows is a summary of results from a mutation method, which includes the success rate, mean of response times, and standard deviation of response times.
 The success count is also given.
 Using the default configuration,`60` mutants are generated for each mutation method in addition to the original query.
@@ -90,12 +90,22 @@ Under the key `experiments`, there are a few predefined settings on how to run t
 ```
 ### Analyzers
 
-Under the key `analyzers`, there are a few predefined settings on how to run the analysis. 
+Under the key `analyzers`, there are a few predefined settings on how to run the analysis. The stability of a query can be classified as unsolvable, unstable, stable, or inconclusive. The classification depends on the query's success rate, like so:
+
+```
+    consistently                             consistently
+        poor            inconsistent             good
+0% |-----------|----------------------------|-----------|  100%
+          r_solvable                    r_stable
+                     mutant success rate
+```
+
+When a query's success rate, `r`, is greater than `r_stable`, it is stable. When `r` is less than `r_solvable`, it is unsolvable. Otherwise, it is unstable. The analysis can also be inconclusive for a variety of reasons (too small of a sample size, analysis times out, etc.).
 
 * `ana_timeout` is the time limit in seconds used in the analysis, which can be different from the `exp_timeout` above. One may want to test out smaller `ana_timeout` thresholds and see how the results differ.
 * `confidence` is the confidence level used in hypothesis tests.
-* `r_solvable` is the threshold between `unsolvable` and `unstable` query in terms of the success rate. 
-* `r_stable` is the threshold between `unstable` and `stable` query in terms of the success rate. 
+* `r_solvable` is the threshold between an `unsolvable` and `unstable` query in terms of the success rate. 
+* `r_stable` is the threshold between an `unstable` and `stable` query in terms of the success rate. 
 * `discount` TBD.
 
 ```
@@ -128,7 +138,7 @@ Under the key `projects`, there are a few predefined projects. A project specifi
 
 * `frame_work` is not important. 
 * `clean_dir` is the directory that contains the preprocessed queries.
-* `artifact_solver_name` is the solver that the project was using, which should match one of the definitions under `solvers`. 
+* `artifact_solver_name` is the original solver that the project used during development, which should match one of the definitions under `solvers`. 
 
 ```
 {
