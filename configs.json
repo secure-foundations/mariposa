@@ -64,7 +64,7 @@
     "analyzers": [
         {
             "name": "default",
-            "ana_timeout": 60,
+            "ana_timeout": null,
             "confidence": 0.05,
             "r_solvable": 0.05,
             "r_stable": 0.95,

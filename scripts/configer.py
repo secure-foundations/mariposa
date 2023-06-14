@@ -98,7 +98,7 @@ class Configer:
 
         self.analyzers = dict()
         for obj in objs["analyzers"]:
-            self.analyzers[obj["name"]] = Analyzer(obj["confidence"], obj["ana_timeout"],obj["r_solvable"], obj["r_stable"], obj["discount"])
+            self.analyzers[obj["name"]] = Analyzer(obj["confidence"], obj["ana_timeout"],obj["r_solvable"], obj["r_stable"], obj["discount"], "z_test")
 
         self.exps = dict()
         for obj in objs["experiments"]:

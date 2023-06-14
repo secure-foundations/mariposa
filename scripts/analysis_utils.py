@@ -31,6 +31,8 @@ Z3_4_12_1 = c.load_known_solver("z3_4_12_1")
 
 MAIN_Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8, Z3_4_8_11, Z3_4_11_2, Z3_4_12_1]
 
+MAIN_ANALYZER = c.load_known_analyzer("default")
+
 plt.rcParams['text.usetex'] = True
 plt.rcParams["font.family"] = "serif"
 
@@ -71,6 +73,8 @@ def make_title(proj, solver):
     # star = ""
     # if proj.artifact_solver == solver:
     #     star = r"$\star$"
+    if solver.name in SOLVER_LABELS:
+        return f"{PROJECT_LABELS[proj.name]} {SOLVER_LABELS[solver.name]}"
     return f"{PROJECT_LABELS[proj.name]} {solver.name}"
 
 def get_color_map(keys):
@@ -96,7 +100,7 @@ MUTATION_LABELS = {
 }
 
 def get_unknowns(proj):
-    th = Analyzer(method="strict")
+    th = Analyzer(.05, None, .05, .95, 0.8, "strict")
     summary = load_sum_table(proj, proj.artifact_solver, MAIN_EXP)
     assert summary is not None
     categories = th.categorize_queries(summary)
@@ -121,7 +125,7 @@ def load_exp_sums(proj, skip_unknowns=True, solvers=None):
     return summaries
 
 def _async_categorize_project(ratios, key, rows):
-    ana = Analyzer()
+    ana = MAIN_ANALYZER
     items = ana.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
     ratios[key] = ps
@@ -261,7 +265,7 @@ def _get_data_time_scatter(rows):
     pf, cfs = 0, 0
     ps, css = 0, 0
 
-    ana = Analyzer("z_test")
+    ana = MAIN_ANALYZER
     cats = {i: [] for i in Stability }
 
     scatters = np.zeros((len(rows), 2))
@@ -355,7 +359,7 @@ def plot_appendix_time_scatter():
         plt.close()
 
 def _get_data_time_std(rows):
-    ana = Analyzer()
+    ana = MAIN_ANALYZER
 
     items = ana.categorize_queries(rows)
     stables = items['stable']
@@ -433,7 +437,7 @@ def plot_paper_time_std():
     plt.close()    
 
 def _async_cutoff_categories(categories, i, rows, mutations):
-    ana = Analyzer()
+    ana = MAIN_ANALYZER
     ana._timeout = i * 1e3
     cur = {p: set() for p in mutations + ["unsolvable", "unstable", "intersect"]}
 
@@ -647,7 +651,7 @@ def create_benchmark(projs=MAIN_PROJS):
     os.system(f"mkdir -p {stable_core_path}")
     os.system(f"mkdir -p {stable_ext_path}")
         
-    ana = Analyzer()
+    ana = MAIN_ANALYZER
 
     for proj in projs:
         print(proj.get_project_name())
@@ -746,7 +750,7 @@ skip = {"attest.vad",
 
 def locality_analysis(proj):
     summaries = load_exp_sums(proj, solvers=[Z3_4_12_1])
-    c = Analyzer()
+    c = MAIN_ANALYZER
     counts = {}
     summary = summaries[Z3_4_12_1]
     fnames = set()
@@ -856,7 +860,7 @@ def plot_appendix_srs():
 
 # def count_timeouts(proj):
 #     summaries = load_solver_summaries(proj, skip_unknowns=True)
-#     c = Analyzer("z_test")
+#     c = Analyzer(method="z_test")
 #     c.timeout = 15e4
 
 #     summary = summaries[Z3_4_12_1]
@@ -1439,3 +1443,8 @@ min unsat: {len(min_unsat)}
 min timeout: {len(min_timeout)}
 min unknown: {len(min_unknown)}
                """) 
+
+if __name__ == "__main__":
+#   plot_paper_overall()
+#   plot_paper_time_scatter()
+    plot_appendix_time_scatter()
