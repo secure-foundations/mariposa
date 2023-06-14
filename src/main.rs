@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
-use std::io::{BufReader, BufWriter, Write, stdout};
+use std::io::{BufReader, BufWriter, Write, stdout, BufRead};
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
@@ -9,20 +9,65 @@ use rustop::opts;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
-fn parse_commands_from_file(file_path: &String) -> Vec<concrete::Command> {
+fn convert_comments(file_path: &String) -> Vec<u8> {
+    let file = File::open(file_path).unwrap();
+    let reader = BufReader::new(file);
+    let mut in_comment = false;
+
+    let mut processed_lines :Vec<String> = Vec::new();
+    let mut level = 0;
+
+    for line in reader.lines() {
+        let line = line.unwrap();
+        let mut nline = line.clone();
+
+        for c in line.chars() {
+            if in_comment {
+                continue;
+            }
+            if c == ';' {
+                in_comment = true;
+                // only convert comment if it is at the top level
+                if level == 0 {
+                    nline = format!("(set-info :comment \"{}\")", line);
+                }
+            } else if c == '(' {
+                level += 1;
+            } else if c == ')' {
+                level -= 1;
+            }
+        }
+        processed_lines.push(nline);
+        in_comment = false;
+    }
+
+    processed_lines.join("\n").as_bytes().to_vec()
+}
+
+fn parse_commands_from_file(file_path: &String, convert: bool) -> Vec<concrete::Command> {
     if std::path::Path::new(file_path).exists() == false {
         panic!("[ERROR] input {} does not exist", file_path);
     }
 
-    let file = File::open(file_path).unwrap();
-    let reader = BufReader::new(file);
+    if convert {
+        let content = convert_comments(&file_path);
+        let reader = BufReader::new(content.as_slice());
+        parse_commands_from_reader(reader)
+    } else {
+        let file = File::open(file_path).unwrap();
+        let reader = BufReader::new(file);
+        parse_commands_from_reader(reader)
+    }
+}
 
+fn parse_commands_from_reader<R>(reader: R) -> Vec<concrete::Command> 
+    where R: std::io::BufRead
+{
     let stream = CommandStream::new(
         reader,
         concrete::SyntaxBuilder,
         None,
     );
-
     let mut builder = renaming::TesterModernizer::new(concrete::SyntaxBuilder);
     let commands = stream.collect::<Result<Vec<_>, _>>().unwrap();
     commands.into_iter().map(|c| c.accept(&mut builder).unwrap()).collect()
@@ -195,10 +240,12 @@ impl Manager {
 
     fn dump_non_info_commands(&mut self, commands: &Vec<concrete::Command>) {
         for command in commands {
-            if let concrete::Command::SetInfo {..} = command {
-            } else {
-                writeln!(self.writer, "{}", command).unwrap();
+            if let concrete::Command::SetInfo {keyword:concrete::Keyword(k), ..} = command {
+                if k != "comment" {
+                    continue;
+                }
             }
+            writeln!(self.writer, "{}", command).unwrap();
         }
     }
 }
@@ -219,7 +266,8 @@ fn main() {
     }.parse_or_exit();
 
     let in_file_path = args.in_file_path;
-    let mut commands :Vec<concrete::Command> = parse_commands_from_file(&in_file_path);
+
+    let mut commands :Vec<concrete::Command> = parse_commands_from_file(&in_file_path, args.chop);
 
     if args.chop {
         if args.mutation != "none" {
@@ -240,11 +288,6 @@ fn main() {
         shuffle_asserts(&mut commands, manager.seed);
     } else if args.mutation == "rename" {
         commands = normalize_commands(commands, manager.seed);
-    } else if args.mutation == "sseed" {
-        if manager.seed != DEFAULT_SEED {
-            let solver_seed = manager.seed as u32;
-            manager.dump(&format!("(set-option :random-seed {solver_seed})\n"));
-        };
     } else if args.mutation == "reseed" {
         let smt_seed = manager.seed as u32;
         let sat_seed = (manager.seed >> 32) as u32;
