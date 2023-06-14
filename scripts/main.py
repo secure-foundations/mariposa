@@ -1,5 +1,6 @@
 from runner import *
 from db_utils import *
+# from bisect_utils import *
 # from analysis_utils import *
 import shutil
 from basic_utils import *
@@ -134,6 +135,8 @@ def preprocess_mode(args):
         exit_with_on_fail(result.returncode == 0, "[ERROR] query split failed")
     queries = list_smt2_files(args.out_dir)
     print(f'[INFO] generated {len(queries)} split queries under {args.out_dir}')
+
+# from datetime import datetime
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")

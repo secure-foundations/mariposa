@@ -3,7 +3,7 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rustop::opts;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 
@@ -243,6 +243,116 @@ fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String)
     return splits;
 }
 
+
+fn name_assert(command: &mut concrete::Command, ct: usize) {
+    let concrete::Command::Assert { term } = command else { return; };
+    // does assert have attributes?
+    if let concrete::Term::Attributes { term: _, attributes: _ } = term {
+        // if name already exists, don't mess with it
+    }
+    else {
+        let new_name = "unsat-cores-dump-name-".to_owned() + &ct.to_string();
+        let attributes = vec![(concrete::Keyword("named".to_owned()), visitors::AttributeValue::Symbol(concrete::Symbol(new_name)))];
+        let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
+        std::mem::swap(term, &mut temp);
+        *term = concrete::Term::Attributes { term: Box::new(temp), attributes };
+    }
+}
+
+fn name_asserts(commands: &mut Vec<concrete::Command>) {
+    commands.iter_mut().enumerate().for_each(|(i, x)| name_assert(x, i));
+    commands.insert(0, concrete::Command::SetOption { keyword: concrete::Keyword("produce-unsat-cores".to_owned()), value: visitors::AttributeValue::Symbol(concrete::Symbol("true".to_owned())) });
+    // if (set-option :produce-unsat-cores false) is present, remove it
+    let mut i = 0;
+    while i < commands.len() {
+        let command = &commands[i];
+        if let concrete::Command::SetOption { keyword: concrete::Keyword(k) , value: visitors::AttributeValue::Symbol(concrete::Symbol(v)) } = command {
+            if k == "produce-unsat-cores" && v == "false"{
+                commands.remove(i);
+                continue;
+            }
+        }
+        i += 1;
+    }
+    commands.push(concrete::Command::GetUnsatCore)
+}
+
+fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> bool {
+    let concrete::Command::Assert { term } = command else { 
+        return true;
+    };
+    let named = concrete::Keyword("named".to_owned());
+
+    if let concrete::Term::Attributes { term: _, attributes } = term {
+        for (key, value) in attributes {
+            if key == &named {
+                if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
+                    if core.contains(name) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+
+// return a Vec<String> where each element is the name of an assert from the unsat core
+fn parse_core_from_file(commands: Vec<concrete::Command>, file_path: String) -> Vec<concrete::Command> {
+    // read lines from file
+    let file = File::open(file_path).unwrap();
+    let reader = BufReader::new(file);
+    let lines = reader.lines().map(|x| x.unwrap());
+    // get the last line of the file
+    let last_line = lines.last().unwrap();
+    // last_line could be timeout -- if so, throw error
+    if last_line == "timeout" {
+        panic!("file timed out")
+    }
+    // strip the first and last character 
+    let last_line = &last_line[1..last_line.len()-1];
+    // split the last line into a vector of strings 
+    let core = last_line.split(" ").map(|x| x.to_string()).collect::<Vec<String>>();
+    // convert core to a HashSet
+    let core = core.into_iter().collect::<HashSet<String>>();
+
+    // filter out commands that are not in the core
+    let new_commands = commands.into_iter().filter(|x| should_keep_command(x, &core)).collect::<Vec<concrete::Command>>();
+    return new_commands;
+}
+
+fn clean_name(command: &mut concrete::Command) {
+    let concrete::Command::Assert { term } = command else { return; };
+    let named = concrete::Keyword("named".to_owned());
+    let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
+    let mut flag = false;
+
+    // does assert have a named attribute?
+    if let concrete::Term::Attributes { term: new_term, attributes } = term {
+        for (key, value) in attributes {
+            if key == &named {
+                if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
+                    // check if name starts with "unsat-cores-dump-name-"
+                    if name.starts_with("unsat-cores-dump-name-") {
+                        // yuck but doesn't seem to affect performance significantly
+                        temp = *new_term.clone();
+                        flag = true;
+                    }
+                }
+            }
+        }
+    }
+    if flag {
+        *command = concrete::Command::Assert { term: temp };
+    }
+
+}
+
+fn clean_names(commands: &mut Vec<concrete::Command>) {
+    commands.iter_mut().for_each(|x| clean_name(x));
+}
+
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -296,6 +406,8 @@ fn main() {
         desc: "seed for randomness";
         opt chop:bool=false,
             desc: "split the input file into multiple files based on check-sats";
+        opt core_file:Option<String>,
+            desc: "file containing unsat cores";
     }
     .parse_or_exit();
 
@@ -329,6 +441,18 @@ fn main() {
         manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
     } else if args.mutation == "lower_shuffle" {
         commands = lower_shuffle_asserts(commands, manager.seed);
+    } else if args.mutation == "unsat-core" {
+            name_asserts(&mut commands);
+    } else if args.mutation == "minimize-query" {
+        commands = parse_core_from_file(commands, args.core_file.unwrap());
+        // minimize-query will now also clean names by default
+        // cleans names that were put in by mariposa
+        clean_names(&mut commands);
+        // remove produce unsat core at top and get-unsat-core from the bottom
+        commands = commands[1..commands.len()-1].to_vec();
+    } else if args.mutation == "clean-names" {
+        clean_names(&mut commands);
     }
+
     manager.dump_non_info_commands(&commands);
 }

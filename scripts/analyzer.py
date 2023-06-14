@@ -34,20 +34,22 @@ class Stability(str, Enum):
         return em
 
 def count_within_timeout(blob, rcode, timeout=1e6):
+    if timeout == None:
+        return np.sum(blob[0] == rcode.value)
     success = blob[0] == rcode.value
     none_timeout = blob[1] < timeout
     success = np.sum(np.logical_and(success, none_timeout))
     return success
 
 class Analyzer:
-    def __init__(self, confidence=0.95, timeout=60, r_solvable=0.05, r_stable=0.95, discount=0.8, method="z_test"):
+    def __init__(self, confidence, timeout, r_solvable, r_stable, discount, method):
         self.confidence = confidence
-        self._timeout = timeout * 1000
+        self._timeout = timeout * 1000 if timeout != None else None
         self.r_solvable = r_solvable * 100
         self.r_stable = r_stable * 100
         self.discount = discount
 
-        exit_with_on_fail(timeout > 0, "[ERROR] timeout (seconds) must be positive")
+        exit_with_on_fail(timeout == None or timeout > 0, "[ERROR] timeout (seconds) must be positive or None")
         exit_with_on_fail(is_ratio(confidence), "[ERROR] confidence must be a value between 0 and 1")
         exit_with_on_fail(is_ratio(r_solvable), "[ERROR] r-solvable must be a value between 0 and 1")
         exit_with_on_fail(is_ratio(r_stable), "[ERROR] r-stable must be a value between 0 and 1")
@@ -95,7 +97,10 @@ class Analyzer:
         size =  group_blob.shape[1]
 
         unsat_indices = group_blob[0] == RCode.UNSAT.value
-        nto_indices = group_blob[1] < self._timeout
+        if self._timeout == None:
+            nto_indices = np.ones(size, dtype=bool)
+        else:
+            nto_indices = group_blob[1] < self._timeout
         valid_indices = np.logical_and(unsat_indices, nto_indices)
         success = np.sum(valid_indices)
 
@@ -120,15 +125,20 @@ class Analyzer:
                                         alternative='smaller',
                                         prop_var=value)
 
-        if p_value <= self.confidence and \
-            np.mean(group_blob[1][valid_indices]) < self._timeout * self.discount:
-            return Stability.UNSTABLE
+        if self._timeout == None:
+            if p_value <= self.confidence:
+                return Stability.UNSTABLE
+        else:
+            if p_value <= self.confidence and \
+                np.mean(group_blob[1][valid_indices]) < self._timeout * self.discount:
+                return Stability.UNSTABLE
     
         _, p_value = proportions_ztest(count=success, 
                                         nobs=size,
                                         value=value,
                                         alternative='larger',
                                         prop_var=value)
+
         if p_value <= self.confidence:
             return Stability.STABLE
         return Stability.INCONCLUSIVE
@@ -167,3 +177,4 @@ class Analyzer:
             item = [mutations[i], votes[i].value, f"{count}/{mut_size} {round(count / (mut_size) * 100, 1)}%", f"{round(np.mean(times), 2)}", f"{round(np.std(times), 2)}"]
             table.append(item)
         print(tabulate(table, headers=["mutation", "status", "success", "mean(second)", "std(second)"], tablefmt="github"))
+

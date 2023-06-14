@@ -31,6 +31,8 @@ Z3_4_12_1 = c.load_known_solver("z3_4_12_1")
 
 MAIN_Z3_SOLVERS = [Z3_4_4_2, Z3_4_5_0, Z3_4_6_0, Z3_4_8_5, Z3_4_8_8, Z3_4_8_11, Z3_4_11_2, Z3_4_12_1]
 
+MAIN_ANALYZER = c.load_known_analyzer("default")
+
 plt.rcParams['text.usetex'] = True
 plt.rcParams["font.family"] = "serif"
 
@@ -71,6 +73,8 @@ def make_title(proj, solver):
     # star = ""
     # if proj.artifact_solver == solver:
     #     star = r"$\star$"
+    if solver.name in SOLVER_LABELS:
+        return f"{PROJECT_LABELS[proj.name]} {SOLVER_LABELS[solver.name]}"
     return f"{PROJECT_LABELS[proj.name]} {solver.name}"
 
 def get_color_map(keys):
@@ -96,7 +100,7 @@ MUTATION_LABELS = {
 }
 
 def get_unknowns(proj):
-    th = Analyzer(method="strict")
+    th = Analyzer(.05, None, .05, .95, 0.8, "strict")
     summary = load_sum_table(proj, proj.artifact_solver, MAIN_EXP)
     assert summary is not None
     categories = th.categorize_queries(summary)
@@ -121,7 +125,7 @@ def load_exp_sums(proj, skip_unknowns=True, solvers=None):
     return summaries
 
 def _async_categorize_project(ratios, key, rows):
-    ana = Analyzer()
+    ana = MAIN_ANALYZER
     items = ana.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
     ratios[key] = ps
@@ -261,7 +265,7 @@ def _get_data_time_scatter(rows):
     pf, cfs = 0, 0
     ps, css = 0, 0
 
-    ana = Analyzer("z_test")
+    ana = MAIN_ANALYZER
     cats = {i: [] for i in Stability }
 
     scatters = np.zeros((len(rows), 2))
@@ -355,7 +359,7 @@ def plot_appendix_time_scatter():
         plt.close()
 
 def _get_data_time_std(rows):
-    ana = Analyzer()
+    ana = MAIN_ANALYZER
 
     items = ana.categorize_queries(rows)
     stables = items['stable']
@@ -433,7 +437,7 @@ def plot_paper_time_std():
     plt.close()    
 
 def _async_cutoff_categories(categories, i, rows, mutations):
-    ana = Analyzer()
+    ana = MAIN_ANALYZER
     ana._timeout = i * 1e3
     cur = {p: set() for p in mutations + ["unsolvable", "unstable", "intersect"]}
 
@@ -647,7 +651,7 @@ def create_benchmark(projs=MAIN_PROJS):
     os.system(f"mkdir -p {stable_core_path}")
     os.system(f"mkdir -p {stable_ext_path}")
         
-    ana = Analyzer()
+    ana = MAIN_ANALYZER
 
     for proj in projs:
         print(proj.get_project_name())
@@ -746,7 +750,7 @@ skip = {"attest.vad",
 
 def locality_analysis(proj):
     summaries = load_exp_sums(proj, solvers=[Z3_4_12_1])
-    c = Analyzer()
+    c = MAIN_ANALYZER
     counts = {}
     summary = summaries[Z3_4_12_1]
     fnames = set()
@@ -856,7 +860,7 @@ def plot_appendix_srs():
 
 # def count_timeouts(proj):
 #     summaries = load_solver_summaries(proj, skip_unknowns=True)
-#     c = Analyzer("z_test")
+#     c = Analyzer(method="z_test")
 #     c.timeout = 15e4
 
 #     summary = summaries[Z3_4_12_1]
@@ -1013,7 +1017,7 @@ def plot_appendix_srs():
 #     plt.savefig("fig/compare.pdf")
 
 # def plot_paper_figs():
-plot_paper_overall()
+#     plot_paper_overall()
 #     plot_paper_ext_cutoff()
 #     plot_paper_pert_diff()
 #     plot_paper_time_std()
@@ -1026,3 +1030,421 @@ plot_paper_overall()
 #     plot_appendix_time_scatter()
 #     plot_appendix_sizes()
 #     plot_appendix_srs()
+
+
+### unsat core figures:
+
+def get_unsat_core_stats(project):
+    # open "data/unsat_core.db" and get rows 
+    con, cur = get_cursor("data/unsat_core.db")
+    # for each row, get the 1.) unsat core path 2.) original query path 3.) original query time 4.) unsat core time 5.) original query size 6.) unsat core size
+    get_size = cur.execute(f"SELECT query_path FROM {project.name.upper()}_MIN_ASSERTS_z3_4_8_5")
+    project_name_caps = ""
+    if "_z3" in project.name:
+        project_name_caps = project.name[:-3].upper()
+    else:
+        project_name_caps = project.name.upper()
+    project_name = project_name_caps.lower()
+    original_table_name = f"{project_name_caps}_z3_4_8_5"
+    size_res = []
+    for query_path in get_size.fetchall():
+        query_name = query_path[0].split("/")[-1]
+        core_path = query_path[0]
+        original_path = project.original_root + query_name
+        original_size = os.path.getsize(original_path)
+        unsat_size = os.path.getsize(core_path)
+        size_res.append(unsat_size / original_size)
+    for check in size_res:
+        if check > 1 or check <= 0: print(f"error: {check}")
+
+    get_time = cur.execute(f"SELECT query_path, elapsed_milli FROM {project.name.upper()}_MIN_ASSERTS_z3_4_8_5 WHERE result_code = 'unsat' ")
+    mariposa_con, mariposa_cur = get_cursor("data/mariposa.db")
+    mariposa_cur.execute(f"SELECT query_path, elapsed_milli FROM {original_table_name} WHERE query_path like 'data%' ")
+    time_dict = dict(mariposa_cur.fetchall())
+    time_res = []
+    for query_path, unsat_time in get_time.fetchall():
+        query_name = query_path.split("/")[-1]
+        core_path = query_path
+        original_path = f"data/{project.name}_clean/{query_name}"
+        original_time = time_dict[original_path]
+        time_res.append(unsat_time / original_time)
+
+    # return a tuple of lists ([size ratio list], [time ratio list]) for time and size ratio graphs
+    return [size_res, time_res]
+
+def plot_size_reduction_graph():
+    fig, ax = plt.subplots()
+    ax.set_xlim(left=0.0, right=1.0)
+    ax.set_title('all projects size ratio cdf')
+    ax.set_ylabel("cumulative proportion of queries (\%)")
+    ax.set_xlabel("size ratio (minimized asserts query filesize / original query filesize)")
+    for project in PROJECTS:
+        project_name_caps = ""
+        if "_z3" in project.name:
+            project_name_caps = project.name[:-3].upper()
+        else:
+            project_name_caps = project.name.upper()
+        size_res = get_unsat_core_stats(project)[0]
+        xs, ys = get_cdf_pts(size_res)
+        label = PROJECT_LABELS[project_name_caps]
+        color = PROJECT_COLORS[project_name_caps]
+        ax.plot(xs, ys, label=label, color=color, linewidth=0.5)
+        ax.plot(np.max(xs), np.max(ys), marker="o", color=color, markersize=2)
+    plt.legend(loc='best')
+    plt.savefig(f"fig/unsat_core/all_size.pdf")
+    plt.close()
+    
+
+
+def plot_time_reduction_graph_zoomed():
+    fig, ax = plt.subplots()
+    ax.set_xlim(left=0.0, right=2.0)
+    ax.set_title('all projects runtime ratio cdf zoomed')
+    ax.set_ylabel("cumulative proportion of queries (\%)")
+    ax.set_xlabel("runtime ratio (minimized asserts query runtime / original query runtime)")
+#   ax.set_xscale("log")
+#   ax.set_yscale("log")
+    for project in PROJECTS:
+        project_name_caps = ""
+        if "_z3" in project.name:
+            project_name_caps = project.name[:-3].upper()
+        else:
+            project_name_caps = project.name.upper()
+        time_res = get_unsat_core_stats(project)[1]
+        xs, ys = get_cdf_pts(time_res)
+        label = PROJECT_LABELS[project_name_caps]
+        color = PROJECT_COLORS[project_name_caps]
+        ax.plot(xs, ys, label=label, color=color, linewidth=0.5)
+        ax.plot(np.max(xs), np.max(ys), marker="o", color=color, markersize=2)
+    plt.legend(loc='best')
+    plt.savefig(f"fig/unsat_core/all_time_zoomed.pdf")
+    plt.close()
+
+
+def plot_time_reduction_graph():
+    fig, ax = plt.subplots()
+    ax.set_title('all projects runtime ratio cdf')
+    ax.set_ylabel("cumulative proportion of queries (\%)")
+    ax.set_xlabel("runtime ratio (minimized asserts query runtime / original query runtime)")
+    ax.set_xscale("log")
+    for project in PROJECTS:
+        project_name_caps = ""
+        if "_z3" in project.name:
+            project_name_caps = project.name[:-3].upper()
+        else:
+            project_name_caps = project.name.upper()
+        time_res = get_unsat_core_stats(project)[1]
+        xs, ys = get_cdf_pts(time_res)
+        label = PROJECT_LABELS[project_name_caps]
+        color = PROJECT_COLORS[project_name_caps]
+        ax.plot(xs, ys, label=label, color=color, linewidth=0.5)
+        ax.plot(np.max(xs), np.max(ys), marker="o", color=color, markersize=2)
+    plt.legend(loc='best')
+    plt.savefig(f"fig/unsat_core/all_time.pdf")
+    plt.close()
+    
+
+def get_size_vs_time_data(db_path, table_name, query_root=""):
+    con, cur = get_cursor(db_path)
+    res = cur.execute(f"SELECT query_path, elapsed_milli FROM {table_name} WHERE result_code = 'unsat' and query_path like 'data%' ")
+    pair = ([], [])
+    for query_path, time in res.fetchall():
+        query_name = query_path.split("/")[-1]
+        file_size = os.path.getsize(query_root + query_name)
+        pair[0].append(file_size)
+        pair[1].append(time)
+    return pair
+
+def plot_size_vs_time_correlations():
+    fig, ax = plt.subplots()
+    ax.set_title('all projects size vs time correlations')
+    ax.set_xlabel("file size (MB)")
+    ax.set_ylabel("time (seconds)")
+    for i, project in enumerate(PROJECTS):
+        project_name_caps = ""
+        if "_z3" in project.name:
+            project_name_caps = project.name[:-3].upper()
+        else:
+            project_name_caps = project.name.upper()
+        project_name = project_name_caps.lower()
+        original_table_name = f"{project_name_caps}_z3_4_8_5"
+        xs, ys = get_size_vs_time_data("data/mariposa.db", original_table_name, project.original_root)
+        xs = [x/1000000 for x in xs]
+        ys = [y/1000 for y in ys]
+        label = PROJECT_LABELS[project_name_caps]
+        color = PROJECT_COLORS[project_name_caps]
+        # scatter plot xs and ys
+        ax.scatter(xs, ys, label=label, color=color, s=1)
+    ax.legend(loc="best")
+    plt.savefig(f"fig/unsat_core/size_vs_time.pdf")
+    plt.close()
+
+import statsmodels.formula.api as smf
+import pandas as pd
+def plot_size_vs_time_regression():
+    fig, ax = plt.subplots()
+    ax.set_title('all projects size vs time correlations w/ regression')
+    ax.set_xlabel("file size (MB)")
+    ax.set_ylabel("time (seconds)")
+    ax.set_xlim(left=-1,right=30)
+    xss = []
+    yss = []
+    for i, project in enumerate(PROJECTS):
+        project_name_caps = ""
+        if "_z3" in project.name:
+            project_name_caps = project.name[:-3].upper()
+        else:
+            project_name_caps = project.name.upper()
+        project_name = project_name_caps.lower()
+        original_table_name = f"{project_name_caps}_z3_4_8_5"
+        xs, ys = get_size_vs_time_data("data/mariposa.db", original_table_name, project.original_root)
+        xs = [x/1000000 for x in xs]
+        ys = [y/1000 for y in ys]
+        xss += xs; yss += ys
+        label = PROJECT_LABELS[project_name_caps]
+        color = PROJECT_COLORS[project_name_caps]
+        # scatter plot xs and ys
+        ax.scatter(xs, ys, label=label, color=color, s=.5, alpha=.5)
+    # regression on xss, yss
+    xss = np.array(xss); yss = np.array(yss)
+    model = smf.quantreg('time ~ size', pd.DataFrame({'size':xss, 'time':yss})).fit(q=.001)
+    y_line = lambda a, b: a + b * xss
+    y = y_line(model.params['Intercept'],
+               model.params['size'])
+    y_another_line = y_line(2+ model.params['Intercept'],
+               model.params['size'])
+    # count number of points falling below y_another_line
+    count = 0
+    for i in range(len(xss)):
+        if yss[i] < y_another_line[i]:
+            count += 1
+    print(f"percentage of queries inside 2 seconds lines: {count} / {len(xss)}:")
+    print(count / len(xss))
+    print(model.summary())
+    ax.plot(xss, y, color="black", lw=.5, label=f".001 (slope = {model.params['size']})")
+    ax.plot(xss, y_another_line, color="red", lw=.5, label=".001 line + 2 secs")
+    ax.legend(loc="best")
+    plt.savefig(f"fig/unsat_core/size_vs_time_regression.pdf")
+    plt.close()
+
+def plot_size_vs_time_regression_unsat_core():
+    fig, ax = plt.subplots()
+    ax.set_title('all projects min asserts size vs time correlations w/ regression')
+    ax.set_xlabel("file size (MB)")
+    ax.set_ylabel("time (seconds)")
+    ax.set_xlim(left=-.5,right=13)
+    xss = []
+    yss = []
+    for i, project in enumerate(PROJECTS):
+        project_name_caps = ""
+        if "_z3" in project.name:
+            project_name_caps = project.name[:-3].upper()
+        else:
+            project_name_caps = project.name.upper()
+        project_name = project_name_caps.lower()
+        original_table_name = f"{project.name.upper()}_MIN_ASSERTS_z3_4_8_5"
+        xs, ys = get_size_vs_time_data("data/unsat_core.db", original_table_name, project.min_assert_root)
+        xs = [x/1000000 for x in xs]
+        ys = [y/1000 for y in ys]
+        xss += xs; yss += ys
+        label = PROJECT_LABELS[project_name_caps]
+        color = PROJECT_COLORS[project_name_caps]
+        # scatter plot xs and ys
+        ax.scatter(xs, ys, label=label, color=color, s=.5, alpha=.5)
+    # regression on xss, yss
+    xss = np.array(xss); yss = np.array(yss)
+    model = smf.quantreg('time ~ size', pd.DataFrame({'size':xss, 'time':yss})).fit(q=.001)
+    y_line = lambda a, b: a + b * xss
+    y = y_line(model.params['Intercept'],
+               model.params['size'])
+    y_another_line = y_line(2+ model.params['Intercept'],
+               model.params['size'])
+    # count number of points falling below y_another_line
+    count = 0
+    for i in range(len(xss)):
+        if yss[i] < y_another_line[i]:
+            count += 1
+    print(f"percentage of queries inside 2 seconds lines: {count} / {len(xss)}:")
+    print(count / len(xss))
+    print(model.summary())
+    ax.plot(xss, y, color="black", lw=.5, label=f".001 (slope = {model.params['size']})")
+    ax.plot(xss, y_another_line, color="red", lw=.5, label=".001 line + 2 secs")
+    ax.legend(loc="best")
+    plt.savefig(f"fig/unsat_core/size_vs_time_regression_unsat_core.pdf")
+    ax.set_ylim(bottom=-1,top=40)
+    plt.savefig(f"fig/unsat_core/size_vs_time_regression_unsat_core_zoomed.pdf")
+    plt.close()
+
+def plot_pie_chart():
+    fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(30,10))
+    for i, project in enumerate(PROJECTS):
+        og_unsat = set()
+        og_timeout = set()
+        og_unknown = set()
+        min_unsat = set()
+        min_timeout = set()
+        min_unknown = set()
+        original_queries_table = f"{project.name.upper()}_UNSAT_CORE_z3_4_8_5"
+        min_queries_table = f"{project.name.upper()}_MIN_ASSERTS_z3_4_8_5"
+        con, cur = get_cursor("data/unsat_core.db")
+        res = cur.execute(f"SELECT query_path, result_code FROM {original_queries_table}")
+        for query_path, result in res:
+            query = query_path.split("/")[-1]
+            if result == "unsat": og_unsat.add(query)
+            elif result == "timeout": og_timeout.add(query)
+            elif result == "unknown": og_unknown.add(query)
+        res = cur.execute(f"SELECT query_path, result_code FROM {min_queries_table}")
+        for query_path, result in res:
+            query = query_path.split("/")[-1]
+            if result == "unsat": min_unsat.add(query)
+            elif result == "timeout": min_timeout.add(query)
+            elif result == "unknown": min_unknown.add(query)
+        print(project.name)
+        values = [len(og_timeout), len(og_unknown), len(min_timeout), len(min_unknown), len(min_unsat)]
+        val_sum = np.sum(values)
+        percs = [ "{:.1%}".format(x / val_sum ) for x in values]
+        print(percs)
+        labels = ["original query timeout ", "original query unknown", "original query unsat and minimized query timeout", "original query unsat and minimized query unknown", "original query unsat and\nminimized query unsat"]
+        labels = [f"{label} (${percs[i][:-1]}\%$)" for i, label in enumerate(labels)]
+        explode = [0.2,0.2,0,0,0]
+        colors = [
+            "#803E75", # Strong Purple
+            "#FF6800", # Vivid Orange
+            "#A6BDD7", # Very Light Blue
+            "#FFB300", # Vivid Yellow
+            "#C10020", # Vivid Red
+            "#817066", # Medium Gray
+        ]
+        # exclude labels[i], percs[i], explode[i], and values[i] if values[i] == 0
+        j = 0
+        while j < len(values):
+            if values[j] == 0:
+                labels.pop(j)
+                percs.pop(j)
+                values.pop(j)
+                explode.pop(j)
+                colors.pop(j)
+            else: j+=1
+        ax = axs[i//3][i%3]
+        ax.set_title(f"{project.name} original and min query results distribution")
+
+        kw = dict(arrowprops=dict(arrowstyle="-"),
+                  zorder=0, va="center")
+
+#       for i, p in enumerate(wedges):
+#           ang = (p.theta2 - p.theta1)/2. + p.theta1
+#           y = np.sin(np.deg2rad(ang))
+#           x = np.cos(np.deg2rad(ang))
+#           horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]
+#           connectionstyle = f"angle,angleA=0,angleB={ang}"
+#           kw["arrowprops"].update({"connectionstyle": connectionstyle})
+#           ax.annotate(labels[i], xy=(x, y), # xytext=(1.9*np.sign(x), 1.9*y), 
+#                       horizontalalignment=horizontalalignment, **kw, fontsize=9)
+
+        ax.pie(values, labels = labels, explode = explode, textprops={'fontsize': 6}, labeldistance=1.25, colors=colors)
+    plt.savefig(f"fig/unsat_core/all_pie.pdf")
+
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
+def plot_pie_chart_plotly():
+    fig = make_subplots(rows=2,cols=3, specs=[[{"type":"domain"} for _ in range(3)] for _ in range(2)], subplot_titles=[project.name for project in PROJECTS])
+    for i, project in enumerate(PROJECTS):
+        og_unsat = set()
+        og_timeout = set()
+        og_unknown = set()
+        min_unsat = set()
+        min_timeout = set()
+        min_unknown = set()
+        original_queries_table = f"{project.name.upper()}_UNSAT_CORE_z3_4_8_5"
+        min_queries_table = f"{project.name.upper()}_MIN_ASSERTS_z3_4_8_5"
+        con, cur = get_cursor("data/unsat_core.db")
+        res = cur.execute(f"SELECT query_path, result_code FROM {original_queries_table}")
+        for query_path, result in res:
+            query = query_path.split("/")[-1]
+            if result == "unsat": og_unsat.add(query)
+            elif result == "timeout": og_timeout.add(query)
+            elif result == "unknown": og_unknown.add(query)
+        res = cur.execute(f"SELECT query_path, result_code FROM {min_queries_table}")
+        for query_path, result in res:
+            query = query_path.split("/")[-1]
+            if result == "unsat": min_unsat.add(query)
+            elif result == "timeout": min_timeout.add(query)
+            elif result == "unknown": min_unknown.add(query)
+        print(project.name)
+        values = [len(og_timeout), len(og_unknown), len(min_timeout), len(min_unknown), len(min_unsat)]
+        val_sum = np.sum(values)
+        percs = [ "{:.1%}".format(x / val_sum ) for x in values]
+        print(percs)
+        labels = ["original query timeout", "original query unknown", "original query unsat and min query timeout", "original query unsat and min query unknown", "original query unsat and min query unsat"]
+#       explode = [0.2,0.2,0,0,0]
+        colors = [
+            "#803E75", # Strong Purple
+            "#FF6800", # Vivid Orange
+            "#A6BDD7", # Very Light Blue
+            "#FFB300", # Vivid Yellow
+            "#C10020", # Vivid Red
+            "#817066", # Medium Gray
+        ]
+        # exclude labels[i], percs[i], explode[i], and values[i] if values[i] == 0
+        j = 0
+        while j < len(values):
+            if values[j] == 0:
+                labels.pop(j)
+                percs.pop(j)
+                values.pop(j)
+#               explode.pop(j)
+                colors.pop(j)
+            else: 
+                labels[j] += f" ({values[j]})"
+                j+=1
+        fig.add_trace(go.Pie(labels=labels, values=values, textinfo='label+percent', 
+                              showlegend=False, 
+                             marker=dict(colors=colors)), row=(i)//3+1, col=(i)%3+1)
+    # move titles down
+    fig.update_annotations(yshift=-300)
+    fig.update_layout(height=900, width=1350)
+    # following 3 lines are to avoid "Loading Mathjax" issue
+    fig.write_image("fig/unsat_core/all_pie_plotly.pdf")
+    import time
+    time.sleep(2)
+    fig.write_image("fig/unsat_core/all_pie_plotly.pdf")
+
+
+def generate_table():
+    for project in PROJECTS:
+        og_unsat = set()
+        og_timeout = set()
+        og_unknown = set()
+        min_unsat = set()
+        min_timeout = set()
+        min_unknown = set()
+        original_queries_table = f"{project.name.upper()}_UNSAT_CORE_z3_4_8_5"
+        min_queries_table = f"{project.name.upper()}_MIN_ASSERTS_z3_4_8_5"
+        con, cur = get_cursor("data/unsat_core.db")
+        res = cur.execute(f"SELECT query_path, result_code FROM {original_queries_table}")
+        for query_path, result in res:
+            query = query_path.split("/")[-1]
+            if result == "unsat": og_unsat.add(query)
+            elif result == "timeout": og_timeout.add(query)
+            elif result == "unknown": og_unknown.add(query)
+        res = cur.execute(f"SELECT query_path, result_code FROM {min_queries_table}")
+        for query_path, result in res:
+            query = query_path.split("/")[-1]
+            if result == "unsat": min_unsat.add(query)
+            elif result == "timeout": min_timeout.add(query)
+            elif result == "unknown": min_unknown.add(query)
+        print(project.name)
+        print(f"""original unsat: {len(og_unsat)}
+original timeout: {len(og_timeout)}
+original unknown: {len(og_unknown)}
+min unsat: {len(min_unsat)}
+min timeout: {len(min_timeout)}
+min unknown: {len(min_unknown)}
+               """) 
+
+if __name__ == "__main__":
+#   plot_paper_overall()
+#   plot_paper_time_scatter()
+    plot_appendix_time_scatter()
