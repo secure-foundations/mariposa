@@ -1,33 +1,29 @@
 # Mariposa
 
-Mariposa is a tool for testing SMT proof stability.  Given a query and a solver, Mariposa:
-* performs mutations to the query
-* run the solver on the mutants
-* report the stability status based on the performance of the mutants
+Mariposa is a tool for testing and quantifying SMT-based proof stability.  Given an SMT query and a solver, Mariposa:
+* creates multiple semantics-preserving mutations of the query
+* runs the solver on the mutants and collects the results and performance data
+* applies statistical tests to the data in order to assign a stability category
+* reports the stability category and relevant stability metrics
 
 ## Prerequisites
 
-In the current setup, the compressed database files from past experiments are all part of the commit history.
-Therefore, we recommend avoid fetching the full history when cloning this repository:
-
+1. Clone this repository.  Since this repository currently includes in the commit history the compressed database files from our past experiments, we recommend that you avoid fetching the full history when cloning:
 ```
 git clone --filter=blob:none git@github.com:secure-foundations/mariposa.git
 ```
 
-We have some rust code that parses and mutates queries, to compile this part:
-
+2. You will need a working Rust toolchain to compile the Mariposa code that parses and mutates queries.  To compile this code, run:
 ```
 cargo build --release
 ```
 
-We have some python code that performs the experiments and analysis.
-This part was written using `python 3.8.10` (and not well tested on other versions).
-To install the required packages:
-
+3. You will need a working Python 3 installation to run the code that performs the experiments and analysis.  This code was written using Python 3.8.10 (and has not been tested on other versions).  To install the required packages, run
 ```
 pip3 install -r requirements.txt
 ```
 ## Quick Start
+**TODO: This appears to require a Z3 installation.  Does Z3 just need to be in the PATH, or does it need to be somewhere specific?**
 
 To perform a basic sanity check:
 ```
@@ -54,22 +50,22 @@ Therefore `61/61` means all the mutants (and the original) succeeded for a mutat
 
 ## Configurations
 
-The experiment or analysis results could differ drastically based on the specific configurations.
-Since there are many configuration parameters and easy to lose track, the parameters are loaded from `configs.json`, which provides several predefined settings.
-If one wishes to use a different setting, we recommend extending the `configs.json`, which contains 4 parts.
+Mariposa supports many configuration options that can drastically affect the outcome of your experiments.
+These options are loaded from `configs.json`, which provides several predefined settings.
+To use a different setting, we recommend modifying the `configs.json` file, which contains 4 parts.
 
 ### Experiments
 
-Under the key `experiments`, there are a few predefined settings on how to run the experiments. 
+Under the key `experiments`, there are a few predefined settings that control how the experiments are run. 
 
-* `mutations` is the enabled mutation methods, where currently `shuffle`, `rename`, `reseed` are supported.
-* `num_mutants` is the number of mutants to generate for each mutation method. It is set to `60` In the previous example, so `shuffle`, `rename`, `reseed` each generated `60` mutants, `180` in total.
-* `keep_mutants` controls whether the mutant will be removed after the experiment. Usually only set to `true` for debugging, since mutants can occupy a lot of space.
-* `init_seed` TBD.
+* `mutations` is a list of enabled mutation methods; currently `shuffle`, `rename`, `reseed` are supported.
+* `num_mutants` is the number of mutants to generate for each mutation method. It is set to `60` In the previous example, so `shuffle`, `rename`, `reseed` each generated `60` mutants for `180` in total.
+* `keep_mutants` controls whether the files containing the mutants will be removed after the experiment. Usually only set to `true` for debugging, since mutants can occupy a lot of space.
+* `init_seed` **TODO: TBD**.
 * `exp_timeout` is the time limit in seconds for the solver to run on each mutant.
-* `num_procs` is the number of processes in parallel when performing the experiments. We recommend setting this to be at most **number_of_physical_cores - 1**. 
+* `num_procs` is the number of processes to run in parallel when performing the experiments. We recommend setting this to be at most **number_of_physical_cores - 1**. 
 * `db_path` is the database file to store the results. This is automatically taken care of in the `single` mode, as explained below. 
-* `db_mode` TBD.
+* `db_mode` **TODO: TBD**.
 
 ```
 {
@@ -90,7 +86,7 @@ Under the key `experiments`, there are a few predefined settings on how to run t
 ```
 ### Analyzers
 
-Under the key `analyzers`, there are a few predefined settings on how to run the analysis. The stability of a query can be classified as unsolvable, unstable, stable, or inconclusive. The classification depends on the query's success rate, like so:
+Under the key `analyzers`, there are a few predefined settings that control how the analysis is performed. The stability of a query can be classified as unsolvable, unstable, stable, or inconclusive. The classification depends on the query's success rate, like so:
 
 ```
     consistently                             consistently
@@ -106,7 +102,7 @@ When a query's success rate, `r`, is greater than `r_stable`, it is stable. When
 * `confidence` is the confidence level used in hypothesis tests.
 * `r_solvable` is the threshold between an `unsolvable` and `unstable` query in terms of the success rate. 
 * `r_stable` is the threshold between an `unstable` and `stable` query in terms of the success rate. 
-* `discount` TBD.
+* `discount` **TODO: TBD**.
 
 ```
 {
@@ -120,9 +116,9 @@ When a query's success rate, `r`, is greater than `r_stable`, it is stable. When
 ```
 ### Solvers
 
-Under the key `solvers`. there are a few predefined solvers. 
+Under the key `solvers`, there are a few predefined solvers. 
 
-* `path` is where the solver can be found. When adding a solver, one does not have to follow the naming convention.
+* `path` is where the solver can be found. 
 * `date` is the date when the solver was released. 
 
 ```
@@ -134,9 +130,9 @@ Under the key `solvers`. there are a few predefined solvers.
 ```
 ### Projects
 
-Under the key `projects`, there are a few predefined projects. A project specifies a collection of **preprocessed** queries in a directory. The directory contains only `*.smt2` files and no nested directories. Each `.smt2` file contains one `(check-sat)` command and is parsable by Mariposa. `preprocess` mode can be used to produce such directory (explained later). 
+Under the key `projects`, there are a few predefined projects. A project specifies a collection of **preprocessed** queries in a directory. The directory contains only `*.smt2` files and no nested directories. Each `.smt2` file contains one `(check-sat)` command and is parsable by Mariposa. `preprocess` mode can be used to produce such a directory (explained later). 
 
-* `frame_work` is not important. 
+* `frame_work` is an arbitrary label; we use it to record the verification tool that produced the original SMT2 files. 
 * `clean_dir` is the directory that contains the preprocessed queries.
 * `artifact_solver_name` is the original solver that the project used during development, which should match one of the definitions under `solvers`. 
 
@@ -151,11 +147,11 @@ Under the key `projects`, there are a few predefined projects. A project specifi
 
 ## Use Cases
 
-The python script `scripts/main.py` is the main interface of Mariposa. It has a required argument for operation mode, which is either `single`, `multiple` or `preprocess`.
+The Python script `scripts/main.py` is Mariposa's main interface. It has a required argument for operation mode, which is either `single`, `multiple`, or `preprocess`.
 
-* `single` mode "quickly" tests out the stability of a single query solver pair.
-* `multiple` mode performs experiments on a predefined project (in the `configs.json`), which can contain many queries that is already *preprocessed*. 
-* `preprocess` gathers and cleans the queries so that they can be ran in the `multiple` mode. 
+* `single` mode "quickly" tests out the stability of a single query-solver pair.
+* `multiple` mode performs experiments on a predefined project (in the `configs.json`), which can contain many queries that are already *preprocessed*. 
+* `preprocess` gathers and cleans the queries so that they can be run in the `multiple` mode. 
 
 ### Single Mode 
 
@@ -167,7 +163,7 @@ The results are stored in a temporary database under `gen/`. This mode can handl
 ```
 python3 scripts/main.py single -s z3_4_12_1 -q data/samples/multiple_checks.smt2
 ```
-The query file actually contains 3 `(check-sat)` commands. The split queries are placed in `gen/multiple_checks.smt2_/`, which is named after the query that was ran.
+The query file actually contains three `(check-sat)` commands. The split queries are placed in `gen/multiple_checks.smt2_/`, which is named after the query that ran.
 ```
 [INFO] single mode will use db gen/multiple_checks.smt2_/test.db
 [INFO] data/samples/multiple_checks.smt2 is split into 3 file(s)
@@ -210,22 +206,22 @@ The above will load the temporary database.
 ### Preprocess Mode 
 
 `preprocess` mode can be used to preprocess a directory that contains  `*.smt2` files (potentially under nested directories).
-For example, maybe some verification tool, say Dafny, exports SMT queries of a project, say IronFleet, into some directory. 
-Then this mode will traverse the given directory, flatten the file path, split any `*.smt2` files that has multiple `(check-sat)` commands, and place the resultant query files in the output directory.
+For example, maybe a verification tool, say Dafny, exports SMT queries from a project, say IronFleet, into some directory. 
+Then this mode will traverse the given directory, flatten the file paths, split any `*.smt2` files that have multiple `(check-sat)` commands, and place the resultant query files in the output directory.
 This also serves as a sanity check that the queries are accepted by Mariposa's parser.
 
 . The two required arguments are:
 * `--in-dir` is the input directory
-* `--out-dir` is the output directory, should **not** exist when calling the script.
+* `--out-dir` is the output directory, which should **not** exist when calling the script.
 
 ### Multiple Mode 
 
-`multiple` mode can be used for larger scale stability testing over a project. The three required arguments for this mode are:
-* `-p/--project`, a project must be already defined in the `configs.json` and gone through the `preprocess`. 
+`multiple` mode can be used for large-scale stability testing over a project. The three required arguments for this mode are:
+* `-p/--project`, a project that must already be defined in the `configs.json` file, and it must have already gone through the `preprocess` mode. 
 * `-s/--solver`, the name of the solver (see `configs.json`)
 * `-e/--experiment`, the name of the experiment configuration. 
 
-The `dummy` project contains 4 queries, 2 of which are unstable. To run `dummy` using `test` configuration:
+The `dummy` project contains 4 queries, 2 of which are unstable. To run the `dummy` project using the `test` configuration:
 ```
 python3 scripts/main.py multiple -p dummy -s z3_4_12_1 -e test 
 ```
@@ -264,5 +260,5 @@ query: data/dummy_clean/verified-sha-sha256.i.dfyImpl___module.__default.lemma__
 
 * A project must be **preprocessed** and added to `configs.json` before it is used.
 * A solver must be added to `configs.json` before it is used.
-* Each spinoff  process is expected to be CPU bound, setting  `num_procs` to a large value that overloads the machine will negatively impact the results.
+* Each spinoff  process is expected to be CPU bound, so setting `num_procs` to a large value that overloads the machine will negatively impact the results.
 
