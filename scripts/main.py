@@ -67,11 +67,20 @@ def single_mode(args):
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
 
         r = Runner(exp)
-        r.run_single_project(project, project.artifact_solver)
+        r.run_single_project(project, project.artifact_solver, 1, 1)
 
     dump_status(project, project.artifact_solver, exp, ana)
 
+def parse_partition(partition):
+    import re
+    pattern = re.compile(r"(\d+)/(\d+)")
+    match = re.match(pattern, partition)
+    exit_with_on_fail(match is not None, f"[ERROR] invalid partition {partition}")
+    return int(match.group(1)), int(match.group(2))
+
 def multi_mode(args):
+    part_id, part_num = parse_partition(args.partition_id)
+
     c = Configer()
     exp = c.load_known_experiment(args.experiment)
     solver = c.load_known_solver(args.solver)
@@ -81,7 +90,11 @@ def multi_mode(args):
     if not args.analysis_only:
         check_existing_tables(exp, project, solver)
         r = Runner(exp)
-        r.run_single_project(project, solver)
+        r.run_single_project(project, solver, part_id, part_num)
+
+    if args.analysis_skip:
+        print("[INFO] skipping analysis")
+        return
 
     rows = load_sum_table(project, solver, cfg=exp)
     items = ana.categorize_queries(rows)
@@ -136,7 +149,68 @@ def preprocess_mode(args):
     queries = list_smt2_files(args.out_dir)
     print(f'[INFO] generated {len(queries)} split queries under {args.out_dir}')
 
-# from datetime import datetime
+import copy 
+
+def manager_mode(args):
+    c = Configer()
+    exp = c.load_known_experiment(args.experiment)
+    solver = c.load_known_solver(args.solver)
+    project = c.load_known_project(args.project)
+    
+    from multiprocessing.managers import BaseManager
+    from multiprocessing import process
+    import threading
+    import multiprocessing
+    
+    queue = multiprocessing.Queue()
+
+    for i in range(1, args.partition_num + 1):
+        wargs = copy.deepcopy(args)
+        wargs.partition_id = f"{i}/{args.partition_num}"
+        wargs.analysis_skip = True
+        queue.put(wargs)
+
+    for i in range(args.partition_num):
+        queue.put(None)
+
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    addr = s.getsockname()[0]
+    s.close()
+
+    BaseManager.register('get_queue', callable=lambda:queue)
+    m = BaseManager(address=('0.0.0.0', 50000), authkey=args.authkey.encode('utf-8'))
+    s = m.get_server()
+
+    print("[INFO] starting manager, run the following command on workers:")
+    print(f"python3 scripts/main.py --worker --manager-addr {addr} --authkey {args.authkey}")
+
+    s.stop_event = threading.Event()
+    process.current_process()._manager_server = s
+
+    while queue.qsize() > 0:
+        try:
+            c = s.listener.accept()
+        except OSError:
+            continue
+        t = threading.Thread(target=s.handle_request, args=(c,))
+        t.daemon = True
+        t.start()
+        # print(self.task_queue.qsize())
+
+def worker_mode(args):
+    from multiprocessing.managers import BaseManager
+    BaseManager.register('get_queue')
+    m = BaseManager(address=(args.manager_addr, 50000), authkey=args.authkey.encode('utf-8'))
+    m.connect()
+    queue = m.get_queue()
+    while True:
+        wargs = queue.get()
+        print(wargs)
+        if wargs is None:
+            break
+        # multi_mode(wargs)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")
@@ -150,13 +224,27 @@ if __name__ == '__main__':
     single_parser.add_argument("-e", "--experiment", default="single", help="the experiment configuration name in configs.json")
 
     multi_parser = subparsers.add_parser('multiple', help='multiple query mode. test an existing (preprocessed) project using the specified solver. the project is specified by a python expression that evaluates to a ProjectInfo object. ')
-    multi_parser.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")
-    multi_parser.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from configs.json)")
 
-    for sp in [single_parser, multi_parser]:
+    multi_parser.add_argument("--partition-id", default="1/1", help="which partition of the project to run mariposa on (probably should not be specified manually)")
+    
+    manager_parser = subparsers.add_parser('manager', help='sever pool manager mode.')
+    manager_parser.add_argument("--partition-num", type=int, required=True, help="number of partitions to split the project into")
+
+    for sp in [multi_parser, manager_parser]:
+        sp.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")
+        sp.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from configs.json)")
+
+    for sp in [single_parser, multi_parser, manager_parser]:
         sp.add_argument("-s", "--solver", required=True, help="the solver name (from configs.json) to use")
         sp.add_argument("--analysis-only", default=False, action='store_true', help="do not perform experiments, only analyze existing data")
+        sp.add_argument("--analysis-skip", default=False, action='store_true', help="skip analysis")
         sp.add_argument("--analyzer", default="default", help="the analyzer name (from configs.json) to use")
+
+    worker_parser = subparsers.add_parser('worker', help='sever pool worker mode.')
+    worker_parser.add_argument("--manager-addr", required=True, help="the manager address for the server pool")
+
+    for sp in [worker_parser, manager_parser]:
+        sp.add_argument("--authkey", required=True, help="the authkey to use for the server pool")
 
     preprocess_parser = subparsers.add_parser('preprocess', help='preprocess mode. (recursively) traverse the input directory and split all queries with ".smt2" file extension, the split queries will be stored under the output directory.')
     preprocess_parser.add_argument("--in-dir", required=True, help='the input directory with ".smt2" files')
@@ -170,3 +258,9 @@ if __name__ == '__main__':
         single_mode(args)
     elif args.sub_command == "multiple":
         multi_mode(args)
+    elif args.sub_command == "manager":
+        manager_mode(args)
+    elif args.sub_command == "worker":
+        worker_mode(args)
+    elif args.sub_command is None:
+        parser.print_help()

@@ -153,11 +153,11 @@ class Runner:
 
         print("[INFO] workers finished")
 
-    def run_single_project(self, project, solver):
+    def run_single_project(self, project, solver, part_id, part_num):
         self.exp_name = self.exp.get_exp_tname(project, solver)
         self._set_up_table()
         tasks = []
-        for origin_path in project.list_queries():
+        for origin_path in project.list_queries(part_id, part_num):
             task = Task(self.exp, self.exp_name, origin_path, None, None, solver)
             tasks.append(task)
 
@@ -167,10 +167,13 @@ class Runner:
                     task = Task(self.exp, self.exp_name, origin_path, perturb, mut_seed, solver)
                     tasks.append(task)
 
+        if (part_id, part_num) != (1, 1):
+            print(f"[INFO] running ONLY part {part_id} out of {part_num} in {project.name}")
+
         random.shuffle(tasks)
         for task in tasks:
             self.task_queue.put(task)
-            
+
         self._run_workers()
         self.sum_name = self.exp.get_sum_tname(project, solver)
         create_sum_table(self.exp, self.exp_name, self.sum_name)

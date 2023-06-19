@@ -10,11 +10,16 @@ class ProjectInfo:
         self.clean_dir = clean_dir
         self.artifact_solver = artifact_solver
 
-    def list_queries(self, size=None):
+    def list_queries(self, part_id=1, part_num=1):
         queries = list_smt2_files(self.clean_dir)
-        if size is None:
-            return queries
-        return random.sample(queries, size)
+        queries.sort()
+        assert part_id < len(queries)
+        part_index -= 1
+        assert part_index > 0 and part_index < part_num
+        total_size = len(queries)
+        chunk_size = (total_size // part_num) + 1
+        chunks = [queries[i:i + chunk_size] for i in range(0, len(queries), chunk_size)]
+        return chunks[part_index]
 
 class SolverInfo:
     def __init__(self, name, date, path):
