@@ -202,8 +202,12 @@ def manager_mode(args):
         t = threading.Thread(target=s.handle_request, args=(c,))
         t.daemon = True
         t.start()
-        
-    assert res_queue.qsize() == args.partition_num
+
+    while res_queue.qsize() != args.partition_num:
+        time.sleep(2)
+        print("[INFO] all workers finished, collecting results...")
+        print(res_queue.qsize())
+
     for i in range(args.partition_num):
         print(res_queue.get())
 
@@ -222,6 +226,7 @@ def worker_mode(args):
     res_queue = m.get_res_queue()
     db_path = f"{get_self_ip()}:{db_path}"
     res_queue.put(db_path)
+    print(f"[INFO] worker {get_self_ip()} finished")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")
