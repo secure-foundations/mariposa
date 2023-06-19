@@ -23,9 +23,7 @@ cargo build --release
 pip3 install -r requirements.txt
 ```
 
-4. There are multiple Z3 binaries available in the `solvers/` folder which are already set up in the `configs.json` file.
-
-To install other versions of Z3, create a new solver configuration in the the `configs.json` file and point it to the location of the binary. See the [Solvers](#solvers) section for more detail.
+4. There are multiple Z3 binaries available in the `solvers/` folder which are already set up in the `configs.json` file. To install other versions of Z3, create a new solver configuration in the the `configs.json` file and point it to the location of the binary. See the [Solvers](#solvers) section for more information on editing `configs.json`.
 
 ## Quick Start
 
@@ -106,7 +104,7 @@ When a query's success rate, `r`, is greater than `r_stable`, it is stable. When
 * `confidence` is the confidence level used in hypothesis tests.
 * `r_solvable` is the threshold between an `unsolvable` and `unstable` query in terms of the success rate. 
 * `r_stable` is the threshold between an `unstable` and `stable` query in terms of the success rate. 
-* `discount` is used to account for stable queries that solve close to the time limit which could be falsely considered unstable. If queries are found to be unstable after an instability test, the mean time, T, the query and mutants took is taken into consideration. If T is greater than or equal to the discount * solver timeout time (`exp_timeout`), the query is not immediately labeled as `unstable` and will continue to a stability test where it can be categorized as inconclusive or stable.
+* `discount` is used to account for stable queries that solve close to the time limit which could be falsely considered unstable. If queries are found to be unstable after an instability test, the mean runtime of the query and mutants, T, is taken into consideration. If T is greater than or equal to the discount * solver timeout time (`exp_timeout`), the query is not immediately labeled as unstable and will continue to a stability test where it can be categorized as inconclusive or stable.
 
 ```
 {
