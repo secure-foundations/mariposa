@@ -107,9 +107,10 @@ def create_experiment_table(cur, table_name):
 #     con.commit()
 #     con.close()
 
-def import_entries(cur, other_db_path, table_name):
+def import_entries(cur, other_db_path, exp_tname, sum_tname):
     cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-    cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
+    cur.execute(f"INSERT INTO {exp_tname} SELECT * FROM OTHER_DB.{exp_tname}")
+    cur.execute(f"INSERT INTO {sum_tname} SELECT * FROM OTHER_DB.{sum_tname}")
 
 def create_sum_table(cfg, exp_table_name, sum_table_name):
     con, cur = get_cursor(cfg.db_path)

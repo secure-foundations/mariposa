@@ -183,7 +183,6 @@ def manager_mode(args):
 
     for i in range(args.partition_num):
         job_queue.put(None)
-    print(job_queue.qsize())
 
     BaseManager.register('get_job_queue', callable=lambda:job_queue)
     BaseManager.register('get_res_queue', callable=lambda:res_queue)
@@ -208,22 +207,22 @@ def manager_mode(args):
         t.start()
 
     print("[INFO] all workers finished, collecting results...")
-    print(res_queue.qsize())
     
-    con, cur = get_cursor(exp.db_path)
-
     for i in range(args.partition_num):
         other_db_path = res_queue.get()
         if addr in other_db_path:
             continue
-        temp_db_path = f"{args.db_path}.temp"
+        con, cur = get_cursor(exp.db_path)
+        temp_db_path = f"{exp.db_path}.temp"
+
         os.system("scp -r {} {}".format(other_db_path, temp_db_path))
         assert os.path.exists(temp_db_path)
-        import_entries(cur, temp_db_path, args.db_path)
+        sum_name = exp.get_sum_tname(project, solver)
+        exp_name = exp.get_exp_tname(project, solver)
+        import_entries(cur, temp_db_path, exp_name, sum_name)
+        con.commit()
+        con.close()
         os.remove(temp_db_path)
-
-    con.commit()
-    con.close()
 
 def worker_mode(args):
     from multiprocessing.managers import BaseManager
@@ -235,8 +234,6 @@ def worker_mode(args):
     m.connect()
     queue = m.get_job_queue()
     while queue.qsize() > 0:
-        print(f"[INFO] worker {get_self_ip()} waiting for job...")
-        print(queue.qsize())
         wargs = queue.get()
         if wargs is None:
             break
