@@ -207,10 +207,9 @@ def worker_mode(args):
     queue = m.get_queue()
     while True:
         wargs = queue.get()
-        print(wargs)
         if wargs is None:
             break
-        # multi_mode(wargs)
+        multi_mode(wargs)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")
