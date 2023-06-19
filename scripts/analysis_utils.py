@@ -641,7 +641,7 @@ def plot_paper_ext_cutoff():
 def create_benchmark(projs=MAIN_PROJS):
     import random
 
-    benchmark_path = "data/benchmark"
+    benchmark_path = "data/benchmarks"
     
     unstable_core_path = f"{benchmark_path}/unstable_core"
     unstable_ext_path = f"{benchmark_path}/unstable_ext"
@@ -656,7 +656,7 @@ def create_benchmark(projs=MAIN_PROJS):
     ana = Z_TEST_60
 
     for proj in projs:
-        print(proj.get_project_name())
+        print(proj.name)
         unss = []
         summaries = load_exp_sums(proj, solvers=[proj.artifact_solver, Z3_4_12_1])
         for solver in [proj.artifact_solver, Z3_4_12_1]:
@@ -705,23 +705,27 @@ def create_benchmark(projs=MAIN_PROJS):
 
         print("stable core:", len(sampled_core), f" (original: {len(stable_core)})")
         print("stable ext:", len(maybes))
-        
+
         # add all unstable core 
         for filename in core:
-            shutil.copyfile(filename, f"{unstable_core_path}/{proj.get_project_name()}-{filename.split('/')[2]}")
-#           print("added: ", filename)
+            og_path = '/home/yizhou7/mariposa/' + filename
+            shutil.copyfile(og_path, f"{unstable_core_path}/{proj.name}-{filename.split('/')[2]}")
+            print("added: ", filename)
 
         # add all unstable ext
         for filename in ext:
-            shutil.copyfile(filename, f"{unstable_ext_path}/{proj.get_project_name()}-{filename.split('/')[2]}")
+            og_path = '/home/yizhou7/mariposa/' + filename
+            shutil.copyfile(og_path, f"{unstable_ext_path}/{proj.name}-{filename.split('/')[2]}")
 
         # add all stable core
         for filename in sampled_core:
-            shutil.copyfile(filename, f"{stable_core_path}/{proj.get_project_name()}-{filename.split('/')[2]}")
+            og_path = '/home/yizhou7/mariposa/' + filename
+            shutil.copyfile(og_path, f"{stable_core_path}/{proj.name}-{filename.split('/')[2]}")
 
         # add all stable ext
         for filename in maybes:
-            shutil.copyfile(filename, f"{stable_ext_path}/{proj.get_project_name()}-{filename.split('/')[2]}")
+            og_path = '/home/yizhou7/mariposa/' + filename
+            shutil.copyfile(og_path, f"{stable_ext_path}/{proj.name}-{filename.split('/')[2]}")
 
 
 skip = {"attest.vad",
@@ -1449,4 +1453,5 @@ min unknown: {len(min_unknown)}
 if __name__ == "__main__":
 #   plot_paper_figs()
 #   plot_appendix_figs()
-    plot_paper_overall()
+#   plot_paper_overall()
+    create_benchmark()
