@@ -129,7 +129,6 @@ class Runner:
         con.close()
 
     def __init__(self, exp):
-        mp.set_start_method('spawn')
         self.task_queue = mp.Queue()
         self.exp = exp
     
