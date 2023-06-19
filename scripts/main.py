@@ -94,7 +94,7 @@ def multi_mode(args):
 
     if args.analysis_skip:
         print("[INFO] skipping analysis")
-        return
+        return exp.db_path
 
     rows = load_sum_table(project, solver, cfg=exp)
     items = ana.categorize_queries(rows)
@@ -151,6 +151,14 @@ def preprocess_mode(args):
 
 import copy 
 
+def get_self_ip():
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    addr = s.getsockname()[0]
+    s.close()
+    return addr
+
 def manager_mode(args):
     c = Configer()
     exp = c.load_known_experiment(args.experiment)
@@ -162,34 +170,31 @@ def manager_mode(args):
     import threading
     import multiprocessing
     
-    queue = multiprocessing.Queue()
+    job_queue = multiprocessing.Queue()
+    res_queue = multiprocessing.Queue()
 
     for i in range(1, args.partition_num + 1):
         wargs = copy.deepcopy(args)
         wargs.partition_id = f"{i}/{args.partition_num}"
         wargs.analysis_skip = True
-        queue.put(wargs)
+        job_queue.put(wargs)
 
     for i in range(args.partition_num):
-        queue.put(None)
+        job_queue.put(None)
 
-    import socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    addr = s.getsockname()[0]
-    s.close()
+    BaseManager.register('get_job_queue', callable=lambda:job_queue)
+    BaseManager.register('get_res_queue', callable=lambda:res_queue)
 
-    BaseManager.register('get_queue', callable=lambda:queue)
     m = BaseManager(address=('0.0.0.0', 50000), authkey=args.authkey.encode('utf-8'))
     s = m.get_server()
 
     print("[INFO] starting manager, run the following command on workers:")
-    print(f"python3 scripts/main.py --worker --manager-addr {addr} --authkey {args.authkey}")
+    print(f"python3 scripts/main.py worker --manager-addr {get_self_ip()} --authkey {args.authkey}")
 
     s.stop_event = threading.Event()
     process.current_process()._manager_server = s
 
-    while queue.qsize() > 0:
+    while job_queue.qsize() > 0:
         try:
             c = s.listener.accept()
         except OSError:
@@ -197,19 +202,26 @@ def manager_mode(args):
         t = threading.Thread(target=s.handle_request, args=(c,))
         t.daemon = True
         t.start()
-        # print(self.task_queue.qsize())
+        
+    assert res_queue.qsize() == args.partition_num
+    for i in range(args.partition_num):
+        print(res_queue.get())
 
 def worker_mode(args):
     from multiprocessing.managers import BaseManager
-    BaseManager.register('get_queue')
+    BaseManager.register('get_job_queue')
+    BaseManager.register('get_res_queue')
     m = BaseManager(address=(args.manager_addr, 50000), authkey=args.authkey.encode('utf-8'))
     m.connect()
-    queue = m.get_queue()
+    queue = m.get_job_queue()
     while True:
         wargs = queue.get()
         if wargs is None:
             break
-        multi_mode(wargs)
+        db_path = multi_mode(wargs)
+    res_queue = m.get_res_queue()
+    db_path = f"{get_self_ip()}:{db_path}"
+    res_queue.put(db_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")
