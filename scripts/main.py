@@ -68,8 +68,33 @@ def single_mode(args):
 
         r = Runner(exp)
         r.run_single_project(project, project.artifact_solver, 1, 1)
-
     dump_status(project, project.artifact_solver, exp, ana)
+
+def dump_multi_status(project, solver, exp, ana):
+    rows = load_sum_table(project, solver, cfg=exp)
+    items = ana.categorize_queries(rows)
+    ps, _ = get_category_percentages(items)
+
+    print("project directory:", project.clean_dir)
+    print("solver used:", solver.path)
+    print("total queries:", len(rows))
+
+    pp_table = [["category", "count", "percentage"]]
+    for cat in {Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE}:
+        pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
+
+    print(tabulate(pp_table, tablefmt="github"))
+    print("")
+    print("listing unstable queries...")
+
+    for row in rows:
+        query = row[0]
+        if query not in items[Stability.UNSTABLE]:
+            continue
+        print("")
+        print("query:", row[0])
+        mutations, blob = row[1], row[2]
+        ana.dump_query_status(mutations, blob)
 
 def parse_partition(partition):
     import re
@@ -96,30 +121,7 @@ def multi_mode(args):
         print("[INFO] skipping analysis")
         return exp.db_path
 
-    rows = load_sum_table(project, solver, cfg=exp)
-    items = ana.categorize_queries(rows)
-    ps, _ = get_category_percentages(items)
-
-    print("project directory:", project.clean_dir)
-    print("solver used:", solver.path)
-    print("total queries:", len(rows))
-
-    pp_table = [["category", "count", "percentage"]]
-    for cat in {Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE}:
-        pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
-
-    print(tabulate(pp_table, tablefmt="github"))
-    print("")
-    print("listing unstable queries...")
-
-    for row in rows:
-        query = row[0]
-        if query not in items[Stability.UNSTABLE]:
-            continue
-        print("")
-        print("query:", row[0])
-        mutations, blob = row[1], row[2]
-        ana.dump_query_status(mutations, blob)
+    dump_multi_status(project, solver, exp, ana)
 
 def flatten_path(base_dir, path):
     assert base_dir in path
@@ -181,20 +183,22 @@ def manager_mode(args):
 
     for i in range(args.partition_num):
         job_queue.put(None)
+    print(job_queue.qsize())
 
     BaseManager.register('get_job_queue', callable=lambda:job_queue)
     BaseManager.register('get_res_queue', callable=lambda:res_queue)
 
     m = BaseManager(address=('0.0.0.0', 50000), authkey=args.authkey.encode('utf-8'))
     s = m.get_server()
+    addr = get_self_ip()
 
     print("[INFO] starting manager, run the following command on workers:")
-    print(f"python3 scripts/main.py worker --manager-addr {get_self_ip()} --authkey {args.authkey}")
+    print(f"python3 scripts/main.py worker --manager-addr {addr} --authkey {args.authkey}")
 
     s.stop_event = threading.Event()
     process.current_process()._manager_server = s
 
-    while job_queue.qsize() > 0:
+    while res_queue.qsize() != args.partition_num:
         try:
             c = s.listener.accept()
         except OSError:
@@ -203,28 +207,42 @@ def manager_mode(args):
         t.daemon = True
         t.start()
 
-    while res_queue.qsize() != args.partition_num:
-        time.sleep(2)
-        print("[INFO] all workers finished, collecting results...")
-        print(res_queue.qsize())
+    print("[INFO] all workers finished, collecting results...")
+    print(res_queue.qsize())
+    
+    con, cur = get_cursor(exp.db_path)
 
     for i in range(args.partition_num):
-        print(res_queue.get())
+        other_db_path = res_queue.get()
+        if addr in other_db_path:
+            continue
+        temp_db_path = f"{args.db_path}.temp"
+        os.system("scp -r {} {}".format(other_db_path, temp_db_path))
+        assert os.path.exists(temp_db_path)
+        import_entries(cur, temp_db_path, args.db_path)
+        os.remove(temp_db_path)
+
+    con.commit()
+    con.close()
 
 def worker_mode(args):
     from multiprocessing.managers import BaseManager
+    import os.path
+
     BaseManager.register('get_job_queue')
     BaseManager.register('get_res_queue')
     m = BaseManager(address=(args.manager_addr, 50000), authkey=args.authkey.encode('utf-8'))
     m.connect()
     queue = m.get_job_queue()
-    while True:
+    while queue.qsize() > 0:
+        print(f"[INFO] worker {get_self_ip()} waiting for job...")
+        print(queue.qsize())
         wargs = queue.get()
         if wargs is None:
             break
         db_path = multi_mode(wargs)
     res_queue = m.get_res_queue()
-    db_path = f"{get_self_ip()}:{db_path}"
+    db_path = f"{get_self_ip()}:{os.path.abspath(db_path)}"
     res_queue.put(db_path)
     print(f"[INFO] worker {get_self_ip()} finished")
 
