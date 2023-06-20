@@ -41,6 +41,7 @@ class Mutation(str, Enum):
     SHUFFLE = "shuffle"
     RENAME = "rename"
     RESEED = "reseed"
+    ALL = "all"
     # LOWER_SHUFFLE = "lower_shuffle"
 
     def __str__(self):
