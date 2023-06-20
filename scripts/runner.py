@@ -122,7 +122,7 @@ def run_tasks(queue, start_time, id):
 class Runner:
     def _set_up_table(self):
         con, cur = get_cursor(self.exp.db_path)
-        exists = check_table_exists(cur, self.exp_name)
+        exists = table_exists(cur, self.exp_name)
         exit_with_on_fail(not exists, f"[ERROR] table {self.exp_name} already exists")
         create_experiment_table(cur, self.exp_name)
         con.commit()
@@ -175,7 +175,7 @@ class Runner:
 
         self._run_workers()
         self.sum_name = self.exp.get_sum_tname(project, solver)
-        create_sum_table(self.exp, self.exp_name, self.sum_name)
+        populate_sum_table(self.exp, self.exp_name, self.sum_name)
 
 def run_projects_solvers(exp, projects, solvers):
     for project, solver in itertools.product(projects, solvers):

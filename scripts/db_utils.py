@@ -16,35 +16,17 @@ def unzip_db():
     os.system("cd data && mv mariposa.db mariposa.temp.db")
     os.system("cd data && cat chunk.tar.gz.* | tar xzvf -")
 
-def check_table_exists(cur, table_name):
-    cur.execute(f"""SELECT name from sqlite_master
-        WHERE type='table'
-        AND name=?""", (table_name,))
-    res = cur.fetchone() != None
-    return res
-
 def get_cursor(db_path):
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     return con, cur
 
-def check_existing_tables(cfg, project, solver):
-    exp_table = cfg.get_exp_tname(project, solver)
-    sum_name = cfg.get_sum_tname(project, solver)
-    con, cur = get_cursor(cfg.db_path)
-
-    if check_table_exists(cur, sum_name):
-        print(f"[INFO] {sum_name} already exists, remove it? [Y]")
-        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
-        cur.execute(f"""DROP TABLE {sum_name}""")
-    
-    if check_table_exists(cur, exp_table):
-        print(f"[INFO] {exp_table} already exists, remove it? [Y]")
-        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
-        cur.execute(f"""DROP TABLE {exp_table}""")
-
-    con.commit()
-    con.close()
+def table_exists(cur, table_name):
+    cur.execute(f"""SELECT name from sqlite_master
+        WHERE type='table'
+        AND name=?""", (table_name,))
+    res = cur.fetchone() != None
+    return res
 
 def rename_table(cur, old_name, new_name):
     q = f"""ALTER TABLE {old_name} RENAME TO {new_name}"""
@@ -84,50 +66,60 @@ def create_experiment_table(cur, table_name):
         )""")
     print(f"[INFO] created table {table_name}")
 
-# def import_tables(other_db_path):
-#     ts0 = get_tables(DB_PATH)
-#     ts1 = get_tables(other_db_path)
-#     tn0 = set(ts0.keys())
-#     tn1 = set(ts1.keys())
-#     for t in tn0.intersection(tn1):
-#         if ts0[t] != ts1[t]:
-#             print(f"[WARN] table row count mismatch {t} {ts0[t]} vs {ts1[t]}")
-
-#     con, cur = get_cursor()
-#     cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-
-#     for table_name in tn1 - tn0:
-#         print(f"[INPUT] confirm importing table {table_name} [Y]")
-#         if input() != "Y":
-#             print(f"[INFO] skip importing table {table_name}")
-#         else:
-#             create_experiment_table(cur, table_name)
-#             cur.execute(f"INSERT INTO {table_name} SELECT * FROM OTHER_DB.{table_name}")
-#             print(f"[INFO] done importing table {table_name}")
-#     con.commit()
-#     con.close()
-
-def import_entries(cur, other_db_path, exp_tname, sum_tname):
-    cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-    cur.execute(f"INSERT INTO {exp_tname} SELECT * FROM OTHER_DB.{exp_tname}")
-    cur.execute(f"INSERT INTO {sum_tname} SELECT * FROM OTHER_DB.{sum_tname}")
-
-def create_sum_table(cfg, exp_table_name, sum_table_name):
-    con, cur = get_cursor(cfg.db_path)
-
-    if not check_table_exists(cur, exp_table_name):
-        print(f"[WARN] table {exp_table_name} does not exist")
-        con.close()
-        return
-
-    cur.execute(f"""DROP TABLE IF EXISTS {sum_table_name}""")
-
+def create_summary_table(cur, sum_table_name):
     cur.execute(f"""CREATE TABLE {sum_table_name} (
         vanilla_path TEXT,
         mutations TEXT,
         summaries BLOB,
         PRIMARY KEY (vanilla_path, mutations)
         )""")
+    print(f"[INFO] created table {sum_table_name}")
+
+def check_existing_tables(cfg, project, solver):
+    exp_table = cfg.get_exp_tname(project, solver)
+    sum_name = cfg.get_sum_tname(project, solver)
+    con, cur = get_cursor(cfg.db_path)
+
+    if table_exists(cur, sum_name):
+        print(f"[INFO] {sum_name} already exists, remove it? [Y]")
+        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+        cur.execute(f"""DROP TABLE {sum_name}""")
+    
+    if table_exists(cur, exp_table):
+        print(f"[INFO] {exp_table} already exists, remove it? [Y]")
+        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+        cur.execute(f"""DROP TABLE {exp_table}""")
+
+    con.commit()
+    con.close()
+
+def import_entries(cur_db_path, other_db_path, exp_tname, sum_tname):
+    con, cur = get_cursor(cur_db_path)
+
+    if not table_exists(cur, sum_tname):
+        create_summary_table(cur, sum_tname)
+
+    if not table_exists(cur, exp_tname):
+        create_experiment_table(cur, exp_tname)
+
+    cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
+    cur.execute(f"INSERT INTO {exp_tname} SELECT * FROM OTHER_DB.{exp_tname}")
+    cur.execute(f"INSERT INTO {sum_tname} SELECT * FROM OTHER_DB.{sum_tname}")
+
+    con.commit()
+    con.close()
+
+def populate_sum_table(cfg, exp_table_name, sum_table_name):
+    con, cur = get_cursor(cfg.db_path)
+
+    if not table_exists(cur, exp_table_name):
+        print(f"[WARN] table {exp_table_name} does not exist")
+        con.close()
+        return
+
+    cur.execute(f"""DROP TABLE IF EXISTS {sum_table_name}""")
+
+    create_summary_table(cur, sum_table_name)
 
     res = cur.execute(f"""
         SELECT query_path, result_code, elapsed_milli
@@ -195,7 +187,7 @@ def export_timeouts(cfg, solver):
     con, cur = get_cursor(cfg.qcfg.db_path)
     solver_table = cfg.qcfg.get_solver_table_name(solver)
 
-    if not check_table_exists(cur, solver_table):
+    if not table_exists(cur, solver_table):
         print(f"[WARN] export timeout: {solver_table} does not exist!")
         con.close()
         return
@@ -238,7 +230,7 @@ def export_timeouts(cfg, solver):
 #     solver_ext_table = ext_cfg.qcfg.get_solver_table_name(solver)
 #     # summary_table = cfg.get_solver_summary_table_name(solver)
 
-#     if not check_table_exists(cur, solver_table):
+#     if not table_exists(cur, solver_table):
 #         con.close()
 #         return
     
@@ -278,7 +270,7 @@ def load_sum_table(project, solver, cfg, skip=set()):
     con, cur = get_cursor(cfg.db_path)
     sum_name = cfg.get_sum_tname(project, solver)
 
-    if not check_table_exists(cur, sum_name):
+    if not table_exists(cur, sum_name):
         print(f"[INFO] skipping {sum_name}")
         return None
 

@@ -166,7 +166,7 @@ def manager_mode(args):
     exp = c.load_known_experiment(args.experiment)
     solver = c.load_known_solver(args.solver)
     project = c.load_known_project(args.project)
-    
+
     from multiprocessing.managers import BaseManager
     from multiprocessing import process
     import threading
@@ -181,6 +181,7 @@ def manager_mode(args):
         wargs.analysis_skip = True
         job_queue.put(wargs)
 
+    # NOTE: we assume number of workers is less than number of partitions
     for i in range(args.partition_num):
         job_queue.put(None)
 
@@ -196,7 +197,8 @@ def manager_mode(args):
 
     s.stop_event = threading.Event()
     process.current_process()._manager_server = s
-
+    
+    # exit when expected number of results are collected
     while res_queue.qsize() != args.partition_num:
         try:
             c = s.listener.accept()
@@ -206,22 +208,20 @@ def manager_mode(args):
         t.daemon = True
         t.start()
 
-    print("[INFO] all workers finished, collecting results...")
-    
+    print(f"[INFO] {args.partition_num}/{args.partition_num} partition message(s) received")
+
     for i in range(args.partition_num):
         other_db_path = res_queue.get()
         if addr in other_db_path:
             continue
-        con, cur = get_cursor(exp.db_path)
         temp_db_path = f"{exp.db_path}.temp"
-
-        os.system("scp -r {} {}".format(other_db_path, temp_db_path))
+        command = f"scp -r {other_db_path} {temp_db_path}"
+        print(f"[INFO] running: {command}")
+        os.system(command)
         assert os.path.exists(temp_db_path)
         sum_name = exp.get_sum_tname(project, solver)
         exp_name = exp.get_exp_tname(project, solver)
-        import_entries(cur, temp_db_path, exp_name, sum_name)
-        con.commit()
-        con.close()
+        import_entries(exp.db_path, temp_db_path, exp_name, sum_name)
         os.remove(temp_db_path)
 
 def worker_mode(args):
@@ -233,14 +233,16 @@ def worker_mode(args):
     m = BaseManager(address=(args.manager_addr, 50000), authkey=args.authkey.encode('utf-8'))
     m.connect()
     queue = m.get_job_queue()
+    res_queue = m.get_res_queue()
+
     while queue.qsize() > 0:
         wargs = queue.get()
         if wargs is None:
             break
         db_path = multi_mode(wargs)
-    res_queue = m.get_res_queue()
-    db_path = f"{get_self_ip()}:{os.path.abspath(db_path)}"
-    res_queue.put(db_path)
+        db_path = f"{get_self_ip()}:{os.path.abspath(db_path)}"
+        res_queue.put(db_path)
+        print(f"[INFO] worker {get_self_ip()} completed partition {wargs.partition_id}")
     print(f"[INFO] worker {get_self_ip()} finished")
 
 if __name__ == '__main__':

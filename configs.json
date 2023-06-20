@@ -59,6 +59,34 @@
         "num_procs": 2,
         "db_path": "./data/test.db",
         "db_mode": "update"
+      },
+      {
+        "name": "unsat_core",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/uc.db",
+        "db_mode": "update"
+      },
+      {
+        "name": "compose",
+        "mutations": [
+          "all"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/compose.db",
+        "db_mode": "update"
       }
     ],
     "analyzers": [
@@ -173,6 +201,12 @@
         "name": "nr",
         "frame_work": "unknown",
         "clean_dir": "node_replication",
+        "artifact_solver_name": "z3_4_12_1"
+      },
+      {
+        "name": "d_komodo_z3_uc",
+        "frame_work": "unknown",
+        "clean_dir": "data/d_komodo_z3_uc/min_asserts",
         "artifact_solver_name": "z3_4_12_1"
       }
     ]

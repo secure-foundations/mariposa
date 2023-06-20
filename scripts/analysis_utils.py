@@ -1449,4 +1449,5 @@ min unknown: {len(min_unknown)}
 if __name__ == "__main__":
 #   plot_paper_figs()
 #   plot_appendix_figs()
-    plot_paper_overall()
+    # plot_paper_overall()
+    pass
