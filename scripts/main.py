@@ -211,16 +211,23 @@ def manager_mode(args):
 
     print(f"[INFO] {args.partition_num}/{args.partition_num} partition message(s) received")
 
+    workers = dict()
     for i in range(args.partition_num):
         (other_db_path, part_id, part_num) = res_queue.get()
         if addr in other_db_path:
             continue
+        if other_db_path not in workers:
+            workers[other_db_path] = []
+        workers[other_db_path].append((part_id, part_num))
+
+    for other_db_path in workers:
         temp_db_path = f"{exp.db_path}.temp"
         command = f"scp -r {other_db_path} {temp_db_path}"
         print(f"[INFO] copying db: {command}")
         os.system(command)
         assert os.path.exists(temp_db_path)
-        import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
+        for (part_id, part_num) in workers[other_db_path]:
+            import_entries(exp.db_path, other_db_path, exp, project, solver, part_id, part_num)
         os.remove(temp_db_path)
 
 def worker_mode(args):
@@ -241,7 +248,7 @@ def worker_mode(args):
         (db_path, part_id, part_num) = multi_mode(wargs)
         db_path = f"{get_self_ip()}:{os.path.abspath(db_path)}"
         res_queue.put((db_path, part_id, part_num))
-        print(f"[INFO] worker {get_self_ip()} completed partition {part_id} out of {part_num}")
+        print(f"[INFO] worker {get_self_ip()} completed partition {part_id}th out of {part_num}")
     print(f"[INFO] worker {get_self_ip()} finished")
 
 if __name__ == '__main__':
