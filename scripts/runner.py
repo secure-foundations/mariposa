@@ -168,7 +168,7 @@ class Runner:
                     tasks.append(task)
 
         if (part_id, part_num) != (1, 1):
-            print(f"[INFO] running ONLY part {part_id} out of {part_num} in {project.name}")
+            print(f"[INFO] running ONLY part {part_id}th of {part_num} in {project.name}")
 
         random.shuffle(tasks)
         for task in tasks:

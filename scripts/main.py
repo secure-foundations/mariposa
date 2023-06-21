@@ -9,10 +9,10 @@ from tabulate import tabulate
 from configer import *
 
 # def import_database(other_server):
-#     other_db_path = "data/mariposa2.db"
-#     os.system(f"rm {other_db_path}")
-#     os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {other_db_path}")
-#     import_tables(other_db_path)
+#     remote_db_path = "data/mariposa2.db"
+#     os.system(f"rm {remote_db_path}")
+#     os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {remote_db_path}")
+#     import_tables(remote_db_path)
 
 def create_single_mode_project(args, solver):
     origin_path = args.query
@@ -162,6 +162,12 @@ def get_self_ip():
     s.close()
     return addr
 
+def start_server(args):
+    from multiprocessing.managers import BaseManager
+    m = BaseManager(address=('0.0.0.0', 50000), authkey=args.authkey.encode('utf-8'))
+    s = m.get_server()
+    s.serve_forever()
+
 def manager_mode(args):
     c = Configer()
     exp = c.load_known_experiment(args.experiment)
@@ -189,45 +195,37 @@ def manager_mode(args):
     BaseManager.register('get_job_queue', callable=lambda:job_queue)
     BaseManager.register('get_res_queue', callable=lambda:res_queue)
 
-    m = BaseManager(address=('0.0.0.0', 50000), authkey=args.authkey.encode('utf-8'))
-    s = m.get_server()
     addr = get_self_ip()
+
+    st = threading.Thread(target=start_server, args=[args])
+    st.setDaemon(True)
+    st.start()
 
     print("[INFO] starting manager, run the following command on workers:")
     print(f"python3 scripts/main.py worker --manager-addr {addr} --authkey {args.authkey}")
 
-    s.stop_event = threading.Event()
-    process.current_process()._manager_server = s
-    
     # exit when expected number of results are collected
     while res_queue.qsize() != args.partition_num:
-        try:
-            c = s.listener.accept()
-        except OSError:
-            continue
-        t = threading.Thread(target=s.handle_request, args=(c,))
-        t.daemon = True
-        t.start()
-
-    print(f"[INFO] {args.partition_num}/{args.partition_num} partition message(s) received")
+        time.sleep(10)
+        print(f"[INFO] {res_queue.qsize()}/{args.partition_num} partition message(s) received")
 
     workers = dict()
     for i in range(args.partition_num):
-        (other_db_path, part_id, part_num) = res_queue.get()
-        if addr in other_db_path:
+        (remote_db_path, part_id, part_num) = res_queue.get()
+        if addr in remote_db_path:
             continue
-        if other_db_path not in workers:
-            workers[other_db_path] = []
-        workers[other_db_path].append((part_id, part_num))
+        if remote_db_path not in workers:
+            workers[remote_db_path] = []
+        workers[remote_db_path].append((part_id, part_num))
 
-    for other_db_path in workers:
+    for remote_db_path in workers:
         temp_db_path = f"{exp.db_path}.temp"
-        command = f"scp -r {other_db_path} {temp_db_path}"
+        command = f"scp -r {remote_db_path} {temp_db_path}"
         print(f"[INFO] copying db: {command}")
         os.system(command)
         assert os.path.exists(temp_db_path)
-        for (part_id, part_num) in workers[other_db_path]:
-            import_entries(exp.db_path, other_db_path, exp, project, solver, part_id, part_num)
+        for (part_id, part_num) in workers[remote_db_path]:
+            import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
         os.remove(temp_db_path)
 
 def worker_mode(args):
