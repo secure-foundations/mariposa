@@ -152,7 +152,7 @@ class Runner:
 
         print("[INFO] workers finished")
 
-    def run_single_project(self, project, solver, part_id, part_num):
+    def run_project(self, project, solver, part_id, part_num):
         self.exp_tname = self.exp.get_exp_tname(project, solver, part_id, part_num)
         self.sum_tname = self.exp.get_sum_tname(project, solver, part_id, part_num)
         self._set_up_table()
