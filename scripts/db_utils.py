@@ -93,8 +93,11 @@ def check_existing_tables(cfg, project, solver):
     con.commit()
     con.close()
 
-def import_entries(cur_db_path, other_db_path, exp_tname, sum_tname):
+def import_entries(cur_db_path, other_db_path, exp, project, solver, part_id, part_num):
     con, cur = get_cursor(cur_db_path)
+    
+    exp_tname = exp.get_exp_tname(project, solver)
+    sum_tname = exp.get_sum_tname(project, solver)
 
     if not table_exists(cur, sum_tname):
         create_summary_table(cur, sum_tname)
@@ -102,9 +105,12 @@ def import_entries(cur_db_path, other_db_path, exp_tname, sum_tname):
     if not table_exists(cur, exp_tname):
         create_experiment_table(cur, exp_tname)
 
+    other_exp_tname = exp.get_exp_tname(project, solver, part_id, part_num)
+    other_sum_tname = exp.get_sum_tname(project, solver, part_id, part_num)
+
     cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-    cur.execute(f"INSERT INTO {exp_tname} SELECT * FROM OTHER_DB.{exp_tname}")
-    cur.execute(f"INSERT INTO {sum_tname} SELECT * FROM OTHER_DB.{sum_tname}")
+    cur.execute(f"INSERT INTO {exp_tname} SELECT * FROM OTHER_DB.{other_exp_tname}")
+    cur.execute(f"INSERT INTO {sum_tname} SELECT * FROM OTHER_DB.{other_sum_tname}")
 
     con.commit()
     con.close()

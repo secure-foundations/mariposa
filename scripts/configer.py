@@ -80,11 +80,19 @@ class ExpConfig:
         # use a start seed if provided
         self.init_seed = None if init_seed == "" else int(init_seed)
 
-    def get_exp_tname(self, project, solver):
-        return scrub(f"{self.name}_{project.name}_{str(solver)}_exp")
+    def get_exp_tname(self, project, solver, part_id=1, part_num=1):
+        if part_id == 1 and part_num == 1:
+            part = ""
+        else:
+            part = f"_p{part_id}of{part_num}"
+        return scrub(f"{self.name}_{project.name}_{str(solver)}_exp{part}")
 
-    def get_sum_tname(self, project, solver):
-        return scrub(f"{self.name}_{project.name}_{str(solver)}_sum")
+    def get_sum_tname(self, project, solver, part_id=1, part_num=1):
+        if part_id == 1 and part_num == 1:
+            part = ""
+        else:
+            part = f"_p{part_id}of{part_num}"
+        return scrub(f"{self.name}_{project.name}_{str(solver)}_sum{part}")
 
 class Configer:
     def __init__(self, path="configs.json"):

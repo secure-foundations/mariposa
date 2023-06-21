@@ -67,7 +67,7 @@ def single_mode(args):
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
 
         r = Runner(exp)
-        r.run_single_project(project, project.artifact_solver, 1, 1)
+        r.run_project(project, project.artifact_solver, 1, 1)
     dump_status(project, project.artifact_solver, exp, ana)
 
 def dump_multi_status(project, solver, exp, ana):
@@ -115,13 +115,14 @@ def multi_mode(args):
     if not args.analysis_only:
         check_existing_tables(exp, project, solver)
         r = Runner(exp)
-        r.run_single_project(project, solver, part_id, part_num)
+        r.run_project(project, solver, part_id, part_num)
 
-    if args.analysis_skip:
+    if not args.analysis_skip:
+        dump_multi_status(project, solver, exp, ana)
+    else:
         print("[INFO] skipping analysis")
-        return exp.db_path
 
-    dump_multi_status(project, solver, exp, ana)
+    return (exp.db_path, part_id, part_num)
 
 def flatten_path(base_dir, path):
     assert base_dir in path
@@ -211,17 +212,15 @@ def manager_mode(args):
     print(f"[INFO] {args.partition_num}/{args.partition_num} partition message(s) received")
 
     for i in range(args.partition_num):
-        other_db_path = res_queue.get()
+        (other_db_path, part_id, part_num) = res_queue.get()
         if addr in other_db_path:
             continue
         temp_db_path = f"{exp.db_path}.temp"
         command = f"scp -r {other_db_path} {temp_db_path}"
-        print(f"[INFO] running: {command}")
+        print(f"[INFO] copying db: {command}")
         os.system(command)
         assert os.path.exists(temp_db_path)
-        sum_name = exp.get_sum_tname(project, solver)
-        exp_name = exp.get_exp_tname(project, solver)
-        import_entries(exp.db_path, temp_db_path, exp_name, sum_name)
+        import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
         os.remove(temp_db_path)
 
 def worker_mode(args):
@@ -239,10 +238,10 @@ def worker_mode(args):
         wargs = queue.get()
         if wargs is None:
             break
-        db_path = multi_mode(wargs)
+        (db_path, part_id, part_num) = multi_mode(wargs)
         db_path = f"{get_self_ip()}:{os.path.abspath(db_path)}"
-        res_queue.put(db_path)
-        print(f"[INFO] worker {get_self_ip()} completed partition {wargs.partition_id}")
+        res_queue.put((db_path, part_id, part_num))
+        print(f"[INFO] worker {get_self_ip()} completed partition {part_id} out of {part_num}")
     print(f"[INFO] worker {get_self_ip()} finished")
 
 if __name__ == '__main__':
