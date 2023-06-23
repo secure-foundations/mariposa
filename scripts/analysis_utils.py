@@ -1507,7 +1507,7 @@ if __name__ == "__main__":
     # plot_paper_overall()
     cats = [Stability.STABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE]
     
-    for project in [D_KOMODO, D_FVBKV]:
+    for project in [D_FVBKV]:
         uk = get_unknowns(project)
         exp = c.load_known_experiment("compose")
         rows = load_sum_table(project, Z3_4_12_1, exp, uk)

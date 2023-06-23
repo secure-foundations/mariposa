@@ -100,6 +100,19 @@
         "num_procs": 7,
         "db_path": "./data/compose2.db",
         "db_mode": "update"
+      },
+      {
+        "name": "compose3",
+        "mutations": [
+          "all"
+        ],
+        "num_mutants": 180,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/compose2.db",
+        "db_mode": "update"
       }
     ],
     "analyzers": [
