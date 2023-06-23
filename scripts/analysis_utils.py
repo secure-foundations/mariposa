@@ -18,6 +18,8 @@ D_LVBKV = c.load_known_project("d_lvbkv")
 FS_VWASM = c.load_known_project("fs_vwasm")
 FS_DICE = c.load_known_project("fs_dice")
 
+D_KOMODO_UC = c.load_known_project("d_komodo_uc")
+
 MAIN_PROJS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]
 
 Z3_4_4_2 = c.load_known_solver("z3_4_4_2")
@@ -1444,10 +1446,90 @@ original unknown: {len(og_unknown)}
 min unsat: {len(min_unsat)}
 min timeout: {len(min_timeout)}
 min unknown: {len(min_unknown)}
-               """) 
+               """)
+
+def stem_file_paths(items):
+    new_items = {}
+    all = set()
+    for cat in Stability:
+        new_items[cat] = set()
+        for query in items[cat]:
+            new_items[cat].add(query.split("/")[-1])
+        all.update(new_items[cat])
+    return new_items
+
+def diff_unsat_core():
+    ana = c.load_known_analyzer("default")
+    exp = c.load_known_experiment("unsat_core")
+    
+    uk = get_unknowns(D_KOMODO)
+    
+    rows = load_sum_table(D_KOMODO_UC, Z3_4_12_1, exp, uk)
+    items = ana.categorize_queries(rows)
+    items = stem_file_paths(items)
+
+    # ps, _ = get_category_percentages(items)
+
+    rows = load_sum_table(D_KOMODO, Z3_4_12_1, MAIN_EXP, uk)
+    items2 = ana.categorize_queries(rows)
+    items2 = stem_file_paths(items2)
+    
+    rows = []
+    # ps, _ = get_category_percentages(items2)
+    for cat2 in [Stability.STABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE]:
+        row = [cat2, len(items[cat2])]
+        for cat1 in [Stability.STABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, "all"]:
+            prev = items2[cat1]
+            now = items[cat2]
+            row.append(len(prev.intersection(now)))
+        rows.append(row)
+
+    print(tabulate(rows, headers="firstrow", tablefmt="github"))
+
+def migration(items1, items2, cats):
+    row = [""]
+    for c2 in cats:
+       row.append(f"{c2.name}--{len(items2[c2])}") 
+    
+    rows = [row]
+    
+    for c1 in cats:
+        row = [f"{c1.name}--{len(items1[c1])}"]
+        for c2 in cats:
+            row.append(len(items1[c1].intersection(items2[c2])))
+        rows.append(row)
+    print(tabulate(rows, headers="firstrow", tablefmt="github"))
+            # print(f"{c1} -> {c2}: {len(items1[c1].intersection(items2[c2]))}")
 
 if __name__ == "__main__":
 #   plot_paper_figs()
 #   plot_appendix_figs()
     # plot_paper_overall()
-    pass
+    cats = [Stability.STABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE]
+    
+    for project in [D_KOMODO, D_FVBKV]:
+        uk = get_unknowns(project)
+        exp = c.load_known_experiment("compose")
+        rows = load_sum_table(project, Z3_4_12_1, exp, uk)
+        items = Z_TEST_60.categorize_queries(rows)
+        inconclusive = items[Stability.INCONCLUSIVE]
+        for row in rows:
+            query = row[0]
+            if query not in inconclusive:
+                continue
+            print("")
+            print("query:", row[0])
+            mutations, blob = row[1], row[2]
+            Z_TEST_60.dump_query_status(mutations, blob)
+
+        # for query in items[Stability.INCONCLUSIVE]:
+        #     print(query)
+        # ps, _ = get_category_percentages(items)
+        # print(ps)
+
+        # rows = load_sum_table(project, Z3_4_12_1, MAIN_EXP, uk)
+        # items2 = Z_TEST_60.categorize_queries(rows)
+        # # ps, _ = get_category_percentages(items)
+        # # print(ps)
+        # migration(items, items2, cats)
+        break

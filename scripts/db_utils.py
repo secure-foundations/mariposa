@@ -275,6 +275,7 @@ def export_timeouts(cfg, solver):
 def load_sum_table(project, solver, cfg, skip=set()):
     con, cur = get_cursor(cfg.db_path)
     sum_name = cfg.get_sum_tname(project, solver)
+    print(f"[INFO] loading {sum_name}")
 
     if not table_exists(cur, sum_name):
         print(f"[INFO] skipping {sum_name}")
