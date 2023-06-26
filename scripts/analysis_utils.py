@@ -101,6 +101,7 @@ MUTATION_LABELS = {
     "rename": r"renaming",
 }
 
+
 def get_unknowns(proj):
     th = STRICT_60
     summary = load_sum_table(proj, proj.artifact_solver, MAIN_EXP)
@@ -1037,6 +1038,91 @@ def plot_appendix_figs():
 #   plot_appendix_sizes()
     plot_appendix_srs()
 
+from statsmodels.stats import multitest
+
+def _ecdf(x):
+    '''no frills empirical cdf used in fdrcorrection
+    '''
+    nobs = len(x)
+    return np.arange(1,nobs+1)/float(nobs)
+
+### benjamini-hochberg adjustment
+def bh_adjust(proj):
+    # blobs[solver] ~ list of query blobs under that solver
+    blobs = load_exp_sums(proj)
+    ana = Z_TEST_60
+
+    # solvability test:
+    for solver in blobs:
+        if solver != Z3_4_12_1:
+            continue
+#       print(solver)
+        p_vals_greater_than_5 = []
+        p_vals_less_than_95 = []
+        raw_vals = []
+        print(len(blobs[solver]))
+        for query in blobs[solver]:
+            query_name = query[0]
+            for group_blob in query[2]:
+                size = group_blob.shape[1]
+                
+                unsat_indices = group_blob[0] == RCode.UNSAT.value
+                nto_indices = group_blob[1] < ana._timeout
+                valid_indices = np.logical_and(unsat_indices, nto_indices)
+                success = np.sum(valid_indices)
+
+                value = ana.r_solvable/100
+                if success == 0: size = size * 4
+                _, p_value = proportions_ztest(count=success,
+                                                nobs=size,
+                                                value=value, 
+                                                alternative='smaller',
+                                                prop_var=value)
+                p_vals_greater_than_5.append(p_value)
+
+                value = ana.r_stable/100
+                _, p_value = proportions_ztest(count=success,
+                                                nobs=size,
+                                                value=value, 
+                                                alternative='larger',
+                                                prop_var=value)
+                p_vals_less_than_95.append(p_value)
+
+                raw_vals.append(success / size)
+                break
+        p_vals_greater_than_5 = np.array(p_vals_greater_than_5)
+        p_vals_less_than_95 = np.array(p_vals_less_than_95)
+        raw_vals = np.array(raw_vals)
+
+        rejected_gt5 = [vals <= .05 for vals in p_vals_greater_than_5]
+        rejected_lt95 = [vals <= .05 for vals in p_vals_less_than_95]
+        print(f"less than 5 ct: {np.sum(rejected_gt5)}")
+        print(f"greater than 95 ct: {np.sum(rejected_lt95)}")
+
+        both_rej = np.logical_and(rejected_gt5, rejected_lt95)
+#       print(f"ct: {np.sum(both_rej)}")
+
+        rejected_gt5 = multitest.fdrcorrection(p_vals_greater_than_5, alpha=.05, method='i')[0]
+        corrected_gt5 = multitest.fdrcorrection(p_vals_greater_than_5, alpha=.05, method='i')[1]
+
+        rejected_lt95 = multitest.fdrcorrection(p_vals_less_than_95, alpha=.05, method='i')[0]
+        corrected_lt95 = multitest.fdrcorrection(p_vals_less_than_95, alpha=.05, method='i')[1]
+
+        print(f"less than 5 ct after correction: {np.sum(rejected_gt5)}")
+        print(f"greater than 95 ct after correction: {np.sum(rejected_lt95)}")
+
+        both_rej = np.logical_and(rejected_gt5, rejected_lt95)
+#       print(f"ct after correction: {np.sum(both_rej)}")
+
+#       print(sum([vals <= .05 for vals in corrected]))
+        
+#       for i, val in enumerate(rejected):
+#           if val == False:
+#               print(raw_vals[i])
+    
+        
+
+
 
 ### unsat core figures:
 
@@ -1454,4 +1540,6 @@ if __name__ == "__main__":
 #   plot_paper_figs()
 #   plot_appendix_figs()
 #   plot_paper_overall()
-    create_benchmark()
+    for proj in MAIN_PROJS:
+        print(proj.name)
+        bh_adjust(proj)
