@@ -31,7 +31,7 @@ To perform a basic sanity check:
 ```
 python3 scripts/main.py single -s z3_4_12_1 -q data/samples/single_check.smt2
 ```
-This will test the stability of the query `data/samples/single_check.smt2` on the solver `Z3 4.12.1`, using the default settings. The result should be something like this:
+This will test the stability of the query `data/samples/single_check.smt2` on the solver `Z3 4.12.1`, using the default settings for experiments. The result should be something like this:
 
 ```
 solver used: solvers/z3-4.12.1
@@ -63,11 +63,11 @@ Under the key `experiments`, there are a few predefined settings that control ho
 * `mutations` is a list of enabled mutation methods; currently `shuffle`, `rename`, `reseed` are supported.
 * `num_mutants` is the number of mutants to generate for each mutation method. It is set to `60` In the previous example, so `shuffle`, `rename`, `reseed` each generated `60` mutants for `180` in total.
 * `keep_mutants` controls whether the files containing the mutants will be removed after the experiment. Usually only set to `true` for debugging, since mutants can occupy a lot of space.
-* `init_seed` **TODO: TBD**.
+* `init_seed` please leave as "" for now.
 * `exp_timeout` is the time limit in seconds for the solver to run on each mutant.
 * `num_procs` is the number of processes to run in parallel when performing the experiments. We recommend setting this to be at most **number_of_physical_cores - 1**. 
 * `db_path` is the database file to store the results. This is automatically taken care of in the `single` mode, as explained below. 
-* `db_mode` **TODO: TBD**.
+* `db_mode` please leave as "update" for now.
 
 ```
 {
