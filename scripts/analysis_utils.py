@@ -18,6 +18,7 @@ D_LVBKV = c.load_known_project("d_lvbkv")
 FS_VWASM = c.load_known_project("fs_vwasm")
 FS_DICE = c.load_known_project("fs_dice")
 
+
 MAIN_PROJS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]
 
 Z3_4_4_2 = c.load_known_solver("z3_4_4_2")
@@ -101,9 +102,9 @@ MUTATION_LABELS = {
     "rename": r"renaming",
 }
 
-def get_unknowns(proj):
+def get_unknowns(proj, exp=MAIN_EXP):
     th = STRICT_60
-    summary = load_sum_table(proj, proj.artifact_solver, MAIN_EXP)
+    summary = load_sum_table(proj, proj.artifact_solver, exp)
     assert summary is not None
     categories = th.categorize_queries(summary)
     return categories[Stability.UNKNOWN]
@@ -1448,10 +1449,96 @@ original unknown: {len(og_unknown)}
 min unsat: {len(min_unsat)}
 min timeout: {len(min_timeout)}
 min unknown: {len(min_unknown)}
-               """) 
+               """)
+
+def stem_file_paths(items):
+    new_items = {}
+    all = set()
+    for cat in Stability:
+        new_items[cat] = set()
+        for query in items[cat]:
+            new_items[cat].add(query.split("/")[-1])
+        all.update(new_items[cat])
+    return new_items
+
+def migration(items1, items2, cats):
+    row = [""]
+
+    for c2 in cats:
+       row.append(f"{c2.name}({len(items2[c2])})") 
+    
+    rows = [row]
+    
+    for c1 in cats:
+        row = [f"{c1.name}({len(items1[c1])})"]
+        for c2 in cats:
+            row.append(len(items1[c1].intersection(items2[c2])))
+        rows.append(row)
+    print(tabulate(rows, headers="firstrow", tablefmt="github"))
+
+def unsat_core_migration():
+    cats = [Stability.UNSTABLE, Stability.UNSOLVABLE, Stability.STABLE, Stability.TALLY]
+
+    uk = get_unknowns(D_KOMODO)
+    rows = load_sum_table(D_KOMODO, Z3_4_12_1, MAIN_EXP, uk)
+    items = Z_TEST_60.categorize_queries(rows, tally=True)
+    items = stem_file_paths(items)
+    ps, total = get_category_percentages(items)
+
+    D_KOMODO_UC = c.load_known_project("d_komodo_uc")
+    exp = c.load_known_experiment("unsat_core")
+    uk = get_unknowns(D_KOMODO_UC, exp)
+    rows = load_sum_table(D_KOMODO_UC, Z3_4_12_1, exp, uk)
+    items2 = Z_TEST_60.categorize_queries(rows, tally=True)
+
+    items2 = stem_file_paths(items2)
+    ps, total = get_category_percentages(items2)
+    
+    migration(items, items2, cats)
+
+def compose_migration():
+    cats = [Stability.UNSTABLE, Stability.UNSOLVABLE, Stability.STABLE, Stability.INCONCLUSIVE]
+    proj = D_KOMODO
+
+    # uk = get_unknowns(proj)
+    uk = set()
+    rows = load_sum_table(proj, Z3_4_12_1, MAIN_EXP, uk)
+    items = Z_TEST_60.categorize_queries(rows)
+    ps, total = get_category_percentages(items)
+
+    pp_table = [["category", "count", "percentage"]]
+    for cat in [Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE]:
+        pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
+    print(tabulate(pp_table, tablefmt="github"))
+
+    nrows = dict()
+    
+    for e in ["compose", "compose2", "compose3"]:
+        exp = c.load_known_experiment(e)
+        rows = load_sum_table(proj, Z3_4_12_1, exp, uk)
+        for row in rows:
+            if row[0] not in nrows:
+                nrows[row[0]] = []
+            nrows[row[0]].append(row)
+    nnrows = []
+
+    for k in nrows:
+        blob = np.hstack([v[2][0] for v in nrows[k]])
+        blob = np.expand_dims(blob, axis=0)
+        nnrows.append([k, ["all"], blob])
+    items2 = Z_TEST_60.categorize_queries(nnrows)
+    ps, total = get_category_percentages(items2)
+
+    pp_table = [["category", "count", "percentage"]]
+    for cat in [Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE]:
+        pp_table.append([cat.value, len(items2[cat]), round(ps[cat], 2)])
+    print(tabulate(pp_table, tablefmt="github"))
+    migration(items2, items, cats)
 
 if __name__ == "__main__":
-#   plot_paper_figs()
+  plot_paper_figs()
 #   plot_appendix_figs()
 #   plot_paper_overall()
-    create_benchmark()
+    # create_benchmark()
+    # plot_paper_overall()
+    # compose_migration()

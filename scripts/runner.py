@@ -43,9 +43,9 @@ def parse_basic_output_cvc(output, error):
     return "error"
 
 class Task:
-    def __init__(self, exp, exp_name, origin_path, perturb, mut_seed, solver):
+    def __init__(self, exp, exp_tname, origin_path, perturb, mut_seed, solver):
         self.exp = exp
-        self.exp_name = exp_name
+        self.exp_tname = exp_tname
         self.solver = solver
         self.origin_path = origin_path
         self.perturb = perturb
@@ -59,7 +59,7 @@ class Task:
             query_name = os.path.basename(self.origin_path)
             assert query_name.endswith(".smt2")
             query_name.replace(".smt2", "")
-            gen_path_pre = "gen/" + self.exp_name + "/" + query_name
+            gen_path_pre = "gen/" + self.exp_tname + "/" + query_name
             mutant_path = f"{gen_path_pre}.{str(self.mut_seed)}.{self.perturb}.smt2"
 
             command = f"{MARIPOSA_BIN_PATH} -i '{self.origin_path}' -m {self.perturb} -o '{mutant_path}' -s {self.mut_seed}"
@@ -87,7 +87,7 @@ class Task:
         
         con = sqlite3.connect(exp.db_path)
         cur = con.cursor()
-        cur.execute(f"""INSERT INTO {self.exp_name}
+        cur.execute(f"""INSERT INTO {self.exp_tname}
             (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
             VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
             (mutant_path, self.origin_path, self.perturb, command, out, err, rcode, elapsed))
@@ -122,14 +122,13 @@ def run_tasks(queue, start_time, id):
 class Runner:
     def _set_up_table(self):
         con, cur = get_cursor(self.exp.db_path)
-        exists = check_table_exists(cur, self.exp_name)
-        exit_with_on_fail(not exists, f"[ERROR] table {self.exp_name} already exists")
-        create_experiment_table(cur, self.exp_name)
+        exists = table_exists(cur, self.exp_tname)
+        exit_with_on_fail(not exists, f"[ERROR] table {self.exp_tname} already exists")
+        create_experiment_table(cur, self.exp_tname)
         con.commit()
         con.close()
 
     def __init__(self, exp):
-        mp.set_start_method('spawn')
         self.task_queue = mp.Queue()
         self.exp = exp
     
@@ -153,32 +152,35 @@ class Runner:
 
         print("[INFO] workers finished")
 
-    def run_single_project(self, project, solver):
-        self.exp_name = self.exp.get_exp_tname(project, solver)
+    def run_project(self, project, solver, part_id, part_num):
+        self.exp_tname = self.exp.get_exp_tname(project, solver, part_id, part_num)
+        self.sum_tname = self.exp.get_sum_tname(project, solver, part_id, part_num)
         self._set_up_table()
         tasks = []
-        for origin_path in project.list_queries():
-            task = Task(self.exp, self.exp_name, origin_path, None, None, solver)
+        for origin_path in project.list_queries(part_id, part_num):
+            task = Task(self.exp, self.exp_tname, origin_path, None, None, solver)
             tasks.append(task)
 
             for perturb in self.exp.enabled_muts:            
                 for _ in range(self.exp.num_mutant):
                     mut_seed = random.randint(0, 0xffffffffffffffff)
-                    task = Task(self.exp, self.exp_name, origin_path, perturb, mut_seed, solver)
+                    task = Task(self.exp, self.exp_tname, origin_path, perturb, mut_seed, solver)
                     tasks.append(task)
+
+        if (part_id, part_num) != (1, 1):
+            print(f"[INFO] running ONLY part {part_id}th of {part_num} in {project.name}")
 
         random.shuffle(tasks)
         for task in tasks:
             self.task_queue.put(task)
-            
-        self._run_workers()
-        self.sum_name = self.exp.get_sum_tname(project, solver)
-        create_sum_table(self.exp, self.exp_name, self.sum_name)
 
-def run_projects_solvers(exp, projects, solvers):
-    for project, solver in itertools.product(projects, solvers):
-        r = Runner(exp)
-        r.run_single_project(project, solver)
+        self._run_workers()
+        populate_sum_table(self.exp, self.exp_tname, self.sum_tname)
+
+# def run_projects_solvers(exp, projects, solvers):
+#     for project, solver in itertools.product(projects, solvers):
+#         r = Runner(exp)
+#         r.run_single_project(project, solver)
 
 def check_serenity_status():
     print("checking scaling_governor...")

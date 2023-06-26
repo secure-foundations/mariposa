@@ -10,11 +10,16 @@ class ProjectInfo:
         self.clean_dir = clean_dir
         self.artifact_solver = artifact_solver
 
-    def list_queries(self, size=None):
+    def list_queries(self, part_id=1, part_num=1):
         queries = list_smt2_files(self.clean_dir)
-        if size is None:
-            return queries
-        return random.sample(queries, size)
+        queries.sort()
+        assert part_id < len(queries)
+        part_id -= 1
+        assert part_id < part_num
+        total_size = len(queries)
+        chunk_size = (total_size // part_num) + 1
+        chunks = [queries[i:i + chunk_size] for i in range(0, len(queries), chunk_size)]
+        return chunks[part_id]
 
 class SolverInfo:
     def __init__(self, name, date, path):
@@ -36,6 +41,7 @@ class Mutation(str, Enum):
     SHUFFLE = "shuffle"
     RENAME = "rename"
     RESEED = "reseed"
+    ALL = "all"
     # LOWER_SHUFFLE = "lower_shuffle"
 
     def __str__(self):
@@ -75,11 +81,19 @@ class ExpConfig:
         # use a start seed if provided
         self.init_seed = None if init_seed == "" else int(init_seed)
 
-    def get_exp_tname(self, project, solver):
-        return scrub(f"{self.name}_{project.name}_{str(solver)}_exp")
+    def get_exp_tname(self, project, solver, part_id=1, part_num=1):
+        if part_id == 1 and part_num == 1:
+            part = ""
+        else:
+            part = f"_p{part_id}of{part_num}"
+        return scrub(f"{self.name}_{project.name}_{str(solver)}_exp{part}")
 
-    def get_sum_tname(self, project, solver):
-        return scrub(f"{self.name}_{project.name}_{str(solver)}_sum")
+    def get_sum_tname(self, project, solver, part_id=1, part_num=1):
+        if part_id == 1 and part_num == 1:
+            part = ""
+        else:
+            part = f"_p{part_id}of{part_num}"
+        return scrub(f"{self.name}_{project.name}_{str(solver)}_sum{part}")
 
 class Configer:
     def __init__(self, path="configs.json"):
