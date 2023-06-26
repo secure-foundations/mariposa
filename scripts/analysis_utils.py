@@ -18,7 +18,6 @@ D_LVBKV = c.load_known_project("d_lvbkv")
 FS_VWASM = c.load_known_project("fs_vwasm")
 FS_DICE = c.load_known_project("fs_dice")
 
-D_KOMODO_UC = c.load_known_project("d_komodo_uc")
 
 MAIN_PROJS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]
 
@@ -103,9 +102,9 @@ MUTATION_LABELS = {
     "rename": r"renaming",
 }
 
-def get_unknowns(proj):
+def get_unknowns(proj, exp=MAIN_EXP):
     th = STRICT_60
-    summary = load_sum_table(proj, proj.artifact_solver, MAIN_EXP)
+    summary = load_sum_table(proj, proj.artifact_solver, exp)
     assert summary is not None
     categories = th.categorize_queries(summary)
     return categories[Stability.UNKNOWN]
@@ -1458,78 +1457,82 @@ def stem_file_paths(items):
         all.update(new_items[cat])
     return new_items
 
-def diff_unsat_core():
-    ana = c.load_known_analyzer("default")
-    exp = c.load_known_experiment("unsat_core")
-    
-    uk = get_unknowns(D_KOMODO)
-    
-    rows = load_sum_table(D_KOMODO_UC, Z3_4_12_1, exp, uk)
-    items = ana.categorize_queries(rows)
-    items = stem_file_paths(items)
-
-    # ps, _ = get_category_percentages(items)
-
-    rows = load_sum_table(D_KOMODO, Z3_4_12_1, MAIN_EXP, uk)
-    items2 = ana.categorize_queries(rows)
-    items2 = stem_file_paths(items2)
-    
-    rows = []
-    # ps, _ = get_category_percentages(items2)
-    for cat2 in [Stability.STABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE]:
-        row = [cat2, len(items[cat2])]
-        for cat1 in [Stability.STABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, "all"]:
-            prev = items2[cat1]
-            now = items[cat2]
-            row.append(len(prev.intersection(now)))
-        rows.append(row)
-
-    print(tabulate(rows, headers="firstrow", tablefmt="github"))
-
 def migration(items1, items2, cats):
     row = [""]
+
     for c2 in cats:
-       row.append(f"{c2.name}--{len(items2[c2])}") 
+       row.append(f"{c2.name}({len(items2[c2])})") 
     
     rows = [row]
     
     for c1 in cats:
-        row = [f"{c1.name}--{len(items1[c1])}"]
+        row = [f"{c1.name}({len(items1[c1])})"]
         for c2 in cats:
             row.append(len(items1[c1].intersection(items2[c2])))
         rows.append(row)
     print(tabulate(rows, headers="firstrow", tablefmt="github"))
-            # print(f"{c1} -> {c2}: {len(items1[c1].intersection(items2[c2]))}")
+
+def unsat_core_migration():
+    cats = [Stability.UNSTABLE, Stability.UNSOLVABLE, Stability.STABLE, Stability.TALLY]
+
+    uk = get_unknowns(D_KOMODO)
+    rows = load_sum_table(D_KOMODO, Z3_4_12_1, MAIN_EXP, uk)
+    items = Z_TEST_60.categorize_queries(rows, tally=True)
+    items = stem_file_paths(items)
+    ps, total = get_category_percentages(items)
+
+    D_KOMODO_UC = c.load_known_project("d_komodo_uc")
+    exp = c.load_known_experiment("unsat_core")
+    uk = get_unknowns(D_KOMODO_UC, exp)
+    rows = load_sum_table(D_KOMODO_UC, Z3_4_12_1, exp, uk)
+    items2 = Z_TEST_60.categorize_queries(rows, tally=True)
+
+    items2 = stem_file_paths(items2)
+    ps, total = get_category_percentages(items2)
+    
+    migration(items, items2, cats)
+
+def compose_migration():
+    cats = [Stability.UNSTABLE, Stability.UNSOLVABLE, Stability.STABLE, Stability.INCONCLUSIVE]
+    proj = D_KOMODO
+
+    # uk = get_unknowns(proj)
+    uk = set()
+    rows = load_sum_table(proj, Z3_4_12_1, MAIN_EXP, uk)
+    items = Z_TEST_60.categorize_queries(rows)
+    ps, total = get_category_percentages(items)
+
+    pp_table = [["category", "count", "percentage"]]
+    for cat in [Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE]:
+        pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
+    print(tabulate(pp_table, tablefmt="github"))
+
+    nrows = dict()
+    
+    for e in ["compose", "compose2", "compose3"]:
+        exp = c.load_known_experiment(e)
+        rows = load_sum_table(proj, Z3_4_12_1, exp, uk)
+        for row in rows:
+            if row[0] not in nrows:
+                nrows[row[0]] = []
+            nrows[row[0]].append(row)
+    nnrows = []
+
+    for k in nrows:
+        blob = np.hstack([v[2][0] for v in nrows[k]])
+        blob = np.expand_dims(blob, axis=0)
+        nnrows.append([k, ["all"], blob])
+    items2 = Z_TEST_60.categorize_queries(nnrows)
+    ps, total = get_category_percentages(items2)
+
+    pp_table = [["category", "count", "percentage"]]
+    for cat in [Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE]:
+        pp_table.append([cat.value, len(items2[cat]), round(ps[cat], 2)])
+    print(tabulate(pp_table, tablefmt="github"))
+    migration(items2, items, cats)
 
 if __name__ == "__main__":
-#   plot_paper_figs()
+  plot_paper_figs()
 #   plot_appendix_figs()
     # plot_paper_overall()
-    cats = [Stability.STABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE]
-    
-    for project in [D_FVBKV]:
-        uk = get_unknowns(project)
-        exp = c.load_known_experiment("compose")
-        rows = load_sum_table(project, Z3_4_12_1, exp, uk)
-        items = Z_TEST_60.categorize_queries(rows)
-        inconclusive = items[Stability.INCONCLUSIVE]
-        for row in rows:
-            query = row[0]
-            if query not in inconclusive:
-                continue
-            print("")
-            print("query:", row[0])
-            mutations, blob = row[1], row[2]
-            Z_TEST_60.dump_query_status(mutations, blob)
-
-        # for query in items[Stability.INCONCLUSIVE]:
-        #     print(query)
-        # ps, _ = get_category_percentages(items)
-        # print(ps)
-
-        # rows = load_sum_table(project, Z3_4_12_1, MAIN_EXP, uk)
-        # items2 = Z_TEST_60.categorize_queries(rows)
-        # # ps, _ = get_category_percentages(items)
-        # # print(ps)
-        # migration(items, items2, cats)
-        break
+    # compose_migration()
