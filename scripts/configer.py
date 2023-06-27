@@ -13,7 +13,6 @@ class ProjectInfo:
     def list_queries(self, part_id=1, part_num=1):
         queries = list_smt2_files(self.clean_dir)
         queries.sort()
-        assert part_id < len(queries)
         part_id -= 1
         assert part_id < part_num
         total_size = len(queries)

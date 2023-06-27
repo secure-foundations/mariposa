@@ -224,11 +224,13 @@ fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String)
 
     for command in commands {
         if let concrete::Command::Push { level: _ } = command {
+            stack[depth].push(command.clone());
             depth += 1;
             stack.push(Vec::new());
         } else if let concrete::Command::Pop { level: _ } = command {
             depth -= 1;
             stack.pop();
+            stack[depth].push(command.clone());
         } else {
             stack[depth].push(command.clone());
         }
