@@ -232,13 +232,19 @@
         "name": "nr",
         "frame_work": "unknown",
         "clean_dir": "node_replication",
-        "artifact_solver_name": "z3_4_12_1"
+        "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "d_komodo_uc",
         "frame_work": "unknown",
         "clean_dir": "data/d_komodo_z3_uc/min_asserts",
         "artifact_solver_name": "z3_4_12_1"
+      },
+      {
+        "name": "splinter",
+        "frame_work": "verus",
+        "clean_dir": "splinter",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }

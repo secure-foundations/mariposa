@@ -187,28 +187,30 @@ fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concre
         .collect()
 }
 
-fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
-    let mut i = 0;
-    while i < commands.len() {
-        let command = &commands[i];
-        if let concrete::Command::SetOption {
-            keyword: concrete::Keyword(k),
-            value: _,
-        } = command
+fn is_target_cmd(command: &concrete::Command) -> bool {
+    if let concrete::Command::SetOption {
+        keyword: concrete::Keyword(k),
+        value: _,
+    } = command
+    {
+        if k == "rlimit"
+            || k == "echo"
+            || k == "RLIMIT"
+            || k == "timeout"
+            || k == "TIMEOUT"
+            || k == "fixedpoint.TIMEOUT"
         {
-            if k == "rlimit"
-                || k == "echo"
-                || k == "RLIMIT"
-                || k == "timeout"
-                || k == "TIMEOUT"
-                || k == "fixedpoint.TIMEOUT"
-            {
-                commands.remove(i);
-                continue;
-            }
+            return true;
         }
-        i += 1;
     }
+    if let concrete::Command::GetModel = command {
+        return true;
+    }
+    return false;
+}
+
+fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
+    commands.retain(|command| !is_target_cmd(command));
 }
 
 fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String) -> usize {
@@ -231,45 +233,66 @@ fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String)
             depth -= 1;
             stack.pop();
             stack[depth].push(command.clone());
-        } else {
-            stack[depth].push(command.clone());
-        }
-        if let concrete::Command::CheckSat = command {
+        } else if let concrete::Command::CheckSat = command {
             splits += 1;
             // write out to file
             let out_file_name = format!("{}.{}.smt2", &out_file_pre, splits);
             let mut manager = Manager::new(Some(out_file_name), 0);
             manager.dump_non_info_commands(&stack.concat());
+            manager.dump_non_info_commands(&vec![concrete::Command::CheckSat]);
+        } else {
+            stack[depth].push(command.clone());
         }
     }
     return splits;
 }
 
-
 fn name_assert(command: &mut concrete::Command, ct: usize) {
     let concrete::Command::Assert { term } = command else { return; };
     // does assert have attributes?
-    if let concrete::Term::Attributes { term: _, attributes: _ } = term {
+    if let concrete::Term::Attributes {
+        term: _,
+        attributes: _,
+    } = term
+    {
         // if name already exists, don't mess with it
-    }
-    else {
+    } else {
         let new_name = "unsat-cores-dump-name-".to_owned() + &ct.to_string();
-        let attributes = vec![(concrete::Keyword("named".to_owned()), visitors::AttributeValue::Symbol(concrete::Symbol(new_name)))];
+        let attributes = vec![(
+            concrete::Keyword("named".to_owned()),
+            visitors::AttributeValue::Symbol(concrete::Symbol(new_name)),
+        )];
         let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
         std::mem::swap(term, &mut temp);
-        *term = concrete::Term::Attributes { term: Box::new(temp), attributes };
+        *term = concrete::Term::Attributes {
+            term: Box::new(temp),
+            attributes,
+        };
     }
 }
 
 fn name_asserts(commands: &mut Vec<concrete::Command>) {
-    commands.iter_mut().enumerate().for_each(|(i, x)| name_assert(x, i));
-    commands.insert(0, concrete::Command::SetOption { keyword: concrete::Keyword("produce-unsat-cores".to_owned()), value: visitors::AttributeValue::Symbol(concrete::Symbol("true".to_owned())) });
+    commands
+        .iter_mut()
+        .enumerate()
+        .for_each(|(i, x)| name_assert(x, i));
+    commands.insert(
+        0,
+        concrete::Command::SetOption {
+            keyword: concrete::Keyword("produce-unsat-cores".to_owned()),
+            value: visitors::AttributeValue::Symbol(concrete::Symbol("true".to_owned())),
+        },
+    );
     // if (set-option :produce-unsat-cores false) is present, remove it
     let mut i = 0;
     while i < commands.len() {
         let command = &commands[i];
-        if let concrete::Command::SetOption { keyword: concrete::Keyword(k) , value: visitors::AttributeValue::Symbol(concrete::Symbol(v)) } = command {
-            if k == "produce-unsat-cores" && v == "false"{
+        if let concrete::Command::SetOption {
+            keyword: concrete::Keyword(k),
+            value: visitors::AttributeValue::Symbol(concrete::Symbol(v)),
+        } = command
+        {
+            if k == "produce-unsat-cores" && v == "false" {
                 commands.remove(i);
                 continue;
             }
@@ -285,7 +308,11 @@ fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> b
     };
     let named = concrete::Keyword("named".to_owned());
 
-    if let concrete::Term::Attributes { term: _, attributes } = term {
+    if let concrete::Term::Attributes {
+        term: _,
+        attributes,
+    } = term
+    {
         for (key, value) in attributes {
             if key == &named {
                 if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
@@ -299,9 +326,11 @@ fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> b
     return false;
 }
 
-
 // return a Vec<String> where each element is the name of an assert from the unsat core
-fn parse_core_from_file(commands: Vec<concrete::Command>, file_path: String) -> Vec<concrete::Command> {
+fn parse_core_from_file(
+    commands: Vec<concrete::Command>,
+    file_path: String,
+) -> Vec<concrete::Command> {
     // read lines from file
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
@@ -312,15 +341,21 @@ fn parse_core_from_file(commands: Vec<concrete::Command>, file_path: String) -> 
     if last_line == "timeout" {
         panic!("file timed out")
     }
-    // strip the first and last character 
-    let last_line = &last_line[1..last_line.len()-1];
-    // split the last line into a vector of strings 
-    let core = last_line.split(" ").map(|x| x.to_string()).collect::<Vec<String>>();
+    // strip the first and last character
+    let last_line = &last_line[1..last_line.len() - 1];
+    // split the last line into a vector of strings
+    let core = last_line
+        .split(" ")
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
     // convert core to a HashSet
     let core = core.into_iter().collect::<HashSet<String>>();
 
     // filter out commands that are not in the core
-    let new_commands = commands.into_iter().filter(|x| should_keep_command(x, &core)).collect::<Vec<concrete::Command>>();
+    let new_commands = commands
+        .into_iter()
+        .filter(|x| should_keep_command(x, &core))
+        .collect::<Vec<concrete::Command>>();
     return new_commands;
 }
 
@@ -331,7 +366,11 @@ fn clean_name(command: &mut concrete::Command) {
     let mut flag = false;
 
     // does assert have a named attribute?
-    if let concrete::Term::Attributes { term: new_term, attributes } = term {
+    if let concrete::Term::Attributes {
+        term: new_term,
+        attributes,
+    } = term
+    {
         for (key, value) in attributes {
             if key == &named {
                 if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
@@ -348,7 +387,6 @@ fn clean_name(command: &mut concrete::Command) {
     if flag {
         *command = concrete::Command::Assert { term: temp };
     }
-
 }
 
 fn clean_names(commands: &mut Vec<concrete::Command>) {
@@ -451,14 +489,14 @@ fn main() {
         manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
         manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
     } else if args.mutation == "unsat-core" {
-            name_asserts(&mut commands);
+        name_asserts(&mut commands);
     } else if args.mutation == "minimize-query" {
         commands = parse_core_from_file(commands, args.core_file.unwrap());
         // minimize-query will now also clean names by default
         // cleans names that were put in by mariposa
         clean_names(&mut commands);
         // remove produce unsat core at top and get-unsat-core from the bottom
-        commands = commands[1..commands.len()-1].to_vec();
+        commands = commands[1..commands.len() - 1].to_vec();
     } else if args.mutation == "clean-names" {
         clean_names(&mut commands);
     }

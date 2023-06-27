@@ -89,8 +89,8 @@ def dump_multi_status(project, solver, exp, ana):
 
     for row in rows:
         query = row[0]
-        if query not in items[Stability.UNSTABLE]:
-            continue
+        # if query not in items[Stability.UNSTABLE]:
+        #     continue
         print("")
         print("query:", row[0])
         mutations, blob = row[1], row[2]

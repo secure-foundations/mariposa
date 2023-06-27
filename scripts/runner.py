@@ -73,6 +73,7 @@ class Task:
             mutant_path = self.origin_path
 
         command = f"{solver.path} '{mutant_path}' -T:{exp.timeout}"
+        # print(f"[INFO] running: {command}")
         out, err, elapsed = subprocess_run(command, exp.timeout + 1)
 
         # TODO: handle other solvers
