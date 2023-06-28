@@ -1025,10 +1025,10 @@ def plot_appendix_srs():
 
 def plot_paper_figs():
     plot_paper_overall()
-    plot_paper_ext_cutoff()
-    plot_paper_pert_diff()
-    plot_paper_time_std()
-    plot_paper_time_scatter()
+#   plot_paper_ext_cutoff()
+#   plot_paper_pert_diff()
+#   plot_paper_time_std()
+#   plot_paper_time_scatter()
 
 def plot_appendix_figs():
     plot_appendix_ext_cutoff()

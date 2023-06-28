@@ -52,19 +52,19 @@ def show_tables(db_path):
     for table, count in tables.items():
         print(table, count)
 
-def create_experiment_table(cur, table_name):
-    cur.execute(f"""CREATE TABLE {table_name}(
-        query_path TEXT NOT NULL,
-        vanilla_path TEXT,
-        perturbation varchar(10),
-        command TEXT NOT NULL,
-        std_out TEXT,
-        std_error TEXT,
-        result_code varchar(10),
-        elapsed_milli INTEGER, 
-        timestamp DEFAULT CURRENT_TIMESTAMP
-        )""")
-    print(f"[INFO] created table {table_name}")
+#def create_experiment_table(cur, table_name):
+#    cur.execute(f"""CREATE TABLE {table_name}(
+#        query_path TEXT NOT NULL,
+#        vanilla_path TEXT,
+#        perturbation varchar(10),
+#        command TEXT NOT NULL,
+#        std_out TEXT,
+#        std_error TEXT,
+#        result_code varchar(10),
+#        elapsed_milli INTEGER, 
+#        timestamp DEFAULT CURRENT_TIMESTAMP
+#        )""")
+#    print(f"[INFO] created table {table_name}")
 
 def create_experiment_table(cur, table_name):
     cur.execute(f"""CREATE TABLE {table_name}(
@@ -383,7 +383,7 @@ if __name__ == "__main__":
 
 #   if len(sys.argv) <= 1:
 #       show_tables("./data/test.db")
-#   pass
+    pass
     # zip_db()
 
     # else:

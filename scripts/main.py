@@ -299,5 +299,7 @@ if __name__ == '__main__':
         manager_mode(args)
     elif args.sub_command == "worker":
         worker_mode(args)
+    elif args.sub_command == "repeat":
+        repeat_mode(args)
     elif args.sub_command is None:
         parser.print_help()

@@ -87,10 +87,16 @@ class Task:
         
         con = sqlite3.connect(exp.db_path)
         cur = con.cursor()
-        cur.execute(f"""INSERT INTO {self.exp_tname}
-            (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
-            VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
-            (mutant_path, self.origin_path, self.perturb, command, out, err, rcode, elapsed))
+        if self.mut_seed == None: 
+            cur.execute(f"""INSERT INTO {self.exp_tname}
+                (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli, mutant_seed)
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);""",
+                (mutant_path, self.origin_path, self.perturb, command, out, err, rcode, elapsed, "",))
+        else:
+            cur.execute(f"""INSERT INTO {self.exp_tname}
+                (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli, mutant_seed)
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);""",
+                (mutant_path, self.origin_path, self.perturb, command, out, err, rcode, elapsed, str(self.mut_seed),))
         con.commit()
         con.close()
 
