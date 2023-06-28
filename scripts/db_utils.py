@@ -315,81 +315,62 @@ def load_sum_table(project, solver, cfg, skip=set()):
     con.close()
     return nrows
 
-def update_mutant_seed(q):
-    con, cur = get_cursor("./data/mariposa.db")
-    cur.execute(q)
+# adds mutant seed to each column in exp tables
+def migrate_db(old_db_path="./data/mariposa.db", new_db_path="./data/mariposa.edited.db"):
+    tables = get_tables(old_db_path)
+    con, cur = get_cursor(old_db_path)
+    newcon, newcur = get_cursor(new_db_path)
+
+    for table in tables:
+        # create new column in exp table with name mutant_seed
+        if table.endswith("_exp"):
+            q = f"""ALTER TABLE {table} ADD COLUMN mutant_seed TEXT"""
+            print(q)
+            cur.execute(q)
+
+    ###### add mutant_seed ######
+    for table in tables:
+        if table.endswith("_exp"):
+            create_experiment_table(newcur, table)
+            print(f"starting {table}...")
+            q = f"""select * from {table}"""
+            res = cur.execute(q).fetchall()
+            for row in tqdm(res):
+                path = row[0]
+                if path.startswith("gen"):
+                    seed = path.split(".")[-3]
+                    row = row + (seed, )
+                    q = f""" insert into {table}
+                (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli, timestamp, mutant_seed)
+                    values( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                    newcur.execute(q, row)
+                else:
+                    row = row + ('', )
+                    q = f""" insert into {table}
+                (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli, timestamp, mutant_seed)
+                    values( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                    newcur.execute(q, row)
+            print(f"finished!")
+        else:
+            # copy sum table from old db to new db
+            create_summary_table(newcur, table)
+            print(f"copying {table}...")
+            q = f"""select * from {table}"""
+            res = cur.execute(q).fetchall()
+            for row in tqdm(res):
+                q = f""" insert into {table}
+                (vanilla_path, mutations, summaries)
+                    values( ?, ?, ?)"""
+                newcur.execute(q, row)
+            print(f"finished!")
+
     con.commit()
     con.close()
 
+    newcon.commit()
+    newcon.close()
 
 if __name__ == "__main__":
-    import multiprocessing as mp
-    tables = get_tables("./data/mariposa.db")
-    con, cur = get_cursor("./data/mariposa.db")
-    
-    newcon, newcur = get_cursor("./data/mariposa.edited.db")
-
-    for table in tables:
-        if table.endswith("sum"):
-            continue
-        newcur.execute(f""" select count(distinct(mutant_seed)), count(mutant_seed) from {table} where mutant_seed is not '' """)
-        res = newcur.fetchall()
-        print(table, res[0][0], res[0][1] )
-
-
-
-
-#   for table in tables:
-#       # create new column in exp table with name mutant_seed
-#       if table.endswith("_exp"):
-#           q = f"""ALTER TABLE {table} ADD COLUMN mutant_seed TEXT"""
-#           print(q)
-#           cur.execute(q)
-
-###### add mutant_seed ######
-#   for table in tables:
-#       if table.endswith("_exp"):
-#           create_experiment_table(newcur, table)
-#           print(f"starting {table}...")
-#           q = f"""SELECT * FROM {table}"""
-#           res = cur.execute(q).fetchall()
-#           for row in tqdm(res):
-#               path = row[0]
-#               if path.startswith("gen"):
-#                   seed = path.split(".")[-3]
-#                   row = row + (seed, )
-#                   q = f""" INSERT INTO {table}
-#               (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli, timestamp, mutant_seed)
-#                   VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-#                   newcur.execute(q, row)
-#               else:
-#                   row = row + ('', )
-#                   q = f""" INSERT INTO {table}
-#               (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli, timestamp, mutant_seed)
-#                   VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-#                   newcur.execute(q, row)
-#           print(f"finished!")
-#       else:
-#           # copy sum table from old db to new db
-#           create_summary_table(newcur, table)
-#           print(f"copying {table}...")
-#           q = f"""SELECT * FROM {table}"""
-#           res = cur.execute(q).fetchall()
-#           for row in tqdm(res):
-#               q = f""" INSERT INTO {table}
-#               (vanilla_path, mutations, summaries)
-#                   VALUES( ?, ?, ?)"""
-#               newcur.execute(q, row)
-#           print(f"finished!")
-#               
-
-#   con.commit()
-#   con.close()
-
-#   newcon.commit()
-#   newcon.close()
-
-
 #       old_table = table
 #       table = table.lower()
 #       if table.endswith("_summary"):
