@@ -124,6 +124,40 @@ def multi_mode(args):
 
     return (exp.db_path, part_id, part_num)
 
+def repeat_mode(args):
+    part_id, part_num = parse_partition(args.partition_id)
+
+    c = Configer()
+    exp = c.load_known_experiment(args.experiment)
+    solver = c.load_known_solver(args.solver)
+    project = c.load_known_project(args.project)
+    ana = c.load_known_analyzer(args.analyzer)
+
+    new_db_path = f"{exp.db_path[:-3]}.repeat.db"
+    # prompt user for new db name
+    if os.path.exists(new_db_path):
+        print(f"[WARN] a file at {exp.db_path[:-3]}.repeat.db already exists, it is recommended you choose a different name!")
+        print(f"[INFO] enter new db name:")
+        new_db_path = input()
+    else:
+        print(f"[INFO] repeat mode will create a new db called {exp.db_path[:-3]}.repeat.db, would you like to choose a different name? [Y]")
+        if input() == "Y":
+            print("[INFO] enter new db name:")
+            new_db_path = input()
+    print(f"[INFO] repeat mode will use db {new_db_path}")
+    
+    if not args.analysis_only:
+#       check_existing_tables(exp, project, solver)
+        r = Runner(exp)
+        r.rerun_project(project, solver, part_id, part_num, new_db_path)
+
+    if not args.analysis_skip:
+        dump_multi_status(project, solver, exp, ana)
+    else:
+        print("[INFO] skipping analysis")
+
+    return (exp.db_path, part_id, part_num)
+
 def flatten_path(base_dir, path):
     assert base_dir in path
     if not base_dir.endswith("/"):
@@ -264,14 +298,18 @@ if __name__ == '__main__':
 
     multi_parser.add_argument("--partition-id", default="1/1", help="which partition of the project to run mariposa on (probably should not be specified manually)")
     
+    repeat_parser = subparsers.add_parser('repeat', help='repeat experiment mode. repeat an existing (preprocessed) experiment using the original configuations. the project is specified by a python expression that evaluates to a ProjectInfo object. ')
+    
+    repeat_parser.add_argument("--partition-id", default="1/1", help="which partition of the project to run mariposa on (probably should not be specified manually)")
+
     manager_parser = subparsers.add_parser('manager', help='sever pool manager mode.')
     manager_parser.add_argument("--partition-num", type=int, required=True, help="number of partitions to split the project into")
 
-    for sp in [multi_parser, manager_parser]:
+    for sp in [multi_parser, manager_parser, repeat_parser]:
         sp.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")
         sp.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from configs.json)")
 
-    for sp in [single_parser, multi_parser, manager_parser]:
+    for sp in [single_parser, multi_parser, manager_parser, repeat_parser]:
         sp.add_argument("-s", "--solver", required=True, help="the solver name (from configs.json) to use")
         sp.add_argument("--analysis-only", default=False, action='store_true', help="do not perform experiments, only analyze existing data")
         sp.add_argument("--analysis-skip", default=False, action='store_true', help="skip analysis")

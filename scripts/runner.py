@@ -157,6 +157,36 @@ class Runner:
             p.join()
 
         print("[INFO] workers finished")
+    
+    def rerun_project(self, project, solver, part_id, part_num, new_db_path):
+        self.exp_tname = self.exp.get_exp_tname(project, solver, part_id, part_num)
+        self.sum_tname = self.exp.get_sum_tname(project, solver, part_id, part_num)
+        
+        old_db_path = self.exp.db_path
+        self.exp.db_path = new_db_path
+
+        # set up table
+        self._set_up_table()
+        
+        # rerun
+        tasks = []
+        con, cur = get_cursor(old_db_path)
+        cur.execute(f"SELECT * FROM {self.exp_tname};")
+        rows = cur.fetchall()
+        con.close()
+        for row in rows:
+            task = Task(self.exp, self.exp_tname, row[1], row[2], row[9], solver)
+            tasks.append(task)
+
+        if (part_id, part_num) != (1, 1):
+            print(f"[INFO] running ONLY part {part_id}th of {part_num} in {project.name}")
+
+        random.shuffle(tasks)
+        for task in tasks:
+            self.task_queue.put(task)
+
+        self._run_workers()
+        populate_sum_table(self.exp, self.exp_tname, self.sum_tname)
 
     def run_project(self, project, solver, part_id, part_num):
         self.exp_tname = self.exp.get_exp_tname(project, solver, part_id, part_num)
