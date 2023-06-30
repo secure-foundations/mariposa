@@ -371,6 +371,7 @@ def migrate_db(old_db_path="./data/mariposa.db", new_db_path="./data/mariposa.ed
     newcon.close()
 
 if __name__ == "__main__":
+    zip_db()
 #       old_table = table
 #       table = table.lower()
 #       if table.endswith("_summary"):
