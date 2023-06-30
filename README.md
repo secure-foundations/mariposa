@@ -6,6 +6,11 @@ Mariposa is a tool for testing and quantifying SMT-based proof stability.  Given
 * applies statistical tests to the data in order to assign a stability category
 * reports the stability category and relevant stability metrics
 
+
+## Mariposa Data
+
+If you are looking for the benchmark and experiment queies from the Mariposa paper, they are available [here](https://github.com/secure-foundations/mariposa-data/).
+
 ## Prerequisites
 
 1. Clone this repository.  Since this repository currently includes in the commit history the compressed database files from our past experiments, we recommend that you avoid fetching the full history when cloning:
