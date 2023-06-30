@@ -75,9 +75,9 @@ def create_summary_table(cur, sum_table_name):
         )""")
     print(f"[INFO] created table {sum_table_name}")
 
-def check_existing_tables(cfg, project, solver):
-    exp_table = cfg.get_exp_tname(project, solver)
-    sum_name = cfg.get_sum_tname(project, solver)
+def check_existing_tables(cfg, project, solver, part_id, part_num):
+    exp_table = cfg.get_exp_tname(project, solver, part_id, part_num)
+    sum_name = cfg.get_sum_tname(project, solver, part_id, part_num)
     con, cur = get_cursor(cfg.db_path)
 
     if table_exists(cur, sum_name):

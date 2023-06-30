@@ -89,8 +89,8 @@ def dump_multi_status(project, solver, exp, ana):
 
     for row in rows:
         query = row[0]
-        # if query not in items[Stability.UNSTABLE]:
-        #     continue
+        if query not in items[Stability.UNSTABLE]:
+            continue
         print("")
         print("query:", row[0])
         mutations, blob = row[1], row[2]
@@ -113,7 +113,7 @@ def multi_mode(args):
     ana = c.load_known_analyzer(args.analyzer)
 
     if not args.analysis_only:
-        check_existing_tables(exp, project, solver)
+        check_existing_tables(exp, project, solver, part_id, part_num)
         r = Runner(exp)
         r.run_project(project, solver, part_id, part_num)
 
@@ -173,6 +173,7 @@ def manager_mode(args):
     exp = c.load_known_experiment(args.experiment)
     solver = c.load_known_solver(args.solver)
     project = c.load_known_project(args.project)
+    check_existing_tables(exp, project, solver, 1, 1)
 
     from multiprocessing.managers import BaseManager
     from multiprocessing import process
@@ -217,6 +218,8 @@ def manager_mode(args):
         if remote_db_path not in workers:
             workers[remote_db_path] = []
         workers[remote_db_path].append((part_id, part_num))
+    # workers = dict()
+    print("[DEBUG] ", workers)
 
     for remote_db_path in workers:
         temp_db_path = f"{exp.db_path}.temp"
