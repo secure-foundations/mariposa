@@ -38,7 +38,7 @@
           "reseed"
         ],
         "num_mutants": 60,
-        "keep_mutants": true,
+        "keep_mutants": false,
         "init_seed": "",
         "exp_timeout": 60,
         "num_procs": 7,
