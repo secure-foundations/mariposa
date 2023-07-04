@@ -84,7 +84,7 @@ class Task:
             for line in f:
                 if "(push" in line:
                     repeat = True
-                if repeat:
+                if repeat and "(get-info" not in line:
                     context.append(line)
                 else:
                     write(p, line)
@@ -112,7 +112,7 @@ class Task:
             # else:
             #     print("[INFO] solver result: ", rcode, elapsed)
 
-            reports[i] = (rcode, elapsed)
+            reports[i] = (rcode, elapsed, out)
 
         if not exp.keep_mutants and self.perturb is not None:
             # remove mutant
@@ -121,7 +121,7 @@ class Task:
         con = sqlite3.connect(exp.db_path)
         cur = con.cursor()
         for i in reports:
-            rcode, elapsed = reports[i]
+            rcode, elapsed, out = reports[i]
             if i != 0:
                 mutant_path = self.origin_path + "." + str(i)
                 per = "inc"
@@ -260,11 +260,11 @@ if __name__ == "__main__":
     c = Configer()
     solver = c.load_known_solver("z3_4_12_1")
     exp = c.load_known_experiment("incremental")
-    p = c.load_known_project("d_lvbkv")
+    p = c.load_known_project("nr")
 
     r = Runner(exp)
     r.run_project(p, solver, 1, 100)
-    
+
     con, cur = get_cursor(exp.db_path)
     sum_name = exp.get_sum_tname(p, solver, 1, 100)
 

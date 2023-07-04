@@ -187,7 +187,7 @@ fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concre
         .collect()
 }
 
-fn is_target_cmd(command: &concrete::Command) -> bool {
+fn should_remove_command(command: &concrete::Command) -> bool {
     if let concrete::Command::SetOption {
         keyword: concrete::Keyword(k),
         value: _,
@@ -206,11 +206,17 @@ fn is_target_cmd(command: &concrete::Command) -> bool {
     if let concrete::Command::GetModel = command {
         return true;
     }
+    if let concrete::Command::GetUnsatCore = command {
+        return true;
+    }
+    if let concrete::Command::GetInfo { flag: _ } = command {
+        return true;
+    }
     return false;
 }
 
 fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
-    commands.retain(|command| !is_target_cmd(command));
+    commands.retain(|command| !should_remove_command(command));
 }
 
 fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String) -> usize {
@@ -226,13 +232,14 @@ fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String)
 
     for command in commands {
         if let concrete::Command::Push { level: _ } = command {
-            stack[depth].push(command.clone());
             depth += 1;
             stack.push(Vec::new());
+            // retain the push command
+            stack[depth].push(command.clone());
         } else if let concrete::Command::Pop { level: _ } = command {
+            // stack[depth].push(command.clone());
             depth -= 1;
             stack.pop();
-            stack[depth].push(command.clone());
         } else if let concrete::Command::CheckSat = command {
             splits += 1;
             // write out to file

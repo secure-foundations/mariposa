@@ -63,7 +63,7 @@
       {
         "name": "incremental",
         "mutations": [],
-        "num_mutants": 29,
+        "num_mutants": 59,
         "keep_mutants": true,
         "init_seed": "",
         "exp_timeout": 60,
