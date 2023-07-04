@@ -100,7 +100,7 @@ class Task:
 
         reports = dict()
 
-        for i in range(30):
+        for i in range(exp.num_mutant + 1):
             start_time = time.time()
             write(p, context)
             out = read(p)
