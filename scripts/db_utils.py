@@ -62,6 +62,7 @@ def create_experiment_table(cur, table_name):
         std_error TEXT,
         result_code varchar(10),
         elapsed_milli INTEGER, 
+        check_sat_id INTEGER,
         timestamp DEFAULT CURRENT_TIMESTAMP
         )""")
     print(f"[INFO] created table {table_name}")

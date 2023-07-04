@@ -61,6 +61,17 @@
         "db_mode": "update"
       },
       {
+        "name": "incremental",
+        "mutations": [],
+        "num_mutants": 29,
+        "keep_mutants": true,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/inc.db",
+        "db_mode": "update"
+      },
+      {
         "name": "unsat_core",
         "mutations": [
           "shuffle",
