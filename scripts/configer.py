@@ -13,11 +13,26 @@ class ProjectInfo:
     def list_queries(self, part_id=1, part_num=1):
         queries = list_smt2_files(self.clean_dir)
         queries.sort()
+
         part_id -= 1
         assert part_id < part_num
         total_size = len(queries)
-        chunk_size = (total_size // part_num) + 1
-        chunks = [queries[i:i + chunk_size] for i in range(0, len(queries), chunk_size)]
+        chunk_size = (total_size // (part_num-1))
+
+        chunks = []
+        end = 0
+        contents = set()
+
+        for i in range(0, part_num -1):
+            start = i * chunk_size
+            end = start + chunk_size
+            chunks.append(queries[start: end])
+            contents.update(queries[start: end])
+        chunks.append(queries[end:])
+        contents.update(queries[end:])
+
+        assert len(chunks) == part_num
+        assert contents == set(queries)
         return chunks[part_id]
 
 class SolverInfo:
