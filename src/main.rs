@@ -299,7 +299,21 @@ fn name_asserts(commands: &mut Vec<concrete::Command>) {
         }
         i += 1;
     }
-    commands.push(concrete::Command::GetUnsatCore)
+    // add (get-unsat-core) after the last check-sat
+    // find index of last check-sat, starting from the end
+    let mut i = commands.len() - 1;
+    while i > 0 {
+        let command = &commands[i];
+        if let concrete::Command::CheckSat = command {
+            break;
+        }
+        i -= 1;
+    }
+    // insert get-unsat-core after last check-sat
+    // if no check-sat, insert at end
+    i += 1;
+    commands.insert(i, concrete::Command::GetUnsatCore);
+//  commands.push(concrete::Command::GetUnsatCore)
 }
 
 fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> bool {
