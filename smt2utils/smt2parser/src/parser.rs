@@ -356,8 +356,8 @@ pomelo! {
     command ::= LeftParen GetUnsatAssumptions RightParen { extra.0.visit_get_unsat_assumptions()? }
     //   ( get-unsat-core )
     command ::= LeftParen GetUnsatCore RightParen { extra.0.visit_get_unsat_core()? }
-    //   ( get-value )
-    command ::= LeftParen GetValue terms(xs) RightParen { extra.0.visit_get_value(xs)? }
+    //   ( get-value ( ⟨term⟩+ )  )
+    command ::= LeftParen GetValue LeftParen terms(xs) RightParen RightParen { extra.0.visit_get_value(xs)? }
     //   ( pop ⟨numeral⟩ )
     command ::= LeftParen Pop Numeral?(x) RightParen { extra.0.visit_pop(x.unwrap_or(num::BigUint::from(1u8)))? }
     //   ( push ⟨numeral⟩ )
