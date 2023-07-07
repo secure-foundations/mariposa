@@ -15,7 +15,7 @@ We used the Mariposa tool to create a benchmark set of SMT queries to use when e
 
 1. Clone this repository.  Since this repository currently includes in the commit history the compressed database files from our past experiments, we recommend that you avoid fetching the full history when cloning:
 ```
-git clone --filter=blob:none git@github.com:secure-foundations/mariposa.git
+git clone --filter=blob:none https://github.com/secure-foundations/mariposa.git
 ```
 
 2. You will need a working Rust toolchain to compile the Mariposa code that parses and mutates queries.  To compile this code, run:
