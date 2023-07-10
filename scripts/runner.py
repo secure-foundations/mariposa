@@ -31,16 +31,35 @@ def parse_basic_output_z3(output):
         return "unknown"
     return "error"
 
-def parse_basic_output_cvc(output, error):
-    if "unsat" in output:
-        return "unsat"
-    elif "sat" in output:
-        return "sat"
-    elif "unknown" in output:
-        return "unknown"
-    elif "interrupted by timeout" in error:
-        return "timeout"
-    return "error"
+# def parse_basic_output_cvc(output, error):
+#     if "unsat" in output:
+#         return "unsat"
+#     elif "sat" in output:
+#         return "sat"
+#     elif "unknown" in output:
+#         return "unknown"
+#     elif "interrupted by timeout" in error:
+#         return "timeout"
+#     return "error"
+
+def start(z3_path):
+    return subprocess.Popen(
+        [z3_path, "-in"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+
+def read(process):
+    return process.stdout.readline().decode("utf-8").strip()
+
+def write(process, message):
+    process.stdin.write(f"{message.strip()}\n".encode("utf-8"))
+    process.stdin.flush()
+
+# def terminate(process):
+#     process.stdin.close()
+#     process.terminate()
+#     process.wait(timeout=0.2)
 
 class Task:
     def __init__(self, exp, exp_tname, origin_path, perturb, mut_seed, solver):
@@ -50,32 +69,12 @@ class Task:
         self.origin_path = origin_path
         self.perturb = perturb
         self.mut_seed = mut_seed
+        self.quake = False
 
     def run_z3(self, mutant_path):
         solver = self.solver
         exp = self.exp
 
-        import subprocess
-
-        def start(z3):
-            return subprocess.Popen(
-                [z3, "-in"],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-
-        def read(process):
-            return process.stdout.readline().decode("utf-8").strip()
-
-        def write(process, message):
-            process.stdin.write(f"{message.strip()}\n".encode("utf-8"))
-            process.stdin.flush()
-
-        def terminate(process):
-            process.stdin.close()
-            process.terminate()
-            process.wait(timeout=0.2)
-        
         p = start(solver.path)
         
         with open(mutant_path, "r") as f:
@@ -96,11 +95,14 @@ class Task:
         context.insert(-1, "(set-option :timeout 0)\n")
 
         context = "".join(context)
-        # print(context)
 
         reports = dict()
+        repeat = 1
 
-        for i in range(exp.num_mutant + 1):
+        if self.quake:
+            repeat = exp.num_mutant + 1
+
+        for i in range(repeat):
             start_time = time.time()
             write(p, context)
             out = read(p)
@@ -109,29 +111,30 @@ class Task:
 
             if rcode == "error":
                 print("[INFO] solver error: ", out)
-            # else:
-            #     print("[INFO] solver result: ", rcode, elapsed)
 
             reports[i] = (rcode, elapsed, out)
 
-        if not exp.keep_mutants and self.perturb is not None:
+        if not exp.keep_mutants and mutant_path != self.origin_path:
             # remove mutant
             os.system(f"rm '{mutant_path}'")
-        
+
         con = sqlite3.connect(exp.db_path)
         cur = con.cursor()
+
         for i in reports:
             rcode, elapsed, out = reports[i]
-            if i != 0:
+
+            perturb = self.perturb
+
+            if self.quake and i > 0:
+                perturb = str(Mutation.QUAKE)
                 mutant_path = self.origin_path + "." + str(i)
-                per = "inc"
-            else:
-                per = None
 
             cur.execute(f"""INSERT INTO {self.exp_tname}
                 (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
                 VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
-                (mutant_path, self.origin_path, per, "", out, "", rcode, elapsed))
+                (mutant_path, self.origin_path, perturb, "", out, "", rcode, elapsed))
+
         con.commit()
         con.close()
 
@@ -220,9 +223,13 @@ class Runner:
         tasks = []
         for origin_path in project.list_queries(part_id, part_num):
             task = Task(self.exp, self.exp_tname, origin_path, None, None, solver)
+            if Mutation.QUAKE in self.exp.enabled_muts:
+                task.quake = True
             tasks.append(task)
 
-            for perturb in self.exp.enabled_muts:            
+            for perturb in self.exp.enabled_muts:
+                if perturb == Mutation.QUAKE:
+                    continue
                 for _ in range(self.exp.num_mutant):
                     mut_seed = random.randint(0, 0xffffffffffffffff)
                     task = Task(self.exp, self.exp_tname, origin_path, perturb, mut_seed, solver)
@@ -236,7 +243,6 @@ class Runner:
             self.task_queue.put(task)
 
         self._run_workers()
-        self.exp.enabled_muts = ["inc"]
         populate_sum_table(self.exp, self.exp_tname, self.sum_tname)
 
 # def run_projects_solvers(exp, projects, solvers):

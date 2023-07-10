@@ -17,6 +17,8 @@ class ProjectInfo:
         part_id -= 1
         assert part_id < part_num
         total_size = len(queries)
+        if part_num == 1:
+            return queries
         chunk_size = (total_size // (part_num-1))
 
         chunks = []
@@ -55,8 +57,8 @@ class Mutation(str, Enum):
     SHUFFLE = "shuffle"
     RENAME = "rename"
     RESEED = "reseed"
+    QUAKE = "quake"
     ALL = "all"
-    # LOWER_SHUFFLE = "lower_shuffle"
 
     def __str__(self):
         return str.__str__(self)

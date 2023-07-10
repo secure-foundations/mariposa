@@ -1536,9 +1536,9 @@ def compose_migration():
     migration(items2, items, cats)
 
 if __name__ == "__main__":
-  plot_paper_figs()
+#   plot_paper_figs()
 #   plot_appendix_figs()
 #   plot_paper_overall()
     # create_benchmark()
     # plot_paper_overall()
-    # compose_migration()
+    compose_migration()

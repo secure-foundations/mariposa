@@ -218,7 +218,6 @@ def manager_mode(args):
         if remote_db_path not in workers:
             workers[remote_db_path] = []
         workers[remote_db_path].append((part_id, part_num))
-    # workers = dict()
     print("[DEBUG] ", workers)
 
     for remote_db_path in workers:
@@ -228,6 +227,7 @@ def manager_mode(args):
         os.system(command)
         assert os.path.exists(temp_db_path)
         for (part_id, part_num) in workers[remote_db_path]:
+            print(f"[INFO] importing partition {part_id}/{part_num} from {remote_db_path}")
             import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
         os.remove(temp_db_path)
 
