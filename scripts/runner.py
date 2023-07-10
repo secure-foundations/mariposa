@@ -58,6 +58,8 @@ def write(process, message):
 
 def terminate(process):
     process.stdin.close()
+    process.stdout.close()
+    process.stderr.close()
     process.terminate()
     process.wait(timeout=0.2)
 
