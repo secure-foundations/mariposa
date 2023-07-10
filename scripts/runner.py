@@ -56,10 +56,10 @@ def write(process, message):
     process.stdin.write(f"{message.strip()}\n".encode("utf-8"))
     process.stdin.flush()
 
-# def terminate(process):
-#     process.stdin.close()
-#     process.terminate()
-#     process.wait(timeout=0.2)
+def terminate(process):
+    process.stdin.close()
+    process.terminate()
+    process.wait(timeout=0.2)
 
 class Task:
     def __init__(self, exp, exp_tname, origin_path, perturb, mut_seed, solver):
@@ -113,6 +113,8 @@ class Task:
                 print("[INFO] solver error: ", out)
 
             reports[i] = (rcode, elapsed, out)
+
+        terminate(p)
 
         if not exp.keep_mutants and mutant_path != self.origin_path:
             # remove mutant
