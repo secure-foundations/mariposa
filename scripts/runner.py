@@ -80,21 +80,23 @@ class Task:
         
         with open(mutant_path, "r") as f:
             repeat = False
-            push = False 
             context = []
             for line in f:
                 if "(push" in line:
                     repeat = True
-                    push = True
-                if repeat and "(get-info" not in line:
+                if repeat:
+                    if "(get-info" in line:
+                        continue
                     context.append(line)
+                    if "(check-sat)" in line:
+                        context.append("(pop 1)\n")
+                        break
                 else:
+                    if "(check-sat)" in line:
+                        break
                     write(p, line)
-                if "(check-sat)" in line:
-                    context.append("(pop 1)\n")
-                    break
 
-        if not push:
+        if not repeat:
             context = ["(push 1)\n", "(check-sat)\n", "(pop 1)\n"]
 
         context.insert(1, f"(set-option :timeout {exp.timeout * 1000})\n")
