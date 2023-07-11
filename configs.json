@@ -251,6 +251,12 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
+        "name": "nr_up",
+        "frame_work": "unknown",
+        "clean_dir": "node_replication_up",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
         "name": "d_komodo_uc",
         "frame_work": "unknown",
         "clean_dir": "data/d_komodo_z3_uc/min_asserts",

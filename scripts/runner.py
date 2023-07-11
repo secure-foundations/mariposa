@@ -61,7 +61,7 @@ def terminate(process):
     process.stdout.close()
     process.stderr.close()
     process.terminate()
-    process.wait(timeout=0.2)
+    process.join()
 
 class Task:
     def __init__(self, exp, exp_tname, origin_path, perturb, mut_seed, solver):
