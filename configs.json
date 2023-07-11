@@ -258,6 +258,12 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
+        "name": "pt",
+        "frame_work": "unknown",
+        "clean_dir": "pt",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
         "name": "pt_up",
         "frame_work": "unknown",
         "clean_dir": "pt_up",
