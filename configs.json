@@ -5,7 +5,8 @@
         "mutations": [
           "shuffle",
           "rename",
-          "reseed"
+          "reseed",
+          "quake"
         ],
         "keep_mutants": false,
         "num_mutants": 60,
@@ -254,6 +255,12 @@
         "name": "nr_up",
         "frame_work": "unknown",
         "clean_dir": "node_replication_up",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "pt_up",
+        "frame_work": "unknown",
+        "clean_dir": "pt_up",
         "artifact_solver_name": "z3_4_12_2"
       },
       {

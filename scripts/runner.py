@@ -137,8 +137,7 @@ class Task:
                 (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
                 VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
                 (mutant_path, self.origin_path, perturb, "", out, "", rcode, elapsed))
-
-        con.commit()
+            con.commit()
         con.close()
 
     def run(self):
