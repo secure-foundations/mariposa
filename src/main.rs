@@ -247,6 +247,50 @@ fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String)
     return splits;
 }
 
+fn split_commands_clean_debug(commands: &mut Vec<concrete::Command>, out_file_path: &String) -> usize {
+    // remove target commands
+    remove_target_cmds(commands);
+    let mut depth = 0;
+    let mut stack = Vec::new();
+    stack.push(Vec::new());
+    let mut splits = 0;
+
+    let out_file_pre = out_file_path.strip_suffix(".smt2").unwrap();
+    // print!("{}", &out_file_pre);
+
+    let mut ignore = false;
+    for command in commands {
+        if let concrete::Command::Push { level: _ } = command {
+            ignore = false;
+            stack[depth].push(command.clone());
+            depth += 1;
+            stack.push(Vec::new());
+        } else if let concrete::Command::Pop { level: _ } = command {
+            ignore = false;
+            depth -= 1;
+            stack.pop();
+            stack[depth].push(command.clone());
+        } else if let concrete::Command::CheckSat = command {
+            if ignore {
+                continue;
+            }
+            splits += 1;
+            // write out to file
+            let out_file_name = format!("{}.{}.smt2", &out_file_pre, splits);
+            let mut manager = Manager::new(Some(out_file_name), 0);
+            manager.dump_non_info_commands(&stack.concat());
+            manager.dump_non_info_commands(&vec![concrete::Command::CheckSat]);
+            ignore = true;
+        } else {
+            if ignore {
+                continue;
+            }
+            stack[depth].push(command.clone());
+        }
+    }
+    return splits;
+}
+
 fn name_assert(command: &mut concrete::Command, ct: usize) {
     let concrete::Command::Assert { term } = command else { return; };
     // does assert have attributes?
@@ -407,6 +451,7 @@ fn clean_names(commands: &mut Vec<concrete::Command>) {
     commands.iter_mut().for_each(|x| clean_name(x));
 }
 
+
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -460,6 +505,8 @@ fn main() {
         desc: "seed for randomness";
         opt chop:bool=false,
             desc: "split the input file into multiple files based on check-sats";
+        opt clean_and_chop:bool=false,
+            desc: "split the input file into multiple files based on check-sats, while also ignoring debug check-sats (supported for Verus and Dafny queries)";
         opt core_file:Option<String>,
             desc: "file containing unsat cores";
     }
@@ -478,6 +525,19 @@ fn main() {
         }
         let out_file_path = args.out_file_path.unwrap();
         let splits = split_commands(&mut commands, &out_file_path);
+        println!("[INFO] {} is split into {} file(s)", &in_file_path, splits);
+        return;
+    }
+
+    if args.clean_and_chop {
+        if args.mutation != "none" {
+            panic!("[ERROR] clean and mutate are incompatible");
+        }
+        if (&args.out_file_path).is_none() {
+            panic!("[ERROR] clean requires an output file path");
+        }
+        let out_file_path = args.out_file_path.unwrap();
+        let splits = split_commands_clean_debug(&mut commands, &out_file_path);
         println!("[INFO] {} is split into {} file(s)", &in_file_path, splits);
         return;
     }
