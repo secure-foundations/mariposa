@@ -144,6 +144,8 @@ def preprocess_mode(args):
 
     print(f'[INFO] found {len(queries)} files with ".smt2" extension under {args.in_dir}')
     for in_path in queries:
+        if not args.out_dir.endswith("/"):
+            args.out_dir += "/"
         out_path = convert_path(in_path, args.in_dir, args.out_dir)
         command = f"./target/release/mariposa -i '{in_path}' --chop --o '{out_path}'"
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)

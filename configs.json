@@ -301,6 +301,12 @@
         "frame_work": "unknown",
         "clean_dir": "data/d_ntt_clean",
         "artifact_solver_name": "z3_4_8_5"
+      },
+      {
+        "name": "d_ntt_open",
+        "frame_work": "unknown",
+        "clean_dir": "data/d_ntt_open_clean",
+        "artifact_solver_name": "z3_4_8_5"
       }
     ]
   }
