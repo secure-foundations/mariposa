@@ -130,6 +130,21 @@
         "num_procs": 7,
         "db_path": "./data/compose2.db",
         "db_mode": "update"
+      },
+      {
+        "name": "opaque",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/opaque.db",
+        "db_mode": "update"
       }
     ],
     "analyzers": [
@@ -143,7 +158,7 @@
         },
         {
             "name": "debug",
-            "ana_timeout": 10,
+            "ana_timeout": 5,
             "confidence": 0.05,
             "r_solvable": 0.05,
             "r_stable": 0.95,
@@ -280,6 +295,12 @@
         "frame_work": "verus",
         "clean_dir": "splinter",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_ntt",
+        "frame_work": "unknown",
+        "clean_dir": "data/d_ntt_clean",
+        "artifact_solver_name": "z3_4_8_5"
       }
     ]
   }
