@@ -247,7 +247,41 @@ fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String)
     return splits;
 }
 
+fn check_clean_debug_warning(commands: &mut Vec<concrete::Command>) -> bool {
+    // assumes check-sats are mostly found inbetween push/pop blocks and if there are any that aren't in a push/pop block there is only one check-sat found at the end of a file and not before any important context that would get ignored
+    let mut naked_check_sat_ct = 0;
+    let mut wrapped_check_sat_ct = 0;
+    let mut in_push_pop = false;
+    for command in commands {
+        if let concrete::Command::Push { level: _ } = command {
+            in_push_pop = true;
+        } else if let concrete::Command::Pop { level: _ } = command {
+            in_push_pop = false;
+        } else if let concrete::Command::CheckSat = command {
+            if !in_push_pop {
+                naked_check_sat_ct += 1;
+            } else {
+                wrapped_check_sat_ct += 1;
+            }
+        }
+    }
+    // will warn if # of check-sats outside of push/pop blocks is more than 1 
+    if naked_check_sat_ct == 0 || (naked_check_sat_ct == 1 && wrapped_check_sat_ct == 0) {
+        false
+    }
+    else {
+        true
+    }
+}
+
+
 fn split_commands_clean_debug(commands: &mut Vec<concrete::Command>, out_file_path: &String) -> usize {
+    // if assumptions are not met, YELL
+    
+    if check_clean_debug_warning(commands) {
+        println!("WARNING: The assumption that the file contains only one check-sat or that all check-sats in the file are inside push/pop blocks was violated. This may cause issues with the generated files.");
+    }
+
     // remove target commands
     remove_target_cmds(commands);
     let mut depth = 0;
