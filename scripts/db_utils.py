@@ -52,6 +52,20 @@ def show_tables(db_path):
     for table, count in tables.items():
         print(table, count)
 
+#def create_experiment_table(cur, table_name):
+#    cur.execute(f"""CREATE TABLE {table_name}(
+#        query_path TEXT NOT NULL,
+#        vanilla_path TEXT,
+#        perturbation varchar(10),
+#        command TEXT NOT NULL,
+#        std_out TEXT,
+#        std_error TEXT,
+#        result_code varchar(10),
+#        elapsed_milli INTEGER, 
+#        timestamp DEFAULT CURRENT_TIMESTAMP
+#        )""")
+#    print(f"[INFO] created table {table_name}")
+
 def create_experiment_table(cur, table_name):
     cur.execute(f"""CREATE TABLE {table_name}(
         query_path TEXT NOT NULL,
@@ -62,7 +76,8 @@ def create_experiment_table(cur, table_name):
         std_error TEXT,
         result_code varchar(10),
         elapsed_milli INTEGER, 
-        timestamp DEFAULT CURRENT_TIMESTAMP
+        timestamp DEFAULT CURRENT_TIMESTAMP,
+        mutant_seed TEXT
         )""")
     print(f"[INFO] created table {table_name}")
 
@@ -300,26 +315,75 @@ def load_sum_table(project, solver, cfg, skip=set()):
     con.close()
     return nrows
 
-if __name__ == "__main__":
-    # import_tables()
-    # tables = get_tables("./data/mariposa.db")
-    # con, cur = get_cursor("./data/mariposa.db")
-    
-    # for table in tables:
-    #     old_table = table
-    #     table = table.lower()
-    #     if table.endswith("_summary"):
-    #         # main_d_komodo_z3_4_5_0_sum
-    #         table = "main_" + table.replace("_summary", "_sum")
-    #         rename_table(cur, old_table, table)
-    #     else:
-    #         table = "main_" + table + "_exp"
-    #         rename_table(cur, old_table, table)
-    # con.commit()
-    # con.close()
+# adds mutant seed to each column in exp tables
+def migrate_db(old_db_path="./data/mariposa.db", new_db_path="./data/mariposa.edited.db"):
+    tables = get_tables(old_db_path)
+    con, cur = get_cursor(old_db_path)
+    newcon, newcur = get_cursor(new_db_path)
 
-    # if len(sys.argv) <= 1:
-    #     show_tables()
+    for table in tables:
+        # create new column in exp table with name mutant_seed
+        if table.endswith("_exp"):
+            q = f"""ALTER TABLE {table} ADD COLUMN mutant_seed TEXT"""
+            print(q)
+            cur.execute(q)
+
+    ###### add mutant_seed ######
+    for table in tables:
+        if table.endswith("_exp"):
+            create_experiment_table(newcur, table)
+            print(f"starting {table}...")
+            q = f"""select * from {table}"""
+            res = cur.execute(q).fetchall()
+            for row in tqdm(res):
+                path = row[0]
+                if path.startswith("gen"):
+                    seed = path.split(".")[-3]
+                    row = row + (seed, )
+                    q = f""" insert into {table}
+                (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli, timestamp, mutant_seed)
+                    values( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                    newcur.execute(q, row)
+                else:
+                    row = row + ('', )
+                    q = f""" insert into {table}
+                (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli, timestamp, mutant_seed)
+                    values( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                    newcur.execute(q, row)
+            print(f"finished!")
+        else:
+            # copy sum table from old db to new db
+            create_summary_table(newcur, table)
+            print(f"copying {table}...")
+            q = f"""select * from {table}"""
+            res = cur.execute(q).fetchall()
+            for row in tqdm(res):
+                q = f""" insert into {table}
+                (vanilla_path, mutations, summaries)
+                    values( ?, ?, ?)"""
+                newcur.execute(q, row)
+            print(f"finished!")
+
+    con.commit()
+    con.close()
+
+    newcon.commit()
+    newcon.close()
+
+if __name__ == "__main__":
+    zip_db()
+#       old_table = table
+#       table = table.lower()
+#       if table.endswith("_summary"):
+#           # main_d_komodo_z3_4_5_0_sum
+#           table = "main_" + table.replace("_summary", "_sum")
+#           rename_table(cur, old_table, table)
+#       else:
+#           table = "main_" + table + "_exp"
+#           rename_table(cur, old_table, table)
+
+#   if len(sys.argv) <= 1:
+#       show_tables("./data/test.db")
     pass
     # zip_db()
 
