@@ -548,7 +548,7 @@ fn main() {
 
     let in_file_path = args.in_file_path;
 
-    let mut commands: Vec<concrete::Command> = parse_commands_from_file(&in_file_path, args.chop);
+    let mut commands: Vec<concrete::Command> = parse_commands_from_file(&in_file_path, args.chop || args.clean_and_chop);
 
     if args.chop {
         if args.mutation != "none" {
