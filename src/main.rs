@@ -2,6 +2,7 @@ use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rustop::opts;
+use smt2parser::concrete::Symbol;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
@@ -209,6 +210,22 @@ fn is_target_cmd(command: &concrete::Command) -> bool {
     return false;
 }
 
+fn is_unsat_core_related(command: &concrete::Command) -> bool {
+    if let concrete::Command::SetOption {
+        keyword: concrete::Keyword(k),
+        value: _,
+    } = command
+    {
+        if k == "produce-unsat-cores" {
+            return true;
+        }
+    }
+    if let concrete::Command::GetUnsatCore = command {
+        return true;
+    }
+    return false;
+}
+
 fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
     commands.retain(|command| !is_target_cmd(command));
 }
@@ -340,11 +357,35 @@ fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> b
     return false;
 }
 
-// return a Vec<String> where each element is the name of an assert from the unsat core
-fn parse_core_from_file(
-    commands: Vec<concrete::Command>,
-    file_path: String,
-) -> Vec<concrete::Command> {
+// temporary while should_keep_command keeps all non-asserts
+fn should_keep_command_noncore(command: &concrete::Command, core: &HashSet<String>) -> bool {
+    let concrete::Command::Assert { term } = command else { 
+        // excludes check-sats
+        if let concrete::Command::CheckSat = command {
+            return false;
+        }
+        return true;
+    };
+    let named = concrete::Keyword("named".to_owned());
+
+    if let concrete::Term::Attributes {
+        term: _,
+        attributes,
+    } = term
+    {
+        for (key, value) in attributes {
+            if key == &named {
+                if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
+                    if core.contains(name) {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+fn core_to_hashset(file_path: String) -> HashSet<String> {
     // read lines from file
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
@@ -357,13 +398,34 @@ fn parse_core_from_file(
     }
     // strip the first and last character
     let last_line = &last_line[1..last_line.len() - 1];
-    // split the last line into a vector of strings
-    let core = last_line
-        .split(" ")
-        .map(|x| x.to_string())
-        .collect::<Vec<String>>();
-    // convert core to a HashSet
-    let core = core.into_iter().collect::<HashSet<String>>();
+    // split on spaces
+    let core: HashSet<String> = last_line.split(" ").map(|x| x.to_owned()).collect();
+    return core;
+}
+
+fn ensure_no_conflicts(commands1: &Vec<concrete::Command>, commands2: &Vec<concrete::Command>) {
+    // symbols used in commands1 and commands2 should be disjoint
+    let mut symbols1 = HashSet::<Symbol>::new();
+    let mut symbols2 = HashSet::<Symbol>::new();
+}
+
+fn parse_noncore_from_file(commands: Vec<concrete::Command>, file_path: String) -> Vec<concrete::Command> {
+    let core = core_to_hashset(file_path);
+
+    // filter out commands that are not in the core
+    let new_commands = commands
+        .into_iter()
+        .filter(|x| should_keep_command_noncore(x, &core))
+        .collect::<Vec<concrete::Command>>();
+    return new_commands;
+}
+
+// return a Vec<String> where each element is the name of an assert from the unsat core
+fn parse_core_from_file(
+    commands: Vec<concrete::Command>,
+    file_path: String,
+) -> Vec<concrete::Command> {
+    let core = core_to_hashset(file_path);
 
     // filter out commands that are not in the core
     let new_commands = commands
@@ -513,7 +575,26 @@ fn main() {
         commands = commands[1..commands.len() - 1].to_vec();
     } else if args.mutation == "clean-names" {
         clean_names(&mut commands);
-    }
+    } else if args.mutation == "unsat-core-alpha-rename" { 
+        // given core file + primed original file, produce a new file with unsat
+        // core combined with a random subset of the original file (alpha renamed so
+        // no definitions conflict with the unsat core file)
+
+        // remove produce unsat core at top and get-unsat-core from the bottom
+        commands.retain(|command| !is_unsat_core_related(command));
+
+        let mut noncore_commands = parse_noncore_from_file(commands.clone(), args.core_file.clone().unwrap());
+        // cleans names put in by mariposa
+        clean_names(&mut noncore_commands);
+        noncore_commands = normalize_commands(noncore_commands, manager.seed);
+
+        let mut core_commands = parse_core_from_file(commands.clone(), args.core_file.clone().unwrap());
+        clean_names(&mut core_commands);
+
+        ensure_no_conflicts(&noncore_commands, &core_commands);
+        // combine commands somehow...
+        commands = [noncore_commands, core_commands].concat();
+    } 
 
     manager.dump_non_info_commands(&commands);
 }
