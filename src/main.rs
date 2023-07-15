@@ -2,7 +2,6 @@ use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rustop::opts;
-use smt2parser::concrete::Symbol;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
@@ -403,10 +402,12 @@ fn core_to_hashset(file_path: String) -> HashSet<String> {
     return core;
 }
 
-fn ensure_no_conflicts(commands1: &Vec<concrete::Command>, commands2: &Vec<concrete::Command>) {
+fn ensure_no_conflicts(symbols1: HashSet<String>, symbols2: HashSet<String>) {
     // symbols used in commands1 and commands2 should be disjoint
-    let mut symbols1 = HashSet::<Symbol>::new();
-    let mut symbols2 = HashSet::<Symbol>::new();
+    let intersection: Vec<String> = symbols1.intersection(&symbols2).cloned().collect();
+    if intersection.len() > 0 {
+        panic!("symbols used in both commands1 and commands2: {:?}", intersection);
+    }
 }
 
 fn parse_noncore_from_file(commands: Vec<concrete::Command>, file_path: String) -> Vec<concrete::Command> {
@@ -588,10 +589,30 @@ fn main() {
         clean_names(&mut noncore_commands);
         noncore_commands = normalize_commands(noncore_commands, manager.seed);
 
+        // get symbols from noncore commands
+        let mut noncore_symbol_tracker = renaming::SymbolTracker::new(concrete::SyntaxBuilder);
+        noncore_commands = noncore_commands
+            .into_iter()
+            .map(|c| c.accept(&mut noncore_symbol_tracker).unwrap())
+            .collect();
+        let noncore_symbols = noncore_symbol_tracker.symbols();
+//      println!("noncore symbols: {:?}", noncore_symbols);
+        
+
         let mut core_commands = parse_core_from_file(commands.clone(), args.core_file.clone().unwrap());
+        // cleans names put in by mariposa
         clean_names(&mut core_commands);
 
-        ensure_no_conflicts(&noncore_commands, &core_commands);
+        // get symbols from core commands
+        let mut core_symbol_tracker = renaming::SymbolTracker::new(concrete::SyntaxBuilder);
+        core_commands = core_commands
+            .into_iter()
+            .map(|c| c.accept(&mut core_symbol_tracker).unwrap())
+            .collect();
+        let core_symbols = core_symbol_tracker.symbols();
+//      println!("core symbols: {:?}", core_symbols);
+        
+        ensure_no_conflicts(noncore_symbols.clone(), core_symbols.clone());
         // combine commands somehow...
         commands = [noncore_commands, core_commands].concat();
     } 
