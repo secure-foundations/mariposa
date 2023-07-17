@@ -31,6 +31,36 @@
         "db_mode": "update"
       },
       {
+        "name": "pagetable",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/pagetable.db",
+        "db_mode": "update"
+      },
+      {
+        "name": "pagetable_redo",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/pagetable_redo.db",
+        "db_mode": "update"
+      },
+      {
         "name": "test",
         "mutations": [
           "shuffle",
@@ -113,12 +143,103 @@
         "num_procs": 7,
         "db_path": "./data/compose2.db",
         "db_mode": "update"
+      },
+      {
+        "name": "nr_closed",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/nr_closed.db",
+        "db_mode": "update"
+      },
+      {
+        "name": "nr_open",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/nr_open.db",
+        "db_mode": "update"
+      },
+      {
+        "name": "spec_crypto",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/spec_crypto.db",
+        "db_mode": "update"
+      },
+      {
+        "name": "splinter",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/splinter.db",
+        "db_mode": "update"
+      },
+      {
+        "name": "d_komodo_alpha_rename",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/alpha_rename_test.db",
+        "db_mode": "update"
       }
     ],
     "analyzers": [
         {
             "name": "default",
             "ana_timeout": null,
+            "confidence": 0.05,
+            "r_solvable": 0.05,
+            "r_stable": 0.95,
+            "discount": 0.8
+        },
+        {
+            "name": "verus_5sec",
+            "ana_timeout": 5,
+            "confidence": 0.05,
+            "r_solvable": 0.05,
+            "r_stable": 0.95,
+            "discount": 0.8
+        },
+        {
+            "name": "verus_2sec",
+            "ana_timeout": 2,
             "confidence": 0.05,
             "r_solvable": 0.05,
             "r_stable": 0.95,
@@ -243,8 +364,56 @@
       {
         "name": "splinter",
         "frame_work": "verus",
-        "clean_dir": "splinter",
+        "clean_dir": "data/splinter_clean",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "pagetable_redo",
+        "frame_work": "verus",
+        "clean_dir": "data/page-table-redo_clean",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "nr_closed",
+        "frame_work": "verus",
+        "clean_dir": "data/nr_closed_clean",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "nr_open",
+        "frame_work": "verus",
+        "clean_dir": "data/nr_open_clean",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "spec_crypto",
+        "frame_work": "dafny",
+        "clean_dir": "data/spec_crypto_clean",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "spec_crypto_bin_seq",
+        "frame_work": "dafny",
+        "clean_dir": "data/spec_crypto_bin_seq_clean",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "spec_crypto_ntt_twiddle",
+        "frame_work": "dafny",
+        "clean_dir": "data/spec_crypto_ntt_twiddle_clean",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "pagetable",
+        "frame_work": "verus",
+        "clean_dir": "data/pagetable_clean",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_komodo_alpha_rename",
+        "frame_work": "dafny",
+        "clean_dir": "data/unsat_cores/d_komodo_z3/alpha_renamed_sampled",
+        "artifact_solver_name": "z3_4_5_0"
       }
     ]
   }

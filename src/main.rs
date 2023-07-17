@@ -615,6 +615,7 @@ fn main() {
         ensure_no_conflicts(noncore_symbols.clone(), core_symbols.clone());
         // combine commands somehow...
         commands = [noncore_commands, core_commands].concat();
+        clean_names(&mut commands);
     } 
 
     manager.dump_non_info_commands(&commands);
