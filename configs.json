@@ -214,7 +214,7 @@
         "num_mutants": 60,
         "keep_mutants": false,
         "init_seed": "",
-        "exp_timeout": 60,
+        "exp_timeout": 120,
         "num_procs": 7,
         "db_path": "./data/alpha_rename_test.db",
         "db_mode": "update"
