@@ -172,7 +172,7 @@ class Analyzer:
     def dump_query_status(self, mutations, blob):
         status, votes = self.categorize_query(blob)
 
-        table = [["overall", status, "x", "x", "x"]]
+        table = [["overall", status, "x", "x", "x", "x", "x"]]
         mut_size = blob.shape[2]
 
         for i in range(len(mutations)):
