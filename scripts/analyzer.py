@@ -176,9 +176,14 @@ class Analyzer:
         mut_size = blob.shape[2]
 
         for i in range(len(mutations)):
-            count = count_within_timeout(blob[i], RCode.UNSAT, timeout=self._timeout)
+            count_unsat = count_within_timeout(blob[i], RCode.UNSAT, timeout=self._timeout)
+            unsat_item = f"{count_unsat}/{mut_size} {round(count_unsat / (mut_size) * 100, 1)}%"
+            count_timeout = count_within_timeout(blob[i], RCode.TIMEOUT, timeout=self._timeout)
+            timeout_item = f"{count_timeout}/{mut_size} {round(count_timeout / (mut_size) * 100, 1)}%"
+            count_unknown = count_within_timeout(blob[i], RCode.UNKNOWN, timeout=self._timeout)
+            unknown_item = f"{count_unknown}/{mut_size} {round(count_unknown / (mut_size) * 100, 1)}%"
             times = np.clip(blob[i][1], 0, self._timeout) / 1000
-            item = [mutations[i], votes[i].value, f"{count}/{mut_size} {round(count / (mut_size) * 100, 1)}%", f"{round(np.mean(times), 2)}", f"{round(np.std(times), 2)}"]
+            item = [mutations[i], votes[i].value, unsat_item, timeout_item, unknown_item, f"{round(np.mean(times), 2)}", f"{round(np.std(times), 2)}"]
             table.append(item)
-        print(tabulate(table, headers=["mutation", "status", "success", "mean(second)", "std(second)"], tablefmt="github"))
+        print(tabulate(table, headers=["mutation", "status", "unsat", "timeout", "unknown", "mean(second)", "std(second)"], tablefmt="github"))
 
