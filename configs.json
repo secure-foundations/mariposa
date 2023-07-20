@@ -462,6 +462,18 @@
         "frame_work": "dafny",
         "clean_dir": "data/ar_small_exp/ar/unstable_less",
         "artifact_solver_name": "z3_4_5_0"
+      },
+      {
+        "name": "uc_unstable_remaining",
+        "frame_work": "dafny",
+        "clean_dir": "data/ar_small_exp/uc/unstable_remaining",
+        "artifact_solver_name": "z3_4_5_0"
+      },
+      {
+        "name": "ar_unstable_remaining",
+        "frame_work": "dafny",
+        "clean_dir": "data/ar_small_exp/ar/unstable_remaining",
+        "artifact_solver_name": "z3_4_5_0"
       }
     ]
   }
