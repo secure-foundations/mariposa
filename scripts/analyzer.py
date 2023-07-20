@@ -42,6 +42,11 @@ def count_within_timeout(blob, rcode, timeout=1e6):
     success = np.sum(np.logical_and(success, none_timeout))
     return success
 
+def count_timeouts(blob, timeout=1e6):
+    if timeout == None:
+        return np.sum(blob[0] == RCode.TIMEOUT.value)
+    return np.sum(blob[1] >= timeout)
+
 class Analyzer:
     def __init__(self, confidence, timeout, r_solvable, r_stable, discount, method):
         self.confidence = confidence
@@ -178,7 +183,7 @@ class Analyzer:
         for i in range(len(mutations)):
             count_unsat = count_within_timeout(blob[i], RCode.UNSAT, timeout=self._timeout)
             unsat_item = f"{count_unsat}/{mut_size} {round(count_unsat / (mut_size) * 100, 1)}%"
-            count_timeout = count_within_timeout(blob[i], RCode.TIMEOUT, timeout=self._timeout)
+            count_timeout = count_timeouts(blob[i], timeout=self._timeout)
             timeout_item = f"{count_timeout}/{mut_size} {round(count_timeout / (mut_size) * 100, 1)}%"
             count_unknown = count_within_timeout(blob[i], RCode.UNKNOWN, timeout=self._timeout)
             unknown_item = f"{count_unknown}/{mut_size} {round(count_unknown / (mut_size) * 100, 1)}%"
