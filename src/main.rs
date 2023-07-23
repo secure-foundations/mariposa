@@ -254,6 +254,84 @@ fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String)
     return splits;
 }
 
+fn check_clean_debug_warning(commands: &mut Vec<concrete::Command>) -> bool {
+    // assumes check-sats are mostly found inbetween push/pop blocks and if there are any that aren't in a push/pop block there is only one check-sat found at the end of a file and not before any important context that would get ignored
+    let mut naked_check_sat_ct = 0;
+    let mut wrapped_check_sat_ct = 0;
+    let mut in_push_pop = false;
+    for command in commands {
+        if let concrete::Command::Push { level: _ } = command {
+            in_push_pop = true;
+        } else if let concrete::Command::Pop { level: _ } = command {
+            in_push_pop = false;
+        } else if let concrete::Command::CheckSat = command {
+            if !in_push_pop {
+                naked_check_sat_ct += 1;
+            } else {
+                wrapped_check_sat_ct += 1;
+            }
+        }
+    }
+    // will warn if # of check-sats outside of push/pop blocks is more than 1 
+    if naked_check_sat_ct == 0 || (naked_check_sat_ct == 1 && wrapped_check_sat_ct == 0) {
+        false
+    }
+    else {
+        true
+    }
+}
+
+
+fn split_commands_clean_debug(commands: &mut Vec<concrete::Command>, out_file_path: &String) -> usize {
+    // if assumptions are not met, YELL
+    
+    if check_clean_debug_warning(commands) {
+        println!("WARNING: The assumption that the file contains only one check-sat or that all check-sats in the file are inside push/pop blocks was violated. This may cause issues with the generated files.");
+    }
+
+    // remove target commands
+    remove_target_cmds(commands);
+    let mut depth = 0;
+    let mut stack = Vec::new();
+    stack.push(Vec::new());
+    let mut splits = 0;
+
+    let out_file_pre = out_file_path.strip_suffix(".smt2").unwrap();
+    // print!("{}", &out_file_pre);
+
+    let mut ignore = false;
+    for command in commands {
+        if let concrete::Command::Push { level: _ } = command {
+            ignore = false;
+            stack[depth].push(command.clone());
+            depth += 1;
+            stack.push(Vec::new());
+        } else if let concrete::Command::Pop { level: _ } = command {
+            ignore = false;
+            depth -= 1;
+            stack.pop();
+            stack[depth].push(command.clone());
+        } else if let concrete::Command::CheckSat = command {
+            if ignore {
+                continue;
+            }
+            splits += 1;
+            // write out to file
+            let out_file_name = format!("{}.{}.smt2", &out_file_pre, splits);
+            let mut manager = Manager::new(Some(out_file_name), 0);
+            manager.dump_non_info_commands(&stack.concat());
+            manager.dump_non_info_commands(&vec![concrete::Command::CheckSat]);
+            ignore = true;
+        } else {
+            if ignore {
+                continue;
+            }
+            stack[depth].push(command.clone());
+        }
+    }
+    return splits;
+}
+
 fn name_assert(command: &mut concrete::Command, ct: usize) {
     let concrete::Command::Assert { term } = command else { return; };
     // does assert have attributes?
@@ -414,6 +492,7 @@ fn clean_names(commands: &mut Vec<concrete::Command>) {
     commands.iter_mut().for_each(|x| clean_name(x));
 }
 
+
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -467,6 +546,8 @@ fn main() {
         desc: "seed for randomness";
         opt chop:bool=false,
             desc: "split the input file into multiple files based on check-sats";
+        opt clean_and_chop:bool=false,
+            desc: "split the input file into multiple files based on check-sats, while also ignoring debug check-sats (supported for Verus and Dafny queries)";
         opt core_file:Option<String>,
             desc: "file containing unsat cores";
     }
@@ -474,7 +555,7 @@ fn main() {
 
     let in_file_path = args.in_file_path;
 
-    let mut commands: Vec<concrete::Command> = parse_commands_from_file(&in_file_path, args.chop);
+    let mut commands: Vec<concrete::Command> = parse_commands_from_file(&in_file_path, args.chop || args.clean_and_chop);
 
     if args.chop {
         if args.mutation != "none" {
@@ -485,6 +566,19 @@ fn main() {
         }
         let out_file_path = args.out_file_path.unwrap();
         let splits = split_commands(&mut commands, &out_file_path);
+        println!("[INFO] {} is split into {} file(s)", &in_file_path, splits);
+        return;
+    }
+
+    if args.clean_and_chop {
+        if args.mutation != "none" {
+            panic!("[ERROR] clean and mutate are incompatible");
+        }
+        if (&args.out_file_path).is_none() {
+            panic!("[ERROR] clean requires an output file path");
+        }
+        let out_file_path = args.out_file_path.unwrap();
+        let splits = split_commands_clean_debug(&mut commands, &out_file_path);
         println!("[INFO] {} is split into {} file(s)", &in_file_path, splits);
         return;
     }

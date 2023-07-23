@@ -143,6 +143,19 @@ def preprocess_mode(args):
     os.makedirs(args.out_dir)
 
     print(f'[INFO] found {len(queries)} files with ".smt2" extension under {args.in_dir}')
+
+    if args.clean_debug:
+        print(f"[INFO] cleaning debug queries and splitting")
+        for in_path in queries:
+            out_path = convert_path(in_path, args.in_dir, args.out_dir)
+            command = f"./target/release/mariposa -i '{in_path}' --clean-and-chop --o '{out_path}'"
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+            print(result.stdout.decode('utf-8'), end="")
+            exit_with_on_fail(result.returncode == 0, "[ERROR] query clean failed")
+        queries = list_smt2_files(args.out_dir)
+        print(f'[INFO] generated {len(queries)} cleaned queries under {args.out_dir}')
+        return
+
     for in_path in queries:
         if not args.out_dir.endswith("/"):
             args.out_dir += "/"
@@ -291,6 +304,8 @@ if __name__ == '__main__':
     preprocess_parser = subparsers.add_parser('preprocess', help='preprocess mode. (recursively) traverse the input directory and split all queries with ".smt2" file extension, the split queries will be stored under the output directory.')
     preprocess_parser.add_argument("--in-dir", required=True, help='the input directory with ".smt2" files')
     preprocess_parser.add_argument("--out-dir", required=True, help="the output directory to store preprocessed files, flattened and split")
+
+    preprocess_parser.add_argument("--clean-debug", required=False, help="if queries fail during the verification process, remove the debug queries that arise during error localization", action='store_true')
 
     args = parser.parse_args()
 
