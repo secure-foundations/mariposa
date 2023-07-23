@@ -544,5 +544,6 @@
 (define-fun e542 () Bool (not e541))
 (define-fun e543 () Bool (or e253 e542))
 (define-fun e544 () Bool (not e543))
+(push 1)
 (assert e544)
 (check-sat)

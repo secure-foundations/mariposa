@@ -13,11 +13,28 @@ class ProjectInfo:
     def list_queries(self, part_id=1, part_num=1):
         queries = list_smt2_files(self.clean_dir)
         queries.sort()
+
         part_id -= 1
         assert part_id < part_num
         total_size = len(queries)
-        chunk_size = (total_size // part_num) + 1
-        chunks = [queries[i:i + chunk_size] for i in range(0, len(queries), chunk_size)]
+        if part_num == 1:
+            return queries
+        chunk_size = (total_size // (part_num-1))
+
+        chunks = []
+        end = 0
+        contents = set()
+
+        for i in range(0, part_num -1):
+            start = i * chunk_size
+            end = start + chunk_size
+            chunks.append(queries[start: end])
+            contents.update(queries[start: end])
+        chunks.append(queries[end:])
+        contents.update(queries[end:])
+
+        assert len(chunks) == part_num
+        assert contents == set(queries)
         return chunks[part_id]
 
 class SolverInfo:
@@ -40,8 +57,8 @@ class Mutation(str, Enum):
     SHUFFLE = "shuffle"
     RENAME = "rename"
     RESEED = "reseed"
+    QUAKE = "quake"
     ALL = "all"
-    # LOWER_SHUFFLE = "lower_shuffle"
 
     def __str__(self):
         return str.__str__(self)
