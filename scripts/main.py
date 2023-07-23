@@ -144,28 +144,14 @@ def preprocess_mode(args):
 
     print(f'[INFO] found {len(queries)} files with ".smt2" extension under {args.in_dir}')
 
-    if args.clean_debug:
-        print(f"[INFO] cleaning debug queries and splitting")
-        for in_path in queries:
-            out_path = convert_path(in_path, args.in_dir, args.out_dir)
-            command = f"./target/release/mariposa -i '{in_path}' --clean-and-chop --o '{out_path}'"
-            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-            print(result.stdout.decode('utf-8'), end="")
-            exit_with_on_fail(result.returncode == 0, "[ERROR] query clean failed")
-        queries = list_smt2_files(args.out_dir)
-        print(f'[INFO] generated {len(queries)} cleaned queries under {args.out_dir}')
-        return
-
+    # print(f"[INFO] cleaning debug queries and splitting")
     for in_path in queries:
-        if not args.out_dir.endswith("/"):
-            args.out_dir += "/"
         out_path = convert_path(in_path, args.in_dir, args.out_dir)
-        command = f"./target/release/mariposa -i '{in_path}' --chop --o '{out_path}'"
+        command = f"./target/release/mariposa -i '{in_path}' --chop --remove-debug --o '{out_path}'"
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
         print(result.stdout.decode('utf-8'), end="")
-        exit_with_on_fail(result.returncode == 0, "[ERROR] query split failed")
-    queries = list_smt2_files(args.out_dir)
-    print(f'[INFO] generated {len(queries)} split queries under {args.out_dir}')
+        exit_with_on_fail(result.returncode == 0, "[ERROR] query clean failed")
+    print(f'[INFO] generated {len(queries)} cleaned queries under {args.out_dir}')
 
 import copy 
 
