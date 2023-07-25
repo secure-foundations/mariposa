@@ -116,9 +116,9 @@ def dump_multi_status(project, solver, exp, ana):
     items = ana.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
 
-    print("project directory:", project.clean_dir)
-    print("solver used:", solver.path)
-    print("total queries:", len(rows))
+#   print("project directory:", project.clean_dir)
+#   print("solver used:", solver.path)
+#   print("total queries:", len(rows))
 
     pp_table = [["category", "count", "percentage"]]
     for cat in {Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE}:
@@ -126,13 +126,13 @@ def dump_multi_status(project, solver, exp, ana):
 
 #   print(tabulate(pp_table, tablefmt="github"))
     print("")
-#   print("listing unstable queries...")
+    print("listing unstable queries...")
 
     for row in rows:
         query = row[0]
         if query not in items[Stability.UNSTABLE]:
             continue
-#       print("query:", row[0])
+        print("query:", row[0])
 #       print(row[0])
         mutations, blob = row[1], row[2]
 #       ana.dump_query_status(mutations, blob)
@@ -144,7 +144,7 @@ def dump_multi_status(project, solver, exp, ana):
         query = row[0]
         if query not in items[Stability.UNSOLVABLE]:
             continue
-#       print("query:", row[0])
+        print("query:", row[0])
 #       print(row[0])
         mutations, blob = row[1], row[2]
 #       ana.dump_query_status(mutations, blob)
@@ -156,21 +156,22 @@ def dump_multi_status(project, solver, exp, ana):
         query = row[0]
         if query not in items[Stability.INCONCLUSIVE]:
             continue
-#       print("query:", row[0])
+        print("query:", row[0])
 #       print(row[0])
 #       mutations, blob = row[1], row[2]
-#       print(blob)
 #       ana.dump_query_status(mutations, blob)
 
     print("")
-    print("listing 50 random stable queries...")
-    
-    stable_queries = items[Stability.STABLE]
-    # sample 50 stable queries
-    stable_queries = random.sample(stable_queries, 50)
-    for query in stable_queries:
-        print(query)
+    print("listing stable queries...")
 
+    for row in rows:
+        query = row[0]
+        if query not in items[Stability.STABLE]:
+            continue
+        print("query:", row[0])
+#       print(row[0])
+#       mutations, blob = row[1], row[2]
+#       ana.dump_query_status(mutations, blob)
 
 # Pure percentages of queries that are stable, unsolvable, unstable (for original query vs original unsat vs alpha renamed unsat)
 def generate_percentages():
@@ -203,22 +204,27 @@ def copy_files_from_file(src, dst, file, ext):
 # copy_files_from_file('data/unsat_cores/d_komodo_z3/min_asserts/', 'data/ar_small_exp/uc/unstable_less/', 'unstable_less', '.smt2')
 # copy_files_from_file('data/unsat_cores/d_komodo_z3/min_asserts/', 'data/ar_small_exp/uc/unsolvable/', 'unsolvable', '.smt2')
 # copy_files_from_file('data/unsat_cores/d_komodo_z3/min_asserts/', 'data/ar_small_exp/uc/stable/', 'stable', '.smt2')
-copy_files_from_file('data/unsat_cores/d_komodo_z3/min_asserts/', 'data/ar_small_exp/uc/unstable_remaining/', 'unstable_remaining', '.smt2')
+# copy_files_from_file('data/unsat_cores/d_komodo_z3/min_asserts/', 'data/ar_small_exp/uc/unstable_remaining/', 'unstable_remaining', '.smt2')
 # 
 # # copy files in unstable, unsolvable, and stable from data/unsat_cores/d_komodo_z3/alpha_renamed_clean/ verified-ARMdef.s.dfyCheckWellformed___module.__default.AddrInL2PageTable.alpha_renamed.1.smt2 to data/ar_small_exp/ar/unstable or unsolvable or stable
 # copy_files_from_file('data/unsat_cores/d_komodo_z3/alpha_renamed_clean/', 'data/ar_small_exp/ar/unstable/', 'unstable', '.alpha_renamed.1.smt2')
 # copy_files_from_file('data/unsat_cores/d_komodo_z3/alpha_renamed_clean/', 'data/ar_small_exp/ar/unstable_less/', 'unstable_less', '.alpha_renamed.1.smt2')
 # copy_files_from_file('data/unsat_cores/d_komodo_z3/alpha_renamed_clean/', 'data/ar_small_exp/ar/unsolvable/', 'unsolvable', '.alpha_renamed.1.smt2')
 # copy_files_from_file('data/unsat_cores/d_komodo_z3/alpha_renamed_clean/', 'data/ar_small_exp/ar/stable/', 'stable', '.alpha_renamed.1.smt2')
-copy_files_from_file('data/unsat_cores/d_komodo_z3/alpha_renamed_clean/', 'data/ar_small_exp/ar/unstable_remaining/', 'unstable_remaining', '.alpha_renamed.1.smt2')
+# copy_files_from_file('data/unsat_cores/d_komodo_z3/alpha_renamed_clean/', 'data/ar_small_exp/ar/unstable_remaining/', 'unstable_remaining', '.alpha_renamed.1.smt2')
 
 UC_EXP = c.load_known_experiment('uc')
 AR_EXP = c.load_known_experiment('ar')
 UC_UNSTABLE_PROJ = c.load_known_project('uc_unstable')
 AR_UNSTABLE_PROJ = c.load_known_project('ar_unstable')
+UC_REMAIN_UNSTABLE_PROJ = c.load_known_project('uc_unstable_remaining')
+AR_REMAIN_UNSTABLE_PROJ = c.load_known_project('ar_unstable_remaining')
 
-# dump_multi_status(UC_UNSTABLE_PROJ, SOLVER, UC_EXP, ANA)
-# dump_multi_status(AR_UNSTABLE_PROJ, SOLVER, AR_EXP, ANA)
+print("UC unstable remaining")
+dump_multi_status(UC_REMAIN_UNSTABLE_PROJ, SOLVER, UC_EXP, ANA)
+print("")
+print("AR unstable remaining")
+dump_multi_status(AR_REMAIN_UNSTABLE_PROJ, SOLVER, AR_EXP, ANA)
 
 
 def investigate_inconclusive(project, solver, exp, ana):
