@@ -7,6 +7,7 @@ from basic_utils import *
 import argparse
 from tabulate import tabulate
 from configer import *
+from verus_integration import *
 
 # def import_database(other_server):
 #     remote_db_path = "data/mariposa2.db"
@@ -93,6 +94,12 @@ def dump_multi_status(project, solver, exp, ana):
             continue
         print("")
         print("query:", row[0])
+        if project.framework.lower() == "verus":
+            query_type, name, location, precise_location = find_verus_query(row[0])
+            print("query type:", query_type)
+            print("name:", name)
+            print("function location:", location)
+            print("precise location (may be missing):", precise_location)
         mutations, blob = row[1], row[2]
         ana.dump_query_status(mutations, blob)
 
@@ -105,7 +112,7 @@ def parse_partition(partition):
 
 def multi_mode(args):
     part_id, part_num = parse_partition(args.partition_id)
-
+    
     c = Configer()
     exp = c.load_known_experiment(args.experiment)
     solver = c.load_known_solver(args.solver)
@@ -119,6 +126,7 @@ def multi_mode(args):
 
     if not args.analysis_skip:
         dump_multi_status(project, solver, exp, ana)
+
     else:
         print("[INFO] skipping analysis")
 
