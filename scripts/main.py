@@ -95,11 +95,10 @@ def dump_multi_status(project, solver, exp, ana):
         print("")
         print("query:", row[0])
         if project.framework.lower() == "verus":
-            query_type, name, location, precise_location = find_verus_query(row[0])
+            query_type, name, location= find_verus_query(row[0])
             print("query type:", query_type)
             print("name:", name)
-            print("function location:", location)
-            print("precise location (may be missing):", precise_location)
+            print("query location:", location)
         mutations, blob = row[1], row[2]
         ana.dump_query_status(mutations, blob)
 
