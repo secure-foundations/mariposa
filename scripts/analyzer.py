@@ -42,6 +42,11 @@ def count_within_timeout(blob, rcode, timeout=1e6):
     success = np.sum(np.logical_and(success, none_timeout))
     return success
 
+def count_timeouts(blob, timeout=1e6):
+    if timeout == None:
+        return np.sum(blob[0] == RCode.TIMEOUT.value)
+    return np.sum(blob[1] >= timeout)
+
 class Analyzer:
     def __init__(self, confidence, timeout, r_solvable, r_stable, discount, method):
         self.confidence = confidence
@@ -172,13 +177,18 @@ class Analyzer:
     def dump_query_status(self, mutations, blob):
         status, votes = self.categorize_query(blob)
 
-        table = [["overall", status, "x", "x", "x"]]
+        table = [["overall", status, "x", "x", "x", "x", "x"]]
         mut_size = blob.shape[2]
 
         for i in range(len(mutations)):
-            count = count_within_timeout(blob[i], RCode.UNSAT, timeout=self._timeout)
+            count_unsat = count_within_timeout(blob[i], RCode.UNSAT, timeout=self._timeout)
+            unsat_item = f"{count_unsat}/{mut_size} {round(count_unsat / (mut_size) * 100, 1)}%"
+            count_timeout = count_timeouts(blob[i], timeout=self._timeout)
+            timeout_item = f"{count_timeout}/{mut_size} {round(count_timeout / (mut_size) * 100, 1)}%"
+            count_unknown = count_within_timeout(blob[i], RCode.UNKNOWN, timeout=self._timeout)
+            unknown_item = f"{count_unknown}/{mut_size} {round(count_unknown / (mut_size) * 100, 1)}%"
             times = np.clip(blob[i][1], 0, self._timeout) / 1000
-            item = [mutations[i], votes[i].value, f"{count}/{mut_size} {round(count / (mut_size) * 100, 1)}%", f"{round(np.mean(times), 2)}", f"{round(np.std(times), 2)}"]
+            item = [mutations[i], votes[i].value, unsat_item, timeout_item, unknown_item, f"{round(np.mean(times), 2)}", f"{round(np.std(times), 2)}"]
             table.append(item)
-        print(tabulate(table, headers=["mutation", "status", "success", "mean(second)", "std(second)"], tablefmt="github"))
+        print(tabulate(table, headers=["mutation", "status", "unsat", "timeout", "unknown", "mean(second)", "std(second)"], tablefmt="github"))
 

@@ -138,19 +138,24 @@ def convert_path(src_path, src_dir, dst_dir):
     return dst_path
 
 def preprocess_mode(args):
-    queries = list_smt2_files(args.in_dir)
-    exit_with_on_fail(not os.path.exists(args.out_dir), f"[ERROR] output directory {args.out_dir} exists")
+    if os.path.exists(args.out_dir):
+        print(f"[WARN] output directory {args.out_dir} already exists, remove it? [Y]")
+        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+        os.rmdir(args.out_dir)
     os.makedirs(args.out_dir)
 
+    queries = list_smt2_files(args.in_dir)
     print(f'[INFO] found {len(queries)} files with ".smt2" extension under {args.in_dir}')
+
+    temp = open("preprocess.sh", "w+")
     for in_path in queries:
         out_path = convert_path(in_path, args.in_dir, args.out_dir)
-        command = f"./target/release/mariposa -i '{in_path}' --chop --o '{out_path}'"
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-        print(result.stdout.decode('utf-8'), end="")
-        exit_with_on_fail(result.returncode == 0, "[ERROR] query split failed")
-    queries = list_smt2_files(args.out_dir)
-    print(f'[INFO] generated {len(queries)} split queries under {args.out_dir}')
+        command = f"./target/release/mariposa -i '{in_path}' --chop --remove-debug --o '{out_path}'\n"
+        temp.write(command)
+    temp.close()
+    print(f"[INFO] emitted to preprocess.sh, running using gnu parallel")
+    os.system("cat preprocess.sh | parallel")
+    os.system("rm preprocess.sh")
 
 import copy 
 
@@ -218,7 +223,6 @@ def manager_mode(args):
         if remote_db_path not in workers:
             workers[remote_db_path] = []
         workers[remote_db_path].append((part_id, part_num))
-    # workers = dict()
     print("[DEBUG] ", workers)
 
     for remote_db_path in workers:
@@ -228,6 +232,7 @@ def manager_mode(args):
         os.system(command)
         assert os.path.exists(temp_db_path)
         for (part_id, part_num) in workers[remote_db_path]:
+            print(f"[INFO] importing partition {part_id}/{part_num} from {remote_db_path}")
             import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
         os.remove(temp_db_path)
 
@@ -289,6 +294,8 @@ if __name__ == '__main__':
     preprocess_parser = subparsers.add_parser('preprocess', help='preprocess mode. (recursively) traverse the input directory and split all queries with ".smt2" file extension, the split queries will be stored under the output directory.')
     preprocess_parser.add_argument("--in-dir", required=True, help='the input directory with ".smt2" files')
     preprocess_parser.add_argument("--out-dir", required=True, help="the output directory to store preprocessed files, flattened and split")
+
+    preprocess_parser.add_argument("--clean-debug", required=False, help="if queries fail during the verification process, remove the debug queries that arise during error localization", action='store_true')
 
     args = parser.parse_args()
 

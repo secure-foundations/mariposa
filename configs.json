@@ -5,7 +5,8 @@
         "mutations": [
           "shuffle",
           "rename",
-          "reseed"
+          "reseed",
+          "quake"
         ],
         "keep_mutants": false,
         "num_mutants": 60,
@@ -28,36 +29,6 @@
         "exp_timeout": 60,
         "num_procs": 7,
         "db_path": "./data/mariposa.db",
-        "db_mode": "update"
-      },
-      {
-        "name": "pagetable",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 60,
-        "num_procs": 7,
-        "db_path": "./data/pagetable.db",
-        "db_mode": "update"
-      },
-      {
-        "name": "pagetable_redo",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 60,
-        "num_procs": 7,
-        "db_path": "./data/pagetable_redo.db",
         "db_mode": "update"
       },
       {
@@ -92,6 +63,22 @@
       },
       {
         "name": "min_asserts",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed",
+          "quake"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": true,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/inc.db",
+        "db_mode": "update"
+      },
+      {
+        "name": "unsat_core",
         "mutations": [
           "shuffle",
           "rename",
@@ -143,111 +130,6 @@
         "num_procs": 7,
         "db_path": "./data/compose2.db",
         "db_mode": "update"
-      },
-      {
-        "name": "nr_closed",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 60,
-        "num_procs": 7,
-        "db_path": "./data/nr_closed.db",
-        "db_mode": "update"
-      },
-      {
-        "name": "nr_open",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 60,
-        "num_procs": 7,
-        "db_path": "./data/nr_open.db",
-        "db_mode": "update"
-      },
-      {
-        "name": "spec_crypto",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 60,
-        "num_procs": 7,
-        "db_path": "./data/spec_crypto.db",
-        "db_mode": "update"
-      },
-      {
-        "name": "splinter",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 60,
-        "num_procs": 7,
-        "db_path": "./data/splinter.db",
-        "db_mode": "update"
-      },
-      {
-        "name": "unsat_core",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 120,
-        "num_procs": 7,
-        "db_path": "./data/uc.db",
-        "db_mode": "update"
-      },
-      {
-        "name": "ar",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 120,
-        "num_procs": 7,
-        "db_path": "./data/ar_small_exp/ar.db",
-        "db_mode": "update"
-      },
-      {
-        "name": "uc",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 120,
-        "num_procs": 7,
-        "db_path": "./data/ar_small_exp/uc.db",
-        "db_mode": "update"
       }
     ],
     "analyzers": [
@@ -277,7 +159,7 @@
         },
         {
             "name": "debug",
-            "ana_timeout": 10,
+            "ana_timeout": 5,
             "confidence": 0.05,
             "r_solvable": 0.05,
             "r_stable": 0.95,
@@ -339,55 +221,55 @@
     "projects": [
       {
         "name": "s_komodo",
-        "frame_work": "serval",
+        "framework": "serval",
         "clean_dir": "data/s_komodo_z3_clean",
         "artifact_solver_name": "z3_4_4_2"
       },
       {
         "name": "d_komodo",
-        "frame_work": "dafny",
+        "framework": "dafny",
         "clean_dir": "data/d_komodo_z3_clean",
         "artifact_solver_name": "z3_4_5_0"
       },
       {
         "name": "d_fvbkv",
-        "frame_work": "dafny",
+        "framework": "dafny",
         "clean_dir": "data/d_fvbkv_z3_clean",
         "artifact_solver_name": "z3_4_6_0"
       },
       {
         "name": "d_lvbkv",
-        "frame_work": "dafny",
+        "framework": "dafny",
         "clean_dir": "data/d_lvbkv_z3_clean",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
         "name": "fs_vwasm",
-        "frame_work": "fstar",
+        "framework": "fstar",
         "clean_dir": "data/fs_vwasm_z3_clean",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
         "name": "fs_dice",
-        "frame_work": "fstar",
+        "framework": "fstar",
         "clean_dir": "data/fs_dice_z3_clean",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
         "name": "dummy",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "data/dummy_clean",
         "artifact_solver_name": "z3_4_12_1"
       },
       {
         "name": "nr",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "node_replication",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "d_komodo_uc",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "data/d_komodo_z3_uc/min_asserts",
         "artifact_solver_name": "z3_4_12_1"
       },
@@ -395,12 +277,6 @@
         "name": "splinter",
         "frame_work": "verus",
         "clean_dir": "data/splinter_clean",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "pagetable_redo",
-        "frame_work": "verus",
-        "clean_dir": "data/page-table-redo_clean",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
@@ -416,64 +292,16 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "spec_crypto",
-        "frame_work": "dafny",
-        "clean_dir": "data/spec_crypto_clean",
-        "artifact_solver_name": "z3_4_12_2"
+        "name": "d_ntt",
+        "framework": "unknown",
+        "clean_dir": "data/d_ntt_clean",
+        "artifact_solver_name": "z3_4_8_5"
       },
       {
-        "name": "spec_crypto_bin_seq",
-        "frame_work": "dafny",
-        "clean_dir": "data/spec_crypto_bin_seq_clean",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "spec_crypto_ntt_twiddle",
-        "frame_work": "dafny",
-        "clean_dir": "data/spec_crypto_ntt_twiddle_clean",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "pagetable",
-        "frame_work": "verus",
-        "clean_dir": "data/pagetable_clean",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "uc_stable",
-        "frame_work": "dafny",
-        "clean_dir": "data/ar_small_exp/uc/stable",
-        "artifact_solver_name": "z3_4_5_0"
-      },
-      {
-        "name": "ar_stable",
-        "frame_work": "dafny",
-        "clean_dir": "data/ar_small_exp/ar/stable",
-        "artifact_solver_name": "z3_4_5_0"
-      },
-      {
-        "name": "uc_unstable",
-        "frame_work": "dafny",
-        "clean_dir": "data/ar_small_exp/uc/unstable_less",
-        "artifact_solver_name": "z3_4_5_0"
-      },
-      {
-        "name": "ar_unstable",
-        "frame_work": "dafny",
-        "clean_dir": "data/ar_small_exp/ar/unstable_less",
-        "artifact_solver_name": "z3_4_5_0"
-      },
-      {
-        "name": "uc_unstable_remaining",
-        "frame_work": "dafny",
-        "clean_dir": "data/ar_small_exp/uc/unstable_remaining",
-        "artifact_solver_name": "z3_4_5_0"
-      },
-      {
-        "name": "ar_unstable_remaining",
-        "frame_work": "dafny",
-        "clean_dir": "data/ar_small_exp/ar/unstable_remaining",
-        "artifact_solver_name": "z3_4_5_0"
+        "name": "d_ntt_open",
+        "framework": "unknown",
+        "clean_dir": "data/d_ntt_open_clean",
+        "artifact_solver_name": "z3_4_8_5"
       }
     ]
   }

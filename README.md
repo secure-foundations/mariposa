@@ -139,14 +139,14 @@ Under the key `solvers`, there are a few predefined solvers.
 
 Under the key `projects`, there are a few predefined projects. A project specifies a collection of **preprocessed** queries in a directory. The directory contains only `*.smt2` files and no nested directories. Each `.smt2` file contains one `(check-sat)` command and is parsable by Mariposa. `preprocess` mode can be used to produce such a directory (explained later). 
 
-* `frame_work` is an arbitrary label; we use it to record the verification tool that produced the original SMT2 files. 
+* `framework` is an arbitrary label; we use it to record the verification tool that produced the original SMT2 files. 
 * `clean_dir` is the directory that contains the preprocessed queries.
 * `artifact_solver_name` is the original solver that the project used during development, which should match one of the definitions under `solvers`. 
 
 ```
 {
     "name": "s_komodo",
-    "frame_work": "serval",
+    "framework": "serval",
     "clean_dir": "data/s_komodo_z3_clean",
     "artifact_solver_name": "z3_4_4_2"
 },

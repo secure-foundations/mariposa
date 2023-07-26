@@ -5,7 +5,7 @@ import multiprocessing as mp
 import itertools
 
 from db_utils import *
-# from configer import *
+from configer import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
@@ -31,16 +31,36 @@ def parse_basic_output_z3(output):
         return "unknown"
     return "error"
 
-def parse_basic_output_cvc(output, error):
-    if "unsat" in output:
-        return "unsat"
-    elif "sat" in output:
-        return "sat"
-    elif "unknown" in output:
-        return "unknown"
-    elif "interrupted by timeout" in error:
-        return "timeout"
-    return "error"
+# def parse_basic_output_cvc(output, error):
+#     if "unsat" in output:
+#         return "unsat"
+#     elif "sat" in output:
+#         return "sat"
+#     elif "unknown" in output:
+#         return "unknown"
+#     elif "interrupted by timeout" in error:
+#         return "timeout"
+#     return "error"
+
+def start(z3_path):
+    return subprocess.Popen(
+        [z3_path, "-in"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+
+def read(process):
+    return process.stdout.readline().decode("utf-8").strip()
+
+def write(process, message):
+    process.stdin.write(f"{message.strip()}\n".encode("utf-8"))
+    process.stdin.flush()
+
+def terminate(process):
+    process.stdin.close()
+    process.stdout.close()
+    process.stderr.close()
+    process.terminate()
 
 class Task:
     def __init__(self, exp, exp_tname, origin_path, perturb, mut_seed, solver):
@@ -50,11 +70,84 @@ class Task:
         self.origin_path = origin_path
         self.perturb = perturb
         self.mut_seed = mut_seed
+        self.quake = False
 
-    def run(self):
+    def run_z3(self, mutant_path):
         solver = self.solver
         exp = self.exp
 
+        p = start(solver.path)
+        
+        with open(mutant_path, "r") as f:
+            repeat = False
+            context = []
+            for line in f:
+                if "(push" in line:
+                    repeat = True
+                if repeat:
+                    if "(get-info" in line:
+                        continue
+                    context.append(line)
+                    if "(check-sat)" in line:
+                        context.append("(pop 1)\n")
+                        break
+                else:
+                    if "(check-sat)" in line:
+                        break
+                    write(p, line)
+
+        if not repeat:
+            context = ["(push 1)\n", "(check-sat)\n", "(pop 1)\n"]
+
+        context.insert(1, f"(set-option :timeout {exp.timeout * 1000})\n")
+        context.insert(-1, "(set-option :timeout 0)\n")
+
+        context = "".join(context)
+
+        reports = dict()
+        repeat = 1
+
+        if self.quake:
+            repeat = exp.num_mutant + 1
+
+        for i in range(repeat):
+            start_time = time.time()
+            write(p, context)
+            out = read(p)
+            elapsed = round((time.time() - start_time) * 1000)
+            rcode = parse_basic_output_z3(out)
+
+            if rcode == "error":
+                print("[INFO] solver error: ", out)
+
+            reports[i] = (rcode, elapsed, out)
+
+        terminate(p)
+
+        if not exp.keep_mutants and mutant_path != self.origin_path:
+            # remove mutant
+            os.system(f"rm '{mutant_path}'")
+
+        con = sqlite3.connect(exp.db_path)
+        cur = con.cursor()
+
+        for i in reports:
+            rcode, elapsed, out = reports[i]
+
+            perturb = self.perturb
+
+            if self.quake and i > 0:
+                perturb = str(Mutation.QUAKE)
+                mutant_path = self.origin_path + "." + str(i)
+
+            cur.execute(f"""INSERT INTO {self.exp_tname}
+                (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
+                (mutant_path, self.origin_path, perturb, "", out, "", rcode, elapsed))
+            con.commit()
+        con.close()
+
+    def run(self):
         if self.perturb is not None:
             query_name = os.path.basename(self.origin_path)
             assert query_name.endswith(".smt2")
@@ -71,29 +164,8 @@ class Task:
                 return
         else:
             mutant_path = self.origin_path
-
-        command = f"{solver.path} '{mutant_path}' -T:{exp.timeout}"
-        # print(f"[INFO] running: {command}")
-        out, err, elapsed = subprocess_run(command, exp.timeout + 1)
-
-        # TODO: handle other solvers
-        rcode = parse_basic_output_z3(out)
-
-        if rcode == "error":
-            print("[INFO] solver error: ", out, err)
-
-        if not exp.keep_mutants and self.perturb is not None:
-            # remove mutant
-            os.system(f"rm '{mutant_path}'")
-        
-        con = sqlite3.connect(exp.db_path)
-        cur = con.cursor()
-        cur.execute(f"""INSERT INTO {self.exp_tname}
-            (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
-            VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
-            (mutant_path, self.origin_path, self.perturb, command, out, err, rcode, elapsed))
-        con.commit()
-        con.close()
+            
+        self.run_z3(mutant_path)
 
 def print_eta(elapsed, cur_size, init_size):
     from datetime import timedelta
@@ -160,9 +232,13 @@ class Runner:
         tasks = []
         for origin_path in project.list_queries(part_id, part_num):
             task = Task(self.exp, self.exp_tname, origin_path, None, None, solver)
+            if Mutation.QUAKE in self.exp.enabled_muts:
+                task.quake = True
             tasks.append(task)
 
-            for perturb in self.exp.enabled_muts:            
+            for perturb in self.exp.enabled_muts:
+                if perturb == Mutation.QUAKE:
+                    continue
                 for _ in range(self.exp.num_mutant):
                     mut_seed = random.randint(0, 0xffffffffffffffff)
                     task = Task(self.exp, self.exp_tname, origin_path, perturb, mut_seed, solver)
@@ -193,76 +269,29 @@ def check_serenity_status():
     # assert stdout == "master"
     os.system("cargo build --release")
 
-# from ana import RCode 
-# from ana import Analyzer
-# from ana import Stability
-# from runner import parse_basic_output_z3
-# from runner import subprocess_run
-# import numpy as np
+if __name__ == "__main__":
+    import numpy as np
 
-# timeout = 60
+    c = Configer()
+    solver = c.load_known_solver("z3_4_12_1")
+    exp = c.load_known_experiment("incremental")
+    p = c.load_known_project("nr")
 
-# def async_run_single_mutant(results, command):
-#     items = command.split(" ")
-#     os.system(command)
-#     items = command.split(" ")
-#     command = f"./solvers/z3_place_holder {items[6]} -T:{timeout}"
-#     out, err, elapsed = subprocess_run(command, timeout + 1)
-#     rcode = parse_basic_output_z3(out)
-#     # os.system(f"rm {items[6]}")
-#     results.append((elapsed, rcode))
+    r = Runner(exp)
+    r.run_project(p, solver, 1, 100)
 
-# def mariposa(task_file):
-#     commands = [t.strip() for t in open(task_file, "r").readlines()]
-#     plain = commands[0]
-#     commands = commands[1:]
+    con, cur = get_cursor(exp.db_path)
+    sum_name = exp.get_sum_tname(p, solver, 1, 100)
 
-#     import multiprocessing as mp
-#     manager = mp.Manager()
-#     pool = mp.Pool(processes=7)
+    res = cur.execute(f"""SELECT * FROM {sum_name}""")
+    rows = res.fetchall()
 
-#     command = f"./solvers/z3_place_holder {plain} -T:{timeout}"
-#     out, err, elapsed = subprocess_run(command, timeout + 1)
-#     rcode = parse_basic_output_z3(out)
-#     pr = (elapsed, rcode)
-#     ana = Analyzer("z_test")
-#     ana.timeout = 6e4 # 1 min
-
-#     reseeds = manager.list([pr])
-#     renames = manager.list([pr])
-#     shuffles = manager.list([pr])
-
-#     for command in commands:
-#         if "reseed" in command:
-#             pool.apply_async(async_run_single_mutant, args=(reseeds, command))
-#         elif "rename" in command:
-#             pool.apply_async(async_run_single_mutant, args=(renames, command))
-#         elif "shuffle" in command:
-#             pool.apply_async(async_run_single_mutant, args=(shuffles, command))
-#         else:
-#             assert False
-    
-#     pool.close()
-#     pool.join()
-
-#     assert len(reseeds) == len(renames) == len(shuffles) == 61
-
-#     blob = np.zeros((3, 2, 61), dtype=int)
-#     for i, things in enumerate([reseeds, renames, shuffles]):
-#         for j, (veri_times, veri_res) in enumerate(things):
-#             blob[i, 0, j] = RCode.from_str(veri_res).value
-#             blob[i, 1, j] = veri_times
-
-#     cat = ana.categorize_query(blob)
-
-#     print(blob)
-#     print(cat)
-
-#     if cat == Stability.STABLE:
-#         exit(0) # good
-#     if cat == Stability.INCONCLUSIVE:
-#         exit(125) # skip
-#     exit(1) # bad 
-
-# if __name__ == "__main__":
-#     mariposa(sys.argv[1])
+    nrows = []
+    mut_size = exp.num_mutant
+    for row in rows:
+        mutations = ast.literal_eval(row[1])
+        blob = np.frombuffer(row[2], dtype=int)
+        blob = blob.reshape((len(mutations), 2, mut_size + 1))
+        nrow = [row[0], mutations, blob]
+        nrows.append(nrow)
+        print(blob)

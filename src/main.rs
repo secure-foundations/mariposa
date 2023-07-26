@@ -187,7 +187,7 @@ fn normalize_commands(commands: Vec<concrete::Command>, seed: u64) -> Vec<concre
         .collect()
 }
 
-fn is_target_cmd(command: &concrete::Command) -> bool {
+fn should_remove_command(command: &concrete::Command) -> bool {
     if let concrete::Command::SetOption {
         keyword: concrete::Keyword(k),
         value: _,
@@ -204,6 +204,12 @@ fn is_target_cmd(command: &concrete::Command) -> bool {
         }
     }
     if let concrete::Command::GetModel = command {
+        return true;
+    }
+    if let concrete::Command::GetUnsatCore = command {
+        return true;
+    }
+    if let concrete::Command::GetInfo { flag: _ } = command {
         return true;
     }
     return false;
@@ -226,12 +232,78 @@ fn is_unsat_core_related(command: &concrete::Command) -> bool {
 }
 
 fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
-    commands.retain(|command| !is_target_cmd(command));
+    commands.retain(|command| !should_remove_command(command));
 }
 
-fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String) -> usize {
-    // remove target commands
+fn remove_debug_commands(commands: &mut Vec<concrete::Command>) -> usize {
+    let mut depth: u32 = 0;
+    let mut max_depth: u32 = 0;
+
+    let mut check_sat_depth_zero = false;
+    let mut main_check_sat = false;
+    let mut in_debug = false;
+    let mut indices = HashSet::new();
+
+    let mut ignored = 0;
+
+    for (index, command) in commands.iter().enumerate() {
+        max_depth = std::cmp::max(max_depth, depth);
+        match command {
+            concrete::Command::Push { level: _ } => {
+                depth += 1;
+                main_check_sat = false;
+                in_debug = false;
+                indices.insert(index);
+            }
+            concrete::Command::Pop { level: _ } => {
+                depth -= 1;
+                main_check_sat = false;
+                in_debug = false;
+                indices.insert(index);
+            },
+            concrete::Command::CheckSat => {
+                if !main_check_sat {
+                    main_check_sat = true;
+                    indices.insert(index);
+                } else {
+                    assert!(in_debug);
+                    ignored += 1;
+                } 
+                if depth == 0 {
+                    check_sat_depth_zero = true;
+                }
+            },
+            concrete::Command::GetModel | 
+                concrete::Command::GetValue { terms: _ } =>
+            {
+                in_debug = true;
+            },
+            _ => {
+                if !in_debug {
+                    indices.insert(index);
+                }
+            }
+        }
+    }
+
+    assert!(!check_sat_depth_zero || max_depth == 0);
+    assert!(max_depth <= 1);
+
+    let mut index = 0;
+    commands.retain(|_| { index+=1; indices.contains(&(index-1)) });
+
+    return ignored;
+}
+
+fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String, remove_debug: bool) -> (usize, usize) {
+    let mut ignored = 0;
+
+    if remove_debug {
+        ignored = remove_debug_commands(commands);
+    }
+    // also remove target commands
     remove_target_cmds(commands);
+
     let mut depth = 0;
     let mut stack = Vec::new();
     stack.push(Vec::new());
@@ -260,7 +332,7 @@ fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String)
             stack[depth].push(command.clone());
         }
     }
-    return splits;
+    return (splits, ignored);
 }
 
 fn name_assert(command: &mut concrete::Command, ct: usize) {
@@ -470,6 +542,7 @@ fn clean_names(commands: &mut Vec<concrete::Command>) {
     commands.iter_mut().for_each(|x| clean_name(x));
 }
 
+
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -533,6 +606,10 @@ struct Args {
     #[arg(long, default_value = "false", conflicts_with = "mutation")]
     chop: bool,
 
+    /// remove debug commands from input file (Verus/Dafny)
+    #[arg(long, default_value = "false", conflicts_with = "mutation")]
+    remove_debug: bool,
+
     /// file containing unsat core (produced by Z3)
     #[arg(long)]
     core_file_path: Option<String>,
@@ -553,8 +630,8 @@ fn main() {
             panic!("[ERROR] chop requires an output file path");
         }
         let out_file_path = args.out_file_path.unwrap();
-        let splits = split_commands(&mut commands, &out_file_path);
-        println!("[INFO] {} is split into {} file(s)", &in_file_path, splits);
+        let (splits, ignored) = split_commands(&mut commands, &out_file_path, args.remove_debug);
+        println!("[INFO] {} is split into {} file(s), ignored {} check-sat", &in_file_path, splits, ignored);
         return;
     }
 

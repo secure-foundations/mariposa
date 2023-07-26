@@ -563,5 +563,6 @@
 (define-fun e561 () Bool (not e560))
 (define-fun e562 () Bool (or e272 e561))
 (define-fun e563 () Bool (not e562))
+(push 1)
 (assert e563)
 (check-sat)
