@@ -1,7 +1,7 @@
+use clap::Parser;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
-use rustop::opts;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
@@ -510,23 +510,36 @@ impl Manager {
     }
 }
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = "mariposa query mutator")]
+struct Args {
+    /// input file path
+    #[arg(short, long)]
+    in_file_path: String,
+
+    /// mutation to perform
+    #[arg(short, long, default_value = "none")]
+    mutation: String,
+
+    /// output file path
+    #[arg(short, long)]
+    out_file_path: Option<String>,
+
+    /// seed for randomness
+    #[arg(short, long, default_value_t = DEFAULT_SEED)]
+    seed: u64,
+
+    /// split the input file into multiple files based on check-sats
+    #[arg(long, default_value = "false", conflicts_with = "mutation")]
+    chop: bool,
+
+    /// file containing unsat core (produced by Z3)
+    #[arg(long)]
+    core_file_path: Option<String>,
+}
+
 fn main() {
-    let (args, _rest) = opts! {
-        synopsis "mariposa query mutator";
-        opt in_file_path:String,
-            desc: "input file path";
-        opt mutation:String=String::from("none"),
-            desc: "mutation to perform";
-        opt out_file_path:Option<String>,
-            desc: "output file path";
-        opt seed:u64=DEFAULT_SEED,
-        desc: "seed for randomness";
-        opt chop:bool=false,
-            desc: "split the input file into multiple files based on check-sats";
-        opt core_file:Option<String>,
-            desc: "file containing unsat cores";
-    }
-    .parse_or_exit();
+    let args = Args::parse();
 
     let in_file_path = args.in_file_path;
 
@@ -568,7 +581,7 @@ fn main() {
     } else if args.mutation == "unsat-core" {
         name_asserts(&mut commands);
     } else if args.mutation == "minimize-query" {
-        commands = parse_core_from_file(commands, args.core_file.unwrap());
+        commands = parse_core_from_file(commands, args.core_file_path.unwrap());
         // minimize-query will now also clean names by default
         // cleans names that were put in by mariposa
         clean_names(&mut commands);
@@ -584,7 +597,7 @@ fn main() {
         // remove produce unsat core at top and get-unsat-core from the bottom
         commands.retain(|command| !is_unsat_core_related(command));
 
-        let mut noncore_commands = parse_noncore_from_file(commands.clone(), args.core_file.clone().unwrap());
+        let mut noncore_commands = parse_noncore_from_file(commands.clone(), args.core_file_path.clone().unwrap());
         // cleans names put in by mariposa
         clean_names(&mut noncore_commands);
         noncore_commands = normalize_commands(noncore_commands, manager.seed);
@@ -598,8 +611,7 @@ fn main() {
         let noncore_symbols = noncore_symbol_tracker.symbols();
 //      println!("noncore symbols: {:?}", noncore_symbols);
         
-
-        let mut core_commands = parse_core_from_file(commands.clone(), args.core_file.clone().unwrap());
+        let mut core_commands = parse_core_from_file(commands.clone(), args.core_file_path.clone().unwrap());
         // cleans names put in by mariposa
         clean_names(&mut core_commands);
 

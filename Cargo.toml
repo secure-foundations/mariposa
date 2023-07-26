@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 smt2parser = {path="smt2utils/smt2parser"}
 rand = "0.8.5"
-rustop = "1.1.2"
 rand_chacha = "0.3.1"
+clap = { version = "4.3.19", features = ["derive"] }
