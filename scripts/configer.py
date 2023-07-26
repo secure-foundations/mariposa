@@ -5,8 +5,9 @@ from enum import Enum
 from analyzer import Analyzer
 
 class ProjectInfo:
-    def __init__(self, name, clean_dir, artifact_solver):
+    def __init__(self, name, framework, clean_dir, artifact_solver):
         self.name = name
+        self.framework =  framework
         self.clean_dir = clean_dir
         self.artifact_solver = artifact_solver
 
@@ -124,7 +125,7 @@ class Configer:
         for obj in objs["projects"]:
             solver = obj["artifact_solver_name"]
             exit_with_on_fail(solver in self.solvers, f"[ERROR] unknown artifact solver {solver} for project {obj['name']}")
-            self.projects[obj["name"]] = ProjectInfo(obj["name"], obj["clean_dir"], solver)
+            self.projects[obj["name"]] = ProjectInfo(obj["name"], obj["framework"], obj["clean_dir"], solver)
 
         self.analyzers = dict()
         for obj in objs["analyzers"]:

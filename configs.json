@@ -220,91 +220,91 @@
     "projects": [
       {
         "name": "s_komodo",
-        "frame_work": "serval",
+        "framework": "serval",
         "clean_dir": "data/s_komodo_z3_clean",
         "artifact_solver_name": "z3_4_4_2"
       },
       {
         "name": "d_komodo",
-        "frame_work": "dafny",
+        "framework": "dafny",
         "clean_dir": "data/d_komodo_z3_clean",
         "artifact_solver_name": "z3_4_5_0"
       },
       {
         "name": "d_fvbkv",
-        "frame_work": "dafny",
+        "framework": "dafny",
         "clean_dir": "data/d_fvbkv_z3_clean",
         "artifact_solver_name": "z3_4_6_0"
       },
       {
         "name": "d_lvbkv",
-        "frame_work": "dafny",
+        "framework": "dafny",
         "clean_dir": "data/d_lvbkv_z3_clean",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
         "name": "fs_vwasm",
-        "frame_work": "fstar",
+        "framework": "fstar",
         "clean_dir": "data/fs_vwasm_z3_clean",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
         "name": "fs_dice",
-        "frame_work": "fstar",
+        "framework": "fstar",
         "clean_dir": "data/fs_dice_z3_clean",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
         "name": "dummy",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "data/dummy_clean",
         "artifact_solver_name": "z3_4_12_1"
       },
       {
         "name": "nr",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "node_replication",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "nr_up",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "node_replication_up",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "pt",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "pt",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "pt_up",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "pt_up",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "d_komodo_uc",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "data/d_komodo_z3_uc/min_asserts",
         "artifact_solver_name": "z3_4_12_1"
       },
       {
         "name": "splinter",
-        "frame_work": "verus",
+        "framework": "verus",
         "clean_dir": "splinter",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "d_ntt",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "data/d_ntt_clean",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
         "name": "d_ntt_open",
-        "frame_work": "unknown",
+        "framework": "unknown",
         "clean_dir": "data/d_ntt_open_clean",
         "artifact_solver_name": "z3_4_8_5"
       }
