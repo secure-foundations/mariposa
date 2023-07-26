@@ -20,7 +20,7 @@ def create_single_mode_project(args, solver):
     exit_with_on_fail(query_name.endswith(".smt2"), '[ERROR] query must end with ".smt2"')
     query_name.replace(".smt2", "")
     gen_split_subdir = f"gen/{query_name}_"
-    project = ProjectInfo("misc", gen_split_subdir, solver)
+    project = ProjectInfo("misc", "unknown", gen_split_subdir, solver)
     return project
 
 def dump_status(project, solver, cfg, ana):
@@ -61,7 +61,7 @@ def single_mode(args):
             shutil.rmtree(project.clean_dir, ignore_errors=True)
         os.makedirs(project.clean_dir)
 
-        command = f"./target/release/mariposa -i '{args.query}' --chop --o '{project.clean_dir}/split.smt2'"
+        command = f"./target/release/mariposa -i '{args.query}' --chop --remove-debug -o '{project.clean_dir}/split.smt2'"
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
         print(result.stdout.decode('utf-8'), end="")
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
