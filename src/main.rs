@@ -1,7 +1,7 @@
+use clap::Parser;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
-use rustop::opts;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
@@ -215,6 +215,22 @@ fn should_remove_command(command: &concrete::Command) -> bool {
     return false;
 }
 
+fn is_unsat_core_related(command: &concrete::Command) -> bool {
+    if let concrete::Command::SetOption {
+        keyword: concrete::Keyword(k),
+        value: _,
+    } = command
+    {
+        if k == "produce-unsat-cores" {
+            return true;
+        }
+    }
+    if let concrete::Command::GetUnsatCore = command {
+        return true;
+    }
+    return false;
+}
+
 fn remove_target_cmds(commands: &mut Vec<concrete::Command>) {
     commands.retain(|command| !should_remove_command(command));
 }
@@ -412,11 +428,35 @@ fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> b
     return false;
 }
 
-// return a Vec<String> where each element is the name of an assert from the unsat core
-fn parse_core_from_file(
-    commands: Vec<concrete::Command>,
-    file_path: String,
-) -> Vec<concrete::Command> {
+// temporary while should_keep_command keeps all non-asserts
+fn should_keep_command_noncore(command: &concrete::Command, core: &HashSet<String>) -> bool {
+    let concrete::Command::Assert { term } = command else { 
+        // excludes check-sats
+        if let concrete::Command::CheckSat = command {
+            return false;
+        }
+        return true;
+    };
+    let named = concrete::Keyword("named".to_owned());
+
+    if let concrete::Term::Attributes {
+        term: _,
+        attributes,
+    } = term
+    {
+        for (key, value) in attributes {
+            if key == &named {
+                if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
+                    if core.contains(name) {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+fn core_to_hashset(file_path: String) -> HashSet<String> {
     // read lines from file
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
@@ -429,13 +469,36 @@ fn parse_core_from_file(
     }
     // strip the first and last character
     let last_line = &last_line[1..last_line.len() - 1];
-    // split the last line into a vector of strings
-    let core = last_line
-        .split(" ")
-        .map(|x| x.to_string())
-        .collect::<Vec<String>>();
-    // convert core to a HashSet
-    let core = core.into_iter().collect::<HashSet<String>>();
+    // split on spaces
+    let core: HashSet<String> = last_line.split(" ").map(|x| x.to_owned()).collect();
+    return core;
+}
+
+fn ensure_no_conflicts(symbols1: HashSet<String>, symbols2: HashSet<String>) {
+    // symbols used in commands1 and commands2 should be disjoint
+    let intersection: Vec<String> = symbols1.intersection(&symbols2).cloned().collect();
+    if intersection.len() > 0 {
+        panic!("symbols used in both commands1 and commands2: {:?}", intersection);
+    }
+}
+
+fn parse_noncore_from_file(commands: Vec<concrete::Command>, file_path: String) -> Vec<concrete::Command> {
+    let core = core_to_hashset(file_path);
+
+    // filter out commands that are not in the core
+    let new_commands = commands
+        .into_iter()
+        .filter(|x| should_keep_command_noncore(x, &core))
+        .collect::<Vec<concrete::Command>>();
+    return new_commands;
+}
+
+// return a Vec<String> where each element is the name of an assert from the unsat core
+fn parse_core_from_file(
+    commands: Vec<concrete::Command>,
+    file_path: String,
+) -> Vec<concrete::Command> {
+    let core = core_to_hashset(file_path);
 
     // filter out commands that are not in the core
     let new_commands = commands
@@ -520,25 +583,40 @@ impl Manager {
     }
 }
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = "mariposa query mutator")]
+struct Args {
+    /// input file path
+    #[arg(short, long)]
+    in_file_path: String,
+
+    /// mutation to perform
+    #[arg(short, long, default_value = "none")]
+    mutation: String,
+
+    /// output file path
+    #[arg(short, long)]
+    out_file_path: Option<String>,
+
+    /// seed for randomness
+    #[arg(short, long, default_value_t = DEFAULT_SEED)]
+    seed: u64,
+
+    /// split the input file into multiple files based on check-sats
+    #[arg(long, default_value = "false", conflicts_with = "mutation")]
+    chop: bool,
+
+    /// remove debug commands from input file (Verus/Dafny)
+    #[arg(long, default_value = "false", conflicts_with = "mutation")]
+    remove_debug: bool,
+
+    /// file containing unsat core (produced by Z3)
+    #[arg(long)]
+    core_file_path: Option<String>,
+}
+
 fn main() {
-    let (args, _rest) = opts! {
-        synopsis "mariposa query mutator";
-        opt in_file_path:String,
-            desc: "input file path";
-        opt mutation:String=String::from("none"),
-            desc: "mutation to perform";
-        opt out_file_path:Option<String>,
-            desc: "output file path";
-        opt seed:u64=DEFAULT_SEED,
-        desc: "seed for randomness";
-        opt chop:bool=false,
-            desc: "split the input file into multiple files based on check-sats";
-        opt remove_debug:bool=false,
-            desc: "remove debug check-sats when chopping (for Verus and Dafny queries)";
-        opt core_file:Option<String>,
-            desc: "file containing unsat cores";
-    }
-    .parse_or_exit();
+    let args = Args::parse();
 
     let in_file_path = args.in_file_path;
 
@@ -580,7 +658,7 @@ fn main() {
     } else if args.mutation == "unsat-core" {
         name_asserts(&mut commands);
     } else if args.mutation == "minimize-query" {
-        commands = parse_core_from_file(commands, args.core_file.unwrap());
+        commands = parse_core_from_file(commands, args.core_file_path.unwrap());
         // minimize-query will now also clean names by default
         // cleans names that were put in by mariposa
         clean_names(&mut commands);
@@ -588,7 +666,46 @@ fn main() {
         commands = commands[1..commands.len() - 1].to_vec();
     } else if args.mutation == "clean-names" {
         clean_names(&mut commands);
-    }
+    } else if args.mutation == "unsat-core-alpha-rename" { 
+        // given core file + primed original file, produce a new file with unsat
+        // core combined with a random subset of the original file (alpha renamed so
+        // no definitions conflict with the unsat core file)
+
+        // remove produce unsat core at top and get-unsat-core from the bottom
+        commands.retain(|command| !is_unsat_core_related(command));
+
+        let mut noncore_commands = parse_noncore_from_file(commands.clone(), args.core_file_path.clone().unwrap());
+        // cleans names put in by mariposa
+        clean_names(&mut noncore_commands);
+        noncore_commands = normalize_commands(noncore_commands, manager.seed);
+
+        // get symbols from noncore commands
+        let mut noncore_symbol_tracker = renaming::SymbolTracker::new(concrete::SyntaxBuilder);
+        noncore_commands = noncore_commands
+            .into_iter()
+            .map(|c| c.accept(&mut noncore_symbol_tracker).unwrap())
+            .collect();
+        let noncore_symbols = noncore_symbol_tracker.symbols();
+//      println!("noncore symbols: {:?}", noncore_symbols);
+        
+        let mut core_commands = parse_core_from_file(commands.clone(), args.core_file_path.clone().unwrap());
+        // cleans names put in by mariposa
+        clean_names(&mut core_commands);
+
+        // get symbols from core commands
+        let mut core_symbol_tracker = renaming::SymbolTracker::new(concrete::SyntaxBuilder);
+        core_commands = core_commands
+            .into_iter()
+            .map(|c| c.accept(&mut core_symbol_tracker).unwrap())
+            .collect();
+        let core_symbols = core_symbol_tracker.symbols();
+//      println!("core symbols: {:?}", core_symbols);
+        
+        ensure_no_conflicts(noncore_symbols.clone(), core_symbols.clone());
+        // combine commands somehow...
+        commands = [noncore_commands, core_commands].concat();
+        clean_names(&mut commands);
+    } 
 
     manager.dump_non_info_commands(&commands);
 }

@@ -1,5 +1,5 @@
 import os 
-from configs.projects import list_smt2_files
+from basic_utils import list_smt2_files
 from db_utils import *
 
 def inst_rules():
@@ -61,4 +61,40 @@ def create_min_assert_files(project):
         print(f"build {min_assert_path}: minimize-query {inst_path} | {core_path}")
         print(f"    core = {core_path}")
     
-create_min_assert_files(D_LVBKV_Z3)
+#create_min_assert_files(D_LVBKV_Z3)
+
+
+import os
+from build import *
+import random
+
+#def create_renamed_rules():
+#    return """
+#rule create_renamed
+#    command = ./target/release/mariposa --m unsat-core-alpha-rename -i $in -r $core -o $out
+#"""
+
+#print(create_renamed_rules())
+#os.system("mkdir -p data/unsat_cores/d_komodo_z3/alpha_renamed")
+
+#for core_path in list_core_files("data/unsat_cores/d_komodo_z3/core/"):
+#    alpha_renamed_path = core_path.replace("/core/", "/alpha_renamed/").replace(".core", ".alpha_renamed.smt2")
+#    inst_path = core_path.replace("/core/", "/inst/").replace(".core", ".smt2")
+#    print(f"build {alpha_renamed_path}: create_renamed {inst_path} | {core_path}")
+#    print(f"    core = {core_path}")
+
+# sample 100 files from data/unsat_cores/d_komodo_z3/alpha_renamed_clean and put them into data/unsat_cores/d_komodo_z3/alpha_renamed_sampled
+def sample_files(sub_root, sample_root, sample_size):
+    file_paths = []
+    for root, _, files in os.walk(sub_root):
+        for file in files:
+            if file.endswith(".smt2"):
+                file_paths.append(os.path.join(root, file))
+    random.shuffle(file_paths)
+    for i in range(sample_size):
+        print(f"moved {file_paths[i]} to {sample_root} ({i})")
+        os.system(f"cp '{file_paths[i]}' '{sample_root}'")
+
+sample_files("/home/gelatin/mariposa-benchmark/unstable_ext", "data/ar_small_exp/arsample_unstable", 40)
+
+

@@ -62,7 +62,7 @@
         "db_mode": "update"
       },
       {
-        "name": "incremental",
+        "name": "min_asserts",
         "mutations": [
           "shuffle",
           "rename",
@@ -87,9 +87,9 @@
         "num_mutants": 60,
         "keep_mutants": false,
         "init_seed": "",
-        "exp_timeout": 60,
+        "exp_timeout": 120,
         "num_procs": 7,
-        "db_path": "./data/uc.db",
+        "db_path": "./data/uc-4_8_5.db",
         "db_mode": "update"
       },
       {
@@ -130,27 +130,28 @@
         "num_procs": 7,
         "db_path": "./data/compose2.db",
         "db_mode": "update"
-      },
-      {
-        "name": "opaque",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed"
-        ],
-        "num_mutants": 60,
-        "keep_mutants": false,
-        "init_seed": "",
-        "exp_timeout": 60,
-        "num_procs": 7,
-        "db_path": "./data/opaque.db",
-        "db_mode": "update"
       }
     ],
     "analyzers": [
         {
             "name": "default",
             "ana_timeout": null,
+            "confidence": 0.05,
+            "r_solvable": 0.05,
+            "r_stable": 0.95,
+            "discount": 0.8
+        },
+        {
+            "name": "verus_5sec",
+            "ana_timeout": 5,
+            "confidence": 0.05,
+            "r_solvable": 0.05,
+            "r_stable": 0.95,
+            "discount": 0.8
+        },
+        {
+            "name": "verus_2sec",
+            "ana_timeout": 2,
             "confidence": 0.05,
             "r_solvable": 0.05,
             "r_stable": 0.95,
@@ -267,24 +268,6 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "nr_up",
-        "framework": "unknown",
-        "clean_dir": "node_replication_up",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "pt",
-        "framework": "unknown",
-        "clean_dir": "pt",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "pt_up",
-        "framework": "unknown",
-        "clean_dir": "pt_up",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
         "name": "d_komodo_uc",
         "framework": "unknown",
         "clean_dir": "data/d_komodo_z3_uc/min_asserts",
@@ -292,8 +275,20 @@
       },
       {
         "name": "splinter",
-        "framework": "verus",
-        "clean_dir": "splinter",
+        "frame_work": "verus",
+        "clean_dir": "data/splinter_clean",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "nr_closed",
+        "frame_work": "verus",
+        "clean_dir": "data/nr_closed_clean",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "nr_open",
+        "frame_work": "verus",
+        "clean_dir": "data/nr_open_clean",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
