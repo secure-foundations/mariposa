@@ -34,6 +34,16 @@ def nr_deleted_partial_order():
         f_out = f.replace(".smt2", ".out").replace("/nr_deleted_partial_order/", "/nr_deleted_partial_order_results/")
         print(f"build {f_out}: run-query {f}")
 
+# create rules for data/verus_cvc/nr_deleted_partial_order
+def nr_modified_partial_order():
+    print(run_rules())
+    files = list_smt2_files("data/verus_cvc/nr_modified_partial_order")
+    os.system("mkdir -p data/verus_cvc/nr_modified_partial_order_results")
+    for f in files:
+        f_out = f.replace(".smt2", ".out").replace("/nr_modified_partial_order/", "/nr_modified_partial_order_results/")
+        print(f"build {f_out}: run-query {f}")
+
 # deleted_partial_order()
 # modified_partial_order()
-nr_deleted_partial_order()
+# nr_deleted_partial_order()
+nr_modified_partial_order()

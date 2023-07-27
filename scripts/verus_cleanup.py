@@ -68,4 +68,4 @@ if __name__ == '__main__':
         os.makedirs(new_folder_path)
     files = list_smt2_files(folder_path)
     for file in files:
-        clean_file(file, new_folder_path)
+        clean_file_partial_order_fix(file, new_folder_path)
