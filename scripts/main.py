@@ -150,7 +150,7 @@ def preprocess_mode(args):
     temp = open("preprocess.sh", "w+")
     for in_path in queries:
         out_path = convert_path(in_path, args.in_dir, args.out_dir)
-        command = f"./target/release/mariposa -i '{in_path}' --chop --remove-debug --o '{out_path}'\n"
+        command = f"./target/release/mariposa -i '{in_path}' --chop --remove-debug -o '{out_path}'\n"
         temp.write(command)
     temp.close()
     print(f"[INFO] emitted to preprocess.sh, running using gnu parallel")
