@@ -324,6 +324,12 @@
         "framework": "dafny",
         "clean_dir": "data/d_lvbkv_closed",
         "artifact_solver_name": "z3_4_8_5"
+      },
+      {
+        "name": "d_lvbkv_opened",
+        "framework": "dafny",
+        "clean_dir": "data/d_lvbkv_opened",
+        "artifact_solver_name": "z3_4_8_5"
       }
     ]
   }
