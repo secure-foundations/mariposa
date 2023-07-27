@@ -221,6 +221,8 @@ This also serves as a sanity check that the queries are accepted by Mariposa's p
 * `--in-dir` is the input directory
 * `--out-dir` is the output directory, which should **not** exist when calling the script.
 
+An additional argument `--clean-debug`  is available for Dafny and Verus projects that will strip away debug queries created during the verification process (error localization). 
+
 ### Multiple Mode 
 
 `multiple` mode can be used for large-scale stability testing over a project. The three required arguments for this mode are:
