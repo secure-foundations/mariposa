@@ -21,7 +21,7 @@ def create_single_mode_project(args, solver):
     exit_with_on_fail(query_name.endswith(".smt2"), '[ERROR] query must end with ".smt2"')
     query_name.replace(".smt2", "")
     gen_split_subdir = f"gen/{query_name}_"
-    project = ProjectInfo("misc", gen_split_subdir, solver)
+    project = ProjectInfo("misc", "unknown", gen_split_subdir, solver)
     return project
 
 def dump_status(project, solver, cfg, ana):
@@ -62,7 +62,7 @@ def single_mode(args):
             shutil.rmtree(project.clean_dir, ignore_errors=True)
         os.makedirs(project.clean_dir)
 
-        command = f"./target/release/mariposa -i '{args.query}' --chop --o '{project.clean_dir}/split.smt2'"
+        command = f"./target/release/mariposa -i '{args.query}' --chop --remove-debug -o '{project.clean_dir}/split.smt2'"
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
         print(result.stdout.decode('utf-8'), end="")
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
@@ -151,20 +151,24 @@ def convert_path(src_path, src_dir, dst_dir):
     return dst_path
 
 def preprocess_mode(args):
-    queries = list_smt2_files(args.in_dir)
-    exit_with_on_fail(not os.path.exists(args.out_dir), f"[ERROR] output directory {args.out_dir} exists")
+    if os.path.exists(args.out_dir):
+        print(f"[WARN] output directory {args.out_dir} already exists, remove it? [Y]")
+        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+        os.rmdir(args.out_dir)
     os.makedirs(args.out_dir)
 
+    queries = list_smt2_files(args.in_dir)
     print(f'[INFO] found {len(queries)} files with ".smt2" extension under {args.in_dir}')
 
-    # print(f"[INFO] cleaning debug queries and splitting")
+    temp = open("preprocess.sh", "w+")
     for in_path in queries:
         out_path = convert_path(in_path, args.in_dir, args.out_dir)
-        command = f"./target/release/mariposa -i '{in_path}' --chop --remove-debug --o '{out_path}'"
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-        print(result.stdout.decode('utf-8'), end="")
-        exit_with_on_fail(result.returncode == 0, "[ERROR] query clean failed")
-    print(f'[INFO] generated {len(queries)} cleaned queries under {args.out_dir}')
+        command = f"./target/release/mariposa -i '{in_path}' --chop --remove-debug -o '{out_path}'\n"
+        temp.write(command)
+    temp.close()
+    print(f"[INFO] emitted to preprocess.sh, running using gnu parallel")
+    os.system("cat preprocess.sh | parallel")
+    os.system("rm preprocess.sh")
 
 import copy 
 
