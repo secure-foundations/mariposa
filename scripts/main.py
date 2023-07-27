@@ -76,6 +76,12 @@ def dump_multi_status(project, solver, exp, ana):
     items = ana.categorize_queries(rows)
     ps, _ = get_category_percentages(items)
 
+    extended_reporting = False
+    if project.framework.lower() == "verus":
+        print(f"[INFO] Mariposa has detected from configs.json your project uses Verus. Do you want to enable extended reporting?  [Y]")
+        print(f"[INFO] NOTE: if you did not use Verus >= a76746c to verify your project, this feature is not supported.")
+        extended_reporting = input() == "Y"
+
     print("project directory:", project.clean_dir)
     print("solver used:", solver.path)
     print("total queries:", len(rows))
@@ -94,7 +100,7 @@ def dump_multi_status(project, solver, exp, ana):
             continue
         print("")
         print("query:", row[0])
-        if project.framework.lower() == "verus":
+        if extended_reporting:
             query_type, name, location= find_verus_query(row[0])
             print("query type:", query_type)
             print("name:", name)

@@ -4,7 +4,8 @@ def find_verus_query(file):
         last_func_def = 0
         last_func_decl = 0
         last_func_term = 0
-        lines = list(map(lambda x: x.strip(), lines))
+        lines = [line.strip() for line in lines]
+
         for i, line in enumerate(lines):
            # find the last Function-Def, Function-Decl-Check-Recommends, and Function-Termination comments
             if line.startswith("(set-info :comment \";; Function-Def"):
