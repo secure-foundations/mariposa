@@ -262,6 +262,12 @@ query: data/dummy_clean/verified-sha-sha256.i.dfyImpl___module.__default.lemma__
 | rename     | unstable | 53/61 86.9%  | 0.76           | 0.23          |
 | reseed     | stable   | 61/61 100.0% | 0.49           | 0.01          |
 ```
+## Integration with Verus
+Mariposa includes the following extra features for projects written in [Verus](https://github.com/verus-lang/verus):
+
+* In [preprocess mode](#preprocess-mode), the `--clean-debug` flag will remove debug queries that arise during error localization
+* When unstable queries are being listed, helpful information about each query, such as the location of the query in the source code, will be reported. To take advantage of this feature, make sure to specify `"framework": "verus"` under your project in `configs.json`.
+
 
 ## Caveats
 
