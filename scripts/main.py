@@ -24,14 +24,25 @@ def create_single_mode_project(args, solver):
     project = ProjectInfo("misc", "unknown", gen_split_subdir, solver)
     return project
 
-def dump_status(project, solver, cfg, ana):
+def dump_status(project, solver, cfg, ana, verus):
     rows = load_sum_table(project, solver, cfg)
     # print("solver:", solver.path)
     print("solver used:", solver.path)
 
+    extended_reporting = False
+    if verus:
+        print(f"[INFO] Mariposa has detected from configs.json your project uses Verus. Do you want to enable extended reporting?  [Y]")
+        print(f"[INFO] NOTE: if you did not use Verus >= a76746c to verify your project, this feature is not supported.")
+        extended_reporting = input() == "Y"
+
     for row in rows:
         print("")
         print("query:", row[0])
+        if extended_reporting:
+            query_type, name, location= find_verus_query(row[0])
+            print("query type:", query_type)
+            print("name:", name)
+            print("query location:", location)
         mutations, blob = row[1], row[2]
         ana.dump_query_status(mutations, blob)
 
@@ -69,7 +80,7 @@ def single_mode(args):
 
         r = Runner(exp)
         r.run_project(project, project.artifact_solver, 1, 1)
-    dump_status(project, project.artifact_solver, exp, ana)
+    dump_status(project, project.artifact_solver, exp, ana, args.verus)
 
 def dump_multi_status(project, solver, exp, ana):
     rows = load_sum_table(project, solver, cfg=exp)
@@ -280,6 +291,7 @@ if __name__ == '__main__':
     single_parser.add_argument("-q", "--query", required=True, help="the input query")
     single_parser.add_argument("--clear", default=False, action='store_true', help="clear past data from single mode experiments")
     single_parser.add_argument("-e", "--experiment", default="single", help="the experiment configuration name in configs.json")
+    single_parser.add_argument("--verus", default=False, action='store_true', help="mark query framework as verus")
 
     multi_parser = subparsers.add_parser('multiple', help='multiple query mode. test an existing (preprocessed) project using the specified solver. the project is specified by a python expression that evaluates to a ProjectInfo object. ')
 

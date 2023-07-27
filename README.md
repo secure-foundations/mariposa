@@ -266,7 +266,7 @@ query: data/dummy_clean/verified-sha-sha256.i.dfyImpl___module.__default.lemma__
 Mariposa includes the following extra features for projects written in [Verus](https://github.com/verus-lang/verus):
 
 * In [preprocess mode](#preprocess-mode), the `--clean-debug` flag will remove debug queries that arise during error localization
-* When unstable queries are being listed, helpful information about each query, such as the location of the query in the source code, will be reported. To take advantage of this feature, make sure to specify `"framework": "verus"` under your project in `configs.json`.
+* When unstable queries are being listed, helpful information about each query, such as the location of the query in the source code, will be reported. To take advantage of this feature, make sure to specify `"framework": "verus"` under your project in `configs.json` for [multiple mode](#multiple-mode) and the command line argument `--verus` when running `main.py` in [single mode](#single-mode).
 
 
 ## Caveats
