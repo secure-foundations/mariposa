@@ -6,6 +6,7 @@
 /data/s_komodo/
 /target
 /gen
+/solvers/
 ninja
 .ninja*
 __pycache__/

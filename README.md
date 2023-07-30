@@ -18,12 +18,17 @@ We used the Mariposa tool to create a benchmark set of SMT queries to use when e
 git clone --filter=blob:none https://github.com/secure-foundations/mariposa.git
 ```
 
-2. You will need a working Rust toolchain to compile the Mariposa code that parses and mutates queries.  To compile this code, run:
+2. Obtain a set of solvers for your platform (Linux x86, macOS x86 or arm64).
+```
+./scripts/get_solvers.sh
+```
+
+3. You will need a working Rust toolchain to compile the Mariposa code that parses and mutates queries.  To compile this code, run:
 ```
 cargo build --release
 ```
 
-3. You will need a working Python 3 installation to run the code that performs the experiments and analysis.  This code was written using Python 3.8.10 (and has not been tested on other versions).  To install the required packages, run
+4. You will need a working Python 3 installation to run the code that performs the experiments and analysis.  This code was written using Python 3.8.10 (and has not been tested on other versions).  To install the required packages, run
 ```
 pip3 install -r requirements.txt
 ```
