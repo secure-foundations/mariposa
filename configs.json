@@ -229,6 +229,16 @@
         "date": "2023/05/12"
       },
       {
+        "name": "z3_4_12_2_arm_osx",
+        "path": "solvers/z3-4.12.2_arm_osx",
+        "date": "2023/05/12"
+      },
+      {
+        "name": "z3_4_12_2_osx",
+        "path": "solvers/z3-4.12.2_osx",
+        "date": "2023/05/12"
+      },
+      {
         "name": "cvc5_1_0_3",
         "path": "solvers/cvc5-1.0.3",
         "date": "2022/12/12"

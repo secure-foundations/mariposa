@@ -17,7 +17,6 @@ z3_versions=(
 )
 
 for z3_version in "${z3_versions[@]}"; do
-
     echo "obtaining z3 $z3_version"
 
     if [ `uname` == "Darwin" ]; then

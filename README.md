@@ -18,33 +18,39 @@ We used the Mariposa tool to create a benchmark set of SMT queries to use when e
 git clone --filter=blob:none https://github.com/secure-foundations/mariposa.git
 ```
 
-2. Obtain a set of solvers for your platform (Linux x86, macOS x86 or arm64).
+<!-- 2. Obtain a set of solvers for your platform (Linux x86, macOS x86 or arm64).
 ```
-./scripts/get_solvers.sh
-```
+./scripts/get_solvers.sh -->
+<!-- ``` -->
 
-3. You will need a working Rust toolchain to compile the Mariposa code that parses and mutates queries.  To compile this code, run:
+2. You will need a working Rust toolchain to compile the Mariposa code that parses and mutates queries.  To compile this code, run:
 ```
 cargo build --release
 ```
 
-4. You will need a working Python 3 installation to run the code that performs the experiments and analysis.  This code was written using Python 3.8.10 (and has not been tested on other versions).  To install the required packages, run
+3. You will need a working Python 3 installation to run the code that performs the experiments and analysis.  This code was written using Python 3.8.10 (and has not been tested on other versions).  To install the required packages, run
 ```
 pip3 install -r requirements.txt
 ```
 
-4. There are multiple Z3 binaries available in the `solvers/` folder which are already set up in the `configs.json` file. To install other versions of Z3, create a new solver configuration in the the `configs.json` file and point it to the location of the binary. See the [Solvers](#solvers) section for more information on editing `configs.json`.
+4. There are multiple Z3 binaries available in the `solvers/` folder which are already set up in the `configs.json` file. Note that most of the solvers are for Linux. To install other versions of Z3, create a new solver configuration in the the `configs.json` file and point it to the location of the binary. See the [Solvers](#solvers) section for more information on editing `configs.json`.
 
 ## Quick Start
 
-To perform a basic sanity check:
+To perform a basic sanity check (on Linux):
 ```
-python3 scripts/main.py single -s z3_4_12_1 -q data/samples/single_check.smt2
+python3 scripts/main.py single -s z3_4_12_2 -q data/samples/single_check.smt2
 ```
-This will test the stability of the query `data/samples/single_check.smt2` on the solver `Z3 4.12.1`, using the default settings for experiments. The result should be something like this:
+
+If you are on macOS, you might want to provide a different solver with the `-s` flag:
+```
+python3 scripts/main.py single -s z3_4_12_2_osx -q data/samples/single_check.smt2
+```
+
+This will test the stability of the query `data/samples/single_check.smt2` on the solver `Z3 4.12.2`, using the default settings for experiments. The result should be something like this:
 
 ```
-solver used: solvers/z3-4.12.1
+solver used: solvers/z3-4.12.2
 query: gen/single_check.smt2_/split.1.smt2
 | mutation   | status   | success      | mean(second)   | std(second)   |
 |------------|----------|--------------|----------------|---------------|
