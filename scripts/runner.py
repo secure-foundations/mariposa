@@ -217,13 +217,19 @@ def print_eta(elapsed, cur_size, init_size):
     from datetime import datetime
 
     elapsed = round(elapsed/3600, 2)
-    done_size = init_size - cur_size
-    estimated = round(cur_size * (elapsed / done_size), 2)
-    estimated = datetime.now() + timedelta(hours=estimated)
-    print(f"[INFO] finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {estimated.strftime('%Y-%m-%d %H:%M')}")
+    if init_size is not None and cur_size is not None:
+        done_size = init_size - cur_size
+        estimated = round(cur_size * (elapsed / done_size), 2)
+        estimated = datetime.now() + timedelta(hours=estimated)
+        print(f"[INFO] finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {estimated.strftime('%Y-%m-%d %H:%M')}")
+    else:
+        print(f"[INFO] elapsed: {elapsed} hours")
 
 def run_tasks(queue, start_time, id):
-    init_size = queue.qsize()
+    try:
+        init_size = queue.qsize()
+    except NotImplementedError:
+        init_size = None
     pelapsed = 0
 
     while True:
@@ -231,7 +237,11 @@ def run_tasks(queue, start_time, id):
         if id == 0:
             elapsed = time.time() - start_time
             if elapsed > pelapsed + 60:
-                print_eta(elapsed, queue.qsize(), init_size)
+                try:
+                    qsize = queue.qsize()
+                except NotImplementedError:
+                    qsize = None
+                print_eta(elapsed, qsize, init_size)
                 pelapsed = elapsed
         if task is None:
             break
@@ -257,7 +267,10 @@ class Runner:
     def _run_workers(self):
         start_time = time.time()
         processes = []
-        print(f"[INFO] {self.task_queue.qsize() + self.exp.num_procs} tasks queued")
+        try:
+            print(f"[INFO] {self.task_queue.qsize() + self.exp.num_procs} tasks queued")
+        except NotImplementedError:
+            print(f"[INFO] at least {self.exp.num_procs} tasks queued")
 
         for i in range(self.exp.num_procs):
             p = mp.Process(target=run_tasks, args=(self.task_queue, start_time, i,))
