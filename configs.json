@@ -376,7 +376,7 @@
       {
         "name": "verus_cvc_splinter",
         "framework": "verus",
-        "clean_dir": "data/verus_cvc",
+        "clean_dir": "data/splinter-cvc",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
