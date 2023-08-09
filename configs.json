@@ -332,12 +332,6 @@
         "artifact_solver_name": "z3_4_12_1"
       },
       {
-        "name": "splinter",
-        "framework": "verus",
-        "clean_dir": "data/splinter_clean",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
         "name": "nr_closed",
         "framework": "verus",
         "clean_dir": "data/nr_closed_clean",
@@ -368,9 +362,9 @@
         "artifact_solver_name": "z3_4_8_5"
       },
       {
-        "name": "verus_cvc_page_table",
+        "name": "splinter",
         "framework": "verus",
-        "clean_dir": "data/verus_cvc/nr_deleted_partial_order",
+        "clean_dir": "data/splinter",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
