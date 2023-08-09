@@ -158,9 +158,9 @@
         "keep_mutants": false,
         "num_mutants": 60,
         "init_seed": "",
-        "exp_timeout": 60,
+        "exp_timeout": 30,
         "num_procs": 7,
-        "db_path": "./data/verus_cvc/verus_cvc_test.db",
+        "db_path": "./data/verus_cvc_test.db",
         "db_mode": "update"
       },
       {
@@ -376,7 +376,7 @@
       {
         "name": "verus_cvc_splinter",
         "framework": "verus",
-        "clean_dir": "data/verus_cvc/splinter_deleted_partial_order",
+        "clean_dir": "data/verus_cvc",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
