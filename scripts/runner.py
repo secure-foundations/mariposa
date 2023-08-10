@@ -31,6 +31,19 @@ def parse_basic_output_z3(output):
         return "unknown"
     return "error"
 
+def parse_basic_output_cvc(output, timeout):
+    if timeout:
+        return "timeout"
+    if "unsat" in output:
+        return "unsat"
+    elif "sat" in output:
+        return "sat"
+    elif "timeout" in output:
+        return "timeout"
+    elif "unknown" in output:
+        return "unknown"
+    return "error"
+
 # def parse_basic_output_cvc(output, error):
 #     if "unsat" in output:
 #         return "unsat"
@@ -42,9 +55,20 @@ def parse_basic_output_z3(output):
 #         return "timeout"
 #     return "error"
 
-def start(z3_path):
+def start_z3(z3_path):
     return subprocess.Popen(
         [z3_path, "-in"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+
+def start_cvc(cvc_path, timelimit, mut_seed=None):
+    if mut_seed is None:
+        args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit)]
+    else:
+        args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit), "--sat-random-seed", str(mut_seed), "--seed", str(mut_seed)]
+    return subprocess.Popen(
+        args,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
@@ -72,16 +96,31 @@ class Task:
         self.mut_seed = mut_seed
         self.quake = False
 
-    def run_z3(self, mutant_path):
+    def run_solver(self, mutant_path):
         solver = self.solver
         exp = self.exp
 
-        p = start(solver.path)
+        solver_type = None
+
+        if "z3" in solver.name:
+            solver_type = "z3"
+            p = start_z3(solver.path)
+        elif "cvc" in solver.name:
+            solver_type = "cvc"
+            if self.perturb == "reseed" or self.perturb == "all":
+                p = start_cvc(solver.path, exp.timeout * 1000, self.mut_seed)
+            else:
+                p = start_cvc(solver.path, exp.timeout * 1000)
+        else:
+            print("Solver is currently unsupported. If you are using z3 or cvc, please make sure z3 or cvc is present in the solver name in config.json.")
+            sys.exit(1)
         
         with open(mutant_path, "r") as f:
             repeat = False
             context = []
             for line in f:
+                if solver_type == "cvc" and "(set-option" in line:
+                    continue
                 if "(push" in line:
                     repeat = True
                 if repeat:
@@ -99,8 +138,9 @@ class Task:
         if not repeat:
             context = ["(push 1)\n", "(check-sat)\n", "(pop 1)\n"]
 
-        context.insert(1, f"(set-option :timeout {exp.timeout * 1000})\n")
-        context.insert(-1, "(set-option :timeout 0)\n")
+        if solver_type == "z3":
+            context.insert(1, f"(set-option :timeout {exp.timeout * 1000})\n")
+            context.insert(-1, "(set-option :timeout 0)\n")
 
         context = "".join(context)
 
@@ -112,13 +152,18 @@ class Task:
 
         for i in range(repeat):
             start_time = time.time()
-            write(p, context)
+            out = write(p, context)
             out = read(p)
             elapsed = round((time.time() - start_time) * 1000)
-            rcode = parse_basic_output_z3(out)
+#           print(elapsed)
+            if solver_type == "z3":
+                rcode = parse_basic_output_z3(out)
+            elif solver_type == "cvc":
+                rcode = parse_basic_output_cvc(out, elapsed > exp.timeout * 1000)
 
             if rcode == "error":
                 print("[INFO] solver error: ", out)
+#           print(rcode)
 
             reports[i] = (rcode, elapsed, out)
 
@@ -165,7 +210,7 @@ class Task:
         else:
             mutant_path = self.origin_path
             
-        self.run_z3(mutant_path)
+        self.run_solver(mutant_path)
 
 def print_eta(elapsed, cur_size, init_size):
     from datetime import timedelta

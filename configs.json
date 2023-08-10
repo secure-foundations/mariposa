@@ -145,6 +145,38 @@
         "num_procs": 7,
         "db_path": "./data/opaque.db",
         "db_mode": "update"
+      },
+      {
+        "name": "verus_cvc",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed",
+          "quake"
+        ],
+        "keep_mutants": false,
+        "num_mutants": 60,
+        "init_seed": "",
+        "exp_timeout": 30,
+        "num_procs": 7,
+        "db_path": "./data/verus_cvc_test.db",
+        "db_mode": "update"
+      },
+      {
+        "name": "verus_cvc_no_muts",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed",
+          "quake"
+        ],
+        "keep_mutants": false,
+        "num_mutants": 0,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/verus_cvc/verus_cvc_no_muts.db",
+        "db_mode": "update"
       }
     ],
     "analyzers": [
@@ -299,12 +331,6 @@
         "artifact_solver_name": "z3_4_12_1"
       },
       {
-        "name": "splinter",
-        "framework": "verus",
-        "clean_dir": "data/splinter_clean",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
         "name": "nr_closed",
         "framework": "verus",
         "clean_dir": "data/nr_closed_clean",
@@ -333,6 +359,18 @@
         "framework": "dafny",
         "clean_dir": "data/d_lvbkv_closed",
         "artifact_solver_name": "z3_4_8_5"
+      },
+      {
+        "name": "splinter",
+        "framework": "verus",
+        "clean_dir": "data/splinter",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "verus_cvc_splinter",
+        "framework": "verus",
+        "clean_dir": "data/splinter-cvc",
+        "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "d_lvbkv_opened",
