@@ -80,13 +80,13 @@ def dump_multi_status(project, solver, exp, ana):
     print("total queries:", len(rows))
 
     pp_table = [["category", "count", "percentage"]]
-    for cat in {Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE}:
+    for cat in [Stability.STABLE, Stability.INCONCLUSIVE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
         pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
 
     print(tabulate(pp_table, tablefmt="github"))
     print("")
     print("listing unstable queries...")
-
+    return
     for row in rows:
         query = row[0]
         if query not in items[Stability.UNSTABLE]:
