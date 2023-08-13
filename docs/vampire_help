@@ -1,1 +1,1345 @@
-{"payload":{"allShortcutsEnabled":false,"fileTree":{"docs":{"items":[{"name":"dafny","path":"docs/dafny","contentType":"directory"},{"name":"fstar","path":"docs/fstar","contentType":"directory"},{"name":"verus","path":"docs/verus","contentType":"directory"},{"name":"cvc5_help","path":"docs/cvc5_help","contentType":"file"},{"name":"vampire_help","path":"docs/vampire_help","contentType":"file"},{"name":"z3_help","path":"docs/z3_help","contentType":"file"}],"totalCount":6},"":{"items":[{"name":"data","path":"data","contentType":"directory"},{"name":"docs","path":"docs","contentType":"directory"},{"name":"fig","path":"fig","contentType":"directory"},{"name":"scripts","path":"scripts","contentType":"directory"},{"name":"smt2utils","path":"smt2utils","contentType":"directory"},{"name":"solvers","path":"solvers","contentType":"directory"},{"name":"src","path":"src","contentType":"directory"},{"name":".gitignore","path":".gitignore","contentType":"file"},{"name":"Cargo.lock","path":"Cargo.lock","contentType":"file"},{"name":"Cargo.toml","path":"Cargo.toml","contentType":"file"},{"name":"LICENSE","path":"LICENSE","contentType":"file"},{"name":"README.md","path":"README.md","contentType":"file"},{"name":"configs.json","path":"configs.json","contentType":"file"},{"name":"requirements.txt","path":"requirements.txt","contentType":"file"}],"totalCount":14}},"fileTreeProcessingTime":2.630229,"foldersToFetch":[],"reducedMotionEnabled":null,"repo":{"id":563042580,"defaultBranch":"master","name":"mariposa","ownerLogin":"secure-foundations","currentUserCanPush":false,"isFork":false,"isEmpty":false,"createdAt":"2022-11-07T19:39:40.000Z","ownerAvatar":"https://avatars.githubusercontent.com/u/32856639?v=4","public":true,"private":false,"isOrgOwned":true},"refInfo":{"name":"182b553066d35ccafad4f1b909499288e3a63777","listCacheKey":"v0:1691698888.0","canEdit":false,"refType":"tree","currentOid":"182b553066d35ccafad4f1b909499288e3a63777"},"path":"docs/vampire_help","currentUser":null,"blob":{"rawLines":["","************************************************************","*************************  Global  *************************","************************************************************","","--cores","\tWhen running in portfolio modes (including casc or smtcomp modes) specify ","\tthe number of cores, set to 0 to use maximum","\tdefault: 1","--instruction_limit (-i)","\tLimit the number (in millions) of executed instructions (excluding the ","\tkernel ones).","\tdefault: 0","--memory_limit (-m)","\tMemory limit in MB","\tdefault: 131072","--mode","\tSelect the mode of operation. Choices are:","\t  -vampire: the standard mode of operation for first-order theorem proving","\t  -portfolio: a portfolio mode running a specified schedule (see schedule)","\t  -casc, casc_sat, smtcomp - like portfolio mode, with competition specific","\t     presets for schedule, etc.","\t  -preprocess,axiom_selection,clausify: modes for producing output","\t      for other solvers.","\t  -tpreprocess,tclausify: output modes for theory input (clauses are quantified","\t      with sort information).","\t  -output,profile: output information about the problem","\tSome modes are not currently maintained (get in touch if interested):","\t  -bpa: perform bound propagation","\t  -consequence_elimination: perform consequence elimination","\t  -random_strategy: attempts to randomize the option values","\t","\tdefault: vampire","\tvalues: axiom_selection,casc,casc_hol,casc_sat,casc_ltb,clausify,consequence_elimination,","\t        model_check,output,portfolio,preprocess,preprocess2,profile,","\t        random_strategy,smtcomp,spider,tclausify,tpreprocess,vampire","--randomize_seed_for_portfolio_workers","\tIn portfolio mode, let each worker process start from its own independent ","\trandom seed.","\tdefault: on","--schedule (-sched)","\tSchedule to be run by the portfolio mode. casc and smtcomp usually point ","\tto the most recent schedule in that category. file loads the schedule from ","\ta file specified in --schedule_file. Note that some old schedules may contain ","\toption values that are no longer supported - see ignore_missing.","\tdefault: casc","\tvalues: casc,casc_2023,casc_2019,casc_sat,casc_hol_2023,casc_sat_2019,","\t        casc_hol_2020,file,induction,integer_induction,ltb_default_2017,","\t        ltb_hh4_2017,ltb_hll_2017,ltb_isa_2017,ltb_mzr_2017,smtcomp,","\t        smtcomp_2018,snake_tptp_uns,snake_tptp_sat,struct_induction","--schedule_file","\tPath to the input schedule file. Each line contains an encoded strategy. ","\tDisabled unless `--schedule file` is set.","\tdefault: <empty>","--slowness","\tThe factor by which is multiplied the time limit of each configuration ","\tin casc/casc_sat/smtcomp/portfolio mode","\tdefault: 1","--superposition (-sup)","\tControl superposition. Turning off this core inference leads to an incomplete ","\tcalculus on equational problems.","\tdefault: on","--time_limit (-t)","\tTime limit in wall clock seconds, you can use d,s,m,h,D suffixes also i.e. ","\t60s, 5m. Setting it to 0 effectively gives no time limit.","\tdefault: 600d","","************************************************************","**********************  Higher-order  **********************","************************************************************","","--add_comb_axioms (-aca)","\tAdd combinator axioms","\tdefault: off","--add_proxy_axioms (-apa)","\tAdd logical proxy axioms","\tdefault: off","--bool_eq_trick (-bet)","\tReplace an equality between boolean terms such as: t = s with a disequality ","\tt != vnot(s) The theory is that this can help with EqRes","\tdefault: off","--cases (-c)","\tAlternative to FOOL Paramodulation that replaces all Boolean subterms in ","\tone step","\tdefault: off","--cases_simp (-cs)","\tFOOL Paramodulation with two conclusion as a simplification","\tdefault: off","--choice_ax (-cha)","\tAdds the cnf form of the Hilbert choice axiom","\tdefault: off","--choice_reasoning (-chr)","\tReason about choice by adding relevant instances of the axiom","\tdefault: off","--cnf_on_the_fly (-cnfonf)","\tVarious options linked to clausification on the fly","\tdefault: eager","\tvalues: eager,lazy_gen,lazy_simp,lazy_not_gen,lazy_not_gen_be_off,","\t        lazy_not_be_gen,off","--combinatory_sup (-csup)","\tSwitches on a specific ordering and that orients combinator axioms left-right. ","\tAlso turns on a number of special inference rules","\tdefault: off","--complex_bool_reasoning (-cbe)","\tSwitches on primitive instantiation and elimination of Leibniz equality","\tdefault: on","--complex_var_cond (-cvc)","\tUse the more complex variable condition provided in the SKIKBO paper.","\tMore terms are comparable with this ordering, but it has worst caseexponential ","\tcomplexity","\tdefault: off","--equality_to_equiv (-e2e)","\tEquality between boolean terms changed to equivalence ","\tt1 : $o = t2 : $o is changed to t1 <=> t2","\tdefault: off","--func_ext (-fe)","\tDeal with extensionality using abstraction, axiom or neither","\tdefault: abstraction","\tvalues: off,axiom,abstraction","--injectivity (-inj)","\tAttempts to identify injective functions and postulates a left-inverse","\tdefault: off","--lam_free_hol (-lfh)","\tReason about lambda-free hol. See paper by Vukmirovic et al.","\tdefault: off","--max_XX_narrows (-mXXn)","\tMaximum number of BXX', CXX' and SXX' narrows thatcan be carried out 0 ","\tmeans that there is no limit. ","\tdefault: 0","--narrow (-narr)","\tControls the set of combinator equations to use in narrowing","\tdefault: all","\tvalues: all,sk,ski,off","--new_taut_del (-ntd)","\tDelete clauses with literals of the form false != true or t = true \\/ t ","\t= false","\tdefault: off","--pragmatic (-prag)","\tModifies various parameters to help Vampire solve 'hard' higher-order","\tdefault: off","--prim_inst_set (-piset)","\tControls the set of equations to use in primitive instantiation","\tdefault: all_but_not_eq","\tvalues: all,all_but_not_eq,false_true_not,small_set","--priority_to_long_reducts (-ptlr)","\tgive priority to clauses produced by lengthy reductions","\tdefault: off","","************************************************************","**************************  Help  **************************","************************************************************","","--bad_option","\tWhat should be done if a bad option value (wrt hard and soft constraints) ","\tis encountered:","\t - hard: will cause a user error","\t - soft: will only report the error (unless it is unsafe)","\t - forced: <under development> ","\t - off: will ignore safe errors","\tNote that unsafe errors will always lead to a user error","\tdefault: soft","\tvalues: hard,forced,off,soft","--explain_option (-explain)","\tUse to explain a single option i.e. -explain explain","\tdefault: <empty>","--help (-h)","\tDisplay the help message","\tdefault: off","--show_options","\tList all available options","\tdefault: off","","*************************************************************","**************************  Input  **************************","*************************************************************","","--forbidden_options","\tIf some of the specified options are set to a forbidden state, vampire ","\twill fail to start, or in portfolio modes it will skip such strategies. ","\tThe expected syntax is <opt1>=<val1>:<opt2>:<val2>:...:<optn>=<valN>","\tdefault: <empty>","--forced_options","\tOptions in the format <opt1>=<val1>:<opt2>=<val2>:...:<optn>=<valN> that ","\toverride the option values set by other means (also inside portfolio mode ","\tstrategies)","\tdefault: <empty>","--guess_the_goal (-gtg)","\tUse heuristics to guess formulas that correspond to the goal. Doesn't really ","\tmake sense if there is already a goal but it will still do something. This ","\tis really designed for use with SMTLIB problems that don't have goals","\tdefault: off","\tvalues: off,all,exists_top,exists_all,exists_sym,position","--guess_the_goal_limit (-gtgl)","\tThe maximum number of input units a symbol appears for it to be considered ","\tin a goal","\tdefault: 1","--ignore_unrecognized_logic (-iul)","\tTry proof search anyways, if vampire would throw an \"unrecognized logic\" ","\terror otherwise.","\tdefault: off","--include","\tPath prefix for the 'include' TPTP directive","\tdefault: <empty>","--input_syntax","\tInput syntax. Historic input syntaxes have been removed as they are not ","\tactively maintained. Contact developers for help with these.","\tdefault: auto","\tvalues: smtlib2,tptp,auto","--random_seed","\tSome parts of vampire use random numbers. This seed allows for reproducibility ","\tof results. By default the seed is not changed.","\tdefault: 1","--random_strategy_seed","\tSets the seed for generating random strategies. This option necessary because ","\t--random_seed <value> will be included as fixed value in the generated ","\trandom strategy, hence won't have any effect on the random strategy generation. ","\tThe default value is derived from the current time.","\tdefault: 1691163110","","*************************************************************","**********************  Preprocessing  **********************","*************************************************************","","--blocked_clause_elimination (-bce)","\tEliminate blocked clauses after clausification.","\tdefault: off","--equality_proxy (-ep)","\tApplies the equality proxy transformation to the problem. It works as follows:","\t - All literals s=t are replaced by E(s,t)","\t - All literals s!=t are replaced by ~E(s,t)","\t - If S the symmetry clause ~E(x,y) \\/ E(y,x) is added","\t - If T the transitivity clause ~E(x,y) \\/ ~E(y,z) \\/ E(x,z) is added","\t - If C the congruence clauses are added as follows:","\t    for predicates p that are not E or equality add","\t     ~E(x1,y1) \\/ ... \\/ ~E(xN,yN) \\/ ~p(x1,...,xN) \\/ p(y1,...,yN)","\t    for non-constant functions f add","\t     ~E(x1,y1) \\/ ... \\/ ~E(xN,yN) \\/ E(f(x1,...,xN),f(y1,...,yN))","\t R stands for reflexivity","\tdefault: off","\tvalues: R,RS,RST,RSTC,off","--equality_resolution_with_deletion (-erd)","\tPerform equality resolution with deletion.","\tdefault: on","--function_definition_elimination (-fde)","\tAttempts to eliminate function definitions. A function definition is a ","\tunit clause of the form f(x1,..,xn) = t where x1,..,xn are the pairwise ","\tdistinct free variables of t and f does not appear in t. If 'all', definitions ","\tare eliminated by replacing every occurrence of f(s1,..,sn) by t{x1 -> ","\ts1, .., xn -> sn}. If 'unused' only unused definitions are removed.","\tdefault: all","\tvalues: all,none,unused","--general_splitting (-gsp)","\tSplits clauses in order to reduce number of different variables in each ","\tclause. A clause C[X] \\/ D[Y] with subclauses C and D over non-equal sets ","\tof variables X and Y can be split into S(Z) \\/ C[X] and ~S(Z) \\/ D[Y] where ","\tZ is the intersection of X and Y.","\tdefault: off","--ignore_conjecture_in_preprocessing (-icip)","\tMake sure we do not delete the conjecture in preprocessing even if it can ","\tbe deleted.","\tdefault: off","--inequality_splitting (-ins)","\tWhen greater than zero, ins defines a weight threshold w such that any ","\tclause C \\/ s!=t where s (or conversely t) is ground and has weight greater ","\tor equal than w is replaced by C \\/ p(s) with the additional unit clause ","\t~p(t) being added for fresh predicate p.","\tdefault: 0","--inline_let (-ile)","\tAlways inline let-expressions.","\tdefault: off","--mono_ep (-mep)","\tUse the monomorphic version of equality proxy transformation.","\tdefault: on","--naming (-nm)","\tIntroduce names for subformulas. Given a subformula F(x1,..,xk) of formula ","\tG a new predicate symbol is introduced as a name for F(x1,..,xk) by adding ","\tthe axiom n(x1,..,xk) <=> F(x1,..,xk) and replacing F(x1,..,xk) with n(x1,..,xk) ","\tin G. The value indicates how many times a subformula must be used before ","\tit is named.","\tdefault: 8","--newcnf (-newcnf)","\tUse NewCNF algorithm to do naming, preprocessing and clausification.","\tdefault: off","--normalize (-norm)","\tNormalize the problem so that the ordering of clauses etc does not effect ","\tproof search.","\tdefault: off","--random_polarities (-rp)","\tAs part of preprocessing, randomly (though consistently) flip polarities ","\tof non-equality predicates in the whole CNF.","\tdefault: off","--shuffle_input (-si)","\tRandomly shuffle the input problem. (Runs after and thus destroys normalize.)","\tdefault: off","--sine_depth (-sd)","\tLimit number of iterations of the transitive closure algorithm that selects ","\tformulas based on SInE's D-relation (see SInE description). 0 means no ","\tlimit, 1 is a maximal limit (least selected axioms), 2 allows two iterations, ","\tetc...","\tdefault: 0","--sine_generality_threshold (-sgt)","\tGenerality of a symbol is the number of input formulas in which a symbol ","\tappears. If the generality of a symbol is smaller than the threshold, it ","\tis always added into the D-relation with formulas in which it appears.","\tdefault: 0","--sine_selection (-ss)","\tIf 'axioms', all formulas that are not annotated as 'axiom' (i.e. conjectures ","\tand hypotheses) are initially selected, and the SInE selection is performed ","\ton those annotated as 'axiom'. If 'included', all formulas that are directly ","\tin the problem file are initially selected, and the SInE selection is performed ","\ton formulas from included files. The 'included' value corresponds to the ","\tbehaviour of the original SInE implementation.","\tdefault: off","\tvalues: axioms,included,off","--sine_tolerance (-st)","\tSInE tolerance parameter (sometimes referred to as 'benevolence')","\tdefault: 1","--sos (-sos)","\tSet of support strategy. All formulas annotated as axioms are put directly ","\tamong active clauses, without performing any inferences between them. If ","\tall, select all literals of set-of-support clauses, otherwise use the default ","\tliteral selector. If theory then only apply to theory axioms introduced ","\tby vampire (all literals are selected).","\tdefault: off","\tvalues: all,off,on,theory","--sos_theory_limit (-sstl)","\tWhen sos=theory, limit the depth of descendants a theory axiom can have.","\tdefault: 0","--theory_axioms (-tha)","\tInclude theory axioms for detected interpreted symbols","\tdefault: on","\tvalues: on,off,some","--theory_flattening (-thf)","\tFlatten clauses to separate theory and non-theory parts in the input. This ","\tis often quickly undone in proof search.","\tdefault: off","--unused_predicate_definition_removal (-updr)","\tAttempt to remove predicate definitions. A predicate definition is a formula ","\tof the form ![X1,..,Xn] : (p(X1,..,XN) <=> F) where p is not equality and ","\tdoes not occur in F and X1,..,XN are the free variables of F. If p has ","\tonly positive (negative) occurrences then <=> in the definition can be ","\treplaced by => (<=). If p does not occur in the rest of the problem the ","\tdefinition can be removed.","\tdefault: on","","************************************************************","***********************  Saturation  ***********************","************************************************************","","--activation_limit (-al)","\tTerminate saturation after this many iterations of the main loop. 0 means ","\tno limit.","\tdefault: 0","--age_weight_ratio (-awr)","\tRatio in which clauses are being selected for activation i.e. a:w means ","\tthat for every a clauses selected based on age there will be w selected ","\tbased on weight.","\tdefault left: 1","\tdefault right: 1","--age_weight_ratio_shape (-awrs)","\tHow to change the age/weight ratio during proof search.","\tdefault: constant","\tvalues: constant,decay,converge","--age_weight_ratio_shape_frequency (-awrsf)","\tHow frequently the age/weight ratio shape is to change: i.e. if set to ","\t'decay' at a frequency of 100, the age/weight ratio will change every 100 ","\tage/weight choices.","\tdefault: 100","--increased_numeral_weight (-inw)","\tThis option only applies if the problem has interpreted numbers. The weight ","\tof integer constants depends on the logarithm of their absolute value (instead ","\tof being 1)","\tdefault: off","--introduced_symbol_precedence (-isp)","\tDecides where to place symbols introduced during proof search in the symbol ","\tprecedence","\tdefault: top","\tvalues: top,bottom","--literal_comparison_mode (-lcm)","\tVampire uses term orderings which use an ordering of predicates. Standard ","\tplaces equality (and certain other special predicates) first and all others ","\tsecond. Predicate depends on symbol precedence (see symbol_precedence). ","\tReverse reverses the order.","\tdefault: standard","\tvalues: predicate,reverse,standard","--literal_maximality_aftercheck (-lma)","\tFor efficiency we perform maximality checks before applying substitutions. ","\tSometimes this can lead to generating more clauses than needed for completeness. ","\tSet this on to add the checks afterwards as well.","\tdefault: off","--lookahaed_delay (-lsd)","\tDelay the use of lookahead selection by this many selections the idea is ","\tthat lookahead selection may behave erratically at the start","\tdefault: 0","--lrs_estimate_correction_coef (-lecc)","\tMake lrs more (<1.0) or less (>1.0) agressive by multiplying by this coef ","\tits estimate of how many clauses are still reachable.","\tdefault: 1","--nongoal_weight_coefficient (-nwc)","\tcoefficient that will multiply the weight of theory clauses (those marked ","\tas 'axiom' in TPTP)","\tdefault: 1","--positive_literal_split_queue (-plsq)","\tTurn on experiments: clause selection with multiple queues containing different ","\tclauses (split by number of positive literals in clause)","\tdefault: off","--positive_literal_split_queue_cutoffs (-plsqc)","\tThe cutoff-values for the positive-literal-split-queues (the cutoff value ","\tfor the last queue is omitted, since it has to be infinity).","\tdefault: 0","--positive_literal_split_queue_layered_arrangement (-plsql)","\tIf turned on, use a layered arrangement to split clauses into queues. Otherwise ","\tuse a tammet-style-arrangement.","\tdefault: off","--positive_literal_split_queue_ratios (-plsqr)","\tThe ratios for picking clauses from the positive-literal-split-queues using ","\tweighted round robin. If a queue is empty, the clause will be picked from ","\tthe next non-empty queue to the right. Note that this option implicitly ","\talso sets the number of queues.","\tdefault: 1,4","--restrict_nwc_to_goal_constants (-rnwc)","\trestrict nongoal_weight_coefficient to those containing goal constants","\tdefault: off","--saturation_algorithm (-sa)","\tSelect the saturation algorithm:","\t - discount:","\t - otter:","\t - limited resource:","\t - instance generation: a simple implementation of instantiation calculus","\t    (global_subsumption, unit_resulting_resolution and age_weight_ratio)","\t - fmb : finite model building for satisfiable problems.","\t - z3 : pass the preprocessed problem to z3, will terminate if the resulting ","\tproblem is not ground.","\tinst_gen, z3 and fmb aren't influenced by options for the saturation algorithm, ","\tapart from those under the relevant heading","\tdefault: lrs","\tvalues: discount,fmb,inst_gen,lrs,otter,z3","--selection (-s)","\tSelection methods 2,3,4,10,11 are complete by virtue of extending Maximal ","\ti.e. they select the best among maximal. Methods 1002,1003,1004,1010,1011 ","\trelax this restriction and are therefore not complete.","\t 0     - Total (select everything)","\t 1     - Maximal","\t 2     - ColoredFirst, MaximalSize then Lexicographical","\t 3     - ColoredFirst, NoPositiveEquality, LeastTopLevelVariables,","\t          LeastDistinctVariables then Lexicographical","\t 4     - ColoredFirst, NoPositiveEquality, LeastTopLevelVariables,","\t          LeastVariables, MaximalSize then Lexicographical","\t 10    - ColoredFirst, NegativeEquality, MaximalSize, Negative then Lexicographical","\t 11    - Lookahead","\t 666   - Random","\t 1002  - Incomplete version of 2","\t 1003  - Incomplete version of 3","\t 1004  - Incomplete version of 4","\t 1010  - Incomplete version of 10","\t 1011  - Incomplete version of 11","\t 1666  - Incomplete version of 666","\tOr negated, which means that reversePolarity is true i.e. for selection ","\twe treat all negative non-equality literals as positive and vice versa ","\t(can only apply to non-equality literals).","\t","\tdefault: 10","--sine_level_split_queue (-slsq)","\tTurn on experiments: clause selection with multiple queues containing different ","\tclauses (split by sine-level of clause)","\tdefault: off","--sine_level_split_queue_cutoffs (-slsqc)","\tThe cutoff-values for the sine-level-split-queues (the cutoff value for ","\tthe last queue is omitted, since it has to be infinity).","\tdefault: 0","--sine_level_split_queue_layered_arrangement (-slsql)","\tIf turned on, use a layered arrangement to split clauses into queues. Otherwise ","\tuse a tammet-style-arrangement.","\tdefault: on","--sine_level_split_queue_ratios (-slsqr)","\tThe ratios for picking clauses from the sine-level-split-queues using weighted ","\tround robin. If a queue is empty, the clause will be picked from the next ","\tnon-empty queue to the right. Note that this option implicitly also sets ","\tthe number of queues.","\tdefault: 1,1","--sine_to_age (-s2a)","\tUse SInE levels to postpone introducing clauses more distant from the conjecture ","\tto proof search by artificially making them younger (age := sine_level).","\tdefault: off","--sine_to_age_generality_threshold (-s2agt)","\tLike sine_generality_threshold but influences sine_to_age, sine_to_pred_levels, ","\tand sine_level_split_queue rather than sine_selection.","\tdefault: 0","--sine_to_age_tolerance (-s2at)","\tLike sine_tolerance but influences sine_to_age, sine_to_pred_levels, and ","\tsine_level_split_queue rather than sine_selection.","\tdefault: 1","--sine_to_pred_levels (-s2pl)","\tAssign levels to predicate symbols as they are used to trigger axioms during ","\tSInE computation. Then use them as predicateLevels determining the ordering. ","\t'on' means conjecture symbols are larger, 'no' means the opposite. (equality ","\tkeeps its standard lowest level).","\tdefault: off","\tvalues: no,off,on","--symbol_precedence (-sp)","\tVampire uses term orderings which require a precedence relation between ","\tsymbols.","\tArity orders symbols by their arity (and reverse_arity takes the reverse ","\tof this) and occurence orders symbols by the order they appear in the problem. ","\tThen we have a few precedence generating schemes adopted from E: frequency ","\t- sort by frequency making rare symbols large, reverse does the opposite, ","\t(For the weighted versions, each symbol occurence counts as many times ","\tas is the length of the clause in which it occurs.) unary_first is like ","\tarity, except that unary symbols are maximal (and ties are broken by frequency), ","\tunary_frequency is like frequency, except that unary symbols are maximal, ","\tconst_max makes constants the largest, then falls back to arity, const_min ","\tmakes constants the smallest, then falls back to reverse_arity, const_frequency ","\tmakes constants the smallest, then falls back to frequency.","\tdefault: arity","\tvalues: arity,occurrence,reverse_arity,unary_first,const_max,const_min,scramble,","\t        frequency,unary_frequency,const_frequency,reverse_frequency,","\t        weighted_frequency,reverse_weighted_frequency","--symbol_precedence_boost (-spb)","\tBoost the symbol precedence of symbols occurring in certain kinds of clauses ","\tin the input.","\tAdditionally, non_intro/intro suppress/boost the precedence of symbols ","\tintroduced during preprocessing (i.e., mainly, the naming predicates and ","\tthe skolems).","\tdefault: none","\tvalues: none,goal,units,goal_then_units,non_intro,intro","--term_ordering (-to)","\tThe term ordering used by Vampire to orient equations and order literals","\tdefault: kbo","\tvalues: kbo,lpo","--theory_split_queue (-thsq)","\tTurn on clause selection using multiple queues containing different clauses ","\t(split by amount of theory reasoning)","\tdefault: off","--theory_split_queue_cutoffs (-thsqc)","\tThe cutoff-values for the split-queues (the cutoff value for the last queue ","\thas to be omitted, as it is always infinity). Any split-queue contains ","\tall clauses which are assigned a feature-value less or equal to the cutoff-value ","\tof the queue. If no custom value for this option is set, the implementation ","\twill use cutoffs 0,4*d,10*d,infinity (where d denotes the theory split ","\tqueue expected ratio denominator).","\tdefault: 0","--theory_split_queue_expected_ratio_denom (-thsqd)","\tThe denominator n such that we expect the final proof to have a ratio of ","\ttheory-axioms to all-axioms of 1/n.","\tdefault: 8","--theory_split_queue_layered_arrangement (-thsql)","\tIf turned on, use a layered arrangement to split clauses into queues. Otherwise ","\tuse a tammet-style-arrangement.","\tdefault: on","--theory_split_queue_ratios (-thsqr)","\tThe ratios for picking clauses from the split-queues using weighted round ","\trobin. If a queue is empty, the clause will be picked from the next non-empty ","\tqueue to the right. Note that this option implicitly also sets the number ","\tof queues.","\tdefault: 1,1","","************************************************************","**********************  LRS Specific  **********************","************************************************************","","--lrs_first_time_check","\tPercentage of time limit at which the LRS algorithm will for the first ","\ttime estimate the number of reachable clauses.","\tdefault: 5","--lrs_weight_limit_only (-lwlo)","\tIf off, the lrs sets both age and weight limit according to clause reachability, ","\totherwise it sets the age limit to 0 and only the weight limit reflects ","\treachable clauses","\tdefault: off","--simulated_instruction_limit (-sil)","\tInstruction limit (in millions) of executed instructions for the purpose ","\tof reachability estimations of the LRS saturation algorithm (if 0, the ","\tactual instruction limit is used)","\tdefault: 0","--simulated_time_limit (-stl)","\tTime limit in seconds for the purpose of reachability estimations of the ","\tLRS saturation algorithm (if 0, the actual time limit is used)","\tdefault: 0d","","************************************************************","***********************  Inferences  ***********************","************************************************************","","--arithmetic_subterm_generalizations (-asg)","\t          Enables various generalization rules for arithmetic terms as ","\tdescribed in the paper Making Theory Reasoning Simpler ( https://easychair.org/publications/preprint/K2hb ","\t).           In some rare cases the conclusion may be not strictly simpler ","\tthan the hypothesis. With `force` we ignore these cases, violating the ","\tordering and just simplifying           anyways. With `cautious` we will ","\tgenerate a new clause instead of simplifying in these cases.","\tdefault: off","\tvalues: force,cautious,off","--backward_demodulation (-bd)","\tOriented rewriting of kept clauses by newly derived unit equalities","\ts = t     L[sθ] \\/ C","\t---------------------   where sθ > tθ (replaces RHS)","\t L[tθ] \\/ C","\t","\tdefault: all","\tvalues: all,off,preordered","--backward_subsumption (-bs)","\tPerform subsumption deletion of kept clauses by newly derived clauses. ","\tUnit_only means that the subsumption will be performed only by unit clauses","\tdefault: off","\tvalues: off,on,unit_only","--backward_subsumption_demodulation (-bsd)","\tPerform backward subsumption demodulation.","\tdefault: off","--backward_subsumption_demodulation_max_matches (-bsdmm)","\tMaximum number of multi-literal matches to consider in backward subsumption ","\tdemodulation. 0 means to try all matches (until first success).","\tdefault: 0","--backward_subsumption_resolution (-bsr)","\tPerform subsumption resolution on kept clauses using newly derived clauses. ","\tUnit_only means that the subsumption resolution will be performed only ","\tby unit clauses","\tdefault: off","\tvalues: off,on,unit_only","--binary_resolution (-br)","\tStandard binary resolution i.e.","\tC \\/ t     D \\/ s","\t---------------------","\t(C \\/ D)θ","\twhere θ = mgu(t,-s) and t selected","\tdefault: on","--cancellation (-canc)","\tEnables the rule cancellation around additions as described in the paper ","\tMaking Theory Reasoning Simpler ( https://easychair.org/publications/preprint/K2hb ","\t).                                 In some rare cases the conclusion may ","\tbe not strictly simpler than the hypothesis. With `force` we ignore these ","\tcases, violating the ordering and just simplifying                     ","\t            anyways. With `cautious` we will generate a new clause instead ","\tof simplifying in these cases.","\tdefault: off","\tvalues: force,cautious,off","--condensation (-cond)","\tPerform condensation. If 'fast' is specified, we only perform condensations ","\tthat are easy to check for.","\tdefault: off","\tvalues: fast,off,on","--demodulation_redundancy_check (-drc)","\tThe following cases of backward and forward demodulation do not preserve ","\tcompleteness:","\ts = t     s = t1 \\/ C \t s = t     s != t1 \\/ C","\t--------------------- \t ---------------------","\tt = t1 \\/ C \t\t t != t1 \\/ C","\twhere t > t1 and s = t > C (RHS replaced)","\tWith `on`, we check this condition and don't demodulate if we could violate ","\tcompleteness.","\tWith `encompass`, we treat demodulations (both forward and backward) as ","\tencompassment demodulations (as defined by Duarte and Korovin in 2022's ","\tIJCAR paper).","\tWith `off`, we skip the checks, save time, but become incomplete.","\tdefault: on","\tvalues: off,encompass,on","--equational_tautology_removal (-etr)","\tA reduction which uses congruence closure to remove logically valid clauses.","\tdefault: off","--extensionality_allow_pos_eq","\tIf extensionality resolution equals filter, this dictates whether we allow ","\tother positive equalities when recognising extensionality clauses","\tdefault: off","--extensionality_max_length","\tSets the maximum length (number of literals) an extensionality clause can ","\thave when doing recognition for extensionality resolution. If zero there ","\tis no maximum.","\tdefault: 0","--extensionality_resolution (-er)","\tTurns on the following inference rule:","\t  x=y \\/ C    s != t \\/ D","\t  -----------------------","\t  C{x → s, y → t} \\/ D","\tWhere s!=t is selected in s!=t \\/D and x=y \\/ C is a recognised as an extensionality ","\tclause - how clauses are recognised depends on the value of this option.","\tIf filter we attempt to recognise all extensionality clauses i.e. those ","\tthat have exactly one X=Y, no inequality of the same sort as X-Y (and optionally ","\tno equality except X=Y, see extensionality_allow_pos_eq).","\tIf known we only recognise a known set of extensionality clauses. At the ","\tmoment this includes the standard and subset-based formulations of the ","\tset extensionality axiom, as well as the array extensionality axiom.","\tIf tagged we only use formulas tagged as extensionality clauses.","\tdefault: off","\tvalues: filter,known,tagged,off","--fool_paramodulation (-foolp)","\tTurns on the following inference rule:","\t        C[s]","\t--------------------,","\tC[true] \\/ s = false","\twhere s is a boolean term that is not a variable, true or false, C[true] ","\tis the C clause with s substituted by true. This rule is needed for efficient ","\ttreatment of boolean terms.","\tdefault: off","--forward_demodulation (-fd)","\tOriented rewriting of newly derived clauses by kept unit equalities","\ts = t     L[sθ] \\/ C","\t---------------------  where sθ > tθ","\t L[tθ] \\/ C","\tIf 'preordered' is set, only equalities s = t where s > t are used for ","\trewriting.","\tdefault: all","\tvalues: all,off,preordered","--forward_literal_rewriting (-flr)","\tPerform forward literal rewriting.","\tdefault: off","--forward_subsumption (-fs)","\tPerform forward subsumption deletion.","\tdefault: on","--forward_subsumption_demodulation (-fsd)","\tPerform forward subsumption demodulation.","\tdefault: off","--forward_subsumption_demodulation_max_matches (-fsdmm)","\tMaximum number of multi-literal matches to consider in forward subsumption ","\tdemodulation. 0 means to try all matches (until first success).","\tdefault: 0","--forward_subsumption_resolution (-fsr)","\tPerform forward subsumption resolution.","\tdefault: on","--function_definition_introduction (-fdi)","\tIf non-zero, introduces function definitions with generalisation for repeated ","\tcompound terms in the active set. For example, if f(a, g(a)) and f(b, g(b)) ","\toccur frequently, we might define d(X) = f(X, g(X)). The parameter value ","\t'n' is a threshold: terms that occur more than n times have a definition ","\tcreated.","\tdefault: 0","--gaussian_variable_elimination (-gve)","\tEnable the immediate simplification \"Gaussian Variable Elimination\":","\t","\ts != t \\/ C[X] ","\t--------------  if s != t can be rewritten to X != r ","\t    C[r] ","\t","\tExample:","\t","\t6 * X0 != 2 * X1 | p(X0, X1)","\t-------------------------------","\t  p(2 * X1 / 6, X1)","\t","\t","\tFor a more detailed description see the paper Making Theory Reasoning Simpler ","\t( https://easychair.org/publications/preprint/K2hb ).           In some ","\trare cases the conclusion may be not strictly simpler than the hypothesis. ","\tWith `force` we ignore these cases, violating the ordering and just simplifying ","\t          anyways. With `cautious` we will generate a new clause instead ","\tof simplifying in these cases.","\tdefault: off","\tvalues: force,cautious,off","--global_subsumption (-gs)","\tPerform global subsumption. Use a set of groundings of generated clauses ","\tG to replace C \\/ L by C if the grounding of C is implied by G. A SAT solver ","\tis used for ground reasoning.","\tdefault: off","--global_subsumption_avatar_assumptions (-gsaa)","\tWhen running global subsumption and AVATAR at the same time we need to ","\tinclude information about the current AVATAR model. When this is off we ","\tignore clauses with AVATAR assumptions for GS. When it is from_current ","\twe assume the assumptions in the current clause. When it is full_model ","\twe assume the full model from AVATAR. See paper Global Subsumption Revisited ","\t(Briefly).","\tdefault: off","\tvalues: off,from_current,full_model","--global_subsumption_explicit_minim (-gsem)","\tno description provided!","\tdefault: randomized","\tvalues: off,on,randomized","--global_subsumption_sat_solver_power (-gsssp)","\tExplicitly minimize the result of global subsumption reduction.","\tdefault: propagation_only","\tvalues: propagation_only,full","--high_school (-hsm)","\tEnables high school education for vampire. (i.e.: sets -gve cautious, -asg ","\tcautious, -ev cautious, -canc cautious, -pum on )","\tdefault: off","--hyper_superposition","\tSimplifying inference that attempts to do several rewritings at once if ","\tit will eliminate literals of the original clause (now we aim just for ","\telimination by equality resolution)","\tdefault: off","--induction (-ind)","\tApply structural and/or integer induction on datatypes and integers.","\tdefault: none","\tvalues: none,struct,int,both","--induction_choice (-indc)","\tWhere to apply induction. Goal only applies to constants in goal, goal_plus ","\textends this with skolem constants introduced by induction. Consider using ","\tguess_the_goal for problems in SMTLIB as they do not come with a conjecture","\tdefault: all","\tvalues: all,goal,goal_plus","--induction_gen (-indgen)","\tApply induction with generalization (on both all & selected occurrences)","\tdefault: off","--induction_max_depth (-indmd)","\tSet maximum depth of induction where 0 means no max.","\tdefault: 0","--induction_neg_only (-indn)","\tOnly apply induction to negative literals","\tdefault: on","--induction_on_complex_terms (-indoct)","\tApply induction on complex (ground) terms vs. only on constants","\tdefault: off","--induction_strengthen_hypothesis (-indstrhyp)","\tStrengthen induction formulas with the remaining skolem constants replaced ","\twith universally quantified variables in hypotheses","\tdefault: off","--induction_unit_only (-indu)","\tOnly apply induction to unit clauses","\tdefault: on","--inner_rewriting (-irw)","\tC[t_1] | t1 != t2 ==> C[t_2] | t1 != t2 when t1>t2","\tdefault: off","--instantiation (-inst)","\tHeuristically instantiate variables. Often wastes a lot of effort. Consider ","\tusing thi instead.","\tdefault: off","\tvalues: off,on","--int_induction_default_bound (-intinddb)","\tAlways apply integer induction with bound 0","\tdefault: off","--int_induction_interval (-intindint)","\tWhether integer induction is applied over infinite or finite intervals, ","\tor both","\tdefault: both","\tvalues: infinite,finite,both","--int_induction_kind (-iik)","\tThe kind of integer induction applied","\tdefault: one","\tvalues: one,two,all","--int_induction_strictness_comp (-intindstcomp)","\tExclude induction term t/literal l combinations from integer induction.","\tInduction is not applied to _comparison_ literals l:","\t  - none: no exclusion","\t  - toplevel_not_in_other: t is a top-level argument of l,","\t    but it does not occur in the other argument of l","\t  - only_one_occurrence: t has only one occurrence in l","\t  - not_in_both: t does not occur in both arguments of l","\t  - always: induction on l is not allowed at all","\t","\tdefault: toplevel_not_in_other","\tvalues: none,toplevel_not_in_other,only_one_occurrence,not_in_both,always","--int_induction_strictness_eq (-intindsteq)","\tExclude induction term t/literal l combinations from integer induction.","\tInduction is not applied to _equality_ literals l:","\t  - none: no exclusion","\t  - toplevel_not_in_other: t is a top-level argument of l,","\t    but it does not occur in the other argument of l","\t  - only_one_occurrence: t has only one occurrence in l","\t  - not_in_both: t does not occur in both arguments of l","\t  - always: induction on l is not allowed at all","\t","\tdefault: none","\tvalues: none,toplevel_not_in_other,only_one_occurrence,not_in_both,always","--int_induction_strictness_term (-intindstterm)","\tExclude induction term t/literal l combinations from integer induction.","\tInduction is not applied to the induction term t:","\t  - none: no exclusion","\t  - interpreted_constant: t is an interpreted constant","\t  - no_skolems: t does not contain a skolem function","\tdefault: interpreted_constant","\tvalues: none,interpreted_constant,no_skolems","--max_induction_gen_subset_size (-indgenss)","\tSet maximum number of occurrences of the induction term to be generalized, ","\twhere 0 means no max. (Regular induction will be applied without this restriction.)","\tdefault: 3","--non_unit_induction (-nui)","\tInduction on certain clauses or clause sets instead of just unit clauses","\tdefault: off","--normalize_inequalities (-norm_ineq)","\tEnable normalizing of inequalities like s < t ==> 0 < t - s.","\tdefault: off","--push_unary_minus (-pum)","\tEnable the immediate simplifications:","\t -(t + s) ==> -t + -s","\t -(-t) ==> t","\t","\tdefault: off","--simultaneous_superposition (-sims)","\tRewrite the whole RHS clause during superposition, not just the target ","\tliteral.","\tdefault: on","--structural_induction_kind (-sik)","\tThe kind of structural induction applied","\tdefault: one","\tvalues: one,two,three,all","--superposition_from_variables (-sfv)","\tPerform superposition from variables.","\tdefault: on","--term_algebra_acyclicity (-tac)","\tActivates the cyclicity rule for term algebras (such as algebraic datatypes ","\tin SMT-LIB):","\t- off : the cyclicity rule is not enforced (this is sound but incomplete)","\t- axiom : the cyclicity rule is axiomatized with a transitive predicate ","\tdescribing the subterm relation over terms","\t- rule : the cyclicity rule is enforced by a specific hyper-resolution ","\trule","\t- light : the cyclicity rule is enforced by rule generating disequality ","\tbetween a term and its known subterms","\tdefault: off","\tvalues: off,axiom,rule,light","--term_algebra_rules (-tar)","\tActivates some rules that improve reasoning with term algebras (such as ","\talgebraic datatypes in SMT-LIB):","\tIf the problem does not contain any term algebra symbols, activating this ","\toptions has no effect","\t- distinctness rule:","\tf(...) = g(...) \\/ A","\t--------------------","\t          A         ","\twhere f and g are distinct term algebra constructors","\t- distinctness tautology deletion: clauses of the form f(...) ~= g(...) ","\t\\/ A are deleted","\t- injectivity rule:","\tf(s1 ... sn) = f(t1 ... tn) \\/ A","\t--------------------------------","\t         s1 = t1 \\/ A","\t               ...","\t         sn = tn \\/ A","\tdefault: on","--theory_instantiation (-thi)","\t","\tEnables theory instantiation rule: ","\tT[x_1, ..., x_n] \\/ C[x_1, ..., x_n]","\t-------------------------------------","\t           C[t_1, ..., t_n]          ","\twhere  ","\t -  T[x_1, ..., x_n] is a pure theory clause  ","\t - ~T[t_1, ...., t_n] is valid ","\t","\tThe rule uses an smt solver (i.e. z3 atm) to find t_1...t_n that satisfy ","\tthe requirement for the rule.","\t","\tThe different option values define the behaviour of which theory literals ","\tto select.","\t- all    : hmmm.. what could that mean?!","\t- neg_eq : only negative equalities","\t- strong : interpreted predicates, but no positive equalities","\t- overlap: all literals that contain variables that are also contained ","\tin a strong literal","\t- new    : deprecated","\t- full   : deprecated","\tdefault: off","\tvalues: off,all,strong,neg_eq,overlap,full,new","--unification_with_abstraction (-uwa)","\tDuring unification, if two terms s and t fail to unify we will introduce ","\ta constraint s!=t and carry on. For example, resolving p(1) \\/ C with ~p(a+2) ","\twould produce C \\/ 1 !=a+2. This is controlled by a check on the terms. ","\tThe expected use case is in theory reasoning. The possible values are:- ","\toff: do not introduce a constraint","\t- interpreted_only: only if s and t have interpreted top symbols","\t- one_side_interpreted: only if one of s or t have interpreted top symbols","\t- one_side_constant: only if one of s or t is an interpreted constant (e.g. ","\ta number)","\t- all: always apply","\t- ground: only if both s and t are ground","\tSee Unification with Abstraction and Theory Instantiation in Saturation-Based ","\tReasoning for further details.","\tdefault: off","\tvalues: off,interpreted_only,one_side_interpreted,one_side_constant,all,","\t        ground","--unit_resulting_resolution (-urr)","\tUses unit resulting resolution only to derive empty clauses (may be useful ","\tfor splitting)","\tdefault: off","\tvalues: ec_only,off,on","--use_ac_eval (-uace)","\tEvaluate associative and commutative operators e.g. + and *.","\tdefault: on","","************************************************************","*************************  AVATAR  *************************","************************************************************","","--avatar (-av)","\tUse AVATAR splitting.","\tdefault: on","--avatar_add_complementary (-aac)","\tno description provided!","\tdefault: ground","\tvalues: ground,none","--avatar_buffered_solver (-abs)","\tAdded buffering functionality to the SAT solver used in AVATAR.","\tdefault: off","--avatar_congruence_closure (-acc)","\tUse a congruence closure decision procedure on top of the AVATAR SAT solver. ","\tThis ensures that models produced by AVATAR satisfy the theory of uninterpreted ","\tfunctions.","\tdefault: off","\tvalues: model,off,on","--avatar_delete_deactivated (-add)","\tno description provided!","\tdefault: on","\tvalues: on,large,off","--avatar_eager_removal (-aer)","\tIf a component was in the model and then becomes 'don't care' eagerly remove ","\tthat component from the first-order solver. Note: only has any impact when ","\tamm is used.","\tdefault: on","--avatar_fast_restart (-afr)","\tno description provided!","\tdefault: off","--avatar_flush_period (-afp)","\tafter given number of generated clauses without deriving an empty clause, ","\tthe splitting component selection is shuffled. If equal to zero, shuffling ","\tis never performed.","\tdefault: 0","--avatar_flush_quotient (-afq)","\tafter each flush, the avatar_flush_period is multiplied by the quotient","\tdefault: 1.5","--avatar_literal_polarity_advice (-alpa)","\tOverride SAT-solver's default polarity/phase setting for variables abstracting ","\tclause components.","\tdefault: none","\tvalues: false,true,none,random","--avatar_minimize_model (-amm)","\tMinimize the SAT-solver model by replacing concrete values with don't-cares ","\tprovided <all> the sat clauses (or only the split clauses with <sco>) remain ","\tprovably satisfied by the partial model.","\tdefault: all","\tvalues: off,sco,all","--avatar_nonsplittable_components (-anc)","\tDecide what to do with a nonsplittable component:","\t  -known: SAT clauses will be learnt from non-splittable clauses that have ","\tcorresponding components (if there is a component C with name SAT l, clause ","\tC | {l1,..ln} will give SAT clause ~l1 \\/ … \\/ ~ln \\/ l). When we add ","\tthe sat clause, we discard the original FO clause C | {l1,..ln} and let ","\tthe component selection update model, possibly adding the component clause ","\tC | {l}.","\t  -all: like known, except when we see a non-splittable clause that doesn't ","\thave a name, we introduce the name for it.","\t  -all_dependent: like all, but we don't introduce names for non-splittable ","\tclauses that don't depend on any components","\tdefault: known","\tvalues: all,all_dependent,known,none","--avatar_split_queue (-avsq)","\tTurn on experiments: clause selection with multiple queues containing different ","\tclauses (split by amount of avatar-split-set-size)","\tdefault: off","--avatar_split_queue_cutoffs (-avsqc)","\tThe cutoff-values for the avatar-split-queues (the cutoff value for the ","\tlast queue is omitted, since it has to be infinity).","\tdefault: 0","--avatar_split_queue_layered_arrangement (-avsql)","\tIf turned on, use a layered arrangement to split clauses into queues. Otherwise ","\tuse a tammet-style-arrangement.","\tdefault: off","--avatar_split_queue_ratios (-avsqr)","\tThe ratios for picking clauses from the split-queues using weighted round ","\trobin. If a queue is empty, the clause will be picked from the next non-empty ","\tqueue to the right. Note that this option implicitly also sets the number ","\tof queues.","\tdefault: 1,1","--avatar_turn_off_time_frac (-atotf)","\tStop splitting after the specified fraction of the overall time has passed ","\t(the default 1.0 means AVATAR runs until the end).","\t(the remaining time AVATAR is still switching branches and communicating ","\twith the SAT solver,","\tbut not introducing new splits anymore. This fights the theoretical possibility ","\tof AVATAR's dynamic incompleteness.)","\tdefault: 1","--cc_unsat_cores (-ccuc)","\tno description provided!","\tdefault: all","\tvalues: first,small_ones,all","--nonliterals_in_clause_weight (-nicw)","\tNon-literal parts of clauses (such as its split history) will also contribute ","\tto the weight","\tdefault: off","--split_at_activation (-sac)","\tSplit a clause when it is activated, default is to split when it is processed","\tdefault: off","","*************************************************************","***********************  SAT Solving  ***********************","*************************************************************","","--sat_fallback_for_smt (-sffsmt)","\tIf using z3 run a sat solver alongside to use if the smt solver returns ","\tunknown at any point","\tdefault: off","--sat_solver (-sas)","\tSelect the SAT solver to be used throughout the solver. This will be used ","\tin AVATAR (for splitting) when the saturation algorithm is discount,lrs ","\tor otter and in instance generation for selection and global subsumption.","\tdefault: minisat","\tvalues: minisat,z3","","*************************************************************","******************  Finite Model Building  ******************","*************************************************************","","--fmb_adjust_sorts (-fmbas)","\tDetect monotonic sorts. If <expand> then expand monotonic subsorts into ","\tproper sorts. If <group> then collapse monotonic sorts into a single sort. ","\tIf <predicate> then introduce sort predicates for non-monotonic sorts and ","\tcollapse all sorts into one. If <function> then introduce sort functions ","\tfor non-monotonic sorts and collapse all sorts into one","\tdefault: group","\tvalues: off,expand,group,predicate,function","--fmb_detect_sort_bounds (-fmbdsb)","\tUse a saturation loop to detect sort bounds introduced by (for example) ","\tinjective functions","\tdefault: off","--fmb_detect_sort_bounds_time_limit (-fmbdsbt)","\tThe time limit (in seconds) for performing sort bound detection","\tdefault: 1","--fmb_enumeration_strategy (-fmbes)","\tHow model sizes assignments are enumerated in the multi-sorted setting. ","\t(Only smt and contour are known to be finite model complete and can therefore ","\treturn UNSAT.)","\tdefault: sbeam","\tvalues: sbeam,smt,contour","--fmb_keep_sbeam_generators (-fmbksg)","\tA modification of the sbeam enumeration strategy which (for a performance ","\tprice) makes it more enumeration-complete.","\tdefault: off","--fmb_size_weight_ratio (-fmbswr)","\tControls the priority the next sort size vector is given based on a ratio. ","\t0 is size only, 1 means 1:1, 2 means 1:2, etc.","\tdefault: 1","--fmb_start_size (-fmbss)","\tSet the initial model size for finite model building","\tdefault: 1","--fmb_symmetry_ratio (-fmbsr)","\tUsually we use at most n principal terms for symmetry avoidance where n ","\tis the current model size. This option allows us to supply a multiplier ","\tfor that n. See Symmetry Avoidance in MACE-Style Finite Model Finding.","\tdefault: 1","--fmb_symmetry_symbol_order (-fmbsso)","\tThe order of symbols considered for symmetry avoidance. See Symmetry Avoidance ","\tin MACE-Style Finite Model Finding.","\tdefault: occurence","\tvalues: occurence,input_usage,preprocessed_usage","","*************************************************************","*******************  Instance Generation  *******************","*************************************************************","","--inst_gen_big_restart_ratio (-igbrr)","\tDetermines how often a big restart (instance generation starts from input ","\tclauses) will be performed. Small restart means all clauses generated so ","\tfar are processed again.","\tdefault: 0","--inst_gen_passive_reactivation (-igpr)","\tWhen the model describing the selection function changes some active clauses ","\tmay become lazily deselected. If passive reaction is selected these clauses ","\tare added into the passive set before recomputing the next model, otherwise ","\tthey are added back to active.","\tdefault: off","--inst_gen_resolution_ratio (-igrr)","\tRatio of resolution and instantiation steps (applies only if inst_gen_with_resolution ","\tis on)","\tdefault left: 1","\tdefault right: 1","--inst_gen_restart_period (-igrp)","\tHow many clauses are processed before restart. The size of the restart ","\tdepends on inst_gen_big_restart_ratio.","\tdefault: 1000","--inst_gen_restart_period_quotient (-igrpq)","\tRestart period is multiplied by this number after each restart.","\tdefault: 1","--inst_gen_selection (-igs)","\tSelection function for InstGen. This is applied *after* model-based selection ","\tis applied. For consistency the value 1011 is used to denote look-ahead ","\tselection.","\tdefault: 0","--inst_gen_with_resolution (-igwr)","\tPerforms instantiation together with resolution (global subsumption index ","\tis shared, also clauses generated by the resolution are added to the instance ","\tSAT problem)","\tdefault: off","","************************************************************","*************************  Output  *************************","************************************************************","","--ignore_missing_inputs_in_unsat_core","\tWhen running in unsat core output mode we will complain if there is an ","\tinput formula that has no label. Set this on if you don't want this behaviour ","\t(which is default in smt-comp).","\tdefault: off","--latex_output","\tFile that will contain proof in the LaTeX format.","\tdefault: off","--latex_use_default_symbols","\tInterpreted symbols such as product have default LaTeX symbols that can ","\tbe used. They can be overriden in the normal way. This option can turn ","\tthem off","\tdefault: on","--minimize_sat_proofs (-msp)","\tPerform unsat core minimization when a sat solver finds a clause set UNSAT","\t(such as with AVATAR proofs or with global subsumption).","\tdefault: on","--output_axiom_names","\tPreserve names of axioms from the problem file in the proof output","\tdefault: off","--output_mode (-om)","\tChange how Vampire prints the final result. SZS uses TPTP's SZS ontology. ","\tsmtcomp mode suppresses all output and just prints sat/unsat. vampire is ","\tthe same as SZS just without the SZS. Spider prints out some profile information ","\tand extra error reports. ucore uses the smt-lib ucore output.","\tdefault: szs","\tvalues: smtcomp,spider,szs,vampire,ucore","--print_clausifier_premises","\tOutput how the clausified problem was derived.","\tdefault: off","--print_proofs_to_file (-pptf)","\tIf Vampire finds a proof, it is printed to the here specified file instead ","\tof to stdout.","\tCurrently, this option only works in portfolio mode.","\tdefault: <empty>","--proof (-p)","\tSpecifies whether proof (or similar e.g. model/saturation) will be output ","\tand in which format:","\t- off gives no proof output","\t- on gives native Vampire proof output","\t- proofcheck will output proof as a sequence of TPTP problems to allow ","\tfor proof-checking by external solvers","\t- tptp gives TPTP output","\t- property is a developmental option. It allows developers to output statistics ","\tabout the proof using a ProofPrinter object (see Kernel/InferenceStore::ProofPropertyPrinter","\t","\tdefault: on","\tvalues: off,on,proofcheck,tptp,property","--proof_extra","\tAdd extra detail to proofs:","\t - free uses known information only","\t- full may perform expensive operations to achieve this so may significantly ","\timpact on performance.","\t The option is still under development and the format of extra information ","\t(mainly from full) may change between minor releases","\tdefault: off","\tvalues: off,free,full","--show_fmb_sort_info","\tPrint information about sorts in FMB","\tdefault: off","--show_fool","\tReveal the internal representation of FOOL terms","\tdefault: off","--show_induction","\tPrint information about induction","\tdefault: off","--show_ordering","\tDisplay the used simplification ordering's parameters.","\tdefault: off","--statistics (-stat)","\tThe level of statistics to report at the end of the run.","\tdefault: brief","\tvalues: brief,full,none","--time_statistics (-tstat)","\tShow how much running time was spent in each part of Vampire","\tdefault: off","","*************************************************************","***********************  Development  ***********************","*************************************************************","","--arity_check","\tEnforce the condition that the same symbol name cannot be used with multiple ","\tarities.This also ensures a symbol is not used as a function and predicate.","\tdefault: off","--decode","\tDecodes an encoded strategy. Can be used to replay a strategy. To make ","\tVampire output an encoded version of the strategy use the encode option.","\tdefault: ","--encode","\tOutput an encoding of the strategy to be used with the decode option","\tdefault: off","--export_avatar","\tExport the avatar problems to solve in smtlib syntax.","\tdefault: <empty>","--export_thi","\tExport the theory instantiation problems to solve in smtlib syntax.","\tdefault: <empty>","--ignore_missing","\tIgnore any options that have been removed (useful in portfolio modes where ","\tthis can cause strategies to be skipped). If set to warn this will print ","\ta warning when ignoring. This is set to warn in CASC mode.","\tdefault: off","\tvalues: on,off,warn","--manual_cs","\tRun Vampire interactively by manually picking the clauses to be selected","\tdefault: off","--parsing_does_not_count","\tExtend the instruction limit by the amount of instructions it took to parse ","\tthe input problem.","\tdefault: off","--random_strategy","\tCreate a random strategy. Randomisation will occur after all other options ","\thave been set, whatever order they have been given in. A random number ","\tof options will be selected  and set with a safe (possibly default) value.","\tdefault: off","\tvalues: on,off,sat,nocheck","--show_active","\tPrint activated clauses.","\tdefault: off","--show_blocked","\tShow generating inferences blocked due to coloring of symbols","\tdefault: off","--show_definitions","\tShow definition introductions.","\tdefault: off","--show_everything","\tTurn (almost) all of the showX commands on","\tdefault: off","--show_new","\tShow new (generated) clauses","\tdefault: off","--show_nonconstant_skolem_function_trace","\tShow introduction of non-constant skolem functions.","\tdefault: off","--show_passive","\tShow clauses added to the passive set.","\tdefault: off","--show_preprocessing","\tShow preprocessing.","\tdefault: off","--show_reductions","\tShow reductions.","\tdefault: off","--show_skolemisations","\tShow Skolemisations.","\tdefault: off","--show_splitting","\tShow updates within AVATAR","\tdefault: off","--show_symbol_elimination","\tShow symbol elimination.","\tdefault: off","--show_theory_axioms","\tShow the added theory axioms.","\tdefault: off","--show_z3","\tPrint the clauses being added to Z3","\tdefault: off","","*************************************************************","**************************  Other  **************************","*************************************************************","","--question_answering (-qa)","\tDetermines whether (and how) we attempt to answer questions","\tdefault: off","\tvalues: answer_literal,from_proof,off","--use_hashing_clause_variant_index (-uhcvi)","\tUse clause variant index based on hashing for clause variant detection ","\t(affects inst_gen and avatar).","\tdefault: off"],"stylingDirectives":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],"csv":null,"csvError":null,"dependabotInfo":{"showConfigurationBanner":false,"configFilePath":null,"networkDependabotPath":"/secure-foundations/mariposa/network/updates","dismissConfigurationNoticePath":"/settings/dismiss-notice/dependabot_configuration_notice","configurationNoticeDismissed":null,"repoAlertsPath":"/secure-foundations/mariposa/security/dependabot","repoSecurityAndAnalysisPath":"/secure-foundations/mariposa/settings/security_analysis","repoOwnerIsOrg":true,"currentUserCanAdminRepo":false},"displayName":"vampire_help","displayUrl":"https://github.com/secure-foundations/mariposa/blob/182b553066d35ccafad4f1b909499288e3a63777/docs/vampire_help?raw=true","headerInfo":{"blobSize":"54 KB","deleteInfo":{"deleteTooltip":"You must be signed in to make or propose changes"},"editInfo":{"editTooltip":"You must be signed in to make or propose changes"},"ghDesktopPath":null,"gitLfsPath":null,"onBranch":false,"shortPath":"4a94144","siteNavLoginPath":"/login?return_to=https%3A%2F%2Fgithub.com%2Fsecure-foundations%2Fmariposa%2Fblob%2F182b553066d35ccafad4f1b909499288e3a63777%2Fdocs%2Fvampire_help","isCSV":false,"isRichtext":false,"toc":null,"lineInfo":{"truncatedLoc":"1345","truncatedSloc":"1300"},"mode":"file"},"image":false,"isCodeownersFile":null,"isValidLegacyIssueTemplate":false,"issueTemplateHelpUrl":"https://docs.github.com/articles/about-issue-and-pull-request-templates","issueTemplate":null,"discussionTemplate":null,"language":null,"languageID":null,"large":false,"loggedIn":false,"newDiscussionPath":"/secure-foundations/mariposa/discussions/new","newIssuePath":"/secure-foundations/mariposa/issues/new","planSupportInfo":{"repoIsFork":null,"repoOwnedByCurrentUser":null,"requestFullPath":"/secure-foundations/mariposa/blob/182b553066d35ccafad4f1b909499288e3a63777/docs/vampire_help","showFreeOrgGatedFeatureMessage":null,"showPlanSupportBanner":null,"upgradeDataAttributes":null,"upgradePath":null},"publishBannersInfo":{"dismissActionNoticePath":"/settings/dismiss-notice/publish_action_from_dockerfile","dismissStackNoticePath":"/settings/dismiss-notice/publish_stack_from_file","releasePath":"/secure-foundations/mariposa/releases/new?marketplace=true","showPublishActionBanner":false,"showPublishStackBanner":false},"renderImageOrRaw":false,"richText":null,"renderedFileInfo":null,"tabSize":8,"topBannersInfo":{"overridingGlobalFundingFile":false,"globalPreferredFundingPath":null,"repoOwner":"secure-foundations","repoName":"mariposa","showInvalidCitationWarning":false,"citationHelpUrl":"https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-on-github/about-citation-files","showDependabotConfigurationBanner":false,"actionsOnboardingTip":null},"truncated":false,"viewable":true,"workflowRedirectUrl":null,"symbols":{"timedOut":false,"notAnalyzed":true,"symbols":[]}},"copilotInfo":null,"csrf_tokens":{"/secure-foundations/mariposa/branches":{"post":"8wTo_lv5htNhv1gXI9aHGVC6836hNIp8FKrENhXmeqza8yOwI9gHWmRo0vbRxWnWw-kjNdhBIcjDboz4YhGKEg"}}},"title":"mariposa/docs/vampire_help at 182b553066d35ccafad4f1b909499288e3a63777 · secure-foundations/mariposa"}
+
+************************************************************
+*************************  Global  *************************
+************************************************************
+
+--cores
+	When running in portfolio modes (including casc or smtcomp modes) specify 
+	the number of cores, set to 0 to use maximum
+	default: 1
+--instruction_limit (-i)
+	Limit the number (in millions) of executed instructions (excluding the 
+	kernel ones).
+	default: 0
+--memory_limit (-m)
+	Memory limit in MB
+	default: 131072
+--mode
+	Select the mode of operation. Choices are:
+	  -vampire: the standard mode of operation for first-order theorem proving
+	  -portfolio: a portfolio mode running a specified schedule (see schedule)
+	  -casc, casc_sat, smtcomp - like portfolio mode, with competition specific
+	     presets for schedule, etc.
+	  -preprocess,axiom_selection,clausify: modes for producing output
+	      for other solvers.
+	  -tpreprocess,tclausify: output modes for theory input (clauses are quantified
+	      with sort information).
+	  -output,profile: output information about the problem
+	Some modes are not currently maintained (get in touch if interested):
+	  -bpa: perform bound propagation
+	  -consequence_elimination: perform consequence elimination
+	  -random_strategy: attempts to randomize the option values
+	
+	default: vampire
+	values: axiom_selection,casc,casc_hol,casc_sat,casc_ltb,clausify,consequence_elimination,
+	        model_check,output,portfolio,preprocess,preprocess2,profile,
+	        random_strategy,smtcomp,spider,tclausify,tpreprocess,vampire
+--randomize_seed_for_portfolio_workers
+	In portfolio mode, let each worker process start from its own independent 
+	random seed.
+	default: on
+--schedule (-sched)
+	Schedule to be run by the portfolio mode. casc and smtcomp usually point 
+	to the most recent schedule in that category. file loads the schedule from 
+	a file specified in --schedule_file. Note that some old schedules may contain 
+	option values that are no longer supported - see ignore_missing.
+	default: casc
+	values: casc,casc_2023,casc_2019,casc_sat,casc_hol_2023,casc_sat_2019,
+	        casc_hol_2020,file,induction,integer_induction,ltb_default_2017,
+	        ltb_hh4_2017,ltb_hll_2017,ltb_isa_2017,ltb_mzr_2017,smtcomp,
+	        smtcomp_2018,snake_tptp_uns,snake_tptp_sat,struct_induction
+--schedule_file
+	Path to the input schedule file. Each line contains an encoded strategy. 
+	Disabled unless `--schedule file` is set.
+	default: <empty>
+--slowness
+	The factor by which is multiplied the time limit of each configuration 
+	in casc/casc_sat/smtcomp/portfolio mode
+	default: 1
+--superposition (-sup)
+	Control superposition. Turning off this core inference leads to an incomplete 
+	calculus on equational problems.
+	default: on
+--time_limit (-t)
+	Time limit in wall clock seconds, you can use d,s,m,h,D suffixes also i.e. 
+	60s, 5m. Setting it to 0 effectively gives no time limit.
+	default: 600d
+
+************************************************************
+**********************  Higher-order  **********************
+************************************************************
+
+--add_comb_axioms (-aca)
+	Add combinator axioms
+	default: off
+--add_proxy_axioms (-apa)
+	Add logical proxy axioms
+	default: off
+--bool_eq_trick (-bet)
+	Replace an equality between boolean terms such as: t = s with a disequality 
+	t != vnot(s) The theory is that this can help with EqRes
+	default: off
+--cases (-c)
+	Alternative to FOOL Paramodulation that replaces all Boolean subterms in 
+	one step
+	default: off
+--cases_simp (-cs)
+	FOOL Paramodulation with two conclusion as a simplification
+	default: off
+--choice_ax (-cha)
+	Adds the cnf form of the Hilbert choice axiom
+	default: off
+--choice_reasoning (-chr)
+	Reason about choice by adding relevant instances of the axiom
+	default: off
+--cnf_on_the_fly (-cnfonf)
+	Various options linked to clausification on the fly
+	default: eager
+	values: eager,lazy_gen,lazy_simp,lazy_not_gen,lazy_not_gen_be_off,
+	        lazy_not_be_gen,off
+--combinatory_sup (-csup)
+	Switches on a specific ordering and that orients combinator axioms left-right. 
+	Also turns on a number of special inference rules
+	default: off
+--complex_bool_reasoning (-cbe)
+	Switches on primitive instantiation and elimination of Leibniz equality
+	default: on
+--complex_var_cond (-cvc)
+	Use the more complex variable condition provided in the SKIKBO paper.
+	More terms are comparable with this ordering, but it has worst caseexponential 
+	complexity
+	default: off
+--equality_to_equiv (-e2e)
+	Equality between boolean terms changed to equivalence 
+	t1 : $o = t2 : $o is changed to t1 <=> t2
+	default: off
+--func_ext (-fe)
+	Deal with extensionality using abstraction, axiom or neither
+	default: abstraction
+	values: off,axiom,abstraction
+--injectivity (-inj)
+	Attempts to identify injective functions and postulates a left-inverse
+	default: off
+--lam_free_hol (-lfh)
+	Reason about lambda-free hol. See paper by Vukmirovic et al.
+	default: off
+--max_XX_narrows (-mXXn)
+	Maximum number of BXX', CXX' and SXX' narrows thatcan be carried out 0 
+	means that there is no limit. 
+	default: 0
+--narrow (-narr)
+	Controls the set of combinator equations to use in narrowing
+	default: all
+	values: all,sk,ski,off
+--new_taut_del (-ntd)
+	Delete clauses with literals of the form false != true or t = true \/ t 
+	= false
+	default: off
+--pragmatic (-prag)
+	Modifies various parameters to help Vampire solve 'hard' higher-order
+	default: off
+--prim_inst_set (-piset)
+	Controls the set of equations to use in primitive instantiation
+	default: all_but_not_eq
+	values: all,all_but_not_eq,false_true_not,small_set
+--priority_to_long_reducts (-ptlr)
+	give priority to clauses produced by lengthy reductions
+	default: off
+
+************************************************************
+**************************  Help  **************************
+************************************************************
+
+--bad_option
+	What should be done if a bad option value (wrt hard and soft constraints) 
+	is encountered:
+	 - hard: will cause a user error
+	 - soft: will only report the error (unless it is unsafe)
+	 - forced: <under development> 
+	 - off: will ignore safe errors
+	Note that unsafe errors will always lead to a user error
+	default: soft
+	values: hard,forced,off,soft
+--explain_option (-explain)
+	Use to explain a single option i.e. -explain explain
+	default: <empty>
+--help (-h)
+	Display the help message
+	default: off
+--show_options
+	List all available options
+	default: off
+
+*************************************************************
+**************************  Input  **************************
+*************************************************************
+
+--forbidden_options
+	If some of the specified options are set to a forbidden state, vampire 
+	will fail to start, or in portfolio modes it will skip such strategies. 
+	The expected syntax is <opt1>=<val1>:<opt2>:<val2>:...:<optn>=<valN>
+	default: <empty>
+--forced_options
+	Options in the format <opt1>=<val1>:<opt2>=<val2>:...:<optn>=<valN> that 
+	override the option values set by other means (also inside portfolio mode 
+	strategies)
+	default: <empty>
+--guess_the_goal (-gtg)
+	Use heuristics to guess formulas that correspond to the goal. Doesn't really 
+	make sense if there is already a goal but it will still do something. This 
+	is really designed for use with SMTLIB problems that don't have goals
+	default: off
+	values: off,all,exists_top,exists_all,exists_sym,position
+--guess_the_goal_limit (-gtgl)
+	The maximum number of input units a symbol appears for it to be considered 
+	in a goal
+	default: 1
+--ignore_unrecognized_logic (-iul)
+	Try proof search anyways, if vampire would throw an "unrecognized logic" 
+	error otherwise.
+	default: off
+--include
+	Path prefix for the 'include' TPTP directive
+	default: <empty>
+--input_syntax
+	Input syntax. Historic input syntaxes have been removed as they are not 
+	actively maintained. Contact developers for help with these.
+	default: auto
+	values: smtlib2,tptp,auto
+--random_seed
+	Some parts of vampire use random numbers. This seed allows for reproducibility 
+	of results. By default the seed is not changed.
+	default: 1
+--random_strategy_seed
+	Sets the seed for generating random strategies. This option necessary because 
+	--random_seed <value> will be included as fixed value in the generated 
+	random strategy, hence won't have any effect on the random strategy generation. 
+	The default value is derived from the current time.
+	default: 1691763961
+
+*************************************************************
+**********************  Preprocessing  **********************
+*************************************************************
+
+--blocked_clause_elimination (-bce)
+	Eliminate blocked clauses after clausification.
+	default: off
+--equality_proxy (-ep)
+	Applies the equality proxy transformation to the problem. It works as follows:
+	 - All literals s=t are replaced by E(s,t)
+	 - All literals s!=t are replaced by ~E(s,t)
+	 - If S the symmetry clause ~E(x,y) \/ E(y,x) is added
+	 - If T the transitivity clause ~E(x,y) \/ ~E(y,z) \/ E(x,z) is added
+	 - If C the congruence clauses are added as follows:
+	    for predicates p that are not E or equality add
+	     ~E(x1,y1) \/ ... \/ ~E(xN,yN) \/ ~p(x1,...,xN) \/ p(y1,...,yN)
+	    for non-constant functions f add
+	     ~E(x1,y1) \/ ... \/ ~E(xN,yN) \/ E(f(x1,...,xN),f(y1,...,yN))
+	 R stands for reflexivity
+	default: off
+	values: R,RS,RST,RSTC,off
+--equality_resolution_with_deletion (-erd)
+	Perform equality resolution with deletion.
+	default: on
+--function_definition_elimination (-fde)
+	Attempts to eliminate function definitions. A function definition is a 
+	unit clause of the form f(x1,..,xn) = t where x1,..,xn are the pairwise 
+	distinct free variables of t and f does not appear in t. If 'all', definitions 
+	are eliminated by replacing every occurrence of f(s1,..,sn) by t{x1 -> 
+	s1, .., xn -> sn}. If 'unused' only unused definitions are removed.
+	default: all
+	values: all,none,unused
+--general_splitting (-gsp)
+	Splits clauses in order to reduce number of different variables in each 
+	clause. A clause C[X] \/ D[Y] with subclauses C and D over non-equal sets 
+	of variables X and Y can be split into S(Z) \/ C[X] and ~S(Z) \/ D[Y] where 
+	Z is the intersection of X and Y.
+	default: off
+--ignore_conjecture_in_preprocessing (-icip)
+	Make sure we do not delete the conjecture in preprocessing even if it can 
+	be deleted.
+	default: off
+--inequality_splitting (-ins)
+	When greater than zero, ins defines a weight threshold w such that any 
+	clause C \/ s!=t where s (or conversely t) is ground and has weight greater 
+	or equal than w is replaced by C \/ p(s) with the additional unit clause 
+	~p(t) being added for fresh predicate p.
+	default: 0
+--inline_let (-ile)
+	Always inline let-expressions.
+	default: off
+--mono_ep (-mep)
+	Use the monomorphic version of equality proxy transformation.
+	default: on
+--naming (-nm)
+	Introduce names for subformulas. Given a subformula F(x1,..,xk) of formula 
+	G a new predicate symbol is introduced as a name for F(x1,..,xk) by adding 
+	the axiom n(x1,..,xk) <=> F(x1,..,xk) and replacing F(x1,..,xk) with n(x1,..,xk) 
+	in G. The value indicates how many times a subformula must be used before 
+	it is named.
+	default: 8
+--newcnf (-newcnf)
+	Use NewCNF algorithm to do naming, preprocessing and clausification.
+	default: off
+--normalize (-norm)
+	Normalize the problem so that the ordering of clauses etc does not effect 
+	proof search.
+	default: off
+--random_polarities (-rp)
+	As part of preprocessing, randomly (though consistently) flip polarities 
+	of non-equality predicates in the whole CNF.
+	default: off
+--shuffle_input (-si)
+	Randomly shuffle the input problem. (Runs after and thus destroys normalize.)
+	default: off
+--sine_depth (-sd)
+	Limit number of iterations of the transitive closure algorithm that selects 
+	formulas based on SInE's D-relation (see SInE description). 0 means no 
+	limit, 1 is a maximal limit (least selected axioms), 2 allows two iterations, 
+	etc...
+	default: 0
+--sine_generality_threshold (-sgt)
+	Generality of a symbol is the number of input formulas in which a symbol 
+	appears. If the generality of a symbol is smaller than the threshold, it 
+	is always added into the D-relation with formulas in which it appears.
+	default: 0
+--sine_selection (-ss)
+	If 'axioms', all formulas that are not annotated as 'axiom' (i.e. conjectures 
+	and hypotheses) are initially selected, and the SInE selection is performed 
+	on those annotated as 'axiom'. If 'included', all formulas that are directly 
+	in the problem file are initially selected, and the SInE selection is performed 
+	on formulas from included files. The 'included' value corresponds to the 
+	behaviour of the original SInE implementation.
+	default: off
+	values: axioms,included,off
+--sine_tolerance (-st)
+	SInE tolerance parameter (sometimes referred to as 'benevolence')
+	default: 1
+--sos (-sos)
+	Set of support strategy. All formulas annotated as axioms are put directly 
+	among active clauses, without performing any inferences between them. If 
+	all, select all literals of set-of-support clauses, otherwise use the default 
+	literal selector. If theory then only apply to theory axioms introduced 
+	by vampire (all literals are selected).
+	default: off
+	values: all,off,on,theory
+--sos_theory_limit (-sstl)
+	When sos=theory, limit the depth of descendants a theory axiom can have.
+	default: 0
+--theory_axioms (-tha)
+	Include theory axioms for detected interpreted symbols
+	default: on
+	values: on,off,some
+--theory_flattening (-thf)
+	Flatten clauses to separate theory and non-theory parts in the input. This 
+	is often quickly undone in proof search.
+	default: off
+--unused_predicate_definition_removal (-updr)
+	Attempt to remove predicate definitions. A predicate definition is a formula 
+	of the form ![X1,..,Xn] : (p(X1,..,XN) <=> F) where p is not equality and 
+	does not occur in F and X1,..,XN are the free variables of F. If p has 
+	only positive (negative) occurrences then <=> in the definition can be 
+	replaced by => (<=). If p does not occur in the rest of the problem the 
+	definition can be removed.
+	default: on
+
+************************************************************
+***********************  Saturation  ***********************
+************************************************************
+
+--activation_limit (-al)
+	Terminate saturation after this many iterations of the main loop. 0 means 
+	no limit.
+	default: 0
+--age_weight_ratio (-awr)
+	Ratio in which clauses are being selected for activation i.e. a:w means 
+	that for every a clauses selected based on age there will be w selected 
+	based on weight.
+	default left: 1
+	default right: 1
+--age_weight_ratio_shape (-awrs)
+	How to change the age/weight ratio during proof search.
+	default: constant
+	values: constant,decay,converge
+--age_weight_ratio_shape_frequency (-awrsf)
+	How frequently the age/weight ratio shape is to change: i.e. if set to 
+	'decay' at a frequency of 100, the age/weight ratio will change every 100 
+	age/weight choices.
+	default: 100
+--increased_numeral_weight (-inw)
+	This option only applies if the problem has interpreted numbers. The weight 
+	of integer constants depends on the logarithm of their absolute value (instead 
+	of being 1)
+	default: off
+--introduced_symbol_precedence (-isp)
+	Decides where to place symbols introduced during proof search in the symbol 
+	precedence
+	default: top
+	values: top,bottom
+--literal_comparison_mode (-lcm)
+	Vampire uses term orderings which use an ordering of predicates. Standard 
+	places equality (and certain other special predicates) first and all others 
+	second. Predicate depends on symbol precedence (see symbol_precedence). 
+	Reverse reverses the order.
+	default: standard
+	values: predicate,reverse,standard
+--literal_maximality_aftercheck (-lma)
+	For efficiency we perform maximality checks before applying substitutions. 
+	Sometimes this can lead to generating more clauses than needed for completeness. 
+	Set this on to add the checks afterwards as well.
+	default: off
+--lookahaed_delay (-lsd)
+	Delay the use of lookahead selection by this many selections the idea is 
+	that lookahead selection may behave erratically at the start
+	default: 0
+--lrs_estimate_correction_coef (-lecc)
+	Make lrs more (<1.0) or less (>1.0) agressive by multiplying by this coef 
+	its estimate of how many clauses are still reachable.
+	default: 1
+--nongoal_weight_coefficient (-nwc)
+	coefficient that will multiply the weight of theory clauses (those marked 
+	as 'axiom' in TPTP)
+	default: 1
+--positive_literal_split_queue (-plsq)
+	Turn on experiments: clause selection with multiple queues containing different 
+	clauses (split by number of positive literals in clause)
+	default: off
+--positive_literal_split_queue_cutoffs (-plsqc)
+	The cutoff-values for the positive-literal-split-queues (the cutoff value 
+	for the last queue is omitted, since it has to be infinity).
+	default: 0
+--positive_literal_split_queue_layered_arrangement (-plsql)
+	If turned on, use a layered arrangement to split clauses into queues. Otherwise 
+	use a tammet-style-arrangement.
+	default: off
+--positive_literal_split_queue_ratios (-plsqr)
+	The ratios for picking clauses from the positive-literal-split-queues using 
+	weighted round robin. If a queue is empty, the clause will be picked from 
+	the next non-empty queue to the right. Note that this option implicitly 
+	also sets the number of queues.
+	default: 1,4
+--restrict_nwc_to_goal_constants (-rnwc)
+	restrict nongoal_weight_coefficient to those containing goal constants
+	default: off
+--saturation_algorithm (-sa)
+	Select the saturation algorithm:
+	 - discount:
+	 - otter:
+	 - limited resource:
+	 - instance generation: a simple implementation of instantiation calculus
+	    (global_subsumption, unit_resulting_resolution and age_weight_ratio)
+	 - fmb : finite model building for satisfiable problems.
+	 - z3 : pass the preprocessed problem to z3, will terminate if the resulting 
+	problem is not ground.
+	inst_gen, z3 and fmb aren't influenced by options for the saturation algorithm, 
+	apart from those under the relevant heading
+	default: lrs
+	values: discount,fmb,inst_gen,lrs,otter,z3
+--selection (-s)
+	Selection methods 2,3,4,10,11 are complete by virtue of extending Maximal 
+	i.e. they select the best among maximal. Methods 1002,1003,1004,1010,1011 
+	relax this restriction and are therefore not complete.
+	 0     - Total (select everything)
+	 1     - Maximal
+	 2     - ColoredFirst, MaximalSize then Lexicographical
+	 3     - ColoredFirst, NoPositiveEquality, LeastTopLevelVariables,
+	          LeastDistinctVariables then Lexicographical
+	 4     - ColoredFirst, NoPositiveEquality, LeastTopLevelVariables,
+	          LeastVariables, MaximalSize then Lexicographical
+	 10    - ColoredFirst, NegativeEquality, MaximalSize, Negative then Lexicographical
+	 11    - Lookahead
+	 666   - Random
+	 1002  - Incomplete version of 2
+	 1003  - Incomplete version of 3
+	 1004  - Incomplete version of 4
+	 1010  - Incomplete version of 10
+	 1011  - Incomplete version of 11
+	 1666  - Incomplete version of 666
+	Or negated, which means that reversePolarity is true i.e. for selection 
+	we treat all negative non-equality literals as positive and vice versa 
+	(can only apply to non-equality literals).
+	
+	default: 10
+--sine_level_split_queue (-slsq)
+	Turn on experiments: clause selection with multiple queues containing different 
+	clauses (split by sine-level of clause)
+	default: off
+--sine_level_split_queue_cutoffs (-slsqc)
+	The cutoff-values for the sine-level-split-queues (the cutoff value for 
+	the last queue is omitted, since it has to be infinity).
+	default: 0
+--sine_level_split_queue_layered_arrangement (-slsql)
+	If turned on, use a layered arrangement to split clauses into queues. Otherwise 
+	use a tammet-style-arrangement.
+	default: on
+--sine_level_split_queue_ratios (-slsqr)
+	The ratios for picking clauses from the sine-level-split-queues using weighted 
+	round robin. If a queue is empty, the clause will be picked from the next 
+	non-empty queue to the right. Note that this option implicitly also sets 
+	the number of queues.
+	default: 1,1
+--sine_to_age (-s2a)
+	Use SInE levels to postpone introducing clauses more distant from the conjecture 
+	to proof search by artificially making them younger (age := sine_level).
+	default: off
+--sine_to_age_generality_threshold (-s2agt)
+	Like sine_generality_threshold but influences sine_to_age, sine_to_pred_levels, 
+	and sine_level_split_queue rather than sine_selection.
+	default: 0
+--sine_to_age_tolerance (-s2at)
+	Like sine_tolerance but influences sine_to_age, sine_to_pred_levels, and 
+	sine_level_split_queue rather than sine_selection.
+	default: 1
+--sine_to_pred_levels (-s2pl)
+	Assign levels to predicate symbols as they are used to trigger axioms during 
+	SInE computation. Then use them as predicateLevels determining the ordering. 
+	'on' means conjecture symbols are larger, 'no' means the opposite. (equality 
+	keeps its standard lowest level).
+	default: off
+	values: no,off,on
+--symbol_precedence (-sp)
+	Vampire uses term orderings which require a precedence relation between 
+	symbols.
+	Arity orders symbols by their arity (and reverse_arity takes the reverse 
+	of this) and occurence orders symbols by the order they appear in the problem. 
+	Then we have a few precedence generating schemes adopted from E: frequency 
+	- sort by frequency making rare symbols large, reverse does the opposite, 
+	(For the weighted versions, each symbol occurence counts as many times 
+	as is the length of the clause in which it occurs.) unary_first is like 
+	arity, except that unary symbols are maximal (and ties are broken by frequency), 
+	unary_frequency is like frequency, except that unary symbols are maximal, 
+	const_max makes constants the largest, then falls back to arity, const_min 
+	makes constants the smallest, then falls back to reverse_arity, const_frequency 
+	makes constants the smallest, then falls back to frequency.
+	default: arity
+	values: arity,occurrence,reverse_arity,unary_first,const_max,const_min,scramble,
+	        frequency,unary_frequency,const_frequency,reverse_frequency,
+	        weighted_frequency,reverse_weighted_frequency
+--symbol_precedence_boost (-spb)
+	Boost the symbol precedence of symbols occurring in certain kinds of clauses 
+	in the input.
+	Additionally, non_intro/intro suppress/boost the precedence of symbols 
+	introduced during preprocessing (i.e., mainly, the naming predicates and 
+	the skolems).
+	default: none
+	values: none,goal,units,goal_then_units,non_intro,intro
+--term_ordering (-to)
+	The term ordering used by Vampire to orient equations and order literals
+	default: kbo
+	values: kbo,lpo
+--theory_split_queue (-thsq)
+	Turn on clause selection using multiple queues containing different clauses 
+	(split by amount of theory reasoning)
+	default: off
+--theory_split_queue_cutoffs (-thsqc)
+	The cutoff-values for the split-queues (the cutoff value for the last queue 
+	has to be omitted, as it is always infinity). Any split-queue contains 
+	all clauses which are assigned a feature-value less or equal to the cutoff-value 
+	of the queue. If no custom value for this option is set, the implementation 
+	will use cutoffs 0,4*d,10*d,infinity (where d denotes the theory split 
+	queue expected ratio denominator).
+	default: 0
+--theory_split_queue_expected_ratio_denom (-thsqd)
+	The denominator n such that we expect the final proof to have a ratio of 
+	theory-axioms to all-axioms of 1/n.
+	default: 8
+--theory_split_queue_layered_arrangement (-thsql)
+	If turned on, use a layered arrangement to split clauses into queues. Otherwise 
+	use a tammet-style-arrangement.
+	default: on
+--theory_split_queue_ratios (-thsqr)
+	The ratios for picking clauses from the split-queues using weighted round 
+	robin. If a queue is empty, the clause will be picked from the next non-empty 
+	queue to the right. Note that this option implicitly also sets the number 
+	of queues.
+	default: 1,1
+
+************************************************************
+**********************  LRS Specific  **********************
+************************************************************
+
+--lrs_first_time_check
+	Percentage of time limit at which the LRS algorithm will for the first 
+	time estimate the number of reachable clauses.
+	default: 5
+--lrs_weight_limit_only (-lwlo)
+	If off, the lrs sets both age and weight limit according to clause reachability, 
+	otherwise it sets the age limit to 0 and only the weight limit reflects 
+	reachable clauses
+	default: off
+--simulated_instruction_limit (-sil)
+	Instruction limit (in millions) of executed instructions for the purpose 
+	of reachability estimations of the LRS saturation algorithm (if 0, the 
+	actual instruction limit is used)
+	default: 0
+--simulated_time_limit (-stl)
+	Time limit in seconds for the purpose of reachability estimations of the 
+	LRS saturation algorithm (if 0, the actual time limit is used)
+	default: 0d
+
+************************************************************
+***********************  Inferences  ***********************
+************************************************************
+
+--arithmetic_subterm_generalizations (-asg)
+	          Enables various generalization rules for arithmetic terms as 
+	described in the paper Making Theory Reasoning Simpler ( https://easychair.org/publications/preprint/K2hb 
+	).           In some rare cases the conclusion may be not strictly simpler 
+	than the hypothesis. With `force` we ignore these cases, violating the 
+	ordering and just simplifying           anyways. With `cautious` we will 
+	generate a new clause instead of simplifying in these cases.
+	default: off
+	values: force,cautious,off
+--backward_demodulation (-bd)
+	Oriented rewriting of kept clauses by newly derived unit equalities
+	s = t     L[sθ] \/ C
+	---------------------   where sθ > tθ (replaces RHS)
+	 L[tθ] \/ C
+	
+	default: all
+	values: all,off,preordered
+--backward_subsumption (-bs)
+	Perform subsumption deletion of kept clauses by newly derived clauses. 
+	Unit_only means that the subsumption will be performed only by unit clauses
+	default: off
+	values: off,on,unit_only
+--backward_subsumption_demodulation (-bsd)
+	Perform backward subsumption demodulation.
+	default: off
+--backward_subsumption_demodulation_max_matches (-bsdmm)
+	Maximum number of multi-literal matches to consider in backward subsumption 
+	demodulation. 0 means to try all matches (until first success).
+	default: 0
+--backward_subsumption_resolution (-bsr)
+	Perform subsumption resolution on kept clauses using newly derived clauses. 
+	Unit_only means that the subsumption resolution will be performed only 
+	by unit clauses
+	default: off
+	values: off,on,unit_only
+--binary_resolution (-br)
+	Standard binary resolution i.e.
+	C \/ t     D \/ s
+	---------------------
+	(C \/ D)θ
+	where θ = mgu(t,-s) and t selected
+	default: on
+--cancellation (-canc)
+	Enables the rule cancellation around additions as described in the paper 
+	Making Theory Reasoning Simpler ( https://easychair.org/publications/preprint/K2hb 
+	).                                 In some rare cases the conclusion may 
+	be not strictly simpler than the hypothesis. With `force` we ignore these 
+	cases, violating the ordering and just simplifying                     
+	            anyways. With `cautious` we will generate a new clause instead 
+	of simplifying in these cases.
+	default: off
+	values: force,cautious,off
+--condensation (-cond)
+	Perform condensation. If 'fast' is specified, we only perform condensations 
+	that are easy to check for.
+	default: off
+	values: fast,off,on
+--demodulation_redundancy_check (-drc)
+	The following cases of backward and forward demodulation do not preserve 
+	completeness:
+	s = t     s = t1 \/ C 	 s = t     s != t1 \/ C
+	--------------------- 	 ---------------------
+	t = t1 \/ C 		 t != t1 \/ C
+	where t > t1 and s = t > C (RHS replaced)
+	With `on`, we check this condition and don't demodulate if we could violate 
+	completeness.
+	With `encompass`, we treat demodulations (both forward and backward) as 
+	encompassment demodulations (as defined by Duarte and Korovin in 2022's 
+	IJCAR paper).
+	With `off`, we skip the checks, save time, but become incomplete.
+	default: on
+	values: off,encompass,on
+--equational_tautology_removal (-etr)
+	A reduction which uses congruence closure to remove logically valid clauses.
+	default: off
+--extensionality_allow_pos_eq
+	If extensionality resolution equals filter, this dictates whether we allow 
+	other positive equalities when recognising extensionality clauses
+	default: off
+--extensionality_max_length
+	Sets the maximum length (number of literals) an extensionality clause can 
+	have when doing recognition for extensionality resolution. If zero there 
+	is no maximum.
+	default: 0
+--extensionality_resolution (-er)
+	Turns on the following inference rule:
+	  x=y \/ C    s != t \/ D
+	  -----------------------
+	  C{x → s, y → t} \/ D
+	Where s!=t is selected in s!=t \/D and x=y \/ C is a recognised as an extensionality 
+	clause - how clauses are recognised depends on the value of this option.
+	If filter we attempt to recognise all extensionality clauses i.e. those 
+	that have exactly one X=Y, no inequality of the same sort as X-Y (and optionally 
+	no equality except X=Y, see extensionality_allow_pos_eq).
+	If known we only recognise a known set of extensionality clauses. At the 
+	moment this includes the standard and subset-based formulations of the 
+	set extensionality axiom, as well as the array extensionality axiom.
+	If tagged we only use formulas tagged as extensionality clauses.
+	default: off
+	values: filter,known,tagged,off
+--fool_paramodulation (-foolp)
+	Turns on the following inference rule:
+	        C[s]
+	--------------------,
+	C[true] \/ s = false
+	where s is a boolean term that is not a variable, true or false, C[true] 
+	is the C clause with s substituted by true. This rule is needed for efficient 
+	treatment of boolean terms.
+	default: off
+--forward_demodulation (-fd)
+	Oriented rewriting of newly derived clauses by kept unit equalities
+	s = t     L[sθ] \/ C
+	---------------------  where sθ > tθ
+	 L[tθ] \/ C
+	If 'preordered' is set, only equalities s = t where s > t are used for 
+	rewriting.
+	default: all
+	values: all,off,preordered
+--forward_literal_rewriting (-flr)
+	Perform forward literal rewriting.
+	default: off
+--forward_subsumption (-fs)
+	Perform forward subsumption deletion.
+	default: on
+--forward_subsumption_demodulation (-fsd)
+	Perform forward subsumption demodulation.
+	default: off
+--forward_subsumption_demodulation_max_matches (-fsdmm)
+	Maximum number of multi-literal matches to consider in forward subsumption 
+	demodulation. 0 means to try all matches (until first success).
+	default: 0
+--forward_subsumption_resolution (-fsr)
+	Perform forward subsumption resolution.
+	default: on
+--function_definition_introduction (-fdi)
+	If non-zero, introduces function definitions with generalisation for repeated 
+	compound terms in the active set. For example, if f(a, g(a)) and f(b, g(b)) 
+	occur frequently, we might define d(X) = f(X, g(X)). The parameter value 
+	'n' is a threshold: terms that occur more than n times have a definition 
+	created.
+	default: 0
+--gaussian_variable_elimination (-gve)
+	Enable the immediate simplification "Gaussian Variable Elimination":
+	
+	s != t \/ C[X] 
+	--------------  if s != t can be rewritten to X != r 
+	    C[r] 
+	
+	Example:
+	
+	6 * X0 != 2 * X1 | p(X0, X1)
+	-------------------------------
+	  p(2 * X1 / 6, X1)
+	
+	
+	For a more detailed description see the paper Making Theory Reasoning Simpler 
+	( https://easychair.org/publications/preprint/K2hb ).           In some 
+	rare cases the conclusion may be not strictly simpler than the hypothesis. 
+	With `force` we ignore these cases, violating the ordering and just simplifying 
+	          anyways. With `cautious` we will generate a new clause instead 
+	of simplifying in these cases.
+	default: off
+	values: force,cautious,off
+--global_subsumption (-gs)
+	Perform global subsumption. Use a set of groundings of generated clauses 
+	G to replace C \/ L by C if the grounding of C is implied by G. A SAT solver 
+	is used for ground reasoning.
+	default: off
+--global_subsumption_avatar_assumptions (-gsaa)
+	When running global subsumption and AVATAR at the same time we need to 
+	include information about the current AVATAR model. When this is off we 
+	ignore clauses with AVATAR assumptions for GS. When it is from_current 
+	we assume the assumptions in the current clause. When it is full_model 
+	we assume the full model from AVATAR. See paper Global Subsumption Revisited 
+	(Briefly).
+	default: off
+	values: off,from_current,full_model
+--global_subsumption_explicit_minim (-gsem)
+	no description provided!
+	default: randomized
+	values: off,on,randomized
+--global_subsumption_sat_solver_power (-gsssp)
+	Explicitly minimize the result of global subsumption reduction.
+	default: propagation_only
+	values: propagation_only,full
+--high_school (-hsm)
+	Enables high school education for vampire. (i.e.: sets -gve cautious, -asg 
+	cautious, -ev cautious, -canc cautious, -pum on )
+	default: off
+--hyper_superposition
+	Simplifying inference that attempts to do several rewritings at once if 
+	it will eliminate literals of the original clause (now we aim just for 
+	elimination by equality resolution)
+	default: off
+--induction (-ind)
+	Apply structural and/or integer induction on datatypes and integers.
+	default: none
+	values: none,struct,int,both
+--induction_choice (-indc)
+	Where to apply induction. Goal only applies to constants in goal, goal_plus 
+	extends this with skolem constants introduced by induction. Consider using 
+	guess_the_goal for problems in SMTLIB as they do not come with a conjecture
+	default: all
+	values: all,goal,goal_plus
+--induction_gen (-indgen)
+	Apply induction with generalization (on both all & selected occurrences)
+	default: off
+--induction_max_depth (-indmd)
+	Set maximum depth of induction where 0 means no max.
+	default: 0
+--induction_neg_only (-indn)
+	Only apply induction to negative literals
+	default: on
+--induction_on_complex_terms (-indoct)
+	Apply induction on complex (ground) terms vs. only on constants
+	default: off
+--induction_strengthen_hypothesis (-indstrhyp)
+	Strengthen induction formulas with the remaining skolem constants replaced 
+	with universally quantified variables in hypotheses
+	default: off
+--induction_unit_only (-indu)
+	Only apply induction to unit clauses
+	default: on
+--inner_rewriting (-irw)
+	C[t_1] | t1 != t2 ==> C[t_2] | t1 != t2 when t1>t2
+	default: off
+--instantiation (-inst)
+	Heuristically instantiate variables. Often wastes a lot of effort. Consider 
+	using thi instead.
+	default: off
+	values: off,on
+--int_induction_default_bound (-intinddb)
+	Always apply integer induction with bound 0
+	default: off
+--int_induction_interval (-intindint)
+	Whether integer induction is applied over infinite or finite intervals, 
+	or both
+	default: both
+	values: infinite,finite,both
+--int_induction_kind (-iik)
+	The kind of integer induction applied
+	default: one
+	values: one,two,all
+--int_induction_strictness_comp (-intindstcomp)
+	Exclude induction term t/literal l combinations from integer induction.
+	Induction is not applied to _comparison_ literals l:
+	  - none: no exclusion
+	  - toplevel_not_in_other: t is a top-level argument of l,
+	    but it does not occur in the other argument of l
+	  - only_one_occurrence: t has only one occurrence in l
+	  - not_in_both: t does not occur in both arguments of l
+	  - always: induction on l is not allowed at all
+	
+	default: toplevel_not_in_other
+	values: none,toplevel_not_in_other,only_one_occurrence,not_in_both,always
+--int_induction_strictness_eq (-intindsteq)
+	Exclude induction term t/literal l combinations from integer induction.
+	Induction is not applied to _equality_ literals l:
+	  - none: no exclusion
+	  - toplevel_not_in_other: t is a top-level argument of l,
+	    but it does not occur in the other argument of l
+	  - only_one_occurrence: t has only one occurrence in l
+	  - not_in_both: t does not occur in both arguments of l
+	  - always: induction on l is not allowed at all
+	
+	default: none
+	values: none,toplevel_not_in_other,only_one_occurrence,not_in_both,always
+--int_induction_strictness_term (-intindstterm)
+	Exclude induction term t/literal l combinations from integer induction.
+	Induction is not applied to the induction term t:
+	  - none: no exclusion
+	  - interpreted_constant: t is an interpreted constant
+	  - no_skolems: t does not contain a skolem function
+	default: interpreted_constant
+	values: none,interpreted_constant,no_skolems
+--max_induction_gen_subset_size (-indgenss)
+	Set maximum number of occurrences of the induction term to be generalized, 
+	where 0 means no max. (Regular induction will be applied without this restriction.)
+	default: 3
+--non_unit_induction (-nui)
+	Induction on certain clauses or clause sets instead of just unit clauses
+	default: off
+--normalize_inequalities (-norm_ineq)
+	Enable normalizing of inequalities like s < t ==> 0 < t - s.
+	default: off
+--push_unary_minus (-pum)
+	Enable the immediate simplifications:
+	 -(t + s) ==> -t + -s
+	 -(-t) ==> t
+	
+	default: off
+--simultaneous_superposition (-sims)
+	Rewrite the whole RHS clause during superposition, not just the target 
+	literal.
+	default: on
+--structural_induction_kind (-sik)
+	The kind of structural induction applied
+	default: one
+	values: one,two,three,all
+--superposition_from_variables (-sfv)
+	Perform superposition from variables.
+	default: on
+--term_algebra_acyclicity (-tac)
+	Activates the cyclicity rule for term algebras (such as algebraic datatypes 
+	in SMT-LIB):
+	- off : the cyclicity rule is not enforced (this is sound but incomplete)
+	- axiom : the cyclicity rule is axiomatized with a transitive predicate 
+	describing the subterm relation over terms
+	- rule : the cyclicity rule is enforced by a specific hyper-resolution 
+	rule
+	- light : the cyclicity rule is enforced by rule generating disequality 
+	between a term and its known subterms
+	default: off
+	values: off,axiom,rule,light
+--term_algebra_rules (-tar)
+	Activates some rules that improve reasoning with term algebras (such as 
+	algebraic datatypes in SMT-LIB):
+	If the problem does not contain any term algebra symbols, activating this 
+	options has no effect
+	- distinctness rule:
+	f(...) = g(...) \/ A
+	--------------------
+	          A         
+	where f and g are distinct term algebra constructors
+	- distinctness tautology deletion: clauses of the form f(...) ~= g(...) 
+	\/ A are deleted
+	- injectivity rule:
+	f(s1 ... sn) = f(t1 ... tn) \/ A
+	--------------------------------
+	         s1 = t1 \/ A
+	               ...
+	         sn = tn \/ A
+	default: on
+--theory_instantiation (-thi)
+	
+	Enables theory instantiation rule: 
+	T[x_1, ..., x_n] \/ C[x_1, ..., x_n]
+	-------------------------------------
+	           C[t_1, ..., t_n]          
+	where  
+	 -  T[x_1, ..., x_n] is a pure theory clause  
+	 - ~T[t_1, ...., t_n] is valid 
+	
+	The rule uses an smt solver (i.e. z3 atm) to find t_1...t_n that satisfy 
+	the requirement for the rule.
+	
+	The different option values define the behaviour of which theory literals 
+	to select.
+	- all    : hmmm.. what could that mean?!
+	- neg_eq : only negative equalities
+	- strong : interpreted predicates, but no positive equalities
+	- overlap: all literals that contain variables that are also contained 
+	in a strong literal
+	- new    : deprecated
+	- full   : deprecated
+	default: off
+	values: off,all,strong,neg_eq,overlap,full,new
+--unification_with_abstraction (-uwa)
+	During unification, if two terms s and t fail to unify we will introduce 
+	a constraint s!=t and carry on. For example, resolving p(1) \/ C with ~p(a+2) 
+	would produce C \/ 1 !=a+2. This is controlled by a check on the terms. 
+	The expected use case is in theory reasoning. The possible values are:- 
+	off: do not introduce a constraint
+	- interpreted_only: only if s and t have interpreted top symbols
+	- one_side_interpreted: only if one of s or t have interpreted top symbols
+	- one_side_constant: only if one of s or t is an interpreted constant (e.g. 
+	a number)
+	- all: always apply
+	- ground: only if both s and t are ground
+	See Unification with Abstraction and Theory Instantiation in Saturation-Based 
+	Reasoning for further details.
+	default: off
+	values: off,interpreted_only,one_side_interpreted,one_side_constant,all,
+	        ground
+--unit_resulting_resolution (-urr)
+	Uses unit resulting resolution only to derive empty clauses (may be useful 
+	for splitting)
+	default: off
+	values: ec_only,off,on
+--use_ac_eval (-uace)
+	Evaluate associative and commutative operators e.g. + and *.
+	default: on
+
+************************************************************
+*************************  AVATAR  *************************
+************************************************************
+
+--avatar (-av)
+	Use AVATAR splitting.
+	default: on
+--avatar_add_complementary (-aac)
+	no description provided!
+	default: ground
+	values: ground,none
+--avatar_buffered_solver (-abs)
+	Added buffering functionality to the SAT solver used in AVATAR.
+	default: off
+--avatar_congruence_closure (-acc)
+	Use a congruence closure decision procedure on top of the AVATAR SAT solver. 
+	This ensures that models produced by AVATAR satisfy the theory of uninterpreted 
+	functions.
+	default: off
+	values: model,off,on
+--avatar_delete_deactivated (-add)
+	no description provided!
+	default: on
+	values: on,large,off
+--avatar_eager_removal (-aer)
+	If a component was in the model and then becomes 'don't care' eagerly remove 
+	that component from the first-order solver. Note: only has any impact when 
+	amm is used.
+	default: on
+--avatar_fast_restart (-afr)
+	no description provided!
+	default: off
+--avatar_flush_period (-afp)
+	after given number of generated clauses without deriving an empty clause, 
+	the splitting component selection is shuffled. If equal to zero, shuffling 
+	is never performed.
+	default: 0
+--avatar_flush_quotient (-afq)
+	after each flush, the avatar_flush_period is multiplied by the quotient
+	default: 1.5
+--avatar_literal_polarity_advice (-alpa)
+	Override SAT-solver's default polarity/phase setting for variables abstracting 
+	clause components.
+	default: none
+	values: false,true,none,random
+--avatar_minimize_model (-amm)
+	Minimize the SAT-solver model by replacing concrete values with don't-cares 
+	provided <all> the sat clauses (or only the split clauses with <sco>) remain 
+	provably satisfied by the partial model.
+	default: all
+	values: off,sco,all
+--avatar_nonsplittable_components (-anc)
+	Decide what to do with a nonsplittable component:
+	  -known: SAT clauses will be learnt from non-splittable clauses that have 
+	corresponding components (if there is a component C with name SAT l, clause 
+	C | {l1,..ln} will give SAT clause ~l1 \/ … \/ ~ln \/ l). When we add 
+	the sat clause, we discard the original FO clause C | {l1,..ln} and let 
+	the component selection update model, possibly adding the component clause 
+	C | {l}.
+	  -all: like known, except when we see a non-splittable clause that doesn't 
+	have a name, we introduce the name for it.
+	  -all_dependent: like all, but we don't introduce names for non-splittable 
+	clauses that don't depend on any components
+	default: known
+	values: all,all_dependent,known,none
+--avatar_split_queue (-avsq)
+	Turn on experiments: clause selection with multiple queues containing different 
+	clauses (split by amount of avatar-split-set-size)
+	default: off
+--avatar_split_queue_cutoffs (-avsqc)
+	The cutoff-values for the avatar-split-queues (the cutoff value for the 
+	last queue is omitted, since it has to be infinity).
+	default: 0
+--avatar_split_queue_layered_arrangement (-avsql)
+	If turned on, use a layered arrangement to split clauses into queues. Otherwise 
+	use a tammet-style-arrangement.
+	default: off
+--avatar_split_queue_ratios (-avsqr)
+	The ratios for picking clauses from the split-queues using weighted round 
+	robin. If a queue is empty, the clause will be picked from the next non-empty 
+	queue to the right. Note that this option implicitly also sets the number 
+	of queues.
+	default: 1,1
+--avatar_turn_off_time_frac (-atotf)
+	Stop splitting after the specified fraction of the overall time has passed 
+	(the default 1.0 means AVATAR runs until the end).
+	(the remaining time AVATAR is still switching branches and communicating 
+	with the SAT solver,
+	but not introducing new splits anymore. This fights the theoretical possibility 
+	of AVATAR's dynamic incompleteness.)
+	default: 1
+--cc_unsat_cores (-ccuc)
+	no description provided!
+	default: all
+	values: first,small_ones,all
+--nonliterals_in_clause_weight (-nicw)
+	Non-literal parts of clauses (such as its split history) will also contribute 
+	to the weight
+	default: off
+--split_at_activation (-sac)
+	Split a clause when it is activated, default is to split when it is processed
+	default: off
+
+*************************************************************
+***********************  SAT Solving  ***********************
+*************************************************************
+
+--sat_fallback_for_smt (-sffsmt)
+	If using z3 run a sat solver alongside to use if the smt solver returns 
+	unknown at any point
+	default: off
+--sat_solver (-sas)
+	Select the SAT solver to be used throughout the solver. This will be used 
+	in AVATAR (for splitting) when the saturation algorithm is discount,lrs 
+	or otter and in instance generation for selection and global subsumption.
+	default: minisat
+	values: minisat,z3
+
+*************************************************************
+******************  Finite Model Building  ******************
+*************************************************************
+
+--fmb_adjust_sorts (-fmbas)
+	Detect monotonic sorts. If <expand> then expand monotonic subsorts into 
+	proper sorts. If <group> then collapse monotonic sorts into a single sort. 
+	If <predicate> then introduce sort predicates for non-monotonic sorts and 
+	collapse all sorts into one. If <function> then introduce sort functions 
+	for non-monotonic sorts and collapse all sorts into one
+	default: group
+	values: off,expand,group,predicate,function
+--fmb_detect_sort_bounds (-fmbdsb)
+	Use a saturation loop to detect sort bounds introduced by (for example) 
+	injective functions
+	default: off
+--fmb_detect_sort_bounds_time_limit (-fmbdsbt)
+	The time limit (in seconds) for performing sort bound detection
+	default: 1
+--fmb_enumeration_strategy (-fmbes)
+	How model sizes assignments are enumerated in the multi-sorted setting. 
+	(Only smt and contour are known to be finite model complete and can therefore 
+	return UNSAT.)
+	default: sbeam
+	values: sbeam,smt,contour
+--fmb_keep_sbeam_generators (-fmbksg)
+	A modification of the sbeam enumeration strategy which (for a performance 
+	price) makes it more enumeration-complete.
+	default: off
+--fmb_size_weight_ratio (-fmbswr)
+	Controls the priority the next sort size vector is given based on a ratio. 
+	0 is size only, 1 means 1:1, 2 means 1:2, etc.
+	default: 1
+--fmb_start_size (-fmbss)
+	Set the initial model size for finite model building
+	default: 1
+--fmb_symmetry_ratio (-fmbsr)
+	Usually we use at most n principal terms for symmetry avoidance where n 
+	is the current model size. This option allows us to supply a multiplier 
+	for that n. See Symmetry Avoidance in MACE-Style Finite Model Finding.
+	default: 1
+--fmb_symmetry_symbol_order (-fmbsso)
+	The order of symbols considered for symmetry avoidance. See Symmetry Avoidance 
+	in MACE-Style Finite Model Finding.
+	default: occurence
+	values: occurence,input_usage,preprocessed_usage
+
+*************************************************************
+*******************  Instance Generation  *******************
+*************************************************************
+
+--inst_gen_big_restart_ratio (-igbrr)
+	Determines how often a big restart (instance generation starts from input 
+	clauses) will be performed. Small restart means all clauses generated so 
+	far are processed again.
+	default: 0
+--inst_gen_passive_reactivation (-igpr)
+	When the model describing the selection function changes some active clauses 
+	may become lazily deselected. If passive reaction is selected these clauses 
+	are added into the passive set before recomputing the next model, otherwise 
+	they are added back to active.
+	default: off
+--inst_gen_resolution_ratio (-igrr)
+	Ratio of resolution and instantiation steps (applies only if inst_gen_with_resolution 
+	is on)
+	default left: 1
+	default right: 1
+--inst_gen_restart_period (-igrp)
+	How many clauses are processed before restart. The size of the restart 
+	depends on inst_gen_big_restart_ratio.
+	default: 1000
+--inst_gen_restart_period_quotient (-igrpq)
+	Restart period is multiplied by this number after each restart.
+	default: 1
+--inst_gen_selection (-igs)
+	Selection function for InstGen. This is applied *after* model-based selection 
+	is applied. For consistency the value 1011 is used to denote look-ahead 
+	selection.
+	default: 0
+--inst_gen_with_resolution (-igwr)
+	Performs instantiation together with resolution (global subsumption index 
+	is shared, also clauses generated by the resolution are added to the instance 
+	SAT problem)
+	default: off
+
+************************************************************
+*************************  Output  *************************
+************************************************************
+
+--ignore_missing_inputs_in_unsat_core
+	When running in unsat core output mode we will complain if there is an 
+	input formula that has no label. Set this on if you don't want this behaviour 
+	(which is default in smt-comp).
+	default: off
+--latex_output
+	File that will contain proof in the LaTeX format.
+	default: off
+--latex_use_default_symbols
+	Interpreted symbols such as product have default LaTeX symbols that can 
+	be used. They can be overriden in the normal way. This option can turn 
+	them off
+	default: on
+--minimize_sat_proofs (-msp)
+	Perform unsat core minimization when a sat solver finds a clause set UNSAT
+	(such as with AVATAR proofs or with global subsumption).
+	default: on
+--output_axiom_names
+	Preserve names of axioms from the problem file in the proof output
+	default: off
+--output_mode (-om)
+	Change how Vampire prints the final result. SZS uses TPTP's SZS ontology. 
+	smtcomp mode suppresses all output and just prints sat/unsat. vampire is 
+	the same as SZS just without the SZS. Spider prints out some profile information 
+	and extra error reports. ucore uses the smt-lib ucore output.
+	default: szs
+	values: smtcomp,spider,szs,vampire,ucore
+--print_clausifier_premises
+	Output how the clausified problem was derived.
+	default: off
+--print_proofs_to_file (-pptf)
+	If Vampire finds a proof, it is printed to the here specified file instead 
+	of to stdout.
+	Currently, this option only works in portfolio mode.
+	default: <empty>
+--proof (-p)
+	Specifies whether proof (or similar e.g. model/saturation) will be output 
+	and in which format:
+	- off gives no proof output
+	- on gives native Vampire proof output
+	- proofcheck will output proof as a sequence of TPTP problems to allow 
+	for proof-checking by external solvers
+	- tptp gives TPTP output
+	- property is a developmental option. It allows developers to output statistics 
+	about the proof using a ProofPrinter object (see Kernel/InferenceStore::ProofPropertyPrinter
+	
+	default: on
+	values: off,on,proofcheck,tptp,property
+--proof_extra
+	Add extra detail to proofs:
+	 - free uses known information only
+	- full may perform expensive operations to achieve this so may significantly 
+	impact on performance.
+	 The option is still under development and the format of extra information 
+	(mainly from full) may change between minor releases
+	default: off
+	values: off,free,full
+--show_fmb_sort_info
+	Print information about sorts in FMB
+	default: off
+--show_fool
+	Reveal the internal representation of FOOL terms
+	default: off
+--show_induction
+	Print information about induction
+	default: off
+--show_ordering
+	Display the used simplification ordering's parameters.
+	default: off
+--statistics (-stat)
+	The level of statistics to report at the end of the run.
+	default: brief
+	values: brief,full,none
+--time_statistics (-tstat)
+	Show how much running time was spent in each part of Vampire
+	default: off
+
+*************************************************************
+***********************  Development  ***********************
+*************************************************************
+
+--arity_check
+	Enforce the condition that the same symbol name cannot be used with multiple 
+	arities.This also ensures a symbol is not used as a function and predicate.
+	default: off
+--decode
+	Decodes an encoded strategy. Can be used to replay a strategy. To make 
+	Vampire output an encoded version of the strategy use the encode option.
+	default: 
+--encode
+	Output an encoding of the strategy to be used with the decode option
+	default: off
+--export_avatar
+	Export the avatar problems to solve in smtlib syntax.
+	default: <empty>
+--export_thi
+	Export the theory instantiation problems to solve in smtlib syntax.
+	default: <empty>
+--ignore_missing
+	Ignore any options that have been removed (useful in portfolio modes where 
+	this can cause strategies to be skipped). If set to warn this will print 
+	a warning when ignoring. This is set to warn in CASC mode.
+	default: off
+	values: on,off,warn
+--manual_cs
+	Run Vampire interactively by manually picking the clauses to be selected
+	default: off
+--parsing_does_not_count
+	Extend the instruction limit by the amount of instructions it took to parse 
+	the input problem.
+	default: off
+--random_strategy
+	Create a random strategy. Randomisation will occur after all other options 
+	have been set, whatever order they have been given in. A random number 
+	of options will be selected  and set with a safe (possibly default) value.
+	default: off
+	values: on,off,sat,nocheck
+--show_active
+	Print activated clauses.
+	default: off
+--show_blocked
+	Show generating inferences blocked due to coloring of symbols
+	default: off
+--show_definitions
+	Show definition introductions.
+	default: off
+--show_everything
+	Turn (almost) all of the showX commands on
+	default: off
+--show_new
+	Show new (generated) clauses
+	default: off
+--show_nonconstant_skolem_function_trace
+	Show introduction of non-constant skolem functions.
+	default: off
+--show_passive
+	Show clauses added to the passive set.
+	default: off
+--show_preprocessing
+	Show preprocessing.
+	default: off
+--show_reductions
+	Show reductions.
+	default: off
+--show_skolemisations
+	Show Skolemisations.
+	default: off
+--show_splitting
+	Show updates within AVATAR
+	default: off
+--show_symbol_elimination
+	Show symbol elimination.
+	default: off
+--show_theory_axioms
+	Show the added theory axioms.
+	default: off
+--show_z3
+	Print the clauses being added to Z3
+	default: off
+
+*************************************************************
+**************************  Other  **************************
+*************************************************************
+
+--question_answering (-qa)
+	Determines whether (and how) we attempt to answer questions
+	default: off
+	values: answer_literal,from_proof,off
+--use_hashing_clause_variant_index (-uhcvi)
+	Use clause variant index based on hashing for clause variant detection 
+	(affects inst_gen and avatar).
+	default: off
