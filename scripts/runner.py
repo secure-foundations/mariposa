@@ -1,24 +1,11 @@
 import sys, os
 import time, random
-import subprocess
 import multiprocessing as mp
-import itertools
 
 from db_utils import *
 from configer import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
-
-def subprocess_run(command, time_limit, debug=False, cwd=None):
-    if debug:
-        print(command)
-    start_time = time.time()
-    res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-    # milliseconds
-    elapsed = round((time.time() - start_time) * 1000)
-    stdout = res.stdout.decode("utf-8").strip()
-    stderr = res.stderr.decode("utf-8").strip()
-    return stdout, stderr, elapsed
 
 def parse_basic_output_z3(output):
     if "unsat" in output:
@@ -44,17 +31,6 @@ def parse_basic_output_cvc(output, timeout):
         return "unknown"
     return "error"
 
-# def parse_basic_output_cvc(output, error):
-#     if "unsat" in output:
-#         return "unsat"
-#     elif "sat" in output:
-#         return "sat"
-#     elif "unknown" in output:
-#         return "unknown"
-#     elif "interrupted by timeout" in error:
-#         return "timeout"
-#     return "error"
-
 def start_z3(z3_path):
     return subprocess.Popen(
         [z3_path, "-in"],
@@ -63,10 +39,9 @@ def start_z3(z3_path):
         stderr=subprocess.PIPE)
 
 def start_cvc(cvc_path, timelimit, mut_seed=None):
-    if mut_seed is None:
-        args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit)]
-    else:
-        args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit), "--sat-random-seed", str(mut_seed), "--seed", str(mut_seed)]
+    args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit)]
+    if mut_seed is not None:
+        args += ["--sat-random-seed", str(mut_seed), "--seed", str(mut_seed)]
     return subprocess.Popen(
         args,
         stdin=subprocess.PIPE,
@@ -316,16 +291,6 @@ class Runner:
 #     for project, solver in itertools.product(projects, solvers):
 #         r = Runner(exp)
 #         r.run_single_project(project, solver)
-
-def check_serenity_status():
-    print("checking scaling_governor...")
-    stdout, _, _ = subprocess_run("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | uniq", 0)
-    assert stdout == "performance"
-
-    print("[INFO] building mariposa...")
-    stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD", 0)
-    # assert stdout == "master"
-    os.system("cargo build --release")
 
 if __name__ == "__main__":
     import numpy as np
