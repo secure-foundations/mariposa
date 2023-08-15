@@ -322,6 +322,12 @@
         "framework": "dafny",
         "clean_dir": "data/unsat_cores/d_komodo_z3/min_asserts",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_dice_uc",
+        "framework": "fstar",
+        "clean_dir": "data/unsat_cores/fs_dice_z3/min_asserts",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }
