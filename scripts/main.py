@@ -86,7 +86,7 @@ def dump_multi_status(project, solver, exp, ana):
     print(tabulate(pp_table, tablefmt="github"))
     print("")
     print("listing unstable queries...")
-    return
+
     for row in rows:
         query = row[0]
         if query not in items[Stability.UNSTABLE]:

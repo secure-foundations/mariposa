@@ -85,19 +85,21 @@ class Analyzer:
 
     def _categorize_strict(self, group_blob):
         size = len(group_blob[0])
+        unsat_indices = group_blob[0] == RCode.UNSAT.value
         success = count_within_timeout(group_blob, RCode.UNSAT, self._timeout)
-
+        
         if success == 0:
-            if count_within_timeout(group_blob, RCode.UNKNOWN, self._timeout) == size:
-                return Stability.UNKNOWN
+            # if count_within_timeout(group_blob, RCode.UNKNOWN, self._timeout) == size:
+            #     return Stability.UNKNOWN
             return Stability.UNSOLVABLE
 
         if success == size:
             return Stability.STABLE
 
-        # if m > self._timeout * self.discount:
-        #     return Stability.STABLE
-        return Stability.UNSTABLE
+        if np.mean(group_blob[1][unsat_indices]) < self._timeout * self.discount:
+            return Stability.UNSTABLE
+
+        return Stability.STABLE
 
     def _categorize_z_test(self, group_blob):
         size =  group_blob.shape[1]

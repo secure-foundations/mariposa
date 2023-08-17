@@ -5,7 +5,8 @@
         "mutations": [
           "shuffle",
           "rename",
-          "reseed"
+          "reseed",
+          "quake"
         ],
         "keep_mutants": true,
         "num_mutants": 60,

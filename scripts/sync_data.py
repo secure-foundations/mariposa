@@ -25,4 +25,5 @@ for i in {1, 2 ,4, 5, 6, 7, 8}:
         # print(f"[INFO] sending zip to {host}")
         print(f"rcp {zipped} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {zipped} && rm {zipped}'")
     else:
+        # print(remote_count == file_count)
         exit_with_on_fail(remote_count == file_count, f"[ERROR] file count mismatch {host}")
