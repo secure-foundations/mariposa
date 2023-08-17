@@ -329,6 +329,18 @@
         "framework": "fstar",
         "clean_dir": "data/unsat_cores/fs_dice_z3/min_asserts",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_lvbkv_uc",
+        "framework": "dafny",
+        "clean_dir": "data/unsat_cores/d_lvbkv_z3/min_asserts",
+        "artifact_solver_name": "z3_4_8_5"
+      },
+      {
+        "name": "d_fvbkv_uc",
+        "framework": "dafny",
+        "clean_dir": "data/unsat_cores/d_fvbkv_z3/min_asserts",
+        "artifact_solver_name": "z3_4_8_5"
       }
     ]
   }
