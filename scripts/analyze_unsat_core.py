@@ -30,60 +30,121 @@ def print_as_table(items, ps):
     pp_table = [["category", "count", "percentage"]]
     total = 0
     for cat in [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
+        if len(items[cat]) == 0:
+            continue
         pp_table.append([cat, len(items[cat]), round(ps[cat], 2)])
         total += len(items[cat])
     pp_table.append(["total", total, "-"])
     print(tabulate(pp_table, headers="firstrow", tablefmt="github"))
     print("")
 
-def analyze_unsat_cores():
+def analyze_unsat_cores0():
     c = Configer()
     UC = c.load_known_experiment("min_asserts")
-    D_KOMODO = c.load_known_project("fs_dice")
-    D_KOMODO_UC = c.load_known_project("fs_dice_uc")
+    # orgi = c.load_known_project("fs_dice")
+    # mini = c.load_known_project("fs_dice_uc")
 
-    # D_KOMODO = c.load_known_project("d_komodo")
-    # D_KOMODO_UC = c.load_known_project("d_komodo_uc")
+    orgi = c.load_known_project("d_komodo")
+    mini = c.load_known_project("d_komodo_uc")
 
-    items0, ps0, tally0 = load(D_KOMODO, UC)
-    items1, ps1, tally1 = load(D_KOMODO_UC, UC)
+    items0, ps0, tally0 = load(orgi, UC)
+    items1, ps1, tally1 = load(mini, UC)
 
-    rows = load_sum_table(D_KOMODO_UC, Z3_4_12_2, UC)
-    items2 = {Stability.STABLE: set(), Stability.UNSTABLE: set(), Stability.UNSOLVABLE: set()}
-    
-    uc_tally = set()
-    for row in rows:
-        query = row[0].split("/")[-1]
-        cat, _ = ANA.categorize_query(row[2])
-        if query in items0[Stability.UNSOLVABLE]:
-            items2[Stability.UNSOLVABLE].add(query)
-        elif cat == Stability.UNSOLVABLE:
-            # print(query)
-            if query in items0[Stability.STABLE]:
-                items2[Stability.STABLE].add(query)
-            elif query in items0[Stability.UNSTABLE]:
-                items2[Stability.UNSTABLE].add(query)
-            else:
-                items2[Stability.UNSOLVABLE].add(query)
-        else:
-            items2[cat].add(query)
-        uc_tally.add(query)
-    for query in tally0 - uc_tally:
-        if query in items0[Stability.STABLE]:
-            items2[Stability.STABLE].add(query)
-        elif query in items0[Stability.UNSTABLE]:
-            items2[Stability.UNSTABLE].add(query)
-        else:
-            items2[Stability.UNSOLVABLE].add(query)
-    ps2, _ = get_category_percentages(items2)
+    assert len(tally1 - tally0) == 0
 
-    print("original:")
+    print("original (unadjusted):")
     print_as_table(items0, ps0)
-    print("unsat cores:")
+    print("minimized (unadjusted):")
     print_as_table(items1, ps1)
-    print("unsat cores adjusted:")
-    print_as_table(items2, ps2)
 
+import re
+
+ASSERT_LABELS = ["qfree", "others", "prelude", "type", "heap"]
+
+def get_dfy_asserts(file):
+    f = open(file, "r")
+    lines = f.readlines()
+    qid_pat = re.compile(r"qid \|([^\|])*\|")
+    labels = {k: 0 for k in ASSERT_LABELS}
+
+    for line in lines:
+        line = line.strip()
+        if line.startswith("(assert"):
+            qid = re.search(qid_pat, line)
+            if qid is None:
+                if "forall" in line:
+                    labels["others"] += 1
+                else:
+                    labels["qfree"] += 1
+                continue
+            qid = qid.group(0)
+            if "DafnyPre" in qid:
+                labels["prelude"] += 1
+            elif "funType" in qid:
+                labels["type"] += 1
+            elif "Heap" in line:
+                labels["heap"] += 1
+            else:
+                labels["others"] += 1
+    return labels
+
+def analyze_unsat_cores1():
+    c = Configer()
+    UC = c.load_known_experiment("min_asserts")
+    orgi = c.load_known_project("d_komodo")
+    mini = c.load_known_project("d_komodo_uc")
+
+    # orgi = c.load_known_project("fs_dice")
+    # mini = c.load_known_project("fs_dice_uc")
+
+    items0, ps0, tally0 = load(orgi, UC)
+    items1, ps1, tally1 = load(mini, UC)
+
+    keep = set()
+    assert len(tally1 - tally0) == 0
+
+    for query in tally0:
+        if query in items0[Stability.UNSOLVABLE]:
+            continue
+        if query not in tally1:
+            continue
+        if query in items1[Stability.UNSOLVABLE]:
+            continue
+        keep.add(query)
+    
+    for cat in [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
+        items0[cat] = items0[cat] & keep
+        items1[cat] = items1[cat] & keep
+
+    ps0, _ = get_category_percentages(items0)
+    ps1, _ = get_category_percentages(items1)
+
+    print("original (adjusted):")
+    print_as_table(items0, ps0)
+    print("minimized (adjusted):")
+    print_as_table(items1, ps1)
+    
+    table = []
+    for query in keep:
+    # for query in items0[Stability.UNSTABLE] & items1[Stability.STABLE]:
+        orgi_path = orgi.clean_dir + "/" + query
+        mini_path = mini.clean_dir + "/" + query
+
+        # o = get_dfy_asserts(orgi_path)
+        o = get_dfy_asserts(mini_path)
+        row = []
+        s = sum(o.values())
+        for k in ASSERT_LABELS:
+            row.append(o[k] * 100 / s)
+        table.append(row)
+    table = np.array(table)
+    for i in range(len(ASSERT_LABELS)):
+        # plt.hist(table[:, i], bins=20, label=ASSERT_LABELS[i], alpha=0.5)
+        xs, ys = get_cdf_pts(table[:, i])
+        plt.plot(xs, ys, label=ASSERT_LABELS[i], linewidth=2)
+    plt.legend()
+    plt.savefig("quanti.m.png")
+ 
 def analyze_opaque():
     OP = c.load_known_experiment("opaque")
     d_lvbkv_opened = c.load_known_project("d_lvbkv_opened")
@@ -94,20 +155,4 @@ def analyze_opaque():
     print_as_table(items0, ps0)
     print_as_table(items1, ps1)
 
-analyze_unsat_cores()
-
-# projs = ["d_fvbkv_z3/", "d_komodo_z3/", "d_lvbkv_z3/", "fs_dice_z3/", "fs_vwasm_z3/"]
-
-# for proj in projs:
-#     insts = list_files(f"data/unsat_cores/{proj}/inst/")
-#     cores = list_files(f"data/unsat_cores/{proj}/core/")
-
-#     insts = set([os.path.basename(x) for x in insts])
-#     cores = set([os.path.basename(x) for x in cores])
-
-#     count = 0
-#     for inst in insts:
-#         if inst.replace(".smt2", ".core") not in cores:
-#             count += 1
-#     print(f"{proj} {round(count/len(insts), 2)}")
-#             # print(f"data/unsat_cores/{proj}/inst/{inst}")
+analyze_unsat_cores1()
