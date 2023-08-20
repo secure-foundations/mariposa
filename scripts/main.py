@@ -311,3 +311,6 @@ if __name__ == '__main__':
         worker_mode(args)
     elif args.sub_command is None:
         parser.print_help()
+# c = Configer()  
+# p = c.load_known_project("d_fvbkv")
+# print(len(p.list_queries(200, 200)))

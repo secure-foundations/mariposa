@@ -263,7 +263,10 @@ class Runner:
         self.sum_tname = self.exp.get_sum_tname(project, solver, part_id, part_num)
         self._set_up_table()
         tasks = []
-        for origin_path in project.list_queries(part_id, part_num):
+        origin_paths = project.list_queries(part_id, part_num)
+        print(f"[INFO] running {len(origin_paths)} original queries")
+
+        for origin_path in origin_paths:
             task = Task(self.exp, self.exp_tname, origin_path, None, None, solver)
             if Mutation.QUAKE in self.exp.enabled_muts:
                 task.quake = True

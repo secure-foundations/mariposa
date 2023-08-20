@@ -61,32 +61,55 @@ import re
 
 ASSERT_LABELS = ["qfree", "others", "prelude", "type", "heap"]
 
+def get_dfy_assert_label(line):
+    qid_pat = re.compile(r"qid \|([^\|])*\|")
+
+    if not line.startswith("(assert"):
+        return None
+
+    qid = re.search(qid_pat, line)
+    if qid is None:
+        if "forall" in line:
+            return "others"
+        else:
+            return "qfree"
+    qid = qid.group(0)
+    if "DafnyPre" in qid:
+        return "prelude"
+    elif "funType" in qid:
+        return "type"
+    elif "Heap" in line:
+        return "heap"
+    else:
+        return "others"
+
 def get_dfy_asserts(file):
     f = open(file, "r")
     lines = f.readlines()
-    qid_pat = re.compile(r"qid \|([^\|])*\|")
     labels = {k: 0 for k in ASSERT_LABELS}
 
     for line in lines:
         line = line.strip()
-        if line.startswith("(assert"):
-            qid = re.search(qid_pat, line)
-            if qid is None:
-                if "forall" in line:
-                    labels["others"] += 1
-                else:
-                    labels["qfree"] += 1
-                continue
-            qid = qid.group(0)
-            if "DafnyPre" in qid:
-                labels["prelude"] += 1
-            elif "funType" in qid:
-                labels["type"] += 1
-            elif "Heap" in line:
-                labels["heap"] += 1
-            else:
-                labels["others"] += 1
+        label = get_dfy_assert_label(line)
+        if label is not None:
+            labels[label] += 1
     return labels
+
+def add_back_dfy_asserts(label, origi_file, mini_file, out_file):
+    assert label in ASSERT_LABELS
+    adding = set()
+    for line in open(origi_file, "r").readlines():
+        if get_dfy_assert_label(line) == label:
+            adding.add(line)
+    out_file = open(out_file, "w")
+    for line in open(mini_file, "r").readlines():
+        if line in adding:
+            continue
+        if line.startswith("(check-sat)"):
+            out_file.write("".join(adding))
+            out_file.write(line)
+            break
+        out_file.write(line)
 
 def analyze_unsat_cores1():
     c = Configer()
@@ -99,6 +122,11 @@ def analyze_unsat_cores1():
 
     items0, ps0, tally0 = load(orgi, UC)
     items1, ps1, tally1 = load(mini, UC)
+
+    print("original (unadjusted):")
+    print_as_table(items0, ps0)
+    print("minimized (unadjusted):")
+    print_as_table(items1, ps1)
 
     keep = set()
     assert len(tally1 - tally0) == 0
@@ -123,27 +151,31 @@ def analyze_unsat_cores1():
     print_as_table(items0, ps0)
     print("minimized (adjusted):")
     print_as_table(items1, ps1)
-    
-    table = []
-    for query in keep:
-    # for query in items0[Stability.UNSTABLE] & items1[Stability.STABLE]:
-        orgi_path = orgi.clean_dir + "/" + query
-        mini_path = mini.clean_dir + "/" + query
 
-        # o = get_dfy_asserts(orgi_path)
-        o = get_dfy_asserts(mini_path)
-        row = []
-        s = sum(o.values())
-        for k in ASSERT_LABELS:
-            row.append(o[k] * 100 / s)
-        table.append(row)
-    table = np.array(table)
-    for i in range(len(ASSERT_LABELS)):
-        # plt.hist(table[:, i], bins=20, label=ASSERT_LABELS[i], alpha=0.5)
-        xs, ys = get_cdf_pts(table[:, i])
-        plt.plot(xs, ys, label=ASSERT_LABELS[i], linewidth=2)
-    plt.legend()
-    plt.savefig("quanti.m.png")
+    return  items0[Stability.UNSTABLE] & items1[Stability.STABLE]
+
+def analyze_unsat_cores2():
+    orgi = c.load_known_project("d_komodo")
+    mini = c.load_known_project("d_komodo_uc")
+
+    for label in ASSERT_LABELS:
+        if os.path.exists(f"data/dfy_asserts/{label}"):
+           continue
+        os.mkdir(f"data/dfy_asserts/{label}") 
+        for query in analyze_unsat_cores1():
+            orgi_path = orgi.clean_dir + "/" + query
+            mini_path = mini.clean_dir + "/" + query
+            out_path = f"data/dfy_asserts/{label}/{query}"
+            add_back_dfy_asserts(label, orgi_path, mini_path, out_path)
+
+    # print(tabulate(table, headers=ASSERT_LABELS, tablefmt="github"))
+    # table = np.array(table)
+    # for i in range(len(ASSERT_LABELS)):
+    #     # plt.hist(table[:, i], bins=20, label=ASSERT_LABELS[i], alpha=0.5)
+    #     xs, ys = get_cdf_pts(table[:, i])
+    #     plt.plot(xs, ys, label=ASSERT_LABELS[i], linewidth=2)
+    # plt.legend()
+    # plt.savefig("quanti.m.png")
  
 def analyze_opaque():
     OP = c.load_known_experiment("opaque")
@@ -155,4 +187,4 @@ def analyze_opaque():
     print_as_table(items0, ps0)
     print_as_table(items1, ps1)
 
-analyze_unsat_cores1()
+analyze_unsat_cores2()
