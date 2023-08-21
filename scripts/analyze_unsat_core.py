@@ -154,6 +154,65 @@ def analyze_unsat_cores1():
 
     return  items0[Stability.UNSTABLE] & items1[Stability.STABLE]
 
+
+def hacky_convert_file_path(path):
+    return path.replace("dfyxxx", "dfy.").replace("1.smt2", "smt2")
+
+def load_unsat_core_data_d_lvbkv():
+    c = Configer()
+    UC = c.load_known_experiment("min_asserts")
+    OP = c.load_known_experiment("opaque")
+    orgi = c.load_known_project("d_lvbkv_closed")
+    mini = c.load_known_project("d_lvbkv_uc")
+
+    items0, ps0, tally0 = load(orgi, OP)
+    for k, v in items0.items():
+        items0[k] = set([hacky_convert_file_path(x) for x in v])
+    tally0 = set([hacky_convert_file_path(x) for x in tally0])
+
+    items1, ps1, tally1 = load(mini, UC)
+
+    keep = set()
+    for query in tally1:
+        if query not in tally0:
+            continue
+        if query in items0[Stability.UNSOLVABLE]:
+            continue
+        if query in items1[Stability.UNSOLVABLE]:
+            continue
+        keep.add(query)
+    # print(len(keep))
+    for cat in [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
+        items0[cat] = items0[cat] & keep
+        items1[cat] = items1[cat] & keep
+
+    ps0, _ = get_category_percentages(items0)
+    ps1, _ = get_category_percentages(items1)
+
+    print("original (adjusted):")
+    print_as_table(items0, ps0)
+    print("minimized (adjusted):")
+    print_as_table(items1, ps1)
+
+    stabilized = items0[Stability.UNSTABLE] & items1[Stability.STABLE]
+    # print(len(stabilized))
+    
+    for label in ASSERT_LABELS:
+        if os.path.exists(f"data/d_lvbkv_asserts/{label}"):
+            continue
+        os.mkdir(f"data/d_lvbkv_asserts/{label}") 
+
+        for query in stabilized:
+            orgi_path = orgi.clean_dir + "/" + query
+            if not os.path.exists(orgi_path):
+                orgi_path = orgi_path.replace("dfy.", "dfyxxx")
+            if not os.path.exists(orgi_path):
+                orgi_path = orgi_path.replace(".smt2", ".1.smt2")
+
+            mini_path = mini.clean_dir + "/" + query
+            out_path = f"data/d_lvbkv_asserts/{label}/{query}"
+            add_back_dfy_asserts(label, orgi_path, mini_path, out_path)
+
 def analyze_unsat_cores2():
     orgi = c.load_known_project("d_komodo")
     mini = c.load_known_project("d_komodo_uc")
@@ -187,4 +246,5 @@ def analyze_opaque():
     print_as_table(items0, ps0)
     print_as_table(items1, ps1)
 
-analyze_unsat_cores2()
+# analyze_unsat_cores2()
+load_unsat_core_data_d_lvbkv()
