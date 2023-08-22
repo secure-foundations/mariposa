@@ -65,23 +65,27 @@ class Analyzer:
             self.categorize_group = self._categorize_strict
         elif method == "z_test":
             self.categorize_group = self._categorize_z_test
+        elif method == "cutoff":
+            self.categorize_group = self._categorize_cutoff
 
-    # def _categorize_group_regression(self, group_blob):
-    #     pres = group_blob[0][0]
-    #     ptime = group_blob[1][0]
-    #     if pres != RCode.UNSAT.value or ptime > self._timeout:
-    #         return Stability.UNSOLVABLE
+    def _categorize_cutoff(self, group_blob):
+        size = len(group_blob[0])
+        unsat_indices = group_blob[0] == RCode.UNSAT.value
+        success = count_within_timeout(group_blob, RCode.UNSAT, self._timeout)
+        sr = success * 100 / size
 
-    #     timeout = max(ptime * 1.5, ptime + 50000)
-    #     success = count_within_timeout(group_blob, RCode.UNSAT, timeout)
+        if sr < self.r_solvable:
+            # if count_within_timeout(group_blob, RCode.UNKNOWN, self._timeout) == size:
+            #     return Stability.UNKNOWN
+            return Stability.UNSOLVABLE
 
-    #     if success < len(group_blob[0]) * 0.8:
-    #         return Stability.RES_UNSTABLE
+        if sr >= self.r_stable:
+            return Stability.STABLE
 
-    #     size = len(group_blob[0])
-    #     if success != size:
-    #         return Stability.RES_UNSTABLE
-    #     return Stability.STABLE
+        if np.mean(group_blob[1][unsat_indices]) < self._timeout * self.discount:
+            return Stability.UNSTABLE
+
+        return Stability.STABLE
 
     def _categorize_strict(self, group_blob):
         size = len(group_blob[0])
