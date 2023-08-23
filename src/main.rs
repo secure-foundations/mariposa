@@ -6,6 +6,7 @@ use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
+use rand::Rng;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -482,6 +483,37 @@ fn ensure_no_conflicts(symbols1: HashSet<String>, symbols2: HashSet<String>) {
     }
 }
 
+fn remove_pattern_rec_helper(curr_term: &mut concrete::Term, rng: &mut ChaCha8Rng, threshold: u64) {
+    match curr_term {
+        concrete::Term::Application { qual_identifier:_, arguments } => 
+            for argument in arguments.iter_mut(){
+                remove_pattern_rec_helper(argument, rng, threshold)
+            },
+        concrete::Term::Let { var_bindings:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
+        concrete::Term::Forall { vars:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
+        concrete::Term::Exists { vars:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
+        concrete::Term::Match { term, cases:_ } => remove_pattern_rec_helper(&mut *term, rng, threshold),
+        concrete::Term::Attributes { term, attributes } => {
+            remove_pattern_rec_helper(term, rng, threshold);
+            let random = rng.gen_range(1..101);
+            if random <= threshold {
+                attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()))
+            }
+        }
+        concrete::Term::Constant(_) => (),
+        concrete::Term::QualIdentifier(_) => (),
+    }
+}
+
+// patterns
+fn remove_patterns(commands: &mut Vec<concrete::Command>, seed: u64, threshold: u64) {
+    let mut rng = ChaCha8Rng::seed_from_u64(seed);
+    commands.iter_mut().for_each(|x| 
+        if let concrete::Command::Assert { term } = x {
+            remove_pattern_rec_helper(term, &mut rng, threshold);
+    });
+}
+
 fn parse_noncore_from_file(commands: Vec<concrete::Command>, file_path: String) -> Vec<concrete::Command> {
     let core = core_to_hashset(file_path);
 
@@ -705,7 +737,9 @@ fn main() {
         // combine commands somehow...
         commands = [noncore_commands, core_commands].concat();
         clean_names(&mut commands);
-    } 
+    } else if args.mutation == "remove-trigger" { 
+        remove_patterns(&mut commands,  manager.seed, 100);
+    }
 
     manager.dump_non_info_commands(&commands);
 }

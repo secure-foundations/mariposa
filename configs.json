@@ -432,6 +432,11 @@
         "framework": "dafny",
         "clean_dir": "data/d_fvbkv_asserts/prelude",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_komodo_uc_trigger",
+        "framework": "dafny",
+        "clean_dir": "data/unsat_cores/d_komodo_z3/min_asserts_no_trigger/"
       }
     ]
   }
