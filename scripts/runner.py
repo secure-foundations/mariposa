@@ -173,7 +173,6 @@ class Task:
                 mutant_path = self.origin_path + "." + str(i)
             else:
                 perturb = None
-
             self.save_result_to_db(mutant_path, perturb, "(interactive session)", rcode, std_out, "", elapsed)
 
     def run_solver(self, mutant_path):
@@ -184,7 +183,7 @@ class Task:
         if rcode == "error":
             print("[ERROR] solver error: {} {} {}".format(command, out, err))
 
-        self.save_result_to_db(mutant_path, command, self.perturb, rcode, out, err, elapsed)
+        self.save_result_to_db(mutant_path, self.perturb, command, rcode, out, err, elapsed)
 
     def run(self):
         if self.perturb is not None:
