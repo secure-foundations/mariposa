@@ -1,6 +1,7 @@
 import sys, os
 import time, random
 import multiprocessing as mp
+import select
 
 from db_utils import *
 from configer import *
@@ -61,6 +62,44 @@ def terminate(process):
     process.stderr.close()
     process.terminate()
 
+def split_query_context(query_path):
+    lines = open(query_path, "r").readlines()
+    main_context = []
+    push_indices = []
+    check_sat_indices = []
+
+    for i, line in enumerate(lines):
+        if line.startswith("(push"):
+            push_indices.append(i)
+        if line.startswith("(check-sat"):
+            check_sat_indices.append(i)
+    assert len(check_sat_indices) == 1
+
+    check_sat_index = check_sat_indices[0]
+
+    if len(push_indices) == 0:
+        # unusual case
+        # take whatever command before check-sat
+        main_index = check_sat_index - 1
+        sub_index = main_index
+    else:
+        main_index = push_indices[-1]
+        sub_index = main_index + 1
+
+    # ignore everything after check-sat
+    lines = lines[:check_sat_index+1]
+
+    main_context = lines[:main_index]
+    query_context = lines[sub_index:]
+
+    assert query_context[-1].startswith("(check-sat")
+
+    # add push/pop
+    query_context.insert(0, "(push 1)\n")
+    query_context.append("(pop 1)\n")
+
+    return main_context, query_context
+
 class Task:
     def __init__(self, exp, exp_tname, origin_path, perturb, mut_seed, solver):
         self.exp = exp
@@ -71,101 +110,81 @@ class Task:
         self.mut_seed = mut_seed
         self.quake = False
 
-    def run_solver(self, mutant_path):
-        solver = self.solver
-        exp = self.exp
-
-        solver_type = None
-
-        if "z3" in solver.name:
-            solver_type = "z3"
-            p = start_z3(solver.path)
-        elif "cvc" in solver.name:
-            solver_type = "cvc"
-            if self.perturb == "reseed" or self.perturb == "all":
-                p = start_cvc(solver.path, exp.timeout * 1000, self.mut_seed)
-            else:
-                p = start_cvc(solver.path, exp.timeout * 1000)
-        else:
-            print("Solver is currently unsupported. If you are using z3 or cvc, please make sure z3 or cvc is present in the solver name in config.json.")
-            sys.exit(1)
-        
-        with open(mutant_path, "r") as f:
-            repeat = False
-            context = []
-            for line in f:
-                if solver_type == "cvc" and "(set-option" in line:
-                    continue
-                if "(push" in line:
-                    repeat = True
-                if repeat:
-                    if "(get-info" in line:
-                        continue
-                    context.append(line)
-                    if "(check-sat)" in line:
-                        context.append("(pop 1)\n")
-                        break
-                else:
-                    if "(check-sat)" in line:
-                        break
-                    write(p, line)
-
-        if not repeat:
-            context = ["(push 1)\n", "(check-sat)\n", "(pop 1)\n"]
-
-        if solver_type == "z3":
-            context.insert(1, f"(set-option :timeout {exp.timeout * 1000})\n")
-            context.insert(-1, "(set-option :timeout 0)\n")
-
-        context = "".join(context)
-
-        reports = dict()
-        repeat = 1
-
-        if self.quake:
-            repeat = exp.num_mutant + 1
-
-        for i in range(repeat):
-            start_time = time.time()
-            out = write(p, context)
-            out = read(p)
-            elapsed = round((time.time() - start_time) * 1000)
-#           print(elapsed)
-            if solver_type == "z3":
-                rcode = parse_basic_output_z3(out)
-            elif solver_type == "cvc":
-                rcode = parse_basic_output_cvc(out, elapsed > exp.timeout * 1000)
-
-            if rcode == "error":
-                print("[INFO] solver error: ", out)
-#           print(rcode)
-
-            reports[i] = (rcode, elapsed, out)
-
-        terminate(p)
-
-        if not exp.keep_mutants and mutant_path != self.origin_path:
-            # remove mutant
-            os.system(f"rm '{mutant_path}'")
-
-        con = sqlite3.connect(exp.db_path)
+    def save_result_to_db(self, mutant_path, perturb, command, rcode, out, err, elapsed):
+        con = sqlite3.connect(self.exp.db_path)
         cur = con.cursor()
 
-        for i in reports:
-            rcode, elapsed, out = reports[i]
+        cur.execute(f"""INSERT INTO {self.exp_tname}
+            (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
+            (mutant_path, self.origin_path, perturb, command, out, err, rcode, elapsed))
 
-            perturb = self.perturb
+        con.commit()
+        con.close()
 
-            if self.quake and i > 0:
+    def run_solver_inc(self, mutant_path):
+        main_context, query_context = split_query_context(mutant_path)
+        p = start_z3(self.solver.path)
+
+        # for z3
+        query_context.insert(1, "(set-option :timeout {})".format(self.exp.timeout * 1000))
+
+        for line in main_context:
+            p.stdin.write(line.encode("utf-8"))
+
+        poll_obj = select.poll()
+        poll_obj.register(p.stdout, select.POLLIN)
+        
+        timeout = False
+
+        for i in range(self.exp.num_mutant + 1):
+            if not timeout:
+                std_out = None
+
+                for line in query_context:
+                    p.stdin.write(line.encode("utf-8"))
+
+                start_time = time.time()
+
+                while time.time() - start_time < self.exp.timeout + 3:
+                    poll_result = poll_obj.poll(0)
+                    if poll_result:
+                        std_out = p.read()
+                        break
+
+                # to milliseconds
+                elapsed = (time.time() - start_time)  * 1000
+
+                if std_out is None:
+                    # kill the process
+                    terminate(p)
+                    timeout = True
+                    print("[INFO] incremental mode solver timeout")
+                    rcode = "timeout"
+                else:
+                    rcode = parse_basic_output_z3(std_out)
+            else:
+                rcode = "timeout"
+                std_out = "Mariposa: quake timeout"
+                elapsed = self.exp.timeout * 1000
+
+            if i > 0:
                 perturb = str(Mutation.QUAKE)
                 mutant_path = self.origin_path + "." + str(i)
+            else:
+                perturb = None
 
-            cur.execute(f"""INSERT INTO {self.exp_tname}
-                (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
-                VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
-                (mutant_path, self.origin_path, perturb, "", out, "", rcode, elapsed))
-            con.commit()
-        con.close()
+            self.save_result_to_db(mutant_path, perturb, "(interactive session)", rcode, std_out, "", elapsed)
+
+    def run_solver(self, mutant_path):
+        command = f"{self.solver.path} {mutant_path} -T:{self.exp.timeout}"
+        out, err, elapsed = subprocess_run(command)
+        rcode = parse_basic_output_z3(out)
+
+        if rcode == "error":
+            print("[ERROR] solver error: {} {} {}".format(command, out, err))
+
+        self.save_result_to_db(mutant_path, command, self.perturb, rcode, out, err, elapsed)
 
     def run(self):
         if self.perturb is not None:
@@ -184,8 +203,15 @@ class Task:
                 return
         else:
             mutant_path = self.origin_path
-            
-        self.run_solver(mutant_path)
+
+        if self.quake:
+            self.run_solver_inc(mutant_path)
+        else:
+            self.run_solver(mutant_path)
+
+        if not self.exp.keep_mutants and mutant_path != self.origin_path:
+            # remove mutant
+            os.system(f"rm '{mutant_path}'")
 
 def print_eta(elapsed, cur_size, init_size):
     from datetime import timedelta
@@ -295,29 +321,50 @@ class Runner:
 #         r = Runner(exp)
 #         r.run_single_project(project, solver)
 
+def create_single_mode_project(origin_path, solver):
+    query_name = os.path.basename(origin_path)
+    exit_with_on_fail(query_name.endswith(".smt2"), '[ERROR] query must end with ".smt2"')
+    query_name.replace(".smt2", "")
+    gen_split_subdir = f"gen/{query_name}_"
+    project = ProjectInfo("misc", "unknown", gen_split_subdir, solver)
+    return project
+
+def dump_status(project, solver, cfg, ana):
+    rows = load_sum_table(project, solver, cfg)
+    # print("solver:", solver.path)
+    print("solver used:", solver.path)
+
+    for row in rows:
+        print("")
+        print("query:", row[0])
+        mutations, blob = row[1], row[2]
+        ana.dump_query_status(mutations, blob)
+
 if __name__ == "__main__":
-    import numpy as np
+    import shutil
+    query_path = sys.argv[1]
 
     c = Configer()
-    solver = c.load_known_solver("z3_4_12_1")
-    exp = c.load_known_experiment("incremental")
-    p = c.load_known_project("nr")
+    solver = c.load_known_solver("z3_4_12_2")
+    exp = c.load_known_experiment("single")
+    p = create_single_mode_project(query_path, solver)
 
+    if exp.db_path == "":
+        exp.db_path = f"{p.clean_dir}/test.db"
+    dir_exists = os.path.exists(p.clean_dir)
+    if dir_exists:
+        shutil.rmtree(p.clean_dir, ignore_errors=True)
+    os.makedirs(p.clean_dir)
+
+    command = f"./target/release/mariposa -i '{query_path}' --chop --remove-debug -o '{p.clean_dir}/split.smt2'"
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+    print(result.stdout.decode('utf-8'), end="")
     r = Runner(exp)
-    r.run_project(p, solver, 1, 100)
+    r.run_project(p, solver, 1, 1)
 
     con, cur = get_cursor(exp.db_path)
-    sum_name = exp.get_sum_tname(p, solver, 1, 100)
+    sum_name = exp.get_sum_tname(p, solver, 1, 1)
 
-    res = cur.execute(f"""SELECT * FROM {sum_name}""")
-    rows = res.fetchall()
-
-    nrows = []
-    mut_size = exp.num_mutant
-    for row in rows:
-        mutations = ast.literal_eval(row[1])
-        blob = np.frombuffer(row[2], dtype=int)
-        blob = blob.reshape((len(mutations), 2, mut_size + 1))
-        nrow = [row[0], mutations, blob]
-        nrows.append(nrow)
-        print(blob)
+    ANA = Analyzer(.05, 60, .05, .95, 0.8, "cutoff")
+    dump_status(p, p.artifact_solver, exp, ANA)
+    # split_query_context(sys.argv[1])

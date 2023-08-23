@@ -14,31 +14,11 @@ from configer import *
 #     os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {remote_db_path}")
 #     import_tables(remote_db_path)
 
-def create_single_mode_project(args, solver):
-    origin_path = args.query
-    query_name = os.path.basename(origin_path)
-    exit_with_on_fail(query_name.endswith(".smt2"), '[ERROR] query must end with ".smt2"')
-    query_name.replace(".smt2", "")
-    gen_split_subdir = f"gen/{query_name}_"
-    project = ProjectInfo("misc", "unknown", gen_split_subdir, solver)
-    return project
-
-def dump_status(project, solver, cfg, ana):
-    rows = load_sum_table(project, solver, cfg)
-    # print("solver:", solver.path)
-    print("solver used:", solver.path)
-
-    for row in rows:
-        print("")
-        print("query:", row[0])
-        mutations, blob = row[1], row[2]
-        ana.dump_query_status(mutations, blob)
-
 def single_mode(args):
     c = Configer()
     exp = c.load_known_experiment(args.experiment)
     solver = c.load_known_solver(args.solver)
-    project = create_single_mode_project(args, solver)
+    project = create_single_mode_project(args.query, solver)
     ana = c.load_known_analyzer(args.analyzer)
 
     if exp.db_path == "":

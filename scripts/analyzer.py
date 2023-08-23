@@ -43,9 +43,10 @@ def count_within_timeout(blob, rcode, timeout=1e6):
     return success
 
 def count_timeouts(blob, timeout=1e6):
-    if timeout == None:
-        return np.sum(blob[0] == RCode.TIMEOUT.value)
-    return np.sum(blob[1] >= timeout)
+    res_indices = np.sum(blob[0] == RCode.TIMEOUT.value)
+    to_indices = blob[1] >= timeout
+    timeout_count = np.sum(np.logical_or(to_indices, res_indices))
+    return timeout_count
 
 class Analyzer:
     def __init__(self, confidence, timeout, r_solvable, r_stable, discount, method):

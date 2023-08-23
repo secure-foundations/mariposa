@@ -177,6 +177,7 @@ def populate_sum_table(cfg, exp_table_name, sum_table_name):
 
             blob[pi][0] = veri_res
             blob[pi][1] = veri_times
+            print(veri_res)
 
         if cfg.db_mode == DBMode.UPDATE:
             cur.execute(f"""REPLACE INTO {sum_table_name}
