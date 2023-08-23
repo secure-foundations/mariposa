@@ -436,7 +436,8 @@
       {
         "name": "d_komodo_uc_trigger",
         "framework": "dafny",
-        "clean_dir": "data/unsat_cores/d_komodo_z3/min_asserts_no_trigger/"
+        "clean_dir": "data/unsat_cores/d_komodo_z3/min_asserts_no_trigger/",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }
