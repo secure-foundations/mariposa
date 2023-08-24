@@ -2,6 +2,7 @@ import sys, os
 import time, random
 import multiprocessing as mp
 import select
+from quake import *
 
 from db_utils import *
 from configer import *
@@ -32,73 +33,35 @@ def parse_basic_output_cvc(output, timeout):
         return "unknown"
     return "error"
 
-def start_z3(z3_path):
+def start_z3(z3_path, mutant_path, max_time):
     return subprocess.Popen(
-        [z3_path, "-in"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+        [z3_path, mutant_path, f"-T:{max_time}"], stdout=subprocess.PIPE)
 
-def start_cvc(cvc_path, timelimit, mut_seed=None):
-    args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit)]
-    if mut_seed is not None:
-        args += ["--sat-random-seed", str(mut_seed), "--seed", str(mut_seed)]
-    return subprocess.Popen(
-        args,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+# def start_cvc(cvc_path, timelimit, mut_seed=None):
+#     args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit)]
+#     if mut_seed is not None:
+#         args += ["--sat-random-seed", str(mut_seed), "--seed", str(mut_seed)]
+#     return subprocess.Popen(
+#         args,
+#         stdin=subprocess.PIPE,
+#         stdout=subprocess.PIPE,
+#         stderr=subprocess.PIPE)
 
-def read(process):
-    return process.stdout.readline().decode("utf-8").strip()
+# def read(process):
+#     return process.stdout.readline().decode("utf-8").strip()
 
-def write(process, message):
-    process.stdin.write(f"{message.strip()}\n".encode("utf-8"))
-    process.stdin.flush()
+# def write(process, message):
+#     message = message.strip()
+#     for i in range(0, len(message), 2048):
+#         process.stdin.write(f"{message[i:i+2048]}".encode("utf-8"))
+#     process.stdin.write("\n".encode("utf-8"))
+#     process.stdin.flush()
 
-def terminate(process):
-    process.stdin.close()
-    process.stdout.close()
-    process.stderr.close()
-    process.terminate()
-
-def split_query_context(query_path):
-    lines = open(query_path, "r").readlines()
-    main_context = []
-    push_indices = []
-    check_sat_indices = []
-
-    for i, line in enumerate(lines):
-        if line.startswith("(push"):
-            push_indices.append(i)
-        if line.startswith("(check-sat"):
-            check_sat_indices.append(i)
-    assert len(check_sat_indices) == 1
-
-    check_sat_index = check_sat_indices[0]
-
-    if len(push_indices) == 0:
-        # unusual case
-        # take whatever command before check-sat
-        main_index = check_sat_index - 1
-        sub_index = main_index
-    else:
-        main_index = push_indices[-1]
-        sub_index = main_index + 1
-
-    # ignore everything after check-sat
-    lines = lines[:check_sat_index+1]
-
-    main_context = lines[:main_index]
-    query_context = lines[sub_index:]
-
-    assert query_context[-1].startswith("(check-sat")
-
-    # add push/pop
-    query_context.insert(0, "(push 1)\n")
-    query_context.append("(pop 1)\n")
-
-    return main_context, query_context
+# def terminate(process):
+#     process.stdin.close()
+#     process.stdout.close()
+#     process.stderr.close()
+#     process.terminate()
 
 class Task:
     def __init__(self, exp, exp_tname, origin_path, perturb, mut_seed, solver):
@@ -123,57 +86,54 @@ class Task:
         con.close()
 
     def run_solver_inc(self, mutant_path):
-        main_context, query_context = split_query_context(mutant_path)
-        p = start_z3(self.solver.path)
+        do_quake(self.origin_path, mutant_path, self.exp.timeout, self.exp.num_mutant + 1)
+        assert os.path.exists(mutant_path)
 
-        # for z3
-        query_context.insert(1, "(set-option :timeout {})".format(self.exp.timeout * 1000))
+        max_time = self.exp.timeout * (self.exp.num_mutant + 1)
 
-        for line in main_context:
-            p.stdin.write(line.encode("utf-8"))
+        p = start_z3(self.solver.path, mutant_path, max_time)
 
         poll_obj = select.poll()
         poll_obj.register(p.stdout, select.POLLIN)
-        
-        timeout = False
+
+        give_up = False
 
         for i in range(self.exp.num_mutant + 1):
-            if not timeout:
-                std_out = None
-
-                for line in query_context:
-                    p.stdin.write(line.encode("utf-8"))
-
-                start_time = time.time()
-
-                while time.time() - start_time < self.exp.timeout + 3:
-                    poll_result = poll_obj.poll(0)
-                    if poll_result:
-                        std_out = p.read()
-                        break
-
-                # to milliseconds
-                elapsed = (time.time() - start_time)  * 1000
-
-                if std_out is None:
-                    # kill the process
-                    terminate(p)
-                    timeout = True
-                    print("[INFO] incremental mode solver timeout")
-                    rcode = "timeout"
-                else:
-                    rcode = parse_basic_output_z3(std_out)
-            else:
+            if give_up:
                 rcode = "timeout"
                 std_out = "Mariposa: quake timeout"
                 elapsed = self.exp.timeout * 1000
+            else:
+                std_out = ""
+                start_time = time.time()
+                poll_result = poll_obj.poll((self.exp.timeout + 3) * 1000)
+                elapsed = time.time() - start_time
+                if poll_result:
+                    outputs = []
+                    while "[INFO] mariposa-quake" not in std_out:
+                        std_out = p.stdout.readline().decode("utf-8").strip()
+                        outputs.append(std_out)
+                    std_out = "".join(outputs)
+                    rcode = parse_basic_output_z3(std_out)
+                    print(f"done with {i}, {elapsed} seconds")
+                else:
+                    assert std_out == ""
+                    print(f"[WARN] solver timeout in {i}th quake seconds")
+                    rcode = "timeout"
+                    std_out = "Mariposa: quake timeout"
+                    elapsed = self.exp.timeout * 1000
+                    give_up = True
 
             if i > 0:
                 perturb = str(Mutation.QUAKE)
                 mutant_path = self.origin_path + "." + str(i)
             else:
                 perturb = None
+                mutant_path = self.origin_path
             self.save_result_to_db(mutant_path, perturb, "(interactive session)", rcode, std_out, "", elapsed)
+
+        p.stdout.close()
+        p.terminate()
 
     def run_solver(self, mutant_path):
         command = f"{self.solver.path} {mutant_path} -T:{self.exp.timeout}"
@@ -186,11 +146,12 @@ class Task:
         self.save_result_to_db(mutant_path, self.perturb, command, rcode, out, err, elapsed)
 
     def run(self):
+        query_name = os.path.basename(self.origin_path)
+        assert query_name.endswith(".smt2")
+        query_name.replace(".smt2", "")
+        gen_path_pre = "gen/" + self.exp_tname + "/" + query_name
+        
         if self.perturb is not None:
-            query_name = os.path.basename(self.origin_path)
-            assert query_name.endswith(".smt2")
-            query_name.replace(".smt2", "")
-            gen_path_pre = "gen/" + self.exp_tname + "/" + query_name
             mutant_path = f"{gen_path_pre}.{str(self.mut_seed)}.{self.perturb}.smt2"
 
             command = f"{MARIPOSA_BIN_PATH} -i '{self.origin_path}' -m {self.perturb} -o '{mutant_path}' -s {self.mut_seed}"
@@ -204,6 +165,7 @@ class Task:
             mutant_path = self.origin_path
 
         if self.quake:
+            mutant_path = f"{gen_path_pre}.quake.smt2"
             self.run_solver_inc(mutant_path)
         else:
             self.run_solver(mutant_path)

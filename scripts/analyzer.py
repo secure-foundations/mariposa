@@ -43,6 +43,8 @@ def count_within_timeout(blob, rcode, timeout=1e6):
     return success
 
 def count_timeouts(blob, timeout=1e6):
+    if timeout == None:
+        timeout = 1e6
     res_indices = np.sum(blob[0] == RCode.TIMEOUT.value)
     to_indices = blob[1] >= timeout
     timeout_count = np.sum(np.logical_or(to_indices, res_indices))
