@@ -115,7 +115,6 @@ class Task:
                         outputs.append(std_out)
                     std_out = "".join(outputs)
                     rcode = parse_basic_output_z3(std_out)
-                    print(f"done with {i}, {elapsed} seconds")
                 else:
                     assert std_out == ""
                     print(f"[WARN] solver timeout in {i}th quake seconds")
