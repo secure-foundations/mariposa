@@ -35,7 +35,7 @@ def parse_basic_output_cvc(output, timeout):
 
 def start_z3(z3_path, mutant_path):
     return subprocess.Popen(
-        [z3_path, mutant_path] stdout=subprocess.PIPE)
+        [z3_path, mutant_path], stdout=subprocess.PIPE)
 
 # def start_cvc(cvc_path, timelimit, mut_seed=None):
 #     args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit)]
