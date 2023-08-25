@@ -33,9 +33,9 @@ def parse_basic_output_cvc(output, timeout):
         return "unknown"
     return "error"
 
-def start_z3(z3_path, mutant_path, max_time):
+def start_z3(z3_path, mutant_path):
     return subprocess.Popen(
-        [z3_path, mutant_path, f"-T:{max_time}"], stdout=subprocess.PIPE)
+        [z3_path, mutant_path] stdout=subprocess.PIPE)
 
 # def start_cvc(cvc_path, timelimit, mut_seed=None):
 #     args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit)]
@@ -89,9 +89,8 @@ class Task:
         do_quake(self.origin_path, mutant_path, self.exp.timeout, self.exp.num_mutant + 1)
         assert os.path.exists(mutant_path)
 
-        max_time = self.exp.timeout * (self.exp.num_mutant + 1)
-
-        p = start_z3(self.solver.path, mutant_path, max_time)
+        # max_time = self.exp.timeout * (self.exp.num_mutant + 1)
+        p = start_z3(self.solver.path, mutant_path)
 
         poll_obj = select.poll()
         poll_obj.register(p.stdout, select.POLLIN)
@@ -112,7 +111,10 @@ class Task:
                     outputs = []
                     while "[INFO] mariposa-quake" not in std_out:
                         std_out = p.stdout.readline().decode("utf-8").strip()
+                        # print(std_out, i)
                         outputs.append(std_out)
+                        if std_out == "":
+                            break
                     std_out = "".join(outputs)
                     rcode = parse_basic_output_z3(std_out)
                 else:
