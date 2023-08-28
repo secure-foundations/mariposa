@@ -7,9 +7,9 @@ from configer import Configer
 
 c = Configer()
 
-mini = c.load_known_project("d_komodo_uc")
+mini = c.load_known_project("d_lvbkv_uc")
 
-prefix = "data/unsat_cores/d_komodo_z3/min_asserts_no_trigger"
+prefix = "data/unsat_cores/d_lvbkv_uc/min_asserts_no_trigger"
 
 for q in mini.list_queries():
     base = q.split("/")[-1]

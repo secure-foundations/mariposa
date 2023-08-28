@@ -38,11 +38,16 @@ class ProjectInfo:
         assert contents == set(queries)
         return chunks[part_id]
 
+class SolverType(str, Enum):
+    Z3 = "z3"
+    CVC5 = "cvc5"
+
 class SolverInfo:
     def __init__(self, name, date, path):
         self.name = name
         self.date = date
         self.path = path
+        self.type = SolverType(name.split("_")[0])
         exit_with_on_fail(os.path.exists(self.path), f"[ERROR] solver binary {self.path} does not exist")
 
     def __str__(self):

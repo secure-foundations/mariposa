@@ -9,20 +9,7 @@ from configer import *
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
-def parse_basic_output_z3(output):
-    if "unsat" in output:
-        return "unsat"
-    elif "sat" in output:
-        return "sat"
-    elif "timeout" in output:
-        return "timeout"
-    elif "unknown" in output:
-        return "unknown"
-    return "error"
-
-def parse_basic_output_cvc(output, timeout):
-    if timeout:
-        return "timeout"
+def parse_basic_output(output):
     if "unsat" in output:
         return "unsat"
     elif "sat" in output:
@@ -34,34 +21,11 @@ def parse_basic_output_cvc(output, timeout):
     return "error"
 
 def start_z3(z3_path, mutant_path):
-    return subprocess.Popen(
-        [z3_path, mutant_path], stdout=subprocess.PIPE)
+    return subprocess.Popen([z3_path, mutant_path], stdout=subprocess.PIPE)
 
-# def start_cvc(cvc_path, timelimit, mut_seed=None):
-#     args = [cvc_path, "--incremental", "-q", "--tlimit-per", str(timelimit)]
-#     if mut_seed is not None:
-#         args += ["--sat-random-seed", str(mut_seed), "--seed", str(mut_seed)]
-#     return subprocess.Popen(
-#         args,
-#         stdin=subprocess.PIPE,
-#         stdout=subprocess.PIPE,
-#         stderr=subprocess.PIPE)
-
-# def read(process):
-#     return process.stdout.readline().decode("utf-8").strip()
-
-# def write(process, message):
-#     message = message.strip()
-#     for i in range(0, len(message), 2048):
-#         process.stdin.write(f"{message[i:i+2048]}".encode("utf-8"))
-#     process.stdin.write("\n".encode("utf-8"))
-#     process.stdin.flush()
-
-# def terminate(process):
-#     process.stdin.close()
-#     process.stdout.close()
-#     process.stderr.close()
-#     process.terminate()
+def start_cvc5(cvc5_path, mutant_path, timelimit):
+    args = [cvc5_path, "--incremental", "-q", "--tlimit-per", str(timelimit), mutant_path]
+    return subprocess.Popen(args, stdout=subprocess.PIPE)
 
 class Task:
     def __init__(self, exp, exp_tname, origin_path, perturb, mut_seed, solver):
@@ -90,7 +54,11 @@ class Task:
         assert os.path.exists(mutant_path)
 
         # max_time = self.exp.timeout * (self.exp.num_mutant + 1)
-        p = start_z3(self.solver.path, mutant_path)
+        if self.solver.type == SolverType.Z3:
+            p = start_z3(self.solver.path, mutant_path)
+        else:
+            assert self.solver.type == SolverType.CVC5
+            p = start_cvc5(self.solver.path, mutant_path, self.exp.timeout * 1000)
 
         poll_obj = select.poll()
         poll_obj.register(p.stdout, select.POLLIN)
@@ -98,11 +66,7 @@ class Task:
         give_up = False
 
         for i in range(self.exp.num_mutant + 1):
-            if give_up:
-                rcode = "timeout"
-                std_out = "Mariposa: quake timeout"
-                elapsed = self.exp.timeout * 1000
-            else:
+            if not give_up:
                 std_out = ""
                 start_time = time.time()
                 poll_result = poll_obj.poll((self.exp.timeout + 3) * 1000)
@@ -116,14 +80,17 @@ class Task:
                         if std_out == "":
                             break
                     std_out = "".join(outputs)
-                    rcode = parse_basic_output_z3(std_out)
+                    rcode = parse_basic_output(std_out)
                 else:
                     assert std_out == ""
                     print(f"[WARN] solver timeout in {i}th quake seconds")
-                    rcode = "timeout"
-                    std_out = "Mariposa: quake timeout"
-                    elapsed = self.exp.timeout * 1000
                     give_up = True
+
+            # give up and set the rest to timeout
+            if give_up:
+                rcode = "timeout"
+                std_out = "Mariposa: quake timeout"
+                elapsed = self.exp.timeout * 1000
 
             if i > 0:
                 perturb = str(Mutation.QUAKE)
@@ -137,13 +104,23 @@ class Task:
         p.terminate()
 
     def run_solver(self, mutant_path):
-        command = f"{self.solver.path} {mutant_path} -T:{self.exp.timeout}"
-        out, err, elapsed = subprocess_run(command)
-        rcode = parse_basic_output_z3(out)
-
+        if self.solver.type == SolverType.Z3:
+            command = f"{self.solver.path} '{mutant_path}' -T:{self.exp.timeout}"
+            out, err, elapsed = subprocess_run(command)
+            rcode = parse_basic_output(out)
+        elif self.solver.type == SolverType.CVC5:
+            seed_options = ""
+            if self.perturb == Mutation.RESEED:
+                mutant_path = self.origin_path
+                seed_options = f"--sat-random-seed {self.mut_seed} --seed {self.mut_seed}"
+            command = f"{self.solver.path} --incremental --quiet --tlimit-per {self.exp.timeout * 1000} '{mutant_path}' {seed_options}"
+            out, err, elapsed = subprocess_run(command)
+            if elapsed >= self.exp.timeout * 1000:
+                rcode = "timeout"
+            else:
+                rcode = parse_basic_output(out)
         if rcode == "error":
             print("[ERROR] solver error: {} {} {}".format(command, out, err))
-
         self.save_result_to_db(mutant_path, self.perturb, command, rcode, out, err, elapsed)
 
     def run(self):
@@ -209,6 +186,7 @@ def run_tasks(queue, start_time, id):
         if task is None:
             break
         task.run()
+    print(f"[INFO] worker {id} finished")
 
 class Runner:
     def _set_up_table(self):
@@ -307,8 +285,8 @@ if __name__ == "__main__":
     query_path = sys.argv[1]
 
     c = Configer()
-    solver = c.load_known_solver("z3_4_12_2")
-    exp = c.load_known_experiment("single")
+    solver = c.load_known_solver("cvc5_1_0_3")
+    exp = c.load_known_experiment("debug")
     p = create_single_mode_project(query_path, solver)
 
     if exp.db_path == "":
