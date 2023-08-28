@@ -440,9 +440,9 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "d_lvbkv_trigger",
+        "name": "d_lvbkv_uc_trigger",
         "framework": "dafny",
-        "clean_dir": "data/unsat_cores/d_lvbkv_z3/min_asserts_no_trigger",
+        "clean_dir": "data/unsat_cores/d_lvbkv_z3/min_asserts_no_trigger/",
         "artifact_solver_name": "z3_4_12_2"
       }
     ]
