@@ -1,4 +1,4 @@
-import sys
+import sys, os
 
 def split_query_context(query_path):
     lines = open(query_path, "r").readlines()
@@ -40,6 +40,8 @@ def split_query_context(query_path):
     return main_context, query_context
 
 def do_quake(query_path, output_path, timeout, repeat=4):
+    if not os.path.exists(output_path):
+        os.makedirs(output_path.split("/")[:-1])
     out_file = open(output_path, "w")
     main_context, query_context = split_query_context(query_path)
     out_file.writelines(main_context)
