@@ -483,37 +483,6 @@ fn ensure_no_conflicts(symbols1: HashSet<String>, symbols2: HashSet<String>) {
     }
 }
 
-fn remove_pattern_rec_helper(curr_term: &mut concrete::Term, rng: &mut ChaCha8Rng, threshold: u64) {
-    match curr_term {
-        concrete::Term::Application { qual_identifier:_, arguments } => 
-            for argument in arguments.iter_mut(){
-                remove_pattern_rec_helper(argument, rng, threshold)
-            },
-        concrete::Term::Let { var_bindings:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
-        concrete::Term::Forall { vars:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
-        concrete::Term::Exists { vars:_, term } => remove_pattern_rec_helper(&mut *term, rng, threshold),
-        concrete::Term::Match { term, cases:_ } => remove_pattern_rec_helper(&mut *term, rng, threshold),
-        concrete::Term::Attributes { term, attributes } => {
-            remove_pattern_rec_helper(term, rng, threshold);
-            let random = rng.gen_range(1..101);
-            if random <= threshold {
-                attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()))
-            }
-        }
-        concrete::Term::Constant(_) => (),
-        concrete::Term::QualIdentifier(_) => (),
-    }
-}
-
-// patterns
-fn remove_patterns(commands: &mut Vec<concrete::Command>, seed: u64, threshold: u64) {
-    let mut rng = ChaCha8Rng::seed_from_u64(seed);
-    commands.iter_mut().for_each(|x| 
-        if let concrete::Command::Assert { term } = x {
-            remove_pattern_rec_helper(term, &mut rng, threshold);
-    });
-}
-
 fn parse_noncore_from_file(commands: Vec<concrete::Command>, file_path: String) -> Vec<concrete::Command> {
     let core = core_to_hashset(file_path);
 
@@ -574,10 +543,13 @@ fn clean_names(commands: &mut Vec<concrete::Command>) {
     commands.iter_mut().for_each(|x| clean_name(x));
 }
 
-
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
+    rng: ChaCha8Rng,
+    pattern_threshold: u64,
+    removed_patterns: u64,
+    total_patterns: u64,
 }
 
 impl Manager {
@@ -592,7 +564,7 @@ impl Manager {
             }
             None => BufWriter::new(Box::new(stdout().lock())),
         };
-        Manager { writer, seed }
+        Manager { writer, seed, rng: ChaCha8Rng::seed_from_u64(seed), pattern_threshold: 10, removed_patterns: 0, total_patterns: 0 }
     }
 
     fn dump(&mut self, s: &String) {
@@ -612,6 +584,39 @@ impl Manager {
             }
             writeln!(self.writer, "{}", command).unwrap();
         }
+    }
+
+    fn remove_pattern_rec_helper(&mut self, curr_term: &mut concrete::Term) {
+        match curr_term {
+            concrete::Term::Application { qual_identifier:_, arguments } => 
+                for argument in arguments.iter_mut(){
+                    self.remove_pattern_rec_helper(argument)
+                },
+            concrete::Term::Let { var_bindings:_, term } => self.remove_pattern_rec_helper(&mut *term),
+            concrete::Term::Forall { vars:_, term } => self.remove_pattern_rec_helper(&mut *term),
+            concrete::Term::Exists { vars:_, term } => self.remove_pattern_rec_helper(&mut *term),
+            concrete::Term::Match { term, cases:_ } => self.remove_pattern_rec_helper(&mut *term),
+            concrete::Term::Attributes { term, attributes } => {
+                self.remove_pattern_rec_helper(term);
+                let random = self.rng.gen_range(1..101);
+                if random <= self.pattern_threshold {
+                    attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()));
+                    self.removed_patterns += 1;
+                }
+                self.total_patterns += 1;
+            }
+            concrete::Term::Constant(_) => (),
+            concrete::Term::QualIdentifier(_) => (),
+        }
+    }
+
+    // patterns
+    fn remove_patterns(&mut self, commands: &mut Vec<concrete::Command>) {
+        commands.iter_mut().for_each(|x| 
+            if let concrete::Command::Assert { term } = x {
+                self.remove_pattern_rec_helper(term);
+        });
+        println!("[INFO] removed {} patterns out of {}", self.removed_patterns, self.total_patterns);
     }
 }
 
@@ -738,7 +743,7 @@ fn main() {
         commands = [noncore_commands, core_commands].concat();
         clean_names(&mut commands);
     } else if args.mutation == "remove-trigger" { 
-        remove_patterns(&mut commands,  manager.seed, 100);
+        manager.remove_patterns(&mut commands);
     }
 
     manager.dump_non_info_commands(&commands);
