@@ -28,7 +28,7 @@ for q in mini.list_queries():
     out_file = f"{prefix}/{base}"
     # diff out_file with q
     o, _, _ = subprocess_run(f"diff {q} {out_file}")
-    if o != "":
-        diff += 1
+    if o == "":
+        os.remove(out_file)
 
-print(diff)
+# print(diff)

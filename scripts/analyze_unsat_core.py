@@ -261,20 +261,16 @@ def get_query_stats(query_path):
     return count        
 
 def compare_queries(orgi_name, mini_name):
-    if orgi_name == "fs_vwasm":
-        keep = set()
-        orgi = c.load_known_project(orgi_name)
-        mini = c.load_known_project(mini_name)
-        og = set()
-        for query in orgi.list_queries():
-            og.add(query.split("/")[-1])
-        for query in mini.list_queries():
-            if query.split("/")[-1] in og:
-                keep.add(query.split("/")[-1])
+    items0, items1, keep = get_basic_keep(orgi_name, mini_name)
+    orgi = c.load_known_project(orgi_name)
+    mini = c.load_known_project(mini_name)
+    
+    ps0, _ = get_category_percentages(items0)
+    ps1, _ = get_category_percentages(items1)
 
-    # _, _, keep = get_basic_keep(orgi_name, mini_name)
-    # orgi = c.load_known_project(orgi_name)
-    # mini = c.load_known_project(mini_name)
+    print("")
+
+    print_compare_table(items0, ps0, items1, ps1)
 
     if os.path.exists(f"cache/{orgi_name}_{mini_name}_query_stats.pkl"):
         pts = cache_load(f"{orgi_name}_{mini_name}_query_stats.pkl")
@@ -294,51 +290,51 @@ def compare_queries(orgi_name, mini_name):
         cache_save(pts, f"{orgi_name}_{mini_name}_query_stats.pkl")
     return pts
 
-# PAIRS = {
-#     "d_komodo": "d_komodo_uc",
-#     "d_fvbkv": "d_fvbkv_uc",
-#     "d_lvbkv_closed": "d_lvbkv_uc",
-#     "fs_dice": "fs_dice_uc",
-#     "fs_vwasm": "fs_vwasm_uc",
-# }
+PAIRS = {
+    "d_komodo": "d_komodo_uc",
+    "d_fvbkv": "d_fvbkv_uc",
+    "d_lvbkv_closed": "d_lvbkv_uc",
+    "fs_dice": "fs_dice_uc",
+    "fs_vwasm": "fs_vwasm_uc",
+}
 
-# fig, ax = plt.subplots()
+fig, ax = plt.subplots()
 
-# for k in PAIRS.keys():
-#     pts = compare_queries(k, PAIRS[k])
-#     # print(sum(pts[:, 1] > 1), len(pts))
-#     # xs, ys = get_cdf_pts(pts[:, 1])
-#     # xs, ys = get_cdf_pts(pts[:, 1] * 100 / pts[:, 0])
-#     # # plt.hist(pts[:, 1] * 100 / pts[:, 0], bins=100, histtype='step', label="minimized")
-#     # plt.plot(xs, ys, marker=",", label=k)
+for k in PAIRS.keys():
+    pts = compare_queries(k, PAIRS[k])
+    # print(sum(pts[:, 1] > 1), len(pts))
+    # xs, ys = get_cdf_pts(pts[:, 1])
+    xs, ys = get_cdf_pts(pts[:, 1] * 100 / pts[:, 0])
+    # plt.hist(pts[:, 1] * 100 / pts[:, 0], bins=100, histtype='step', label="minimized")
+    plt.plot(xs, ys, marker=",", label=k)
 
-# plt.legend()
-# # plt.xscale("log")
-# plt.savefig("original.png")
+plt.legend()
+plt.xscale("log")
+plt.savefig("original.png")
 
-def get_fstar_assert_label():
-    # f = open("woot.smt2", "r")
-    o, _, _ = subprocess_run('grep -E "qid [^\)]+" -o woot.smt2')
-    qids = o.split("\n")
-    prelude = 0
-    typing = 0
-    lowstar = 0
-    others = 0
-    for qid in sorted(qids):
-        if "FStar" in qid:
-            prelude += 1
-        elif "Prims" in qid:
-            prelude += 1
-        # elif "qid typing" in qid or "kinding" in qid:
-        #     typing += 1
-        # elif "LowStar" in qid:
-        #     lowstar += 1
-        # else:
-        #     others +=1 
-            print(qid)
-    print(prelude, typing, lowstar, others)
+# def get_fstar_assert_label():
+#     # f = open("woot.smt2", "r")
+#     o, _, _ = subprocess_run('grep -E "qid [^\)]+" -o woot.smt2')
+#     qids = o.split("\n")
+#     prelude = 0
+#     typing = 0
+#     lowstar = 0
+#     others = 0
+#     for qid in sorted(qids):
+#         if "FStar" in qid:
+#             prelude += 1
+#         elif "Prims" in qid:
+#             prelude += 1
+#         # elif "qid typing" in qid or "kinding" in qid:
+#         #     typing += 1
+#         # elif "LowStar" in qid:
+#         #     lowstar += 1
+#         # else:
+#         #     others +=1 
+#             print(qid)
+#     print(prelude, typing, lowstar, others)
 
-get_fstar_assert_label()
+# get_fstar_assert_label()
 
 
 # compare_queries("d_komodo", "d_komodo_uc")
