@@ -41,7 +41,10 @@ def split_query_context(query_path):
 
 def do_quake(query_path, output_path, timeout, repeat=4):
     if not os.path.exists(output_path):
-        os.makedirs("/".join(output_path.split("/")[:-1]))
+        try:
+            os.makedirs("/".join(output_path.split("/")[:-1]))
+        except:
+            pass
     out_file = open(output_path, "w")
     main_context, query_context = split_query_context(query_path)
     out_file.writelines(main_context)
