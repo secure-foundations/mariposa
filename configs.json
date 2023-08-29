@@ -344,6 +344,12 @@
         "artifact_solver_name": "z3_4_8_5"
       },
       {
+        "name": "fs_vwasm_uc",
+        "framework": "fstar",
+        "clean_dir": "data/unsat_cores/fs_vwasm_z3/min_asserts",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
         "name": "d_komodo_uc_type",
         "framework": "dafny",
         "clean_dir": "data/dfy_asserts/type",
