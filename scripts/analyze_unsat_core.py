@@ -1,6 +1,7 @@
 from basic_utils import *
 from db_utils import *
 from vbkv_filemap import *
+from cache_utils import *
 
 from plot_utils import *
 from configer import Configer
@@ -204,7 +205,6 @@ def print_basics(orgi_name, mini_name):
         table_.append([k] + table[k])
     print(tabulate(table_, headers="firstrow", tablefmt="github"))
 
-
 def print_asserts(orgi_name, mini_name):
     _, _, keep = get_basic_keep(orgi_name, mini_name)
     orgi = c.load_known_project(orgi_name)
@@ -252,7 +252,96 @@ def print_asserts(orgi_name, mini_name):
     table.append(np.round(np.divide(np.mean(pts0, axis=0), np.mean(pts1, axis=0)), 2))
     print(tabulate(table, headers="firstrow", tablefmt="github"))
 
-# get_basic_keep("d_komodo", "d_komodo_uc")
+def get_query_stats(query_path):
+    f = open(query_path, "r")
+    count = 0
+    for line in f.readlines():
+        if line.startswith("(assert"):
+            count +=1 
+    return count        
+
+def compare_queries(orgi_name, mini_name):
+    if orgi_name == "fs_vwasm":
+        keep = set()
+        orgi = c.load_known_project(orgi_name)
+        mini = c.load_known_project(mini_name)
+        og = set()
+        for query in orgi.list_queries():
+            og.add(query.split("/")[-1])
+        for query in mini.list_queries():
+            if query.split("/")[-1] in og:
+                keep.add(query.split("/")[-1])
+
+    # _, _, keep = get_basic_keep(orgi_name, mini_name)
+    # orgi = c.load_known_project(orgi_name)
+    # mini = c.load_known_project(mini_name)
+
+    if os.path.exists(f"cache/{orgi_name}_{mini_name}_query_stats.pkl"):
+        pts = cache_load(f"{orgi_name}_{mini_name}_query_stats.pkl")
+    else:
+        pts = np.zeros((len(keep), 2))
+        for i, query in enumerate(tqdm(keep)):
+            orgi_path = orgi.clean_dir + "/" + query
+            if not os.path.exists(orgi_path):
+                orgi_path = orgi_path.replace("dfy.", "dfyxxx")
+            if not os.path.exists(orgi_path):
+                orgi_path = orgi_path.replace(".smt2", ".1.smt2")
+            mini_path = mini.clean_dir + "/" + query
+            oc = get_query_stats(orgi_path)
+            pts[i][0] = oc
+            mc = get_query_stats(mini_path)
+            pts[i][1] = mc
+        cache_save(pts, f"{orgi_name}_{mini_name}_query_stats.pkl")
+    return pts
+
+# PAIRS = {
+#     "d_komodo": "d_komodo_uc",
+#     "d_fvbkv": "d_fvbkv_uc",
+#     "d_lvbkv_closed": "d_lvbkv_uc",
+#     "fs_dice": "fs_dice_uc",
+#     "fs_vwasm": "fs_vwasm_uc",
+# }
+
+# fig, ax = plt.subplots()
+
+# for k in PAIRS.keys():
+#     pts = compare_queries(k, PAIRS[k])
+#     # print(sum(pts[:, 1] > 1), len(pts))
+#     # xs, ys = get_cdf_pts(pts[:, 1])
+#     # xs, ys = get_cdf_pts(pts[:, 1] * 100 / pts[:, 0])
+#     # # plt.hist(pts[:, 1] * 100 / pts[:, 0], bins=100, histtype='step', label="minimized")
+#     # plt.plot(xs, ys, marker=",", label=k)
+
+# plt.legend()
+# # plt.xscale("log")
+# plt.savefig("original.png")
+
+def get_fstar_assert_label():
+    # f = open("woot.smt2", "r")
+    o, _, _ = subprocess_run('grep -E "qid [^\)]+" -o woot.smt2')
+    qids = o.split("\n")
+    prelude = 0
+    typing = 0
+    lowstar = 0
+    others = 0
+    for qid in sorted(qids):
+        if "FStar" in qid:
+            prelude += 1
+        elif "Prims" in qid:
+            prelude += 1
+        # elif "qid typing" in qid or "kinding" in qid:
+        #     typing += 1
+        # elif "LowStar" in qid:
+        #     lowstar += 1
+        # else:
+        #     others +=1 
+            print(qid)
+    print(prelude, typing, lowstar, others)
+
+get_fstar_assert_label()
+
+
+# compare_queries("d_komodo", "d_komodo_uc")
 # get_basic_keep("d_fvbkv", "d_fvbkv_uc")
 # get_basic_keep("d_lvbkv_closed", "d_lvbkv_uc")
 # print_asserts("d_komodo", "d_komodo_uc")
