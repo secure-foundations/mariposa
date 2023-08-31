@@ -169,8 +169,6 @@ def manager_mode(args):
     res_queue = multiprocessing.Queue()
 
     for i in range(1, args.partition_num + 1):
-        if i <= 102:
-            continue
         wargs = copy.deepcopy(args)
         wargs.partition_id = f"{i}/{args.partition_num}"
         wargs.analysis_skip = True
@@ -218,6 +216,61 @@ def manager_mode(args):
             import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
         os.remove(temp_db_path)
 
+def recovery_mode(args):
+    #  -s z3_4_12_2 -p d_komodo_uc_trigger_10 -e min_asserts
+    c = Configer()
+    exp = c.load_known_experiment(args.experiment)
+    solver = c.load_known_solver(args.solver)
+    project = c.load_known_project(args.project)
+
+    for i in {1, 2 , 5, 6, 7, 8}:
+        temp_db_path = f"{exp.db_path}.{i}.temp"
+        remote_db_path = f"s190{i}:~/mariposa/{exp.db_path}"
+        if os.path.exists(temp_db_path):
+            continue
+        command = f"scp {remote_db_path} {temp_db_path}"
+        print(f"[INFO] copying db: {command}")
+        os.system(command)
+        assert os.path.exists(temp_db_path)
+    
+    exp_tname = exp.get_exp_tname(project, solver)
+    sum_tname = exp.get_sum_tname(project, solver)
+
+    import re
+    pattern = re.compile(r"p(\d+)of(\d+)")
+    part_num = None
+    
+    imports = dict()
+    finished = set()
+
+    for i in {1, 2 , 5, 6, 7, 8}:
+        temp_db_path = f"{exp.db_path}.{i}.temp"
+        print(f"[INFO] importing db {temp_db_path}")
+        tables = get_tables(temp_db_path)
+        imports[temp_db_path] = []
+        for table in tables:
+            if table.startswith(exp_tname + "_"):
+                partition = table[len(exp_tname) + 1:]
+                match = re.match(pattern, partition)
+                assert part_num is None or part_num == int(match.group(2))
+                part_num = int(match.group(2))
+                part_id = int(match.group(1))
+                if part_id in finished:
+                    print("[INFO] ignored duplicated part {part_id}")
+                    continue
+                finished.add(part_id)
+                imports[temp_db_path].append((part_id, part_num))
+    excepted = set(range(1, part_num + 1))
+
+    if finished != excepted:
+        print("[WARN] some partitions are missing, aborting", excepted - finished)
+        return
+
+    # for temp_db_path in imports:
+    #     for (part_id, part_num) in imports[temp_db_path]:
+    #         print(f"[INFO] importing partition {part_id}/{part_num} from {temp_db_path}")
+    #         import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
+
 def worker_mode(args):
     from multiprocessing.managers import BaseManager
     import os.path
@@ -256,13 +309,17 @@ if __name__ == '__main__':
     
     manager_parser = subparsers.add_parser('manager', help='sever pool manager mode.')
     manager_parser.add_argument("--partition-num", type=int, required=True, help="number of partitions to split the project into")
+    
+    recovery_parser = subparsers.add_parser('recovery', help='recovery mode. recover the database from a crashed run (do not use unless on s190x cluster).')
 
-    for sp in [multi_parser, manager_parser]:
+    for sp in [multi_parser, manager_parser, recovery_parser]:
         sp.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")
         sp.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from configs.json)")
 
-    for sp in [single_parser, multi_parser, manager_parser]:
+    for sp in [single_parser, multi_parser, manager_parser, recovery_parser]:
         sp.add_argument("-s", "--solver", required=True, help="the solver name (from configs.json) to use")
+        if sp == recovery_parser:
+            continue
         sp.add_argument("--analysis-only", default=False, action='store_true', help="do not perform experiments, only analyze existing data")
         sp.add_argument("--analysis-skip", default=False, action='store_true', help="skip analysis")
         sp.add_argument("--analyzer", default="default", help="the analyzer name (from configs.json) to use")
@@ -291,6 +348,8 @@ if __name__ == '__main__':
         manager_mode(args)
     elif args.sub_command == "worker":
         worker_mode(args)
+    elif args.sub_command == "recovery":
+        recovery_mode(args)
     elif args.sub_command is None:
         parser.print_help()
 # c = Configer()  
