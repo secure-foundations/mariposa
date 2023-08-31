@@ -169,6 +169,8 @@ def manager_mode(args):
     res_queue = multiprocessing.Queue()
 
     for i in range(1, args.partition_num + 1):
+        if i <= 102:
+            continue
         wargs = copy.deepcopy(args)
         wargs.partition_id = f"{i}/{args.partition_num}"
         wargs.analysis_skip = True

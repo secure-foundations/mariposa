@@ -46,31 +46,31 @@ NON_GOAL_LABELS = ["qfree", "others", "prelude", "type", "heap"]
 
 import re
 
-def get_dfy_assert_label(line):
-    qid_pat = re.compile(r"qid \|([^\|])*\|")
+# def get_dfy_assert_label(line):
+#     qid_pat = re.compile(r"qid \|([^\|])*\|")
 
-    if not line.startswith("(assert"):
-        return None
+#     if not line.startswith("(assert"):
+#         return None
     
-    if line.startswith("(assert (not (=>") or  \
-        line.startswith("(assert (not (let"):
-        return "goal"
+#     if line.startswith("(assert (not (=>") or  \
+#         line.startswith("(assert (not (let"):
+#         return "goal"
 
-    qid = re.search(qid_pat, line)
-    if qid is None:
-        if "forall" in line:
-            return "others"
-        else:
-            return "qfree"
-    qid = qid.group(0)
-    if "DafnyPre" in qid:
-        return "prelude"
-    elif "funType" in qid:
-        return "type"
-    elif "Heap" in line:
-        return "heap"
-    else:
-        return "others"
+#     qid = re.search(qid_pat, line)
+#     if qid is None:
+#         if "forall" in line:
+#             return "others"
+#         else:
+#             return "qfree"
+#     qid = qid.group(0)
+#     if "DafnyPre" in qid:
+#         return "prelude"
+#     elif "funType" in qid:
+#         return "type"
+#     elif "Heap" in line:
+#         return "heap"
+#     else:
+#         return "others"
 
 def add_back_dfy_asserts(label, origi_file, mini_file, out_file):
     assert label in ASSERT_LABELS
@@ -144,7 +144,7 @@ def get_basic_keep(orgi_name, mini_name):
             items0[k] = set([hacky_convert_file_path(x) for x in v])
             tally0 = set([hacky_convert_file_path(x) for x in tally0])
 
-    print_compare_table(items0, ps0, items1, ps1)
+    # print_compare_table(items0, ps0, items1, ps1)
 
     keep = set()
     # print(len(tally1 - tally0))
@@ -171,7 +171,18 @@ def get_basic_keep(orgi_name, mini_name):
         items0[cat] = items0[cat] & keep
         items1[cat] = items1[cat] & keep
 
-    return items0, items1, keep
+    keeps = dict()
+    for query in keep:
+        orgi_path = orgi.clean_dir + "/" + query
+        if not os.path.exists(orgi_path):
+            orgi_path = orgi_path.replace("dfy.", "dfyxxx")
+        if not os.path.exists(orgi_path):
+            orgi_path = orgi_path.replace(".smt2", ".1.smt2")
+        mini_path = mini.clean_dir + "/" + query
+        # print(orgi_path, mini_path)
+        keeps[query] = (orgi_path, mini_path)
+
+    return items0, items1, keeps
 
 def print_basics(orgi_name, mini_name):
     UC = c.load_known_experiment("min_asserts")
@@ -205,88 +216,95 @@ def print_basics(orgi_name, mini_name):
         table_.append([k] + table[k])
     print(tabulate(table_, headers="firstrow", tablefmt="github"))
 
-def print_asserts(orgi_name, mini_name):
-    _, _, keep = get_basic_keep(orgi_name, mini_name)
-    orgi = c.load_known_project(orgi_name)
-    mini = c.load_known_project(mini_name)
+# def print_asserts(orgi_name, mini_name):
+#     _, _, keep = get_basic_keep(orgi_name, mini_name)
+#     orgi = c.load_known_project(orgi_name)
+#     mini = c.load_known_project(mini_name)
 
-    pts0 = []
-    pts1 = []
-    for query in tqdm(keep):
-        # if "Impl.i" not in query:
-        #     continue
-        orgi_path = orgi.clean_dir + "/" + query
-        if not os.path.exists(orgi_path):
-            orgi_path = orgi_path.replace("dfy.", "dfyxxx")
-        if not os.path.exists(orgi_path):
-            orgi_path = orgi_path.replace(".smt2", ".1.smt2")
-        asserts = get_dfy_asserts(orgi_path)
+#     pts0 = []
+#     pts1 = []
+#     for query in tqdm(keep):
+#         # if "Impl.i" not in query:
+#         #     continue
+#         orgi_path = orgi.clean_dir + "/" + query
+#         if not os.path.exists(orgi_path):
+#             orgi_path = orgi_path.replace("dfy.", "dfyxxx")
+#         if not os.path.exists(orgi_path):
+#             orgi_path = orgi_path.replace(".smt2", ".1.smt2")
+#         asserts = get_dfy_asserts(orgi_path)
 
-        row = []
-        for k in ASSERT_LABELS:
-            row.append(asserts[k])
-        assert (asserts["goal"] == 1)
-        pts0.append(row)
+#         row = []
+#         for k in ASSERT_LABELS:
+#             row.append(asserts[k])
+#         assert (asserts["goal"] == 1)
+#         pts0.append(row)
 
-        mini_path = mini.clean_dir + "/" + query
-        asserts = get_dfy_asserts(mini_path)
-        row = []
-        for k in ASSERT_LABELS:
-            row.append(asserts[k])
-        assert (asserts["goal"] == 1)
-        pts1.append(row)
+#         mini_path = mini.clean_dir + "/" + query
+#         asserts = get_dfy_asserts(mini_path)
+#         row = []
+#         for k in ASSERT_LABELS:
+#             row.append(asserts[k])
+#         assert (asserts["goal"] == 1)
+#         pts1.append(row)
 
-    # print(pts0)
-    # print(pts1)
+#     # print(pts0)
+#     # print(pts1)
     
-    pts0 = np.array(pts0, dtype=np.float64)
-    pts1 = np.array(pts1, dtype=np.float64)
+#     pts0 = np.array(pts0, dtype=np.float64)
+#     pts1 = np.array(pts1, dtype=np.float64)
 
-    # for i in range(pts0.shape[0]):
-    #     pts0[i, :] = pts0[i, :] * 100 / np.sum(pts0[i, :])
-    #     pts1[i, :] = pts1[i, :] * 100 / np.sum(pts1[i, :])
+#     # for i in range(pts0.shape[0]):
+#     #     pts0[i, :] = pts0[i, :] * 100 / np.sum(pts0[i, :])
+#     #     pts1[i, :] = pts1[i, :] * 100 / np.sum(pts1[i, :])
 
-    table = [ASSERT_LABELS]
-    table.append(np.round(np.mean(pts0, axis=0), 2))
-    table.append(np.round(np.mean(pts1, axis=0), 2))
-    table.append(np.round(np.divide(np.mean(pts0, axis=0), np.mean(pts1, axis=0)), 2))
-    print(tabulate(table, headers="firstrow", tablefmt="github"))
+#     table = [ASSERT_LABELS]
+#     table.append(np.round(np.mean(pts0, axis=0), 2))
+#     table.append(np.round(np.mean(pts1, axis=0), 2))
+#     table.append(np.round(np.divide(np.mean(pts0, axis=0), np.mean(pts1, axis=0)), 2))
+#     print(tabulate(table, headers="firstrow", tablefmt="github"))
 
-def get_query_stats(query_path):
-    f = open(query_path, "r")
-    count = 0
-    for line in f.readlines():
-        if line.startswith("(assert"):
-            count +=1 
-    return count        
+def get_query_stats(query_path, fs):
+    fcount = 0
+    ecount = 0
+    total = 0
+    for line in open(query_path).readlines():
+        quanti = False
+        if not line.startswith("(assert"):
+            continue
+        if "(forall" in line:
+            quanti = True
+            fcount += 1
+            total += 1
+        if "(exists" in line:
+            quanti = True
+            ecount += 1
+            total += 1
+        if not quanti:
+            total += 1
+    return fcount, ecount, total
 
 def compare_queries(orgi_name, mini_name):
     items0, items1, keep = get_basic_keep(orgi_name, mini_name)
-    orgi = c.load_known_project(orgi_name)
-    mini = c.load_known_project(mini_name)
-    
-    ps0, _ = get_category_percentages(items0)
-    ps1, _ = get_category_percentages(items1)
+    # ps0, _ = get_category_percentages(items0)
+    # ps1, _ = get_category_percentages(items1)
 
-    print("")
-
-    print_compare_table(items0, ps0, items1, ps1)
+    # print("")
+    # print_compare_table(items0, ps0, items1, ps1)
 
     if os.path.exists(f"cache/{orgi_name}_{mini_name}_query_stats.pkl"):
         pts = cache_load(f"{orgi_name}_{mini_name}_query_stats.pkl")
     else:
-        pts = np.zeros((len(keep), 2))
+        pts = np.zeros((len(keep), 6))
         for i, query in enumerate(tqdm(keep)):
-            orgi_path = orgi.clean_dir + "/" + query
-            if not os.path.exists(orgi_path):
-                orgi_path = orgi_path.replace("dfy.", "dfyxxx")
-            if not os.path.exists(orgi_path):
-                orgi_path = orgi_path.replace(".smt2", ".1.smt2")
-            mini_path = mini.clean_dir + "/" + query
-            oc = get_query_stats(orgi_path)
-            pts[i][0] = oc
-            mc = get_query_stats(mini_path)
-            pts[i][1] = mc
+            orgi_path, mini_path = keep[query]
+            c1, c2, c3 = get_query_stats(orgi_path, "fs" in orgi_name)
+            pts[i][0] = c1
+            pts[i][1] = c2
+            pts[i][2] = c3
+            c1, c2, c3 = get_query_stats(mini_path, "fs" in orgi_name)
+            pts[i][3] = c1
+            pts[i][4] = c2
+            pts[i][5] = c3
         cache_save(pts, f"{orgi_name}_{mini_name}_query_stats.pkl")
     return pts
 
@@ -298,20 +316,93 @@ PAIRS = {
     "fs_vwasm": "fs_vwasm_uc",
 }
 
-fig, ax = plt.subplots()
+import matplotlib.ticker as mtick
 
-for k in PAIRS.keys():
-    pts = compare_queries(k, PAIRS[k])
-    # print(sum(pts[:, 1] > 1), len(pts))
-    # xs, ys = get_cdf_pts(pts[:, 1])
-    xs, ys = get_cdf_pts(pts[:, 1] * 100 / pts[:, 0])
-    # plt.hist(pts[:, 1] * 100 / pts[:, 0], bins=100, histtype='step', label="minimized")
-    plt.plot(xs, ys, marker=",", label=k)
+def get_assert_size(query_path):
+    size = 0
+    for line in open(query_path).readlines():
+        if line.startswith("(assert"):
+            size += len(line)
+    return size
 
-plt.legend()
-plt.xscale("log")
-plt.savefig("original.png")
+def plot_context_reduction():
+    fig, ax = plt.subplots()
 
+    for k in PAIRS.keys():
+        pts = compare_queries(k, PAIRS[k])
+        xs, ys = get_cdf_pts(pts[:, 5] * 100 / pts[:, 2])
+        plt.plot(xs, ys, marker=",", label=k, linewidth=2)
+
+    plt.ylabel("cumulative percentage of queries")
+    plt.xlabel("percentage of assertions kept in unsat core (log scale)")
+    plt.title("Unsat Core Context Reduction")
+    plt.legend()
+    plt.xscale("log")
+    plt.xscale("log")
+    plt.xlim(0.001, 100)
+    plt.ylim(0)
+    plt.xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
+    plt.savefig("fig/unsat_core/context_reduction.png", dpi=200)
+    plt.close()
+
+    fig, ax = plt.subplots()
+
+    for k in PAIRS.keys():
+        items0, items1, keep = get_basic_keep(k, PAIRS[k])
+        if os.path.exists(f"cache/{k}_assert_size.pkl"):
+            pts = cache_load(f"{k}_assert_size.pkl")
+        else:
+            pts = np.zeros((len(keep),), dtype=np.float64)
+            for i, q in enumerate(tqdm(keep)):
+                orgi_path, mini_path = keep[q]
+                # print(orgi_path, mini_path)
+                # get file size
+                fs0 = get_assert_size(orgi_path)
+                fs1 = get_assert_size(mini_path)
+                pts[i] = fs1 / fs0
+            cache_save(pts, f"{k}_assert_size.pkl")            
+        xs, ys = get_cdf_pts(pts * 100)
+        plt.plot(xs, ys, marker=",", label=k, linewidth=2)
+
+    plt.ylabel("cumulative percentage of queries")
+    plt.xlabel("percentage of assert bytes kept (log scale)")
+    plt.legend()
+    plt.title("Unsat Core Size Reduction")
+    plt.ylim(0)
+    # plt.xlim(0)
+    plt.xscale("log")
+    plt.xlim(0.001, 100)
+    plt.xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
+    # ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=3))
+    plt.savefig("fig/unsat_core/size_reduction.png", dpi=200)
+
+plot_context_reduction()
+
+def plot_quanti():
+    for orgi_name in PAIRS.keys():
+        fig, ax = plt.subplots()
+        orgi = c.load_known_project(orgi_name)
+        pts = compare_queries(k, PAIRS[k])
+
+        xs = np.arange(0, len(pts[:, 1]), 1)
+        # 0 fcount, 1 ecount, 2 total
+        pts = pts[pts[:, 2].argsort()]
+        # plt.plot(xs, pts[:, 2], "bo", markersize=1)
+        # plt.plot(xs, pts[:, 1] + pts[:, 0], "bo", markersize=1)
+        plt.fill_between(xs, pts[:, 2], pts[:, 0]+pts[:, 1], color="#332288")
+        plt.fill_between(xs, pts[:, 0]+pts[:, 1], pts[:, 0], color="#44AA99")
+        plt.fill_between(xs, pts[:, 0], np.zeros(len(xs)), color="#88CCEE")
+        # plt.plot(xs, pts[:, 1], "bo", markersize=1)
+        # plt.fill_between(xs, pts[:, 2], pts[:, 0]+pts[:, 1], color='grey', alpha=0.5)
+        # plt.plot(xs, pts[:, 0]+pts[:, 1], marker="o", color="blue", markersize=1)
+        # xs, ys = get_cdf_pts(pts[:, 5]/ pts[:, 2])
+        # plt.plot(xs, ys, marker=",", label=k, linewidth=2)
+        plt.ylim(0)
+        plt.xlim(0, len(xs))
+        plt.savefig(f"fig/quanti/{k}.png", dpi=200)
+        plt.close()
+
+# plot_quanti()
 # def get_fstar_assert_label():
 #     # f = open("woot.smt2", "r")
 #     o, _, _ = subprocess_run('grep -E "qid [^\)]+" -o woot.smt2')
