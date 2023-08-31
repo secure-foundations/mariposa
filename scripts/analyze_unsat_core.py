@@ -155,7 +155,7 @@ def get_quanti_stats(query_path, fs):
             total += 1
     return fcount, ecount, total
 
-def compare_queries(orgi_name, mini_name):
+def get_project_quanti_stats(orgi_name, mini_name):
     items0, items1, keep = get_basic_keep(orgi_name, mini_name)
 
     if os.path.exists(f"cache/{orgi_name}_{mini_name}_query_stats.pkl"):
@@ -164,11 +164,11 @@ def compare_queries(orgi_name, mini_name):
         pts = np.zeros((len(keep), 6))
         for i, query in enumerate(tqdm(keep)):
             orgi_path, mini_path = keep[query]
-            c1, c2, c3 = get_quanti_stats(orgi_path, "fs" in orgi_name)
+            c1, c2, c3 = get_quanti_stats(orgi_path)
             pts[i][0] = c1
             pts[i][1] = c2
             pts[i][2] = c3
-            c1, c2, c3 = get_quanti_stats(mini_path, "fs" in orgi_name)
+            c1, c2, c3 = get_quanti_stats(mini_path)
             pts[i][3] = c1
             pts[i][4] = c2
             pts[i][5] = c3
@@ -186,7 +186,7 @@ def plot_context_reduction():
     fig, ax = plt.subplots()
 
     for k in PAIRS.keys():
-        pts = compare_queries(k, PAIRS[k])
+        pts = get_project_quanti_stats(k, PAIRS[k])
         xs, ys = get_cdf_pts(pts[:, 5] * 100 / pts[:, 2])
         plt.plot(xs, ys, marker=",", label=k, linewidth=2)
 
@@ -233,39 +233,6 @@ def plot_context_reduction():
     # ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=3))
     plt.savefig("fig/unsat_core/size_reduction.png", dpi=200)
 
-def plot_quanti():
-    for orgi_name in PAIRS.keys():
-        fig, ax = plt.subplots()
-        orgi = c.load_known_project(orgi_name)
-        if os.path.exists(f"cache/{orgi_name}_quanti.pkl"):
-            pts = cache_load(f"{orgi_name}_quanti.pkl")
-        else:
-            pts = np.zeros((len(orgi.list_queries()), 3))
-            for i, q in enumerate(tqdm(orgi.list_queries())):
-                c1, c2, c3 = get_quanti_stats(q, "fs" in orgi_name)
-                pts[i] = [c1, c2, c3]
-            cache_save(pts, f"{orgi_name}_quanti.pkl")
-
-        xs = np.arange(0, len(pts[:, 1]), 1)
-        # 0 fcount, 1 ecount, 2 total
-        pts = pts[pts[:, 2].argsort()]
-        # plt.plot(xs, pts[:, 2], "bo", markersize=1)
-        # plt.plot(xs, pts[:, 1] + pts[:, 0], "bo", markersize=1)
-        plt.fill_between(xs, pts[:, 2], pts[:, 0]+pts[:, 1], color="#332288")
-        plt.fill_between(xs, pts[:, 0]+pts[:, 1], pts[:, 0], color="#44AA99")
-        plt.fill_between(xs, pts[:, 0], np.zeros(len(xs)), color="#88CCEE")
-        # plt.plot(xs, pts[:, 1], "bo", markersize=1)
-        # plt.fill_between(xs, pts[:, 2], pts[:, 0]+pts[:, 1], color='grey', alpha=0.5)
-        # plt.plot(xs, pts[:, 0]+pts[:, 1], marker="o", color="blue", markersize=1)
-        # xs, ys = get_cdf_pts(pts[:, 5]/ pts[:, 2])
-        # plt.plot(xs, ys, marker=",", label=k, linewidth=2)
-        plt.ylim(0)
-        plt.xlim(0, len(xs))
-        plt.savefig(f"fig/quanti/{orgi_name}.png", dpi=200)
-        plt.close()
-
-# plot_instability_reduction()
-
 # def print_basics(orgi_name, mini_name):
 #     UC = c.load_known_experiment("min_asserts")
 #     items0, items1, keep = get_basic_keep(orgi_name, mini_name)
@@ -297,83 +264,5 @@ def plot_quanti():
 #         table_.append([k] + table[k])
 #     print(tabulate(table_, headers="firstrow", tablefmt="github"))
 
-# def print_asserts(orgi_name, mini_name):
-#     _, _, keep = get_basic_keep(orgi_name, mini_name)
-#     orgi = c.load_known_project(orgi_name)
-#     mini = c.load_known_project(mini_name)
-
-#     pts0 = []
-#     pts1 = []
-#     for query in tqdm(keep):
-#         # if "Impl.i" not in query:
-#         #     continue
-#         orgi_path = orgi.clean_dir + "/" + query
-#         if not os.path.exists(orgi_path):
-#             orgi_path = orgi_path.replace("dfy.", "dfyxxx")
-#         if not os.path.exists(orgi_path):
-#             orgi_path = orgi_path.replace(".smt2", ".1.smt2")
-#         asserts = get_dfy_asserts(orgi_path)
-
-#         row = []
-#         for k in ASSERT_LABELS:
-#             row.append(asserts[k])
-#         assert (asserts["goal"] == 1)
-#         pts0.append(row)
-
-#         mini_path = mini.clean_dir + "/" + query
-#         asserts = get_dfy_asserts(mini_path)
-#         row = []
-#         for k in ASSERT_LABELS:
-#             row.append(asserts[k])
-#         assert (asserts["goal"] == 1)
-#         pts1.append(row)
-
-#     # print(pts0)
-#     # print(pts1)
-    
-#     pts0 = np.array(pts0, dtype=np.float64)
-#     pts1 = np.array(pts1, dtype=np.float64)
-
-#     # for i in range(pts0.shape[0]):
-#     #     pts0[i, :] = pts0[i, :] * 100 / np.sum(pts0[i, :])
-#     #     pts1[i, :] = pts1[i, :] * 100 / np.sum(pts1[i, :])
-
-#     table = [ASSERT_LABELS]
-#     table.append(np.round(np.mean(pts0, axis=0), 2))
-#     table.append(np.round(np.mean(pts1, axis=0), 2))
-#     table.append(np.round(np.divide(np.mean(pts0, axis=0), np.mean(pts1, axis=0)), 2))
-#     print(tabulate(table, headers="firstrow", tablefmt="github"))
-
-# orgi = c.load_known_project("fs_vwasm")
-# for i, q in enumerate(orgi.list_queries()):
-#     # get file size
-#     fs0 = get_assert_size(q)
-#     print(fs0, q)
-
-# plot_quanti()
-
-# def get_fstar_assert_label():
-#     # f = open("woot.smt2", "r")
-#     o, _, _ = subprocess_run('grep -E "qid [^\)]+" -o woot.smt2')
-#     qids = o.split("\n")
-#     prelude = 0
-#     typing = 0
-#     lowstar = 0
-#     others = 0
-#     for qid in sorted(qids):
-#         if "FStar" in qid:
-#             prelude += 1
-#         elif "Prims" in qid:
-#             prelude += 1
-#         # elif "qid typing" in qid or "kinding" in qid:
-#         #     typing += 1
-#         # elif "LowStar" in qid:
-#         #     lowstar += 1
-#         # else:
-#         #     others +=1 
-#             print(qid)
-#     print(prelude, typing, lowstar, others)
-
-# get_fstar_assert_label()
-
 # plot_context_reduction()
+# plot_instability_reduction()

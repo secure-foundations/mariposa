@@ -599,9 +599,14 @@ impl Manager {
             concrete::Term::Attributes { term, attributes } => {
                 self.remove_pattern_rec_helper(term);
                 let random = self.rng.gen_range(1..101);
+                let mut removed = false;
                 if random <= self.pattern_threshold {
                     attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()));
                     self.removed_patterns += 1;
+                    removed = true;
+                }
+                if removed && attributes.len() == 0 {
+                    attributes.push((concrete::Keyword("qid".to_owned()), visitors::AttributeValue::Symbol(concrete::Symbol("mariposa-attribute-placeholder".to_owned()))));
                 }
                 self.total_patterns += 1;
             }
@@ -744,7 +749,9 @@ fn main() {
         clean_names(&mut commands);
     } else if args.mutation == "remove-trigger" { 
         manager.remove_patterns(&mut commands);
+    } else if args.mutation == "none" {
+        // parse and do nothing
+        return;
     }
-
     manager.dump_non_info_commands(&commands);
 }
