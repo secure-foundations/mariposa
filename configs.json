@@ -445,27 +445,15 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "d_komodo_uc_trigger",
+        "name": "d_komodo_trigger_10",
         "framework": "dafny",
-        "clean_dir": "data/unsat_cores/d_komodo_z3/min_asserts_no_trigger/",
+        "clean_dir": "data/triggers/d_komodo_z3/remove_10_percent_trigger/",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "d_komodo_uc_trigger_10",
-        "framework": "dafny",
-        "clean_dir": "data/unsat_cores/d_komodo_z3/min_asserts_no_trigger2",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "d_lvbkv_uc_trigger",
-        "framework": "dafny",
-        "clean_dir": "data/unsat_cores/d_lvbkv_z3/min_asserts_no_trigger/",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "fs_vwasm_uc_trigger_10",
+        "name": "fs_vwasm_trigger_10",
         "framework": "fstar",
-        "clean_dir": "data/unsat_cores/fs_vwasm_z3/min_asserts_no_trigger2",
+        "clean_dir": "data/triggers/fs_vwasm_z3/remove_10_percent_trigger/",
         "artifact_solver_name": "z3_4_12_2"
       }
     ]

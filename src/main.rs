@@ -749,9 +749,10 @@ fn main() {
         clean_names(&mut commands);
     } else if args.mutation == "remove-trigger" { 
         manager.remove_patterns(&mut commands);
-    } else if args.mutation == "none" {
+    } else if args.mutation == "parse-only" {
         // parse and do nothing
         return;
     }
+
     manager.dump_non_info_commands(&commands);
 }

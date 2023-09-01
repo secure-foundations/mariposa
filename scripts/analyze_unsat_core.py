@@ -135,25 +135,30 @@ def plot_instability_reduction():
     plt.savefig("fig/unsat_core/instability_reduction.png", dpi=200)
     plt.close()
 
-def get_quanti_stats(query_path, fs):
+def get_quanti_stats(query_path):
     fcount = 0
     ecount = 0
+    qf = 0
     total = 0
     for line in open(query_path).readlines():
         quanti = False
         if not line.startswith("(assert"):
             continue
-        if "(forall" in line:
+        cfc = line.count("(forall")
+        if cfc > 0:
             quanti = True
-            fcount += 1
-            total += 1
-        if "(exists" in line:
+            fcount += cfc
+        
+        cec = line.count("(exists")
+        
+        if cec > 0:        
             quanti = True
-            ecount += 1
-            total += 1
+            ecount += cec
+
         if not quanti:
-            total += 1
-    return fcount, ecount, total
+            qf += 1
+        total += 1
+    return fcount, ecount, qf, total
 
 def get_project_quanti_stats(orgi_name, mini_name):
     items0, items1, keep = get_basic_keep(orgi_name, mini_name)
@@ -161,17 +166,12 @@ def get_project_quanti_stats(orgi_name, mini_name):
     if os.path.exists(f"cache/{orgi_name}_{mini_name}_query_stats.pkl"):
         pts = cache_load(f"{orgi_name}_{mini_name}_query_stats.pkl")
     else:
-        pts = np.zeros((len(keep), 6))
+        pts = np.zeros((len(keep), 8))
         for i, query in enumerate(tqdm(keep)):
             orgi_path, mini_path = keep[query]
-            c1, c2, c3 = get_quanti_stats(orgi_path)
-            pts[i][0] = c1
-            pts[i][1] = c2
-            pts[i][2] = c3
-            c1, c2, c3 = get_quanti_stats(mini_path)
-            pts[i][3] = c1
-            pts[i][4] = c2
-            pts[i][5] = c3
+            c0, c1, c2, c3 = get_quanti_stats(orgi_path)
+            c4, c5, c6, c7 = get_quanti_stats(mini_path)
+            pts[i] = [c0, c1, c2, c3, c4, c5, c6, c7]
         cache_save(pts, f"{orgi_name}_{mini_name}_query_stats.pkl")
     return pts
 
@@ -187,7 +187,7 @@ def plot_context_reduction():
 
     for k in PAIRS.keys():
         pts = get_project_quanti_stats(k, PAIRS[k])
-        xs, ys = get_cdf_pts(pts[:, 5] * 100 / pts[:, 2])
+        xs, ys = get_cdf_pts(pts[:, 7] * 100 / pts[:, 3])
         plt.plot(xs, ys, marker=",", label=k, linewidth=2)
 
     plt.ylabel("cumulative percentage of queries")
@@ -264,5 +264,6 @@ def plot_context_reduction():
 #         table_.append([k] + table[k])
 #     print(tabulate(table_, headers="firstrow", tablefmt="github"))
 
-# plot_context_reduction()
+if __name__ == "__main__":
+    plot_context_reduction()
 # plot_instability_reduction()
