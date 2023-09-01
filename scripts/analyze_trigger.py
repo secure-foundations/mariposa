@@ -24,9 +24,42 @@ def remove_some_triggers():
     #     print(f"./target/release/mariposa --in-file-path {q}")
 
 def format_item(count, total):
-    return f"{int(count)} ({round(count * 100 / total, 2)}%)"
+    return f"{int(count)} ({round(count * 100 / total, 0)}%)"
 
 def print_assertion_distribution():
+    tpts = []
+
+    for orgi_name in PAIRS.keys():
+        pts = load_quanti_stats(orgi_name)
+        total = pts[:, 2] + pts[:, 3] + pts[:, 4]
+        pts = pts[(pts[:, 2]/total).argsort()]
+        total = pts[:, 2] + pts[:, 3] + pts[:, 4]
+        qf, nqf, others = pts[:, 2], pts[:, 3], pts[:, 4]
+
+        row = [orgi_name]
+        tt = np.median(total)
+        row.append(int(tt))
+        row.append(format_item(np.median(others), tt))
+        row.append(format_item(np.median(qf), tt))
+        row.append(format_item(np.median(nqf), tt))
+
+        qf, nqf, others = qf * 100 /total, nqf * 100 /total, others * 100 /total
+    
+        xs = np.arange(0, len(pts[:, 1]), 1)
+        fig, ax = plt.subplots()
+        plt.fill_between(xs, nqf, label="Q-assert")
+        plt.fill_between(xs, nqf, nqf + qf, label="QF-assert")
+        plt.fill_between(xs, nqf + qf, nqf + qf + others, label="N-assert")
+        plt.ylim(0)
+        plt.xlim(0, len(xs))
+        plt.legend()
+        plt.savefig(f"fig/quanti/{orgi_name}_commands.png", dpi=200)
+        plt.close()
+        tpts.append(row)
+
+    print(tabulate(tpts, ["project", "total", "n-assert", "qf-assert", "q-assert"], tablefmt="latex"))
+
+def print_quantifier_distribution():
     tpts = []
 
     for orgi_name in PAIRS.keys():
@@ -39,35 +72,9 @@ def print_assertion_distribution():
             for i, q in enumerate(tqdm(orgi.list_queries())):
                 pts[i] = get_quanti_stats(q)
             cache_save(pts, f"{orgi_name}_quanti.pkl")
-
-        total = pts[:, 2] + pts[:, 3] + pts[:, 4]
-        pts = pts[(pts[:, 2]/total).argsort()]
+        nqfs = pts[:, 3]
         forall, exists = pts[:, 0], pts[:, 1]
-        total = pts[:, 2] + pts[:, 3] + pts[:, 4]
-        qf, nqf, others  = pts[:, 2] * 100 /total, pts[:, 3]* 100 /total, pts[:, 4]* 100 /total
 
-        # row = [orgi_name]
-        # row.append(format_item(others, total))
-        # row.append(format_item(qf, total))
-        # row.append(format_item(nqf, total))
-        # row.append(forall)
-        # row.append(exists)
-    
-        xs = np.arange(0, len(pts[:, 1]), 1)
-        fig, ax = plt.subplots()
-        plt.fill_between(xs, nqf, label="Q-assert")
-        plt.fill_between(xs, nqf, nqf + qf, label="QF-assert")
-        plt.fill_between(xs, nqf + qf, nqf + qf + others, label="N-assert")
-        plt.ylim(0)
-        plt.xlim(0, len(xs))
-        plt.legend()
-        plt.savefig(f"fig/quanti/{orgi_name}.png", dpi=200)
-        plt.close()
-
-        # tpts.append(row)
-
-    # print(tabulate(tpts, ["n-assert", "qf-assert", "q-assert", "forall", "exists"], tablefmt="github", floatfmt=".0f"))
-    
 # def plot_prelude():
 #     for orgi_name in PAIRS.keys():
 #         fig, ax = plt.subplots()

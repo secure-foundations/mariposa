@@ -132,7 +132,7 @@ def plot_instability_reduction():
     plt.title("Unsat Core Instability Difference")
     plt.xticks(ticks, PAIRS.keys())
     plt.ylabel("percentage of unstable queries")
-    plt.savefig("fig/unsat_core/instability_reduction.png", dpi=200)
+    plt.savefig("fig/context/instability_diff.png", dpi=200)
     plt.close()
 
 def get_quanti_stats(query_path):
@@ -164,19 +164,28 @@ def get_quanti_stats(query_path):
             nqf += 1
     return fcount, ecount, qf, nqf, others
 
-def get_project_quanti_stats(orgi_name, mini_name):
-    items0, items1, keep = get_basic_keep(orgi_name, mini_name)
-
-    if os.path.exists(f"cache/{orgi_name}_{mini_name}_query_stats.pkl"):
-        pts = cache_load(f"{orgi_name}_{mini_name}_query_stats.pkl")
+def load_quanti_stats(pname):
+    project = c.load_known_project(pname)
+    if os.path.exists(f"cache/{pname}_quanti.pkl"):
+        pts = cache_load(f"{pname}_quanti.pkl")
     else:
-        pts = np.zeros((len(keep), 8))
-        for i, query in enumerate(tqdm(keep)):
-            orgi_path, mini_path = keep[query]
-            c0, c1, c2, c3 = get_quanti_stats(orgi_path)
-            c4, c5, c6, c7 = get_quanti_stats(mini_path)
-            pts[i] = [c0, c1, c2, c3, c4, c5, c6, c7]
-        cache_save(pts, f"{orgi_name}_{mini_name}_query_stats.pkl")
+        pts = np.zeros((len(project.list_queries()), 5))
+        for i, q in enumerate(tqdm(project.list_queries())):
+            pts[i] = get_quanti_stats(q)
+        cache_save(pts, f"{pname}_quanti.pkl")
+    return pts
+
+def load_quanti_keep_stats(orgi_name):
+    if os.path.exists(f"cache/{orgi_name}_keep_quanti.pkl"):
+        pts = cache_load(f"{orgi_name}_keep_quanti.pkl")
+    else:
+        mini_name = PAIRS[orgi_name]
+        items0, items1, keep = get_basic_keep(orgi_name, mini_name)
+        pts = np.zeros((len(keep), 10))
+        for i, q in enumerate(tqdm(keep)):
+            pts[i] = get_quanti_stats(keep[q][0]) \
+                + get_quanti_stats(keep[q][1])
+        cache_save(pts, f"{orgi_name}_keep_quanti.pkl")
     return pts
 
 def get_assert_size(query_path):
@@ -189,35 +198,33 @@ def get_assert_size(query_path):
 def plot_context_reduction():
     fig, ax = plt.subplots()
 
-    for k in PAIRS.keys():
-        pts = get_project_quanti_stats(k, PAIRS[k])
-        xs, ys = get_cdf_pts(pts[:, 7] * 100 / pts[:, 3])
-        plt.plot(xs, ys, marker=",", label=k, linewidth=2)
+    for orgi_name in PAIRS.keys():
+        pts = load_quanti_keep_stats(orgi_name)
+        # print((pts[:, 2] + pts[:, 3]) * 100 / (pts[:, 7] + pts[:, 8]))
+        xs, ys = get_cdf_pts((pts[:, 7] + pts[:, 8]) * 100 / (pts[:, 2] + pts[:, 3]) )
+        plt.plot(xs, ys, marker=",", label=orgi_name, linewidth=2)
 
     plt.ylabel("cumulative percentage of queries")
     plt.xlabel("percentage of assertions retained in unsat core (log scale)")
     plt.title("Unsat Core Context Retention")
     plt.legend()
     plt.xscale("log")
-    plt.xscale("log")
     plt.xlim(0.001, 100)
     plt.ylim(0)
     plt.xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
-    plt.savefig("fig/unsat_core/context_reduction.png", dpi=200)
+    plt.savefig("fig/context/context_retention.png", dpi=200)
     plt.close()
 
     fig, ax = plt.subplots()
 
     for k in PAIRS.keys():
-        items0, items1, keep = get_basic_keep(k, PAIRS[k])
         if os.path.exists(f"cache/{k}_assert_size.pkl"):
             pts = cache_load(f"{k}_assert_size.pkl")
         else:
+            items0, items1, keep = get_basic_keep(k, PAIRS[k])
             pts = np.zeros((len(keep),), dtype=np.float64)
             for i, q in enumerate(tqdm(keep)):
                 orgi_path, mini_path = keep[q]
-                # print(orgi_path, mini_path)
-                # get file size
                 fs0 = get_assert_size(orgi_path)
                 fs1 = get_assert_size(mini_path)
                 pts[i] = fs1 / fs0
@@ -230,12 +237,12 @@ def plot_context_reduction():
     plt.legend()
     plt.title("Unsat Core Size Retention")
     plt.ylim(0)
-    # plt.xlim(0)
     plt.xscale("log")
     plt.xlim(0.001, 100)
     plt.xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
     # ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=3))
-    plt.savefig("fig/unsat_core/size_reduction.png", dpi=200)
+    plt.savefig("fig/context/size_retention.png", dpi=200)
+    plt.close()
 
 # def print_basics(orgi_name, mini_name):
 #     UC = c.load_known_experiment("min_asserts")
@@ -270,4 +277,4 @@ def plot_context_reduction():
 
 if __name__ == "__main__":
     plot_context_reduction()
-# plot_instability_reduction()
+    plot_instability_reduction()
