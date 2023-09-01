@@ -139,10 +139,13 @@ def get_quanti_stats(query_path):
     fcount = 0
     ecount = 0
     qf = 0
-    total = 0
+    nqf = 0
+    others = 0
+
     for line in open(query_path).readlines():
         quanti = False
         if not line.startswith("(assert"):
+            others += 1
             continue
         cfc = line.count("(forall")
         if cfc > 0:
@@ -157,8 +160,9 @@ def get_quanti_stats(query_path):
 
         if not quanti:
             qf += 1
-        total += 1
-    return fcount, ecount, qf, total
+        else:
+            nqf += 1
+    return fcount, ecount, qf, nqf, others
 
 def get_project_quanti_stats(orgi_name, mini_name):
     items0, items1, keep = get_basic_keep(orgi_name, mini_name)
