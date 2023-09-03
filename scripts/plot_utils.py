@@ -16,6 +16,11 @@ def plot_csum(sp, data, label):
     y = np.arange(n)
     sp.plot(np.sort(data), y, marker=",", label=label)
 
+def get_csum_pts(data):
+    n = len(data)
+    y = np.arange(n)
+    return np.sort(data), y
+
 def setup_fig(rows, columns):
     figure, axis = plt.subplots(rows, columns)
 

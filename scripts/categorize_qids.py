@@ -1,3 +1,5 @@
+from basic_utils import *
+
 ASSERT_LABELS = ["qfree", "others", "prelude", "type", "heap", "goal"]
 NON_GOAL_LABELS = ["qfree", "others", "prelude", "type", "heap"]
 
@@ -5,30 +7,35 @@ import re
 
 DFY_QID_PAT = re.compile(r"qid \|([^\|])*\|")
 
-def get_dfy_assert_label(line):
-    if not line.startswith("(assert"):
-        return None
-    
-    if line.startswith("(assert (not (=>") or  \
-        line.startswith("(assert (not (let"):
-        return "goal"
+def get_dfy_assert_label(file):
+    o, _, _ = subprocess_run(f'rg "qid \|([^\|])*\|" -o {file}')
+    qids = o.split("\n")
+    prelude = 0
+    types = 0
+    for qid in qids:
+        if "DafnyPre" in qid:
+            prelude += 1
+        # elif "funType" in qid:
+        #     types += 1
+        # else:
+        #     print(qid)
+    return prelude, len(qids) - prelude
 
-    qid = re.search(DFY_QID_PAT, line)
-    if qid is None:
-        if "forall" in line:
-            return "others"
-        else:
-            return "qfree"
-    qid = qid.group(0)
+def get_fs_assert_label(file):
+    o, _, _ = subprocess_run(f'grep -E "qid [^\)]+" -o {file}')
+    prelude = 0
+    qids = o.split("\n")
+    for qid in qids:
+        if "FStar" in qid:
+            prelude += 1
+        elif "Prims" in qid:
+            prelude += 1
+        # elif "qid typing" in qid or "kinding" in qid:
+        #     typing += 1
+    return prelude, len(qids) - prelude
 
-    if "DafnyPre" in qid:
-        return "prelude"
-    elif "funType" in qid:
-        return "type"
-    elif "Heap" in line:
-        return "heap"
-    else:
-        return "others"
+if __name__ == "__main__":
+    get_fs_assert_label(sys.argv[1])
 
 # def add_back_dfy_asserts(label, origi_file, mini_file, out_file):
 #     assert label in ASSERT_LABELS
@@ -57,21 +64,6 @@ def get_dfy_assert_label(line):
 #         if label is not None:
 #             labels[label] += 1
 #     return labels
-
-# for label in NON_GOAL_LABELS:
-#     if os.path.exists(f"data/d_fvbkv_asserts/{label}"):
-#         continue
-#     os.mkdir(f"data/d_fvbkv_asserts/{label}") 
-
-#     for query in stabilized:
-#         orgi_path = orgi.clean_dir + "/" + query
-#         # if not os.path.exists(orgi_path):
-#         #     orgi_path = orgi_path.replace("dfy.", "dfyxxx")
-#         # if not os.path.exists(orgi_path):
-#         #     orgi_path = orgi_path.replace(".smt2", ".1.smt2")
-#         mini_path = mini.clean_dir + "/" + query
-#         out_path = f"data/d_fvbkv_asserts/{label}/{query}"
-#         add_back_dfy_asserts(label, orgi_path, mini_path, out_path)
 
 # def print_asserts(orgi_name, mini_name):
 #     _, _, keep = get_basic_keep(orgi_name, mini_name)

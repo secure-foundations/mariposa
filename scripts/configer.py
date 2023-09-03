@@ -13,7 +13,11 @@ class ProjectInfo:
 
     def list_queries(self, part_id=1, part_num=1):
         queries = list_smt2_files(self.clean_dir)
-        queries.sort()
+        # sort then shuffle (original is ordered by the os.walk)
+        queries = sorted(queries)
+        # some fixed random seed will do
+        random.seed(984352732132123)
+        random.shuffle(queries)
 
         part_id -= 1
         assert part_id < part_num
@@ -156,3 +160,12 @@ class Configer:
     def load_known_analyzer(self, name):
         exit_with_on_fail(name in self.analyzers, f"[ERROR] unknown analyzer {name}")
         return self.analyzers[name]
+
+if __name__ == "__main__":
+    c = Configer()
+    p = c.load_known_project("d_komodo")
+    sample = p.list_queries(1, 10)
+    for s in sample:
+        print(s)
+    # print(sample)
+    # print(len(sample))

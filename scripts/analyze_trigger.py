@@ -6,6 +6,8 @@ from plot_utils import *
 from configer import Configer
 from analyze_unsat_core import *
 from cache_utils import cache_load, cache_save
+from categorize_qids import *
+
 import random
 
 c = Configer()
@@ -26,6 +28,10 @@ def remove_some_triggers():
 def format_item(count, total):
     return f"{int(count)} ({round(count * 100 / total, 0)}%)"
 
+# def load_qid_stats(proj_name):
+    # qid_stats = {}
+    # return qid_stats    
+    
 def print_assertion_distribution():
     tpts = []
 
@@ -61,51 +67,62 @@ def print_assertion_distribution():
 
 def print_quantifier_distribution():
     tpts = []
+    # fig, ax = plt.subplots()
 
     for orgi_name in PAIRS.keys():
-        orgi = c.load_known_project(orgi_name)
-        
-        if os.path.exists(f"cache/{orgi_name}_quanti.pkl"):
-            pts = cache_load(f"{orgi_name}_quanti.pkl")
-        else:
-            pts = np.zeros((len(orgi.list_queries()), 5))
-            for i, q in enumerate(tqdm(orgi.list_queries())):
-                pts[i] = get_quanti_stats(q)
-            cache_save(pts, f"{orgi_name}_quanti.pkl")
-        nqfs = pts[:, 3]
-        forall, exists = pts[:, 0], pts[:, 1]
+        pts = load_quanti_stats(orgi_name)
+        forall, exists, nqf = pts[:, 0], pts[:, 1], pts[:, 3]
+        row = [orgi_name]
+        row.append(np.median(forall))
+        row.append(np.mean(forall/nqf))
+        row.append(np.median(exists))
+        row.append(np.mean(exists/nqf))
+        tpts.append(row)
 
-# def plot_prelude():
-#     for orgi_name in PAIRS.keys():
-#         fig, ax = plt.subplots()
-#         orgi = c.load_known_project(orgi_name)
-#         if os.path.exists(f"cache/{orgi_name}_quanti.pkl"):
-#             pts = cache_load(f"{orgi_name}_quanti.pkl")
-#         else:
-#             pts = np.zeros((len(orgi.list_queries()), 3))
-#             for i, q in enumerate(tqdm(orgi.list_queries())):
-#                 c1, c2, c3 = get_quanti_stats(q, "fs" in orgi_name)
-#                 pts[i] = [c1, c2, c3]
-#             cache_save(pts, f"{orgi_name}_quanti.pkl")
+    print(tabulate(tpts, ["project", 
+                          "forall per-qeury", "per-quantified-assert", 
+                          "exists per-query", "per-quantified-assert"]))
 
-#         xs = np.arange(0, len(pts[:, 1]), 1)
-#         # 0 fcount, 1 ecount, 2 total
-#         pts = pts[pts[:, 2].argsort()]
-#         plt.fill_between(xs, pts[:, 2], pts[:, 0]+pts[:, 1], color="#332288")
-#         plt.fill_between(xs, pts[:, 0] + pts[:, 1], pts[:, 0], color="#44AA99")
-#         plt.fill_between(xs, pts[:, 0], np.zeros(len(xs)), color="#88CCEE")
+    # plt.plot(xs, ys, marker=",", label="forall", linewidth=2)
+    # plt.legend()
+    # plt.savefig(f"fig/quanti/quanti.png", dpi=200)
 
-#         print(np.mean(pts[:, 0] / pts[:, 2]) * 100 )
-#         print(np.mean(pts[:, 1] / pts[:, 2]) * 100 )
-#         print(np.mean((pts[:, 2] - pts[:, 0] - pts[:, 1])/ pts[:, 2]) * 100 )
-#         print("")
+def load_prelude_stats(pname):
+    project = c.load_known_project(pname)
+    if os.path.exists(f"cache/{pname}_preldue.pkl"):
+        pts = cache_load(f"{pname}_preldue.pkl")
+    else:
+        pts = np.zeros((len(project.list_queries()), 2))
+        for i, q in enumerate(tqdm(project.list_queries())):
+            if project.framework == "fstar":
+                pts[i] = get_fs_assert_label(q)
+            else:
+                assert project.framework == "dafny"
+                pts[i] = get_dfy_assert_label(q)
+        cache_save(pts, f"{pname}_preldue.pkl")
+    return pts
 
-#         plt.ylim(0)
-#         plt.xlim(0, len(xs))
-#         plt.savefig(f"fig/quanti/{orgi_name}.png", dpi=200)
-#         plt.close()
+def plot_prelude():
+    fig, ax = plt.subplots()
+    for orgi_name in PAIRS.keys():
+        pts = load_prelude_stats(orgi_name)
+        xs, ys = get_cdf_pts(pts[:, 0] * 100 / (pts[:, 1] + pts[:, 0]))
+        plt.plot(xs, ys, marker=",", label=f"{orgi_name}", linewidth=2)
+
+    plt.xscale("log")
+    plt.xlim(1, 100)
+    plt.ylim(0)
+    plt.xticks([1.0, 10, 100], ["1%", "10%", "100%"])
+
+    plt.xlabel("percentage of quantifiers from prelude (log scale)")
+    plt.ylabel("cumulative percentage of queries")
+
+    plt.legend()
+    plt.savefig(f"fig/quanti/prelude.png", dpi=200)
 
 if __name__ == "__main__":
     # remove_some_triggers()
-    print_assertion_distribution()
+    # print_assertion_distribution()
+    # print_quantifier_distribution()
+    plot_prelude()
     # print(get_quanti_stats(sys.argv[1]))
