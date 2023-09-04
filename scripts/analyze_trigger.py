@@ -12,15 +12,14 @@ import random
 
 c = Configer()
 
-def remove_some_triggers():
-    orgi = c.load_known_project("d_komodo")
-    pruned = c.load_known_project("d_komodo_trigger_10")
+def sample_then_remove_all_triggers(orgi_name, pruned_name):
+    orgi = c.load_known_project(orgi_name)
+    pruned = c.load_known_project(pruned_name)
     prefix = pruned.clean_dir
 
-    for q in orgi.list_queries():
+    for q in orgi.list_queries(1, 10):
         base = q.split("/")[-1]
-        rs = random.randint(0, 0xffffffffffffffff)
-        print(f"./target/release/mariposa --in-file-path {q} --out-file-path {prefix}/{base} -m remove-trigger --seed {rs}")
+        print(f"./target/release/mariposa --in-file-path {q} --out-file-path {prefix}/{base} -m remove-trigger")
 
     # for q in list_smt2_files(prefix):
     #     print(f"./target/release/mariposa --in-file-path {q}")
@@ -121,8 +120,8 @@ def plot_prelude():
     plt.savefig(f"fig/quanti/prelude.png", dpi=200)
 
 if __name__ == "__main__":
-    # remove_some_triggers()
+    sample_then_remove_all_triggers("d_komodo", "d_komodo_10_percent_sample_no_trigger")
     # print_assertion_distribution()
     # print_quantifier_distribution()
-    plot_prelude()
+    # plot_prelude()
     # print(get_quanti_stats(sys.argv[1]))

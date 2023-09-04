@@ -79,6 +79,22 @@
         "db_mode": "update"
       },
       {
+        "name": "triggers",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed",
+          "quake"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/triggers.db",
+        "db_mode": "update"
+      },
+      {
         "name": "unsat_core",
         "mutations": [
           "shuffle",
@@ -445,15 +461,9 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "d_komodo_trigger_10",
+        "name": "d_komodo_10_percent_sample_no_trigger",
         "framework": "dafny",
-        "clean_dir": "data/triggers/d_komodo_z3/remove_10_percent_trigger/",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "fs_vwasm_trigger_10",
-        "framework": "fstar",
-        "clean_dir": "data/triggers/fs_vwasm_z3/remove_10_percent_trigger/",
+        "clean_dir": "data/triggers/d_komodo_10_percent_sample_no_trigger",
         "artifact_solver_name": "z3_4_12_2"
       }
     ]

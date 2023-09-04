@@ -326,7 +326,7 @@ fn split_commands(commands: &mut Vec<concrete::Command>, out_file_path: &String,
             splits += 1;
             // write out to file
             let out_file_name = format!("{}.{}.smt2", &out_file_pre, splits);
-            let mut manager = Manager::new(Some(out_file_name), 0);
+            let mut manager = Manager::new(Some(out_file_name), 0, 100);
             manager.dump_non_info_commands(&stack.concat());
             manager.dump_non_info_commands(&vec![concrete::Command::CheckSat]);
         } else {
@@ -457,6 +457,7 @@ fn should_keep_command_noncore(command: &concrete::Command, core: &HashSet<Strin
     }
     return true;
 }
+
 fn core_to_hashset(file_path: String) -> HashSet<String> {
     // read lines from file
     let file = File::open(file_path).unwrap();
@@ -553,7 +554,7 @@ struct Manager {
 }
 
 impl Manager {
-    fn new(out_file_path: Option<String>, seed: u64) -> Manager {
+    fn new(out_file_path: Option<String>, seed: u64, pattern_threshold: u64) -> Manager {
         let writer: BufWriter<Box<dyn std::io::Write>> = match out_file_path {
             Some(path) => {
                 let path = std::path::Path::new(&path);
@@ -564,7 +565,7 @@ impl Manager {
             }
             None => BufWriter::new(Box::new(stdout().lock())),
         };
-        Manager { writer, seed, rng: ChaCha8Rng::seed_from_u64(seed), pattern_threshold: 10, removed_patterns: 0, total_patterns: 0 }
+        Manager { writer, seed, rng: ChaCha8Rng::seed_from_u64(seed), pattern_threshold, removed_patterns: 0, total_patterns: 0 }
     }
 
     fn dump(&mut self, s: &String) {
@@ -652,6 +653,10 @@ struct Args {
     #[arg(long, default_value = "false", conflicts_with = "mutation")]
     remove_debug: bool,
 
+    ///the threshold (percentage of) patterns to be removed
+    #[arg(long, default_value_t = 100)]
+    pattern_threshold: u64,
+
     /// file containing unsat core (produced by Z3)
     #[arg(long)]
     core_file_path: Option<String>,
@@ -677,7 +682,13 @@ fn main() {
         return;
     }
 
-    let mut manager = Manager::new(args.out_file_path, args.seed);
+    let pattern_threshold = args.pattern_threshold;
+
+    if pattern_threshold > 100 {
+        panic!("[INFO] pattern threshold must be between 0 and 100");
+    }
+
+    let mut manager = Manager::new(args.out_file_path, args.seed, pattern_threshold);
 
     if args.mutation == "shuffle" {
         shuffle_asserts(&mut commands, manager.seed);
