@@ -27,10 +27,6 @@ def sample_then_remove_all_triggers(orgi_name, pruned_name):
 def format_item(count, total):
     return f"{int(count)} ({round(count * 100 / total, 0)}%)"
 
-# def load_qid_stats(proj_name):
-    # qid_stats = {}
-    # return qid_stats    
-    
 def print_assertion_distribution():
     tpts = []
 
@@ -120,7 +116,10 @@ def plot_prelude():
     plt.savefig(f"fig/quanti/prelude.png", dpi=200)
 
 if __name__ == "__main__":
-    sample_then_remove_all_triggers("d_komodo", "d_komodo_10_percent_sample_no_trigger")
+    # sample_then_remove_all_triggers("d_komodo", "d_komodo_10_percent_sample_no_trigger")
+    # sample_then_remove_all_triggers("fs_vwasm", "fs_vwasm_10_percent_sample_no_trigger")
+    sample_then_remove_all_triggers("d_fvbkv", "d_fvbkv_10_percent_sample_no_trigger")
+
     # print_assertion_distribution()
     # print_quantifier_distribution()
     # plot_prelude()

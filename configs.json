@@ -465,6 +465,18 @@
         "framework": "dafny",
         "clean_dir": "data/triggers/d_komodo_10_percent_sample_no_trigger",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_vwasm_10_percent_sample_no_trigger",
+        "framework": "fstar",
+        "clean_dir": "data/triggers/fs_vwasm_10_percent_sample_no_trigger",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_fvbkv_10_percent_sample_no_trigger",
+        "framework": "dafny",
+        "clean_dir": "data/triggers/d_fvbkv_10_percent_sample_no_trigger",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }
