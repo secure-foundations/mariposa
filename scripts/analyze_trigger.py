@@ -118,7 +118,7 @@ def plot_prelude():
 if __name__ == "__main__":
     # sample_then_remove_all_triggers("d_komodo", "d_komodo_10_percent_sample_no_trigger")
     # sample_then_remove_all_triggers("fs_vwasm", "fs_vwasm_10_percent_sample_no_trigger")
-    sample_then_remove_all_triggers("d_fvbkv", "d_fvbkv_10_percent_sample_no_trigger")
+    sample_then_remove_all_triggers("fs_dice", "fs_dice_10_percent_sample_no_trigger")
 
     # print_assertion_distribution()
     # print_quantifier_distribution()
