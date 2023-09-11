@@ -25,6 +25,17 @@ def load(proj, exp):
         return None, None, None
     items = ANA.categorize_queries(rows, tally=True)
     items = stem_file_paths(items)
+
+    if proj.name == "d_fvbkv":
+        for item in items:
+            keep = set()
+            for k in items[item]:
+                for a in DF_FILES:
+                    if k.startswith(a):
+                        keep.add(k)
+                        break
+            items[item] = keep
+
     tally = items.pop(Stability.TALLY)
     ps, _ = get_category_percentages(items)
     return items, ps, tally
@@ -69,15 +80,6 @@ def get_basic_keep(orgi_name, mini_name):
         if query in items1[Stability.UNSOLVABLE]:
             continue
         keep.add(query)
-
-    if orgi_name == "d_fvbkv":
-        keep_ = set()
-        for k in keep:
-            for a in DF_FILES:
-                if k.startswith(a):
-                    keep_.add(k)
-                    break
-        keep = keep_
 
     for cat in [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
         items0[cat] = items0[cat] & keep

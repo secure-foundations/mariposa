@@ -12,6 +12,14 @@ import random
 
 c = Configer()
 
+TRIGGER_REMOVED_PAIRS = {
+    "d_komodo": "d_komodo_10_percent_sample_no_trigger",
+    "d_fvbkv": "d_fvbkv_10_percent_sample_no_trigger",
+    "d_lvbkv_closed": "d_lvbkv_10_percent_sample_no_trigger",
+    "fs_dice": "fs_dice_10_percent_sample_no_trigger",
+    "fs_vwasm": "fs_vwasm_10_percent_sample_no_trigger",
+}
+
 def sample_then_remove_all_triggers(orgi_name, pruned_name):
     orgi = c.load_known_project(orgi_name)
     pruned = c.load_known_project(pruned_name)
@@ -115,12 +123,62 @@ def plot_prelude():
     plt.legend()
     plt.savefig(f"fig/quanti/prelude.png", dpi=200)
 
+
+def plot_instability_increase():
+    fig, ax = plt.subplots()
+    x = 0
+
+    TG = c.load_known_experiment("triggers")
+    OP = c.load_known_experiment("opaque")
+    UC = c.load_known_experiment("min_asserts")
+
+    table = []
+
+    for p, trp in TRIGGER_REMOVED_PAIRS.items():
+        exp = OP if p == "d_lvbkv_closed" else UC
+        p = c.load_known_project(p)
+        items0, ps0, tally0 = load(p, exp)
+        table.append([p.name, ps0[Stability.UNSOLVABLE], ps0[Stability.UNSTABLE], ps0[Stability.STABLE]])
+        trp = c.load_known_project(trp)
+        items0, ps0, tally0 = load(trp, TG)
+        table.append([p.name, ps0[Stability.UNSOLVABLE], ps0[Stability.UNSTABLE], ps0[Stability.STABLE]])
+
+    print(tabulate(table, ["project", "unsolvable", "unstable", "stable"], tablefmt="github", floatfmt=".2f"))
+    # pts = np.zeros((len(PAIRS), 4))
+    # for i, origi in enumerate(PAIRS):
+    #     mini = PAIRS[origi]
+    #     items0, items1, keep = get_basic_keep(origi, mini)
+    #     ps0, _ = get_category_percentages(items0)
+    #     ps1, _ = get_category_percentages(items1)
+    #     pts[i] = ps0[Stability.UNSTABLE], len(items0[Stability.UNSTABLE]), ps1[Stability.UNSTABLE], len(items1[Stability.UNSTABLE])
+    # print(pts.tolist())
+
+    # pts = [[5.583756345177665, 110.0, 1.6751269035532994, 33.0], [3.187721369539551, 162.0, 1.338055883510429, 68.0], [3.920031360250882, 200.0, 1.1760094080752646, 60.0], [1.0980966325036603, 15.0, 0.36603221083455345, 5.0], [0.06134969325153374, 1.0, 0.18404907975460122, 3.0]]
+
+    # ticks = []
+
+    # for i, k in enumerate(PAIRS.keys()):    
+    #     plt.bar(x, height=pts[i][0], label="original")
+    #     plt.text(x, pts[i][0], f"{int(pts[i][1])}")
+    #     ticks.append(x + 0.5)
+    #     plt.bar(x+1, height=pts[i][2], label="reduced")
+    #     plt.text(x+1, pts[i][2], f"{int(pts[i][3])}")
+    #     x += 4
+
+    # plt.title("Unsat Core Instability Difference")
+    # plt.xticks(ticks, PAIRS.keys())
+    # plt.ylabel("percentage of unstable queries")
+    # plt.savefig("fig/context/instability_diff.png", dpi=200)
+    # plt.close()
+
 if __name__ == "__main__":
     # sample_then_remove_all_triggers("d_komodo", "d_komodo_10_percent_sample_no_trigger")
     # sample_then_remove_all_triggers("fs_vwasm", "fs_vwasm_10_percent_sample_no_trigger")
-    sample_then_remove_all_triggers("fs_dice", "fs_dice_10_percent_sample_no_trigger")
+    # sample_then_remove_all_triggers("d_lvbkv_closed", "d_lvbkv_10_percent_sample_no_trigger")
 
     # print_assertion_distribution()
     # print_quantifier_distribution()
     # plot_prelude()
     # print(get_quanti_stats(sys.argv[1]))
+    plot_instability_increase()
+
