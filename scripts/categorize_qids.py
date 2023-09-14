@@ -142,6 +142,9 @@ if __name__ == "__main__":
 #             print(qid)
 #     print(prelude, typing, lowstar, others)
 
+if __name__ == "__main__":
+    get_dfy_assert_label(sys.argv[1])
+
 # get_fstar_assert_label()
 
 

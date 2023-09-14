@@ -275,7 +275,8 @@ fn remove_debug_commands(commands: &mut Vec<concrete::Command>) -> usize {
                 }
             },
             concrete::Command::GetModel | 
-                concrete::Command::GetValue { terms: _ } =>
+                concrete::Command::GetValue { terms: _ } |
+                concrete::Command::GetInfo { flag: _ } =>
             {
                 in_debug = true;
             },

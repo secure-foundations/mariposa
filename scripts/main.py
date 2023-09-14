@@ -121,7 +121,7 @@ def preprocess_mode(args):
     if os.path.exists(args.out_dir):
         print(f"[WARN] output directory {args.out_dir} already exists, remove it? [Y]")
         exit_with_on_fail(input() == "Y", f"[INFO] aborting")
-        os.rmdir(args.out_dir)
+        shutil.rmtree(args.out_dir)
     os.makedirs(args.out_dir)
 
     queries = list_smt2_files(args.in_dir)
@@ -134,8 +134,8 @@ def preprocess_mode(args):
         temp.write(command)
     temp.close()
     print(f"[INFO] emitted to preprocess.sh, running using gnu parallel")
-    os.system("cat preprocess.sh | parallel")
-    os.system("rm preprocess.sh")
+    # os.system("cat preprocess.sh | parallel")
+    # os.system("rm preprocess.sh")
 
 import copy 
 

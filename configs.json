@@ -489,6 +489,18 @@
         "framework": "fstar",
         "clean_dir": "data/triggers/fs_dice_10_percent_sample_no_trigger",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_dice_10_percent_sample_no_trigger",
+        "framework": "fstar",
+        "clean_dir": "data/triggers/fs_dice_10_percent_sample_no_trigger",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_fvbkv_pruned",
+        "framework": "dafny",
+        "clean_dir": "data/d_fvbkv_pruned",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }
