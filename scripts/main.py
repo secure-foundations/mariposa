@@ -134,8 +134,8 @@ def preprocess_mode(args):
         temp.write(command)
     temp.close()
     print(f"[INFO] emitted to preprocess.sh, running using gnu parallel")
-    # os.system("cat preprocess.sh | parallel")
-    # os.system("rm preprocess.sh")
+    os.system("cat preprocess.sh | parallel")
+    os.system("rm preprocess.sh")
 
 import copy 
 
