@@ -507,6 +507,12 @@
         "framework": "dafny",
         "clean_dir": "data/d_fvbkv_unpruned",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_fvbkv_shaked",
+        "framework": "dafny",
+        "clean_dir": "data/d_fvbkv_shaked",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }

@@ -25,8 +25,6 @@ c = Configer()
 # there are few not mapped, because of spliting at the VCG level
 # print(pruned_queries - unpruned_queries)
 
-import os
-
 def get_prune_keep(orgi_name, mini_name):
     TG = c.load_known_experiment("triggers")
     orgi = c.load_known_project(orgi_name)
@@ -66,10 +64,16 @@ def analyze_d_fvbkv_prune():
 
     pts0 = load_quanti_stats("d_fvbkv_unpruned", set([keep[k][0] for k in keep]))
     pts1 = load_quanti_stats("d_fvbkv_pruned", set([keep[k][1] for k in keep]))
+    pts2 = load_quanti_stats("d_fvbkv_shaked", set(["data/d_fvbkv_shaked/" + k for k in keep]))
 
     xs, ys = get_cdf_pts((pts1[:, 2] + pts1[:, 3]) * 100 / (pts0[:, 0] + pts0[:, 1]))
     # print(xs[:4], ys[:4])
-    plt.plot(xs, ys, label="ratio")
+    plt.plot(xs, ys, label="pruned")
+
+    xs, ys = get_cdf_pts((pts2[:, 2] + pts2[:, 3]) * 100 / (pts0[:, 0] + pts0[:, 1]))
+    # print(xs[:4], ys[:4])
+    plt.plot(xs, ys, label="shaked")
+    
     plt.xlim(0.001, 100)
     plt.xscale("log")
     plt.ylim(0)
@@ -79,6 +83,15 @@ def analyze_d_fvbkv_prune():
     # for q in items0[Stability.STABLE] & items1[Stability.UNSOLVABLE]:
     #     print(keep[q])
     print(tabulate(table, headers="firstrow", tablefmt="github"))
+
+def shake_d_fvbkv():
+    orgi = c.load_known_project("d_fvbkv_unpruned")
+
+    for q in orgi.list_queries():
+        print(f"echo '{q}'")
+        print(f"./target/release/mariposa --mutation tree-shake  --in-file-path {q} --out-file-path data/d_fvbkv_shaked/{q.split('/')[-1]}")
+
+# shake_d_fvbkv()
 
 analyze_d_fvbkv_prune()
 

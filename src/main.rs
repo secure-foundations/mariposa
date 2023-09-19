@@ -563,7 +563,7 @@ fn get_global_symbol_defs(command: &concrete::Command) -> HashSet<String> {
                 symbols.insert(x.0.0.clone());
                 assert_eq!(x.2.parameters.len(), 0);
                 x.2.constructors.iter().for_each(|y| {
-                    println!("{}", y.symbol.0);
+                    symbols.insert(y.symbol.0.clone());
                     y.selectors.iter().for_each(|z| {
                         symbols.insert(z.0.0.clone());
                     });
@@ -605,8 +605,8 @@ fn get_identifier_symbols(identifier: &concrete::Identifier) -> HashSet<Symbol> 
             symbols.insert(symbol.clone());
         }
         concrete::Identifier::Indexed{ symbol, indices } => {
-            // symbols.insert(symbol.clone());
-            panic!("TODO indexed identifier")
+            symbols.insert(symbol.clone());
+            // panic!("TODO indexed identifier {}", symbol)
         }
     }
     symbols
@@ -706,17 +706,15 @@ impl SymbolUseTracker {
     }
 }
 
+// const KNOWN_SYMBOLS: HashSet<String> = vec!["or", "select", "not", "and", ">", "=", "ite", "true", "=>"].into_iter().map(|x| x.to_string()).collect();
+
 fn get_command_symbol_uses(command: &concrete::Command, defs: &HashSet<String>) -> HashSet<String> {
     let mut tracker = SymbolUseTracker::new();
     match command {
         Command::Assert { term } => {
             tracker.get_symbol_uses(term);
         }
-        // Command::DeclareConst { symbol, sort } => {
-        //     tracker.try_add_use(symbol);
-        // }
         _ => {
-            // panic!("TODO ")
         }
     }
     let mut r: HashSet<String> = tracker.global_symbols.into_iter().map(|f| f.0).collect();
@@ -777,31 +775,31 @@ fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
         .flatten()
         .collect();
 
-    let symbols: Vec<HashSet<String>> = commands.iter()
+    let mut symbols: Vec<HashSet<String>> = commands.iter()
         .map(|c| get_command_symbol_uses(&c, &defs))
         .collect();
 
-    // let uses: HashSet<String> = symbols.into_iter().map(|f| f.0).collect();
+    let mut snowball = symbols.pop().unwrap();
 
-    // for i in uses {
-    //     println!("{}", i);
-    // }
-
-    // for i in uses.difference(&defs) {
-    //     println!("{}", i);
-    // }
-
+    let mut poss = HashSet::new();
+    poss.insert(i);
     for (pos, x) in symbols.iter().rev().enumerate() {
-        println!("{:?}", x);
-        println!("{}", commands[symbols.len() - pos - 1]);
+        let actual_pos = symbols.len() - pos - 1;
+        if snowball.intersection(x).count() != 0 {
+            snowball.extend(x.iter().cloned());
+            poss.insert(actual_pos);
+            // println!("{}", commands[symbols.len() - pos - 1]);
+        } else {
+            if let Command::Assert { term: _ } = &commands[actual_pos] {
+            } else {
+                poss.insert(actual_pos);
+            }
+        }
     }
 
-    // let noncore_symbols = tracker.symbols();
-    // println!("noncore symbols: {:?}", noncore_commands);
-    // command.accept(&mut state);
-
-    // print!("i: {:?}", &commands[i]);
-    vec![]
+    commands = commands.into_iter().enumerate().filter(|(pos, _)| poss.contains(pos)).map(|(_, x)| x).collect();
+    commands.push(Command::CheckSat);
+    commands
 }
 
 struct Manager {
