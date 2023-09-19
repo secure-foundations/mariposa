@@ -529,6 +529,18 @@
         "framework": "dafny",
         "clean_dir": "data/d_fvbkv_shaked",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_dice_shaked",
+        "framework": "fstar",
+        "clean_dir": "data/fs_dice_shaked",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_fvbkv_unpruned_new",
+        "framework": "fstar",
+        "clean_dir": "data/d_fvbkv_unpruned_new",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }

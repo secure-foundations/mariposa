@@ -77,18 +77,18 @@ class Analyzer:
         success = count_within_timeout(group_blob, RCode.UNSAT, self._timeout)
         sr = success * 100 / size
 
+        # if count_within_timeout(group_blob, RCode.UNKNOWN, None) == size:
+        #     return Stability.UNKNOWN
+
         if sr < self.r_solvable:
-            # if count_within_timeout(group_blob, RCode.UNKNOWN, self._timeout) == size:
-            #     return Stability.UNKNOWN
             return Stability.UNSOLVABLE
 
         if sr >= self.r_stable:
             return Stability.STABLE
+        # if np.mean(group_blob[1][unsat_indices]) < self._timeout * self.discount:
+        return Stability.UNSTABLE
 
-        if np.mean(group_blob[1][unsat_indices]) < self._timeout * self.discount:
-            return Stability.UNSTABLE
-
-        return Stability.STABLE
+        # return Stability.STABLE
 
     def _categorize_strict(self, group_blob):
         size = len(group_blob[0])
@@ -96,8 +96,6 @@ class Analyzer:
         success = count_within_timeout(group_blob, RCode.UNSAT, self._timeout)
         
         if success == 0:
-            # if count_within_timeout(group_blob, RCode.UNKNOWN, self._timeout) == size:
-            #     return Stability.UNKNOWN
             return Stability.UNSOLVABLE
 
         if success == size:
@@ -170,13 +168,16 @@ class Analyzer:
         ress -= {Stability.INCONCLUSIVE}
         if len(ress) == 1:
             return ress.pop(), votes
+        ress -= {Stability.UNKNOWN}
+        # if len(ress) == 1:
+        #     return ress.pop(), votes
         return Stability.UNSTABLE, votes
 
     def categorize_queries(self, rows, perturbs=None, tally=False):
         categories = Stability.empty_map()
         for query_row in rows:
             plain_path = query_row[0]
-            res = self.categorize_query(query_row[2], perturbs)[0]
+            res, votes = self.categorize_query(query_row[2], perturbs)
             categories[res].add(plain_path)
         if tally:
             tally = set.union(*categories.values())
