@@ -668,41 +668,41 @@ fn test_random_renaming() {
     );
 }
 
-/// A [`Rewriter`] implementation that visits all symbols and keeps track of them.
-#[derive(Debug, Default)]
-pub struct SymbolTracker<V> {
-    visitor: V,
-    /// HashSet of all symbols visited.
-    symbols: HashSet<String>,
-}
+// /// A [`Rewriter`] implementation that visits all symbols and keeps track of them.
+// #[derive(Debug, Default)]
+// pub struct SymbolTracker<V> {
+//     visitor: V,
+//     /// HashSet of all symbols visited.
+//     symbols: HashSet<String>,
+// }
 
-impl<V> SymbolTracker<V> {
-    pub fn new(visitor: V) -> Self {
-        Self {
-            visitor,
-            symbols: HashSet::new(),
-        }
-    }
+// impl<V> SymbolTracker<V> {
+//     pub fn new(visitor: V) -> Self {
+//         Self {
+//             visitor,
+//             symbols: HashSet::new(),
+//         }
+//     }
 
-    pub fn symbols(&self) -> &HashSet<String> {
-        &self.symbols
-    }
-}
+//     pub fn symbols(&self) -> &HashSet<String> {
+//         &self.symbols
+//     }
+// }
 
-impl<V, Error> Rewriter for SymbolTracker<V>
-where
-    V: Smt2Visitor<Symbol = Symbol, Error = Error>,
-{
-    type V = V;
-    type Error = Error;
+// impl<V, Error> Rewriter for SymbolTracker<V>
+// where
+//     V: Smt2Visitor<Symbol = Symbol, Error = Error>,
+// {
+//     type V = V;
+//     type Error = Error;
 
-    fn visitor(&mut self) -> &mut V {
-        &mut self.visitor
-    }
+//     fn visitor(&mut self) -> &mut V {
+//         &mut self.visitor
+//     }
 
-    fn bind_symbol(&mut self, symbol: &Symbol) {
-        let name = symbol.0.to_string();
-        self.symbols.insert(name);
-    }
-}
+//     fn bind_symbol(&mut self, symbol: &Symbol) {
+//         let name = symbol.0.to_string();
+//         self.symbols.insert(name);
+//     }
+// }
 

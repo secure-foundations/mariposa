@@ -2,10 +2,13 @@ use clap::Parser;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
-use smt2parser::{concrete, renaming, visitors, CommandStream};
+// use smt2parser::shaking::SymbolCollector;
+use smt2parser::{concrete, renaming, visitors, CommandStream, concrete::Command, concrete::Term, concrete::Symbol, concrete::AttributeValue};
+use core::panic;
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
+use std::vec;
 use rand::Rng;
 
 const DEFAULT_SEED: u64 = 1234567890;
@@ -545,6 +548,262 @@ fn clean_names(commands: &mut Vec<concrete::Command>) {
     commands.iter_mut().for_each(|x| clean_name(x));
 }
 
+fn get_global_symbol_defs(command: &concrete::Command) -> HashSet<String> {
+    let mut symbols = HashSet::new();
+    match command {
+        Command::DeclareConst { symbol, sort: _ } => {
+            symbols.insert(symbol.0.clone());
+        }
+        Command::DeclareDatatype { symbol, datatype } => {
+            symbols.insert(symbol.0.clone());
+            panic!("TODO datatype")
+        }
+        Command::DeclareDatatypes { datatypes } => {
+            datatypes.iter().for_each(|x| {
+                symbols.insert(x.0.0.clone());
+                assert_eq!(x.2.parameters.len(), 0);
+                x.2.constructors.iter().for_each(|y| {
+                    println!("{}", y.symbol.0);
+                    y.selectors.iter().for_each(|z| {
+                        symbols.insert(z.0.0.clone());
+                    });
+                });
+            });
+        }
+        Command::DeclareFun { symbol, parameters: _, sort: _ } => {
+            symbols.insert(symbol.0.clone());
+        }
+        Command::DeclareSort { symbol, arity: _ } => {
+            symbols.insert(symbol.0.clone());
+        }
+        Command::DefineFun { sig, term } => {
+            symbols.insert(sig.name.0.clone());
+        }
+        Command::DefineFunRec { sig, term } => {
+            panic!("TODO define fun rec")
+        }
+        Command::DefineFunsRec { funs } => {
+            panic!("TODO define funs rec")
+        }
+        Command::DefineSort { symbol, parameters: _, sort } => {
+            panic!("TODO define sort")
+        }
+        _ => (),
+    }
+    symbols
+}
+
+struct SymbolUseTracker {
+    local_symbols: Vec<HashSet<Symbol>>,
+    global_symbols: HashSet<Symbol>,
+}
+
+fn get_identifier_symbols(identifier: &concrete::Identifier) -> HashSet<Symbol> {
+    let mut symbols = HashSet::new();
+    match identifier {
+        concrete::Identifier::Simple{ symbol } => {
+            symbols.insert(symbol.clone());
+        }
+        concrete::Identifier::Indexed{ symbol, indices } => {
+            // symbols.insert(symbol.clone());
+            panic!("TODO indexed identifier")
+        }
+    }
+    symbols
+}
+
+impl SymbolUseTracker {
+    fn new() -> SymbolUseTracker {
+        SymbolUseTracker { local_symbols: Vec::new(), global_symbols: HashSet::new() }
+    }
+
+    fn push_term_scope(&mut self) {
+        self.local_symbols.push(HashSet::new());
+    }
+
+    fn pop_term_scope(&mut self) {
+        self.local_symbols.pop();
+    }
+
+    fn try_add_use(&mut self, symbol: &concrete::Symbol) {
+        for scope in self.local_symbols.iter_mut().rev() {
+            if scope.contains(symbol) {
+                return;
+            }
+        }
+        self.global_symbols.insert(symbol.clone());
+    }
+
+    fn add_local_binding(&mut self, symbol: &concrete::Symbol) {
+        let index = self.local_symbols.len() - 1;
+        self.local_symbols[index].insert(symbol.clone());
+    }
+
+    fn get_symbol_uses(&mut self, term: &concrete::Term) {
+        match term {
+            Term::Constant(..) => (),
+            Term::QualIdentifier(qual_identifier) => {
+                if let concrete::QualIdentifier::Simple{ identifier } = qual_identifier {
+                    get_identifier_symbols(identifier).iter().for_each(|x| self.try_add_use(x));
+                } else {
+                    panic!("TODO sorted QualIdentifier")
+                }   
+            }
+            Term::Application{ qual_identifier, arguments } => {
+                if let concrete::QualIdentifier::Simple{ identifier } = qual_identifier {
+                    get_identifier_symbols(identifier).iter().for_each(|x| self.try_add_use(x));
+                } else {
+                    panic!("TODO sorted QualIdentifier")
+                }
+                arguments.iter().for_each(|x| self.get_symbol_uses(x));
+            }
+            Term::Let{ var_bindings, term } => {
+                self.push_term_scope();
+                var_bindings.iter().for_each(|x| {
+                    self.add_local_binding(&x.0);
+                    self.get_symbol_uses(&x.1);
+                });
+                self.get_symbol_uses(term);
+                self.pop_term_scope();
+            }
+            Term::Forall{ vars, term } => {
+                self.push_term_scope();
+                // no need for sort symbols right?
+                vars.iter().for_each(|x| self.add_local_binding(&x.0));
+                self.get_symbol_uses(&term);
+                self.pop_term_scope();
+            }
+            Term::Exists { vars, term } => {
+                self.push_term_scope();
+                vars.iter().for_each(|x| self.add_local_binding(&x.0));
+                self.get_symbol_uses(&term);
+                self.pop_term_scope();
+            }
+            Term::Match { term, cases } => {
+                panic!("TODO match cases")
+            }
+            Term::Attributes {term, attributes} => {
+                self.get_symbol_uses(term);
+                attributes.into_iter().for_each(|f| {
+                    let concrete::Keyword(k) = &f.0;
+                    if k == "pattern" {
+                        match &f.1 {
+                            AttributeValue::None => (),
+                            AttributeValue::Constant(..) => (),
+                            AttributeValue::Symbol(symbol) => self.try_add_use(symbol),
+                            AttributeValue::Terms(terms) => terms.iter().for_each(|x| self.get_symbol_uses(x)),
+                            _ => panic!("TODO attribute value {:?}", &f.1),
+                        }
+                    } else if k == "named" || k == "qid" || k == "skolemid" || k == "weight" || k == "lblpos" || k == "lblneg" || k == "no-pattern" {
+                        // TODO: no pattern?
+                        // println!("{}", f.1);
+                    } else {
+                        panic!("TODO attribute keyword {}", k)
+                    }
+                });
+            }
+        }
+    }
+}
+
+fn get_command_symbol_uses(command: &concrete::Command, defs: &HashSet<String>) -> HashSet<String> {
+    let mut tracker = SymbolUseTracker::new();
+    match command {
+        Command::Assert { term } => {
+            tracker.get_symbol_uses(term);
+        }
+        // Command::DeclareConst { symbol, sort } => {
+        //     tracker.try_add_use(symbol);
+        // }
+        _ => {
+            // panic!("TODO ")
+        }
+    }
+    let mut r: HashSet<String> = tracker.global_symbols.into_iter().map(|f| f.0).collect();
+    r.retain(|x| defs.contains(x));
+    r
+}
+
+// TODO： flatten pass before tree-shaking
+
+// fn flatten_nested_and(command: &mut concrete) -> Vec<concrete::Command>
+// {
+//     match command {
+//         concrete::Term::Application { qual_identifier, arguments } => {
+//             if let concrete::QualIdentifier::Simple{ identifier } = qual_identifier {
+//                 if let concrete::Identifier::Simple{ symbol } = identifier {
+//                     if symbol == "and" {
+//                         let mut new_args = Vec::new();
+//                         for argument in arguments.iter_mut() {
+//                             if let concrete::Term::Application { qual_identifier, arguments } = argument {
+//                                 if let concrete::QualIdentifier::Simple{ identifier } = qual_identifier {
+//                                     if let concrete::Identifier::Simple{ symbol } = identifier {
+//                                         if symbol == "and" {
+//                                             new_args.append(arguments);
+//                                             continue;
+//                                         }
+//                                     }
+//                                 }
+//                             }
+//                             new_args.push(argument.clone());
+//                         }
+//                         *arguments = new_args;
+//                     }
+//                 }
+//             }
+//             for argument in arguments.iter_mut() {
+//                 flatten_nested_and(argument);
+//             }
+//         }
+//         _ => (),
+//     }
+// }
+
+fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
+    let mut i = commands.len() - 1;
+    while i > 0 {
+        let command = &commands[i];
+        if let Command::Assert { term: _ } = command {
+            break;
+        }
+        i -= 1;
+    }
+
+    commands.truncate(i + 1);
+
+    let defs: HashSet<String> = commands
+        .iter()
+        .map(|x| get_global_symbol_defs(x))
+        .flatten()
+        .collect();
+
+    let symbols: Vec<HashSet<String>> = commands.iter()
+        .map(|c| get_command_symbol_uses(&c, &defs))
+        .collect();
+
+    // let uses: HashSet<String> = symbols.into_iter().map(|f| f.0).collect();
+
+    // for i in uses {
+    //     println!("{}", i);
+    // }
+
+    // for i in uses.difference(&defs) {
+    //     println!("{}", i);
+    // }
+
+    for (pos, x) in symbols.iter().rev().enumerate() {
+        println!("{:?}", x);
+        println!("{}", commands[symbols.len() - pos - 1]);
+    }
+
+    // let noncore_symbols = tracker.symbols();
+    // println!("noncore symbols: {:?}", noncore_commands);
+    // command.accept(&mut state);
+
+    // print!("i: {:?}", &commands[i]);
+    vec![]
+}
+
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -721,49 +980,52 @@ fn main() {
     } else if args.mutation == "clean-names" {
         clean_names(&mut commands);
     } else if args.mutation == "unsat-core-alpha-rename" { 
-        // given core file + primed original file, produce a new file with unsat
-        // core combined with a random subset of the original file (alpha renamed so
-        // no definitions conflict with the unsat core file)
+        panic!("unsat-core-alpha-rename is deprecated");
+//         // given core file + primed original file, produce a new file with unsat
+//         // core combined with a random subset of the original file (alpha renamed so
+//         // no definitions conflict with the unsat core file)
 
-        // remove produce unsat core at top and get-unsat-core from the bottom
-        commands.retain(|command| !is_unsat_core_related(command));
+//         // remove produce unsat core at top and get-unsat-core from the bottom
+//         commands.retain(|command| !is_unsat_core_related(command));
 
-        let mut noncore_commands = parse_noncore_from_file(commands.clone(), args.core_file_path.clone().unwrap());
-        // cleans names put in by mariposa
-        clean_names(&mut noncore_commands);
-        noncore_commands = normalize_commands(noncore_commands, manager.seed);
+//         let mut noncore_commands = parse_noncore_from_file(commands.clone(), args.core_file_path.clone().unwrap());
+//         // cleans names put in by mariposa
+//         clean_names(&mut noncore_commands);
+//         noncore_commands = normalize_commands(noncore_commands, manager.seed);
 
-        // get symbols from noncore commands
-        let mut noncore_symbol_tracker = renaming::SymbolTracker::new(concrete::SyntaxBuilder);
-        noncore_commands = noncore_commands
-            .into_iter()
-            .map(|c| c.accept(&mut noncore_symbol_tracker).unwrap())
-            .collect();
-        let noncore_symbols = noncore_symbol_tracker.symbols();
-//      println!("noncore symbols: {:?}", noncore_symbols);
+//         // get symbols from noncore commands
+//         let mut noncore_symbol_tracker = renaming::SymbolTracker::new(concrete::SyntaxBuilder);
+//         noncore_commands = noncore_commands
+//             .into_iter()
+//             .map(|c| c.accept(&mut noncore_symbol_tracker).unwrap())
+//             .collect();
+//         let noncore_symbols = noncore_symbol_tracker.symbols();
+// //      println!("noncore symbols: {:?}", noncore_symbols);
         
-        let mut core_commands = parse_core_from_file(commands.clone(), args.core_file_path.clone().unwrap());
-        // cleans names put in by mariposa
-        clean_names(&mut core_commands);
+//         let mut core_commands = parse_core_from_file(commands.clone(), args.core_file_path.clone().unwrap());
+//         // cleans names put in by mariposa
+//         clean_names(&mut core_commands);
 
-        // get symbols from core commands
-        let mut core_symbol_tracker = renaming::SymbolTracker::new(concrete::SyntaxBuilder);
-        core_commands = core_commands
-            .into_iter()
-            .map(|c| c.accept(&mut core_symbol_tracker).unwrap())
-            .collect();
-        let core_symbols = core_symbol_tracker.symbols();
-//      println!("core symbols: {:?}", core_symbols);
+//         // get symbols from core commands
+//         let mut core_symbol_tracker = renaming::SymbolTracker::new(concrete::SyntaxBuilder);
+//         core_commands = core_commands
+//             .into_iter()
+//             .map(|c| c.accept(&mut core_symbol_tracker).unwrap())
+//             .collect();
+//         let core_symbols = core_symbol_tracker.symbols();
+// //      println!("core symbols: {:?}", core_symbols);
         
-        ensure_no_conflicts(noncore_symbols.clone(), core_symbols.clone());
-        // combine commands somehow...
-        commands = [noncore_commands, core_commands].concat();
-        clean_names(&mut commands);
+//         ensure_no_conflicts(noncore_symbols.clone(), core_symbols.clone());
+//         // combine commands somehow...
+//         commands = [noncore_commands, core_commands].concat();
+//         clean_names(&mut commands);
     } else if args.mutation == "remove-trigger" { 
         manager.remove_patterns(&mut commands);
     } else if args.mutation == "parse-only" {
         // parse and do nothing
         return;
+    } else if args.mutation == "tree-shake" {
+        commands = tree_shake(commands);        
     }
 
     manager.dump_non_info_commands(&commands);

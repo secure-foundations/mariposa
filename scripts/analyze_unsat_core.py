@@ -166,17 +166,6 @@ def get_quanti_stats(query_path):
             nqf += 1
     return fcount, ecount, qf, nqf, others
 
-def load_quanti_stats(pname):
-    project = c.load_known_project(pname)
-    if os.path.exists(f"cache/{pname}_quanti.pkl"):
-        pts = cache_load(f"{pname}_quanti.pkl")
-    else:
-        pts = np.zeros((len(project.list_queries()), 5))
-        for i, q in enumerate(tqdm(project.list_queries())):
-            pts[i] = get_quanti_stats(q)
-        cache_save(pts, f"{pname}_quanti.pkl")
-    return pts
-
 def load_quanti_keep_stats(orgi_name):
     if os.path.exists(f"cache/{orgi_name}_keep_quanti.pkl"):
         pts = cache_load(f"{orgi_name}_keep_quanti.pkl")

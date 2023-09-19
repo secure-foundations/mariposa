@@ -32,6 +32,20 @@ def sample_then_remove_all_triggers(orgi_name, pruned_name):
     # for q in list_smt2_files(prefix):
     #     print(f"./target/release/mariposa --in-file-path {q}")
 
+def load_quanti_stats(pname, selected=None):
+    project = c.load_known_project(pname)
+    if os.path.exists(f"cache/{pname}_quanti.pkl"):
+        pts = cache_load(f"{pname}_quanti.pkl")
+    else:
+        if selected == None:
+            selected = project.list_queries()
+        selected = sorted(selected)
+        pts = np.zeros((len(selected), 5))
+        for i, q in enumerate(tqdm(selected)):
+            pts[i] = get_quanti_stats(q)
+        cache_save(pts, f"{pname}_quanti.pkl")
+    return pts
+
 def format_item(count, total):
     return f"{int(count)} ({round(count * 100 / total, 0)}%)"
 
