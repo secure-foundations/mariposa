@@ -95,6 +95,22 @@
         "db_mode": "update"
       },
       {
+        "name": "pruned",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed",
+          "quake"
+        ],
+        "num_mutants": 10,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/pruned.db",
+        "db_mode": "update"
+      },
+      {
         "name": "unsat_core",
         "mutations": [
           "shuffle",
