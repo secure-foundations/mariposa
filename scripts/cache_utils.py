@@ -1,4 +1,4 @@
-import pickle
+import pickle, os
 
 def cache_save(obj, name):
     with open("cache/" + name, 'wb+') as f:
@@ -7,3 +7,6 @@ def cache_save(obj, name):
 def cache_load(name):
     with open("cache/" + name, 'rb') as f:
         return pickle.load(f)
+
+def cache_exists(name):
+    return os.path.exists("cache/" + name)

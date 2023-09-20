@@ -56,6 +56,11 @@ class SolverInfo:
 
     def __str__(self):
         return scrub(self.name).lower()
+    
+    def pretty_name(self):
+        tokens = self.name.split("_")
+        version = ".".join(tokens[1:])
+        return f"{tokens[0].upper()} {version}"
 
     def __hash__(self):
         return hash(str(self))
@@ -134,7 +139,7 @@ class Configer:
         for obj in objs["projects"]:
             solver = obj["artifact_solver_name"]
             exit_with_on_fail(solver in self.solvers, f"[ERROR] unknown artifact solver {solver} for project {obj['name']}")
-            self.projects[obj["name"]] = ProjectInfo(obj["name"], obj["framework"], obj["clean_dir"], solver)
+            self.projects[obj["name"]] = ProjectInfo(obj["name"], obj["framework"], obj["clean_dir"], self.solvers[solver])
 
         self.analyzers = dict()
         for obj in objs["analyzers"]:

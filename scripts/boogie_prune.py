@@ -8,9 +8,12 @@ from analyze_trigger import load_quanti_stats
 
 def export_smt_from_bpl():
     bgs = list_files_ext("boogies", ".bpl")
+    print("""rule boogie
+  command = timeout 60s dotnet tool run boogie $in /proverLog:pruned_new/@FILE@.@PROC@.smt2  /timeLimit:1 /prune /proverOpt:O:auto_config=false /proverOpt:O:type_check=true /proverOpt:O:smt.case_split=3 /proverOpt:O:smt.qi.eager_threshold=100 /proverOpt:O:smt.delay_units=true && touch $out""")
+
     for bg in bgs:
         # print(f"dotnet tool run boogie {bg} /proverLog:unpruned/@FILE@.@PROC@.smt2 /timeLimit:1")
-        print(f"dotnet tool run boogie {bg} /proverLog:unpruned_new/@FILE@.@PROC@.smt2  /timeLimit:1 /proverOpt:O:auto_config=false /proverOpt:O:type_check=true /proverOpt:O:smt.case_split=3 /proverOpt:O:smt.qi.eager_threshold=100 /proverOpt:O:smt.delay_units=true")
+        print(f"build {bg}.done : boogie {bg}")
 
 c = Configer()
 

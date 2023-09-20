@@ -96,6 +96,8 @@ class Analyzer:
         success = count_within_timeout(group_blob, RCode.UNSAT, self._timeout)
         
         if success == 0:
+            if count_within_timeout(group_blob, RCode.UNKNOWN, self._timeout) == size:
+                return Stability.UNKNOWN
             return Stability.UNSOLVABLE
 
         if success == size:

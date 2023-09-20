@@ -6,6 +6,7 @@ from plot_utils import *
 import matplotlib.pyplot as plt
 import multiprocessing as mp
 from configer import Configer
+from cache_utils import *
 
 c = Configer()
 
@@ -19,7 +20,7 @@ FS_VWASM = c.load_known_project("fs_vwasm")
 FS_DICE = c.load_known_project("fs_dice")
 
 
-MAIN_PROJS = [S_KOMODO, D_KOMODO, D_FVBKV, D_LVBKV, FS_VWASM, FS_DICE]
+MAIN_PROJS = [D_KOMODO, S_KOMODO, D_FVBKV, D_LVBKV, FS_DICE, FS_VWASM]
 
 Z3_4_4_2 = c.load_known_solver("z3_4_4_2")
 Z3_4_5_0 = c.load_known_solver("z3_4_5_0")
@@ -159,18 +160,12 @@ def _mp_categorize_projects(projs, solvers):
 
 def plot_paper_overall():
     projs = MAIN_PROJS
-    solvers = MAIN_Z3_SOLVERS
-    
     project_names = [proj.name for proj in projs]
     solver_names = [SOLVER_LABELS[s] for s in MAIN_Z3_SOLVERS]
     solver_labels = [f"{SOLVER_LABELS[s]}\n{s.date[:-3]}" for s in MAIN_Z3_SOLVERS]
-
-    data = _mp_categorize_projects(projs, solvers)
     
     # splits = [[0, 1], [2, 3], [4, 5]]
-    
     # print(r"\toprule")
-    
     # for split in splits:
     #     for j in range(len(solver_names)):
     #         if j == 0:
@@ -197,42 +192,48 @@ def plot_paper_overall():
     #     print("\hline")
     # print(r"\bottomrule")
 
-    data = np.array(data)
-    print(data.tolist())
+def plot_presentation_overall():
+    projs = MAIN_PROJS
+    project_names = [proj.name for proj in projs]
+    solver_names = [SOLVER_LABELS[s] for s in MAIN_Z3_SOLVERS]
+    solver_labels = [f"{SOLVER_LABELS[s]}\n{s.date[:-3]}" for s in MAIN_Z3_SOLVERS]
+
+    if cache_exists("overall_data"):
+        data = cache_load("overall_data")
+    else:
+        data = _mp_categorize_projects(projs, MAIN_Z3_SOLVERS)
+        data = np.array(data)
+        cache_save(data, "overall_data")
 
     bar_width = len(solver_names)/70
+
     fig, ax = plt.subplots()
     fig.set_size_inches(15, 5)
 
     br = np.arange(len(solver_names))
     br = [x - 2 * bar_width for x in br]
-
-    # data[project_index][solver_index][category_index]
     handles = []
+    
+    keep_sets = [{0}, {0, 1}, {0, 1, 2}, {0, 1, 2, 3}, {0, 1, 2, 3, 4}, {0, 1, 2, 3, 4, 5}, {0, 2, 3, 4, 5}, {2, 3}]
 
     for pi, project_row in enumerate(data):
+        br = [x + bar_width for x in br]
+        if pi > 0:
+            continue
+
         pcs = np.zeros((len(Stability), len(solver_names)))
 
-        br = [x + bar_width for x in br]
-        for i, ps in enumerate(project_row):
-            pcs[:, i] = ps
+        pcs[:, 4] = project_row[4]
         pcolor = PROJECT_COLORS[project_names[pi]]
         pcs = np.cumsum(pcs,axis=0)
 
         plt.bar(br, height=pcs[1], width=bar_width,
-                color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.2)
+                color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.8)
         hd = plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width,
-                color=pcolor, edgecolor='black', linewidth=0.2)
+                color=pcolor, edgecolor='black', linewidth=0.8)
         handles.append(hd)
         plt.bar(br, height=pcs[3]-pcs[2], bottom=pcs[2], width=bar_width,
-                color="w", edgecolor='black', linewidth=0.2)
-
-        for i in range(len(solver_names)):
-            if solver_names[i] == str(projs[pi].artifact_solver):
-                plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=40)
-            # if i == 4 and pi == 0:
-            #     plt.bar(br[i], height=20, bottom=pcs[3][i], width=bar_width, 
-            #             color='white', edgecolor='black', linewidth=0.3, linestyle=(0, (1, 5)))
+                color="w", edgecolor='black', linewidth=0.8)
 
     label_x = 2.85
     leable_y = 5
@@ -240,29 +241,98 @@ def plot_paper_overall():
     
     plt.text(label_x, leable_y, r'\texttt{unsolvable}', horizontalalignment='right', fontsize=FSIZE)
     plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 1.0], 
-             'o', ls=ls, color='black', linewidth=0.5, ms=1)
+            'o', ls=ls, color='black', linewidth=2, ms=1)
     leable_y += 0.8
     plt.text(label_x, leable_y, r'\texttt{unstable}', horizontalalignment='right', fontsize=FSIZE)
     plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 2.7],
-             'o', ls=ls, color='black', linewidth=0.5, ms=1)
+            'o', ls=ls, color='black', linewidth=2, ms=1)
     leable_y += 0.8
     plt.text(label_x, leable_y, r'\texttt{inconclusive}', horizontalalignment='right', fontsize=FSIZE)
     plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 4.7],
-             'o', ls=ls, color='black', linewidth=0.5, ms=1)
+            'o', ls=ls, color='black', linewidth=2, ms=1)
     # plt.text(3.5, 5.45, r'\texttt{stable}' + "\n" + r"stack up to 100\%" + "\n" + "(unplotted)", horizontalalignment='right')
     # plt.plot([3.55, 3.88], [6.40, 6.75], 'o', ls='-', color='black', linewidth=0.2, ms=2)
 
     ax.tick_params(axis='both', which='major')
     plt.xticks([r + 2 * bar_width for r in range(len(solver_names))], solver_labels, rotation=30, ha='right', fontsize=FSIZE)
     from matplotlib.lines import Line2D
-    woot = Line2D([0], [0], marker="*", color='black', linestyle='None', label='artifact solver'),
-    plt.legend(handles + [woot],  [PROJECT_LABELS[p] for p in project_names] + ['artifact solver'], loc='upper left', fontsize=FSIZE)
+    # woot = Line2D([0], [0], marker="*", color='black', linestyle='None', label='artifact solver'),
+    plt.legend(handles,  [PROJECT_LABELS[p] for p in project_names[:1]], loc='upper left', fontsize=FSIZE)
     plt.ylabel(r'query proportion ($\%$)', fontsize=FSIZE, fontname=FNAME)
     plt.xlabel('solver versions and release dates', fontsize=FSIZE, fontname=FNAME)
     plt.ylim(bottom=0, top=9)
+    plt.xlim(left=-0.25, right=7.75)
     plt.tight_layout()
-    plt.savefig("fig/all_paper.pdf")
+    plt.savefig(f"fig/overall/00.png", dpi=300)
     plt.close()
+    
+    for keep_set in keep_sets:
+        fig, ax = plt.subplots()
+        fig.set_size_inches(15, 5)
+
+        br = np.arange(len(solver_names))
+        br = [x - 2 * bar_width for x in br]
+
+        # data[project_index][solver_index][category_index]
+        handles = []
+
+        for pi, project_row in enumerate(data):
+            br = [x + bar_width for x in br]
+
+            if pi not in keep_set:
+                continue
+
+            pcs = np.zeros((len(Stability), len(solver_names)))
+
+            for i, ps in enumerate(project_row):
+                pcs[:, i] = ps
+            pcolor = PROJECT_COLORS[project_names[pi]]
+            pcs = np.cumsum(pcs,axis=0)
+
+            plt.bar(br, height=pcs[1], width=bar_width,
+                    color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.8)
+            hd = plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width,
+                    color=pcolor, edgecolor='black', linewidth=0.8)
+            handles.append(hd)
+            plt.bar(br, height=pcs[3]-pcs[2], bottom=pcs[2], width=bar_width,
+                    color="w", edgecolor='black', linewidth=0.8)
+
+            for i in range(len(solver_names)):
+                if solver_names[i] == projs[pi].artifact_solver.pretty_name():
+                    plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=40)
+
+        label_x = 2.85
+        leable_y = 5
+        ls = (0, (1, 5))
+
+        if 0 in keep_set:
+            plt.text(label_x, leable_y, r'\texttt{unsolvable}', horizontalalignment='right', fontsize=FSIZE)
+            plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 1.0], 
+                    'o', ls=ls, color='black', linewidth=2, ms=1)
+            leable_y += 0.8
+            plt.text(label_x, leable_y, r'\texttt{unstable}', horizontalalignment='right', fontsize=FSIZE)
+            plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 2.7],
+                    'o', ls=ls, color='black', linewidth=2, ms=1)
+            leable_y += 0.8
+            plt.text(label_x, leable_y, r'\texttt{inconclusive}', horizontalalignment='right', fontsize=FSIZE)
+            plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 4.7],
+                    'o', ls=ls, color='black', linewidth=2, ms=1)
+        # plt.text(3.5, 5.45, r'\texttt{stable}' + "\n" + r"stack up to 100\%" + "\n" + "(unplotted)", horizontalalignment='right')
+        # plt.plot([3.55, 3.88], [6.40, 6.75], 'o', ls='-', color='black', linewidth=0.2, ms=2)
+
+        ax.tick_params(axis='both', which='major')
+        plt.xticks([r + 2 * bar_width for r in range(len(solver_names))], solver_labels, rotation=30, ha='right', fontsize=FSIZE)
+        from matplotlib.lines import Line2D
+        woot = Line2D([0], [0], marker="*", color='black', linestyle='None', label='artifact solver'),
+        plt.legend(handles + [woot],  [PROJECT_LABELS[project_names[p]] for p in keep_set] + ['artifact solver'], loc='upper left', fontsize=FSIZE)
+        plt.ylabel(r'query proportion ($\%$)', fontsize=FSIZE, fontname=FNAME)
+        plt.xlabel('solver versions and release dates', fontsize=FSIZE, fontname=FNAME)
+        plt.ylim(bottom=0, top=9)
+        plt.xlim(left=-0.25, right=7.75)
+        plt.tight_layout()
+        keep_set = "_".join([str(k) for k in sorted(keep_set)])
+        plt.savefig(f"fig/overall/{keep_set}.png", dpi=300)
+        plt.close()
 
 def _get_data_time_scatter(rows):
     pf, cfs = 0, 0
@@ -474,7 +544,7 @@ def _mp_get_all_cutoff_categories(rows, cutoffs, mutations):
                          args=(categories, i, rows, mutations,))
     pool.close()
     pool.join()
-    return categories
+    return {k: categories[k] for k in categories}
 
 def _plot_pert_diff(rows, sp):
     mutations = [str(p) for p in MAIN_EXP.enabled_muts]
@@ -553,10 +623,15 @@ def plot_paper_pert_diff():
     plt.close()
 
 # def _pert_cutoff(proj, sp):
-def _get_data_time_cutoff(rows, cutoffs, steps):
+def _get_data_time_cutoff(name, rows, cutoffs, steps):
     mutations = [str(p) for p in MAIN_EXP.enabled_muts]
 
-    categories = _mp_get_all_cutoff_categories(rows, cutoffs, mutations)
+    if cache_exists(f"data_time_cutoff_{name}"):
+        categories = cache_load(f"data_time_cutoff_{name}")
+    else:
+        categories = _mp_get_all_cutoff_categories(rows, cutoffs, mutations)
+        cache_save(categories, f"data_time_cutoff_{name}")
+
     total = len(rows)
     unstables = [percentage(len(categories[i]["unstable"]), total) for i in cutoffs]
     unsolvables = [percentage(len(categories[i]["unsolvable"]), total) for i in cutoffs]
@@ -577,11 +652,11 @@ def _get_data_time_cutoff(rows, cutoffs, steps):
     # print("unsolvables = ", unsolvables)
     return diffs, unstables, unsolvables
 
-def _plot_ext_cutoff(rows, sp, max_time, steps=[]):
+def _plot_ext_cutoff(name, rows, sp, max_time, steps=[]):
     cutoffs = [i for i in range(10, max_time+1, 1)]
 
     # name = proj.name
-    diffs, unstables, unsolvables = _get_data_time_cutoff(rows, cutoffs, steps)
+    diffs, unstables, unsolvables = _get_data_time_cutoff(name, rows, cutoffs, steps)
     sp.plot(cutoffs, unsolvables,
             label=r"\texttt{unsolvable}",color=MUTATION_COLORS["unsolvable"], linewidth=1.5)
     sp.plot(cutoffs, unstables,
@@ -628,7 +703,7 @@ def plot_paper_ext_cutoff():
     for index, proj in enumerate([D_KOMODO, D_FVBKV]):
         sp = axis[index]
         rows = load_exp_sums(proj, True)[solver]
-        _plot_ext_cutoff(rows, sp, 150, [10, 30, 60])
+        _plot_ext_cutoff(proj.name, rows, sp, 150, [10, 30, 60])
         sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         sp.set_ylim(bottom=0, top=8)
     
@@ -638,6 +713,49 @@ def plot_paper_ext_cutoff():
     plt.tight_layout()
     plt.savefig(f"fig/time_cutoff/cutoff_paper.pdf")
     plt.close()
+
+def plot_presentation_ext_cutoff():
+    max_time = 150
+    cutoffs = [i for i in range(10, max_time+1, 1)]
+    proj = D_KOMODO
+    solver = Z3_4_12_1
+    rows = load_exp_sums(proj, True)[solver]
+    steps = [10, 30, 60]
+    
+    for index in range(0, len(steps)+1):
+        fig, ax = plt.subplots()
+        fig.set_size_inches(12, 6)
+        sp = ax
+        # name = proj.name
+        diffs, unstables, unsolvables = _get_data_time_cutoff(proj.name, rows, cutoffs, steps)
+        sp.plot(cutoffs, unsolvables,
+                label=r"\texttt{unsolvable}",color=MUTATION_COLORS["unsolvable"], linewidth=1.5)
+        sp.plot(cutoffs, unstables,
+                label=r"\texttt{unstable}" + "(+0s)", color=MUTATION_COLORS["unstable"], linewidth=1.5)
+            
+        step_colors = ["#A6BDD7", "#817066", "#F6768E"]
+        for j, step in enumerate(steps):
+            if j >= index:
+                continue
+            changes = diffs[j]
+            sp.plot(cutoffs[:len(changes)], changes,
+                    label= r"\texttt{unstable}" + f"(+{step}s)",  linestyle='--', color=step_colors[j], linewidth=1.5)
+            sp.vlines(cutoffs[-1]-step,
+                    ymin=0, ymax=changes[-1], linestyle='--', color=step_colors[j], linewidth=1.5)
+
+        sp.set_xlim(left=min(cutoffs), right=max_time)
+        sp.set_ylim(bottom=0)
+        
+        sp.legend()
+        fig.supylabel(r"proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
+        fig.supxlabel("time limit (seconds)", fontsize=FSIZE, fontname=FNAME) 
+        sp.set_title("Extened Time Experiment " + make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
+        sp.set_xticks([10, 30, 60, 90, 120, 150])    
+        plt.tight_layout()
+        # create dir if not exist
+        os.system(f"mkdir -p fig/time_cutoff/{proj.name}")
+        plt.savefig(f"fig/time_cutoff/{proj.name}/time_ext.{index}.png", dpi=300)
+        plt.close()
 
 def create_benchmark(projs=MAIN_PROJS):
     import random
@@ -727,7 +845,6 @@ def create_benchmark(projs=MAIN_PROJS):
         for filename in maybes:
             og_path = '/home/yizhou7/mariposa/' + filename
             shutil.copyfile(og_path, f"{stable_ext_path}/{proj.name}-{filename.split('/')[2]}")
-
 
 skip = {"attest.vad",
 "attest_helpers.vad",
@@ -865,164 +982,6 @@ def plot_appendix_srs():
         plt.savefig(f"fig/sr_cdf/{proj.name}.pdf")
         plt.close()
 
-# def count_timeouts(proj):
-#     summaries = load_solver_summaries(proj, skip_unknowns=True)
-#     c = Analyzer(method="z_test")
-#     c.timeout = 15e4
-
-#     summary = summaries[Z3_4_12_1]
-#     counts = []
-#     for row in summary:
-#         group_blobs = row[2]
-#         # combined = np.concatenate((group_blobs[:,1][0], group_blobs[0,:,1:][1], group_blobs[0,:,1:][2]))
-#         if c.categorize_query(group_blobs) != Stability.UNSTABLE:
-#             continue
-
-#         combined = np.hstack((group_blobs[0,:,:], group_blobs[1,:,1:], group_blobs[2,:,1:]))
-#         combined = combined.T
-
-#         to = 0
-#         fs = 0
-#         for (res, time) in combined:
-#             if time >= 15e4:
-#                 to += 1
-#                 fs += 1
-#             elif res != RCode.UNSAT.value:
-#                 fs += 1
-#         if fs == 0:
-#             continue
-#         # if to == 0:
-#         #     print(combined.T)
-#         counts.append(percentage(to, fs))
-#     print(np.mean(counts))
-#         # success = blob[0] == rcode.value
-#         # none_timeout = blob[1] < timeout
-#         # success = np.sum(np.logical_and(success, none_timeout))
-            
-#         # count_within_timeout(group_blobs[i], RCode.UNSAT, timeout=6e4)
-
-# def compare_vbkvs(linear, dynamic):
-#     dfiles, lfiles = set(), set()
-#     for k, v in FILE_MAP.items():
-#         dfiles |= set(v[0])
-#         lfiles |= set(v[1])
-#     # print(len(lfiles))
-#     # print(len(dfiles))
-
-#     ana = Analyzer("z_test")
-#     ana.timeout = 61e4
-#     # th.r_solvable = 20
-#     # th.r_stable = 80
-
-#     l_filtered = set()
-#     for query in linear.samples[Z3_4_12_1]:
-#         for f in lfiles:
-#             if "-" + f in query:
-#                 l_filtered.add(query)
-#     d_filtered = set()
-#     for query in dynamic.samples[Z3_4_12_1]:
-#         for f in dfiles:
-#             if "-" + f in query:
-#                 d_filtered.add(query)
-#                 break
-
-#     print(len(l_filtered))
-#     print(len(d_filtered))
-
-#     # data = np.zeros((4, len(Stability)))
-
-#     l_summary = load_solver_summary(linear, Z3_4_12_1, get_unknowns(linear))
-#     # l_categories = categorize_queries(l_summary, ana)
-#     pts = []
-#     xs = []
-#     ys = []
-#     maybes = 0
-
-#     for query_row in l_summary:
-#         # if query_row[0] not in l_filtered:
-#         #     continue
-#         group_blobs = query_row[2]
-#         res = ana.categorize_query(group_blobs, None)
-
-#         if res != Stability.STABLE:
-#             continue
-        
-#         mean = 0
-#         std = 0
-        
-#         for i in range(3):
-#             times = group_blobs[:,1][i]
-#             times = np.clip(times, 0, 6e4) / 1000
-#             cur = np.std(times)
-#             if std < cur:
-#                 mean = np.mean(times)
-#                 std = cur
-        
-#         if std < 1 and mean > 15:
-#             maybes += 1
-        
-#         xs.append(mean)
-#         ys.append(std)
-
-#     plt.scatter(xs, ys, label="linear", s=2, alpha=0.5)
-#     print(maybes)
-
-#     maybes = 0
-
-#     d_summary = load_solver_summary(dynamic, Z3_4_12_1, get_unknowns(dynamic))
-
-#     xs = []
-#     ys = []
-#     for query_row in d_summary:
-#         # if query_row[0] not in d_filtered:
-#         #     continue
-#         group_blobs = query_row[2]
-#         res = ana.categorize_query(group_blobs, None)
-
-#         if res != Stability.STABLE:
-#             continue
-        
-#         mean = 0
-#         std = 0
-        
-#         for i in range(3):
-#             times = group_blobs[:,1][i]
-#             times = np.clip(times, 0, 6e4) / 1000
-#             cur = np.std(times)
-#             if std < cur:
-#                 mean = np.mean(times)
-#                 std = cur
-        
-#         if std < 1 and mean > 15:
-#             maybes += 1
-        
-#         xs.append(mean)
-#         ys.append(std)
-
-#     plt.scatter(xs, ys, label="dynamic", marker="x", s=2)
-#     plt.xlim(left=1)
-#     print(maybes)
-    
-#     # print(len(d_summary))
-#     # pts = []
-#     # # d_categories = categorize_queries(d_summary, ana)
-#     # for query_row in d_summary:
-#     #     if query_row[0] not in d_filtered:
-#     #         continue
-#     #     group_blobs = query_row[2] 
-#     #     if group_blobs[0][0][0] == RCode.UNSAT.value:
-#     #         pts.append(group_blobs[0][1][0] / 1000)
-        
-#     # xs, ys = get_cdf_pts(pts)
-#     # # ys = np.flip(ys)
-#     # plt.plot(xs, ys, label="dynamic")
-#     # plt.xlim(left=5)
-#     # plt.ylim(bottom=98, top=100)
-
-#     plt.legend()
-#     plt.tight_layout()
-#     plt.savefig("fig/compare.pdf")
-
 def plot_paper_figs():
     plot_paper_overall()
     plot_paper_ext_cutoff()
@@ -1038,6 +997,10 @@ def plot_appendix_figs():
 #   plot_appendix_sizes()
     plot_appendix_srs()
 
+
+def plot_presentation_figs():
+    # plot_presentation_overall()
+    plot_presentation_ext_cutoff()
 
 ### unsat core figures:
 
@@ -1188,6 +1151,7 @@ def plot_size_vs_time_correlations():
 
 import statsmodels.formula.api as smf
 import pandas as pd
+
 def plot_size_vs_time_regression():
     fig, ax = plt.subplots()
     ax.set_title('all projects size vs time correlations w/ regression')
@@ -1418,39 +1382,6 @@ def plot_pie_chart_plotly():
     time.sleep(2)
     fig.write_image("fig/unsat_core/all_pie_plotly.pdf")
 
-
-def generate_table():
-    for project in PROJECTS:
-        og_unsat = set()
-        og_timeout = set()
-        og_unknown = set()
-        min_unsat = set()
-        min_timeout = set()
-        min_unknown = set()
-        original_queries_table = f"{project.name.upper()}_UNSAT_CORE_z3_4_8_5"
-        min_queries_table = f"{project.name.upper()}_MIN_ASSERTS_z3_4_8_5"
-        con, cur = get_cursor("data/unsat_core.db")
-        res = cur.execute(f"SELECT query_path, result_code FROM {original_queries_table}")
-        for query_path, result in res:
-            query = query_path.split("/")[-1]
-            if result == "unsat": og_unsat.add(query)
-            elif result == "timeout": og_timeout.add(query)
-            elif result == "unknown": og_unknown.add(query)
-        res = cur.execute(f"SELECT query_path, result_code FROM {min_queries_table}")
-        for query_path, result in res:
-            query = query_path.split("/")[-1]
-            if result == "unsat": min_unsat.add(query)
-            elif result == "timeout": min_timeout.add(query)
-            elif result == "unknown": min_unknown.add(query)
-        print(project.name)
-        print(f"""original unsat: {len(og_unsat)}
-original timeout: {len(og_timeout)}
-original unknown: {len(og_unknown)}
-min unsat: {len(min_unsat)}
-min timeout: {len(min_timeout)}
-min unknown: {len(min_unknown)}
-               """)
-
 def stem_file_paths(items):
     new_items = {}
     all = set()
@@ -1461,85 +1392,12 @@ def stem_file_paths(items):
         all.update(new_items[cat])
     return new_items
 
-def migration(items1, items2, cats):
-    row = [""]
-
-    for c2 in cats:
-       row.append(f"{c2.name}({len(items2[c2])})") 
-    
-    rows = [row]
-    
-    for c1 in cats:
-        row = [f"{c1.name}({len(items1[c1])})"]
-        for c2 in cats:
-            row.append(len(items1[c1].intersection(items2[c2])))
-        rows.append(row)
-    print(tabulate(rows, headers="firstrow", tablefmt="github"))
-
-def unsat_core_migration():
-    cats = [Stability.UNSTABLE, Stability.UNSOLVABLE, Stability.STABLE, Stability.TALLY]
-
-    uk = get_unknowns(D_KOMODO)
-    rows = load_sum_table(D_KOMODO, Z3_4_12_1, MAIN_EXP, uk)
-    items = Z_TEST_60.categorize_queries(rows, tally=True)
-    items = stem_file_paths(items)
-    ps, total = get_category_percentages(items)
-
-    D_KOMODO_UC = c.load_known_project("d_komodo_uc")
-    exp = c.load_known_experiment("unsat_core")
-    uk = get_unknowns(D_KOMODO_UC, exp)
-    rows = load_sum_table(D_KOMODO_UC, Z3_4_12_1, exp, uk)
-    items2 = Z_TEST_60.categorize_queries(rows, tally=True)
-
-    items2 = stem_file_paths(items2)
-    ps, total = get_category_percentages(items2)
-    
-    migration(items, items2, cats)
-
-def compose_migration():
-    cats = [Stability.UNSTABLE, Stability.UNSOLVABLE, Stability.STABLE, Stability.INCONCLUSIVE]
-    proj = D_KOMODO
-
-    # uk = get_unknowns(proj)
-    uk = set()
-    rows = load_sum_table(proj, Z3_4_12_1, MAIN_EXP, uk)
-    items = Z_TEST_60.categorize_queries(rows)
-    ps, total = get_category_percentages(items)
-
-    pp_table = [["category", "count", "percentage"]]
-    for cat in [Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE]:
-        pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
-    print(tabulate(pp_table, tablefmt="github"))
-
-    nrows = dict()
-    
-    for e in ["compose", "compose2", "compose3"]:
-        exp = c.load_known_experiment(e)
-        rows = load_sum_table(proj, Z3_4_12_1, exp, uk)
-        for row in rows:
-            if row[0] not in nrows:
-                nrows[row[0]] = []
-            nrows[row[0]].append(row)
-    nnrows = []
-
-    for k in nrows:
-        blob = np.hstack([v[2][0] for v in nrows[k]])
-        blob = np.expand_dims(blob, axis=0)
-        nnrows.append([k, ["all"], blob])
-    items2 = Z_TEST_60.categorize_queries(nnrows)
-    ps, total = get_category_percentages(items2)
-
-    pp_table = [["category", "count", "percentage"]]
-    for cat in [Stability.UNSOLVABLE, Stability.UNSTABLE, Stability.INCONCLUSIVE, Stability.STABLE]:
-        pp_table.append([cat.value, len(items2[cat]), round(ps[cat], 2)])
-    print(tabulate(pp_table, tablefmt="github"))
-    migration(items2, items, cats)
-
 if __name__ == "__main__":
+    plot_presentation_figs()
 #   plot_paper_figs()
+    # plot_paper_ext_cutoff()
 #   plot_appendix_figs()
-#   plot_paper_overall()
     # create_benchmark()
     # plot_paper_overall()
     # compose_migration()
-    unsat_core_migration()
+    # unsat_core_migration()
