@@ -102,7 +102,7 @@
           "reseed",
           "quake"
         ],
-        "num_mutants": 10,
+        "num_mutants": 60,
         "keep_mutants": false,
         "init_seed": "",
         "exp_timeout": 60,
@@ -540,6 +540,12 @@
         "name": "d_fvbkv_unpruned_new",
         "framework": "fstar",
         "clean_dir": "data/d_fvbkv_unpruned_new",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_fvbkv_pruned_new",
+        "framework": "fstar",
+        "clean_dir": "data/d_fvbkv_pruned_new",
         "artifact_solver_name": "z3_4_12_2"
       }
     ]
