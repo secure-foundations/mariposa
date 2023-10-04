@@ -1202,11 +1202,23 @@ def stem_file_paths(items):
         all.update(new_items[cat])
     return new_items
 
+def gen_test_set():
+    ana = MAIN_ANALYZER
+    for proj in MAIN_PROJS:
+        print(proj.name)
+        summaries = load_exp_sums(proj, solvers=[Z3_4_12_1])
+        rows = summaries[Z3_4_12_1]
+        items = ana.categorize_queries(rows)
+        for i in items[Stability.UNSTABLE]:
+            os.system(f"cp {i} data/test_set/")
+
+
 if __name__ == "__main__":
-  plot_paper_figs()
+#   plot_paper_figs()
     # plot_paper_ext_cutoff()
 #   plot_appendix_figs()
-    # create_benchmark()
+    create_benchmark()
     # plot_paper_overall()
     # compose_migration()
     # unsat_core_migration()
+    # gen_test_set()

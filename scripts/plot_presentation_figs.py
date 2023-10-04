@@ -453,8 +453,8 @@ def plot_presentation_time_scatter():
 
 if __name__ == "__main__":
     # plot_presentation_latest()
-    # plot_presentation_overall()
+    plot_presentation_overall()
     # plot_presentation_pert_diff()
-    plot_presentation_time_std()
+    # plot_presentation_time_std()
     # plot_presentation_ext_cutoff()
     # plot_presentation_time_scatter()

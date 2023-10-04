@@ -2,6 +2,7 @@ use clap::Parser;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
+use smt2parser::concrete::QualIdentifier;
 // use smt2parser::shaking::SymbolCollector;
 use smt2parser::{concrete, renaming, visitors, CommandStream, concrete::Command, concrete::Term, concrete::Symbol, concrete::AttributeValue};
 use core::panic;
@@ -724,40 +725,47 @@ fn get_command_symbol_uses(command: &concrete::Command, defs: &HashSet<String>) 
 
 // TODO： flatten pass before tree-shaking
 
-// fn flatten_nested_and(command: &mut concrete) -> Vec<concrete::Command>
-// {
-//     match command {
-//         concrete::Term::Application { qual_identifier, arguments } => {
-//             if let concrete::QualIdentifier::Simple{ identifier } = qual_identifier {
-//                 if let concrete::Identifier::Simple{ symbol } = identifier {
-//                     if symbol == "and" {
-//                         let mut new_args = Vec::new();
-//                         for argument in arguments.iter_mut() {
-//                             if let concrete::Term::Application { qual_identifier, arguments } = argument {
-//                                 if let concrete::QualIdentifier::Simple{ identifier } = qual_identifier {
-//                                     if let concrete::Identifier::Simple{ symbol } = identifier {
-//                                         if symbol == "and" {
-//                                             new_args.append(arguments);
-//                                             continue;
-//                                         }
-//                                     }
-//                                 }
-//                             }
-//                             new_args.push(argument.clone());
-//                         }
-//                         *arguments = new_args;
-//                     }
-//                 }
-//             }
-//             for argument in arguments.iter_mut() {
-//                 flatten_nested_and(argument);
-//             }
-//         }
-//         _ => (),
-//     }
+fn is_and(term: &concrete::Term) -> Option<(Term, Term)> {
+    if let Term::Application { qual_identifier, arguments } = term {
+        if let QualIdentifier::Simple { identifier } = qual_identifier {
+            if let concrete::Identifier::Simple { symbol } = identifier {
+                if symbol.0 == "and" {
+                    assert!(arguments.len() == 2);
+                    return Some((arguments[0].clone(), arguments[1].clone()));
+                }
+            }
+        }
+    }
+    return None;
+}
+
+fn is_nested_and(term: &concrete::Term) -> Vec<Term> {
+    if let Some((l, r)) = is_and(term) {
+        let mut l = is_nested_and(&l);
+        let mut r = is_nested_and(&r);
+        l.append(&mut r);
+        return l;
+    }
+    return vec![term.clone()];
+}
+
+fn flatten_nested_and(command: concrete::Command) -> Vec<concrete::Command>
+{
+    if let Command::Assert { term } = &command {
+        let ts = is_nested_and(&term);
+        ts.into_iter().map(|x| concrete::Command::Assert { term: x }).collect()
+    } else {
+        vec![command]
+    }
+}
+
+// fn rewrite_true_implies()
+// fn decompose_goal(command: &concrete::Command) {
 // }
 
+// TODO: tree-shake should be a fixed point
 fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
+    commands = commands.into_iter().map(|x| flatten_nested_and(x)).flatten().collect();
     let mut i = commands.len() - 1;
     while i > 0 {
         let command = &commands[i];
@@ -766,7 +774,8 @@ fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
         }
         i -= 1;
     }
-
+    // decompose_goal(&commands[i]);
+    // println!("{:?}", &commands[i]);
     commands.truncate(i + 1);
 
     let defs: HashSet<String> = commands
@@ -782,20 +791,25 @@ fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
     let mut snowball = symbols.pop().unwrap();
 
     let mut poss = HashSet::new();
+    let mut pposs = HashSet::new();
     poss.insert(i);
-    for (pos, x) in symbols.iter().rev().enumerate() {
-        let actual_pos = symbols.len() - pos - 1;
-        if snowball.intersection(x).count() != 0 {
-            snowball.extend(x.iter().cloned());
-            poss.insert(actual_pos);
-            // println!("{}", commands[symbols.len() - pos - 1]);
-        } else {
-            if let Command::Assert { term: _ } = &commands[actual_pos] {
-            } else {
+
+    while poss != pposs {
+        pposs = poss.clone();
+        for (pos, x) in symbols.iter().rev().enumerate() {
+            let actual_pos = symbols.len() - pos - 1;
+            if snowball.intersection(x).count() != 0 {
+                snowball.extend(x.iter().cloned());
                 poss.insert(actual_pos);
+            } else {
+                if let Command::Assert { term: _ } = &commands[actual_pos] {
+                } else {
+                    poss.insert(actual_pos);
+                }
             }
         }
     }
+    println!("{} / {}", poss.len(), commands.len());
 
     commands = commands.into_iter().enumerate().filter(|(pos, _)| poss.contains(pos)).map(|(_, x)| x).collect();
     commands.push(Command::CheckSat);
@@ -1023,7 +1037,7 @@ fn main() {
         // parse and do nothing
         return;
     } else if args.mutation == "tree-shake" {
-        commands = tree_shake(commands);        
+        commands = tree_shake(commands);
     }
 
     manager.dump_non_info_commands(&commands);
