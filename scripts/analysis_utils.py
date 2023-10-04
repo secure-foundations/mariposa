@@ -40,8 +40,8 @@ STRICT_60 = Analyzer(.05, 60, .05, .95, 0.8, "strict")
 plt.rcParams['text.usetex'] = True
 plt.rcParams["font.family"] = "serif"
 
-FSIZE = 16
-FNAME ='Times New Roman'
+FSIZE = 20
+FNAME ='Raleway'
 
 COLORS = [
     "#803E75", # Strong Purple
@@ -134,7 +134,7 @@ def _async_categorize_project(ratios, key, rows):
     ps, _ = get_category_percentages(items)
     ratios[key] = ps
 
-def _mp_categorize_projects(projs, solvers):
+def mp_categorize_projects(projs, solvers):
     manager = mp.Manager()
     ratios = manager.dict()
 
@@ -191,148 +191,6 @@ def plot_paper_overall():
     #                 print(entry, end=" & ")    
     #     print("\hline")
     # print(r"\bottomrule")
-
-def plot_presentation_overall():
-    projs = MAIN_PROJS
-    project_names = [proj.name for proj in projs]
-    solver_names = [SOLVER_LABELS[s] for s in MAIN_Z3_SOLVERS]
-    solver_labels = [f"{SOLVER_LABELS[s]}\n{s.date[:-3]}" for s in MAIN_Z3_SOLVERS]
-
-    if cache_exists("overall_data"):
-        data = cache_load("overall_data")
-    else:
-        data = _mp_categorize_projects(projs, MAIN_Z3_SOLVERS)
-        data = np.array(data)
-        cache_save(data, "overall_data")
-
-    bar_width = len(solver_names)/70
-
-    fig, ax = plt.subplots()
-    fig.set_size_inches(15, 5)
-
-    br = np.arange(len(solver_names))
-    br = [x - 2 * bar_width for x in br]
-    handles = []
-    
-    keep_sets = [{0}, {0, 1}, {0, 1, 2}, {0, 1, 2, 3}, {0, 1, 2, 3, 4}, {0, 1, 2, 3, 4, 5}, {0, 2, 3, 4, 5}, {2, 3}]
-
-    for pi, project_row in enumerate(data):
-        br = [x + bar_width for x in br]
-        if pi > 0:
-            continue
-
-        pcs = np.zeros((len(Stability), len(solver_names)))
-
-        pcs[:, 4] = project_row[4]
-        pcolor = PROJECT_COLORS[project_names[pi]]
-        pcs = np.cumsum(pcs,axis=0)
-
-        plt.bar(br, height=pcs[1], width=bar_width,
-                color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.8)
-        hd = plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width,
-                color=pcolor, edgecolor='black', linewidth=0.8)
-        handles.append(hd)
-        plt.bar(br, height=pcs[3]-pcs[2], bottom=pcs[2], width=bar_width,
-                color="w", edgecolor='black', linewidth=0.8)
-
-    label_x = 2.85
-    leable_y = 5
-    ls = (0, (1, 5))
-    
-    plt.text(label_x, leable_y, r'\texttt{unsolvable}', horizontalalignment='right', fontsize=FSIZE)
-    plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 1.0], 
-            'o', ls=ls, color='black', linewidth=2, ms=1)
-    leable_y += 0.8
-    plt.text(label_x, leable_y, r'\texttt{unstable}', horizontalalignment='right', fontsize=FSIZE)
-    plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 2.7],
-            'o', ls=ls, color='black', linewidth=2, ms=1)
-    leable_y += 0.8
-    plt.text(label_x, leable_y, r'\texttt{inconclusive}', horizontalalignment='right', fontsize=FSIZE)
-    plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 4.7],
-            'o', ls=ls, color='black', linewidth=2, ms=1)
-    # plt.text(3.5, 5.45, r'\texttt{stable}' + "\n" + r"stack up to 100\%" + "\n" + "(unplotted)", horizontalalignment='right')
-    # plt.plot([3.55, 3.88], [6.40, 6.75], 'o', ls='-', color='black', linewidth=0.2, ms=2)
-
-    ax.tick_params(axis='both', which='major')
-    plt.xticks([r + 2 * bar_width for r in range(len(solver_names))], solver_labels, rotation=30, ha='right', fontsize=FSIZE)
-    from matplotlib.lines import Line2D
-    # woot = Line2D([0], [0], marker="*", color='black', linestyle='None', label='artifact solver'),
-    plt.legend(handles,  [PROJECT_LABELS[p] for p in project_names[:1]], loc='upper left', fontsize=FSIZE)
-    plt.ylabel(r'query proportion ($\%$)', fontsize=FSIZE, fontname=FNAME)
-    plt.xlabel('solver versions and release dates', fontsize=FSIZE, fontname=FNAME)
-    plt.ylim(bottom=0, top=9)
-    plt.xlim(left=-0.25, right=7.75)
-    plt.tight_layout()
-    plt.savefig(f"fig/overall/00.png", dpi=300)
-    plt.close()
-    
-    for keep_set in keep_sets:
-        fig, ax = plt.subplots()
-        fig.set_size_inches(15, 5)
-
-        br = np.arange(len(solver_names))
-        br = [x - 2 * bar_width for x in br]
-
-        # data[project_index][solver_index][category_index]
-        handles = []
-
-        for pi, project_row in enumerate(data):
-            br = [x + bar_width for x in br]
-
-            if pi not in keep_set:
-                continue
-
-            pcs = np.zeros((len(Stability), len(solver_names)))
-
-            for i, ps in enumerate(project_row):
-                pcs[:, i] = ps
-            pcolor = PROJECT_COLORS[project_names[pi]]
-            pcs = np.cumsum(pcs,axis=0)
-
-            plt.bar(br, height=pcs[1], width=bar_width,
-                    color=pcolor, alpha=0.40, edgecolor='black', linewidth=0.8)
-            hd = plt.bar(br, height=pcs[2]-pcs[1], bottom=pcs[1], width=bar_width,
-                    color=pcolor, edgecolor='black', linewidth=0.8)
-            handles.append(hd)
-            plt.bar(br, height=pcs[3]-pcs[2], bottom=pcs[2], width=bar_width,
-                    color="w", edgecolor='black', linewidth=0.8)
-
-            for i in range(len(solver_names)):
-                if solver_names[i] == projs[pi].artifact_solver.pretty_name():
-                    plt.scatter(br[i], pcs[3][i] + 0.2, marker="*", color='black',  linewidth=0.8, s=40)
-
-        label_x = 2.85
-        leable_y = 5
-        ls = (0, (1, 5))
-
-        if 0 in keep_set:
-            plt.text(label_x, leable_y, r'\texttt{unsolvable}', horizontalalignment='right', fontsize=FSIZE)
-            plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 1.0], 
-                    'o', ls=ls, color='black', linewidth=2, ms=1)
-            leable_y += 0.8
-            plt.text(label_x, leable_y, r'\texttt{unstable}', horizontalalignment='right', fontsize=FSIZE)
-            plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 2.7],
-                    'o', ls=ls, color='black', linewidth=2, ms=1)
-            leable_y += 0.8
-            plt.text(label_x, leable_y, r'\texttt{inconclusive}', horizontalalignment='right', fontsize=FSIZE)
-            plt.plot([label_x + 0.05, 3.88], [leable_y + 0.05, 4.7],
-                    'o', ls=ls, color='black', linewidth=2, ms=1)
-        # plt.text(3.5, 5.45, r'\texttt{stable}' + "\n" + r"stack up to 100\%" + "\n" + "(unplotted)", horizontalalignment='right')
-        # plt.plot([3.55, 3.88], [6.40, 6.75], 'o', ls='-', color='black', linewidth=0.2, ms=2)
-
-        ax.tick_params(axis='both', which='major')
-        plt.xticks([r + 2 * bar_width for r in range(len(solver_names))], solver_labels, rotation=30, ha='right', fontsize=FSIZE)
-        from matplotlib.lines import Line2D
-        woot = Line2D([0], [0], marker="*", color='black', linestyle='None', label='artifact solver'),
-        plt.legend(handles + [woot],  [PROJECT_LABELS[project_names[p]] for p in keep_set] + ['artifact solver'], loc='upper left', fontsize=FSIZE)
-        plt.ylabel(r'query proportion ($\%$)', fontsize=FSIZE, fontname=FNAME)
-        plt.xlabel('solver versions and release dates', fontsize=FSIZE, fontname=FNAME)
-        plt.ylim(bottom=0, top=9)
-        plt.xlim(left=-0.25, right=7.75)
-        plt.tight_layout()
-        keep_set = "_".join([str(k) for k in sorted(keep_set)])
-        plt.savefig(f"fig/overall/{keep_set}.png", dpi=300)
-        plt.close()
 
 def _get_data_time_scatter(rows):
     pf, cfs = 0, 0
@@ -431,7 +289,7 @@ def plot_appendix_time_scatter():
         plt.savefig(f"fig/time_scatter/{proj.name}.pdf")
         plt.close()
 
-def _get_data_time_std(rows):
+def get_data_time_std(rows):
     ana = Z_TEST_60
 
     items = ana.categorize_queries(rows)
@@ -450,10 +308,10 @@ def _get_data_time_std(rows):
             dps[k].append(np.std(bs))
     return dps
 
-def _plot_time_std(exp, rows, sp):
+def plot_time_std(exp, rows, sp):
     y_bound = 0
     x_bound = 0
-    dps = _get_data_time_std(rows)
+    dps = get_data_time_std(rows)
     mutations = [str(p) for p in exp.enabled_muts]
 
     for i in range(len(mutations)):
@@ -483,7 +341,7 @@ def plot_appendix_time_std():
         for index, solver in enumerate(MAIN_Z3_SOLVERS):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
-            _plot_time_std(MAIN_EXP, rows, sp)
+            plot_time_std(MAIN_EXP, rows, sp)
             sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
             sp.legend()
         figure.supylabel(r"proportion of queries exceding ($\%$)", fontsize=FSIZE, fontname=FNAME)
@@ -499,7 +357,7 @@ def plot_paper_time_std():
     for index, proj in enumerate([D_KOMODO, FS_DICE]):
         sp = axis[index]
         rows = load_exp_sums(proj, True, [solver])[solver]
-        _plot_time_std(MAIN_EXP, rows, sp)
+        plot_time_std(MAIN_EXP, rows, sp)
         sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         sp.legend()
 
@@ -532,7 +390,7 @@ def _async_cutoff_categories(categories, i, rows, mutations):
     assert(len(cur["intersect"]) <= len(cur["reseed"]))
     categories[i] = cur
 
-def _mp_get_all_cutoff_categories(rows, cutoffs, mutations):
+def mp_get_all_cutoff_categories(rows, cutoffs, mutations):
     manager = mp.Manager()
     pool = mp.Pool(processes=8)
     categories = manager.dict()
@@ -546,14 +404,14 @@ def _mp_get_all_cutoff_categories(rows, cutoffs, mutations):
     pool.join()
     return {k: categories[k] for k in categories}
 
-def _plot_pert_diff(rows, sp):
+def plot_pert_diff(rows, sp):
     mutations = [str(p) for p in MAIN_EXP.enabled_muts]
     cutoffs = np.arange(10, 61, 0.5)
 
     top = 0
     total = len(rows)
 
-    categories = _mp_get_all_cutoff_categories(rows, cutoffs, mutations)
+    categories = mp_get_all_cutoff_categories(rows, cutoffs, mutations)
     keys = ["unstable"] + mutations + ["unsolvable", "intersect"]
     points = {p:[] for p in keys}
 
@@ -584,7 +442,7 @@ def plot_appendix_pert_diff():
         for index, solver in enumerate(MAIN_Z3_SOLVERS):
             sp = axis[int(index/cc)][int(index%cc)]
             rows = summaries[solver]
-            _plot_pert_diff(rows, sp)
+            plot_pert_diff(rows, sp)
             sp.legend()
             sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         figure.supylabel(r"proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
@@ -602,7 +460,7 @@ def plot_paper_pert_diff():
     for index, proj in enumerate([D_KOMODO, D_FVBKV]):
         sp = axis[index]
         rows = load_exp_sums(proj, True, [solver])[solver]
-        _plot_pert_diff(rows, sp)
+        plot_pert_diff(rows, sp)
         sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
         sp.legend()
 
@@ -611,7 +469,7 @@ def plot_paper_pert_diff():
     # for index, solver in enumerate([proj.artifact_solver, Z3_4_12_1]):
     #     sp = axis[1][index]
     #     rows = summaries[solver]
-    #     _plot_pert_diff(rows, sp)
+    #     plot_pert_diff(rows, sp)
     #     sp.set_ylim(top=3.5)
     #     sp.set_title(make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
     # axis[1][0].legend()
@@ -623,13 +481,13 @@ def plot_paper_pert_diff():
     plt.close()
 
 # def _pert_cutoff(proj, sp):
-def _get_data_time_cutoff(name, rows, cutoffs, steps):
+def get_data_time_cutoff(name, rows, cutoffs, steps):
     mutations = [str(p) for p in MAIN_EXP.enabled_muts]
 
     if cache_exists(f"data_time_cutoff_{name}"):
         categories = cache_load(f"data_time_cutoff_{name}")
     else:
-        categories = _mp_get_all_cutoff_categories(rows, cutoffs, mutations)
+        categories = mp_get_all_cutoff_categories(rows, cutoffs, mutations)
         cache_save(categories, f"data_time_cutoff_{name}")
 
     total = len(rows)
@@ -656,7 +514,7 @@ def _plot_ext_cutoff(name, rows, sp, max_time, steps=[]):
     cutoffs = [i for i in range(10, max_time+1, 1)]
 
     # name = proj.name
-    diffs, unstables, unsolvables = _get_data_time_cutoff(name, rows, cutoffs, steps)
+    diffs, unstables, unsolvables = get_data_time_cutoff(name, rows, cutoffs, steps)
     sp.plot(cutoffs, unsolvables,
             label=r"\texttt{unsolvable}",color=MUTATION_COLORS["unsolvable"], linewidth=1.5)
     sp.plot(cutoffs, unstables,
@@ -713,49 +571,6 @@ def plot_paper_ext_cutoff():
     plt.tight_layout()
     plt.savefig(f"fig/time_cutoff/cutoff_paper.pdf")
     plt.close()
-
-def plot_presentation_ext_cutoff():
-    max_time = 150
-    cutoffs = [i for i in range(10, max_time+1, 1)]
-    proj = D_KOMODO
-    solver = Z3_4_12_1
-    rows = load_exp_sums(proj, True)[solver]
-    steps = [10, 30, 60]
-    
-    for index in range(0, len(steps)+1):
-        fig, ax = plt.subplots()
-        fig.set_size_inches(12, 6)
-        sp = ax
-        # name = proj.name
-        diffs, unstables, unsolvables = _get_data_time_cutoff(proj.name, rows, cutoffs, steps)
-        sp.plot(cutoffs, unsolvables,
-                label=r"\texttt{unsolvable}",color=MUTATION_COLORS["unsolvable"], linewidth=1.5)
-        sp.plot(cutoffs, unstables,
-                label=r"\texttt{unstable}" + "(+0s)", color=MUTATION_COLORS["unstable"], linewidth=1.5)
-            
-        step_colors = ["#A6BDD7", "#817066", "#F6768E"]
-        for j, step in enumerate(steps):
-            if j >= index:
-                continue
-            changes = diffs[j]
-            sp.plot(cutoffs[:len(changes)], changes,
-                    label= r"\texttt{unstable}" + f"(+{step}s)",  linestyle='--', color=step_colors[j], linewidth=1.5)
-            sp.vlines(cutoffs[-1]-step,
-                    ymin=0, ymax=changes[-1], linestyle='--', color=step_colors[j], linewidth=1.5)
-
-        sp.set_xlim(left=min(cutoffs), right=max_time)
-        sp.set_ylim(bottom=0)
-        
-        sp.legend()
-        fig.supylabel(r"proportion of queries ($\%$)", fontsize=FSIZE, fontname=FNAME)
-        fig.supxlabel("time limit (seconds)", fontsize=FSIZE, fontname=FNAME) 
-        sp.set_title("Extened Time Experiment " + make_title(proj, solver), fontsize=FSIZE, fontname=FNAME)
-        sp.set_xticks([10, 30, 60, 90, 120, 150])    
-        plt.tight_layout()
-        # create dir if not exist
-        os.system(f"mkdir -p fig/time_cutoff/{proj.name}")
-        plt.savefig(f"fig/time_cutoff/{proj.name}/time_ext.{index}.png", dpi=300)
-        plt.close()
 
 def create_benchmark(projs=MAIN_PROJS):
     import random
@@ -996,11 +811,6 @@ def plot_appendix_figs():
     plot_appendix_time_scatter()
 #   plot_appendix_sizes()
     plot_appendix_srs()
-
-
-def plot_presentation_figs():
-    # plot_presentation_overall()
-    plot_presentation_ext_cutoff()
 
 ### unsat core figures:
 
@@ -1393,8 +1203,7 @@ def stem_file_paths(items):
     return new_items
 
 if __name__ == "__main__":
-    plot_presentation_figs()
-#   plot_paper_figs()
+  plot_paper_figs()
     # plot_paper_ext_cutoff()
 #   plot_appendix_figs()
     # create_benchmark()

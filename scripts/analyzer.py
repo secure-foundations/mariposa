@@ -42,14 +42,6 @@ def count_within_timeout(blob, rcode, timeout=1e6):
     success = np.sum(np.logical_and(success, none_timeout))
     return success
 
-def count_timeouts(blob, timeout=1e6):
-    if timeout == None:
-        timeout = 1e6
-    res_indices = np.sum(blob[0] == RCode.TIMEOUT.value)
-    to_indices = blob[1] >= timeout
-    timeout_count = np.sum(np.logical_or(to_indices, res_indices))
-    return timeout_count
-
 class Analyzer:
     def __init__(self, confidence, timeout, r_solvable, r_stable, discount, method):
         self.confidence = confidence
@@ -193,13 +185,13 @@ class Analyzer:
         mut_size = blob.shape[2]
 
         for i in range(len(mutations)):
-            count_unsat = count_within_timeout(blob[i], RCode.UNSAT, timeout=self._timeout)
+            count_unsat = count_within_timeout(blob[i], RCode.UNSAT)
             unsat_item = f"{count_unsat}/{mut_size} {round(count_unsat / (mut_size) * 100, 1)}%"
-            count_timeout = count_timeouts(blob[i], timeout=self._timeout)
+            count_timeout = count_within_timeout(blob[i], RCode.TIMEOUT)
             timeout_item = f"{count_timeout}/{mut_size} {round(count_timeout / (mut_size) * 100, 1)}%"
-            count_unknown = count_within_timeout(blob[i], RCode.UNKNOWN, timeout=self._timeout)
+            count_unknown = count_within_timeout(blob[i], RCode.UNKNOWN)
             unknown_item = f"{count_unknown}/{mut_size} {round(count_unknown / (mut_size) * 100, 1)}%"
-            times = np.clip(blob[i][1], 0, self._timeout) / 1000
+            times = blob[i][1] / 1000
             item = [mutations[i], votes[i].value, unsat_item, timeout_item, unknown_item, f"{round(np.mean(times), 2)}", f"{round(np.std(times), 2)}"]
             table.append(item)
         print(tabulate(table, headers=["mutation", "status", "unsat", "timeout", "unknown", "mean(second)", "std(second)"], tablefmt="github"))
