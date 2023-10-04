@@ -547,7 +547,12 @@
         "framework": "fstar",
         "clean_dir": "data/d_fvbkv_pruned_new",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_dice_forall_fun",
+        "framework": "fstar",
+        "clean_dir": "data/fs_dice_forall_fun",
+        "artifact_solver_name": "z3_4_12_2"
       }
-    ]
   }
   

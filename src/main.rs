@@ -759,60 +759,89 @@ fn flatten_nested_and(command: concrete::Command) -> Vec<concrete::Command>
     }
 }
 
+fn convert_def_fun_to_assert(command: concrete::Command) -> Vec<concrete::Command>
+{
+    if let Command::DefineFun { sig, term } = &command {
+        let vars: Vec<Term> = sig.parameters.iter().map(
+            |f| Term::QualIdentifier(QualIdentifier::Simple { identifier: concrete::Identifier::Simple { symbol: f.0.clone() } 
+        })).collect();
+        vec![
+            Command::DeclareFun { symbol: sig.name.clone(), parameters: sig.parameters.iter().map(|f| f.1.clone()).collect() , sort: sig.result.clone() },
+            Command::Assert { 
+                term: Term::Forall {
+                    vars: sig.parameters.iter().map(|f| (f.0.clone(), f.1.clone())).collect(),
+                    term: Box::new(Term::Application { 
+                        qual_identifier: QualIdentifier::Simple { identifier: concrete::Identifier::Simple { symbol: Symbol("=".to_string()) } },
+                        arguments: vec![
+                            Term::Application {
+                                    qual_identifier: QualIdentifier::Simple { identifier: concrete::Identifier::Simple { symbol: sig.name.clone() } },
+                                    arguments: vars,
+                            },
+                            term.clone(),
+                        ]
+                    })
+             }},
+        ]
+    } else {
+        vec![command]
+    }
+}
 // fn rewrite_true_implies()
 // fn decompose_goal(command: &concrete::Command) {
 // }
 
 // TODO: tree-shake should be a fixed point
 fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
-    commands = commands.into_iter().map(|x| flatten_nested_and(x)).flatten().collect();
-    let mut i = commands.len() - 1;
-    while i > 0 {
-        let command = &commands[i];
-        if let Command::Assert { term: _ } = command {
-            break;
-        }
-        i -= 1;
-    }
-    // decompose_goal(&commands[i]);
-    // println!("{:?}", &commands[i]);
-    commands.truncate(i + 1);
+    // commands = commands.into_iter().map(|x| flatten_nested_and(x)).flatten().collect();
+    commands = commands.into_iter().map(|x| convert_def_fun_to_assert(x)).flatten().collect();
 
-    let defs: HashSet<String> = commands
-        .iter()
-        .map(|x| get_global_symbol_defs(x))
-        .flatten()
-        .collect();
+    // let mut i = commands.len() - 1;
+    // while i > 0 {
+    //     let command = &commands[i];
+    //     if let Command::Assert { term: _ } = command {
+    //         break;
+    //     }
+    //     i -= 1;
+    // }
+    // // decompose_goal(&commands[i]);
+    // // println!("{:?}", &commands[i]);
+    // commands.truncate(i + 1);
 
-    let mut symbols: Vec<HashSet<String>> = commands.iter()
-        .map(|c| get_command_symbol_uses(&c, &defs))
-        .collect();
+    // let defs: HashSet<String> = commands
+    //     .iter()
+    //     .map(|x| get_global_symbol_defs(x))
+    //     .flatten()
+    //     .collect();
 
-    let mut snowball = symbols.pop().unwrap();
+    // let mut symbols: Vec<HashSet<String>> = commands.iter()
+    //     .map(|c| get_command_symbol_uses(&c, &defs))
+    //     .collect();
 
-    let mut poss = HashSet::new();
-    let mut pposs = HashSet::new();
-    poss.insert(i);
+    // let mut snowball = symbols.pop().unwrap();
 
-    while poss != pposs {
-        pposs = poss.clone();
-        for (pos, x) in symbols.iter().rev().enumerate() {
-            let actual_pos = symbols.len() - pos - 1;
-            if snowball.intersection(x).count() != 0 {
-                snowball.extend(x.iter().cloned());
-                poss.insert(actual_pos);
-            } else {
-                if let Command::Assert { term: _ } = &commands[actual_pos] {
-                } else {
-                    poss.insert(actual_pos);
-                }
-            }
-        }
-    }
-    println!("{} / {}", poss.len(), commands.len());
+    // let mut poss = HashSet::new();
+    // let mut pposs = HashSet::new();
+    // poss.insert(i);
 
-    commands = commands.into_iter().enumerate().filter(|(pos, _)| poss.contains(pos)).map(|(_, x)| x).collect();
-    commands.push(Command::CheckSat);
+    // while poss != pposs {
+    //     pposs = poss.clone();
+    //     for (pos, x) in symbols.iter().rev().enumerate() {
+    //         let actual_pos = symbols.len() - pos - 1;
+    //         if snowball.intersection(x).count() != 0 {
+    //             snowball.extend(x.iter().cloned());
+    //             poss.insert(actual_pos);
+    //         } else {
+    //             if let Command::Assert { term: _ } = &commands[actual_pos] {
+    //             } else {
+    //                 poss.insert(actual_pos);
+    //             }
+    //         }
+    //     }
+    // }
+    // println!("{} / {}", poss.len(), commands.len());
+
+    // commands = commands.into_iter().enumerate().filter(|(pos, _)| poss.contains(pos)).map(|(_, x)| x).collect();
+    // commands.push(Command::CheckSat);
     commands
 }
 
