@@ -21,3 +21,5 @@ data/*
 !data/*.lrz
 temp
 !data/bisect_tasks/
+build.ninja
+cache/
