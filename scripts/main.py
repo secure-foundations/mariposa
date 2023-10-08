@@ -245,7 +245,7 @@ def recovery_mode(args):
 
     for i in {1, 2 , 5, 6, 7, 8}:
         temp_db_path = f"{exp.db_path}.{i}.temp"
-        print(f"[INFO] importing db {temp_db_path}")
+        print(f"[INFO] copying db {temp_db_path}")
         tables = get_tables(temp_db_path)
         imports[temp_db_path] = []
         for table in tables:
@@ -266,10 +266,10 @@ def recovery_mode(args):
         print("[WARN] some partitions are missing, aborting", excepted - finished)
         return
 
-    # for temp_db_path in imports:
-    #     for (part_id, part_num) in imports[temp_db_path]:
-    #         print(f"[INFO] importing partition {part_id}/{part_num} from {temp_db_path}")
-    #         import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
+    for temp_db_path in imports:
+        for (part_id, part_num) in imports[temp_db_path]:
+            print(f"[INFO] importing partition {part_id}/{part_num} from {temp_db_path}")
+            import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
 
 def worker_mode(args):
     from multiprocessing.managers import BaseManager

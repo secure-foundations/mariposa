@@ -554,5 +554,6 @@
         "clean_dir": "data/fs_dice_forall_fun",
         "artifact_solver_name": "z3_4_12_2"
       }
+    ]
   }
   

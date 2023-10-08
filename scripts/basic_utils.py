@@ -48,3 +48,9 @@ def list_files_ext(sub_root, ext):
 
 def scrub(name):
     return ''.join([c if c.isalnum() else "_" for c in name])
+
+def line_count(filename):
+    with open(filename) as f:
+        for i, _ in enumerate(f):
+            pass
+    return i + 1
