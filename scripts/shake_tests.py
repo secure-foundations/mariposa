@@ -8,7 +8,7 @@ UNSTABLE_SAMPLES = "data/test_set/"
 def emit_build_file(in_dir, out_dir):
     print("""
 rule shake
-    command = ./target/release/mariposa -i $in -m fun-assert -o $out
+    command = ./target/release/mariposa -i $in -m tree-rewrite -o $out
 
 rule z3
     command = ./solvers/z3-4.12.2 $in -T:10 > $out
@@ -17,8 +17,10 @@ rule z3
     for query in list_files_ext(in_dir, ".smt2"):
         base = os.path.basename(query)
         shake = f"{out_dir}/{base}"
+        if "fs_" in query:
+            continue
         print(f"build {shake}: shake {query}")
-        # print(f"build {shake}.rst: z3 {shake}")
+        print(f"build {shake}.rst: z3 {shake}")
 
 emit_build_file(sys.argv[1], sys.argv[2])
 

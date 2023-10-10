@@ -29,9 +29,6 @@ def sample_then_remove_all_triggers(orgi_name, pruned_name):
         base = q.split("/")[-1]
         print(f"./target/release/mariposa --in-file-path {q} --out-file-path {prefix}/{base} -m remove-trigger")
 
-    # for q in list_smt2_files(prefix):
-    #     print(f"./target/release/mariposa --in-file-path {q}")
-
 def load_quanti_stats(pname, selected=None):
     project = c.load_known_project(pname)
     if os.path.exists(f"cache/{pname}_quanti.pkl"):

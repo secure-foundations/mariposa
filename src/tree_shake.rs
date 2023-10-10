@@ -2,6 +2,8 @@ use smt2parser::concrete;
 use smt2parser::concrete::{AttributeValue, Command, QualIdentifier, Symbol, Term};
 use std::collections::HashSet;
 
+use crate::tree_rewrite;
+
 const DEBUG_DEFS: bool = false;
 
 // get the symbols defined in a command
@@ -383,15 +385,7 @@ pub fn fun_to_assert(command: concrete::Command) -> Vec<concrete::Command> {
 
 pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
     // commands = commands.into_iter().map(|x| flatten_nested_and(x)).flatten().collect();
-    let mut i = commands.len() - 1;
-    while i > 0 {
-        let command = &commands[i];
-        if let Command::Assert { term: _ } = command {
-            break;
-        }
-        i -= 1;
-    }
-    commands.truncate(i + 1);
+    tree_rewrite::truncate_commands(&mut commands);
 
     let defs: HashSet<String> = commands
         .iter()
@@ -400,9 +394,10 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
         .collect();
 
     let goal_command = commands.pop().unwrap();
+
     let mut snowball = get_command_symbol_uses(&goal_command, &defs, true).flattened_all_symbols();
 
-    // print!("Snowball: {:?} ", snowball);
+    print!("Snowball: {:?} ", snowball);
 
     let symbols: Vec<SymbolUsage> = commands
         .iter()

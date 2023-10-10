@@ -156,6 +156,22 @@
         "num_procs": 7,
         "db_path": "./data/verus_cvc_test.db",
         "db_mode": "update"
+      },
+      {
+        "name": "rewrite",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed",
+          "quake"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/rewrite.db",
+        "db_mode": "update"
       }
     ],
     "analyzers": [
@@ -513,30 +529,6 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "d_fvbkv_pruned",
-        "framework": "dafny",
-        "clean_dir": "data/d_fvbkv_pruned",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "d_fvbkv_unpruned",
-        "framework": "dafny",
-        "clean_dir": "data/d_fvbkv_unpruned",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "d_fvbkv_shaked",
-        "framework": "dafny",
-        "clean_dir": "data/d_fvbkv_shaked",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "fs_dice_shaked",
-        "framework": "fstar",
-        "clean_dir": "data/fs_dice_shaked",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
         "name": "d_fvbkv_unpruned_new",
         "framework": "fstar",
         "clean_dir": "data/d_fvbkv_unpruned_new",
@@ -546,12 +538,6 @@
         "name": "d_fvbkv_pruned_new",
         "framework": "fstar",
         "clean_dir": "data/d_fvbkv_pruned_new",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
-        "name": "fs_dice_forall_fun",
-        "framework": "fstar",
-        "clean_dir": "data/fs_dice_forall_fun",
         "artifact_solver_name": "z3_4_12_2"
       },
       {

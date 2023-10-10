@@ -11,7 +11,8 @@ use std::fs::File;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::vec;
 mod tree_shake;
-mod unsat_core;
+mod core_export;
+mod tree_rewrite;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -305,43 +306,6 @@ fn split_commands(
 }
 
 
-
-// fn is_and(term: &concrete::Term) -> Option<(Term, Term)> {
-//     if let Term::Application { qual_identifier, arguments } = term {
-//         if let QualIdentifier::Simple { identifier } = qual_identifier {
-//             if let concrete::Identifier::Simple { symbol } = identifier {
-//                 if symbol.0 == "and" {
-//                     assert!(arguments.len() == 2);
-//                     return Some((arguments[0].clone(), arguments[1].clone()));
-//                 }
-//             }
-//         }
-//     }
-//     return None;
-// }
-
-// fn is_nested_and(term: &concrete::Term) -> Vec<Term> {
-//     if let Some((l, r)) = is_and(term) {
-//         let mut l = is_nested_and(&l);
-//         let mut r = is_nested_and(&r);
-//         l.append(&mut r);
-//         return l;
-//     }
-//     return vec![term.clone()];
-// }
-
-// fn flatten_nested_and(command: concrete::Command) -> Vec<concrete::Command>
-// {
-//     if let Command::Assert { term } = &command {
-//         let ts = is_nested_and(&term);
-//         ts.into_iter().map(|x| concrete::Command::Assert { term: x }).collect()
-//     } else {
-//         vec![command]
-//     }
-// }
-
-// fn rewrite_true_implies()
-
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -531,12 +495,12 @@ fn main() {
         manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
         manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
     } else if args.mutation == "unsat-core-label-assert" {
-        unsat_core::label_asserts(&mut commands);
+        core_export::label_asserts(&mut commands);
     } else if args.mutation == "unsat-core-reduce-assert" {
         let core_path = args.core_file_path.unwrap();
-        commands = unsat_core::reduce_asserts(commands, core_path)
+        commands = core_export::reduce_asserts(commands, core_path)
     } else if args.mutation == "unsat-core-remove-label" {
-        unsat_core::remove_labels(&mut commands);
+        core_export::remove_labels(&mut commands);
     } else if args.mutation == "remove-trigger" {
         manager.remove_patterns(&mut commands);
     } else if args.mutation == "parse-only" {
@@ -544,6 +508,8 @@ fn main() {
         return;
     } else if args.mutation == "tree-shake" {
         commands = tree_shake::tree_shake(commands);
+    } else if args.mutation == "tree-rewrite" {
+        commands = tree_rewrite::tree_rewrite(commands);
     } else if args.mutation == "fun-assert" {
         commands = commands
             .into_iter()

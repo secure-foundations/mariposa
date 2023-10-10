@@ -1,6 +1,6 @@
 type Ty;
-function  Lit<T>(x: T) : T;
-axiom (forall<T> x: T ::   Lit(x): T == x);
+function {:identity} Lit<T>(x: T) : T;
+axiom (forall<T> x: T :: {:identity} Lit(x): T == x);
 type ref;
 const null: ref;
 type Box;

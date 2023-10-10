@@ -43,8 +43,8 @@ def get_prune_keep(orgi_name, mini_name):
 
     keep = tally0 & tally1
     
-    keep = keep - items0[Stability.UNSOLVABLE]
-    keep = keep - items1[Stability.UNSOLVABLE]
+    # keep = keep - items0[Stability.UNSOLVABLE]
+    # keep = keep - items1[Stability.UNSOLVABLE]
     
     for cat in [Stability.UNKNOWN, Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
         items0[cat] = items0[cat] & keep
@@ -63,6 +63,9 @@ def get_prune_keep(orgi_name, mini_name):
 
 def analyze_d_fvbkv_prune():
     items0, items1, keep, werid = get_prune_keep("d_fvbkv_unpruned_new", "d_fvbkv_pruned_new")
+
+    for i in werid:
+        print(i)
 
     # PN = c.load_known_experiment("pruned")
 
