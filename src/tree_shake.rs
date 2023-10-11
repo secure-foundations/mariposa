@@ -1,6 +1,6 @@
 use smt2parser::concrete;
 use smt2parser::concrete::{AttributeValue, Command, QualIdentifier, Symbol, Term};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::tree_rewrite;
 
@@ -73,38 +73,32 @@ fn get_global_symbol_defs(command: &concrete::Command) -> HashSet<String> {
     symbols
 }
 
-fn get_identifier_symbols(identifier: &concrete::Identifier) -> HashSet<Symbol> {
-    let mut symbols = HashSet::new();
+fn get_identifier_symbols(identifier: &concrete::Identifier) -> Symbol {
     match identifier {
-        concrete::Identifier::Simple { symbol } => {
-            symbols.insert(symbol.clone());
-        }
+        concrete::Identifier::Simple { symbol } => symbol.clone(),
         concrete::Identifier::Indexed { symbol, indices: _ } => {
-            symbols.insert(symbol.clone());
+            symbol.clone()
             // panic!("TODO indexed identifier {}", symbol)
         }
     }
-    symbols
 }
 
+type SymbolSet = HashSet<Symbol>;
+
 struct SymbolUseTracker {
+    defined_symbols: SymbolSet,
     // local symbols (e.g. bound variables forall, exists, let)
-    local_symbols: Vec<HashSet<Symbol>>,
+    local_symbols: Vec<SymbolSet>,
     // global symbols (e.g. defined functions, constants)
-    non_pattern_symbols: HashSet<Symbol>,
-    pattern_symbols: Vec<HashSet<Symbol>>,
-    in_pattern: bool,
-    collect_all: bool,
+    pattern_symbols: Vec<(SymbolSet, SymbolSet)>,
 }
 
 impl SymbolUseTracker {
-    fn new(collet_all: bool) -> SymbolUseTracker {
+    fn new(defs: &SymbolSet) -> SymbolUseTracker {
         SymbolUseTracker {
+            defined_symbols: defs.clone(),
             local_symbols: Vec::new(),
-            non_pattern_symbols: HashSet::new(),
             pattern_symbols: Vec::new(),
-            in_pattern: false,
-            collect_all: collet_all,
         }
     }
 
@@ -116,47 +110,46 @@ impl SymbolUseTracker {
         self.local_symbols.pop();
     }
 
-    fn try_add_pattern_group(&mut self) {
-        if self.in_pattern {
-            return;
-        }
-        self.in_pattern = true;
-        self.pattern_symbols.push(HashSet::new());
-    }
+    // fn try_add_pattern_group(&mut self) {
+        // if self.in_pattern {
+        //     return;
+        // }
+        // self.in_pattern = true;
+        // self.pattern_symbols.push(HashSet::new());
+    // }
 
-    fn exit_pattern_group(&mut self) {
-        assert!(self.in_pattern);
-        self.in_pattern = false;
-    }
+    // fn exit_pattern_group(&mut self) {
+    //     assert!(self.in_pattern);
+    //     self.in_pattern = false;
+    // }
 
-    fn try_add_use(&mut self, symbol: &concrete::Symbol) {
-        // ignore if defined in local scope
-        for scope in self.local_symbols.iter_mut().rev() {
-            if scope.contains(symbol) {
-                return;
-            }
-        }
-        if self.in_pattern {
-            let index = self.pattern_symbols.len() - 1;
-            self.pattern_symbols[index].insert(symbol.clone());
-        } else {
-            self.non_pattern_symbols.insert(symbol.clone());
-        }
-    }
+    // fn try_add_use(&mut self, symbol: &concrete::Symbol) {
+    //     // ignore if defined in local scope
+    //     for scope in self.local_symbols.iter_mut().rev() {
+    //         if scope.contains(symbol) {
+    //             return;
+    //         }
+    //     }
+    //     if self.in_pattern {
+    //         let index = self.pattern_symbols.len() - 1;
+    //         self.pattern_symbols[index].insert(symbol.clone());
+    //     } else {
+    //         self.non_pattern_symbols.insert(symbol.clone());
+    //     }
+    // }
 
     fn add_local_binding(&mut self, symbol: &concrete::Symbol) {
         let index = self.local_symbols.len() - 1;
         self.local_symbols[index].insert(symbol.clone());
     }
 
-    fn get_symbol_uses(&mut self, term: &concrete::Term) {
+    fn get_symbol_uses(&mut self, term: &concrete::Term) -> SymbolSet {
+        let mut uses = HashSet::new();
         match term {
-            Term::Constant(..) => (),
+            Term::Constant(..) => { () },
             Term::QualIdentifier(qual_identifier) => {
                 if let concrete::QualIdentifier::Simple { identifier } = qual_identifier {
-                    get_identifier_symbols(identifier)
-                        .iter()
-                        .for_each(|x| self.try_add_use(x));
+                    uses.insert(get_identifier_symbols(identifier));
                 } else {
                     panic!("TODO sorted QualIdentifier")
                 }
@@ -166,58 +159,63 @@ impl SymbolUseTracker {
                 arguments,
             } => {
                 if let concrete::QualIdentifier::Simple { identifier } = qual_identifier {
-                    get_identifier_symbols(identifier)
-                        .iter()
-                        .for_each(|x| self.try_add_use(x));
+                    uses.insert(get_identifier_symbols(identifier));
                 } else {
                     panic!("TODO sorted QualIdentifier")
                 }
-                arguments.iter().for_each(|x| self.get_symbol_uses(x));
+                arguments
+                    .into_iter()
+                    .map(|x| self.get_symbol_uses(x))
+                    .for_each(|x| uses.extend(x));
             }
             Term::Let { var_bindings, term } => {
+                // remove local bindings
                 self.push_term_scope();
                 var_bindings.iter().for_each(|x| {
                     self.add_local_binding(&x.0);
-                    self.get_symbol_uses(&x.1);
+                    uses.extend(self.get_symbol_uses(&x.1).iter().cloned());
                 });
-                self.get_symbol_uses(term);
+                uses.extend(self.get_symbol_uses(term).iter().cloned());
                 self.pop_term_scope();
             }
             Term::Forall { vars, term } => {
                 self.push_term_scope();
                 // no need for sort symbols right?
                 vars.iter().for_each(|x| self.add_local_binding(&x.0));
-                self.get_symbol_uses(&term);
+                uses.extend(self.get_symbol_uses(term).iter().cloned());
                 self.pop_term_scope();
             }
             Term::Exists { vars, term } => {
                 self.push_term_scope();
                 vars.iter().for_each(|x| self.add_local_binding(&x.0));
-                self.get_symbol_uses(&term);
+                uses.extend(self.get_symbol_uses(term).iter().cloned());
                 self.pop_term_scope();
             }
             Term::Match { term: _, cases: _ } => {
                 panic!("TODO match cases")
             }
             Term::Attributes { term, attributes } => {
-                let mut use_pattern = false;
+                let mut pattern_sets = Vec::new();
                 attributes.into_iter().for_each(|f| {
                     let concrete::Keyword(k) = &f.0;
                     // if pattern is given, ignore the term
                     if k == "pattern" {
-                        use_pattern = true;
                         // self.in_pattern = true;
-                        self.try_add_pattern_group();
+                        // self.try_add_pattern_group();
                         match &f.1 {
                             AttributeValue::None => (),
                             AttributeValue::Constant(..) => (),
-                            AttributeValue::Symbol(symbol) => self.try_add_use(symbol),
+                            AttributeValue::Symbol(symbol) => {
+                                panic!("TODO pattern symbol {:?}", &f.1);
+                                // uses.insert(symbol.clone());
+                            },
                             AttributeValue::Terms(terms) => {
-                                terms.iter().for_each(|x| self.get_symbol_uses(x))
+                                // assert!(terms.len() == 1);
+                                terms.iter().for_each(|x| pattern_sets.push(self.get_symbol_uses(&x)));
                             }
                             _ => panic!("TODO attribute value {:?}", &f.1),
                         }
-                        self.exit_pattern_group();
+                        // self.exit_pattern_group();
                     } else if k == "named"
                         || k == "qid"
                         || k == "skolemid"
@@ -231,160 +229,142 @@ impl SymbolUseTracker {
                         panic!("TODO attribute keyword {}", k)
                     }
                 });
-                if !use_pattern || self.collect_all {
-                    self.get_symbol_uses(term);
+                uses = self.get_symbol_uses(term);
+                if pattern_sets.len() >= 1 {
+                    pattern_sets.iter().for_each(|x| 
+                        self.pattern_symbols.push((x.clone(), uses.clone()))
+                    );
+                    uses = HashSet::new();
+                    pattern_sets.iter().for_each(|x| uses.extend(x.iter().cloned()));
                 }
             }
         }
+        // remove local bindings
+        uses.retain(|x| {
+            for scope in self.local_symbols.iter() {
+                if scope.contains(x) {
+                    return false;
+                }
+            }
+            self.defined_symbols.contains(x)
+        });
+        uses
     }
 }
 
-struct SymbolUsage {
-    non_pattern_symbols: HashSet<String>,
-    pattern_symbols: Vec<HashSet<String>>,
-}
+// struct SymbolUsage {
+//     non_pattern_symbols: SymbolSet,
+//     pattern_symbols: HashMap<SymbolSet, SymbolSet>,
+// }
 
-impl SymbolUsage {
-    fn flattened_pattern_symbols(&self) -> HashSet<String> {
-        self.pattern_symbols.iter().flatten().cloned().collect()
-    }
+// impl SymbolUsage {
+//     // fn flattened_pattern_symbols(&self) -> HashSet<String> {
+//     //     self.pattern_symbols.iter().flatten().cloned().collect()
+//     // }
 
-    fn flattened_all_symbols(&self) -> HashSet<String> {
-        let mut all_symbols = self.non_pattern_symbols.clone();
-        all_symbols.extend(self.flattened_pattern_symbols());
-        all_symbols
-    }
+//     // fn flattened_all_symbols(&self) -> HashSet<String> {
+//     //     let mut all_symbols = self.non_pattern_symbols.clone();
+//     //     all_symbols.extend(self.flattened_pattern_symbols());
+//     //     all_symbols
+//     // }
 
-    fn check_overlap(&self, other: &mut HashSet<String>) -> bool {
-        if self.flattened_all_symbols().intersection(other).count() != 0 {
-            other.extend(self.flattened_all_symbols());
-            return true;
-        }
-        // if self.non_pattern_symbols.intersection(other).count() != 0 {
-        //     let m = self.flattened_all_symbols();
-        //     other.extend(m);
-        //     return true;
-        // }
-        // if self.pattern_symbols
-        //     .iter()
-        //     .any(|x| x.intersection(other).count() != 0) {
-        //     // other.extend(self.non_pattern_symbols.clone());
-        //     other.extend(self.flattened_all_symbols());
-        //     return true;
-        // }
-        return false;
-    }
-}
+//     // fn check_overlap(&self, other: &mut HashSet<String>) -> bool {
+//     //     if self.flattened_all_symbols().intersection(other).count() != 0 {
+//     //         other.extend(self.flattened_all_symbols());
+//     //         return true;
+//     //     }
+//     //     // if self.non_pattern_symbols.intersection(other).count() != 0 {
+//     //     //     let m = self.flattened_all_symbols();
+//     //     //     other.extend(m);
+//     //     //     return true;
+//     //     // }
+//     //     // if self.pattern_symbols
+//     //     //     .iter()
+//     //     //     .any(|x| x.intersection(other).count() != 0) {
+//     //     //     // other.extend(self.non_pattern_symbols.clone());
+//     //     //     other.extend(self.flattened_all_symbols());
+//     //     //     return true;
+//     //     // }
+//     //     return false;
+//     // }
+// }
 
 fn get_command_symbol_uses(
     command: &concrete::Command,
-    defs: &HashSet<String>,
-    collet: bool,
-) -> SymbolUsage {
-    let mut tracker = SymbolUseTracker::new(collet);
+    defs: &SymbolSet,
+) -> () {
+    let mut tracker = SymbolUseTracker::new(defs);
     match command {
         Command::Assert { term } => {
-            tracker.get_symbol_uses(term);
+            let uses = tracker.get_symbol_uses(term);
+            // remove defs
+            // uses.retain(|x| def.contains(x));
+            if uses.len() > 0 {
+                println!("{}", command);
+                for s in &uses {
+                    println!("\t{}", s);
+                }
+                let mut i = 0;
+                for (xs, ys) in tracker.pattern_symbols.iter() {
+                    println!("Pattern group {}", i);
+                    println!("Pattern symbols:");
+
+                    for s in xs {
+                        println!("\t{}", s);
+                    }
+                    println!("Mapped non-pattern symbols:");
+                    for s in ys {
+                        println!("\t{}", s);
+                    }
+                    i += 1;
+                    println!();
+                }
+            }
         }
         _ => {}
     }
-    let mut np_symbols: HashSet<String> = tracker
-        .non_pattern_symbols
-        .into_iter()
-        .map(|f| f.0)
-        .collect();
-    np_symbols.retain(|x| defs.contains(x));
+//     let mut np_symbols: HashSet<String> = tracker
+//         .non_pattern_symbols
+//         .into_iter()
+//         .map(|f| f.0)
+//         .collect();
+//     np_symbols.retain(|x| defs.contains(x));
 
-    for i in &mut tracker.pattern_symbols {
-        i.retain(|x| defs.contains(&x.0));
-    }
+//     for i in &mut tracker.pattern_symbols {
+//         i.retain(|x| defs.contains(&x.0));
+//     }
 
-    let p_symbols: Vec<HashSet<String>> = tracker
-        .pattern_symbols
-        .into_iter()
-        .map(|f| f.into_iter().map(|x| x.0).collect())
-        .collect();
+//     let p_symbols: Vec<HashSet<String>> = tracker
+//         .pattern_symbols
+//         .into_iter()
+//         .map(|f| f.into_iter().map(|x| x.0).collect())
+//         .collect();
 
-    if np_symbols.len() > 0 || p_symbols.len() > 0 {
-        println!("{}", command);
-        println!("Non-pattern symbols:");
+//     if np_symbols.len() > 0 || p_symbols.len() > 0 {
+//         println!("{}", command);
+//         println!("Non-pattern symbols:");
 
-        for i in &np_symbols {
-            println!("\t{}", i);
-        }
+//         for i in &np_symbols {
+//             println!("\t{}", i);
+//         }
 
-        println!("Pattern symbols:");
+//         println!("Pattern symbols:");
 
-        for i in &p_symbols {
-            for j in i {
-                println!("\t{}", j);
-            }
-            println!();
-        }
-    }
-    SymbolUsage {
-        non_pattern_symbols: np_symbols,
-        pattern_symbols: p_symbols,
-    }
-}
-
-pub fn fun_to_assert(command: concrete::Command) -> Vec<concrete::Command> {
-    if let Command::DefineFun { sig, term } = &command {
-        if sig.parameters.len() == 0 {
-            return vec![command];
-        }
-        let vars: Vec<Term> = sig
-            .parameters
-            .iter()
-            .map(|f| {
-                Term::QualIdentifier(QualIdentifier::Simple {
-                    identifier: concrete::Identifier::Simple {
-                        symbol: f.0.clone(),
-                    },
-                })
-            })
-            .collect();
-        vec![
-            Command::DeclareFun {
-                symbol: sig.name.clone(),
-                parameters: sig.parameters.iter().map(|f| f.1.clone()).collect(),
-                sort: sig.result.clone(),
-            },
-            Command::Assert {
-                term: Term::Forall {
-                    vars: sig
-                        .parameters
-                        .iter()
-                        .map(|f| (f.0.clone(), f.1.clone()))
-                        .collect(),
-                    term: Box::new(Term::Application {
-                        qual_identifier: QualIdentifier::Simple {
-                            identifier: concrete::Identifier::Simple {
-                                symbol: Symbol("=".to_string()),
-                            },
-                        },
-                        arguments: vec![
-                            Term::Application {
-                                qual_identifier: QualIdentifier::Simple {
-                                    identifier: concrete::Identifier::Simple {
-                                        symbol: sig.name.clone(),
-                                    },
-                                },
-                                arguments: vars,
-                            },
-                            term.clone(),
-                        ],
-                    }),
-                },
-            },
-        ]
-    } else {
-        vec![command]
-    }
+//         for i in &p_symbols {
+//             for j in i {
+//                 println!("\t{}", j);
+//             }
+//             println!();
+//         }
+//     }
+//     SymbolUsage {
+//         non_pattern_symbols: np_symbols,
+//         pattern_symbols: p_symbols,
+//     }
 }
 
 pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
-    // commands = commands.into_iter().map(|x| flatten_nested_and(x)).flatten().collect();
+//     // commands = commands.into_iter().map(|x| flatten_nested_and(x)).flatten().collect();
     tree_rewrite::truncate_commands(&mut commands);
 
     let defs: HashSet<String> = commands
@@ -393,43 +373,44 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
         .flatten()
         .collect();
 
-    let goal_command = commands.pop().unwrap();
+    // let goal_command = commands.pop().unwrap();
 
-    let mut snowball = get_command_symbol_uses(&goal_command, &defs, true).flattened_all_symbols();
+//     let mut snowball = get_command_symbol_uses(&goal_command, &defs, true).flattened_all_symbols();
 
-    print!("Snowball: {:?} ", snowball);
+//     print!("Snowball: {:?} ", snowball);
+    let defs: SymbolSet = defs.iter().map(|x| Symbol(x.clone())).collect();
 
-    let symbols: Vec<SymbolUsage> = commands
+    let symbols: Vec<()> = commands
         .iter()
-        .map(|c| get_command_symbol_uses(&c, &defs, false))
+        .map(|c| get_command_symbol_uses(&c, &defs))
         .collect();
 
-    let mut poss = HashSet::new();
-    let mut pposs = HashSet::new();
-    poss.insert(0);
+//     let mut poss = HashSet::new();
+//     let mut pposs = HashSet::new();
+//     poss.insert(0);
 
-    while poss != pposs {
-        pposs = poss.clone();
-        for (pos, ss) in symbols.iter().enumerate() {
-            if ss.check_overlap(&mut snowball) {
-                // snowball.extend(ss.0.iter().cloned());
-                poss.insert(pos);
-            } else {
-                if let Command::Assert { term: _ } = &commands[pos] {
-                } else {
-                    poss.insert(pos);
-                }
-            }
-        }
-    }
+//     while poss != pposs {
+//         pposs = poss.clone();
+//         for (pos, ss) in symbols.iter().enumerate() {
+//             if ss.check_overlap(&mut snowball) {
+//                 // snowball.extend(ss.0.iter().cloned());
+//                 poss.insert(pos);
+//             } else {
+//                 if let Command::Assert { term: _ } = &commands[pos] {
+//                 } else {
+//                     poss.insert(pos);
+//                 }
+//             }
+//         }
+//     }
 
-    commands = commands
-        .into_iter()
-        .enumerate()
-        .filter(|(pos, _)| poss.contains(pos))
-        .map(|(_, x)| x)
-        .collect();
-    commands.push(goal_command);
-    commands.push(Command::CheckSat);
+//     commands = commands
+//         .into_iter()
+//         .enumerate()
+//         .filter(|(pos, _)| poss.contains(pos))
+//         .map(|(_, x)| x)
+//         .collect();
+//     commands.push(goal_command);
+//     commands.push(Command::CheckSat);
     commands
 }

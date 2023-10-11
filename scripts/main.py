@@ -41,7 +41,7 @@ def single_mode(args):
             shutil.rmtree(project.clean_dir, ignore_errors=True)
         os.makedirs(project.clean_dir)
 
-        command = f"./target/release/mariposa -i '{args.query}' --chop --remove-debug -o '{project.clean_dir}/split.smt2'"
+        command = f"./target/release/mariposa -i '{args.query}' --chop  -o '{project.clean_dir}/split.smt2'"
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
         print(result.stdout.decode('utf-8'), end="")
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")

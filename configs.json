@@ -142,22 +142,6 @@
         "db_mode": "update"
       },
       {
-        "name": "verus_cvc",
-        "mutations": [
-          "shuffle",
-          "rename",
-          "reseed",
-          "quake"
-        ],
-        "keep_mutants": false,
-        "num_mutants": 60,
-        "init_seed": "",
-        "exp_timeout": 30,
-        "num_procs": 7,
-        "db_path": "./data/verus_cvc_test.db",
-        "db_mode": "update"
-      },
-      {
         "name": "rewrite",
         "mutations": [
           "shuffle",

@@ -166,7 +166,7 @@ pub fn find_goal_command_index(commands: &Vec<concrete::Command>) -> usize {
             if let Command::CheckSat = &commands[i + 1] {
                 // break;
             } else {
-                panic!("expected check-sat after assert");
+                panic!("expected check-sat after the goal assert");
             }
             break;
         }
@@ -191,4 +191,59 @@ pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> 
     commands.push(concrete::Command::CheckSat);
 
     return commands;
+}
+
+pub fn fun_to_assert(command: concrete::Command) -> Vec<concrete::Command> {
+    if let Command::DefineFun { sig, term } = &command {
+        if sig.parameters.len() == 0 {
+            return vec![command];
+        }
+        let vars: Vec<Term> = sig
+            .parameters
+            .iter()
+            .map(|f| {
+                Term::QualIdentifier(QualIdentifier::Simple {
+                    identifier: concrete::Identifier::Simple {
+                        symbol: f.0.clone(),
+                    },
+                })
+            })
+            .collect();
+        vec![
+            Command::DeclareFun {
+                symbol: sig.name.clone(),
+                parameters: sig.parameters.iter().map(|f| f.1.clone()).collect(),
+                sort: sig.result.clone(),
+            },
+            Command::Assert {
+                term: Term::Forall {
+                    vars: sig
+                        .parameters
+                        .iter()
+                        .map(|f| (f.0.clone(), f.1.clone()))
+                        .collect(),
+                    term: Box::new(Term::Application {
+                        qual_identifier: QualIdentifier::Simple {
+                            identifier: concrete::Identifier::Simple {
+                                symbol: Symbol("=".to_string()),
+                            },
+                        },
+                        arguments: vec![
+                            Term::Application {
+                                qual_identifier: QualIdentifier::Simple {
+                                    identifier: concrete::Identifier::Simple {
+                                        symbol: sig.name.clone(),
+                                    },
+                                },
+                                arguments: vars,
+                            },
+                            term.clone(),
+                        ],
+                    }),
+                },
+            },
+        ]
+    } else {
+        vec![command]
+    }
 }

@@ -513,7 +513,7 @@ fn main() {
     } else if args.mutation == "fun-assert" {
         commands = commands
             .into_iter()
-            .map(|x| tree_shake::fun_to_assert(x))
+            .map(|x| tree_rewrite::fun_to_assert(x))
             .flatten()
             .collect();
     }
