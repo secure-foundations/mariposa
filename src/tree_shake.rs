@@ -43,7 +43,7 @@ fn get_global_symbol_defs(command: &concrete::Command) -> HashSet<String> {
             symbol: _,
             arity: _,
         } => {
-            println!("Sort symbol not considered");
+            // println!("Sort symbol not considered");
             // symbols.insert(symbol.0.clone());
         }
         Command::DefineFun { sig, term: _ } => {
@@ -91,6 +91,7 @@ struct SymbolUseTracker {
     local_symbols: Vec<SymbolSet>,
     // global symbols (e.g. defined functions, constants)
     pattern_symbols: Vec<(SymbolSet, SymbolSet)>,
+    non_pattern_symbols: SymbolSet,
 }
 
 impl SymbolUseTracker {
@@ -99,6 +100,7 @@ impl SymbolUseTracker {
             defined_symbols: defs.clone(),
             local_symbols: Vec::new(),
             pattern_symbols: Vec::new(),
+            non_pattern_symbols: HashSet::new(),
         }
     }
 
@@ -250,6 +252,45 @@ impl SymbolUseTracker {
         });
         uses
     }
+
+    fn check_overlap(&self, other: &mut SymbolSet) -> bool {
+        if self.non_pattern_symbols.intersection(other).count() != 0 {
+            other.extend(self.non_pattern_symbols.clone());
+            return true;
+        }
+        let mut overlap = false;
+        for (xs, ys) in self.pattern_symbols.iter() {
+            if xs.intersection(other).count() != 0 {
+                other.extend(ys.clone());
+                overlap = true;
+            }
+        }
+        return overlap;
+    }
+
+    fn debug(self) {
+                 // remove defs
+            // uses.retain(|x| def.contains(x));
+
+        for s in &self.non_pattern_symbols {
+            println!("\t{}", s);
+        }
+        let mut i = 0;
+        for (xs, ys) in self.pattern_symbols.iter() {
+            println!("Pattern group {}", i);
+            println!("Pattern symbols:");
+
+            for s in xs {
+                println!("\t{}", s);
+            }
+            println!("Mapped non-pattern symbols:");
+            for s in ys {
+                println!("\t{}", s);
+            }
+            i += 1;
+            println!();
+        }
+    }
 }
 
 // struct SymbolUsage {
@@ -292,80 +333,33 @@ impl SymbolUseTracker {
 fn get_command_symbol_uses(
     command: &concrete::Command,
     defs: &SymbolSet,
-) -> () {
+) -> SymbolUseTracker {
     let mut tracker = SymbolUseTracker::new(defs);
     match command {
         Command::Assert { term } => {
             let uses = tracker.get_symbol_uses(term);
-            // remove defs
-            // uses.retain(|x| def.contains(x));
-            if uses.len() > 0 {
-                println!("{}", command);
-                for s in &uses {
-                    println!("\t{}", s);
-                }
-                let mut i = 0;
-                for (xs, ys) in tracker.pattern_symbols.iter() {
-                    println!("Pattern group {}", i);
-                    println!("Pattern symbols:");
-
-                    for s in xs {
-                        println!("\t{}", s);
-                    }
-                    println!("Mapped non-pattern symbols:");
-                    for s in ys {
-                        println!("\t{}", s);
-                    }
-                    i += 1;
-                    println!();
-                }
-            }
+            tracker.non_pattern_symbols = uses;
+        // if self.uses.len() > 0 {
+        // println!("{}", command);
+        // }
         }
         _ => {}
     }
-//     let mut np_symbols: HashSet<String> = tracker
-//         .non_pattern_symbols
-//         .into_iter()
-//         .map(|f| f.0)
-//         .collect();
-//     np_symbols.retain(|x| defs.contains(x));
-
-//     for i in &mut tracker.pattern_symbols {
-//         i.retain(|x| defs.contains(&x.0));
-//     }
-
-//     let p_symbols: Vec<HashSet<String>> = tracker
-//         .pattern_symbols
-//         .into_iter()
-//         .map(|f| f.into_iter().map(|x| x.0).collect())
-//         .collect();
-
-//     if np_symbols.len() > 0 || p_symbols.len() > 0 {
-//         println!("{}", command);
-//         println!("Non-pattern symbols:");
-
-//         for i in &np_symbols {
-//             println!("\t{}", i);
-//         }
-
-//         println!("Pattern symbols:");
-
-//         for i in &p_symbols {
-//             for j in i {
-//                 println!("\t{}", j);
-//             }
-//             println!();
-//         }
-//     }
-//     SymbolUsage {
-//         non_pattern_symbols: np_symbols,
-//         pattern_symbols: p_symbols,
-//     }
+    tracker
 }
 
 pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
-//     // commands = commands.into_iter().map(|x| flatten_nested_and(x)).flatten().collect();
     tree_rewrite::truncate_commands(&mut commands);
+
+    // commands = tree_rewrite::tree_rewrite(commands); 
+    // commands = commands
+    //     .into_iter()
+    //     .map(|x| tree_rewrite::flatten_assert(x))
+    //     .flatten()
+    //     .collect();
+
+    // println!("flattened command count: {}", commands.len());
+    let goal_command = commands.pop().unwrap();
 
     let defs: HashSet<String> = commands
         .iter()
@@ -373,44 +367,43 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
         .flatten()
         .collect();
 
-    // let goal_command = commands.pop().unwrap();
-
-//     let mut snowball = get_command_symbol_uses(&goal_command, &defs, true).flattened_all_symbols();
-
-//     print!("Snowball: {:?} ", snowball);
     let defs: SymbolSet = defs.iter().map(|x| Symbol(x.clone())).collect();
 
-    let symbols: Vec<()> = commands
+    let mut snowball = get_command_symbol_uses(&goal_command, &defs).non_pattern_symbols.clone();
+
+    // print!("Snowball: {:?} ", snowball);
+
+    let symbols: Vec<SymbolUseTracker> = commands
         .iter()
         .map(|c| get_command_symbol_uses(&c, &defs))
         .collect();
 
-//     let mut poss = HashSet::new();
-//     let mut pposs = HashSet::new();
-//     poss.insert(0);
+    let mut poss = HashSet::new();
+    let mut pposs = HashSet::new();
+    poss.insert(0);
 
-//     while poss != pposs {
-//         pposs = poss.clone();
-//         for (pos, ss) in symbols.iter().enumerate() {
-//             if ss.check_overlap(&mut snowball) {
-//                 // snowball.extend(ss.0.iter().cloned());
-//                 poss.insert(pos);
-//             } else {
-//                 if let Command::Assert { term: _ } = &commands[pos] {
-//                 } else {
-//                     poss.insert(pos);
-//                 }
-//             }
-//         }
-//     }
+    while poss != pposs {
+        pposs = poss.clone();
+        for (pos, ss) in symbols.iter().enumerate() {
+            if ss.check_overlap(&mut snowball) {
+                // snowball.extend(ss.0.iter().cloned());
+                poss.insert(pos);
+            } else {
+                if let Command::Assert { term: _ } = &commands[pos] {
+                } else {
+                    poss.insert(pos);
+                }
+            }
+        }
+    }
 
-//     commands = commands
-//         .into_iter()
-//         .enumerate()
-//         .filter(|(pos, _)| poss.contains(pos))
-//         .map(|(_, x)| x)
-//         .collect();
-//     commands.push(goal_command);
-//     commands.push(Command::CheckSat);
+    commands = commands
+        .into_iter()
+        .enumerate()
+        .filter(|(pos, _)| poss.contains(pos))
+        .map(|(_, x)| x)
+        .collect();
+    commands.push(goal_command);
+    commands.push(Command::CheckSat);
     commands
 }

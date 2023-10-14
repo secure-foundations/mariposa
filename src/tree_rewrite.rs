@@ -2,42 +2,6 @@ use smt2parser::concrete;
 use smt2parser::concrete::{AttributeValue, Command, QualIdentifier, Symbol, Term};
 use std::collections::{HashMap, HashSet};
 
-// fn is_and(term: &concrete::Term) -> Option<(Term, Term)> {
-//     if let Term::Application { qual_identifier, arguments } = term {
-//         if let QualIdentifier::Simple { identifier } = qual_identifier {
-//             if let concrete::Identifier::Simple { symbol } = identifier {
-//                 if symbol.0 == "and" {
-//                     assert!(arguments.len() == 2);
-//                     return Some((arguments[0].clone(), arguments[1].clone()));
-//                 }
-//             }
-//         }
-//     }
-//     return None;
-// }
-
-// fn is_nested_and(term: &concrete::Term) -> Vec<Term> {
-//     if let Some((l, r)) = is_and(term) {
-//         let mut l = is_nested_and(&l);
-//         let mut r = is_nested_and(&r);
-//         l.append(&mut r);
-//         return l;
-//     }
-//     return vec![term.clone()];
-// }
-
-// fn flatten_nested_and(command: concrete::Command) -> Vec<concrete::Command>
-// {
-//     if let Command::Assert { term } = &command {
-//         let ts = is_nested_and(&term);
-//         ts.into_iter().map(|x| concrete::Command::Assert { term: x }).collect()
-//     } else {
-//         vec![command]
-//     }
-// }
-
-// fn rewrite_true_implies()
-
 fn rewrite_let_binding(var: &Symbol, term0: &concrete::Term) -> concrete::Command {
     let sig = concrete::FunctionDec {
         name: var.clone(),
@@ -185,6 +149,13 @@ pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> 
     truncate_commands(&mut commands);
     let goal_command = commands.pop().unwrap();
 
+    commands = commands
+        .into_iter()
+        .map(|x| flatten_assert(x))
+        .flatten()
+        .collect();
+    // commands = rewrite_equal(commands);
+
     let mut rewriter = LetBindingReWriter::new();
     let mut sub_commands = rewriter.rewrite(goal_command);
     commands.append(&mut sub_commands);
@@ -247,3 +218,154 @@ pub fn fun_to_assert(command: concrete::Command) -> Vec<concrete::Command> {
         vec![command]
     }
 }
+
+fn get_and_term(term: &concrete::Term) -> Option<(Term, Term)> {
+    if let Term::Application {
+        qual_identifier,
+        arguments,
+    } = term
+    {
+        if let QualIdentifier::Simple { identifier } = qual_identifier {
+            if let concrete::Identifier::Simple { symbol } = identifier {
+                if symbol.0 == "and" {
+                    assert!(arguments.len() == 2);
+                    return Some((arguments[0].clone(), arguments[1].clone()));
+                }
+            }
+        }
+    }
+    return None;
+}
+
+fn get_nested_and_terms(term: &concrete::Term) -> Vec<Term> {
+    if let Some((l, r)) = get_and_term(term) {
+        let mut l = get_nested_and_terms(&l);
+        let mut r = get_nested_and_terms(&r);
+        l.append(&mut r);
+        return l;
+    }
+    return vec![term.clone()];
+}
+
+pub fn flatten_assert(command: concrete::Command) -> Vec<concrete::Command> {
+    if let Command::Assert { term } = &command {
+        let ts = get_nested_and_terms(&term);
+        ts.into_iter()
+            .map(|x| concrete::Command::Assert { term: x })
+            .collect()
+    } else {
+        vec![command]
+    }
+}
+
+fn get_equal_term(term: &concrete::Term) -> Option<(Term, Term)> {
+    if let Term::Application {
+        qual_identifier,
+        arguments,
+    } = term
+    {
+        if let QualIdentifier::Simple { identifier } = qual_identifier {
+            if let concrete::Identifier::Simple { symbol } = identifier {
+                if symbol.0 == "=" {
+                    assert!(arguments.len() == 2);
+                    return Some((arguments[0].clone(), arguments[1].clone()));
+                }
+            }
+        }
+    }
+    return None;
+}
+
+// pub struct EqualityRewriter {
+//     lhs: HashMap<Term, (Term, usize)>,
+//     // binded: HashSet<Symbol>,
+//     // bindings: Vec<(Symbol, concrete::Term)>,
+// }
+
+// impl EqualityRewriter {
+//     fn new(commands: &Vec<concrete::Command>) -> EqualityRewriter {
+//         let mut lhs = HashMap::new();
+
+//         commands.iter().enumerate().for_each(|(i, c)| {
+//             if let Command::Assert { term } = c {
+//                 if let Some((l, r)) = get_equal_term(&term) {
+//                     lhs.insert(l, (r, i));
+//                 }
+//             }
+//         });  
+
+//         EqualityRewriter {
+//             lhs: lhs,
+//         }
+//     }
+// }
+
+
+fn replace_equal_terms(command: &concrete::Command, rules: &HashMap<Term, Term>) -> Option<concrete::Command>
+{
+    if let Command::Assert { term } = command {
+        let mut string = format!("{}", term);
+        for rule in rules.iter() {
+            let lhs = rule.0.to_string();
+            let rhs = rule.1.to_string();
+            if string.contains(&lhs) {
+                string = string.replace(&lhs, &rhs);
+            }
+        }
+        println!("(assert {})", string);
+    } else {
+        println!("{}", command);
+    }
+
+    // if let Command::DefineFun { sig: _, term } = command {
+    //     let string = format!("{}", term);
+    //     for rule in rules.iter() {
+    //         let lhs = rule.0.to_string();
+    //         let rhs = rule.1.to_string();
+    //         if string.contains(&lhs) {
+    //             println!("original:\n {}", string);
+    //             let aa = string.replace(&lhs, &rhs);
+    //             println!("replace with:\n {}", aa);
+    //         }
+    //     }
+    // }
+    return None;
+}
+
+pub fn rewrite_equal(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command>
+{
+    let mut lhs: HashMap<Term, Term> = HashMap::new();
+
+    commands.retain(|c| {
+        if let Command::Assert { term } = c {
+            if let Some((l, r)) = get_equal_term(&term) {
+                lhs.insert(l, r);
+                return false;
+            }
+        }
+        return true;
+    });
+
+    // for rule in lhs.iter() {
+    //     let lhs = rule.0.to_string();
+    //     let rhs = rule.1.to_string();
+    //     println!("lhs {}", lhs);
+    //     println!("rhs {}", rhs);
+    // }
+
+    for cmd in commands.iter() {
+        replace_equal_terms(cmd, &lhs);
+    }
+
+    // let mut commands = commands;
+    
+    // commands.into_iter().map(|x| replace_equal_terms(x, &lhs)).map(filter_none).flatten().collect();
+
+
+    // EqualityRewriter {
+    //     lhs: lhs,
+    // }
+
+    // let rewriter = EqualityRewriter::new(&commands);
+    vec![]
+}   
