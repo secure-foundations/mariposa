@@ -545,6 +545,12 @@
         "framework": "fstar",
         "clean_dir": "data/fs_vwasm_fun_assert",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_dice_fun_assert",
+        "framework": "fstar",
+        "clean_dir": "data/fs_dice_fun_assert",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }
