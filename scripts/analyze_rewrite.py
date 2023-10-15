@@ -68,7 +68,6 @@ def get_basic_keep(org_name, mod_name):
 def analyze_fun_assert():
     get_basic_keep("fs_vwasm", "fs_vwasm_fun_assert")
 
-
 def emit_build_file(in_dir, out_dir):
     print("""
 rule rewrite
@@ -91,6 +90,33 @@ rule z3
         print(f"build {shake}.rst: diff {shake}")
         print(f"    core = {min_path}")
 
+def emit_build_file2():
+    print("""
+rule rewrite
+    command = ./target/release/mariposa -i $in -m tree-shake -o $out
+
+rule diff
+    command = python3 scripts/diff_smt.py $core $in > $out
+
+rule z3
+    command = ./solvers/z3-4.12.2 $in -T:10 > $out
+""")
+
+    for query in list_files_ext("data/benchmarks/stable_core/", ".smt2"):
+        # if "fs_" not in query:
+        #     continue
+        # print(query)
+        cmd = r'rg -e "\(assert" ' +  query + ' | wc -l'
+        orgi = int(subprocess_run(cmd)[0])
+
+        # base = os.path.basename(query)
+        shake = f"gen/shake_stable/{base}"
+        cmd = r'rg -e "\(assert" ' +  shake  + ' | wc -l'
+        mini = int(subprocess_run(cmd)[0])
+        print(round(mini / orgi, 2))
+        # print(f"build {shake}: rewrite {query}")
+        # print(f"build {shake}.rst: z3 {shake}")
+
 def test_macro_finder():
     for query in list_smt2_files("data/benchmarks/unstable_ext"):
         if "d_" not in query:
@@ -103,14 +129,18 @@ def test_macro_finder():
         out_path.write(query)
 
 def check_shake_rsts():
-    for rst in list_files_ext("gen/shake_d_lvbkv_z3_clean/", ".rst"):
+    for rst in list_files_ext("gen/shake_d_lvbkv", ".rst"):
         num = open(rst).readline().strip().split(" ")
         num = [int(i) for i in num]
-        if num[1] != num[2]:
-            print(num)
+        if num[0] != num[2]:
+            print(rst)
+        # cmd = r'rg -e "\(assert" ' +  "data/d_lvbkv_z3_clean/" + rst[:-4].split("/")[-1] + ' | wc -l'
+        # orgi = int(subprocess_run(cmd)[0])
+        # print(round(num[1] / orgi, 2))
 
 if __name__ == "__main__":
     # test_macro_finder()
     # emit_build_file(sys.argv[1], sys.argv[2])
-    check_shake_rsts()
+    emit_build_file2()
+    # check_shake_rsts()
     # os.system('grep -rnw "unknown" -l  gen/shake_satble/*.rst')

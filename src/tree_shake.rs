@@ -5,6 +5,7 @@ use std::collections::{HashMap, HashSet};
 use crate::tree_rewrite;
 
 const DEBUG_DEFS: bool = false;
+const DEBUG_USES: bool = false;
 
 // get the symbols defined in a command
 fn get_global_symbol_defs(command: &concrete::Command) -> HashSet<String> {
@@ -254,11 +255,11 @@ impl SymbolUseTracker {
     }
 
     fn check_overlap(&self, other: &mut SymbolSet) -> bool {
+        let mut overlap = false;
         if self.non_pattern_symbols.intersection(other).count() != 0 {
             other.extend(self.non_pattern_symbols.clone());
-            return true;
+            overlap = true;
         }
-        let mut overlap = false;
         for (xs, ys) in self.pattern_symbols.iter() {
             if xs.intersection(other).count() != 0 {
                 other.extend(ys.clone());
@@ -268,7 +269,7 @@ impl SymbolUseTracker {
         return overlap;
     }
 
-    fn debug(self) {
+    fn debug(&self) {
                  // remove defs
             // uses.retain(|x| def.contains(x));
 
@@ -337,13 +338,25 @@ fn get_command_symbol_uses(
     let mut tracker = SymbolUseTracker::new(defs);
     match command {
         Command::Assert { term } => {
+            // println!("assert {}", term);
             let uses = tracker.get_symbol_uses(term);
             tracker.non_pattern_symbols = uses;
-        // if self.uses.len() > 0 {
-        // println!("{}", command);
-        // }
+            tracker.defined_symbols = HashSet::new();
+            tracker.local_symbols = Vec::new();
+        }
+        Command::DefineFun { sig, term } => 
+        {
+            let uses = tracker.get_symbol_uses(term);
+            tracker.non_pattern_symbols = uses;
+            tracker.non_pattern_symbols.insert(sig.name.clone());
+            tracker.defined_symbols = HashSet::new();
+            tracker.local_symbols = Vec::new();
         }
         _ => {}
+    }
+    if DEBUG_USES {
+        println!("{}", command);
+        tracker.debug();
     }
     tracker
 }
@@ -359,7 +372,7 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
     //     .collect();
 
     // println!("flattened command count: {}", commands.len());
-    let goal_command = commands.pop().unwrap();
+    let goal_command = commands[commands.len() - 1].clone();
 
     let defs: HashSet<String> = commands
         .iter()
@@ -371,7 +384,12 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
 
     let mut snowball = get_command_symbol_uses(&goal_command, &defs).non_pattern_symbols.clone();
 
-    // print!("Snowball: {:?} ", snowball);
+    if DEBUG_USES {
+        println!("[sb]Snowball:");
+        for s in &snowball {
+            println!("[sb]\t{}", s);
+        }
+    }
 
     let symbols: Vec<SymbolUseTracker> = commands
         .iter()
@@ -397,13 +415,20 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
         }
     }
 
+    if DEBUG_USES {
+        println!("[sb]Snowball:");
+        for s in &snowball {
+            println!("[sb]\t{}", s);
+        }    
+    }
+
     commands = commands
         .into_iter()
         .enumerate()
         .filter(|(pos, _)| poss.contains(pos))
         .map(|(_, x)| x)
         .collect();
-    commands.push(goal_command);
+    // commands.push(goal_command);
     commands.push(Command::CheckSat);
     commands
 }
