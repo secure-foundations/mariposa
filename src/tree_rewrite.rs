@@ -2,16 +2,16 @@ use smt2parser::concrete;
 use smt2parser::concrete::{AttributeValue, Command, QualIdentifier, Symbol, Term};
 use std::collections::{HashMap, HashSet};
 
-fn rewrite_let_binding(var: &Symbol, term0: &concrete::Term) -> concrete::Command {
-    let sig = concrete::FunctionDec {
-        name: var.clone(),
-        parameters: vec![],
-        result: concrete::Sort::Simple {
-            identifier: concrete::Identifier::Simple {
-                symbol: Symbol("Bool".to_owned()),
-            },
-        },
-    };
+fn rewrite_let_binding(var: &Symbol, term0: &concrete::Term) -> Vec<concrete::Command> {
+    // let sig = concrete::FunctionDec {
+    //     name: var.clone(),
+    //     parameters: vec![],
+    //     result: concrete::Sort::Simple {
+    //         identifier: concrete::Identifier::Simple {
+    //             symbol: Symbol("Bool".to_owned()),
+    //         },
+    //     },
+    // };
 
     if let Term::Let {
         var_bindings: _,
@@ -21,10 +21,30 @@ fn rewrite_let_binding(var: &Symbol, term0: &concrete::Term) -> concrete::Comman
         panic!("not supporting another let in term0");
     }
 
-    Command::DefineFun {
-        sig: sig,
-        term: term0.clone(),
-    }
+    let lhs = Term::QualIdentifier(QualIdentifier::Simple {
+        identifier: concrete::Identifier::Simple {
+            symbol: var.clone(),
+        },
+    });
+
+    let term = Box::new(Term::Application {
+        qual_identifier: QualIdentifier::Simple {
+            identifier: concrete::Identifier::Simple {
+                symbol: Symbol("=".to_string()),
+            },
+        },
+        arguments: vec![lhs, term0.clone(),]});
+
+    vec![
+        Command::DeclareConst {
+            symbol: var.clone(),
+            sort: concrete::Sort::Simple {
+                identifier: concrete::Identifier::Simple {
+                    symbol: Symbol("Bool".to_owned()),
+                },
+            },
+        },
+        Command::Assert { term: *term }]
 }
 
 pub struct LetBindingReWriter {
@@ -103,7 +123,7 @@ impl LetBindingReWriter {
         let mut commands = vec![];
         for (var, binding) in &self.bindings {
             let def_fun = rewrite_let_binding(&var, &binding);
-            commands.push(def_fun);
+            commands.extend(def_fun);
         }
         return commands;
     }
@@ -149,11 +169,11 @@ pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> 
     truncate_commands(&mut commands);
     let goal_command = commands.pop().unwrap();
 
-    commands = commands
-        .into_iter()
-        .map(|x| flatten_assert(x))
-        .flatten()
-        .collect();
+    // commands = commands
+    //     .into_iter()
+    //     .map(|x| flatten_assert(x))
+    //     .flatten()
+    //     .collect();
     // commands = rewrite_equal(commands);
 
     let mut rewriter = LetBindingReWriter::new();

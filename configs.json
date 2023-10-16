@@ -5,8 +5,7 @@
         "mutations": [
           "shuffle",
           "rename",
-          "reseed",
-          "quake"
+          "reseed"
         ],
         "keep_mutants": true,
         "num_mutants": 60,
@@ -550,6 +549,24 @@
         "name": "fs_dice_fun_assert",
         "framework": "fstar",
         "clean_dir": "data/fs_dice_fun_assert",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_fvbkv_shake",
+        "framework": "dafny",
+        "clean_dir": "data/d_fvbkv_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_komodo_shake",
+        "framework": "dafny",
+        "clean_dir": "data/d_komodo_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_dice_shake",
+        "framework": "fstar",
+        "clean_dir": "data/fs_dice_shake",
         "artifact_solver_name": "z3_4_12_2"
       }
     ]
