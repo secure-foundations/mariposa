@@ -510,6 +510,8 @@ fn main() {
         commands = tree_shake::tree_shake(commands);
     } else if args.mutation == "tree-rewrite" {
         commands = tree_rewrite::tree_rewrite(commands);
+    } else if args.mutation == "remove-unused" {
+        commands = tree_shake::remove_unused_symbols(commands);
     } else if args.mutation == "fun-assert" {
         commands = commands
             .into_iter()

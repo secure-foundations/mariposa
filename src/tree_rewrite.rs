@@ -33,7 +33,8 @@ fn rewrite_let_binding(var: &Symbol, term0: &concrete::Term) -> Vec<concrete::Co
                 symbol: Symbol("=".to_string()),
             },
         },
-        arguments: vec![lhs, term0.clone(),]});
+        arguments: vec![lhs, term0.clone()],
+    });
 
     vec![
         Command::DeclareConst {
@@ -44,7 +45,8 @@ fn rewrite_let_binding(var: &Symbol, term0: &concrete::Term) -> Vec<concrete::Co
                 },
             },
         },
-        Command::Assert { term: *term }]
+        Command::Assert { term: *term },
+    ]
 }
 
 pub struct LetBindingReWriter {
@@ -167,7 +169,10 @@ pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
 pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
     let mut commands = commands;
     truncate_commands(&mut commands);
-    let goal_command = commands.pop().unwrap();
+    // let goal_command = commands.pop().unwrap();
+
+    commands = rewrite_trivial(commands);
+    find_macro(&commands);
 
     // commands = commands
     //     .into_iter()
@@ -176,9 +181,9 @@ pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> 
     //     .collect();
     // commands = rewrite_equal(commands);
 
-    let mut rewriter = LetBindingReWriter::new();
-    let mut sub_commands = rewriter.rewrite(goal_command);
-    commands.append(&mut sub_commands);
+    // let mut rewriter = LetBindingReWriter::new();
+    // let mut sub_commands = rewriter.rewrite(goal_command);
+    // commands.append(&mut sub_commands);
     commands.push(concrete::Command::CheckSat);
 
     return commands;
@@ -278,7 +283,7 @@ pub fn flatten_assert(command: concrete::Command) -> Vec<concrete::Command> {
     }
 }
 
-fn get_equal_term(term: &concrete::Term) -> Option<(Term, Term)> {
+fn get_equal_terms(term: &concrete::Term) -> Option<(Term, Term)> {
     if let Term::Application {
         qual_identifier,
         arguments,
@@ -294,6 +299,119 @@ fn get_equal_term(term: &concrete::Term) -> Option<(Term, Term)> {
         }
     }
     return None;
+}
+
+// fn get_true_implies_term(term: &concrete::Term) -> Option<Term> {
+//     if let Term::Application {
+//         qual_identifier,
+//         arguments,
+//     } = term
+//     {
+//         if let QualIdentifier::Simple { identifier } = qual_identifier {
+//             if let concrete::Identifier::Simple { symbol } = identifier {
+//                 if symbol.0 == "=>" {
+//                     assert!(arguments.len() == 2);
+//                     if arguments[0].to_string() == "true" {
+//                         return Some(arguments[1].clone());
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     return None;
+// }
+
+fn rewrite_term_trivial_rec(term: concrete::Term) -> concrete::Term {
+    match term {
+        Term::Constant(_) => term,
+        Term::QualIdentifier(_) => term,
+        Term::Application {
+            qual_identifier,
+            arguments,
+        } => {
+            if let QualIdentifier::Simple { identifier } = &qual_identifier {
+                if let concrete::Identifier::Simple { symbol } = identifier {
+                    if symbol.0 == "=>" {
+                        assert!(arguments.len() == 2);
+                        if arguments[0].to_string() == "true" {
+                            return rewrite_term_trivial_rec(arguments[1].clone());
+                        }
+                    }
+                }
+            }
+            let mut new_arguments = vec![];
+            for arg in arguments {
+                let new_arg = rewrite_term_trivial_rec(arg);
+                new_arguments.push(new_arg);
+            }
+            return Term::Application {
+                qual_identifier,
+                arguments: new_arguments,
+            };
+        }
+        Term::Let { var_bindings, term } => {
+            let var_bindings = var_bindings
+                .into_iter()
+                .map(|(var, binding)| (var, rewrite_term_trivial_rec(binding)))
+                .collect();
+            let term = rewrite_term_trivial_rec(*term);
+            return Term::Let {
+                var_bindings: var_bindings,
+                term: Box::new(term),
+            };
+        }
+        Term::Forall { vars, term } => {
+            let new_term = rewrite_term_trivial_rec(*term);
+            return Term::Forall {
+                vars: vars,
+                term: Box::new(new_term),
+            };
+        }
+        Term::Exists { vars, term } => {
+            let new_term = rewrite_term_trivial_rec(*term);
+            return Term::Exists {
+                vars: vars,
+                term: Box::new(new_term),
+            };
+        }
+        Term::Match { term: _, cases: _ } => {
+            panic!("not supporting match yet");
+        }
+        Term::Attributes { term, attributes } => {
+            let new_term = rewrite_term_trivial_rec(*term);
+            return Term::Attributes {
+                term: Box::new(new_term),
+                attributes: attributes,
+            };
+        }
+    }
+}
+
+fn rewrite_trivial(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
+    commands.iter_mut().for_each(|c| {
+        if let Command::Assert { term } = c {
+            *term = rewrite_term_trivial_rec(term.clone());
+        }
+    });
+    commands
+}
+
+fn find_macro(commands: &Vec<concrete::Command>) {
+    commands.iter().for_each(|c| {
+        if let Command::Assert { term } = c {
+            if let Term::Forall { vars, term } = term {
+                if let Term::Attributes { term , attributes } = &**term {
+                    if let Some((lhs, rhs)) = get_equal_terms(term) {
+                        // println!("found macro?");
+                        // println!("{}", c);
+                        println!("lhs {}", lhs);
+                        println!("rhs {}", rhs);
+                        println!("");
+                    }
+                }
+            }
+        }
+    });
 }
 
 // pub struct EqualityRewriter {
@@ -312,7 +430,7 @@ fn get_equal_term(term: &concrete::Term) -> Option<(Term, Term)> {
 //                     lhs.insert(l, (r, i));
 //                 }
 //             }
-//         });  
+//         });
 
 //         EqualityRewriter {
 //             lhs: lhs,
@@ -320,72 +438,70 @@ fn get_equal_term(term: &concrete::Term) -> Option<(Term, Term)> {
 //     }
 // }
 
+// fn replace_equal_terms(command: &concrete::Command, rules: &HashMap<Term, Term>) -> Option<concrete::Command>
+// {
+//     if let Command::Assert { term } = command {
+//         let mut string = format!("{}", term);
+//         for rule in rules.iter() {
+//             let lhs = rule.0.to_string();
+//             let rhs = rule.1.to_string();
+//             if string.contains(&lhs) {
+//                 string = string.replace(&lhs, &rhs);
+//             }
+//         }
+//         println!("(assert {})", string);
+//     } else {
+//         println!("{}", command);
+//     }
 
-fn replace_equal_terms(command: &concrete::Command, rules: &HashMap<Term, Term>) -> Option<concrete::Command>
-{
-    if let Command::Assert { term } = command {
-        let mut string = format!("{}", term);
-        for rule in rules.iter() {
-            let lhs = rule.0.to_string();
-            let rhs = rule.1.to_string();
-            if string.contains(&lhs) {
-                string = string.replace(&lhs, &rhs);
-            }
-        }
-        println!("(assert {})", string);
-    } else {
-        println!("{}", command);
-    }
+//     // if let Command::DefineFun { sig: _, term } = command {
+//     //     let string = format!("{}", term);
+//     //     for rule in rules.iter() {
+//     //         let lhs = rule.0.to_string();
+//     //         let rhs = rule.1.to_string();
+//     //         if string.contains(&lhs) {
+//     //             println!("original:\n {}", string);
+//     //             let aa = string.replace(&lhs, &rhs);
+//     //             println!("replace with:\n {}", aa);
+//     //         }
+//     //     }
+//     // }
+//     return None;
+// }
 
-    // if let Command::DefineFun { sig: _, term } = command {
-    //     let string = format!("{}", term);
-    //     for rule in rules.iter() {
-    //         let lhs = rule.0.to_string();
-    //         let rhs = rule.1.to_string();
-    //         if string.contains(&lhs) {
-    //             println!("original:\n {}", string);
-    //             let aa = string.replace(&lhs, &rhs);
-    //             println!("replace with:\n {}", aa);
-    //         }
-    //     }
-    // }
-    return None;
-}
+// pub fn rewrite_equal(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command>
+// {
+//     let mut lhs: HashMap<Term, Term> = HashMap::new();
 
-pub fn rewrite_equal(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command>
-{
-    let mut lhs: HashMap<Term, Term> = HashMap::new();
+//     commands.retain(|c| {
+//         if let Command::Assert { term } = c {
+//             if let Some((l, r)) = get_equal_term(&term) {
+//                 lhs.insert(l, r);
+//                 return false;
+//             }
+//         }
+//         return true;
+//     });
 
-    commands.retain(|c| {
-        if let Command::Assert { term } = c {
-            if let Some((l, r)) = get_equal_term(&term) {
-                lhs.insert(l, r);
-                return false;
-            }
-        }
-        return true;
-    });
+//     // for rule in lhs.iter() {
+//     //     let lhs = rule.0.to_string();
+//     //     let rhs = rule.1.to_string();
+//     //     println!("lhs {}", lhs);
+//     //     println!("rhs {}", rhs);
+//     // }
 
-    // for rule in lhs.iter() {
-    //     let lhs = rule.0.to_string();
-    //     let rhs = rule.1.to_string();
-    //     println!("lhs {}", lhs);
-    //     println!("rhs {}", rhs);
-    // }
+//     for cmd in commands.iter() {
+//         replace_equal_terms(cmd, &lhs);
+//     }
 
-    for cmd in commands.iter() {
-        replace_equal_terms(cmd, &lhs);
-    }
+//     // let mut commands = commands;
 
-    // let mut commands = commands;
-    
-    // commands.into_iter().map(|x| replace_equal_terms(x, &lhs)).map(filter_none).flatten().collect();
+//     // commands.into_iter().map(|x| replace_equal_terms(x, &lhs)).map(filter_none).flatten().collect();
 
+//     // EqualityRewriter {
+//     //     lhs: lhs,
+//     // }
 
-    // EqualityRewriter {
-    //     lhs: lhs,
-    // }
-
-    // let rewriter = EqualityRewriter::new(&commands);
-    vec![]
-}   
+//     // let rewriter = EqualityRewriter::new(&commands);
+//     vec![]
+// }

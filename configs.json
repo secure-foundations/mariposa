@@ -8,7 +8,7 @@
           "reseed"
         ],
         "keep_mutants": true,
-        "num_mutants": 60,
+        "num_mutants": 10,
         "init_seed": "",
         "exp_timeout": 60,
         "num_procs": 7,
@@ -567,6 +567,12 @@
         "name": "fs_dice_shake",
         "framework": "fstar",
         "clean_dir": "data/fs_dice_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_vwasm_shake",
+        "framework": "fstar",
+        "clean_dir": "data/fs_vwasm_shake",
         "artifact_solver_name": "z3_4_12_2"
       }
     ]

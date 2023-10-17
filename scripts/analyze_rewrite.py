@@ -110,7 +110,6 @@ def emit_build_file(name, analysis=False):
         shake_path = f"{shake.clean_dir}/{base}"
         
         # print(f"build {shake_path}: tree_shake {origin_path}")
-        
         # origin_asserts = get_asserts(origin_path)
         shake_asserts = get_asserts(shake_path)
         core_asserts = get_asserts(core_path)
@@ -123,11 +122,12 @@ def emit_build_file(name, analysis=False):
             orgi = int(subprocess_run(cmd)[0])
             cmd = r'rg -e "\(assert" ' +  shake_path  + ' | wc -l'
             mini = int(subprocess_run(cmd)[0])
-            print(round(mini / orgi, 2))        
-        
+            print(round(mini / orgi, 2))
+
             print(shake_path)
-        #     print(f"cp {origin_path} temp/woot.smt2")
-        #     print(f"cp {core_path} temp/core.smt2")
+            print(f"cp {origin_path} temp/woot.smt2")
+            print(f"cp {core_path} temp/core.smt2")
+            print(f"cp {shake_path} temp/out.smt2")
             print(len(shake_asserts.keys()), common_count, len(core_asserts))
 
     print(count)
@@ -176,7 +176,7 @@ def check_shake_rsts():
 
 if __name__ == "__main__":
     # test_macro_finder()
-    emit_build_file("fs_dice")
+    emit_build_file("fs_vwasm")
     # emit_build_file2()
     # check_shake_rsts()
     # os.system('grep -rnw "unknown" -l  gen/shake_satble/*.rst')
