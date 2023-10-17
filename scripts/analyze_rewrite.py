@@ -80,8 +80,8 @@ def analyze_fun_assert():
 def emit_build_file_common():
     print("""
 rule tree_shake
-    command = ./target/release/mariposa -i $in -m tree-shake -o $out
-    
+    command = ./target/release/mariposa -i $in -m tree-shake -o $out > $out.log
+
 rule fun_assert
     command = ./target/release/mariposa -i $in -m fun-assert -o $out
 
@@ -92,7 +92,8 @@ rule z3
     command = ./solvers/z3-4.12.2 $in -T:10 > $out
 """)
 
-def emit_build_file(name, analysis=False):
+
+def load_project(name):
     c = Configer()
 
     orig = c.load_known_project(name)
@@ -101,23 +102,37 @@ def emit_build_file(name, analysis=False):
     shake = c.load_known_project(shake)
     core = c.load_known_project(core)
 
-    # emit_build_file_common()
-    count = 0
-    # for core_path in tqdm(list_smt2_files(core.clean_dir)):
+    return orig, core, shake
+
+def emit_build_file(name):
+    orig, core, shake = load_project(name)
+
+    emit_build_file_common()
     for core_path in list_smt2_files(core.clean_dir):
         base = os.path.basename(core_path)
         origin_path = f"{orig.clean_dir}/{base}"
         shake_path = f"{shake.clean_dir}/{base}"
-        
-        # print(f"build {shake_path}: tree_shake {origin_path}")
-        # origin_asserts = get_asserts(origin_path)
+
+        print(f"build {shake_path}: tree_shake {origin_path}")
+
+def analyze_rewrite(name):
+    orig, core, shake = load_project(name)
+    
+    count = 0
+    for core_path in list_smt2_files(core.clean_dir):
+    # for core_path in tqdm(list_smt2_files(core.clean_dir)):
+        base = os.path.basename(core_path)
+        origin_path = f"{orig.clean_dir}/{base}"
+        shake_path = f"{shake.clean_dir}/{base}"
+    
+    #     origin_asserts = get_asserts(origin_path)
         shake_asserts = get_asserts(shake_path)
         core_asserts = get_asserts(core_path)
-        
+
         common_count = len(core_asserts.keys() & shake_asserts.keys())
         if common_count != len(core_asserts):
             count += 1
-        
+
             cmd = r'rg -e "\(assert" ' +  origin_path + ' | wc -l'
             orgi = int(subprocess_run(cmd)[0])
             cmd = r'rg -e "\(assert" ' +  shake_path  + ' | wc -l'
@@ -135,23 +150,69 @@ def emit_build_file(name, analysis=False):
     # print(f"build {shake_rst}: diff_core {shake_path}")
     # print(f"    core = {core_path}")
 
-def emit_build_file2():
-    emit_build_file_common()
-    
-    for query in list_files_ext("data/benchmarks/stable_core/", ".smt2"):
-        base = os.path.basename(query)
-        shake_path = f"gen/shake_stable/{base}"
 
-        print(base)
-        cmd = r'rg -e "\(assert" ' +  query + ' | wc -l'
-        orgi = int(subprocess_run(cmd)[0])
-        cmd = r'rg -e "\(assert" ' +  shake_path  + ' | wc -l'
-        mini = int(subprocess_run(cmd)[0])
-        print(round(mini / orgi, 2))
+def parse_stamps(filename):
+    cmds0 = dict()
+    for line in open(filename):
+        line = line.split("|||")
+        stamp = int(line[0].strip())
+        line = line[1].replace(" ", "").strip().strip()
+        cmds0[line] = stamp
+    return cmds0
+
+def get_asserts(filename):
+    cmds0 = dict()
+    for line in open(filename):
+        if line.startswith("(assert "):
+            cmds0[line.replace(" ", "").strip()] = line.strip()
+    return cmds0
+
+def emit_build_file2():
+    # emit_build_file_common()
+    
+    woot = []
+    woot2 = []
+    # for query in list_files_ext("data/benchmarks/stable_core/", ".smt2"):
+    for query in list_files_ext("data/benchmarks/unstable_ext/", ".smt2"):
+        if "s_komodo" in query:
+            continue
+        base = os.path.basename(query)
+        # shake_path = f"data/shake_stable/{base}"
+        shake_path = f"data/shake_unstable/{base}"
 
         # shake_rst = shake_path.replace(".smt2", ".rst")
         # print(f"build {shake_path}: tree_shake {query}")
         # print(f"build {shake_rst}: z3 {shake_path}")
+
+        if base.startswith("fs_vwasm-"):
+            core_path = base.replace("fs_vwasm-", "data/unsat_cores/fs_vwasm_z3/min_asserts/")
+        elif base.startswith("fs_dice-"):
+            core_path = base.replace("fs_dice-", "data/unsat_cores/fs_dice_z3/min_asserts/")
+        elif base.startswith("d_komodo-"):
+            core_path = base.replace("d_komodo-", "data/unsat_cores/d_komodo_z3/min_asserts/")
+        elif base.startswith("d_fvbkv-"):
+            core_path = base.replace("d_fvbkv-", "data/unsat_cores/d_fvbkv_z3/min_asserts/")
+        elif base.startswith("d_lvbkv-"):
+            core_path = base.replace("d_lvbkv-", "data/unsat_cores/d_lvbkv_z3/min_asserts/")
+
+        stamps = parse_stamps(shake_path + ".log")
+        
+        if not os.path.exists(core_path):
+            continue
+
+        # print(core_path)
+        core_asserts = get_asserts(core_path)
+        depths = [stamps[i] if i in stamps else 0 for i in core_asserts]
+        # print(round(np.mean(depths), 2), np.max(depths))
+        woot2.append(round(np.mean(depths), 2))
+        woot.append(np.max(depths))
+
+    print(np.mean(woot), np.mean(woot2))
+        # cmd = r'rg -e "\(assert" ' +  query + ' | wc -l'
+        # orgi = int(subprocess_run(cmd)[0])
+        # cmd = r'rg -e "\(assert" ' +  shake_path  + ' | wc -l'
+        # mini = int(subprocess_run(cmd)[0])
+        # print(round(mini / orgi, 2))
 
 def test_macro_finder():
     for query in list_smt2_files("data/benchmarks/unstable_ext"):
@@ -176,7 +237,8 @@ def check_shake_rsts():
 
 if __name__ == "__main__":
     # test_macro_finder()
-    emit_build_file("fs_vwasm")
-    # emit_build_file2()
+    # emit_build_file("d_fvbkv")
+    # analyze_rewrite("d_fvbkv")
+    emit_build_file2()
     # check_shake_rsts()
     # os.system('grep -rnw "unknown" -l  gen/shake_satble/*.rst')

@@ -361,9 +361,9 @@ impl UseTracker {
 
     fn aggregate(&mut self, snowball: &mut SymbolSet) -> bool {
         let mut keep_going = true;
-        let mut included = !self.live_symbols.is_disjoint(&snowball);
+        let mut modified = !self.live_symbols.is_disjoint(&snowball);
 
-        if included {
+        if modified {
             snowball.extend(self.live_symbols.iter().cloned());
         }
 
@@ -393,7 +393,7 @@ impl UseTracker {
                         self.live_symbols.extend(child_symbols.iter().cloned());
                         snowball.extend(child_symbols.into_iter());
                         non_matched.append(&mut match_states);
-                        included = true;
+                        modified = true;
                     }
                     MatchState::NoPatternState(s) => {
                         let NoPatternState {
@@ -403,7 +403,7 @@ impl UseTracker {
                         // assert!(!filtered_symbols.is_disjoint(snowball));
                         self.live_symbols.extend(hidden_symbols.iter().cloned());
                         snowball.extend(hidden_symbols.into_iter());
-                        included = true;
+                        modified = true;
                     }
                 }
             });
@@ -411,11 +411,70 @@ impl UseTracker {
             self.match_states = non_matched;
         }
 
-        if included {
+        if modified {
             snowball.extend(self.live_symbols.iter().cloned());
         }
 
-        included
+        modified
+    }
+
+    fn delayed_aggregate(&mut self, snowball: &SymbolSet, delayed: &mut SymbolSet) -> bool {
+        let mut keep_going = true;
+        let mut modified = !self.live_symbols.is_disjoint(&snowball);
+
+        if modified {
+            delayed.extend(self.live_symbols.iter().cloned());
+        }
+
+        while keep_going {
+            let mut cur_match_states = Vec::new();
+            std::mem::swap(&mut self.match_states, &mut cur_match_states);
+
+            let (matched, mut non_matched): (_, Vec<_>) = cur_match_states
+                .into_iter()
+                .partition(|s| s.check_match(snowball));
+
+            keep_going = matched.len() != 0;
+
+            matched.into_iter().for_each(|m| {
+                match m {
+                    MatchState::PatternState(s) => {
+                        let PatternState {
+                            local_symbols,
+                            hidden_term,
+                            patterns: _,
+                        } = s;
+                        let mut child = self.fork(local_symbols);
+                        let child_symbols = child.get_symbol_uses(&hidden_term);
+                        let UseTracker {
+                            mut match_states, ..
+                        } = child;
+                        self.live_symbols.extend(child_symbols.iter().cloned());
+                        delayed.extend(child_symbols.into_iter());
+                        non_matched.append(&mut match_states);
+                        modified = true;
+                    }
+                    MatchState::NoPatternState(s) => {
+                        let NoPatternState {
+                            hidden_symbols,
+                            filtered_symbols,
+                        } = s;
+                        // assert!(!filtered_symbols.is_disjoint(snowball));
+                        self.live_symbols.extend(hidden_symbols.iter().cloned());
+                        delayed.extend(hidden_symbols.into_iter());
+                        modified = true;
+                    }
+                }
+            });
+
+            self.match_states = non_matched;
+        }
+
+        if modified {
+            delayed.extend(self.live_symbols.iter().cloned());
+        }
+
+        modified
     }
 
     fn debug(&self) {
@@ -514,11 +573,21 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
     let mut pposs = HashSet::new();
     poss.insert(0);
 
+    let mut iteration = 0;
+    let mut stamps = HashMap::new();
+
     while poss != pposs {
+        // if iteration >= 2 {
+        //     break;
+        // }
+        let mut delayed = HashSet::new();
         pposs = poss.clone();
         for (pos, tracker) in trackers.iter_mut().enumerate() {
-            if tracker.aggregate(&mut snowball) {
+            if tracker.delayed_aggregate(&snowball, &mut delayed) {
                 poss.insert(pos);
+                if !stamps.contains_key(&pos) {
+                    stamps.insert(pos, iteration);
+                }
             } else {
                 if let Command::Assert { term: _ } = &commands[pos] {
                 } else {
@@ -526,7 +595,15 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
                 }
             }
         }
+
+        snowball.extend(delayed.into_iter());
+        iteration += 1;
     }
+
+    stamps.iter().for_each(|(pos, stamp)| {
+        println!("{}|||{}", stamp, &commands[*pos]);
+    });
+    println!("0|||{}", &goal_command);
 
     if DEBUG_USES {
         for (i, tracker) in trackers.iter().enumerate() {
