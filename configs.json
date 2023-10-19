@@ -574,6 +574,60 @@
         "framework": "fstar",
         "clean_dir": "data/fs_vwasm_shake",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_lvbkv_shake",
+        "framework": "dafny",
+        "clean_dir": "data/d_lvbkv_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "unstable_ext",
+        "framework": "mixed",
+        "clean_dir": "data/benchmarks/unstable_ext",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "unstable_ext_shake",
+        "framework": "mixed",
+        "clean_dir": "data/unstable_ext_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "stable_core",
+        "framework": "mixed",
+        "clean_dir": "data/benchmarks/stable_core",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "stable_core_shake",
+        "framework": "mixed",
+        "clean_dir": "data/stable_core_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "stable_ext",
+        "framework": "mixed",
+        "clean_dir": "data/benchmarks/stable_ext",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "stable_ext_shake",
+        "framework": "mixed",
+        "clean_dir": "data/stable_ext_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "unstable_core",
+        "framework": "mixed",
+        "clean_dir": "data/benchmarks/unstable_core",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "unstable_core_shake",
+        "framework": "mixed",
+        "clean_dir": "data/unstable_core_shake",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }
