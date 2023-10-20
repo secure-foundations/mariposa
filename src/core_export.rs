@@ -98,6 +98,7 @@ fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> b
 }
 
 const CORE_DUMP_PREFIX: &str = "unsat-cores-dump-name-";
+const PRODUCE_CORE_OPTION: &str = "produce-unsat-cores";
 
 fn remove_label(command: &mut concrete::Command) {
     let concrete::Command::Assert { term } = command else { return; };
@@ -159,7 +160,7 @@ fn label_assert(command: &mut concrete::Command, ct: usize) {
 
 pub fn label_asserts(commands: &mut Vec<concrete::Command>) {
     let produce = concrete::Command::SetOption {
-        keyword: concrete::Keyword(CORE_DUMP_PREFIX.to_owned()),
+        keyword: concrete::Keyword(PRODUCE_CORE_OPTION.to_owned()),
         value: visitors::AttributeValue::Symbol(concrete::Symbol("true".to_owned())),
     };
 

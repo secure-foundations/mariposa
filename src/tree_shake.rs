@@ -1,8 +1,6 @@
-use rand_chacha::rand_core::le;
-use smt2parser::concrete::{self, SExpr};
-use smt2parser::concrete::{AttributeValue, Command, QualIdentifier, Symbol, Term};
+use smt2parser::concrete::{self};
+use smt2parser::concrete::{AttributeValue, Command, Symbol, Term};
 use std::collections::{HashMap, HashSet};
-use std::hash::Hash;
 use std::sync::Arc;
 
 use crate::tree_rewrite;
@@ -96,6 +94,10 @@ fn get_sexpr_symbols(e: &concrete::SExpr) -> SymbolSet {
         concrete::SExpr::Symbol(symbol) => {
             symbols.insert(symbol.clone());
         }
+        concrete::SExpr::Application(app) => {
+            app.iter()
+                .for_each(|x| symbols.extend(get_sexpr_symbols(x)));
+        }
         _ => panic!("TODO SExpr {:?}", e),
     }
     symbols
@@ -130,9 +132,7 @@ impl MatchState {
                 }
                 check_match
             }
-            MatchState::NoPatternState(s) => {
-                !s.filtered_symbols.is_disjoint(symbols)
-            }
+            MatchState::NoPatternState(s) => !s.filtered_symbols.is_disjoint(symbols),
         }
     }
 
@@ -291,9 +291,8 @@ impl UseTracker {
                                     });
                                 }
                                 AttributeValue::SExpr(ses) => {
-                                    ses.iter().for_each(|se| 
-                                        no_pattern.extend(get_sexpr_symbols(se))
-                                    );
+                                    ses.iter()
+                                        .for_each(|se| no_pattern.extend(get_sexpr_symbols(se)));
                                 }
                             }
                         } else if k == "named"
@@ -310,7 +309,9 @@ impl UseTracker {
                     });
                 }
 
-                no_pattern.retain(|x| (!self.local_symbols.contains(x)) && self.defined_symbols.contains(x));
+                no_pattern.retain(|x| {
+                    (!self.local_symbols.contains(x)) && self.defined_symbols.contains(x)
+                });
 
                 if pattern_sets.len() != 0 {
                     // drop no pattern if pattern is given
@@ -383,7 +384,7 @@ impl UseTracker {
                         let PatternState {
                             local_symbols,
                             hidden_term,
-                            patterns: _,
+                            ..
                         } = s;
                         let mut child = self.fork(local_symbols);
                         let child_symbols = child.get_symbol_uses(&hidden_term);
@@ -396,11 +397,7 @@ impl UseTracker {
                         modified = true;
                     }
                     MatchState::NoPatternState(s) => {
-                        let NoPatternState {
-                            hidden_symbols,
-                            filtered_symbols,
-                        } = s;
-                        // assert!(!filtered_symbols.is_disjoint(snowball));
+                        let NoPatternState { hidden_symbols, .. } = s;
                         self.live_symbols.extend(hidden_symbols.iter().cloned());
                         snowball.extend(hidden_symbols.into_iter());
                         modified = true;
@@ -419,60 +416,45 @@ impl UseTracker {
     }
 
     fn delayed_aggregate(&mut self, snowball: &SymbolSet, delayed: &mut SymbolSet) -> bool {
-        let mut keep_going = true;
         let mut modified = !self.live_symbols.is_disjoint(&snowball);
 
         if modified {
             delayed.extend(self.live_symbols.iter().cloned());
         }
 
-        while keep_going {
-            let mut cur_match_states = Vec::new();
-            std::mem::swap(&mut self.match_states, &mut cur_match_states);
+        let mut cur_match_states = Vec::new();
+        std::mem::swap(&mut self.match_states, &mut cur_match_states);
 
-            let (matched, mut non_matched): (_, Vec<_>) = cur_match_states
-                .into_iter()
-                .partition(|s| s.check_match(snowball));
+        let (matched, mut non_matched): (_, Vec<_>) = cur_match_states
+            .into_iter()
+            .partition(|s| s.check_match(snowball));
 
-            keep_going = matched.len() != 0;
+        modified = modified || matched.len() != 0;
 
-            matched.into_iter().for_each(|m| {
-                match m {
-                    MatchState::PatternState(s) => {
-                        let PatternState {
-                            local_symbols,
-                            hidden_term,
-                            patterns: _,
-                        } = s;
-                        let mut child = self.fork(local_symbols);
-                        let child_symbols = child.get_symbol_uses(&hidden_term);
-                        let UseTracker {
-                            mut match_states, ..
-                        } = child;
-                        self.live_symbols.extend(child_symbols.iter().cloned());
-                        delayed.extend(child_symbols.into_iter());
-                        non_matched.append(&mut match_states);
-                        modified = true;
-                    }
-                    MatchState::NoPatternState(s) => {
-                        let NoPatternState {
-                            hidden_symbols,
-                            filtered_symbols,
-                        } = s;
-                        // assert!(!filtered_symbols.is_disjoint(snowball));
-                        self.live_symbols.extend(hidden_symbols.iter().cloned());
-                        delayed.extend(hidden_symbols.into_iter());
-                        modified = true;
-                    }
-                }
-            });
+        matched.into_iter().for_each(|m| match m {
+            MatchState::PatternState(s) => {
+                let PatternState {
+                    local_symbols,
+                    hidden_term,
+                    ..
+                } = s;
+                let mut child = self.fork(local_symbols);
+                let child_symbols = child.get_symbol_uses(&hidden_term);
+                let UseTracker {
+                    mut match_states, ..
+                } = child;
+                self.live_symbols.extend(child_symbols.iter().cloned());
+                delayed.extend(child_symbols.into_iter());
+                non_matched.append(&mut match_states);
+            }
+            MatchState::NoPatternState(s) => {
+                let NoPatternState { hidden_symbols, .. } = s;
+                self.live_symbols.extend(hidden_symbols.iter().cloned());
+                delayed.extend(hidden_symbols.into_iter());
+            }
+        });
 
-            self.match_states = non_matched;
-        }
-
-        if modified {
-            delayed.extend(self.live_symbols.iter().cloned());
-        }
+        self.match_states = non_matched;
 
         modified
     }
@@ -545,13 +527,12 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
     //     .collect();
 
     // println!("flattened command count: {}", commands.len());
-    // let goal_command = commands.pop().unwrap();
     // let mut rewriter = tree_rewrite::LetBindingReWriter::new();
     // let mut sub_commands = rewriter.rewrite(goal_command);
     // commands.append(&mut sub_commands);
 
     let goal_command = commands.pop().unwrap();
-    // [commands.len() - 1].clone();
+    // let goal_command = commands[commands.len() - 1].clone();
     // print!("{} ", goal_command);
 
     let defs: SymbolSet = commands

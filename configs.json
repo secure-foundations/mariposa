@@ -296,7 +296,7 @@
       {
         "name": "d_lvbkv",
         "framework": "dafny",
-        "clean_dir": "data/d_lvbkv_z3_clean",
+        "clean_dir": "data/d_lvbkv",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
@@ -345,12 +345,6 @@
         "name": "d_ntt_open",
         "framework": "unknown",
         "clean_dir": "data/d_ntt_open_clean",
-        "artifact_solver_name": "z3_4_8_5"
-      },
-      {
-        "name": "d_lvbkv_closed",
-        "framework": "dafny",
-        "clean_dir": "data/d_lvbkv_closed",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
