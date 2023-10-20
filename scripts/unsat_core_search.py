@@ -1,12 +1,10 @@
 from basic_utils import *
 from diff_smt import *
-import random
-import math
-import zlib 
+import random, math, hashlib
 
 class Expander:    
     def __init__(self, orig_path, hint_path, remove_cache=False):
-        self.name_hash = str(zlib.adler32(orig_path.encode()))
+        self.name_hash = hashlib.sha256(orig_path.encode()).hexdigest()
         self._setup_diff(orig_path, hint_path, remove_cache)
         hint_commands = open(hint_path).readlines()
 
@@ -23,10 +21,12 @@ class Expander:
         self.timeout = 30
 
         # first test using all diffs
+        print("initial round: " + self.exp_path)
         std, _, time = self._run_exp(self.diff_asserts)
         message = "the initial round is not unsat"
         exit_with_on_fail(std == "unsat", message)
         self.timeout = max(2 * time // 1000, 10)
+        self.working_diff = self.diff_asserts
 
         print("timeout is set to: ", self.timeout)
 
@@ -57,11 +57,14 @@ class Expander:
         else:
             self.diff_asserts = open(diff_path).readlines()
 
-    def _run_exp(self, next_diff):
+    def _write_exp(self, next_diff):
         exp_file = open(self.exp_path, "w")
         ext_commands = self.pre_push + next_diff + self.post_push
         exp_file.writelines(ext_commands)
         exp_file.close()
+
+    def _run_exp(self, next_diff):
+        self._write_exp(next_diff)
         std, err, time  = subprocess_run(f"./solvers/z3-4.8.5 {self.exp_path} -T:{self.timeout}")
         return std, err, time 
 
@@ -74,13 +77,14 @@ class Expander:
             std = self._run_exp(next_diff)[0]
             if std == "unsat":
                 print("narrowed to diff len: ", len(next_diff))
+                self.working_diff = next_diff
                 return next_diff
             trails += 1
 
         print("give up bisection search at diff len: ", len(cur_diff))
         return cur_diff
 
-    def try_complete_core(self):
+    def try_complete_core(self, output_path=None):
         cur_diff = self.diff_asserts
         while 1:
             next_diff = self.binary_search(cur_diff)
@@ -88,9 +92,11 @@ class Expander:
                 cur_diff = next_diff
             else:
                 break
-    # print("give up bisection search at diff len: ", len(next_diff))
+
+        if output_path is not None:
+            self._write_exp(self.working_diff)
+            os.system(f"cp {self.exp_path} {output_path}")
 
 if __name__ == "__main__":
     e = Expander(sys.argv[1], sys.argv[2])
-    e.try_complete_core()
-
+    e.try_complete_core(sys.argv[3])

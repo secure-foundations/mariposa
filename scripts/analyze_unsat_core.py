@@ -101,7 +101,7 @@ def get_basic_keep(orgi_name, mini_name):
 PAIRS = {
     "d_komodo": "d_komodo_uc",
     "d_fvbkv": "d_fvbkv_uc",
-    "d_lvbkv_closed": "d_lvbkv_uc",
+    # "d_lvbkv_closed": "d_lvbkv_uc",
     "fs_dice": "fs_dice_uc",
     "fs_vwasm": "fs_vwasm_uc",
 }
