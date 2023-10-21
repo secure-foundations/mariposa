@@ -3,6 +3,8 @@ from basic_utils import *
 
 def get_asserts(filename):
     cmds0 = dict()
+    if filename is None:
+        return cmds0
     for line in open(filename):
         if line.startswith("(assert "):
             cmds0[line.replace(" ", "").strip()] = line.strip()
