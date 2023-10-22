@@ -5,10 +5,11 @@
         "mutations": [
           "shuffle",
           "rename",
-          "reseed"
+          "reseed",
+          "quake"
         ],
         "keep_mutants": true,
-        "num_mutants": 10,
+        "num_mutants": 60,
         "init_seed": "",
         "exp_timeout": 60,
         "num_procs": 7,
@@ -380,7 +381,7 @@
       {
         "name": "d_lvbkv_uc",
         "framework": "dafny",
-        "clean_dir": "data/unsat_cores/d_lvbkv_z3/min_asserts",
+        "clean_dir": "data/unsat_cores/d_lvbkv/min_asserts",
         "artifact_solver_name": "z3_4_8_5"
       },
       {
