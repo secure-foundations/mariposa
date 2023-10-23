@@ -292,14 +292,29 @@ def worker_mode(args):
         print(f"[INFO] worker {get_self_ip()} completed partition {part_id}th out of {part_num}")
     print(f"[INFO] worker {get_self_ip()} finished")
 
+def update_mode(args):
+    c = Configer()
+    exp = c.load_known_experiment(args.experiment)
+    solver = c.load_known_solver(args.solver)
+    project = c.load_known_project(args.project)
+
+    sanity = args.query.startswith(project.clean_dir)
+    message = f"[ERROR] query {args.query} does not belong to project {project.clean_dir}"
+    exit_with_on_fail(sanity, message)
+    r = Runner(exp)
+    r.update_project(project, solver, args.query)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")
 
     subparsers = parser.add_subparsers(dest='sub_command', help="mode to run mariposa in")
 
+    update_parser = subparsers.add_parser('update', help='update mode. update an existing experiment by (adding) a single query.')
     single_parser = subparsers.add_parser('single', help='single query mode. run mariposa on a single query with ".smt2" file extension, which will be split into multiple ".smt2" files based on check-sat(s), the split queries will be stored under the "gen/" directory and tested using the specified solver.')
 
-    single_parser.add_argument("-q", "--query", required=True, help="the input query")
+    for sp in [update_parser, single_parser]:
+        sp.add_argument("-q", "--query", required=True, help="the input query")
+
     single_parser.add_argument("--clear", default=False, action='store_true', help="clear past data from single mode experiments")
     single_parser.add_argument("-e", "--experiment", default="single", help="the experiment configuration name in configs.json")
 
@@ -312,11 +327,11 @@ if __name__ == '__main__':
     
     recovery_parser = subparsers.add_parser('recovery', help='recovery mode. recover the database from a crashed run (do not use unless on s190x cluster).')
 
-    for sp in [multi_parser, manager_parser, recovery_parser]:
+    for sp in [multi_parser, manager_parser, recovery_parser, update_parser]:
         sp.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")
         sp.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from configs.json)")
 
-    for sp in [single_parser, multi_parser, manager_parser, recovery_parser]:
+    for sp in [single_parser, multi_parser, manager_parser, recovery_parser, update_parser]:
         sp.add_argument("-s", "--solver", required=True, help="the solver name (from configs.json) to use")
         if sp == recovery_parser:
             continue
@@ -350,6 +365,8 @@ if __name__ == '__main__':
         worker_mode(args)
     elif args.sub_command == "recovery":
         recovery_mode(args)
+    elif args.sub_command == "update":
+        update_mode(args)
     elif args.sub_command is None:
         parser.print_help()
 # c = Configer()  

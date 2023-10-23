@@ -233,27 +233,64 @@ class Runner:
         print(f"[INFO] running {len(origin_paths)} original queries")
 
         for origin_path in origin_paths:
-            task = Task(self.exp, self.exp_tname, origin_path, None, None, solver)
-            if Mutation.QUAKE in self.exp.enabled_muts:
-                task.quake = True
-            tasks.append(task)
-
-            for perturb in self.exp.enabled_muts:
-                if perturb == Mutation.QUAKE:
-                    continue
-                for _ in range(self.exp.num_mutant):
-                    mut_seed = random.randint(0, 0xffffffffffffffff)
-                    task = Task(self.exp, self.exp_tname, origin_path, perturb, mut_seed, solver)
-                    tasks.append(task)
+            tasks += self.get_tasks_from_original_query(origin_path, solver)
 
         if (part_id, part_num) != (1, 1):
             print(f"[INFO] running ONLY part {part_id}th of {part_num} in {project.name}")
 
         random.shuffle(tasks)
+
         for task in tasks:
             self.task_queue.put(task)
 
         self._run_workers()
+        populate_sum_table(self.exp, self.exp_tname, self.sum_tname)
+
+    def get_tasks_from_original_query(self, origin_path, solver):
+        tasks = []
+        task = Task(self.exp, self.exp_tname, origin_path, None, None, solver)
+        if Mutation.QUAKE in self.exp.enabled_muts:
+            task.quake = True
+        tasks.append(task)
+
+        for perturb in self.exp.enabled_muts:
+            if perturb == Mutation.QUAKE:
+                continue
+            for _ in range(self.exp.num_mutant):
+                mut_seed = random.randint(0, 0xffffffffffffffff)
+                task = Task(self.exp, self.exp_tname, origin_path, perturb, mut_seed, solver)
+                tasks.append(task)
+        return tasks
+
+    def update_project(self, project, solver, query_path):
+        self.exp_tname = self.exp.get_exp_tname(project, solver)
+        self.sum_tname = self.exp.get_sum_tname(project, solver)
+
+        con, cur = get_cursor(self.exp.db_path)
+        exp_exists = table_exists(cur, self.exp_tname)
+        sum_exists = table_exists(cur, self.sum_tname)
+
+        # check if table exists in the database
+        exit_with_on_fail(exp_exists and sum_exists, f"[ERROR] table {self.exp_tname} or {self.sum_tname} does not exist")
+        
+        # check if the query is already in the table
+        cur.execute(f"SELECT * FROM {self.exp_tname} WHERE vanilla_path = '{query_path}'")
+        rows0 = cur.fetchall()
+        cur.execute(f"SELECT * FROM {self.sum_tname} WHERE vanilla_path = '{query_path}'")
+        rows1 = cur.fetchall()
+        con.close()
+
+        query_not_exist = len(rows0) == 0 and len(rows1) == 0
+        exit_with_on_fail(query_not_exist, f"[INFO] query {query_path} already in the table")
+
+        tasks = self.get_tasks_from_original_query(query_path, solver)
+
+        for task in tasks:
+            self.task_queue.put(task)
+
+        self._run_workers()
+
+        # just regenerate the sum table
         populate_sum_table(self.exp, self.exp_tname, self.sum_tname)
 
 # def run_projects_solvers(exp, projects, solvers):
