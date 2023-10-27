@@ -290,8 +290,20 @@ class Runner:
 
         self._run_workers()
 
-        # just regenerate the sum table
-        populate_sum_table(self.exp, self.exp_tname, self.sum_tname)
+        con, cur = get_cursor(self.exp.db_path)
+        res = cur.execute(f"""
+        SELECT query_path, result_code, elapsed_milli
+        FROM {self.exp_tname}
+        WHERE query_path = ?""", (query_path,))
+
+        vanilla_rows = res.fetchall()
+        assert len(vanilla_rows) == 1
+
+        (vanilla_path, v_rcode, v_time) = vanilla_rows[0]
+        add_single_summary(self.exp, cur, self.exp_tname, self.sum_tname, query_path, v_rcode, v_time)
+
+        con.commit()
+        con.close()
 
 # def run_projects_solvers(exp, projects, solvers):
 #     for project, solver in itertools.product(projects, solvers):

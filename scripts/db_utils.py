@@ -143,52 +143,54 @@ def populate_sum_table(cfg, exp_table_name, sum_table_name):
         if vanilla_path in processed:
             continue
         processed.add(vanilla_path)
-
-        res = cur.execute(f"""
-            SELECT result_code, elapsed_milli, perturbation FROM {exp_table_name}
-            WHERE vanilla_path = "{vanilla_path}"
-            AND perturbation IS NOT NULL""")
-        mutations = [str(p) for p in cfg.enabled_muts]
-        v_rcode = RCode.from_str(v_rcode).value
-        results = {p: [[v_rcode], [v_time]] for p in mutations}
-
-        for row in reversed(res.fetchall()):
-            results[row[2]][0].append(RCode.from_str(row[0]).value)
-            results[row[2]][1].append(row[1])
-
-        mut_size = cfg.num_mutant
-        expected_size = mut_size + 1
-        
-        blob = np.zeros((len(mutations), 2, expected_size), dtype=int)
-        for pi, perturb in enumerate(mutations):
-            (veri_res, veri_times) = results[perturb]
-
-            if len(veri_res) > expected_size:
-                if dup_warn:
-                    print(f"[WARN] {vanilla_path} has more than {mut_size} mutants with {perturb}, truncating")
-                    print(f"[WARN] this may be caused by multiple runs of the same experiment. remove duplicate rows from table {exp_table_name} in {cfg.db_path} if necessary")
-                dup_warn = False
-                veri_res = veri_res[:expected_size]
-                veri_times = veri_times[:expected_size]
-            elif len(veri_res) < expected_size:
-                print(f"[ERROR] {vanilla_path} has less than {mut_size} mutants, aborting")
-                con.close()
-                sys.exit(1)
-
-            blob[pi][0] = veri_res
-            blob[pi][1] = veri_times
-
-        if cfg.db_mode == DBMode.UPDATE:
-            cur.execute(f"""REPLACE INTO {sum_table_name}
-                VALUES(?, ?, ?);""", 
-                (vanilla_path, str(mutations), blob))
-        else:
-            cur.execute(f"""INSERT INTO {sum_table_name}
-                VALUES(?, ?, ?);""", 
-                (vanilla_path, str(mutations), blob))
+        add_single_summary(cfg, cur, exp_table_name, sum_table_name, vanilla_path, v_rcode, v_time)
 
     con.commit()
     con.close()
+
+def add_single_summary(cfg, cur, exp_table_name, sum_table_name, vanilla_path, v_rcode, v_time):
+    res = cur.execute(f"""
+        SELECT result_code, elapsed_milli, perturbation FROM {exp_table_name}
+        WHERE vanilla_path = "{vanilla_path}"
+        AND perturbation IS NOT NULL""")
+    mutations = [str(p) for p in cfg.enabled_muts]
+    v_rcode = RCode.from_str(v_rcode).value
+    results = {p: [[v_rcode], [v_time]] for p in mutations}
+
+    for row in reversed(res.fetchall()):
+        results[row[2]][0].append(RCode.from_str(row[0]).value)
+        results[row[2]][1].append(row[1])
+
+    mut_size = cfg.num_mutant
+    expected_size = mut_size + 1
+    
+    blob = np.zeros((len(mutations), 2, expected_size), dtype=int)
+    for pi, perturb in enumerate(mutations):
+        (veri_res, veri_times) = results[perturb]
+
+        if len(veri_res) > expected_size:
+            # if dup_warn:
+            print(f"[WARN] {vanilla_path} has more than {mut_size} mutants with {perturb}, truncating")
+            print(f"[WARN] this may be caused by multiple runs of the same experiment. remove duplicate rows from table {exp_table_name} in {cfg.db_path} if necessary")
+            # dup_warn = False
+            veri_res = veri_res[:expected_size]
+            veri_times = veri_times[:expected_size]
+        elif len(veri_res) < expected_size:
+            print(f"[ERROR] {vanilla_path} has less than {mut_size} mutants, aborting")
+            con.close()
+            sys.exit(1)
+
+        blob[pi][0] = veri_res
+        blob[pi][1] = veri_times
+
+    # if cfg.db_mode == DBMode.UPDATE:
+    #     cur.execute(f"""REPLACE INTO {sum_table_name}
+    #         VALUES(?, ?, ?);""", 
+    #         (vanilla_path, str(mutations), blob))
+    # else:
+    cur.execute(f"""INSERT INTO {sum_table_name}
+        VALUES(?, ?, ?);""", 
+        (vanilla_path, str(mutations), blob))
 
 def export_timeouts(cfg, solver):
     con, cur = get_cursor(cfg.qcfg.db_path)
@@ -276,7 +278,7 @@ def export_timeouts(cfg, solver):
 def load_sum_table(project, solver, cfg, skip=set()):
     con, cur = get_cursor(cfg.db_path)
     sum_name = cfg.get_sum_tname(project, solver)
-    print(f"[INFO] loading {sum_name}")
+    # print(f"[INFO] loading {sum_name}")
 
     if not table_exists(cur, sum_name):
         print(f"[INFO] skipping {sum_name}")

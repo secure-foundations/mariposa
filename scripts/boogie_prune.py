@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from plot_utils import *
 from configer import Configer
-from analyze_unsat_core import *
+from scripts.unsat_core_analysis import *
 from analyze_trigger import load_quanti_stats
 
 def export_smt_from_bpl():

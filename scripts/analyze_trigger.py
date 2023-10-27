@@ -4,7 +4,7 @@ from vbkv_filemap import *
 
 from plot_utils import *
 from configer import Configer
-from analyze_unsat_core import *
+from scripts.unsat_core_analysis import *
 from cache_utils import cache_load, cache_save
 from categorize_qids import *
 
