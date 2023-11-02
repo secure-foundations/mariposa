@@ -195,28 +195,28 @@ def analyze_rewrite2():
         
         data = []
         for origin_path in tqdm(list_files_ext(orig.clean_dir, ".smt2")):
+        # for origin_path in list_files_ext(orig.clean_dir, ".smt2"):
             if "s_komodo" in origin_path:
                 continue
             base = os.path.basename(origin_path)
             shake_path = f"{shake.clean_dir}/{base}"
 
             if base.startswith("fs_vwasm-"):
-                core_path = base.replace("fs_vwasm-", "data/unsat_cores/fs_vwasm_z3/min_asserts/")
+                core_path = base.replace("fs_vwasm-", "data/unsat_cores/fs_vwasm/min_asserts/")
             elif base.startswith("fs_dice-"):
-                core_path = base.replace("fs_dice-", "data/unsat_cores/fs_dice_z3/min_asserts/")
+                core_path = base.replace("fs_dice-", "data/unsat_cores/fs_dice/min_asserts/")
             elif base.startswith("d_komodo-"):
-                core_path = base.replace("d_komodo-", "data/unsat_cores/d_komodo_z3/min_asserts/")
+                core_path = base.replace("d_komodo-", "data/unsat_cores/d_komodo/min_asserts/")
             elif base.startswith("d_fvbkv-"):
-                core_path = base.replace("d_fvbkv-", "data/unsat_cores/d_fvbkv_z3/min_asserts/")
+                core_path = base.replace("d_fvbkv-", "data/unsat_cores/d_fvbkv/min_asserts/")
             elif base.startswith("d_lvbkv-"):
-                core_path = base.replace("d_lvbkv-", "data/unsat_cores/d_lvbkv_z3/min_asserts/")
+                core_path = base.replace("d_lvbkv-", "data/unsat_cores/d_lvbkv/min_asserts/")
+                new_path = origin_path.replace("data/benchmarks/stable_core/d_lvbkv-", "data/d_lvbkv/")
 
             if not os.path.exists(core_path):
                 continue
 
             # shake_asserts = get_asserts(shake_path)
-            core_asserts = get_asserts(core_path)
-
             # common_count = len(core_asserts.keys() & shake_asserts.keys())
             # if common_count != len(core_asserts):
             #     count += 1
@@ -225,11 +225,11 @@ def analyze_rewrite2():
             orgi = int(subprocess_run(cmd)[0])
             cmd = r'rg -e "\(assert" ' +  shake_path  + ' | wc -l'
             mini = int(subprocess_run(cmd)[0])
-
             stamps = parse_stamps(shake_path + ".log")
             core_asserts = get_asserts(core_path)
             depths = [stamps[i] for i in core_asserts if i in stamps]
             miss = len([i for i in core_asserts if i not in stamps])
+            # print(miss)
             # if miss != 0:
             #     print(f"cp {origin_path} temp/woot.smt2")
             #     print(f"cp {core_path} temp/core.smt2")
@@ -289,9 +289,9 @@ if __name__ == "__main__":
 
     # emit_build_file("stable_core")
     # emit_build_file("stable_ext")
-    emit_build_file("unstable_ext")
+    # emit_build_file("unstable_ext")
     # emit_build_file("unstable_core")
-    # analyze_rewrite2()
+    analyze_rewrite2()
 
     # check_shake_rsts()
     # os.system('grep -rnw "unknown" -l  gen/shake_satble/*.rst')

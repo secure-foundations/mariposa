@@ -9,9 +9,16 @@ UNSTABLE_TRIALS = 4
 
 def run_z3(query_path, timeout):
     assert timeout < 100
-    std, err, rtime  = subprocess_run(f"./solvers/z3-4.12.2 {query_path} -T:{timeout}")
-    # print(std)
+    std, err, rtime  = subprocess_run(f"./solvers/z3-4.8.5 {query_path} -T:{timeout}")
     return std, err, rtime
+
+def run_instrumented_query(query_path, output_path):
+    std, err, rtime  = subprocess_run(f"./solvers/z3-4.12.2 {query_path} -T:120")
+    if not std.startswith("unsat"):
+        std, err, rtime  = subprocess_run(f"./solvers/z3-4.8.5 {query_path} -T:120")
+    assert std.startswith("unsat")
+    assert "error" not in std
+    open(output_path, "w+").write(std)
 
 class Reducer:
     def __init__(self, working_path):
@@ -39,7 +46,7 @@ class Reducer:
             else:
                 self.non_assert_indices.add(i)
 
-        self.timeout = 30
+        self.timeout = 60
 
         self.load_retain_indices()
 
@@ -82,9 +89,9 @@ class Reducer:
         return test_indices
 
     def nary_search(self, drop_size):
-        print("starting nary search", drop_size, self.get_stats())
-        if drop_size <= len(self.working_indices):
+        if drop_size >= len(self.working_indices):
             return "no progress"
+        print("starting nary search", drop_size, self.get_stats())
         trails = 0
         while trails < 20:
             test_indices = self.pick_test_indices(drop_size)
@@ -168,12 +175,12 @@ class Reducer:
             return std, err, rtime 
 
         if not self.enable_mut:
-            return std, err, time
+            return std, err, rtime
 
         if self.unstable_count == 0 and self.exp_count == 10:
             self.enable_mut = False
             print("disabling mutation")
-            return std, err, time
+            return std, err, rtime
 
         for _ in range(UNSTABLE_TRIALS):
             os.system(f"./target/release/mariposa -i {self.exp_path} -o {self.mut_path} -m all")
@@ -181,10 +188,10 @@ class Reducer:
             if std == "unsat":
                 self.unstable_count += 1
                 print("found unstable")
-                return std, err, time
+                return std, err, rtime
 
         self.exp_count += 1
-        return std, err, time
+        return std, err, rtime
 
     def _write_exp(self, keep_indices):
         assert keep_indices.isdisjoint(self.retain_indices)
@@ -258,13 +265,11 @@ class Expander:
         return run_z3(self.exp_path, self.timeout)
 
     def binary_search(self, cur_diff):
-        if len(cur_diff) <= 1:
+        if len(cur_diff) <= 4:
             return cur_diff
+
         logn = int(math.log(len(cur_diff), 2))
         trails = 0
-
-        if len(cur_diff) // 4 == 0:
-            return cur_diff
 
         while trails < logn * 8:
             next_diff = random.sample(cur_diff, k=len(cur_diff) // 4)
@@ -292,12 +297,97 @@ class Expander:
             self._write_exp(self.working_diff)
             os.system(f"cp {self.exp_path} {output_path}")
 
+class Roulette:
+    def __init__(self, orig_path):
+        random.seed(time.time())
+
+        self.all_cmds = open(orig_path).readlines()
+        self.name_hash = hashlib.sha256(orig_path.encode()).hexdigest()
+
+        self.exp_path = f"gen/{self.name_hash}.rt.exp.smt2"
+        self.mut_path = f"gen/{self.name_hash}.mut.smt2"
+
+        self.curr_indices = set()
+        self.retain_indices = set()
+        self.non_assert_indices = set()
+
+        for i in range(len(self.all_cmds)):
+            if self.all_cmds[i].startswith("(assert"):
+                self.curr_indices.add(i)
+            else:
+                self.non_assert_indices.add(i)
+
+        self.timeout = 60
+        # self._run_exp(self.curr_indices)
+
+    def binary_search(self):
+        # if len(test_indices) <= 64:
+        #     return test_indices
+        trails = 0
+        next_indices = set(random.sample(self.curr_indices, k=len(self.curr_indices) // 3))
+
+        while trails < 40:
+            # dropped = self.curr_indices - next_indices
+            std = self._run_exp(next_indices)[0]
+            if std == "unsat":
+                print("narrowed to diff len: ", len(next_indices))
+                # just in case something weird happens
+                self.curr_indices = deepcopy(next_indices)
+            # elif std == "unknown":
+            #     next_indices = next_indices | set(random.sample(dropped, k=len(dropped) // 2))
+            #     # dropped = self.curr_indices - next_indices
+            #     print("unknown, adding back: ", len(dropped) //2)
+            # else:
+            #     print("TO")
+
+            trails += 1
+
+        print("give up bisection search at diff len: ", len(self.curr_indices))
+
+    def _write_exp(self, keep_indices):
+        # assert keep_indices.isdisjoint(self.retain_indices)
+        # assert keep_indices.isdisjoint(self.non_assert_indices)
+        exp_file = open(self.exp_path, "w")
+        exp_cmds = []
+        for i in range(len(self.all_cmds)):
+            if i in self.non_assert_indices or i in keep_indices or i in self.retain_indices:
+                exp_cmds.append(self.all_cmds[i])
+        exp_file.writelines(exp_cmds)
+        exp_file.close()
+
+    def _run_exp(self, keep_indices):
+        self._write_exp(keep_indices)
+
+        std, err, rtime  = run_z3(self.exp_path, self.timeout)
+
+        if std == "unsat":
+            self.timeout = min(rtime // 1000 + 2, self.timeout)
+            return std, err, rtime
+
+        for _ in range(UNSTABLE_TRIALS):
+            os.system(f"./target/release/mariposa -i {self.exp_path} -o {self.mut_path} -m all -s {random.randint(0, 0xffffffffffffffff)}")
+            std, err, rtime  = run_z3(self.mut_path, self.timeout)
+            if std == "unsat":
+                self.unstable_count += 1
+                print("found unstable")
+                return std, err, time
+
+        return std, err, time
+
+    def try_reduce_query(self):
+        self.binary_search()
+
 if __name__ == "__main__":
     op = sys.argv[1]
-    
+
     if op == "complete":
         e = Expander(sys.argv[2], sys.argv[3])
         e.try_complete_core(sys.argv[4])
     elif op == "reduce":
         r = Reducer(sys.argv[2])
         r.try_reduce_query(sys.argv[3])
+    elif op == "roulette":
+        r = Roulette(sys.argv[2])
+        r.try_reduce_query()
+    elif op == "create-core":
+        run_instrumented_query(sys.argv[2], sys.argv[3])

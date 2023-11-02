@@ -369,31 +369,61 @@
       {
         "name": "d_komodo_uc",
         "framework": "dafny",
-        "clean_dir": "data/unsat_cores/d_komodo_z3/min_asserts",
+        "clean_dir": "data/unsat_cores/d_komodo/min_asserts",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "fs_dice_uc",
-        "framework": "fstar",
-        "clean_dir": "data/unsat_cores/fs_dice_z3/min_asserts",
+        "name": "d_komodo_uc_ext",
+        "framework": "dafny",
+        "clean_dir": "data/unsat_cores/d_komodo/mini_ext",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "d_lvbkv_uc",
         "framework": "dafny",
         "clean_dir": "data/unsat_cores/d_lvbkv/min_asserts",
-        "artifact_solver_name": "z3_4_8_5"
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_lvbkv_uc_ext",
+        "framework": "dafny",
+        "clean_dir": "data/unsat_cores/d_lvbkv/mini_ext",
+        "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "d_fvbkv_uc",
         "framework": "dafny",
-        "clean_dir": "data/unsat_cores/d_fvbkv_z3/min_asserts",
+        "clean_dir": "data/unsat_cores/d_fvbkv/min_asserts",
         "artifact_solver_name": "z3_4_8_5"
+      },
+      {
+        "name": "d_fvbkv_uc_ext",
+        "framework": "dafny",
+        "clean_dir": "data/unsat_cores/d_fvbkv/mini_ext",
+        "artifact_solver_name": "z3_4_8_5"
+      },
+      {
+        "name": "fs_dice_uc",
+        "framework": "fstar",
+        "clean_dir": "data/unsat_cores/fs_dice/min_asserts",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_dice_uc_ext",
+        "framework": "fstar",
+        "clean_dir": "data/unsat_cores/fs_dice/mini_ext",
+        "artifact_solver_name": "z3_4_12_2"
       },
       {
         "name": "fs_vwasm_uc",
         "framework": "fstar",
-        "clean_dir": "data/unsat_cores/fs_vwasm_z3/min_asserts",
+        "clean_dir": "data/unsat_cores/fs_vwasm/min_asserts",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_vwasm_uc_ext",
+        "framework": "fstar",
+        "clean_dir": "data/unsat_cores/fs_vwasm/mini_ext",
         "artifact_solver_name": "z3_4_12_2"
       },
       {

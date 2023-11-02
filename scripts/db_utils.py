@@ -233,6 +233,34 @@ def export_timeouts(cfg, solver):
         print(command)
     con.close()
 
+def drop_query(db_path, exp_tname, sum_tname, query_path):
+    con, cur = get_cursor(db_path)
+    exp_exists = table_exists(cur, exp_tname)
+    sum_exists = table_exists(cur, sum_tname)
+
+    # check if table exists in the database
+    exit_with_on_fail(exp_exists and sum_exists, f"[ERROR] table {exp_tname} or {sum_tname} does not exist")
+
+    # check if the query is already in the table
+    cur.execute(f"SELECT * FROM {exp_tname} WHERE vanilla_path = '{query_path}'")
+    rows0 = cur.fetchall()
+
+    if len(rows0) > 0:
+        print(f"[INFO] query {query_path} already in the table, remove it? [Y]")
+        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+        cur.execute(f"DELETE FROM {exp_tname} WHERE vanilla_path = '{query_path}'")
+
+    cur.execute(f"SELECT * FROM {sum_tname} WHERE vanilla_path = '{query_path}'")
+    rows1 = cur.fetchall()
+
+    if len(rows1) > 0:
+        print(f"[INFO] query {query_path} already in the summary table, remove it? [Y]")
+        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+        cur.execute(f"DELETE FROM {sum_tname} WHERE vanilla_path = '{query_path}'")
+
+    con.commit()
+    con.close()
+
 # def extend_solver_summary_table(cfg, ext_cfg, solver):
 #     con, cur = get_cursor(cfg.qcfg.db_path)
 #     solver_table = cfg.qcfg.get_solver_table_name(solver)

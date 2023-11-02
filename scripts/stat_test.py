@@ -4,6 +4,8 @@ import statsmodels.stats.proportion as prop
 from sys import argv
 import numpy as np
 import scipy
+from scipy.stats import hypergeom
+import math
 
 significance = 0.05
 
@@ -61,4 +63,9 @@ def chi2_test():
     print(T > c2)
     # print(T < c1)
 
-z_test()
+# z_test()
+
+for i in range(0, 300):
+    # rv = hypergeom(1000, 800, i)
+    print(round(100 * math.pow(0.999, i), 2))
+    # print(round(rv.pmf(i) * 100, 2))

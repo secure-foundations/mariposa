@@ -265,23 +265,7 @@ class Runner:
     def update_project(self, project, solver, query_path):
         self.exp_tname = self.exp.get_exp_tname(project, solver)
         self.sum_tname = self.exp.get_sum_tname(project, solver)
-
-        con, cur = get_cursor(self.exp.db_path)
-        exp_exists = table_exists(cur, self.exp_tname)
-        sum_exists = table_exists(cur, self.sum_tname)
-
-        # check if table exists in the database
-        exit_with_on_fail(exp_exists and sum_exists, f"[ERROR] table {self.exp_tname} or {self.sum_tname} does not exist")
-        
-        # check if the query is already in the table
-        cur.execute(f"SELECT * FROM {self.exp_tname} WHERE vanilla_path = '{query_path}'")
-        rows0 = cur.fetchall()
-        cur.execute(f"SELECT * FROM {self.sum_tname} WHERE vanilla_path = '{query_path}'")
-        rows1 = cur.fetchall()
-        con.close()
-
-        query_not_exist = len(rows0) == 0 and len(rows1) == 0
-        exit_with_on_fail(query_not_exist, f"[INFO] query {query_path} already in the table")
+        drop_query(self.exp.db_path, self.exp_tname, self.sum_tname, query_path)
 
         tasks = self.get_tasks_from_original_query(query_path, solver)
 

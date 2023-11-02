@@ -6,151 +6,151 @@ from plot_utils import *
 from configer import Configer
 from unsat_core_build import *
 
-def stem_file_paths(items):
-    new_items = {}
-    for cat in Stability:
-        new_items[cat] = set()
-        for query in items[cat]:
-            new_items[cat].add(query.split("/")[-1])
-    return new_items
+# def percent(a, b):
+#     return round(a * 100 / b, 2)
 
-def load_project(proj_name):
-    c = Configer()
-    Z3_4_12_2 = c.load_known_solver("z3_4_12_2")
-    ANA = Analyzer(.05, 60, .05, .95, 0.8, "cutoff")
-
-    if proj_name in UNSAT_CORE_PROJECTS:
-        proj = c.load_known_project(proj_name)
-        exp = c.load_known_experiment("baseline")
-    elif proj_name in UNSAT_CORE_PROJECTS.values():
-        proj = c.load_known_project(proj_name)
-        exp = c.load_known_experiment("min_asserts")
-
-    rows = load_sum_table(proj, Z3_4_12_2, exp)
-    items = ANA.categorize_queries(rows, tally=True)
-    items = stem_file_paths(items)
-    tally = items.pop(Stability.TALLY)
-    ps, _ = get_category_percentages(items)
-    return items, ps, tally
-
-def print_compare_table(items0, ps0, items1, ps1):
-    table = [["category", "original", "minimized"]]
-    for cat in items0:
-        r0 = round(ps0[cat], 2)
-        r1 = round(ps1[cat], 2)
-        if r0 == 0 and r1 == 0:
-            continue
-        table.append([cat, f"{len(items0[cat])} ({r0})", f"{len(items1[cat])} ({r1})"])
-    print(tabulate(table, headers="firstrow", tablefmt="github"))
-
-def find_category(query, items):
-    for cat in items:
-        if query in items[cat]:
-            return cat
-    return None
-
-class CoreStats:
-    def __init__(self, orgi_name):
-        o_items, _, o_tally = load_project(orgi_name)
-        m_items, _, m_tally = load_project(UNSAT_CORE_PROJECTS[orgi_name])
-        assert m_tally.issubset(o_tally)
-        
-        self.proj = ExtendedProjectInfo(orgi_name)
-        self.o_items = o_items
-        self.o_tally = o_tally
-        self.m_items = m_items
-        self.m_tally = m_tally
-
-    def get_query_status(self):
-        # the original is unsolvable, we won't get a core anyways 
-        # actually we could if we try hard ...
-        orig_unsolvable = set()
-        # the original is solvable, but we don't get a core
-        core_missing = set()
-        # the original is solvable, but the minimized is not
-        core_incomplete = set()
-        # we patched the incomplete core, it should be solvable 
-        patched = set()
-
-        for query in self.o_tally:
-            if query in self.o_items[Stability.UNSOLVABLE]:
-                orig_unsolvable.add(query)
-                continue
-
-            if query not in self.m_tally:
-                # cat = find_category(query, o_items)
-                core_missing.add(query)
-            elif query in self.m_items[Stability.UNSOLVABLE]:
-                core_incomplete.add(query)
-
-            ext_path = self.proj.mini_ext_dir + query
-            # hint_path = self.proj.mini_dir + query
-            # orig_path = self.proj.orig_dir + query
-
-            if os.path.exists(ext_path):
-                patched.add(query)
-
-        return orig_unsolvable, core_missing, core_incomplete, patched
-
-    def fix_missing(self):
-        orig_unsolvable, core_missing, core_incomplete, patched = self.get_query_status()
-
-        # for query in self.o_tally - orig_unsolvable - patched:
-        #     hint_path = self.proj.mini_dir + query
-        #     ext_path = self.proj.mini_ext_dir + query
-        #     orig_path = self.proj.orig_dir + query
-
-        #     # hint_asserts = get_asserts(hint_path)
-        #     # ext_asserts = get_asserts(ext_path)
-
-        #     cat = find_category(query, self.o_items)
-        #     if query in core_missing:
-        #         if cat == Stability.STABLE:
-        #             print(f"python3 scripts/unsat_core_search.py reduce {orig_path} {ext_path} > {ext_path}.log")
-        content = [BUILD_RULES]
-
-        for query in patched:
-            ext_path = self.proj.mini_ext_dir + query
-            content += self.proj.emit_iterate_reduce_ext_query(ext_path)
-            break
-
-        print("\n".join(content))
-            
-        # print(f"python3 scripts/unsat_core_search.py reduce {ext_path} {ext_path} > {ext_path}.log")
-
-# def get_basic_keep(orgi_name, mini_name):
+# def load_project(proj_name):
 #     c = Configer()
-#     BA = c.load_known_experiment("baseline")
+#     Z3_4_12_2 = c.load_known_solver("z3_4_12_2")
+#     ANA = Analyzer(.05, 60, .05, .95, 0.8, "cutoff")
 
-#     orgi = c.load_known_project(orgi_name)
-#     mini = c.load_known_project(mini_name)
+#     if proj_name in UNSAT_CORE_PROJECTS:
+#         proj = c.load_known_project(proj_name)
+#         exp = c.load_known_experiment("baseline")
+#     elif proj_name in UNSAT_CORE_PROJECTS.values():
+#         proj = c.load_known_project(proj_name)
+#         exp = c.load_known_experiment("min_asserts")
 
-#     items0, ps0, tally0 = load(orgi, BA)
-#     items1, ps1, tally1 = load(mini, UC)
+#     rows = load_sum_table(proj, Z3_4_12_2, exp)
+#     items = ANA.categorize_queries(rows, tally=True)
+#     items = stem_file_paths(items)
+#     tally = items.pop(Stability.TALLY)
+#     ps, _ = get_category_percentages(items)
+#     return items, ps, tally
 
-#     keep = set()
-#     # print(len(tally1 - tally0))
-
-#     for query in tally0:
-#         if query in items0[Stability.UNSOLVABLE]:
+# def print_compare_table(items0, ps0, items1, ps1):
+#     table = [["category", "original", "minimized"]]
+#     for cat in items0:
+#         r0 = round(ps0[cat], 2)
+#         r1 = round(ps1[cat], 2)
+#         if r0 == 0 and r1 == 0:
 #             continue
-#         if query not in tally1:
-#             continue
-#         if query in items1[Stability.UNSOLVABLE]:
-#             continue
-#         keep.add(query)
+#         table.append([cat, f"{len(items0[cat])} ({r0})", f"{len(items1[cat])} ({r1})"])
+#     print(tabulate(table, headers="firstrow", tablefmt="github"))
 
-#     for cat in [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
-#         items0[cat] = items0[cat] & keep
-#         items1[cat] = items1[cat] & keep
 
-#     keeps = dict()
-#     for query in keep:
-#         orgi_path = orgi.clean_dir + "/" + query
-#         mini_path = mini.clean_dir + "/" + query
-#         keeps[query] = (orgi_path, mini_path)
+# class CoreStats:
+#     def __init__(self, orgi_name):
+#         o_items, _, o_tally = load_project(orgi_name)
+#         m_items, _, m_tally = load_project(UNSAT_CORE_PROJECTS[orgi_name])
+#         assert m_tally.issubset(o_tally)
 
-#     return items0, items1, keeps
+#         self.proj = ExtendedProjectInfo(orgi_name)
+#         self.o_items = o_items
+#         self.o_tally = o_tally
+#         self.m_items = m_items
+#         self.m_tally = m_tally
+
+#         # the original is unsolvable, we won't get a core anyways
+#         # actually we could if we try hard ...
+#         orig_unsolvable = set()
+#         # the original is solvable, but we don't get a core
+#         core_missing = set()
+#         # the original is solvable, but the minimized is not
+#         core_incomplete = set()
+#         # we patched the incomplete core, it should be solvable
+#         patched = set()
+
+#         for query in self.o_tally:
+#             if query in self.o_items[Stability.UNSOLVABLE]:
+#                 orig_unsolvable.add(query)
+#                 continue
+
+#             if query not in self.m_tally:
+#                 # cat = find_category(query, o_items)
+#                 core_missing.add(query)
+#             elif query in self.m_items[Stability.UNSOLVABLE]:
+#                 core_incomplete.add(query)
+
+#             ext_path = self.proj.mini_ext_dir + query
+#             # hint_path = self.proj.mini_dir + query
+#             # orig_path = self.proj.orig_dir + query
+
+#             if os.path.exists(ext_path):
+#                 patched.add(query)
+
+#         self.orig_unsolvable = orig_unsolvable
+#         self.core_missing = core_missing
+#         self.core_incomplete = core_incomplete
+#         self.patched = patched
+
+#     def fix_missing(self):
+#         content = []
+#         for query in self.o_tally - self.orig_unsolvable - self.patched:
+#             hint_path = self.proj.mini_dir + query
+#             ext_path = self.proj.mini_ext_dir + query
+#             orig_path = self.proj.orig_dir + query
+
+#             # hint_asserts = get_asserts(hint_path)
+#             # ext_asserts = get_asserts(ext_path)
+
+#             o_cat = find_category(query, self.o_items)
+#             m_cat = find_category(query, self.m_items)
+#             if m_cat == None:
+#                 print(os.path.exists(hint_path))
+#             # if o_cat == Stability.STABLE:
+#                 # content += self.proj.emit_iterate_reduce_ext_query(ext_path)
+#             # r = subprocess_run(f"./solvers/z3-4.12.2 {orig_path} -T:60")[0]
+#             # if r == "unsat":
+#             #     print(orig_path)
+#                 # print(o_cat, m_cat)
+#             # print(f"python3 scripts/unsat_core_search.py reduce {orig_path} {ext_path}")
+
+#             # if cat == Stability.STABLE:
+#             #     if query in self.core_missing:
+#             #         print(f"python3 scripts/unsat_core_search.py reduce {orig_path} {ext_path} > {ext_path}.log")
+#             #     else:
+#             #         print(f"python3 scripts/unsat_core_search.py complete {orig_path} {hint_path} {ext_path} > {ext_path}.log")
+#             # else:
+#         # for query in self.patched:
+#         #     ext_path = self.proj.mini_ext_dir + query
+#         #     content += self.proj.emit_iterate_reduce_ext_query(ext_path)
+
+#         return content
+
+#     def sanity_check(self):
+#         content = []
+#         for query in self.patched:
+#             ext_path = self.proj.mini_ext_dir + query
+#             sub_path = self.proj.mini_ext_dir + query + ".sub"
+#             # if not os.path.exists(sub_path):
+#             #     os.system("rm " + ext_path)
+#             content += self.proj.emit_subset_check(query)
+#         return content
+
+#     def print_status(self):
+#         print(f"original: {len(self.o_tally)}")
+#         print(f"original unsolvable: {len(self.orig_unsolvable)}")
+#         print(f"original solvable, core missing: {len(self.core_missing)}")
+#         print(f"original solvable, core incomplete: {len(self.core_incomplete)}")
+#         print(f"patched: {len(self.patched)} {percent(len(self.patched), len(self.o_tally))}%")
+#         print("")
+
+#     def get_context_status(self):
+#         # get_assert_count("temp/woot.smt2")
+#         # print(self.o_tally - self.orig_unsolvable - self.patched)
+
+#         assert self.patched == self.o_tally - self.orig_unsolvable
+#         for query in self.patched:
+#             # orig_path = self.proj.orig_dir + query
+#             hint_path = self.proj.mini_dir + query
+#             ext_path = self.proj.mini_ext_dir + query
+#             if not os.path.exists(hint_path):
+#                 continue
+#             hint_asserts = get_asserts(hint_path)
+#             ext_asserts = get_asserts(ext_path)
+#             print(key_set(hint_asserts) - key_set(ext_asserts))
+#             print(key_set(ext_asserts) - key_set(hint_asserts))
 
 # def plot_instability_reduction():
 #     fig, ax = plt.subplots()
@@ -169,7 +169,7 @@ class CoreStats:
 
 #     ticks = []
 
-#     for i, k in enumerate(PAIRS.keys()):    
+#     for i, k in enumerate(PAIRS.keys()):
 #         plt.bar(x, height=pts[i][0], label="original")
 #         plt.text(x, pts[i][0], f"{int(pts[i][1])}")
 #         ticks.append(x + 0.5)
@@ -199,10 +199,10 @@ class CoreStats:
 #         if cfc > 0:
 #             quanti = True
 #             fcount += cfc
-        
+
 #         cec = line.count("(exists")
-        
-#         if cec > 0:        
+
+#         if cec > 0:
 #             quanti = True
 #             ecount += cec
 
@@ -265,7 +265,7 @@ class CoreStats:
 #                 fs0 = get_assert_size(orgi_path)
 #                 fs1 = get_assert_size(mini_path)
 #                 pts[i] = fs1 / fs0
-#             cache_save(pts, f"{k}_assert_size.pkl")            
+#             cache_save(pts, f"{k}_assert_size.pkl")
 #         xs, ys = get_cdf_pts(pts * 100)
 #         plt.plot(xs, ys, marker=",", label=k, linewidth=2)
 
@@ -281,9 +281,77 @@ class CoreStats:
 #     plt.savefig("fig/context/size_retention.png", dpi=200)
 #     plt.close()
 
+    # fig, ax = plt.subplots(3, 1)
+    # fig.set_size_inches(7, 12)
+
+    # for p in UNSAT_CORE_PROJECTS.values():
+    #     data = p.get_patched_diff_stats()
+    #     indices = np.where(data[:,3] == 0)
+    #     xs, ys = get_cdf_pts(data[indices][:,4]/data[indices][:,0] * 100)
+    #     ax[0].plot(xs, ys, marker=",", linewidth=2, label=p.name)
+
+    #     xs, ys = get_cdf_pts(data[indices][:,4])
+    #     ax[1].plot(xs, ys, marker=",", linewidth=2)
+        
+    #     indices = np.where(data[:,3] != 0)
+
+    #     xs, ys = get_cdf_pts(data[indices][:,3]/data[indices][:,1] * 100)
+    #     ax[2].plot(xs, ys, marker=",", linewidth=2)
+
+    # ax[0].set_ylim(0, 100)
+    # ax[0].set_xlim(0, 100)
+    # ax[0].set_ylabel("cumulative percentage of queries")
+    # ax[0].set_xlabel("percentage of asserts dropped")
+    # ax[0].legend()
+
+    # ax[1].set_ylim(0, 100)
+    # ax[1].set_xlim(0, 200)
+    # ax[1].set_ylabel("cumulative percentage of queries")
+    # ax[1].set_xlabel("number of asserts dropped")
+
+    # ax[2].set_ylim(0, 100)
+    # ax[2].set_xlim(0, 100)
+    # ax[2].set_ylabel("cumulative percentage of queries")
+    # ax[2].set_xlabel("percentage of asserts added")
+
+    # plt.suptitle("Updated Unsat Core Change (w.r.t Plain Unsat Core)")
+    # plt.savefig("fig/context/updated_core_diff.png", dpi=200)
+    # plt.close()
+
 if __name__ == "__main__":
-    # plot_context_reduction()
-    # plot_instability_reduction()
-    for p in UNSAT_CORE_PROJECTS:
-        CoreStats(p).fix_missing()
-    # CoreStats("d_lvbkv").list_missing_unsat_cores()
+    for p in UNSAT_CORE_PROJECTS.values():
+        fig, ax = plt.subplots()
+        s_dps = []
+        u_dps = []
+        dps = []
+        for qm in tqdm(p.qms):
+            # if qm.mini_exists:
+            #     dps.append(qm.get_shake_stats())
+            if qm.orig_status == Stability.UNSTABLE:
+                u_dps.append(qm.get_shake_stats())
+            elif qm.orig_status == Stability.STABLE:
+                s_dps.append(qm.get_shake_stats())
+
+        s_dps = np.array(s_dps)
+        u_dps = np.array(u_dps)
+        dps = np.array(dps)
+
+        # xs, ys = get_cdf_pts(dps[:, 0])
+        # plt.plot(xs, ys, marker=",", linewidth=2, label="original mean", color="red")
+
+        # xs, ys = get_cdf_pts(dps[:, 3])
+        # plt.plot(xs, ys, marker=",", linewidth=2, label="core mean", color="red")
+
+        xs, ys = get_cdf_pts(u_dps[:, 1])
+        plt.plot(xs, ys, marker=",", linewidth=2, label="unstable original max", color="red")
+        xs, ys = get_cdf_pts(u_dps[:, 4])
+        plt.plot(xs, ys, marker=",", linewidth=2, label="unstable core max", linestyle="--", color="red")
+        
+        xs, ys = get_cdf_pts(s_dps[:, 1])
+        plt.plot(xs, ys, marker=",", linewidth=2, label="stable original max", color="blue")
+        xs, ys = get_cdf_pts(s_dps[:, 4])
+        plt.plot(xs, ys, marker=",", linewidth=2, label="stable core max", linestyle="--", color="blue")
+
+        plt.legend()
+        plt.savefig(f"fig/context/shake_{p.name}.png", dpi=200)
+        plt.close()
