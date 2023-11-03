@@ -10,3 +10,6 @@ def cache_load(name):
 
 def cache_exists(name):
     return os.path.exists("cache/" + name)
+
+def cache_clear(name):
+    os.remove("cache/" + name)

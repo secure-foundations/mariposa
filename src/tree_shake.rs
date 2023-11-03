@@ -554,13 +554,10 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
     let mut pposs = HashSet::new();
     poss.insert(0);
 
-    let mut iteration = 0;
+    let mut iteration = 1;
     let mut stamps = HashMap::new();
 
     while poss != pposs {
-        // if iteration >= 2 {
-        //     break;
-        // }
         let mut delayed = HashSet::new();
         pposs = poss.clone();
         for (pos, tracker) in trackers.iter_mut().enumerate() {

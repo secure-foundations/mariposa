@@ -415,19 +415,6 @@ impl Manager {
     }
 }
 
-
-use z3tracer::{Model, syntax::{Ident, Term}};
-let mut model = Model::default();
-let input = br#"
-[mk-app] #0 a
-[mk-app] #1 + #0 #0
-[eof]
-"#;
-model.process(None, &input[1..])?;
-assert_eq!(model.terms().len(), 2);
-assert!(matches!(model.term(&Ident::from_str("#1")?)?, Term::App { .. }));
-assert_eq!(model.id_to_sexp(&BTreeMap::new(), &Ident::from_str("#1").unwrap()).unwrap(), "(+ a a)");
-
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = "mariposa query mutator")]
 struct Args {

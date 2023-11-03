@@ -169,8 +169,6 @@ build {self.fmt_path}: format {self.orig_path}"""
         return res
 
     def emit_shake(self):
-        if os.path.exists(self.shke_log_path):
-            return ""
         return f"""
 build {self.shke_path}: shake {self.orig_path}
     log = {self.shke_log_path}"""
@@ -218,8 +216,6 @@ build {self.shke_path}: shake {self.orig_path}
             else:
                 e_depths = [np.inf]
                 e_misses = np.inf
-            print(self.extd_path)
-            print(self.mini_path)
 
             data = [np.mean(o_depths), max(o_depths), o_misses,
             np.mean(m_depths), max(m_depths), m_misses,
@@ -311,6 +307,7 @@ class ProjectCoreManager:
                 # print(qm.orig_status, qm.mini_status)            
 
         print(f"total: {len(self.orig_tally)}")
+
         for k in missing:
             print(f"{k}: {len(missing[k])}")
 
@@ -380,6 +377,8 @@ if __name__ == "__main__":
 
     for p in UNSAT_CORE_PROJECTS.values():
         # p.get_stats()
+        if p.name != "d_fvbkv":
+            continue
         contents += p.emit_shake_rules()
         # contents += p.emit_check_rules()
         # contents += p.emit_mini_rules()
