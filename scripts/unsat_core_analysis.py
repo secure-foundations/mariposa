@@ -317,14 +317,18 @@ from unsat_core_build import *
     # plt.suptitle("Updated Unsat Core Change (w.r.t Plain Unsat Core)")
     # plt.savefig("fig/context/updated_core_diff.png", dpi=200)
     # plt.close()
+    
+def filter_valid_dps(dps):
+    nz = dps > 0
+    nf = dps != np.inf
+    return dps[np.logical_and(nz, nf)]
 
 if __name__ == "__main__":
     for p in UNSAT_CORE_PROJECTS.values():
-        fig, ax = plt.subplots()
         s_dps = []
         u_dps = []
         dps = []
-        for qm in tqdm(p.qms):
+        for qm in p.qms:
             # if qm.mini_exists:
             #     dps.append(qm.get_shake_stats())
             if qm.orig_status == Stability.UNSTABLE:
@@ -343,14 +347,32 @@ if __name__ == "__main__":
         # plt.plot(xs, ys, marker=",", linewidth=2, label="core mean", color="red")
 
         xs, ys = get_cdf_pts(u_dps[:, 1])
-        plt.plot(xs, ys, marker=",", linewidth=2, label="unstable original max", color="red")
-        xs, ys = get_cdf_pts(u_dps[:, 4])
-        plt.plot(xs, ys, marker=",", linewidth=2, label="unstable core max", linestyle="--", color="red")
-        
+        x_max = np.max(xs)
+        plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable original", color="red", drawstyle='steps-post')
+
+        xs, ys = get_cdf_pts(filter_valid_dps(u_dps[:, 4]))
+        x_max = max(np.max(xs), x_max)
+        plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable core", linestyle="--", color="red", drawstyle='steps-post')
+
         xs, ys = get_cdf_pts(s_dps[:, 1])
-        plt.plot(xs, ys, marker=",", linewidth=2, label="stable original max", color="blue")
-        xs, ys = get_cdf_pts(s_dps[:, 4])
-        plt.plot(xs, ys, marker=",", linewidth=2, label="stable core max", linestyle="--", color="blue")
+        x_max = max(np.max(xs), x_max)
+        plt.plot(xs, ys, marker=",", linewidth=2, label="stable original", color="blue", drawstyle='steps-post')
+
+        nz = s_dps[:, 5] > 0
+        nf = s_dps[:, 5] != np.inf
+        print("shake missed ", np.sum(np.logical_and(nz, nf)))
+
+        xs, ys = get_cdf_pts(filter_valid_dps(s_dps[:, 4]))
+        x_max = max(np.max(xs), x_max)
+        plt.plot(xs, ys, marker=",", linewidth=2, label="stable core", linestyle="--", color="blue", drawstyle='steps-post')
+
+        plt.ylabel("cumulative percentage of queries")
+        plt.xlabel("maximum assertion depth")
+        plt.ylim(0, 100)
+        plt.xlim(left=0, right=x_max)
+        plt.xticks(np.arange(0, x_max+1, 1))
+        plt.grid(True)
+        plt.title(f"Shake Assertion Max Depth Distribution {p.name}")
 
         plt.legend()
         plt.savefig(f"fig/context/shake_{p.name}.png", dpi=200)

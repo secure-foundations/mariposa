@@ -9,7 +9,7 @@ import statistics
 def get_cdf_pts(data):
     n = len(data)
     y = np.arange(n) * 100 / float(n) 
-    return np.sort(data), y
+    return np.sort(data), np.insert(y[1:], n-1, 100)
 
 def plot_csum(sp, data, label):
     n = len(data)
