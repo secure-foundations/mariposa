@@ -4,11 +4,9 @@ from vbkv_filemap import *
 
 from plot_utils import *
 from configer import Configer
-from scripts.unsat_core_analysis import *
+from scripts.unsat_core_plot import *
 from cache_utils import cache_load, cache_save
 from categorize_qids import *
-
-import random
 
 c = Configer()
 
@@ -19,6 +17,48 @@ TRIGGER_REMOVED_PAIRS = {
     "fs_dice": "fs_dice_10_percent_sample_no_trigger",
     "fs_vwasm": "fs_vwasm_10_percent_sample_no_trigger",
 }
+
+#  def get_quanti_stats(query_path):
+#     fcount = 0
+#     ecount = 0
+#     qf = 0
+#     nqf = 0
+#     others = 0
+
+#     for line in open(query_path).readlines():
+#         quanti = False
+#         if not line.startswith("(assert"):
+#             others += 1
+#             continue
+#         cfc = line.count("(forall")
+#         if cfc > 0:
+#             quanti = True
+#             fcount += cfc
+
+#         cec = line.count("(exists")
+
+#         if cec > 0:
+#             quanti = True
+#             ecount += cec
+
+#         if not quanti:
+#             qf += 1
+#         else:
+#             nqf += 1
+#     return fcount, ecount, qf, nqf, others
+
+# def load_quanti_keep_stats(orgi_name):
+#     if os.path.exists(f"cache/{orgi_name}_keep_quanti.pkl"):
+#         pts = cache_load(f"{orgi_name}_keep_quanti.pkl")
+#     else:
+#         mini_name = PAIRS[orgi_name]
+#         items0, items1, keep = get_basic_keep(orgi_name, mini_name)
+#         pts = np.zeros((len(keep), 10))
+#         for i, q in enumerate(tqdm(keep)):
+#             pts[i] = get_quanti_stats(keep[q][0]) \
+#                 + get_quanti_stats(keep[q][1])
+#         cache_save(pts, f"{orgi_name}_keep_quanti.pkl")
+#     return pts
 
 def sample_then_remove_all_triggers(orgi_name, pruned_name):
     orgi = c.load_known_project(orgi_name)

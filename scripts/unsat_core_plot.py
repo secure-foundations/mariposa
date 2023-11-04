@@ -7,16 +7,6 @@ from configer import Configer
 from unsat_core_build import *
 import plotly.graph_objects as go
 
-# def print_compare_table(items0, ps0, items1, ps1):
-#     table = [["category", "original", "minimized"]]
-#     for cat in items0:
-#         r0 = round(ps0[cat], 2)
-#         r1 = round(ps1[cat], 2)
-#         if r0 == 0 and r1 == 0:
-#             continue
-#         table.append([cat, f"{len(items0[cat])} ({r0})", f"{len(items1[cat])} ({r1})"])
-#     print(tabulate(table, headers="firstrow", tablefmt="github"))
-
 # def plot_instability_reduction():
 #     fig, ax = plt.subplots()
 #     x = 0
@@ -48,47 +38,6 @@ import plotly.graph_objects as go
 #     plt.savefig("fig/context/instability_diff.png", dpi=200)
 #     plt.close()
 
-# def get_quanti_stats(query_path):
-#     fcount = 0
-#     ecount = 0
-#     qf = 0
-#     nqf = 0
-#     others = 0
-
-#     for line in open(query_path).readlines():
-#         quanti = False
-#         if not line.startswith("(assert"):
-#             others += 1
-#             continue
-#         cfc = line.count("(forall")
-#         if cfc > 0:
-#             quanti = True
-#             fcount += cfc
-
-#         cec = line.count("(exists")
-
-#         if cec > 0:
-#             quanti = True
-#             ecount += cec
-
-#         if not quanti:
-#             qf += 1
-#         else:
-#             nqf += 1
-#     return fcount, ecount, qf, nqf, others
-
-# def load_quanti_keep_stats(orgi_name):
-#     if os.path.exists(f"cache/{orgi_name}_keep_quanti.pkl"):
-#         pts = cache_load(f"{orgi_name}_keep_quanti.pkl")
-#     else:
-#         mini_name = PAIRS[orgi_name]
-#         items0, items1, keep = get_basic_keep(orgi_name, mini_name)
-#         pts = np.zeros((len(keep), 10))
-#         for i, q in enumerate(tqdm(keep)):
-#             pts[i] = get_quanti_stats(keep[q][0]) \
-#                 + get_quanti_stats(keep[q][1])
-#         cache_save(pts, f"{orgi_name}_keep_quanti.pkl")
-#     return pts
 
 # def get_assert_size(query_path):
 #     size = 0
@@ -144,43 +93,6 @@ def plot_context_reduction():
 #     # ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=3))
 #     plt.savefig("fig/context/size_retention.png", dpi=200)
 #     plt.close()
-
-    # fig, ax = plt.subplots(3, 1)
-    # fig.set_size_inches(7, 12)
-
-    # for p in UNSAT_CORE_PROJECTS.values():
-    #     data = p.get_patched_diff_stats()
-    #     indices = np.where(data[:,3] == 0)
-    #     xs, ys = get_cdf_pts(data[indices][:,4]/data[indices][:,0] * 100)
-    #     ax[0].plot(xs, ys, marker=",", linewidth=2, label=p.name)
-
-    #     xs, ys = get_cdf_pts(data[indices][:,4])
-    #     ax[1].plot(xs, ys, marker=",", linewidth=2)
-        
-    #     indices = np.where(data[:,3] != 0)
-
-    #     xs, ys = get_cdf_pts(data[indices][:,3]/data[indices][:,1] * 100)
-    #     ax[2].plot(xs, ys, marker=",", linewidth=2)
-
-    # ax[0].set_ylim(0, 100)
-    # ax[0].set_xlim(0, 100)
-    # ax[0].set_ylabel("cumulative percentage of queries")
-    # ax[0].set_xlabel("percentage of asserts dropped")
-    # ax[0].legend()
-
-    # ax[1].set_ylim(0, 100)
-    # ax[1].set_xlim(0, 200)
-    # ax[1].set_ylabel("cumulative percentage of queries")
-    # ax[1].set_xlabel("number of asserts dropped")
-
-    # ax[2].set_ylim(0, 100)
-    # ax[2].set_xlim(0, 100)
-    # ax[2].set_ylabel("cumulative percentage of queries")
-    # ax[2].set_xlabel("percentage of asserts added")
-
-    # plt.suptitle("Updated Unsat Core Change (w.r.t Plain Unsat Core)")
-    # plt.savefig("fig/context/updated_core_diff.png", dpi=200)
-    # plt.close()
 
 def filter_valid_dps(dps):
     return dps[dps != np.inf]
