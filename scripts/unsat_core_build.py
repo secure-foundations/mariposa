@@ -4,6 +4,7 @@ from configer import *
 from db_utils import *
 from unsat_core_search import run_z3
 from cache_utils import *
+from copy import deepcopy
 
 UNSAT_CORE_PROJECTS_NAMES = {
     "d_komodo": ("d_komodo_uc", "d_komodo_uc_ext", "d_komodo_shake"),
@@ -56,19 +57,28 @@ def stem_file_paths(items):
     return new_items
 
 def load_proj_stability(proj, exp):
-    ANA = Analyzer(.05, 60, .05, .95, 0.8, "cutoff")
-    rows = load_sum_table(proj, Z3_4_12_2, exp)
     expected = set([os.path.basename(q) for q in proj.list_queries()])
 
-    if rows is None:
-        return dict(), expected
+    cat_cache_name = f"{proj.name}_{exp.name}_cats"
+    if cache_exists(cat_cache_name):
+        items = cache_load(cat_cache_name)
+        tally = set.union(*items.values())
+    else:
+        ANA = Analyzer(.05, 60, .05, .95, 0.8, "cutoff")
+        rows = load_sum_table(proj, Z3_4_12_2, exp)
 
-    items = ANA.categorize_queries(rows, tally=True)
-    items = stem_file_paths(items)
-    tally = items.pop(Stability.TALLY)
-    # it might be ok that some experiments are missing
-    # not the other way around though
-    assert tally.issubset(expected)
+        if rows is None:
+            # do not cache this
+            return dict(), expected
+
+        items = ANA.categorize_queries(rows, tally=True)
+        items = stem_file_paths(items)
+        tally = items.pop(Stability.TALLY)
+
+        # it might be ok that some experiments are missing
+        # not the other way around though
+        assert tally.issubset(expected)
+        cache_save(items, cat_cache_name)
 
     if tally != expected:
         print(f"[WARNING] tally mismatch in {proj.name}, maybe run fix missing?")
@@ -94,7 +104,7 @@ def parse_stamps(filename):
     return cmds0
 
 class QueryCoreManager:
-    def __init__(self, orig_path, orig_status, mini_status, proj=None):
+    def __init__(self, orig_path, orig_status, mini_status, extd_status, proj=None):
         assert os.path.exists(orig_path)
         if proj is None:
             for proj in UNSAT_CORE_PROJECTS.values():
@@ -123,7 +133,8 @@ class QueryCoreManager:
 
         self.orig_status = orig_status
         self.mini_status = mini_status
-        
+        self.extd_status = extd_status
+
         self.mini_check_path = f"gen/{self.name_hash}.mini.check"
         self.extd_check_path = f"gen/{self.name_hash}.extd.check"
 
@@ -192,7 +203,7 @@ build {self.shke_path}: shake {self.orig_path}
     def reduce_from_extd(self):
         return f"python3 scripts/unsat_core_search.py reduce {self.extd_path} {self.extd_path}"
     
-    def get_shake_stats(self):
+    def get_shake_stats(self, unify=False):
         if cache_exists(self.shke_stat_name):
             data = cache_load(self.shke_stat_name)
         else:
@@ -216,15 +227,20 @@ build {self.shke_path}: shake {self.orig_path}
             else:
                 e_depths = [np.inf]
                 e_misses = np.inf
+                print(e_misses)
 
             data = [np.mean(o_depths), max(o_depths), o_misses,
-            np.mean(m_depths), max(m_depths), m_misses,
-            np.mean(e_depths), max(e_depths), e_misses]
+                np.mean(m_depths), max(m_depths), m_misses,
+                np.mean(e_depths), max(e_depths), e_misses]
             cache_save(data, self.shke_stat_name)
-            # print(round(np.mean(o_depths), 2), max(o_depths), o_misses)
-            # print(round(np.mean(m_depths), 2), max(m_depths), m_misses)
-            # print(round(np.mean(e_depths), 2), max(e_depths), e_misses)
+
+        if unify and self.should_unify():
+                data[3:6] = data[6:]
+
         return data
+
+    def should_unify(self):
+        return self.mini_status in {Stability.UNSOLVABLE, None} and self.extd_exists
 
 class MissingTypes(str, Enum):
     ORIG_EXPERIMENT_MISSING = "original file present but experiment missing"
@@ -242,15 +258,17 @@ class ProjectCoreManager:
         self.mini = c.load_known_project(mini_name)
         self.extd = c.load_known_project(extd_name)
         self.shke = c.load_known_project(shke_name)
-        orig_items, self.orig_tally = load_proj_stability(self.orig, BASELINE)
-        mini_items, self.mini_tally = load_proj_stability(self.mini, PLAIN_UC)
+        self.orig_cats, self.orig_tally = load_proj_stability(self.orig, BASELINE)
+        self.mini_cats, self.mini_tally = load_proj_stability(self.mini, PLAIN_UC)
+        self.extd_cats, self.extd_tally = load_proj_stability(self.extd, PLAIN_UC)
 
         self.qms = []
         for orig_path in self.orig.list_queries():
             base = os.path.basename(orig_path)
-            orig_status = find_category(base, orig_items)
-            mini_status = find_category(base, mini_items)
-            qm = QueryCoreManager(orig_path, orig_status, mini_status, self)
+            orig_status = find_category(base, self.orig_cats)
+            mini_status = find_category(base, self.mini_cats)
+            extd_status = find_category(base, self.extd_cats)
+            qm = QueryCoreManager(orig_path, orig_status, mini_status, extd_status, self)
             self.qms.append(qm)
 
     def emit_check_rules(self):
@@ -314,55 +332,60 @@ class ProjectCoreManager:
     def get_stats(self):
         print(f"# {self.name}")
         # orig_unsolvable = set()
-        cats = [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE, None]
-        orig_cats = {cat: 0 for cat in cats}
-        mini_cats = {cat: 0 for cat in cats}
+        # for cat in cats:
+        #     oc = len(self.orig_cats[cat])
+        #     mc = len(self.mini_cats[cat])
+        #     ec = len(self.extd_cats[cat])
 
-        ptable = []
-        patched = 0
+        #     ptable.append([cat, 
+        #         oc, percent(oc, len(self.orig_tally)), 
+        #         mc, percent(mc, len(self.orig_tally)),
+        #         ec, percent(ec, len(self.orig_tally))])
 
-        for qm in self.qms:
-            if qm.orig_status not in orig_cats:
-                orig_cats[qm.orig_status] = 0
-            orig_cats[qm.orig_status] += 1
-            if qm.mini_status not in mini_cats:
-                mini_cats[qm.mini_status] = 0
-            mini_cats[qm.mini_status] += 1
-            if qm.mini_status == Stability.UNSOLVABLE \
-                and qm.extd_exists:
-                patched +=1
+        # keep = self.orig_tally - self.orig_cats[Stability.UNSOLVABLE]
 
-        for cat in cats:
-            oc = orig_cats[cat]
-            mc = mini_cats[cat]
-            ptable.append([cat, oc, percent(oc, len(self.orig_tally)), mc, percent(mc, len(self.orig_tally))])
-            
-        print(tabulate(ptable, headers=["", "orig", "", "mini", ""]))
-        print(f"patched {patched} / { mini_cats[Stability.UNSOLVABLE]}")
-        print("")
+        # unified = deepcopy(self.mini_cats)
+        # changed = set()
+        # for i in unified[Stability.UNSOLVABLE]:
+        #     new_cat = find_category(i, self.extd_cats)
+        #     if new_cat != None:
+        #         changed.add(i)
+        #         unified[new_cat].add(i)
 
-    def get_patched_diff_stats(self):
-        cache_path = f"patched_diff_stats_{self.name}.pkl"
+        # unified[Stability.UNSOLVABLE] -= changed
+
+        # for cat in cats:
+        #     oc = len(self.orig_cats[cat] & keep)
+        #     mc = len(self.mini_cats[cat] & keep)
+        #     ec = len(unified[cat] & keep)
+        #     ptable.append([cat, 
+        #         oc, percent(oc, len(keep)), 
+        #         mc, percent(mc, len(keep)),
+        #         ec, percent(ec, len(keep))])
+
+        # print(tabulate(ptable, headers=["", "orig", "", "mini", "", "extd", ""]))
+        # print("")        
+
+    def get_assert_counts(self, unify=False):
+        if unify:
+            cache_path = f"assert_counts_{self.name}_unified.pkl"
+        else:
+            cache_path = f"assert_counts_{self.name}.pkl"
+
         if cache_exists(cache_path):
             data = cache_load(cache_path)
         else:
             data = []
             for qm in tqdm(self.qms):
-                if qm.extd_exists and qm.mini_exists:
-                    e_asserts = key_set(get_asserts(qm.extd_path))
-                    m_asserts = key_set(get_asserts(qm.mini_path))
-                    common = len(e_asserts & m_asserts)
-                    added = len(e_asserts - m_asserts)
-                    subed = len(m_asserts - e_asserts)
-                    data.append([len(m_asserts), len(e_asserts), common, added, subed])
+                o_asserts = get_assert_count(qm.orig_path)
+                m_asserts = get_assert_count(qm.mini_path)
+                e_asserts = get_assert_count(qm.extd_path)
+                if unify and qm.should_unify():
+                    m_asserts = e_asserts
+                data.append([o_asserts, m_asserts, e_asserts])
             data = np.array(data)
             cache_save(data, cache_path)
-        # print(data[:,3] - data[:,4])
         return data
-
-    def get_shake_stats(self):
-        for qm in tqdm(self.qms):
-            qm.get_shake_stats()
 
     def contains_query(self, query):
         return query.startswith(self.orig.clean_dir)
@@ -376,16 +399,13 @@ if __name__ == "__main__":
     contents = []
 
     for p in UNSAT_CORE_PROJECTS.values():
-        # p.get_stats()
-        if p.name != "d_fvbkv":
-            continue
-        contents += p.emit_shake_rules()
+        # contents += p.emit_shake_rules()
         # contents += p.emit_check_rules()
         # contents += p.emit_mini_rules()
         # p.emit_fix_missing()
-        # p.get_shake_stats()
+        pass
 
-    random.shuffle(contents)
-    print(BUILD_RULES)
-    for i in contents:
-        print(i)
+    # random.shuffle(contents)
+    # print(BUILD_RULES)
+    # for i in contents:
+    #     print(i)

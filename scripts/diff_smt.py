@@ -1,6 +1,7 @@
 import sys
 from basic_utils import *
 import hashlib
+import numpy as np
 
 def get_asserts(filename):
     cmds0 = dict()
@@ -29,7 +30,7 @@ def check_assert_subset(orig_path, reduced_path):
 def get_assert_count(filename):
     output = subprocess_run(r'rg -e "\(assert" -c' + " " + filename)[0]
     if output == "":
-        return 0
+        return np.inf
     return int(output)
 
 def key_set(d):
