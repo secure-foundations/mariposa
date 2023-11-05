@@ -2,6 +2,7 @@ use smt2parser::concrete::{self};
 use smt2parser::concrete::{AttributeValue, Command, Symbol, Term};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
+use std::io::Write;
 
 use crate::tree_rewrite;
 
@@ -378,30 +379,28 @@ impl UseTracker {
 
             keep_going = matched.len() != 0;
 
-            matched.into_iter().for_each(|m| {
-                match m {
-                    MatchState::PatternState(s) => {
-                        let PatternState {
-                            local_symbols,
-                            hidden_term,
-                            ..
-                        } = s;
-                        let mut child = self.fork(local_symbols);
-                        let child_symbols = child.get_symbol_uses(&hidden_term);
-                        let UseTracker {
-                            mut match_states, ..
-                        } = child;
-                        self.live_symbols.extend(child_symbols.iter().cloned());
-                        snowball.extend(child_symbols.into_iter());
-                        non_matched.append(&mut match_states);
-                        modified = true;
-                    }
-                    MatchState::NoPatternState(s) => {
-                        let NoPatternState { hidden_symbols, .. } = s;
-                        self.live_symbols.extend(hidden_symbols.iter().cloned());
-                        snowball.extend(hidden_symbols.into_iter());
-                        modified = true;
-                    }
+            matched.into_iter().for_each(|m| match m {
+                MatchState::PatternState(s) => {
+                    let PatternState {
+                        local_symbols,
+                        hidden_term,
+                        ..
+                    } = s;
+                    let mut child = self.fork(local_symbols);
+                    let child_symbols = child.get_symbol_uses(&hidden_term);
+                    let UseTracker {
+                        mut match_states, ..
+                    } = child;
+                    self.live_symbols.extend(child_symbols.iter().cloned());
+                    snowball.extend(child_symbols.into_iter());
+                    non_matched.append(&mut match_states);
+                    modified = true;
+                }
+                MatchState::NoPatternState(s) => {
+                    let NoPatternState { hidden_symbols, .. } = s;
+                    self.live_symbols.extend(hidden_symbols.iter().cloned());
+                    snowball.extend(hidden_symbols.into_iter());
+                    modified = true;
                 }
             });
 
@@ -517,20 +516,12 @@ pub fn remove_unused_symbols(mut commands: Vec<concrete::Command>) -> Vec<concre
     commands
 }
 
-pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
+pub fn tree_shake(
+    mut commands: Vec<concrete::Command>,
+    shake_max_depth: u32,
+    shake_log_path: Option<String>,
+) -> Vec<concrete::Command> {
     tree_rewrite::truncate_commands(&mut commands);
-    // commands = tree_rewrite::tree_rewrite(commands);
-    // commands = commands
-    //     .into_iter()
-    //     .map(|x| tree_rewrite::flatten_assert(x))
-    //     .flatten()
-    //     .collect();
-
-    // println!("flattened command count: {}", commands.len());
-    // let mut rewriter = tree_rewrite::LetBindingReWriter::new();
-    // let mut sub_commands = rewriter.rewrite(goal_command);
-    // commands.append(&mut sub_commands);
-
     let goal_command = commands.pop().unwrap();
     // let goal_command = commands[commands.len() - 1].clone();
     // print!("{} ", goal_command);
@@ -576,12 +567,24 @@ pub fn tree_shake(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command
 
         snowball.extend(delayed.into_iter());
         iteration += 1;
+
+        if iteration > shake_max_depth {
+            break;
+        }
     }
 
-    stamps.iter().for_each(|(pos, stamp)| {
-        println!("{}|||{}", stamp, &commands[*pos]);
-    });
-    println!("0|||{}", &goal_command);
+    if shake_log_path.is_none() {
+        for (pos, stamp) in stamps.iter() {
+            println!("{}|||{}", stamp, &commands[*pos]);
+        }
+        println!("0|||{}", &goal_command);
+    } else {
+        let mut log_file = std::fs::File::create(shake_log_path.unwrap()).unwrap();
+        for (pos, stamp) in stamps.iter() {
+            writeln!(log_file, "{}|||{}", stamp, &commands[*pos]).unwrap();
+        }
+        writeln!(log_file, "0|||{}", &goal_command).unwrap();
+    }
 
     if DEBUG_USES {
         for (i, tracker) in trackers.iter().enumerate() {

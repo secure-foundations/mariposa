@@ -446,6 +446,14 @@ struct Args {
     #[arg(long, default_value_t = 100)]
     pattern_threshold: u64,
 
+    ///the max depth of tree-shaking
+    #[arg(long, default_value_t = u32::MAX)]
+    shake_max_depth: u32,
+
+    /// file to log the shake depth
+    #[arg(long)]
+    shake_log_path: Option<String>,
+
     /// file containing unsat core (produced by Z3)
     #[arg(long)]
     core_file_path: Option<String>,
@@ -511,7 +519,7 @@ fn main() {
         // parse and do nothing
         return;
     } else if args.mutation == "tree-shake" {
-        commands = tree_shake::tree_shake(commands);
+        commands = tree_shake::tree_shake(commands, args.shake_max_depth, args.shake_log_path);
     } else if args.mutation == "tree-rewrite" {
         commands = tree_rewrite::tree_rewrite(commands);
     } else if args.mutation == "remove-unused" {
@@ -522,6 +530,8 @@ fn main() {
             .map(|x| tree_rewrite::fun_to_assert(x))
             .flatten()
             .collect();
+    } else {
+        panic!("[ERROR] unknown mutation {}", args.mutation);
     }
 
     manager.dump_non_info_commands(&commands);
