@@ -7,7 +7,7 @@ from configer import Configer
 from unsat_core_build import *
 import plotly.graph_objects as go
 
-# def plot_instability_reduction():
+# def plot_instability_retention():
 #     fig, ax = plt.subplots()
 #     x = 0
 
@@ -46,7 +46,7 @@ import plotly.graph_objects as go
 #             size += len(line)
 #     return size
 
-def plot_context_reduction():
+def plot_all_context_retention():
     fig, ax = plt.subplots()
 
     for proj in UNSAT_CORE_PROJECTS.values():
@@ -60,44 +60,68 @@ def plot_context_reduction():
     plt.legend()
     plt.xscale("log")
     plt.xlim(0.001, 100)
-    plt.ylim(0)
+    plt.ylim(0, 100)
     plt.xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
-    plt.savefig("fig/context/context_retention.png", dpi=200)
+    plt.savefig("fig/context/retention_core.png", dpi=200)
     plt.close()
 
-#     fig, ax = plt.subplots()
+def plot_all_shake_context_retention():
+    figure, axis = setup_fig(len(UNSAT_CORE_PROJECTS), 2)
 
-#     for k in PAIRS.keys():
-#         if os.path.exists(f"cache/{k}_assert_size.pkl"):
-#             pts = cache_load(f"{k}_assert_size.pkl")
-#         else:
-#             items0, items1, keep = get_basic_keep(k, PAIRS[k])
-#             pts = np.zeros((len(keep),), dtype=np.float64)
-#             for i, q in enumerate(tqdm(keep)):
-#                 orgi_path, mini_path = keep[q]
-#                 fs0 = get_assert_size(orgi_path)
-#                 fs1 = get_assert_size(mini_path)
-#                 pts[i] = fs1 / fs0
-#             cache_save(pts, f"{k}_assert_size.pkl")
-#         xs, ys = get_cdf_pts(pts * 100)
-#         plt.plot(xs, ys, marker=",", label=k, linewidth=2)
+    for i, proj in enumerate(UNSAT_CORE_PROJECTS.values()):
+        plot_shake_context_retention(axis[i], proj)
 
-#     plt.ylabel("cumulative percentage of queries")
-#     plt.xlabel("percentage of assert bytes retained in unsat core (log scale)")
-#     plt.legend()
-#     plt.title("Unsat Core Size Retention")
-#     plt.ylim(0)
-#     plt.xscale("log")
-#     plt.xlim(0.001, 100)
-#     plt.xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
-#     # ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=3))
-#     plt.savefig("fig/context/size_retention.png", dpi=200)
-#     plt.close()
+    plt.savefig(f"fig/context/retention_shake.png", dpi=200)
+    plt.close()
+
+def plot_shake_context_retention(sps, proj):
+    if cache_exists(f"shake_retention_{proj.name}"):
+        pts = cache_load(f"shake_retention_{proj.name}")
+    else:
+        pts = np.zeros((len(proj.qms), 4))
+        for i, qm in enumerate(tqdm(proj.qms)):
+            o_asserts = get_assert_count(qm.orig_path)
+            m_asserts = get_assert_count(qm.mini_path)
+            stats = qm.get_shake_stats()
+            s_o_asserts = qm.get_shake_assert_count(stats[4])
+            s_p_asserts = qm.get_shake_assert_count()
+            pts[i] = o_asserts, m_asserts, s_o_asserts, s_p_asserts
+        cache_save(pts, f"shake_retention_{proj.name}")
+
+    xs, ys = get_cdf_pts(pts[:, 1] * 100 / pts[:, 0])
+    sps[0].plot(xs, ys, marker=",", label="unsat-core", linewidth=2)
+    sps[1].plot(xs, ys, marker=",", label="unsat-core", linewidth=2)
+
+    xs, ys = get_cdf_pts(pts[:, 2] * 100 / pts[:, 0])
+    sps[0].plot(xs, ys, marker=",", label="shake-oracle", linewidth=2)
+    sps[1].plot(xs, ys, marker=",", label="shake-oracle", linewidth=2)
+
+    xs, ys = get_cdf_pts(pts[:, 3] * 100 / pts[:, 0])
+    sps[0].plot(xs, ys, marker=",", label="shake-plain", linewidth=2)
+    sps[1].plot(xs, ys, marker=",", label="shake-plain", linewidth=2)
+
+    sps[0].set_ylabel("cumulative percentage of queries")
+    sps[0].set_xlabel("percentage of assertions retained in unsat core (log scale)")
+    sps[1].set_xlabel("percentage of assertions retained in unsat core")
+    
+    sps[0].set_title(f"Unsat Core Context Retention {proj.name}")
+
+    sps[0].legend()
+    sps[1].legend()
+
+    sps[0].set_xscale("log")
+    sps[0].set_xlim(0.001, 100)
+    sps[0].set_xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
+
+    sps[1].set_xlim(0, 100)
+
+    sps[0].set_ylim(0, 100)
+    sps[1].set_ylim(0, 100)
 
 def filter_valid_dps(dps):
     return dps[dps != np.inf]
 
-def plot_shake_max_depth(proj):
+def plot_shake_max_depth(sp, proj):
     s_dps = []
     u_dps = []
     dps = []
@@ -116,38 +140,44 @@ def plot_shake_max_depth(proj):
 
     # xs, ys = get_cdf_pts(dps[:, 1])
     # x_max = np.max(xs)
-    # plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="original", drawstyle='steps-post')
+    # sp.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="original", drawstyle='steps-post')
     
     # xs, ys = get_cdf_pts(filter_valid_dps(dps[:, 4]))
     # x_max = max(np.max(xs), x_max)
-    # plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="core", linestyle="--", drawstyle='steps-post')
+    # sp.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="core", linestyle="--", drawstyle='steps-post')
 
     xs, ys = get_cdf_pts(u_dps[:, 1])
     x_max = np.max(xs)
-    plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable original", color="red", drawstyle='steps-post')
+    sp.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable original", color="red", drawstyle='steps-post')
 
     xs, ys = get_cdf_pts(filter_valid_dps(u_dps[:, 4]))
     x_max = max(np.max(xs), x_max)
-    plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable core", linestyle="--", color="red", drawstyle='steps-post')
+    sp.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable core", linestyle="--", color="red", drawstyle='steps-post')
 
     xs, ys = get_cdf_pts(s_dps[:, 1])
     x_max = max(np.max(xs), x_max)
-    plt.plot(xs, ys, marker=",", linewidth=2, label="stable original", color="blue", drawstyle='steps-post')
+    sp.plot(xs, ys, marker=",", linewidth=2, label="stable original", color="blue", drawstyle='steps-post')
 
     xs, ys = get_cdf_pts(filter_valid_dps(s_dps[:, 4]))
     x_max = max(np.max(xs), x_max)
-    plt.plot(xs, ys, marker=",", linewidth=2, label="stable core", linestyle="--", color="blue", drawstyle='steps-post')
+    sp.plot(xs, ys, marker=",", linewidth=2, label="stable core", linestyle="--", color="blue", drawstyle='steps-post')
 
-    plt.ylabel("cumulative percentage of queries")
-    plt.xlabel("maximum assertion depth")
-    plt.ylim(0, 100)
-    plt.xlim(left=0, right=x_max)
-    plt.xticks(np.arange(0, x_max+1, 1))
-    plt.grid(True)
-    plt.title(f"Shake Assertion Max Depth Distribution {proj.name}")
+    sp.set_ylabel("cumulative percentage of queries")
+    sp.set_xlabel("maximum assertion depth")
+    sp.set_ylim(0, 100)
+    sp.set_xlim(left=0, right=x_max)
+    sp.set_xticks(np.arange(0, x_max+1, 1))
+    sp.grid(True)
+    sp.legend()
+    sp.set_title(f"Shake Assertion Max Depth Distribution {proj.name}")
 
-    plt.legend()
-    plt.savefig(f"fig/context/shake_{proj.name}.png", dpi=200)
+def plot_all_shake_max_depth():
+    figure, axis = setup_fig(len(UNSAT_CORE_PROJECTS), 1)
+
+    for i, proj in enumerate(UNSAT_CORE_PROJECTS.values()):
+        plot_shake_max_depth(axis[i], proj)
+
+    plt.savefig(f"fig/context/shake_max_depth.png", dpi=200)
     plt.close()
 
 def plot_shake_incomplete(proj):
@@ -294,8 +324,8 @@ def plot_migration(proj):
 
 if __name__ == "__main__":
     for proj in UNSAT_CORE_PROJECTS.values():
-        # plot_shake_incomplete(proj)
-        # plot_shake_max_depth(proj)
-        plot_migration(proj)
-
-    # plot_context_reduction()
+        plot_shake_incomplete(proj)
+        # plot_migration(proj)
+    # plot_all_shake_max_depth()
+    # plot_all_context_retention()
+    plot_all_shake_context_retention()

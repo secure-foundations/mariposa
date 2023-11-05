@@ -203,6 +203,9 @@ build {self.shke_path}: shake {self.orig_path}
     def reduce_from_extd(self):
         return f"python3 scripts/unsat_core_search.py reduce {self.extd_path} {self.extd_path}"
     
+    def should_unify(self):
+        return self.mini_status in {Stability.UNSOLVABLE, None} and self.extd_exists
+    
     def get_shake_stats(self, unify=False):
         if cache_exists(self.shke_stat_name):
             data = cache_load(self.shke_stat_name)
@@ -244,24 +247,26 @@ build {self.shke_path}: shake {self.orig_path}
         stamps = parse_stamps(self.shke_log_path)
         assert(len(stamps) != 0)
         # orig_asserts = get_asserts(self.orig_path)
-        stats = self.get_shake_stats()
+        # stats = self.get_shake_stats()
 
-        o_asserts = 0
-        s_asserts = 0
-        out_file = open("data/shake_unstable_test/" + self.base, "w+")
+        out_file = open("data/shake_unstable_fs_dice/" + self.base, "w+")
         
         for line in open(self.orig_path):
             if line.startswith("(assert "):
                 nline = line.replace(" ", "").strip()
-                o_asserts += 1
                 if nline not in stamps or stamps[nline] > max_depth:
                     continue
-                s_asserts += 1
             out_file.write(line)
         out_file.close()
 
-    def should_unify(self):
-        return self.mini_status in {Stability.UNSOLVABLE, None} and self.extd_exists
+    # def get_oracle_max_depth(self):
+    #     return stats[4] == np.inf
+
+    def get_shake_assert_count(self, max_depth=np.inf):
+        stamps = parse_stamps(self.shke_log_path)
+        assert(len(stamps) != 0)
+        s_asserts = np.sum([1 for i in stamps if stamps[i] <= max_depth])
+        return s_asserts
 
 class MissingTypes(str, Enum):
     ORIG_EXPERIMENT_MISSING = "original file present but experiment missing"
@@ -416,27 +421,24 @@ UNSAT_CORE_PROJECTS = {
 }
 
 if __name__ == "__main__":
-    p = UNSAT_CORE_PROJECTS["d_komodo"]
+    p = UNSAT_CORE_PROJECTS["fs_dice"]
     unstables = list()
     for qm in p.qms:
         if qm.orig_status == Stability.UNSTABLE:
             stats = qm.get_shake_stats()
-            # assuming we have an oracle
-            qm.shake_from_log(3 if stats[4] == np.inf else stats[4])
+            # print(qm.orig_status, qm.mini_status, qm.extd_status, stats[4])
+            # assuming we have an oracle 
+            qm.shake_from_log(5 if stats[4] == np.inf else stats[4])
             # unstables.append(qm)
             # print(qm.orig_status, qm.mini_status, qm.extd_status)
             # print("; core max: ", stats[4])
             # print("; core miss: ", stats[5])
             # print("; shake: ", s_asserts, "/", o_asserts)
+
     # random.seed(time.time())
     # qm = random.choice(unstables)
     # print(qm.orig_status, qm.mini_status, qm.extd_status)
     # print(qm.orig_path)
-
-    # qm.shake_from_log(3)
-        # break
-            # print(qm.orig_path)
-    # contents = []
 
     # for p in UNSAT_CORE_PROJECTS.values():
         # contents += p.emit_shake_rules()
