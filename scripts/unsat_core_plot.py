@@ -277,7 +277,7 @@ def plot_migration(proj):
                     ])
 
     fig.update_layout(title_text=f"{proj.name} stability migration", font_size=10)
-    fig.write_image(f"fig/context/{proj.name}_migration.png", width=800, height=600, scale=2)
+    fig.write_image(f"fig/context/migration/{proj.name}.png", width=800, height=600, scale=2)
 
 # def plot_shake_mean_depth(proj):
 #     s_dps = []
@@ -324,8 +324,9 @@ def plot_migration(proj):
 
 if __name__ == "__main__":
     for proj in UNSAT_CORE_PROJECTS.values():
-        plot_shake_incomplete(proj)
-        # plot_migration(proj)
+        # plot_shake_incomplete(proj)
+        plot_migration(proj)
+
     # plot_all_shake_max_depth()
     # plot_all_context_retention()
-    plot_all_shake_context_retention()
+    # plot_all_shake_context_retention()
