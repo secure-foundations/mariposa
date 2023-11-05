@@ -569,6 +569,12 @@
         "framework": "mixed",
         "clean_dir": "data/shake_unstable_test",
         "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "shake_unstable_fs_dice",
+        "framework": "mixed",
+        "clean_dir": "data/shake_unstable_fs_dice",
+        "artifact_solver_name": "z3_4_12_2"
       }
     ]
   }
