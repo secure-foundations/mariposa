@@ -1,3 +1,4 @@
+use clap::command;
 use smt2parser::concrete::{self};
 use smt2parser::concrete::{AttributeValue, Command, Symbol, Term};
 use std::collections::{HashMap, HashSet};
@@ -308,6 +309,28 @@ impl UseTracker {
                             panic!("TODO attribute keyword {}", k)
                         }
                     });
+                } else {
+                    attributes.into_iter().for_each(|f| {
+                        let concrete::Keyword(k) = &f.0;
+                        if k == "pattern" || k == "no-pattern" {
+                            match &f.1 {
+                                AttributeValue::None => (),
+                                AttributeValue::Constant(..) => (),
+                                AttributeValue::Symbol(symbol) => {
+                                    panic!("TODO symbol {:?}", symbol);
+                                }
+                                AttributeValue::Terms(terms) => {
+                                    terms
+                                        .iter()
+                                        .for_each(|x| uses.extend(self.get_symbol_uses(&x)));
+                                }
+                                AttributeValue::SExpr(ses) => {
+                                    ses.iter()
+                                        .for_each(|se| uses.extend(get_sexpr_symbols(se)));
+                                }
+                            }
+                        }
+                    });
                 }
 
                 no_pattern.retain(|x| {
@@ -315,7 +338,6 @@ impl UseTracker {
                 });
 
                 if pattern_sets.len() != 0 {
-                    // drop no pattern if pattern is given
                     let match_state = PatternState {
                         local_symbols: self.local_symbols.clone(),
                         hidden_term: term.clone().into(),
@@ -324,6 +346,7 @@ impl UseTracker {
                     self.match_states
                         .push(MatchState::PatternState(match_state));
                 } else if no_pattern.len() != 0 {
+                    // drop no pattern if pattern is given
                     let live = self.get_symbol_uses(term);
                     let filtered_symbols = live.difference(&no_pattern).cloned().collect();
                     // println!("no pattern: {:?}", &filtered_symbols);
@@ -361,58 +384,58 @@ impl UseTracker {
         }
     }
 
-    fn aggregate(&mut self, snowball: &mut SymbolSet) -> bool {
-        let mut keep_going = true;
-        let mut modified = !self.live_symbols.is_disjoint(&snowball);
+    // fn aggregate(&mut self, snowball: &mut SymbolSet) -> bool {
+    //     let mut keep_going = true;
+    //     let mut modified = !self.live_symbols.is_disjoint(&snowball);
 
-        if modified {
-            snowball.extend(self.live_symbols.iter().cloned());
-        }
+    //     if modified {
+    //         snowball.extend(self.live_symbols.iter().cloned());
+    //     }
 
-        while keep_going {
-            let mut cur_match_states = Vec::new();
-            std::mem::swap(&mut self.match_states, &mut cur_match_states);
+    //     while keep_going {
+    //         let mut cur_match_states = Vec::new();
+    //         std::mem::swap(&mut self.match_states, &mut cur_match_states);
 
-            let (matched, mut non_matched): (_, Vec<_>) = cur_match_states
-                .into_iter()
-                .partition(|s| s.check_match(snowball));
+    //         let (matched, mut non_matched): (_, Vec<_>) = cur_match_states
+    //             .into_iter()
+    //             .partition(|s| s.check_match(snowball));
 
-            keep_going = matched.len() != 0;
+    //         keep_going = matched.len() != 0;
 
-            matched.into_iter().for_each(|m| match m {
-                MatchState::PatternState(s) => {
-                    let PatternState {
-                        local_symbols,
-                        hidden_term,
-                        ..
-                    } = s;
-                    let mut child = self.fork(local_symbols);
-                    let child_symbols = child.get_symbol_uses(&hidden_term);
-                    let UseTracker {
-                        mut match_states, ..
-                    } = child;
-                    self.live_symbols.extend(child_symbols.iter().cloned());
-                    snowball.extend(child_symbols.into_iter());
-                    non_matched.append(&mut match_states);
-                    modified = true;
-                }
-                MatchState::NoPatternState(s) => {
-                    let NoPatternState { hidden_symbols, .. } = s;
-                    self.live_symbols.extend(hidden_symbols.iter().cloned());
-                    snowball.extend(hidden_symbols.into_iter());
-                    modified = true;
-                }
-            });
+    //         matched.into_iter().for_each(|m| match m {
+    //             MatchState::PatternState(s) => {
+    //                 let PatternState {
+    //                     local_symbols,
+    //                     hidden_term,
+    //                     ..
+    //                 } = s;
+    //                 let mut child = self.fork(local_symbols);
+    //                 let child_symbols = child.get_symbol_uses(&hidden_term);
+    //                 let UseTracker {
+    //                     mut match_states, ..
+    //                 } = child;
+    //                 self.live_symbols.extend(child_symbols.iter().cloned());
+    //                 snowball.extend(child_symbols.into_iter());
+    //                 non_matched.append(&mut match_states);
+    //                 modified = true;
+    //             }
+    //             MatchState::NoPatternState(s) => {
+    //                 let NoPatternState { hidden_symbols, .. } = s;
+    //                 self.live_symbols.extend(hidden_symbols.iter().cloned());
+    //                 snowball.extend(hidden_symbols.into_iter());
+    //                 modified = true;
+    //             }
+    //         });
 
-            self.match_states = non_matched;
-        }
+    //         self.match_states = non_matched;
+    //     }
 
-        if modified {
-            snowball.extend(self.live_symbols.iter().cloned());
-        }
+    //     if modified {
+    //         snowball.extend(self.live_symbols.iter().cloned());
+    //     }
 
-        modified
-    }
+    //     modified
+    // }
 
     fn delayed_aggregate(&mut self, snowball: &SymbolSet, delayed: &mut SymbolSet) -> bool {
         let mut modified = !self.live_symbols.is_disjoint(&snowball);
@@ -496,11 +519,16 @@ pub fn remove_unused_symbols(mut commands: Vec<concrete::Command>) -> Vec<concre
         .flatten()
         .collect();
 
+    // for i in &uses {
+    //     println!("{}", i);
+    // }
+
     // println!("building remove set: ");
     let mut remove_indices = HashSet::new();
 
     cmd_defs.iter().enumerate().for_each(|(i, x)| {
-        if x.len() != 0 && !uses.is_disjoint(x) {
+        if x.len() != 0 && uses.is_disjoint(x) {
+            // println!("removing {}", &commands[i]);
             remove_indices.insert(i);
         }
     });

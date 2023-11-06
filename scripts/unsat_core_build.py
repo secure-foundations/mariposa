@@ -7,11 +7,11 @@ from cache_utils import *
 from copy import deepcopy
 
 UNSAT_CORE_PROJECTS_NAMES = {
-    "d_komodo": ("d_komodo_uc", "d_komodo_uc_ext", "d_komodo_shake"),
-    "d_fvbkv": ("d_fvbkv_uc", "d_fvbkv_uc_ext", "d_fvbkv_shake"),
-    "d_lvbkv": ("d_lvbkv_uc", "d_lvbkv_uc_ext", "d_lvbkv_shake"),
-    "fs_dice": ("fs_dice_uc", "fs_dice_uc_ext", "fs_dice_shake"),
-    "fs_vwasm": ("fs_vwasm_uc", "fs_vwasm_uc_ext", "fs_vwasm_shake"),
+    "d_komodo": ("d_komodo_uc", "d_komodo_uc_ext", "d_komodo_shake", "d_komodo_uc_strip"),
+    # "d_fvbkv": ("d_fvbkv_uc", "d_fvbkv_uc_ext", "d_fvbkv_shake"),
+    # "d_lvbkv": ("d_lvbkv_uc", "d_lvbkv_uc_ext", "d_lvbkv_shake"),
+    "fs_dice": ("fs_dice_uc", "fs_dice_uc_ext", "fs_dice_shake", "fs_dice_uc_strip"),
+    # "fs_vwasm": ("fs_vwasm_uc", "fs_vwasm_uc_ext", "fs_vwasm_shake"),
 }
 
 CONFIG = Configer()
@@ -46,6 +46,9 @@ rule format
 
 rule shake
     command = ./target/release/mariposa -i $in -o $out -m tree-shake > $log
+    
+rule strip
+    command = ./target/release/mariposa -i $in -o $out -m remove-unused
 """
 
 def stem_file_paths(items):
@@ -127,9 +130,11 @@ class QueryCoreManager:
         self.mini_path = self.proj.mini.clean_dir + "/" + self.base
         self.extd_path = self.proj.extd.clean_dir + "/" + self.base
         self.shke_path = self.proj.shke.clean_dir + "/" + self.base
+        self.strp_path = self.proj.strp.clean_dir + "/" + self.base
 
         self.mini_exists = os.path.exists(self.mini_path)
         self.extd_exists = os.path.exists(self.extd_path)
+        self.shke_exists = os.path.exists(self.shke_path)
 
         self.orig_status = orig_status
         self.mini_status = mini_status
@@ -183,6 +188,16 @@ build {self.fmt_path}: format {self.orig_path}"""
         return f"""
 build {self.shke_path}: shake {self.orig_path}
     log = {self.shke_log_path}"""
+
+    def emit_strip(self):
+        input_path = self.mini_path
+        if self.should_unify():
+            input_path = self.extd_path
+        if not os.path.exists(input_path):
+            return ""
+
+        return f"""
+build {self.strp_path}: strip {input_path}"""
 
     def get_core_missing_reason(self):
         assert not self.mini_exists
@@ -279,11 +294,13 @@ class ProjectCoreManager:
     def __init__(self, orig_name):
         self.name = orig_name
         c = Configer()
-        (mini_name, extd_name, shke_name) = UNSAT_CORE_PROJECTS_NAMES[orig_name]
+        (mini_name, extd_name, shke_name, strp_name) = UNSAT_CORE_PROJECTS_NAMES[orig_name]
         self.orig = c.load_known_project(orig_name)
         self.mini = c.load_known_project(mini_name)
         self.extd = c.load_known_project(extd_name)
         self.shke = c.load_known_project(shke_name)
+        self.strp = c.load_known_project(strp_name)
+
         self.orig_cats, self.orig_tally = load_proj_stability(self.orig, BASELINE)
         self.mini_cats, self.mini_tally = load_proj_stability(self.mini, PLAIN_UC)
         self.extd_cats, self.extd_tally = load_proj_stability(self.extd, PLAIN_UC)
@@ -316,6 +333,12 @@ class ProjectCoreManager:
         content = []
         for qm in self.qms:
             content.append(qm.emit_create_mini())
+        return content
+
+    def emit_strip_rules(self):
+        content = []
+        for qm in self.qms:
+            content.append(qm.emit_strip())
         return content
 
     def emit_fix_missing(self):
@@ -355,43 +378,6 @@ class ProjectCoreManager:
         for k in missing:
             print(f"{k}: {len(missing[k])}")
 
-    def get_stats(self):
-        print(f"# {self.name}")
-        # orig_unsolvable = set()
-        # for cat in cats:
-        #     oc = len(self.orig_cats[cat])
-        #     mc = len(self.mini_cats[cat])
-        #     ec = len(self.extd_cats[cat])
-
-        #     ptable.append([cat, 
-        #         oc, percent(oc, len(self.orig_tally)), 
-        #         mc, percent(mc, len(self.orig_tally)),
-        #         ec, percent(ec, len(self.orig_tally))])
-
-        # keep = self.orig_tally - self.orig_cats[Stability.UNSOLVABLE]
-
-        # unified = deepcopy(self.mini_cats)
-        # changed = set()
-        # for i in unified[Stability.UNSOLVABLE]:
-        #     new_cat = find_category(i, self.extd_cats)
-        #     if new_cat != None:
-        #         changed.add(i)
-        #         unified[new_cat].add(i)
-
-        # unified[Stability.UNSOLVABLE] -= changed
-
-        # for cat in cats:
-        #     oc = len(self.orig_cats[cat] & keep)
-        #     mc = len(self.mini_cats[cat] & keep)
-        #     ec = len(unified[cat] & keep)
-        #     ptable.append([cat, 
-        #         oc, percent(oc, len(keep)), 
-        #         mc, percent(mc, len(keep)),
-        #         ec, percent(ec, len(keep))])
-
-        # print(tabulate(ptable, headers=["", "orig", "", "mini", "", "extd", ""]))
-        # print("")        
-
     def get_assert_counts(self, unify=False):
         if unify:
             cache_path = f"assert_counts_{self.name}_unified.pkl"
@@ -422,13 +408,15 @@ UNSAT_CORE_PROJECTS = {
 
 if __name__ == "__main__":
     p = UNSAT_CORE_PROJECTS["fs_dice"]
-    unstables = list()
-    for qm in p.qms:
-        if qm.orig_status == Stability.UNSTABLE:
-            stats = qm.get_shake_stats()
-            # print(qm.orig_status, qm.mini_status, qm.extd_status, stats[4])
-            # assuming we have an oracle 
-            qm.shake_from_log(5 if stats[4] == np.inf else stats[4])
+    contents = p.emit_strip_rules()
+
+    # unstables = list()
+    # for qm in p.qms:
+    #     if qm.orig_status == Stability.UNSTABLE:
+    #         stats = qm.get_shake_stats()
+    #         # print(qm.orig_status, qm.mini_status, qm.extd_status, stats[4])
+    #         # assuming we have an oracle 
+    #         qm.shake_from_log(5 if stats[4] == np.inf else stats[4])
             # unstables.append(qm)
             # print(qm.orig_status, qm.mini_status, qm.extd_status)
             # print("; core max: ", stats[4])
@@ -447,7 +435,7 @@ if __name__ == "__main__":
         # p.emit_fix_missing()
         # pass
 
-    # random.shuffle(contents)
-    # print(BUILD_RULES)
-    # for i in contents:
-    #     print(i)
+    random.shuffle(contents)
+    print(BUILD_RULES)
+    for i in contents:
+        print(i)

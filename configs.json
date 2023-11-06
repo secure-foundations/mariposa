@@ -487,15 +487,15 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "d_fvbkv_shake",
-        "framework": "dafny",
-        "clean_dir": "data/d_fvbkv_shake",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
         "name": "d_komodo_shake",
         "framework": "dafny",
         "clean_dir": "data/d_komodo_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_fvbkv_shake",
+        "framework": "dafny",
+        "clean_dir": "data/d_fvbkv_shake",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
@@ -514,6 +514,18 @@
         "name": "d_lvbkv_shake",
         "framework": "dafny",
         "clean_dir": "data/d_lvbkv_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_komodo_uc_strip",
+        "framework": "dafny",
+        "clean_dir": "data/unsat_cores/d_komodo/strip",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_dice_uc_strip",
+        "framework": "fstar",
+        "clean_dir": "data/unsat_cores/fs_dice/strip",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
