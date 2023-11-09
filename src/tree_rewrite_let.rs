@@ -1,11 +1,11 @@
-use smt2parser::concrete;
-use smt2parser::concrete::{Command, QualIdentifier, Symbol, Term};
-use std::collections::{HashMap, HashSet};
+// use clap::command;
+// use rand_chacha::rand_core::le;
+// use smt2parser::concrete;
+// use smt2parser::concrete::{Command, QualIdentifier, Symbol, Term};
+// use std::collections::{HashMap, HashSet};
 
-use crate::pretty_print::print_prop_skeleton;
-use crate::term_match::match_simple_app_terms;
-use crate::term_rewrite_label::remove_label_rec;
-use crate::term_rewrite_prop::term_rewrite_prop;
+// use crate::pretty_print::print_prop_skeleton;
+// use crate::term_match::match_simple_app_terms;
 
 // fn rewrite_let_binding(var: &Symbol, term0: &concrete::Term) -> Vec<concrete::Command> {
 //     if let Term::Let {
@@ -55,7 +55,109 @@ use crate::term_rewrite_prop::term_rewrite_prop;
 //     return None;
 // }
 
+// fn match_negative_label(term: Term) -> Term {
+//     let (s, mut args) = match_simple_app_terms(term).unwrap();
+//     assert!(s.0 == "or");
+//     assert!(args.len() == 2);
+//     let r = args.pop().unwrap();
+//     let l = args.pop().unwrap();
+//     if let Some(label) = get_simple_qualid_symbol(&l) {
+//         assert!(label.0.starts_with("%lbl%@"));
+//         return r;
+//     }
+//     panic!()
+//     // get_simple_qualid_symbol(&r).unwrap();
+//     // return l;
+// }
 
+// fn match_positive_label(term: Term) -> Term {
+//     let (s, mut args) = match_simple_app_terms(term).unwrap();
+//     assert!(s.0 == "and");
+//     assert!(args.len() == 2);
+//     let r = args.pop().unwrap();
+//     let l = args.pop().unwrap();
+//     if let Some(label) = get_simple_qualid_symbol(&l) {
+//         assert!(label.0.starts_with("%lbl%+"));
+//         return r;
+//     }
+//     get_simple_qualid_symbol(&r).unwrap();
+//     return l;
+// }
+
+// fn remove_label_rec(term: Term) -> Term {
+//     match term {
+//         Term::Constant(_) => term,
+//         Term::QualIdentifier(_) => term,
+//         Term::Application {
+//             qual_identifier,
+//             arguments,
+//         } => {
+//             let arguments = arguments
+//                 .into_iter()
+//                 .map(|arg| remove_label_rec(arg))
+//                 .collect();
+//             return Term::Application {
+//                 qual_identifier,
+//                 arguments,
+//             };
+//         }
+//         Term::Let { var_bindings, term } => {
+//             let var_bindings = var_bindings
+//                 .into_iter()
+//                 .map(|(var, binding)| (var, remove_label_rec(binding)))
+//                 .collect();
+//             let term = remove_label_rec(*term);
+//             return Term::Let {
+//                 var_bindings: var_bindings,
+//                 term: Box::new(term),
+//             };
+//         }
+//         Term::Forall { vars, term } => {
+//             let term = remove_label_rec(*term);
+//             return Term::Forall {
+//                 vars: vars,
+//                 term: Box::new(term),
+//             };
+//         }
+//         Term::Exists { vars, term } => {
+//             let term = remove_label_rec(*term);
+//             return Term::Exists {
+//                 vars: vars,
+//                 term: Box::new(term),
+//             };
+//         }
+//         Term::Match { term: _, cases: _ } => {
+//             panic!("not supporting match yet");
+//         }
+//         Term::Attributes { term, attributes } => {
+//             let mut lblneg = false;
+//             let mut lblpos = false;
+//             let mut term = *term;
+
+//             attributes.iter().for_each(|f| {
+//                 let concrete::Keyword(k) = &f.0;
+//                 if k == "lblneg" {
+//                     lblneg = true;
+//                 } else if k == "lblpos" {
+//                     lblpos = true;
+//                 }
+//             });
+
+//             if lblneg {
+//                 return match_negative_label(term);
+//             } else if lblpos {
+//                 return match_positive_label(term);
+//             } else {
+//                 term = remove_label_rec(term);
+//             }
+
+//             return Term::Attributes {
+//                 term: Box::new(term),
+//                 attributes: attributes,
+//             };
+//         }
+//     }
+// }
 
 // pub struct LetBindingReWriter {
 //     let_bindings: HashMap<Symbol, (concrete::Term, usize)>,
@@ -232,28 +334,28 @@ use crate::term_rewrite_prop::term_rewrite_prop;
 //     }
 // }
 
-pub fn find_goal_command_index(commands: &Vec<concrete::Command>) -> usize {
-    let mut i = commands.len() - 1;
-    // TODO: more robust pattern matching?
-    while i > 0 {
-        let command = &commands[i];
-        if let Command::Assert { term: _ } = command {
-            if let Command::CheckSat = &commands[i + 1] {
-                // break;
-            } else {
-                panic!("expected check-sat after the goal assert");
-            }
-            break;
-        }
-        i -= 1;
-    }
-    i
-}
+// pub fn find_goal_command_index(commands: &Vec<concrete::Command>) -> usize {
+//     let mut i = commands.len() - 1;
+//     // TODO: more robust pattern matching?
+//     while i > 0 {
+//         let command = &commands[i];
+//         if let Command::Assert { term: _ } = command {
+//             if let Command::CheckSat = &commands[i + 1] {
+//                 // break;
+//             } else {
+//                 panic!("expected check-sat after the goal assert");
+//             }
+//             break;
+//         }
+//         i -= 1;
+//     }
+//     i
+// }
 
-pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
-    let i = find_goal_command_index(commands);
-    commands.truncate(i + 1);
-}
+// pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
+//     let i = find_goal_command_index(commands);
+//     commands.truncate(i + 1);
+// }
 
 // pub fn fun_to_assert(command: concrete::Command) -> Vec<concrete::Command> {
 //     if let Command::DefineFun { sig, term } = &command {
@@ -399,80 +501,6 @@ pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
 // }
 
 
-
-// // fn find_macro(commands: &Vec<concrete::Command>) {
-// //     commands.iter().for_each(|c| {
-// //         if let Command::Assert { term } = c {
-// //             if let Term::Forall { vars, term } = term {
-// //                 if let Term::Attributes { term , attributes } = &**term {
-// //                     if let Some((lhs, rhs)) = get_equal_terms(term) {
-// //                         // println!("found macro?");
-// //                         // println!("{}", c);
-// //                         println!("lhs {}", lhs);
-// //                         println!("rhs {}", rhs);
-// //                         println!("");
-// //                     }
-// //                 }
-// //             }
-// //         }
-// //     });
-// // }
-
-// // pub struct EqualityRewriter {
-// //     lhs: HashMap<Term, (Term, usize)>,
-// //     // binded: HashSet<Symbol>,
-// //     // bindings: Vec<(Symbol, concrete::Term)>,
-// // }
-
-// // impl EqualityRewriter {
-// //     fn new(commands: &Vec<concrete::Command>) -> EqualityRewriter {
-// //         let mut lhs = HashMap::new();
-
-// //         commands.iter().enumerate().for_each(|(i, c)| {
-// //             if let Command::Assert { term } = c {
-// //                 if let Some((l, r)) = get_equal_term(&term) {
-// //                     lhs.insert(l, (r, i));
-// //                 }
-// //             }
-// //         });
-
-// //         EqualityRewriter {
-// //             lhs: lhs,
-// //         }
-// //     }
-// // }
-
-// // fn replace_equal_terms(command: &concrete::Command, rules: &HashMap<Term, Term>) -> Option<concrete::Command>
-// // {
-// //     if let Command::Assert { term } = command {
-// //         let mut string = format!("{}", term);
-// //         for rule in rules.iter() {
-// //             let lhs = rule.0.to_string();
-// //             let rhs = rule.1.to_string();
-// //             if string.contains(&lhs) {
-// //                 string = string.replace(&lhs, &rhs);
-// //             }
-// //         }
-// //         println!("(assert {})", string);
-// //     } else {
-// //         println!("{}", command);
-// //     }
-
-// //     // if let Command::DefineFun { sig: _, term } = command {
-// //     //     let string = format!("{}", term);
-// //     //     for rule in rules.iter() {
-// //     //         let lhs = rule.0.to_string();
-// //     //         let rhs = rule.1.to_string();
-// //     //         if string.contains(&lhs) {
-// //     //             println!("original:\n {}", string);
-// //     //             let aa = string.replace(&lhs, &rhs);
-// //     //             println!("replace with:\n {}", aa);
-// //     //         }
-// //     //     }
-// //     // }
-// //     return None;
-// // }
-
 // fn make_substitution(term: Term, lhs: &Term, rhs: &Term) -> Term {
 //     match term {
 //         Term::Constant(_) => term,
@@ -534,182 +562,3 @@ pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
 //         }
 //     }
 // }
-
-// pub fn rewrite_equal(commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
-//     let mut lhs: HashMap<Term, Term> = HashMap::new();
-//     commands.iter().for_each(|c| {
-//         if let Command::Assert { term } = c {
-//             if let Some((l, r)) = get_equal_terms(&term) {
-//                 if r == get_true() || r == get_false() {
-//                     lhs.insert(l, r);
-//                 }
-//             }
-//         }
-//     });
-
-//     for rule in lhs.iter() {
-//         let lhs = rule.0.to_string();
-//         let rhs = rule.1.to_string();
-//         println!("; lhs {}", lhs);
-//         println!("; rhs {}", rhs);
-//     }
-
-//     commands
-//         .into_iter()
-//         .map(|cmd| {
-//             if let Command::Assert { mut term } = cmd {
-//                 for (l, r) in &lhs {
-//                     term = make_substitution(term, l, r);
-//                 }
-//                 Command::Assert { term }
-//             } else {
-//                 cmd
-//             }
-//         })
-//         .collect()
-
-//     // let mut commands = commands;
-
-//     // commands.into_iter().map(|x| replace_equal_terms(x, &lhs)).map(filter_none).flatten().collect();
-
-//     // EqualityRewriter {
-//     //     lhs: lhs,
-//     // }
-
-//     // let rewriter = EqualityRewriter::new(&commands);
-// }
-
-// fn cancel_implication_rec(
-//     premise: &concrete::Term,
-//     lhs: concrete::Term,
-//     found: &mut bool,
-// ) -> concrete::Term {
-//     if *premise == lhs {
-//         *found = true;
-//         return get_true();
-//     }
-
-//     if *found {
-//         return lhs;
-//     }
-
-//     // println!("canceling... {}", premise);
-//     // println!("canceling... lhs {}", lhs);
-
-//     if let Some((f, mut arguments)) = match_simple_app_terms(lhs.clone()) {
-//         if f.0 == "and" {
-//             assert!(arguments.len() == 2);
-//             let r = arguments.pop().unwrap();
-//             let l = arguments.pop().unwrap();
-//             let l = cancel_implication_rec(premise, l, found);
-//             let r = cancel_implication_rec(premise, r, found);
-//             return Term::Application {
-//                 qual_identifier: QualIdentifier::Simple {
-//                     identifier: concrete::Identifier::Simple {
-//                         symbol: Symbol("and".to_string()),
-//                     },
-//                 },
-//                 arguments: vec![l, r],
-//             };
-//         }
-//     }
-//     return lhs;
-// }
-
-// fn cancel_implication(
-//     premise: concrete::Term,
-//     lhs: concrete::Term,
-//     rhs: concrete::Term,
-// ) -> Option<concrete::Term> {
-//     if premise == lhs {
-//         return Some(rhs);
-//     }
-
-//     let mut matched = false;
-//     let lhs = cancel_implication_rec(&premise, lhs, &mut matched);
-//     if !matched {
-//         return None;
-//     }
-//     assert!(matched);
-//     return Some(Term::Application {
-//         qual_identifier: QualIdentifier::Simple {
-//             identifier: concrete::Identifier::Simple {
-//                 symbol: Symbol("and".to_string()),
-//             },
-//         },
-//         arguments: vec![lhs, rhs],
-//     });
-// }
-
-// fn peel_goal_term_rec(term: concrete::Term) {
-//     let cpy = term.clone();
-//     if let Some((f, mut arguments)) = match_simple_app_terms(term) {
-//         if f.0 == "=>" {
-//             assert!(arguments.len() == 2);
-//             println!("(assert {})", arguments[0]);
-//             let rhs = arguments.pop().unwrap();
-//             peel_goal_term_rec(rhs);
-//         }
-
-//         if f.0 == "and" {
-//             assert!(arguments.len() == 2);
-//             let r = arguments.pop().unwrap();
-//             let l = arguments.pop().unwrap();
-
-//             if let Some((f, implies)) = match_simple_app_terms(r) {
-//                 if f.0 != "=>" {
-//                     println!("and lhs {}", l);
-//                     println!("and rhs {} {} {}", f, implies[0], implies[1]);
-//                     panic!("not supporting this yet");
-//                 }
-//                 // assert!(implies.len() == 2);
-//                 let imp = cancel_implication(l, implies[0].clone(), implies[1].clone());
-//                 if let Some(imp) = imp {
-//                     peel_goal_term_rec(imp);
-//                 } else {
-//                     print!("(assert {})", cpy);
-//                 }
-//             }
-//         }
-//     } else {
-//         panic!("???? {}", cpy);
-//     }
-// }
-
-// fn peel_goal_term(term: concrete::Term) {
-//     if let Some((f, arguments)) = match_simple_app_terms(term) {
-//         assert!(f.0 == "not");
-//         assert!(arguments.len() == 1);
-//         peel_goal_term_rec(arguments[0].clone());
-//     } else {
-//         panic!()
-//     }
-// }
-
-fn decompose_goal(goal_command: concrete::Command) -> Vec<concrete::Command> {
-    let mut commands = vec![];
-    if let Command::Assert { mut term } = goal_command {
-        remove_label_rec(&mut term);
-        term_rewrite_prop(&mut term);
-        commands.push(Command::Assert { term });
-    }
-    return commands;
-}
-
-fn command_rewrite_prop(command: &mut concrete::Command) {
-    if let Command::Assert { term } = command {
-        term_rewrite_prop(term);
-    }
-}
-
-pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
-    let mut commands = commands;
-    truncate_commands(&mut commands);
-    let goal_command = commands.pop().unwrap();
-
-    commands.iter_mut().for_each(|mut c| command_rewrite_prop(&mut c));
-    let mut sub_commands = decompose_goal(goal_command);
-    commands.append(&mut sub_commands);
-    commands.push(Command::CheckSat);
-    return commands;
-}

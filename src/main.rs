@@ -13,6 +13,10 @@ use std::vec;
 mod tree_shake;
 mod core_export;
 mod tree_rewrite;
+mod pretty_print;
+mod term_match;
+mod term_rewrite_prop;
+mod term_rewrite_label;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -525,11 +529,11 @@ fn main() {
     } else if args.mutation == "remove-unused" {
         commands = tree_shake::remove_unused_symbols(commands);
     } else if args.mutation == "fun-assert" {
-        commands = commands
-            .into_iter()
-            .map(|x| tree_rewrite::fun_to_assert(x))
-            .flatten()
-            .collect();
+        // commands = commands
+        //     .into_iter()
+        //     .map(|x| tree_rewrite::fun_to_assert(x))
+        //     .flatten()
+        //     .collect();
     } else {
         panic!("[ERROR] unknown mutation {}", args.mutation);
     }
