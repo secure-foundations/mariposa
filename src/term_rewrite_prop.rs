@@ -1,14 +1,14 @@
 use smt2parser::concrete;
-use smt2parser::concrete::{Command, QualIdentifier, Symbol, Term};
+use smt2parser::concrete::{QualIdentifier, Symbol, Term};
 use std::collections::{HashMap, HashSet};
 
 use crate::term_match::{
-    make_false_term, make_not_term, make_trivial_bool_term, match_simple_qual_identifier, make_true_term, match_bool_term
+    make_bool_term, make_false_term, make_not_term, make_true_term, match_bool_term,
+    match_simple_qual_identifier,
 };
 
-fn rewrite_prop_app(identifier: &QualIdentifier, arguments: &Vec<Term>) -> Option<Term> {
+fn rewrite_prop_app(identifier: &QualIdentifier, arguments: &mut Vec<Term>) -> Option<Term> {
     let id = match_simple_qual_identifier(identifier)?;
-    // assert!(arguments.len() == 2);
 
     if id.0 == "=>" || id.0 == "implies" {
         let p = match_bool_term(&arguments[0]);
@@ -28,40 +28,26 @@ fn rewrite_prop_app(identifier: &QualIdentifier, arguments: &Vec<Term>) -> Optio
             return Some(make_true_term());
         }
     } else if id.0 == "and" {
-        assert!(arguments.len() == 2);
-        let p = match_bool_term(&arguments[0]);
-        let q = match_bool_term(&arguments[1]);
-
-        if p == Some(false) {
-            // false and q = false
+        arguments.retain(|arg| match_bool_term(arg) != Some(true));
+        if arguments
+            .iter()
+            .any(|arg| match_bool_term(arg) == Some(false))
+        {
             return Some(make_false_term());
-        } else if p == Some(true) {
-            // true and q = q
-            return Some(arguments[1].clone());
-        } else if q == Some(false) {
-            // p and false = false
-            return Some(make_false_term());
-        } else if q == Some(true) {
-            // p and true = p
-            return Some(arguments[0].clone());
+        }
+        if arguments.len() == 1 {
+            return arguments.pop();
         }
     } else if id.0 == "or" {
-        assert!(arguments.len() == 2);
-        let p = match_bool_term(&arguments[0]);
-        let q = match_bool_term(&arguments[1]);
-
-        if p == Some(false) {
-            // false or q = q
-            return Some(arguments[1].clone());
-        } else if p == Some(true) {
-            // true or q = true
+        arguments.retain(|arg| match_bool_term(arg) != Some(false));
+        if arguments
+            .iter()
+            .any(|arg| match_bool_term(arg) == Some(true))
+        {
             return Some(make_true_term());
-        } else if q == Some(false) {
-            // p or false = p
-            return Some(arguments[0].clone());
-        } else if q == Some(true) {
-            // p or true = true
-            return Some(make_true_term());
+        }
+        if arguments.len() == 1 {
+            return arguments.pop();
         }
     } else if id.0 == "not" {
         assert!(arguments.len() == 1);
@@ -101,22 +87,22 @@ impl PropRewriter {
             } => {
                 let temp = vec![];
                 let arg_terms = std::mem::replace(arguments, temp);
-                let arg_terms: Vec<Term> = arg_terms
+                let mut arg_terms: Vec<Term> = arg_terms
                     .into_iter()
                     .map(|mut arg| {
                         if let Some(b) = self.rewrite_prop_rec(&mut arg) {
-                            make_trivial_bool_term(b)
+                            make_bool_term(b)
                         } else {
                             arg
                         }
                     })
                     .collect();
-                if let Some(new_term) = rewrite_prop_app(qual_identifier, &arg_terms) {
+                if let Some(new_term) = rewrite_prop_app(qual_identifier, &mut arg_terms) {
                     let trivial = match_bool_term(&new_term);
                     *term = new_term;
                     return trivial;
                 } else {
-                    *arguments = arg_terms;       
+                    *arguments = arg_terms;
                     return None;
                 }
             }
@@ -136,7 +122,7 @@ impl PropRewriter {
 
                 let mut result = None;
                 if let Some(trivial) = self.rewrite_prop_rec(sub_term) {
-                    *term = make_trivial_bool_term(trivial);
+                    *term = make_bool_term(trivial);
                     result = Some(trivial);
                 }
 
@@ -151,7 +137,7 @@ impl PropRewriter {
                 term: sub_term,
             } => {
                 let trivial = self.rewrite_prop_rec(sub_term)?;
-                *term = make_trivial_bool_term(trivial);
+                *term = make_bool_term(trivial);
                 return Some(trivial);
             }
             Term::Exists {
@@ -159,7 +145,7 @@ impl PropRewriter {
                 term: sub_term,
             } => {
                 let trivial = self.rewrite_prop_rec(sub_term)?;
-                *term = make_trivial_bool_term(trivial);
+                *term = make_bool_term(trivial);
                 return Some(trivial);
             }
             Term::Attributes {
@@ -167,7 +153,7 @@ impl PropRewriter {
                 attributes: _,
             } => {
                 let trivial = self.rewrite_prop_rec(sub_term)?;
-                *term = make_trivial_bool_term(trivial);
+                *term = make_bool_term(trivial);
                 return Some(trivial);
             }
             _ => None,

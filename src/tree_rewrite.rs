@@ -1,4 +1,4 @@
-use smt2parser::concrete;
+use smt2parser::{concrete, rewriter};
 use smt2parser::concrete::{Command, QualIdentifier, Symbol, Term};
 use std::collections::{HashMap, HashSet};
 
@@ -6,62 +6,7 @@ use crate::pretty_print::print_prop_skeleton;
 use crate::term_match::match_simple_app_terms;
 use crate::term_rewrite_label::remove_label_rec;
 use crate::term_rewrite_prop::term_rewrite_prop;
-
-// fn rewrite_let_binding(var: &Symbol, term0: &concrete::Term) -> Vec<concrete::Command> {
-//     if let Term::Let {
-//         var_bindings: _,
-//         term: _,
-//     } = term0
-//     {
-//         panic!("not supporting another let in term0");
-//     }
-
-//     let lhs = Term::QualIdentifier(QualIdentifier::Simple {
-//         identifier: concrete::Identifier::Simple {
-//             symbol: var.clone(),
-//         },
-//     });
-
-//     let term = Box::new(Term::Application {
-//         qual_identifier: QualIdentifier::Simple {
-//             identifier: concrete::Identifier::Simple {
-//                 symbol: Symbol("=".to_string()),
-//             },
-//         },
-//         arguments: vec![lhs, term0.clone()],
-//     });
-
-//     vec![
-//         Command::DeclareConst {
-//             symbol: var.clone(),
-//             sort: concrete::Sort::Simple {
-//                 identifier: concrete::Identifier::Simple {
-//                     symbol: Symbol("Bool".to_owned()),
-//                 },
-//             },
-//         },
-//         Command::Assert { term: *term },
-//     ]
-// }
-
-// fn get_simple_qualid_symbol(term: &Term) -> Option<Symbol> {
-//     if let Term::QualIdentifier(qual_identifier) = term {
-//         if let QualIdentifier::Simple { identifier } = qual_identifier {
-//             if let concrete::Identifier::Simple { symbol } = identifier {
-//                 return Some(symbol.clone());
-//             }
-//         }
-//     }
-//     return None;
-// }
-
-
-
-// pub struct LetBindingReWriter {
-//     let_bindings: HashMap<Symbol, (concrete::Term, usize)>,
-//     order: Vec<Symbol>,
-//     other_bindings: HashSet<Symbol>,
-// }
+use crate::term_rewrite_let::LetBindingReWriter;
 
 // fn replace_symbol_rec(term: Term, old: &Symbol, new: &Term, count: &mut usize) -> Term {
 //     match term {
@@ -130,105 +75,6 @@ use crate::term_rewrite_prop::term_rewrite_prop;
 //                 attributes: attributes,
 //             };
 //         }
-//     }
-// }
-
-// impl LetBindingReWriter {
-//     pub fn new() -> LetBindingReWriter {
-//         LetBindingReWriter {
-//             let_bindings: HashMap::new(),
-//             order: vec![],
-//             other_bindings: HashSet::new(),
-//         }
-//     }
-
-//     // fn add_other_binding(&mut self, var: Symbol, binding: concrete::Term) {
-//     //     assert!(!self.binded.contains(&var));
-//     //     self.binded.insert(var.clone());
-//     //     self.bindings.insert(var, binding, 0);
-//     // }
-
-//     fn add_let_binding(&mut self, var: Symbol, binding: concrete::Term) {
-//         assert!(!self.other_bindings.contains(&var));
-//         let exists = self.let_bindings.insert(var.clone(), (binding, 0));
-//         self.order.push(var);
-//         assert!(exists.is_none());
-//     }
-
-//     fn increment_let_binding(&mut self, qual_identifier: &concrete::QualIdentifier) {
-//         if let concrete::QualIdentifier::Simple { identifier } = qual_identifier {
-//             if let concrete::Identifier::Simple { symbol } = identifier {
-//                 if let Some((binding, count)) = self.let_bindings.get_mut(symbol) {
-//                     *count += 1;
-//                 }
-//             }
-//         }
-//     }
-
-//     fn rewrite_let_bindings_rec(&mut self, term: Term) -> Term {
-//         match term {
-//             Term::Constant(_) => term,
-//             Term::QualIdentifier(qual_identifier) => {
-//                 self.increment_let_binding(&qual_identifier);
-//                 Term::QualIdentifier(qual_identifier)
-//             }
-//             Term::Application {
-//                 qual_identifier,
-//                 arguments,
-//             } => {
-//                 let arguments = arguments
-//                     .into_iter()
-//                     .map(|arg| self.rewrite_let_bindings_rec(arg))
-//                     .collect();
-//                 return Term::Application {
-//                     qual_identifier,
-//                     arguments: arguments,
-//                 };
-//             }
-//             Term::Let { var_bindings, term } => {
-//                 for (var, binding) in var_bindings {
-//                     let binding = self.rewrite_let_bindings_rec(binding);
-//                     self.add_let_binding(var, binding);
-//                 }
-//                 return self.rewrite_let_bindings_rec(*term);
-//             }
-//             Term::Forall { vars, term } => {
-//                 let term = self.rewrite_let_bindings_rec(*term);
-//                 return Term::Forall {
-//                     vars: vars,
-//                     term: Box::new(term),
-//                 };
-//             }
-//             Term::Exists { vars, term } => {
-//                 let term = self.rewrite_let_bindings_rec(*term);
-//                 return Term::Exists {
-//                     vars: vars,
-//                     term: Box::new(term),
-//                 };
-//             }
-//             Term::Match { term: _, cases: _ } => {
-//                 panic!("not supporting match yet");
-//             }
-//             Term::Attributes { term, attributes } => {
-//                 let term = self.rewrite_let_bindings_rec(*term);
-//                 return Term::Attributes {
-//                     term: Box::new(term),
-//                     attributes: attributes,
-//                 };
-//             }
-//         }
-//     }
-
-//     fn rewrite_let_bindings(&mut self, command: concrete::Command) -> Vec<concrete::Command> {
-//         let mut commands = vec![];
-//         if let Command::Assert { term } = command {
-//             let mut term = self.rewrite_let_bindings_rec(term);
-//             self.order.reverse();
-//             let def_fun = rewrite_let_binding(&var, &binding);
-//             commands.extend(def_fun);
-//             commands.push(Command::Assert { term: term });
-//         }
-//         return commands;
 //     }
 // }
 
@@ -691,7 +537,8 @@ fn decompose_goal(goal_command: concrete::Command) -> Vec<concrete::Command> {
     if let Command::Assert { mut term } = goal_command {
         remove_label_rec(&mut term);
         term_rewrite_prop(&mut term);
-        commands.push(Command::Assert { term });
+        let mut rw = LetBindingReWriter::new();
+        commands.extend(rw.rewrite_let_bindings(term));
     }
     return commands;
 }

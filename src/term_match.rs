@@ -17,7 +17,7 @@ pub fn make_false_term() -> concrete::Term {
     });
 }
 
-pub fn make_trivial_bool_term(b: bool) -> concrete::Term {
+pub fn make_bool_term(b: bool) -> concrete::Term {
     if b {
         return make_true_term();
     } else {
@@ -49,16 +49,18 @@ pub fn match_bool_term(term: &concrete::Term) -> Option<bool> {
     return None;
 }
 
-pub fn match_simple_qual_identifier(identifier: &concrete::QualIdentifier) -> Option<Symbol> {
+#[inline]
+pub fn match_simple_qual_identifier(identifier: &concrete::QualIdentifier) -> Option<&Symbol> {
     if let QualIdentifier::Simple { identifier } = identifier {
         if let concrete::Identifier::Simple { symbol } = identifier {
-            return Some(symbol.clone());
+            return Some(symbol);
         }
     }
     return None;
 }
 
-pub fn match_simple_qual_identifier_term(term: &Term) -> Option<Symbol> {
+#[inline]
+pub fn match_simple_qual_identifier_term(term: &Term) -> Option<&Symbol> {
     if let Term::QualIdentifier(qual_identifier) = term {
         return match_simple_qual_identifier(qual_identifier);
     }

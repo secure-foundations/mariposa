@@ -1,5 +1,4 @@
-use clap::command;
-use smt2parser::concrete::{self};
+use smt2parser::concrete;
 use smt2parser::concrete::{AttributeValue, Command, Symbol, Term};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;

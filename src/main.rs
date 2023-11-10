@@ -17,6 +17,7 @@ mod pretty_print;
 mod term_match;
 mod term_rewrite_prop;
 mod term_rewrite_label;
+mod term_rewrite_let;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
