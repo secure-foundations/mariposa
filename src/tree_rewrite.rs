@@ -1,12 +1,13 @@
-use smt2parser::{concrete, rewriter};
 use smt2parser::concrete::{Command, QualIdentifier, Symbol, Term};
-use std::collections::{HashMap, HashSet};
+use smt2parser::{concrete, rewriter};
+// use std::collections::{HashMap, HashSet};
 
 use crate::pretty_print::print_prop_skeleton;
-use crate::term_match::match_simple_app_terms;
+use crate::term_match::{make_not_term, match_simple_app_term};
+use crate::term_rewrite_flat::flatten_assert;
 use crate::term_rewrite_label::remove_label_rec;
-use crate::term_rewrite_prop::term_rewrite_prop;
 use crate::term_rewrite_let::LetBindingReWriter;
+use crate::term_rewrite_prop::term_rewrite_prop;
 
 // fn replace_symbol_rec(term: Term, old: &Symbol, new: &Term, count: &mut usize) -> Term {
 //     match term {
@@ -156,40 +157,6 @@ pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
 //     }
 // }
 
-// // fn get_nested_and_terms(term: &concrete::Term) -> Vec<Term> {
-// //     if let Some((l, r)) = get_binary_app_term(term, &Symbol("and".to_string())) {
-// //         let mut l = get_nested_and_terms(&l);
-// //         let mut r = get_nested_and_terms(&r);
-// //         l.append(&mut r);
-// //         return l;
-// //     }
-// //     return vec![term.clone()];
-// // }
-
-// // fn get_nested_implies_terms(term: &concrete::Term) -> Vec<Term> {
-// //     if let Some((l, r)) = get_binary_app_term(term, &Symbol("=>".to_string())) {
-// //         let mut r = get_nested_implies_terms(&r);
-// //         r.insert(0, l);
-// //         return r;
-// //     } else if let Some((l, r)) = get_binary_app_term(term, &Symbol("implies".to_string())) {
-// //         let mut r = get_nested_implies_terms(&r);
-// //         r.insert(0, l);
-// //         return r;
-// //     }
-// //     return vec![term.clone()];
-// // }
-
-// // pub fn flatten_assert(command: concrete::Command) -> Vec<concrete::Command> {
-// //     if let Command::Assert { term } = &command {
-// //         let ts = get_nested_and_terms(&term);
-// //         ts.into_iter()
-// //             .map(|x| concrete::Command::Assert { term: x })
-// //             .collect()
-// //     } else {
-// //         vec![command]
-// //     }
-// // }
-
 // // fn flatten_nested_implies_assert(command: concrete::Command) -> concrete::Command {
 // //     if let Command::Assert { term } = &command {
 // //         if let Some((l, r)) = get_bin_app_term(term, &Symbol("=".to_string())) {
@@ -243,8 +210,6 @@ pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
 //     }
 //     return None;
 // }
-
-
 
 // // fn find_macro(commands: &Vec<concrete::Command>) {
 // //     commands.iter().for_each(|c| {
@@ -318,68 +283,6 @@ pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
 // //     // }
 // //     return None;
 // // }
-
-// fn make_substitution(term: Term, lhs: &Term, rhs: &Term) -> Term {
-//     match term {
-//         Term::Constant(_) => term,
-//         Term::QualIdentifier(_) => {
-//             if lhs == &term {
-//                 return rhs.clone();
-//             } else {
-//                 return term;
-//             }
-//         }
-//         Term::Application {
-//             qual_identifier,
-//             arguments,
-//         } => {
-//             let mut new_arguments = vec![];
-//             for arg in arguments {
-//                 let new_arg = make_substitution(arg, lhs, rhs);
-//                 new_arguments.push(new_arg);
-//             }
-//             return Term::Application {
-//                 qual_identifier,
-//                 arguments: new_arguments,
-//             };
-//         }
-//         Term::Let { var_bindings, term } => {
-//             let var_bindings = var_bindings
-//                 .into_iter()
-//                 .map(|(var, binding)| (var, make_substitution(binding, lhs, rhs)))
-//                 .collect();
-//             let term = make_substitution(*term, lhs, rhs);
-//             return Term::Let {
-//                 var_bindings: var_bindings,
-//                 term: Box::new(term),
-//             };
-//         }
-//         Term::Forall { vars, term } => {
-//             let new_term = make_substitution(*term, lhs, rhs);
-//             return Term::Forall {
-//                 vars: vars,
-//                 term: Box::new(new_term),
-//             };
-//         }
-//         Term::Exists { vars, term } => {
-//             let new_term = make_substitution(*term, lhs, rhs);
-//             return Term::Exists {
-//                 vars: vars,
-//                 term: Box::new(new_term),
-//             };
-//         }
-//         Term::Match { term: _, cases: _ } => {
-//             panic!("not supporting match yet");
-//         }
-//         Term::Attributes { term, attributes } => {
-//             let new_term = make_substitution(*term, lhs, rhs);
-//             return Term::Attributes {
-//                 term: Box::new(new_term),
-//                 attributes: attributes,
-//             };
-//         }
-//     }
-// }
 
 // pub fn rewrite_equal(commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
 //     let mut lhs: HashMap<Term, Term> = HashMap::new();
@@ -487,58 +390,71 @@ pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
 //     });
 // }
 
-// fn peel_goal_term_rec(term: concrete::Term) {
-//     let cpy = term.clone();
-//     if let Some((f, mut arguments)) = match_simple_app_terms(term) {
-//         if f.0 == "=>" {
-//             assert!(arguments.len() == 2);
-//             println!("(assert {})", arguments[0]);
-//             let rhs = arguments.pop().unwrap();
-//             peel_goal_term_rec(rhs);
-//         }
+fn peel_goal_term_rec(term: &mut concrete::Term, results: &mut Vec<Command>) {
+    // let cpy = term.clone();
+    if let Some((f, arguments)) = match_simple_app_term(term) {
+        if f.0 == "=>" {
+            assert!(arguments.len() == 2);
+            results.push(Command::Assert {
+                term: arguments[0].clone(),
+            });
+            let mut rhs = arguments.pop().unwrap();
+            peel_goal_term_rec(&mut rhs, results);
+            return;
+        }
+    }
 
-//         if f.0 == "and" {
-//             assert!(arguments.len() == 2);
-//             let r = arguments.pop().unwrap();
-//             let l = arguments.pop().unwrap();
+    if let Term::Forall {
+        vars,
+        term: sub_term,
+    } = term
+    {
+        vars.iter().for_each(|v| {
+            results.push(Command::DeclareConst {
+                symbol: v.0.clone(),
+                sort: v.1.clone(),
+            });
+        });
+        peel_goal_term_rec(sub_term, results);
+        return;
+    }
 
-//             if let Some((f, implies)) = match_simple_app_terms(r) {
-//                 if f.0 != "=>" {
-//                     println!("and lhs {}", l);
-//                     println!("and rhs {} {} {}", f, implies[0], implies[1]);
-//                     panic!("not supporting this yet");
-//                 }
-//                 // assert!(implies.len() == 2);
-//                 let imp = cancel_implication(l, implies[0].clone(), implies[1].clone());
-//                 if let Some(imp) = imp {
-//                     peel_goal_term_rec(imp);
-//                 } else {
-//                     print!("(assert {})", cpy);
-//                 }
-//             }
-//         }
-//     } else {
-//         panic!("???? {}", cpy);
-//     }
-// }
+    if let Term::Attributes { term: sub_term, .. } = term {
+        // TODO: maintain attributes if there is no change
+        peel_goal_term_rec(sub_term, results);
+        return;
+    }
 
-// fn peel_goal_term(term: concrete::Term) {
-//     if let Some((f, arguments)) = match_simple_app_terms(term) {
-//         assert!(f.0 == "not");
-//         assert!(arguments.len() == 1);
-//         peel_goal_term_rec(arguments[0].clone());
-//     } else {
-//         panic!()
-//     }
-// }
+    println!("(assert (not");
+    print_prop_skeleton(&term, 1);
+    println!("))");
+
+    results.push(Command::Assert {
+        term: make_not_term(term.clone()),
+    });
+}
+
+fn peel_goal_term(term: &mut concrete::Term) -> Vec<Command> {
+    let mut results = vec![];
+    if let Term::Attributes { term: sub_term, .. } = term {
+        if let Some((f, arguments)) = match_simple_app_term(sub_term) {
+            assert!(f.0 == "not");
+            assert!(arguments.len() == 1);
+            let mut arg = arguments.pop().unwrap();
+            peel_goal_term_rec(&mut arg, &mut results);
+        }
+    }
+    return results;
+}
 
 fn decompose_goal(goal_command: concrete::Command) -> Vec<concrete::Command> {
     let mut commands = vec![];
     if let Command::Assert { mut term } = goal_command {
         remove_label_rec(&mut term);
         term_rewrite_prop(&mut term);
-        let mut rw = LetBindingReWriter::new();
-        commands.extend(rw.rewrite_let_bindings(term));
+        commands.extend(peel_goal_term(&mut term));
+        // let mut rw = LetBindingReWriter::new();
+        // commands.extend(rw.rewrite_let_bindings(term));
     }
     return commands;
 }
@@ -554,9 +470,18 @@ pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> 
     truncate_commands(&mut commands);
     let goal_command = commands.pop().unwrap();
 
-    commands.iter_mut().for_each(|mut c| command_rewrite_prop(&mut c));
-    let mut sub_commands = decompose_goal(goal_command);
-    commands.append(&mut sub_commands);
+    commands
+        .iter_mut()
+        .for_each(|mut c| command_rewrite_prop(&mut c));
+
+    commands.extend(decompose_goal(goal_command));
+
+    commands = commands
+        .into_iter()
+        .map(|c| flatten_assert(c))
+        .flatten()
+        .collect();
+
     commands.push(Command::CheckSat);
     return commands;
 }

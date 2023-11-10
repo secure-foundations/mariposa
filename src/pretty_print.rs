@@ -1,5 +1,7 @@
 use smt2parser::concrete;
-use smt2parser::concrete::{QualIdentifier, Term};
+use smt2parser::concrete::Term;
+
+use crate::term_match::match_simple_qual_identifier;
 
 pub fn print_prop_skeleton(term: &concrete::Term, indent: usize) {
     match term {
@@ -13,23 +15,20 @@ pub fn print_prop_skeleton(term: &concrete::Term, indent: usize) {
             qual_identifier,
             arguments,
         } => {
-            if let QualIdentifier::Simple { identifier } = qual_identifier {
-                if let concrete::Identifier::Simple { symbol } = identifier {
-                    if symbol.0 == "=>" || symbol.0 == "implies" || symbol.0 == "and" || symbol.0 == "or" || symbol.0 == "=" {
-                        assert!(arguments.len() == 2);
-                        print!("{}(=>\n", " ".repeat(indent));
-                        print_prop_skeleton(&arguments[0], indent + 1);
-                        print_prop_skeleton(&arguments[1], indent + 1);
-                        print!("{})\n", " ".repeat(indent));
-                        return;
+            if let Some(symbol) = match_simple_qual_identifier(qual_identifier) {
+                if symbol.0 == "=>"
+                    || symbol.0 == "implies"
+                    || symbol.0 == "and"
+                    || symbol.0 == "or"
+                    || symbol.0 == "="
+                    || symbol.0 == "not"
+                {
+                    print!("{}({}\n", " ".repeat(indent), symbol.0);
+                    for arg in arguments {
+                        print_prop_skeleton(arg, indent + 1);
                     }
-                    if symbol.0 == "not" {
-                        assert!(arguments.len() == 1);
-                        print!("{}(not\n", " ".repeat(indent));
-                        print_prop_skeleton(&arguments[0], indent + 1);
-                        print!("{})\n", " ".repeat(indent));
-                        return;
-                    }
+                    print!("{})\n", " ".repeat(indent));
+                    return;
                 }
             }
             println!("{}{}", " ".repeat(indent), term);

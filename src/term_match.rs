@@ -85,7 +85,7 @@ pub fn match_simple_qual_identifier_term(term: &Term) -> Option<&Symbol> {
 //     return None;
 // }
 
-pub fn match_simple_app_terms(term: &mut concrete::Term) -> Option<(&Symbol, &mut Vec<concrete::Term>)> {
+pub fn match_simple_app_term(term: &mut concrete::Term) -> Option<(&Symbol, &mut Vec<concrete::Term>)> {
     if let Term::Application {
         qual_identifier,
         arguments,
@@ -100,29 +100,9 @@ pub fn match_simple_app_terms(term: &mut concrete::Term) -> Option<(&Symbol, &mu
     return None;
 }
 
-// pub fn match_simple_binary_app_terms(term: concrete::Term) -> Option<(Symbol, Vec<concrete::Term>)> {
-//     match_simple_app_terms(term).and_then(|(symbol, arguments)| {
-//         if arguments.len() == 2 {
-//             return Some((symbol, arguments));
-//         }
-//         return None;
-//     })
-// }
-
-// fn get_unary_app_term(term: &concrete::Term, fun_symbol: &Symbol) -> Option<Term> {
-//     if let Term::Application {
-//         qual_identifier,
-//         arguments,
-//     } = term
-//     {
-//         if let QualIdentifier::Simple { identifier } = qual_identifier {
-//             if let concrete::Identifier::Simple { symbol } = identifier {
-//                 if symbol == fun_symbol {
-//                     assert!(arguments.len() == 1);
-//                     return Some(arguments[0].clone());
-//                 }
-//             }
-//         }
+// pub fn match_forall_term(term: &mut concrete::Term) -> Option<(&mut Vec<(Symbol, concrete::Sort)>, &mut concrete::Term)> {
+//     if let Term::Forall { vars, term } = term {
+//         return Some((vars, term));
 //     }
 //     return None;
 // }
