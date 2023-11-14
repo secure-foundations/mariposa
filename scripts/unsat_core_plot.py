@@ -6,8 +6,10 @@ from plot_utils import *
 from configer import Configer
 from unsat_core_build import *
 import plotly.graph_objects as go
+import plotly
+import re
 
-# def plot_instability_retention():
+# def plot_instability_change():
 #     fig, ax = plt.subplots()
 #     x = 0
 
@@ -277,7 +279,8 @@ def plot_migration(proj):
                     ])
 
     fig.update_layout(title_text=f"{proj.name} stability migration", font_size=10)
-    fig.write_image(f"fig/context/migration/{proj.name}.png", width=800, height=600, scale=2)
+    # fig.write_image(f"fig/context/migration/{proj.name}.png", width=800, height=600, scale=2)
+    plotly.offline.plot(fig, filename=f"fig/context/migration/{proj.name}.html")
 
 # def plot_shake_mean_depth(proj):
 #     s_dps = []
@@ -322,10 +325,55 @@ def plot_migration(proj):
 #     plt.savefig(f"fig/context/shake_mean_{proj.name}.png", dpi=200)
 #     plt.close()
 
+def analyze_fs_dice():
+    proj = UNSAT_CORE_PROJECTS["fs_dice"]
+    for qm in proj.qms:
+        if qm.base == "queries-L0.Impl.Certificate-14.smt2":
+            break
+
+    print(qm.orig_status)
+    print(qm.extd_status)
+    print(qm.extd_status)
+    # print(qm.get_shake_stats(True))
+    # qm.shake_from_log(4)
+    stamps = parse_stamps(qm.shke_log_path)
+
+    temp = "temp/shake.smt2"
+    qid_pattern = re.compile("qid [^\)]+")
+    orig_asserts = get_asserts(qm.orig_path)
+    mini_asserts = get_asserts(qm.mini_path)
+    temp_asserts = get_asserts(temp)
+    
+    # os.system(f"cp {qm.orig_path} temp/woot.smt2")
+    # os.system(f"cp {qm.mini_path} temp/core.smt2")
+    # os.system(f"cp {qm.extd_path} temp/extd.smt2")
+
+    # for a in temp_asserts:
+    #     finds = re.findall(qid_pattern, mini_asserts[a])
+    #     for i in finds:
+    #         print(i)
+    #     if len(finds) != 0:
+    #         print("")
+
+    for a, c in temp_asserts.items() - mini_asserts.items():
+        finds = re.findall(qid_pattern, c)
+        if len(finds) != 0:
+            print(c)
+            if a in stamps:
+                print(stamps[a])
+            else:
+                print("inf")
+            for i in finds:
+                print(i)
+
+            print("")
+    # print(len(orig_asserts), len(mini_asserts), len(temp_asserts))
+
 if __name__ == "__main__":
-    for proj in UNSAT_CORE_PROJECTS.values():
-        # plot_shake_incomplete(proj)
-        plot_migration(proj)
+    analyze_fs_dice()
+    # for proj in UNSAT_CORE_PROJECTS.values():
+    #     # plot_shake_incomplete(proj)
+    #     plot_migration(proj)
 
     # plot_all_shake_max_depth()
     # plot_all_context_retention()

@@ -5,11 +5,10 @@
         "mutations": [
           "shuffle",
           "rename",
-          "reseed",
-          "quake"
+          "reseed"
         ],
-        "keep_mutants": true,
-        "num_mutants": 60,
+        "keep_mutants": false,
+        "num_mutants": 10,
         "init_seed": "",
         "exp_timeout": 60,
         "num_procs": 7,

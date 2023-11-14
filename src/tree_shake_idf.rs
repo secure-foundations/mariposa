@@ -1,82 +1,161 @@
+use core::panic;
 use smt2parser::concrete;
 use smt2parser::concrete::{AttributeValue, Command, Symbol, Term};
+use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::fs::read_to_string;
 use std::io::Write;
+use std::process::id;
+use std::sync::Arc;
 
+use crate::term_match::match_simple_qual_identifier;
 use crate::tree_rewrite;
+use crate::tree_shake::get_global_symbol_defs;
 
-const DEBUG_DEFS: bool = false;
-const DEBUG_USES: bool = false;
+struct IDFShaker {
+    plain_idfs: HashMap<Symbol, u32>,
+    processed_idfs: HashMap<Symbol, f64>,
+    local_bindings: HashSet<Symbol>,
+    local_processed: HashSet<Symbol>,
+    symbol_command_count: u32,
+}
+
+impl IDFShaker {
+    fn new() -> Self {
+        Self {
+            plain_idfs: HashMap::new(),
+            processed_idfs: HashMap::new(),
+            local_bindings: HashSet::new(),
+            local_processed: HashSet::new(),
+            symbol_command_count: 0,
+        }
+    }
+
+    fn process_command(&mut self, command: &Command) {
+        let defs = get_global_symbol_defs(command);
+        defs.into_iter().for_each(|symbol| {
+            assert_eq!(self.plain_idfs.insert(symbol, 0), None);
+        });
+
+        if let Command::Assert { term } = command {
+            self.get_symbol_uses(term);
+            self.symbol_command_count += 1;
+        } else if let Command::DefineFun { sig, term } = command {
+            for p in &sig.parameters {
+                self.local_bindings.insert(p.0.clone());
+            }
+            self.add_symbol_use(&sig.name);
+            self.get_symbol_uses(term);
+            for p in &sig.parameters {
+                self.local_bindings.remove(&p.0);
+            }
+            self.symbol_command_count += 1;
+        }
+        self.local_bindings.clear();
+        self.local_processed.clear();
+    }
+
+    fn add_symbol_use(&mut self, symbol: &Symbol) {
+        // if we have a local binding, we don't need to count it
+        if self.local_bindings.contains(symbol) {
+            return;
+        }
+
+        // for idf, we only need to process once per symbol per command
+        if self.local_processed.contains(symbol) {
+            return;
+        }
+
+        // only count if we have a definition
+        if let Some(count) = self.plain_idfs.get_mut(symbol) {
+            *count += 1;
+            self.local_processed.insert(symbol.clone());
+        }
+    }
+
+    fn get_symbol_uses(&mut self, term: &concrete::Term) {
+        match term {
+            Term::Constant(..) => (),
+            Term::QualIdentifier(qual_identifier) => {
+                let symbol = match_simple_qual_identifier(qual_identifier).unwrap();
+                self.add_symbol_use(symbol);
+            }
+            Term::Application {
+                qual_identifier,
+                arguments,
+            } => {
+                if let Some(symbol) = match_simple_qual_identifier(qual_identifier) {
+                    self.add_symbol_use(symbol);
+                    arguments.iter().for_each(|x| self.get_symbol_uses(x))
+                }
+            }
+            Term::Let { var_bindings, term } => {
+                // remove local bindings
+                var_bindings.iter().for_each(|x| {
+                    self.local_bindings.insert(x.0.clone());
+                    self.get_symbol_uses(&x.1);
+                });
+                self.get_symbol_uses(term);
+                var_bindings.iter().for_each(|x| {
+                    self.local_bindings.remove(&x.0);
+                });
+            }
+            Term::Forall { vars, term } => {
+                // no need for sort symbols right?
+                vars.iter().for_each(|x| {
+                    self.local_bindings.insert(x.0.clone());
+                });
+                self.get_symbol_uses(term);
+                vars.iter().for_each(|x| {
+                    self.local_bindings.remove(&x.0);
+                });
+            }
+            Term::Exists { vars, term } => {
+                vars.iter().for_each(|x| {
+                    self.local_bindings.insert(x.0.clone());
+                });
+                self.get_symbol_uses(term);
+                vars.iter().for_each(|x| {
+                    self.local_bindings.remove(&x.0);
+                });
+            }
+            Term::Match { term: _, cases: _ } => {
+                panic!("TODO match cases")
+            }
+            Term::Attributes {
+                term,
+                attributes: _,
+            } => {
+                // ignore attributes for now?
+                self.get_symbol_uses(term);
+            }
+        }
+    }
+
+    fn compute_idfs(&mut self) {
+        // let log_n = (self.plain_idfs.len() as f64).log10();
+        let n = self.symbol_command_count;
+        self.plain_idfs.iter().for_each(|(symbol, count)| {
+            if *count != 0 {
+                let idf = (n as f64 / (n as f64 - *count as f64)).log10();
+                self.processed_idfs.insert(symbol.clone(), idf);
+            }
+        });
+    }
+
+    fn dump_to_file(&self, symbol_score_path: String) {
+        let mut file = std::fs::File::create(symbol_score_path).unwrap();
+        let mut idfs: Vec<_> = self.plain_idfs.iter().collect();
+        idfs.sort_by_key(|x| x.1);
+        for (symbol, count) in idfs {
+            let score = self.processed_idfs.get(symbol).unwrap_or(&f64::INFINITY);
+            file.write_all(format!("{}:\t{}\t{}\n", symbol, count, score).as_bytes())
+                .unwrap();
+        }
+    }
+}
 
 type SymbolSet = HashSet<Symbol>;
-
-// get the symbols defined in a command
-pub fn get_global_symbol_defs(command: &concrete::Command) -> SymbolSet {
-    let mut symbols = HashSet::new();
-    match command {
-        Command::DeclareConst { symbol, sort: _ } => {
-            symbols.insert(symbol.clone());
-        }
-        Command::DeclareDatatype {
-            symbol: _,
-            datatype: _,
-        } => {
-            // symbols.insert(symbol.0.clone());
-            panic!("TODO datatype")
-        }
-        Command::DeclareDatatypes { datatypes } => {
-            datatypes.iter().for_each(|x| {
-                symbols.insert(x.0.clone());
-                assert_eq!(x.2.parameters.len(), 0);
-                x.2.constructors.iter().for_each(|y| {
-                    symbols.insert(y.symbol.clone());
-                    y.selectors.iter().for_each(|z| {
-                        symbols.insert(z.0.clone());
-                    });
-                });
-            });
-        }
-        Command::DeclareFun {
-            symbol,
-            parameters: _,
-            sort: _,
-        } => {
-            symbols.insert(symbol.clone());
-        }
-        Command::DeclareSort {
-            symbol: _,
-            arity: _,
-        } => {
-            // println!("Sort symbol not considered");
-            // symbols.insert(symbol.0.clone());
-        }
-        Command::DefineFun { sig, term: _ } => {
-            symbols.insert(sig.name.clone());
-        }
-        Command::DefineFunRec { sig: _, term: _ } => {
-            panic!("TODO define fun rec")
-        }
-        Command::DefineFunsRec { funs: _ } => {
-            panic!("TODO define funs rec")
-        }
-        Command::DefineSort {
-            symbol: _,
-            parameters: _,
-            sort: _,
-        } => {
-            panic!("TODO define sort")
-        }
-        _ => (),
-    }
-    if DEBUG_DEFS && symbols.len() > 0 {
-        println!("{}", command);
-        for s in &symbols {
-            println!("\t{}", s);
-        }
-    }
-    symbols
-}
 
 fn get_identifier_symbols(identifier: &concrete::Identifier) -> Symbol {
     match identifier {
@@ -121,20 +200,22 @@ enum MatchState {
 }
 
 impl MatchState {
-    fn check_match(&self, symbols: &SymbolSet) -> bool {
-        let mut check_match = false;
+    fn check_match(&self, symbols: &SymbolSet) -> Option<SymbolSet> {
         match self {
             MatchState::PatternState(s) => {
                 for p in &s.patterns {
                     if p.is_subset(symbols) {
-                        check_match = true;
-                        break;
+                        return Some(p.clone());
                     }
                 }
-                check_match
             }
-            MatchState::NoPatternState(s) => !s.filtered_symbols.is_disjoint(symbols),
+            MatchState::NoPatternState(s) => {
+                if !s.filtered_symbols.is_disjoint(symbols) {
+                    return Some(s.hidden_symbols.intersection(symbols).cloned().collect());
+                }
+            }
         }
+        return None;
     }
 
     fn debug(&self) {
@@ -167,7 +248,6 @@ impl MatchState {
 }
 
 struct UseTracker {
-    defined_symbols: Arc<SymbolSet>,
     // local symbols (e.g. bound variables forall, exists, let)
     local_symbols: SymbolSet,
     match_states: Vec<MatchState>,
@@ -176,23 +256,25 @@ struct UseTracker {
 }
 
 impl UseTracker {
-    fn new(defs: Arc<SymbolSet>, command: &concrete::Command, exhaustive: bool) -> UseTracker {
+    fn new(
+        command: &concrete::Command,
+        defs: &HashMap<Symbol, f64>,
+        exhaustive: bool,
+    ) -> UseTracker {
         let mut tracker = UseTracker {
-            defined_symbols: defs.clone(),
             local_symbols: HashSet::new(),
             match_states: Vec::new(),
             live_symbols: HashSet::new(),
             exhaustive: exhaustive,
         };
 
-        tracker.process_command(command);
+        tracker.process_command(command, defs);
         tracker
     }
 
     // fork is used to create a new tracker for its sub terms
     fn fork(&self, locals: SymbolSet) -> UseTracker {
         UseTracker {
-            defined_symbols: self.defined_symbols.clone(),
             local_symbols: locals,
             match_states: Vec::new(),
             live_symbols: HashSet::new(),
@@ -208,7 +290,11 @@ impl UseTracker {
         self.local_symbols.remove(symbol);
     }
 
-    fn get_symbol_uses(&mut self, term: &concrete::Term) -> SymbolSet {
+    fn get_symbol_uses(
+        &mut self,
+        term: &concrete::Term,
+        defs: &HashMap<concrete::Symbol, f64>,
+    ) -> SymbolSet {
         let mut uses = HashSet::new();
         match term {
             Term::Constant(..) => (),
@@ -230,16 +316,16 @@ impl UseTracker {
                 }
                 arguments
                     .into_iter()
-                    .map(|x| self.get_symbol_uses(x))
+                    .map(|x| self.get_symbol_uses(x, defs))
                     .for_each(|x| uses.extend(x));
             }
             Term::Let { var_bindings, term } => {
                 // remove local bindings
                 var_bindings.iter().for_each(|x| {
                     self.add_local_binding(&x.0);
-                    uses.extend(self.get_symbol_uses(&x.1).into_iter())
+                    uses.extend(self.get_symbol_uses(&x.1, defs).into_iter())
                 });
-                uses.extend(self.get_symbol_uses(term).into_iter());
+                uses.extend(self.get_symbol_uses(term, defs).into_iter());
                 var_bindings
                     .iter()
                     .for_each(|x| self.remove_local_binding(&x.0));
@@ -247,12 +333,12 @@ impl UseTracker {
             Term::Forall { vars, term } => {
                 // no need for sort symbols right?
                 vars.iter().for_each(|x| self.add_local_binding(&x.0));
-                uses.extend(self.get_symbol_uses(term).into_iter());
+                uses.extend(self.get_symbol_uses(term, defs).into_iter());
                 vars.iter().for_each(|x| self.remove_local_binding(&x.0));
             }
             Term::Exists { vars, term } => {
                 vars.iter().for_each(|x| self.add_local_binding(&x.0));
-                uses.extend(self.get_symbol_uses(term).into_iter());
+                uses.extend(self.get_symbol_uses(term, defs).into_iter());
                 vars.iter().for_each(|x| self.remove_local_binding(&x.0));
             }
             Term::Match { term: _, cases: _ } => {
@@ -273,9 +359,9 @@ impl UseTracker {
                                     panic!("TODO pattern symbol {:?}", symbol);
                                 }
                                 AttributeValue::Terms(terms) => {
-                                    terms
-                                        .iter()
-                                        .for_each(|x| pattern_sets.push(self.get_symbol_uses(&x)));
+                                    terms.iter().for_each(|x| {
+                                        pattern_sets.push(self.get_symbol_uses(&x, defs))
+                                    });
                                 }
                                 _ => panic!("TODO attribute value {:?}", &f.1),
                             }
@@ -288,7 +374,7 @@ impl UseTracker {
                                 }
                                 AttributeValue::Terms(terms) => {
                                     terms.iter().for_each(|x| {
-                                        no_pattern.extend(self.get_symbol_uses(&x));
+                                        no_pattern.extend(self.get_symbol_uses(&x, defs));
                                     });
                                 }
                                 AttributeValue::SExpr(ses) => {
@@ -321,20 +407,17 @@ impl UseTracker {
                                 AttributeValue::Terms(terms) => {
                                     terms
                                         .iter()
-                                        .for_each(|x| uses.extend(self.get_symbol_uses(&x)));
+                                        .for_each(|x| uses.extend(self.get_symbol_uses(&x, defs)));
                                 }
                                 AttributeValue::SExpr(ses) => {
-                                    ses.iter()
-                                        .for_each(|se| uses.extend(get_sexpr_symbols(se)));
+                                    ses.iter().for_each(|se| uses.extend(get_sexpr_symbols(se)));
                                 }
                             }
                         }
                     });
                 }
 
-                no_pattern.retain(|x| {
-                    (!self.local_symbols.contains(x)) && self.defined_symbols.contains(x)
-                });
+                no_pattern.retain(|x| (!self.local_symbols.contains(x)) && defs.contains_key(x));
 
                 if pattern_sets.len() != 0 {
                     let match_state = PatternState {
@@ -346,7 +429,7 @@ impl UseTracker {
                         .push(MatchState::PatternState(match_state));
                 } else if no_pattern.len() != 0 {
                     // drop no pattern if pattern is given
-                    let live = self.get_symbol_uses(term);
+                    let live = self.get_symbol_uses(term, defs);
                     let filtered_symbols = live.difference(&no_pattern).cloned().collect();
                     // println!("no pattern: {:?}", &filtered_symbols);
                     let match_state = NoPatternState {
@@ -356,26 +439,26 @@ impl UseTracker {
                     self.match_states
                         .push(MatchState::NoPatternState(match_state));
                 } else {
-                    uses.extend(self.get_symbol_uses(term).into_iter());
+                    uses.extend(self.get_symbol_uses(term, defs).into_iter());
                 }
             }
         }
         // remove local bindings
-        uses.retain(|x| (!self.local_symbols.contains(x)) && self.defined_symbols.contains(x));
+        uses.retain(|x| (!self.local_symbols.contains(x)) && defs.contains_key(x));
         uses
     }
 
-    fn process_command(&mut self, command: &concrete::Command) {
+    fn process_command(&mut self, command: &concrete::Command, defs: &HashMap<Symbol, f64>) {
         match command {
             Command::Assert { term } => {
-                let uses = self.get_symbol_uses(term);
+                let uses = self.get_symbol_uses(term, defs);
                 self.live_symbols = uses;
             }
             Command::DefineFun { sig, term } => {
                 for p in &sig.parameters {
                     self.add_local_binding(&p.0);
                 }
-                let uses = self.get_symbol_uses(term);
+                let uses = self.get_symbol_uses(term, defs);
                 self.live_symbols = uses;
                 self.live_symbols.insert(sig.name.clone());
             }
@@ -383,61 +466,24 @@ impl UseTracker {
         }
     }
 
-    // fn aggregate(&mut self, snowball: &mut SymbolSet) -> bool {
-    //     let mut keep_going = true;
-    //     let mut modified = !self.live_symbols.is_disjoint(&snowball);
+    fn delayed_aggregate(
+        &mut self,
+        snowball: &SymbolSet,
+        defs: &HashMap<Symbol, f64>,
+        debug: bool,
+    ) -> (bool, SymbolSet, f64) {
+        let mut delayed = SymbolSet::new();
+        let intersection = self.live_symbols.intersection(&snowball);
+        let mut score = 0.0;
 
-    //     if modified {
-    //         snowball.extend(self.live_symbols.iter().cloned());
-    //     }
-
-    //     while keep_going {
-    //         let mut cur_match_states = Vec::new();
-    //         std::mem::swap(&mut self.match_states, &mut cur_match_states);
-
-    //         let (matched, mut non_matched): (_, Vec<_>) = cur_match_states
-    //             .into_iter()
-    //             .partition(|s| s.check_match(snowball));
-
-    //         keep_going = matched.len() != 0;
-
-    //         matched.into_iter().for_each(|m| match m {
-    //             MatchState::PatternState(s) => {
-    //                 let PatternState {
-    //                     local_symbols,
-    //                     hidden_term,
-    //                     ..
-    //                 } = s;
-    //                 let mut child = self.fork(local_symbols);
-    //                 let child_symbols = child.get_symbol_uses(&hidden_term);
-    //                 let UseTracker {
-    //                     mut match_states, ..
-    //                 } = child;
-    //                 self.live_symbols.extend(child_symbols.iter().cloned());
-    //                 snowball.extend(child_symbols.into_iter());
-    //                 non_matched.append(&mut match_states);
-    //                 modified = true;
-    //             }
-    //             MatchState::NoPatternState(s) => {
-    //                 let NoPatternState { hidden_symbols, .. } = s;
-    //                 self.live_symbols.extend(hidden_symbols.iter().cloned());
-    //                 snowball.extend(hidden_symbols.into_iter());
-    //                 modified = true;
-    //             }
-    //         });
-
-    //         self.match_states = non_matched;
-    //     }
-
-    //     if modified {
-    //         snowball.extend(self.live_symbols.iter().cloned());
-    //     }
-
-    //     modified
-    // }
-
-    fn delayed_aggregate(&mut self, snowball: &SymbolSet, delayed: &mut SymbolSet) -> bool {
         let mut modified = !self.live_symbols.is_disjoint(&snowball);
+
+        intersection.for_each(|x| {
+            // use the matched symbol's score
+            // println!("{} ", x);
+            let x_score = defs.get(x).unwrap();
+            score = f64::max(*x_score, score);
+        });
 
         if modified {
             delayed.extend(self.live_symbols.iter().cloned());
@@ -446,11 +492,30 @@ impl UseTracker {
         let mut cur_match_states = Vec::new();
         std::mem::swap(&mut self.match_states, &mut cur_match_states);
 
-        let (matched, mut non_matched): (_, Vec<_>) = cur_match_states
-            .into_iter()
-            .partition(|s| s.check_match(snowball));
+        let (matched, mut non_matched): (_, Vec<_>) = cur_match_states.into_iter().partition(|s| {
+            if let Some(symbols) = s.check_match(&snowball) {
+                symbols.iter().for_each(|x| {
+                    // use the matched symbol's score
+                    score = f64::max(*defs.get(x).unwrap(), score);
+                });
+                true
+            } else {
+                false
+            }
+        });
 
         modified = modified || matched.len() != 0;
+
+        if debug {
+            println!("{}", matched.len());
+            println!("{}", modified);
+
+            println!("Live symbols:");
+            for s in &self.live_symbols {
+                println!("\t{}", s);
+            }
+            panic!("debug");
+        }
 
         matched.into_iter().for_each(|m| match m {
             MatchState::PatternState(s) => {
@@ -460,7 +525,7 @@ impl UseTracker {
                     ..
                 } = s;
                 let mut child = self.fork(local_symbols);
-                let child_symbols = child.get_symbol_uses(&hidden_term);
+                let child_symbols = child.get_symbol_uses(&hidden_term, defs);
                 let UseTracker {
                     mut match_states, ..
                 } = child;
@@ -477,7 +542,12 @@ impl UseTracker {
 
         self.match_states = non_matched;
 
-        modified
+        if let Some(xs) = delayed.get(&Symbol("Tclass._System.___hFunc8_1".to_string())) {
+            let sc = *defs.get(xs).unwrap();
+            println!("current score? {}", sc);
+        }
+
+        (modified, delayed, score)
     }
 
     fn debug(&self) {
@@ -497,96 +567,46 @@ impl UseTracker {
     }
 }
 
-pub fn remove_unused_symbols(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
-    // println!("computing def symbols: ");
-    let mut defs = HashSet::new();
-    let cmd_defs: Vec<SymbolSet> = commands
-        .iter()
-        .map(|x| {
-            let d = get_global_symbol_defs(x);
-            defs.extend(d.iter().cloned());
-            d
-        })
-        .collect();
+// fn parse_raw_idf() -> HashMap<Symbol, f64> {
+//     let mut result = HashMap::new();
 
-    let defs = Arc::new(defs);
+//     for line in read_to_string("log").unwrap().lines() {
+//         let parts = line.split(": ");
+//         let collection = parts.collect::<Vec<&str>>();
+//         assert!(collection.len() == 2);
+//         let symbol = collection[0];
+//         let count = collection[1].parse::<u32>().unwrap();
+//         if count != 0 {
+//             result.insert(Symbol(symbol.to_string()), count as f64);
+//         }
+//     }
+//     result
+// }
 
-    // println!("computing use symbols: ");
-    let uses: SymbolSet = commands
-        .iter()
-        .map(|c| UseTracker::new(defs.clone(), &c, true).live_symbols)
-        .flatten()
-        .collect();
-
-    // for i in &uses {
-    //     println!("{}", i);
-    // }
-
-    // println!("building remove set: ");
-    let mut remove_indices = HashSet::new();
-
-    cmd_defs.iter().enumerate().for_each(|(i, x)| {
-        if x.len() != 0 && uses.is_disjoint(x) {
-            // println!("removing {}", &commands[i]);
-            remove_indices.insert(i);
-        }
-    });
-
-    // println!("removing use symbols: ");
-    commands = commands
-        .into_iter()
-        .enumerate()
-        .filter(|(pos, _)| !remove_indices.contains(pos))
-        .map(|(_, x)| x)
-        .collect();
-
-    commands
-}
-
-pub fn tree_shake(
-    mut commands: Vec<concrete::Command>,
-    shake_max_depth: u32,
-    shake_log_path: Option<String>,
-) -> Vec<concrete::Command> {
+pub fn tree_shake_idf(
+    mut commands: Vec<Command>,
+    symbol_score_path: Option<String>,
+    command_score_path: Option<String>,
+) -> Vec<Command> {
     tree_rewrite::truncate_commands(&mut commands);
+
+    let mut shaker = IDFShaker::new();
+    commands.iter().for_each(|x| shaker.process_command(x));
+    shaker.compute_idfs();
+
+    if let Some(path) = symbol_score_path {
+        shaker.dump_to_file(path);
+    }
+
     let goal_command = commands.pop().unwrap();
-    // let goal_command = commands[commands.len() - 1].clone();
-    // print!("{} ", goal_command);
 
-    let mut defs: SymbolSet = commands
-        .iter()
-        .map(|x| get_global_symbol_defs(x))
-        .flatten()
-        .collect();
-
-    // defs.remove(&concrete::Symbol("HasType".to_string()));
-    // defs.remove(&concrete::Symbol("ApplyTT".to_string()));
-    // defs.remove(&concrete::Symbol("Tm_type".to_string()));
-    // defs.remove(&concrete::Symbol("HasTypeFuel".to_string()));
-    // defs.remove(&concrete::Symbol("NoHoist".to_string()));
-    // defs.remove(&concrete::Symbol("Dummy_value".to_string()));
-    // defs.remove(&concrete::Symbol("Tm_arrow".to_string()));
-    // defs.remove(&concrete::Symbol("IsTotFun".to_string()));
-    // defs.remove(&concrete::Symbol("HasTypeZ".to_string()));
-    // defs.remove(&concrete::Symbol("Valid".to_string()));
-    // defs.remove(&concrete::Symbol("is-Tm_arrow".to_string()));
-
-    // defs.remove(&concrete::Symbol("LayerTypeType".to_string()));
-    // defs.remove(&concrete::Symbol("$IsGoodHeap".to_string()));
-    // defs.remove(&concrete::Symbol("MapType1Type".to_string()));
-    // defs.remove(&concrete::Symbol("refType".to_string()));
-    // defs.remove(&concrete::Symbol("BoxType".to_string()));
-    // defs.remove(&concrete::Symbol("$Is".to_string()));
-    // defs.remove(&concrete::Symbol("DatatypeTypeType".to_string()));
-    // defs.remove(&concrete::Symbol("type".to_string()));
-
-    let defs = Arc::new(defs);
-    let tracker = UseTracker::new(defs.clone(), &goal_command, true);
+    let mut defs = shaker.processed_idfs;
+    let tracker = UseTracker::new(&goal_command, &defs, true);
     let mut snowball = tracker.live_symbols;
 
     let mut trackers: Vec<UseTracker> = commands
         .iter()
-        .map(|c| UseTracker::new(defs.clone(), &c, false))
+        .map(|c| UseTracker::new(&c, &defs, false))
         .collect();
 
     let mut poss = HashSet::new();
@@ -594,16 +614,23 @@ pub fn tree_shake(
     poss.insert(0);
 
     let mut iteration = 1;
-    let mut stamps = HashMap::new();
+    let mut stamps: HashMap<usize, (u32, f64)> = HashMap::new();
 
     while poss != pposs {
-        let mut delayed = HashSet::new();
+        let mut iteration_delayed = HashMap::new();
         pposs = poss.clone();
         for (pos, tracker) in trackers.iter_mut().enumerate() {
-            if tracker.delayed_aggregate(&snowball, &mut delayed) {
+            // let debug = commands[pos].to_string().contains(":skolemid |7774|");
+            let debug = false;
+            let (modified, delayed, score) = tracker.delayed_aggregate(&snowball, &defs, debug);
+
+            if modified {
                 poss.insert(pos);
+                delayed.into_iter().for_each(|x| {
+                    iteration_delayed.insert(x, score);
+                });
                 if !stamps.contains_key(&pos) {
-                    stamps.insert(pos, iteration);
+                    stamps.insert(pos, (iteration, score));
                 }
             } else {
                 if let Command::Assert { term: _ } = &commands[pos] {
@@ -613,43 +640,47 @@ pub fn tree_shake(
             }
         }
 
-        snowball.extend(delayed.into_iter());
-        iteration += 1;
+        iteration_delayed.iter().for_each(|(symbol, score)| {
+            if !snowball.contains(symbol) {
+                let new_score = defs.get(symbol).unwrap() + *score;
+                defs.insert(symbol.clone(), new_score);
 
-        if iteration > shake_max_depth {
-            break;
-        }
-    }
+                // if symbol == &Symbol("Tclass._System.___hFunc8_1".to_string()) {
+                //     println!("new score {} {}?", iteration, new_score);
+                // }
 
-    if let Some(shake_log_path) = shake_log_path {
-        let mut log_file = std::fs::File::create(shake_log_path).unwrap();
-        for (pos, stamp) in stamps.iter() {
-            writeln!(log_file, "{}|||{}", stamp, &commands[*pos]).unwrap();
-        }
-        writeln!(log_file, "0|||{}", &goal_command).unwrap();
-    }
-
-    if DEBUG_USES {
-        for (i, tracker) in trackers.iter().enumerate() {
-            if let Command::Assert { term: _ } = &commands[i] {
-                // println!("Command:\n{}:", commands[i]);
-                tracker.debug();
-            } else {
+                snowball.insert(symbol.clone());
             }
-        }
+        });
+
+        iteration += 1;
     }
 
-    if DEBUG_USES {
-        println!("[sb]Snowball:");
-        for s in &snowball {
-            println!("[sb]\t{}", s);
+    if let Some(path) = command_score_path {
+        let mut log_file = std::fs::File::create(path).unwrap();
+        let mut scores: Vec<_> = stamps.iter().collect();
+        scores.sort_by(|(_, (_, s1)), (_, (_, s2))| s1.partial_cmp(s2).unwrap());
+        scores.reverse();
+
+        for (pos, (it, sc)) in scores.iter() {
+            writeln!(log_file, "{}|||{}|||{}", it, sc, &commands[**pos]).unwrap();
         }
+        writeln!(log_file, "0|||0|||{}", &goal_command).unwrap();
     }
 
     commands = commands
         .into_iter()
         .enumerate()
-        .filter(|(pos, _)| poss.contains(pos))
+        .filter(|(pos, _)| 
+        {
+            poss.contains(pos) 
+            // && if let Some(score) = stamps.get(pos) {
+            //     (score.1) < 0.2
+            // } else {
+            //     true
+            // }
+        }
+        )
         .map(|(_, x)| x)
         .collect();
     commands.push(goal_command);

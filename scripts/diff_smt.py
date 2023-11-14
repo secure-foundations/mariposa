@@ -33,6 +33,15 @@ def get_assert_count(filename):
         return np.inf
     return int(output)
 
+def print_diff_stats(path1, path2):
+    # count1 = get_assert_count(path1)
+    # count2 = get_assert_count(path2)
+    # print(count1, count2)
+    lines1 = set(open(path1).readlines())
+    lines2 = set(open(path2).readlines())
+    for i in lines1 - lines2:
+        print(i, end="")
+
 def key_set(d):
     return set(d.keys())
 
@@ -48,7 +57,8 @@ if __name__ == "__main__":
     op = sys.argv[1]
     if op == "subset-check":
         check_assert_subset(sys.argv[2], sys.argv[3])
-    # else:
+    elif op == "diff-stats":
+        print_diff_stats(sys.argv[2], sys.argv[3])
     # a = get_asserts(sys.argv[1])
     # b = get_asserts(sys.argv[2])
     # for i in a.keys() - b.keys():

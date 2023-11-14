@@ -264,8 +264,7 @@ build {self.strp_path}: strip {input_path}"""
         # orig_asserts = get_asserts(self.orig_path)
         # stats = self.get_shake_stats()
 
-        out_file = open("data/shake_unstable_fs_dice/" + self.base, "w+")
-        
+        out_file = open("temp/shake.smt2", "w+")
         for line in open(self.orig_path):
             if line.startswith("(assert "):
                 nline = line.replace(" ", "").strip()
@@ -411,12 +410,14 @@ if __name__ == "__main__":
     contents = p.emit_strip_rules()
 
     # unstables = list()
-    # for qm in p.qms:
-    #     if qm.orig_status == Stability.UNSTABLE:
-    #         stats = qm.get_shake_stats()
-    #         # print(qm.orig_status, qm.mini_status, qm.extd_status, stats[4])
-    #         # assuming we have an oracle 
-    #         qm.shake_from_log(5 if stats[4] == np.inf else stats[4])
+    for qm in p.qms:
+        if qm.orig_status == Stability.UNSTABLE:
+            stats = qm.get_shake_stats()
+            # print(qm.orig_status, qm.mini_status, qm.extd_status, stats[4])
+            # assuming we have an oracle 
+            max_depth = 5 if stats[4] == np.inf else stats[4]
+            print(f"./target/release/mariposa -i {qm.orig_path} -o data/shake_unstable_fs_dice/{qm.base} -m tree-shake --shake-max-depth {max_depth} > /dev/null")
+            # qm.shake_from_log()
             # unstables.append(qm)
             # print(qm.orig_status, qm.mini_status, qm.extd_status)
             # print("; core max: ", stats[4])
@@ -435,7 +436,7 @@ if __name__ == "__main__":
         # p.emit_fix_missing()
         # pass
 
-    random.shuffle(contents)
-    print(BUILD_RULES)
-    for i in contents:
-        print(i)
+    # random.shuffle(contents)
+    # print(BUILD_RULES)
+    # for i in contents:
+    #     print(i)
