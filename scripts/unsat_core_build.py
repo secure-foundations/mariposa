@@ -45,8 +45,8 @@ rule format
     command = ./target/release/mariposa -i $in -o $out
 
 rule shake
-    command = ./target/release/mariposa -i $in -o $out -m tree-shake > $log
-    
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake-idf --command-score-path $log
+
 rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 """
@@ -102,7 +102,7 @@ def parse_stamps(filename):
     for line in open(filename):
         line = line.split("|||")
         stamp = int(line[0].strip())
-        line = line[1].replace(" ", "").strip().strip()
+        line = line[2].replace(" ", "").strip().strip()
         cmds0[line] = stamp
     return cmds0
 
@@ -221,8 +221,8 @@ build {self.strp_path}: strip {input_path}"""
     def should_unify(self):
         return self.mini_status in {Stability.UNSOLVABLE, None} and self.extd_exists
     
-    def get_shake_stats(self, unify=False):
-        if cache_exists(self.shke_stat_name):
+    def get_shake_stats(self, unify=False, clear_cache=False):
+        if cache_exists(self.shke_stat_name) and not clear_cache:
             data = cache_load(self.shke_stat_name)
         else:
             stamps = parse_stamps(self.shke_log_path)
@@ -245,7 +245,6 @@ build {self.strp_path}: strip {input_path}"""
             else:
                 e_depths = [np.inf]
                 e_misses = np.inf
-                print(e_misses)
 
             data = [np.mean(o_depths), max(o_depths), o_misses,
                 np.mean(m_depths), max(m_depths), m_misses,
@@ -264,7 +263,8 @@ build {self.strp_path}: strip {input_path}"""
         # orig_asserts = get_asserts(self.orig_path)
         # stats = self.get_shake_stats()
 
-        out_file = open("temp/shake.smt2", "w+")
+        out_file = open("data/shake_unstable_oracle/fs_dice/" + self.base, "w+")
+
         for line in open(self.orig_path):
             if line.startswith("(assert "):
                 nline = line.replace(" ", "").strip()
@@ -327,6 +327,19 @@ class ProjectCoreManager:
         for qm in self.qms:
             content.append(qm.emit_shake())
         return content
+    
+    def shake_from_logs(self):
+        for qm in p.qms:
+            if qm.orig_status == Stability.UNSTABLE:
+                stats = qm.get_shake_stats()
+                print(qm.orig_status, qm.mini_status, qm.extd_status, stats[4])
+                # assuming we have an oracle 
+                max_depth = 5 if stats[4] == np.inf else stats[4]
+                # print(f"./target/release/mariposa -i {qm.orig_path} -o data/shake_unstable_fs_dice/{qm.base} -m tree-shake --shake-max-depth {max_depth} > /dev/null")
+                # qm.shake_from_log()
+                print(qm.orig_status, qm.mini_status, qm.extd_status)
+                print(max_depth)
+                # print("; shake: ", s_asserts, "/", o_asserts)
     
     def emit_mini_rules(self):
         content = []
@@ -407,22 +420,10 @@ UNSAT_CORE_PROJECTS = {
 
 if __name__ == "__main__":
     p = UNSAT_CORE_PROJECTS["fs_dice"]
-    contents = p.emit_strip_rules()
-
+    p.shake_from_logs()
+    # contents = p.emit_strip_rules()
+    # contents = p.emit_shake_rules()
     # unstables = list()
-    for qm in p.qms:
-        if qm.orig_status == Stability.UNSTABLE:
-            stats = qm.get_shake_stats()
-            # print(qm.orig_status, qm.mini_status, qm.extd_status, stats[4])
-            # assuming we have an oracle 
-            max_depth = 5 if stats[4] == np.inf else stats[4]
-            print(f"./target/release/mariposa -i {qm.orig_path} -o data/shake_unstable_fs_dice/{qm.base} -m tree-shake --shake-max-depth {max_depth} > /dev/null")
-            # qm.shake_from_log()
-            # unstables.append(qm)
-            # print(qm.orig_status, qm.mini_status, qm.extd_status)
-            # print("; core max: ", stats[4])
-            # print("; core miss: ", stats[5])
-            # print("; shake: ", s_asserts, "/", o_asserts)
 
     # random.seed(time.time())
     # qm = random.choice(unstables)

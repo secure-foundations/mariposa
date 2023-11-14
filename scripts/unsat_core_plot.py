@@ -186,8 +186,13 @@ def plot_shake_incomplete(proj):
     dps = []
 
     for qm in proj.qms:
-        stats = qm.get_shake_stats(unify=True)
+        stats = qm.get_shake_stats(unify=True, clear_cache=True)
         dps.append(stats)
+        if stats[5] > 0 and stats[5] < np.inf:
+            print(f"cp {qm.orig_path} temp/woot.smt2")
+            print(f"cp {qm.mini_path} temp/core.smt2")
+            print(f"cp {qm.shke_path} temp/out.smt2")
+            print("")
 
     dps = np.array(dps)
 
@@ -370,11 +375,12 @@ def analyze_fs_dice():
     # print(len(orig_asserts), len(mini_asserts), len(temp_asserts))
 
 if __name__ == "__main__":
-    analyze_fs_dice()
+    # analyze_fs_dice()
+    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["fs_dice"])
     # for proj in UNSAT_CORE_PROJECTS.values():
     #     # plot_shake_incomplete(proj)
     #     plot_migration(proj)
 
     # plot_all_shake_max_depth()
     # plot_all_context_retention()
-    # plot_all_shake_context_retention()
+    plot_all_shake_context_retention()

@@ -9,7 +9,7 @@ use std::process::id;
 use std::sync::Arc;
 
 use crate::term_match::match_simple_qual_identifier;
-use crate::tree_rewrite;
+use crate::{tree_rewrite, pretty_print};
 use crate::tree_shake::get_global_symbol_defs;
 
 struct IDFShaker {
@@ -138,6 +138,7 @@ impl IDFShaker {
         self.plain_idfs.iter().for_each(|(symbol, count)| {
             if *count != 0 {
                 let idf = (n as f64 / (n as f64 - *count as f64)).log10();
+                // let idf = (*count as f64) / n as f64;
                 self.processed_idfs.insert(symbol.clone(), idf);
             }
         });
@@ -203,6 +204,14 @@ impl MatchState {
     fn check_match(&self, symbols: &SymbolSet) -> Option<SymbolSet> {
         match self {
             MatchState::PatternState(s) => {
+                // let mut all_patterns = SymbolSet::new();
+                // s.patterns.iter().for_each(|x| {
+                //     all_patterns.extend(x.iter().cloned());
+                // });
+
+                // if all_patterns.is_subset(symbols) {
+                //     return Some(all_patterns);
+                // }
                 for p in &s.patterns {
                     if p.is_subset(symbols) {
                         return Some(p.clone());
@@ -223,15 +232,17 @@ impl MatchState {
             MatchState::PatternState(ps) => {
                 println!("\tHidden term:\n\t{}", ps.hidden_term);
                 for (i, s) in ps.patterns.iter().enumerate() {
-                    println!("\tPatterns {}:", i);
+                    print!("\t\tPatterns {}: (", i);
                     for s in s {
-                        println!("\t\t{}", s);
+                        print!(" {} ", s);
                     }
+                    println!(")");
                 }
-                println!("\tLocal symbols:");
+                print!("\tLocal symbols: (");
                 for s in &ps.local_symbols {
-                    println!("\t\t{}", s);
+                    print!(" {}", s);
                 }
+                println!(")");
             }
             MatchState::NoPatternState(s) => {
                 println!("\tHidden symbols:");
@@ -359,9 +370,11 @@ impl UseTracker {
                                     panic!("TODO pattern symbol {:?}", symbol);
                                 }
                                 AttributeValue::Terms(terms) => {
+                                    let mut pattern_set = HashSet::new();
                                     terms.iter().for_each(|x| {
-                                        pattern_sets.push(self.get_symbol_uses(&x, defs))
+                                        pattern_set.extend(self.get_symbol_uses(&x, defs));
                                     });
+                                    pattern_sets.push(pattern_set);
                                 }
                                 _ => panic!("TODO attribute value {:?}", &f.1),
                             }
@@ -478,11 +491,14 @@ impl UseTracker {
 
         let mut modified = !self.live_symbols.is_disjoint(&snowball);
 
+        let mut count = 0;
         intersection.for_each(|x| {
             // use the matched symbol's score
             // println!("{} ", x);
             let x_score = defs.get(x).unwrap();
-            score = f64::max(*x_score, score);
+            // score = score.min(*x_score);
+            score += *x_score;
+            count += 1;
         });
 
         if modified {
@@ -496,7 +512,10 @@ impl UseTracker {
             if let Some(symbols) = s.check_match(&snowball) {
                 symbols.iter().for_each(|x| {
                     // use the matched symbol's score
-                    score = f64::max(*defs.get(x).unwrap(), score);
+                    let x_score = defs.get(x).unwrap();
+                    // score = score.min(*x_score);
+                    score += *x_score;
+                    count += 1;
                 });
                 true
             } else {
@@ -504,17 +523,19 @@ impl UseTracker {
             }
         });
 
+
+
         modified = modified || matched.len() != 0;
 
         if debug {
             println!("{}", matched.len());
             println!("{}", modified);
 
-            println!("Live symbols:");
+            print!("Live symbols:\n\t(");
             for s in &self.live_symbols {
-                println!("\t{}", s);
+                println!("{}", s);
             }
-            panic!("debug");
+            println!(")");
         }
 
         matched.into_iter().for_each(|m| match m {
@@ -542,46 +563,32 @@ impl UseTracker {
 
         self.match_states = non_matched;
 
-        if let Some(xs) = delayed.get(&Symbol("Tclass._System.___hFunc8_1".to_string())) {
-            let sc = *defs.get(xs).unwrap();
-            println!("current score? {}", sc);
+        if count > 1 {
+            score /= count as f64;
         }
 
         (modified, delayed, score)
     }
 
     fn debug(&self) {
-        println!("Live symbols:");
+        print!("Live symbols:\n\t(");
         for s in &self.live_symbols {
-            println!("\t{}", s);
+            print!(" {} ", s);
         }
-        println!("Local symbols:");
+        println!(")");
+        print!("Local symbols:\n\t(");
         for s in &self.local_symbols {
-            println!("\t{}", s);
+            print!(" {} ", s);
         }
+        println!(")");
         println!("Match states:");
         for (i, s) in self.match_states.iter().enumerate() {
             println!("\tMatch state {}", i);
             s.debug();
         }
+        println!()
     }
 }
-
-// fn parse_raw_idf() -> HashMap<Symbol, f64> {
-//     let mut result = HashMap::new();
-
-//     for line in read_to_string("log").unwrap().lines() {
-//         let parts = line.split(": ");
-//         let collection = parts.collect::<Vec<&str>>();
-//         assert!(collection.len() == 2);
-//         let symbol = collection[0];
-//         let count = collection[1].parse::<u32>().unwrap();
-//         if count != 0 {
-//             result.insert(Symbol(symbol.to_string()), count as f64);
-//         }
-//     }
-//     result
-// }
 
 pub fn tree_shake_idf(
     mut commands: Vec<Command>,
@@ -616,11 +623,14 @@ pub fn tree_shake_idf(
     let mut iteration = 1;
     let mut stamps: HashMap<usize, (u32, f64)> = HashMap::new();
 
+    // for s in &snowball {
+    //     println!("[isb]\t{}", s);
+    // }
+
     while poss != pposs {
         let mut iteration_delayed = HashMap::new();
         pposs = poss.clone();
         for (pos, tracker) in trackers.iter_mut().enumerate() {
-            // let debug = commands[pos].to_string().contains(":skolemid |7774|");
             let debug = false;
             let (modified, delayed, score) = tracker.delayed_aggregate(&snowball, &defs, debug);
 
@@ -642,8 +652,8 @@ pub fn tree_shake_idf(
 
         iteration_delayed.iter().for_each(|(symbol, score)| {
             if !snowball.contains(symbol) {
-                let new_score = defs.get(symbol).unwrap() + *score;
-                defs.insert(symbol.clone(), new_score);
+                // let new_score = defs.get(symbol).unwrap() + *score;
+                // defs.insert(symbol.clone(), new_score);
 
                 // if symbol == &Symbol("Tclass._System.___hFunc8_1".to_string()) {
                 //     println!("new score {} {}?", iteration, new_score);
@@ -658,15 +668,23 @@ pub fn tree_shake_idf(
 
     if let Some(path) = command_score_path {
         let mut log_file = std::fs::File::create(path).unwrap();
-        let mut scores: Vec<_> = stamps.iter().collect();
-        scores.sort_by(|(_, (_, s1)), (_, (_, s2))| s1.partial_cmp(s2).unwrap());
-        scores.reverse();
-
-        for (pos, (it, sc)) in scores.iter() {
-            writeln!(log_file, "{}|||{}|||{}", it, sc, &commands[**pos]).unwrap();
+        for (pos, (it, sc)) in stamps.iter() {
+            writeln!(log_file, "{}|||{}|||{}", it, sc, &commands[*pos]).unwrap();
         }
         writeln!(log_file, "0|||0|||{}", &goal_command).unwrap();
     }
+
+    // for s in &snowball {
+    //     println!("[fsb]\t{}", s);
+    // }
+
+    // for (i, tr) in trackers.iter().enumerate() {
+    //     if commands[i].to_string().contains("_module.__default.DoesTraceDemonstrateSHA256 ") {
+    //         // println!("{} {}", i, commands[i]);
+    //         pretty_print::print_command(&commands[i]);
+    //         tr.debug();
+    //     }
+    // }
 
     commands = commands
         .into_iter()
@@ -674,11 +692,6 @@ pub fn tree_shake_idf(
         .filter(|(pos, _)| 
         {
             poss.contains(pos) 
-            // && if let Some(score) = stamps.get(pos) {
-            //     (score.1) < 0.2
-            // } else {
-            //     true
-            // }
         }
         )
         .map(|(_, x)| x)

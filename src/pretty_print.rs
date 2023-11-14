@@ -1,5 +1,5 @@
 use smt2parser::concrete;
-use smt2parser::concrete::Term;
+use smt2parser::concrete::{Term, Command};
 
 use crate::term_match::match_simple_qual_identifier;
 
@@ -73,5 +73,15 @@ pub fn print_prop_skeleton(term: &concrete::Term, indent: usize) {
             });
             print!("{})\n", " ".repeat(indent));
         }
+    }
+}
+
+pub fn print_command(cmd: &Command) {
+    if let Command::Assert { term } = cmd {
+        print_prop_skeleton(term, 0);
+    } else if let Command::DefineFun { sig, term } = cmd {
+        panic!("TODO define fun")
+    } else {
+        println!("{}\n", cmd);
     }
 }

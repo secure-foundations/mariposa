@@ -576,15 +576,15 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "shake_unstable_test",
+        "name": "shake_oracle_d_komodo",
         "framework": "mixed",
-        "clean_dir": "data/shake_unstable_test",
+        "clean_dir": "data/shake_unstable_oracle/d_komodo",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "shake_unstable_fs_dice",
+        "name": "shake_oracle_ds_dice",
         "framework": "mixed",
-        "clean_dir": "data/shake_unstable_fs_dice",
+        "clean_dir": "data/shake_unstable_oracle/fs_dice",
         "artifact_solver_name": "z3_4_12_2"
       }
     ]

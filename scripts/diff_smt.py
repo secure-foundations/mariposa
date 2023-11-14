@@ -2,6 +2,7 @@ import sys
 from basic_utils import *
 import hashlib
 import numpy as np
+import re
 
 def get_asserts(filename):
     cmds0 = dict()
@@ -42,6 +43,47 @@ def print_diff_stats(path1, path2):
     for i in lines1 - lines2:
         print(i, end="")
 
+s_expr_start = re.compile(r"^\(([^ ]+) ")
+
+def get_scores_for_core(score_file, core_file):
+    core_asserts = get_asserts(core_file)
+    # scores = dict()
+    layers = dict()
+
+    with open(score_file) as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip().split("|||")
+            it = int(line[0])
+            if it not in layers:
+                layers[it] = []
+            layers[it].append((float(line[1]), line[2]))
+
+        for it in sorted(layers.keys()):
+            min_score = 1
+            max_score = 0
+
+            scores = []
+            for i in sorted(layers[it]):
+                nline = i[1].replace(" ", "").strip()
+                print(i[1])
+                if nline in core_asserts and "forall" in i[1]:
+                    min_score = min(i[0], min_score)
+                    max_score = max(i[0], max_score)
+                    print("\tis core:", it, i[0])
+                else:
+                    print("\tnone core:", it, i[0])
+                    pass
+
+                scores.append(i[0])
+            scores = np.array(scores)
+            print("===layer summary===")
+            print(it, min_score, max_score, np.sum([scores <= max_score]), len(scores))
+
+    # for i in core_asserts.keys():
+    #     if i in scores:
+    #         print(scores[i])
+
 def key_set(d):
     return set(d.keys())
 
@@ -59,6 +101,9 @@ if __name__ == "__main__":
         check_assert_subset(sys.argv[2], sys.argv[3])
     elif op == "diff-stats":
         print_diff_stats(sys.argv[2], sys.argv[3])
+    elif op == "core":
+        get_scores_for_core(sys.argv[2], sys.argv[3])
+
     # a = get_asserts(sys.argv[1])
     # b = get_asserts(sys.argv[2])
     # for i in a.keys() - b.keys():
