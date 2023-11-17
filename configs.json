@@ -582,7 +582,7 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "shake_oracle_ds_dice",
+        "name": "shake_oracle_fs_dice",
         "framework": "mixed",
         "clean_dir": "data/shake_unstable_oracle/fs_dice",
         "artifact_solver_name": "z3_4_12_2"

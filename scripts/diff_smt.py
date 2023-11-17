@@ -46,43 +46,40 @@ def print_diff_stats(path1, path2):
 s_expr_start = re.compile(r"^\(([^ ]+) ")
 
 def get_scores_for_core(score_file, core_file):
-    core_asserts = get_asserts(core_file)
     # scores = dict()
     layers = dict()
+    covered = set()
+    olines = get_asserts(core_file)
+    core_asserts = key_set(olines)
 
+    # cores = set(core_asserts.keys())
     with open(score_file) as f:
         lines = f.readlines()
         for line in lines:
             line = line.strip().split("|||")
             it = int(line[0])
             if it not in layers:
-                layers[it] = []
-            layers[it].append((float(line[1]), line[2]))
+                layers[it] = set()
+            nl = line[1].replace(" ", "").strip()
+            olines[nl] = line[1]
+
+            layers[it].add(nl)
 
         for it in sorted(layers.keys()):
-            min_score = 1
-            max_score = 0
+            print(f"===layer {it} summary===")
+            print(f"core asserts: {len(core_asserts & layers[it])}/{len(layers[it])}")
+            for nl in layers[it]:
+                covered.add(nl)
+                if nl in core_asserts:
+                    print("[c] ", end="")
+                print(olines[nl])
 
-            scores = []
-            for i in sorted(layers[it]):
-                nline = i[1].replace(" ", "").strip()
-                print(i[1])
-                if nline in core_asserts and "forall" in i[1]:
-                    min_score = min(i[0], min_score)
-                    max_score = max(i[0], max_score)
-                    print("\tis core:", it, i[0])
-                else:
-                    print("\tnone core:", it, i[0])
-                    pass
+    print("===missing summary===")
 
-                scores.append(i[0])
-            scores = np.array(scores)
-            print("===layer summary===")
-            print(it, min_score, max_score, np.sum([scores <= max_score]), len(scores))
+    for i in core_asserts - covered:
+        print(olines[i])
 
-    # for i in core_asserts.keys():
-    #     if i in scores:
-    #         print(scores[i])
+
 
 def key_set(d):
     return set(d.keys())

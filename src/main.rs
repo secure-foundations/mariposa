@@ -456,6 +456,9 @@ struct Args {
     #[arg(long, default_value_t = u32::MAX)]
     shake_max_depth: u32,
 
+    #[arg(long)]
+    shake_debug: bool,
+
     /// file to log the shake depth
     #[arg(long)]
     command_score_path: Option<String>,
@@ -529,13 +532,18 @@ fn main() {
         // parse and do nothing
         return;
     } else if args.mutation == "tree-shake" {
-        commands = tree_shake::tree_shake(commands, args.shake_max_depth, args.command_score_path);
-    } else if args.mutation == "tree-shake-idf" {
-        commands = tree_shake_idf::tree_shake_idf(
+        commands = tree_shake::tree_shake(
             commands,
-            args.symbol_score_path,
+            args.shake_max_depth,
             args.command_score_path,
+            args.shake_debug,
         );
+    } else if args.mutation == "tree-shake-idf" {
+        // commands = tree_shake_idf::tree_shake_idf(
+        //     commands,
+        //     args.symbol_score_path,
+        //     args.command_score_path,
+        // );
     } else if args.mutation == "tree-rewrite" {
         commands = tree_rewrite::tree_rewrite(commands);
     } else if args.mutation == "remove-unused" {

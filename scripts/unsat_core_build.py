@@ -8,10 +8,10 @@ from copy import deepcopy
 
 UNSAT_CORE_PROJECTS_NAMES = {
     "d_komodo": ("d_komodo_uc", "d_komodo_uc_ext", "d_komodo_shake", "d_komodo_uc_strip"),
-    # "d_fvbkv": ("d_fvbkv_uc", "d_fvbkv_uc_ext", "d_fvbkv_shake"),
-    # "d_lvbkv": ("d_lvbkv_uc", "d_lvbkv_uc_ext", "d_lvbkv_shake"),
+    "d_fvbkv": ("d_fvbkv_uc", "d_fvbkv_uc_ext", "d_fvbkv_shake"),
+    "d_lvbkv": ("d_lvbkv_uc", "d_lvbkv_uc_ext", "d_lvbkv_shake"),
     "fs_dice": ("fs_dice_uc", "fs_dice_uc_ext", "fs_dice_shake", "fs_dice_uc_strip"),
-    # "fs_vwasm": ("fs_vwasm_uc", "fs_vwasm_uc_ext", "fs_vwasm_shake"),
+    "fs_vwasm": ("fs_vwasm_uc", "fs_vwasm_uc_ext", "fs_vwasm_shake"),
 }
 
 CONFIG = Configer()
@@ -45,7 +45,7 @@ rule format
     command = ./target/release/mariposa -i $in -o $out
 
 rule shake
-    command = ./target/release/mariposa -i $in -o $out -m tree-shake-idf --command-score-path $log
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log
 
 rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
@@ -102,7 +102,7 @@ def parse_stamps(filename):
     for line in open(filename):
         line = line.split("|||")
         stamp = int(line[0].strip())
-        line = line[2].replace(" ", "").strip().strip()
+        line = line[1].replace(" ", "").strip().strip()
         cmds0[line] = stamp
     return cmds0
 
@@ -130,7 +130,9 @@ class QueryCoreManager:
         self.mini_path = self.proj.mini.clean_dir + "/" + self.base
         self.extd_path = self.proj.extd.clean_dir + "/" + self.base
         self.shke_path = self.proj.shke.clean_dir + "/" + self.base
-        self.strp_path = self.proj.strp.clean_dir + "/" + self.base
+
+        if proj.strp is not None:
+            self.strp_path = self.proj.strp.clean_dir + "/" + self.base
 
         self.mini_exists = os.path.exists(self.mini_path)
         self.extd_exists = os.path.exists(self.extd_path)
@@ -220,8 +222,8 @@ build {self.strp_path}: strip {input_path}"""
     
     def should_unify(self):
         return self.mini_status in {Stability.UNSOLVABLE, None} and self.extd_exists
-    
-    def get_shake_stats(self, unify=False, clear_cache=False):
+
+    def get_shake_stats(self, unify=True, clear_cache=False):
         if cache_exists(self.shke_stat_name) and not clear_cache:
             data = cache_load(self.shke_stat_name)
         else:
@@ -293,12 +295,16 @@ class ProjectCoreManager:
     def __init__(self, orig_name):
         self.name = orig_name
         c = Configer()
-        (mini_name, extd_name, shke_name, strp_name) = UNSAT_CORE_PROJECTS_NAMES[orig_name]
+        sub_names = UNSAT_CORE_PROJECTS_NAMES[orig_name]
+        # mini_name, extd_name, shke_name, strp_name
         self.orig = c.load_known_project(orig_name)
-        self.mini = c.load_known_project(mini_name)
-        self.extd = c.load_known_project(extd_name)
-        self.shke = c.load_known_project(shke_name)
-        self.strp = c.load_known_project(strp_name)
+        self.mini = c.load_known_project(sub_names[0])
+        self.extd = c.load_known_project(sub_names[1])
+        self.shke = c.load_known_project(sub_names[2])
+        if len(sub_names) > 3:
+            self.strp = c.load_known_project(sub_names[3])
+        else:
+            self.strp = None
 
         self.orig_cats, self.orig_tally = load_proj_stability(self.orig, BASELINE)
         self.mini_cats, self.mini_tally = load_proj_stability(self.mini, PLAIN_UC)
@@ -327,7 +333,7 @@ class ProjectCoreManager:
         for qm in self.qms:
             content.append(qm.emit_shake())
         return content
-    
+
     def shake_from_logs(self):
         for qm in p.qms:
             if qm.orig_status == Stability.UNSTABLE:
@@ -420,9 +426,9 @@ UNSAT_CORE_PROJECTS = {
 
 if __name__ == "__main__":
     p = UNSAT_CORE_PROJECTS["fs_dice"]
-    p.shake_from_logs()
+    # p.shake_from_logs()
     # contents = p.emit_strip_rules()
-    # contents = p.emit_shake_rules()
+    contents = p.emit_shake_rules()
     # unstables = list()
 
     # random.seed(time.time())
@@ -437,7 +443,7 @@ if __name__ == "__main__":
         # p.emit_fix_missing()
         # pass
 
-    # random.shuffle(contents)
-    # print(BUILD_RULES)
-    # for i in contents:
-    #     print(i)
+    random.shuffle(contents)
+    print(BUILD_RULES)
+    for i in contents:
+        print(i)

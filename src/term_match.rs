@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use smt2parser::concrete;
 use smt2parser::concrete::{QualIdentifier, Symbol, Term};
 
@@ -100,9 +102,27 @@ pub fn match_simple_app_term(term: &mut concrete::Term) -> Option<(&Symbol, &mut
     return None;
 }
 
-// pub fn match_forall_term(term: &mut concrete::Term) -> Option<(&mut Vec<(Symbol, concrete::Sort)>, &mut concrete::Term)> {
-//     if let Term::Forall { vars, term } = term {
-//         return Some((vars, term));
-//     }
-//     return None;
-// }
+pub fn get_identifier_symbols(identifier: &concrete::Identifier) -> Symbol {
+    match identifier {
+        concrete::Identifier::Simple { symbol } => symbol.clone(),
+        concrete::Identifier::Indexed { symbol, indices: _ } => symbol.clone(),
+    }
+}
+
+pub type SymbolSet = HashSet<Symbol>;
+
+pub fn get_sexpr_symbols(e: &concrete::SExpr) -> SymbolSet {
+    let mut symbols = HashSet::new();
+    match e {
+        concrete::SExpr::Constant(..) => (),
+        concrete::SExpr::Symbol(symbol) => {
+            symbols.insert(symbol.clone());
+        }
+        concrete::SExpr::Application(app) => {
+            app.iter()
+                .for_each(|x| symbols.extend(get_sexpr_symbols(x)));
+        }
+        _ => panic!("TODO SExpr {:?}", e),
+    }
+    symbols
+}

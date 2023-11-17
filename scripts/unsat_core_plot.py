@@ -185,13 +185,14 @@ def plot_all_shake_max_depth():
 def plot_shake_incomplete(proj):
     dps = []
 
-    for qm in proj.qms:
+    for qm in tqdm(proj.qms):
         stats = qm.get_shake_stats(unify=True, clear_cache=True)
         dps.append(stats)
         if stats[5] > 0 and stats[5] < np.inf:
             print(f"cp {qm.orig_path} temp/woot.smt2")
             print(f"cp {qm.mini_path} temp/core.smt2")
             print(f"cp {qm.shke_path} temp/out.smt2")
+            print(f"cp {qm.shke_log_path} temp/log.txt")
             print("")
 
     dps = np.array(dps)
@@ -201,6 +202,15 @@ def plot_shake_incomplete(proj):
 
     misses = np.sum(np.logical_and(nz, nf))
     print(proj.name, "shake missed ", misses, "/", np.sum(nf), "/", len(proj.qms))
+
+def dump_baseline_unstable(proj):
+    for qm in tqdm(proj.qms):
+        if qm.orig_status == Stability.UNSTABLE:
+            print(f"cp {qm.orig_path} temp/woot.smt2")
+            print(f"cp {qm.mini_path} temp/core.smt2")
+            print(f"cp {qm.shke_path} temp/out.smt2")
+            print(f"cp {qm.shke_log_path} temp/log.txt")
+            print("")
 
 def plot_migration(proj):
     mini_cats = proj.mini_cats
@@ -348,7 +358,7 @@ def analyze_fs_dice():
     orig_asserts = get_asserts(qm.orig_path)
     mini_asserts = get_asserts(qm.mini_path)
     temp_asserts = get_asserts(temp)
-    
+
     # os.system(f"cp {qm.orig_path} temp/woot.smt2")
     # os.system(f"cp {qm.mini_path} temp/core.smt2")
     # os.system(f"cp {qm.extd_path} temp/extd.smt2")
@@ -376,11 +386,15 @@ def analyze_fs_dice():
 
 if __name__ == "__main__":
     # analyze_fs_dice()
-    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["fs_dice"])
+    # dump_baseline_unstable(UNSAT_CORE_PROJECTS["d_komodo"])
+    plot_shake_incomplete(UNSAT_CORE_PROJECTS["fs_dice"])
+    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["d_lvbkv"])
+    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["d_lvbkv"])
+    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["fs_vwasm"])
     # for proj in UNSAT_CORE_PROJECTS.values():
-    #     # plot_shake_incomplete(proj)
+    #     plot_shake_incomplete(proj)
     #     plot_migration(proj)
 
     # plot_all_shake_max_depth()
     # plot_all_context_retention()
-    plot_all_shake_context_retention()
+    # plot_all_shake_context_retention()
