@@ -1,54 +1,13 @@
 use smt2parser::concrete;
-use smt2parser::concrete::{AttributeValue, Command, Symbol, Term};
+use smt2parser::concrete::{AttributeValue, Command, Term};
 use std::collections::{HashMap, HashSet};
 use std::io::Write;
 use std::sync::Arc;
 
-use crate::term_match::{SymbolSet, get_identifier_symbols, get_sexpr_symbols};
+use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
 use crate::tree_rewrite;
+use crate::tree_shake_idf::{get_commands_symbol_def, get_command_symbol_def};
 
-const DEBUG_DEFS: bool = false;
-
-// get the symbols defined in a command
-pub fn get_global_symbol_defs(command: &concrete::Command) -> SymbolSet {
-    let mut symbols = HashSet::new();
-    match command {
-        Command::DeclareConst { symbol, sort: _ } => {
-            symbols.insert(symbol.clone());
-        }
-        Command::DeclareDatatypes { datatypes } => {
-            datatypes.iter().for_each(|x| {
-                symbols.insert(x.0.clone());
-                assert_eq!(x.2.parameters.len(), 0);
-                x.2.constructors.iter().for_each(|y| {
-                    symbols.insert(y.symbol.clone());
-                    y.selectors.iter().for_each(|z| {
-                        symbols.insert(z.0.clone());
-                    });
-                });
-            });
-        }
-        Command::DeclareFun { symbol, .. } => {
-            symbols.insert(symbol.clone());
-        }
-        Command::DefineFun { sig, .. } => {
-            symbols.insert(sig.name.clone());
-        }
-        Command::DeclareSort { .. } => {
-            // println!("Sort symbol not considered");
-            // symbols.insert(symbol.0.clone());
-        }
-        _ => (),
-    }
-
-    if DEBUG_DEFS && symbols.len() > 0 {
-        println!("{}", command);
-        for s in &symbols {
-            println!("\t{}", s);
-        }
-    }
-    symbols
-}
 
 struct PatternState {
     local_symbols: SymbolSet,
@@ -95,7 +54,8 @@ struct NoPatternState {
 
 impl NoPatternState {
     fn check_match(&self, symbols: &SymbolSet) -> bool {
-        self.matchable_symbols.is_subset(symbols)
+        // if there is any overlap with the matchable symbols 
+        !self.matchable_symbols.is_disjoint(symbols)
     }
 
     fn debug(&self) {
@@ -195,27 +155,27 @@ impl UseTracker {
             }
             Term::Attributes { term, attributes } => {
                 if self.exhaustive {
-                    // attributes.into_iter().for_each(|f| {
-                    //     let concrete::Keyword(k) = &f.0;
-                    //     if k == "pattern" || k == "no-pattern" {
-                    //         match &f.1 {
-                    //             AttributeValue::None => (),
-                    //             AttributeValue::Constant(..) => (),
-                    //             AttributeValue::Symbol(symbol) => {
-                    //                 panic!("TODO symbol {:?}", symbol);
-                    //             }
-                    //             AttributeValue::Terms(terms) => {
-                    //                 terms
-                    //                     .iter()
-                    //                     .for_each(|x| uses.extend(self.get_symbol_uses(&x)));
-                    //             }
-                    //             AttributeValue::SExpr(ses) => {
-                    //                 ses.iter().for_each(|se| uses.extend(get_sexpr_symbols(se)));
-                    //             }
-                    //         }
-                    //     }
-                    // });
-                    uses = self.get_symbol_uses(term);
+                    attributes.into_iter().for_each(|f| {
+                        let concrete::Keyword(k) = &f.0;
+                        if k == "pattern" || k == "no-pattern" {
+                            match &f.1 {
+                                AttributeValue::None => (),
+                                AttributeValue::Constant(..) => (),
+                                AttributeValue::Symbol(symbol) => {
+                                    panic!("TODO symbol {:?}", symbol);
+                                }
+                                AttributeValue::Terms(terms) => {
+                                    terms
+                                        .iter()
+                                        .for_each(|x| uses.extend(self.get_symbol_uses(&x)));
+                                }
+                                AttributeValue::SExpr(ses) => {
+                                    ses.iter().for_each(|se| uses.extend(get_sexpr_symbols(se)));
+                                }
+                            }
+                        }
+                    });
+                    uses.extend(self.get_symbol_uses(term));
                 } else {
                     uses = self.get_attr_term_symbol_uses(attributes, term);
                 }
@@ -424,21 +384,29 @@ impl UseTracker {
 pub fn tree_shake(
     mut commands: Vec<concrete::Command>,
     shake_max_depth: u32,
+    shake_max_symbol_frequency: usize,
+    shake_init_strategy: u32,
     shake_log_path: Option<String>,
     debug: bool,
 ) -> Vec<concrete::Command> {
     tree_rewrite::truncate_commands(&mut commands);
+    let defs = Arc::new(get_commands_symbol_def(&commands, shake_max_symbol_frequency));
+
+    let mut snowball = HashSet::new();
     let goal_command = commands.pop().unwrap();
 
-    let defs: SymbolSet = commands
-        .iter()
-        .map(|x| get_global_symbol_defs(x))
-        .flatten()
-        .collect();
-
-    let defs = Arc::new(defs);
-    let tracker = UseTracker::new(defs.clone(), &goal_command, true);
-    let mut snowball = tracker.live_symbols;
+    if shake_init_strategy == 0 {
+        // lazy evaluation match states on goal
+        let tracker = UseTracker::new(defs.clone(), &goal_command, false);
+        snowball = tracker.live_symbols;
+        // put the goal back immediately
+        commands.push(goal_command.clone());
+    } else {
+        assert_eq!(shake_init_strategy, 1);
+        // eager evaluation match states on goal
+        let tracker = UseTracker::new(defs.clone(), &goal_command, true);
+        snowball = tracker.live_symbols;
+    }
 
     if debug {
         for s in &snowball {
@@ -514,24 +482,19 @@ pub fn tree_shake(
         .filter(|(pos, _)| poss.contains(pos))
         .map(|(_, x)| x)
         .collect();
-    commands.push(goal_command);
+
+    if shake_init_strategy == 1 {
+        // reintroduce the goal
+        commands.push(goal_command.clone());
+    }
+
     commands.push(Command::CheckSat);
     commands
 }
 
 pub fn remove_unused_symbols(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
     // println!("computing def symbols: ");
-    let mut defs = HashSet::new();
-    let cmd_defs: Vec<SymbolSet> = commands
-        .iter()
-        .map(|x| {
-            let d = get_global_symbol_defs(x);
-            defs.extend(d.iter().cloned());
-            d
-        })
-        .collect();
-
-    let defs = Arc::new(defs);
+    let defs = Arc::new(get_commands_symbol_def(&commands, 100));
 
     // println!("computing use symbols: ");
     let uses: SymbolSet = commands
@@ -540,26 +503,11 @@ pub fn remove_unused_symbols(mut commands: Vec<concrete::Command>) -> Vec<concre
         .flatten()
         .collect();
 
-    // for i in &uses {
-    //     println!("{}", i);
-    // }
+    // remove all commands that define a symbol that is not used
 
-    // println!("building remove set: ");
-    let mut remove_indices = HashSet::new();
-
-    cmd_defs.iter().enumerate().for_each(|(i, x)| {
-        if x.len() != 0 && uses.is_disjoint(x) {
-            // println!("removing {}", &commands[i]);
-            remove_indices.insert(i);
-        }
-    });
-
-    // println!("removing use symbols: ");
     commands = commands
         .into_iter()
-        .enumerate()
-        .filter(|(pos, _)| !remove_indices.contains(pos))
-        .map(|(_, x)| x)
+        .filter(|c| uses.is_disjoint(&get_command_symbol_def(c)))
         .collect();
 
     commands

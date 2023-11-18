@@ -222,6 +222,13 @@ build {self.strp_path}: strip {input_path}"""
     
     def should_unify(self):
         return self.mini_status in {Stability.UNSOLVABLE, None} and self.extd_exists
+    
+    def get_unify_path(self):
+        if self.should_unify():
+            return self.extd_path
+        if self.mini_exists:
+            return self.mini_path
+        return None
 
     def get_shake_stats(self, unify=True, clear_cache=False):
         if cache_exists(self.shke_stat_name) and not clear_cache:
@@ -259,13 +266,13 @@ build {self.strp_path}: strip {input_path}"""
         return data
 
     # probably not the best ...
-    def shake_from_log(self, max_depth=np.inf):
+    def shake_from_log(self, dir, max_depth=np.inf):
         stamps = parse_stamps(self.shke_log_path)
         assert(len(stamps) != 0)
         # orig_asserts = get_asserts(self.orig_path)
         # stats = self.get_shake_stats()
 
-        out_file = open("data/shake_unstable_oracle/fs_dice/" + self.base, "w+")
+        out_file = open(dir + "/" + self.base, "w+")
 
         for line in open(self.orig_path):
             if line.startswith("(assert "):
@@ -283,6 +290,16 @@ build {self.strp_path}: strip {input_path}"""
         assert(len(stamps) != 0)
         s_asserts = np.sum([1 for i in stamps if stamps[i] <= max_depth])
         return s_asserts
+
+    def get_debug_cmds(self):
+        print(f"cp {self.orig_path} temp/woot.smt2")
+        u_path = self.get_unify_path()
+        if u_path:
+            print(f"cp {u_path} temp/core.smt2")
+        else:
+            print("rm temp/core.smt2")
+        print(f"cp {self.shke_path} temp/out.smt2")
+        print(f"cp {self.shke_log_path} temp/log.txt")
 
 class MissingTypes(str, Enum):
     ORIG_EXPERIMENT_MISSING = "original file present but experiment missing"
@@ -310,6 +327,8 @@ class ProjectCoreManager:
         self.mini_cats, self.mini_tally = load_proj_stability(self.mini, PLAIN_UC)
         self.extd_cats, self.extd_tally = load_proj_stability(self.extd, PLAIN_UC)
 
+        self.qm_index = dict()
+
         self.qms = []
         for orig_path in self.orig.list_queries():
             base = os.path.basename(orig_path)
@@ -318,6 +337,7 @@ class ProjectCoreManager:
             extd_status = find_category(base, self.extd_cats)
             qm = QueryCoreManager(orig_path, orig_status, mini_status, extd_status, self)
             self.qms.append(qm)
+            self.qm_index[qm.base] = qm
 
     def emit_check_rules(self):
         assert self.mini_tally.issubset(self.orig_tally)
@@ -417,6 +437,10 @@ class ProjectCoreManager:
             cache_save(data, cache_path)
         return data
 
+    def get_query_manager(self, path):
+        path = os.path.basename(path)
+        return self.qm_index[path]
+
     def contains_query(self, query):
         return query.startswith(self.orig.clean_dir)
 
@@ -424,26 +448,30 @@ UNSAT_CORE_PROJECTS = {
     name: ProjectCoreManager(name) for name in UNSAT_CORE_PROJECTS_NAMES
 }
 
-if __name__ == "__main__":
-    p = UNSAT_CORE_PROJECTS["fs_dice"]
-    # p.shake_from_logs()
-    # contents = p.emit_strip_rules()
-    contents = p.emit_shake_rules()
-    # unstables = list()
-
-    # random.seed(time.time())
-    # qm = random.choice(unstables)
-    # print(qm.orig_status, qm.mini_status, qm.extd_status)
-    # print(qm.orig_path)
+def emit_build_rules():
+    contents = []
+    p = UNSAT_CORE_PROJECTS["d_komodo"]
 
     # for p in UNSAT_CORE_PROJECTS.values():
-        # contents += p.emit_shake_rules()
-        # contents += p.emit_check_rules()
-        # contents += p.emit_mini_rules()
-        # p.emit_fix_missing()
-        # pass
 
+    contents += p.emit_shake_rules()
+    # contents += p.emit_check_rules()
+    # contents += p.emit_mini_rules()
+
+    random.seed(time.time())
+    
     random.shuffle(contents)
     print(BUILD_RULES)
     for i in contents:
         print(i)
+
+def generate_test_set():
+    qms = random.sample(p.qms, 200)
+    for qm in qms:
+        stats = qm.get_shake_stats()
+        print(qm.orig_status, qm.mini_status, qm.extd_status, stats[4])
+        print(qm.orig_status, qm.mini_status, qm.extd_status)
+        qm.shake_from_log("data/shake_unstable_oracle/d_komodo", max_depth = 4 if stats[4] == np.inf else stats[4])
+
+if __name__ == "__main__":
+    generate_test_set()

@@ -452,12 +452,22 @@ struct Args {
     #[arg(long, default_value_t = 100)]
     pattern_threshold: u64,
 
+    /// file containing unsat core (produced by Z3)
+    #[arg(long)]
+    core_file_path: Option<String>,
+
     ///the max depth of tree-shaking
     #[arg(long, default_value_t = u32::MAX)]
     shake_max_depth: u32,
 
     #[arg(long)]
     shake_debug: bool,
+
+    #[arg(long, default_value_t = 0)]
+    shake_init_strategy: u32,
+
+    #[arg(long, default_value_t = 100)]
+    shake_max_symbol_frequency: usize,
 
     /// file to log the shake depth
     #[arg(long)]
@@ -466,10 +476,6 @@ struct Args {
     /// file to log the symbol score
     #[arg(long)]
     symbol_score_path: Option<String>,
-
-    /// file containing unsat core (produced by Z3)
-    #[arg(long)]
-    core_file_path: Option<String>,
 }
 
 fn main() {
@@ -532,18 +538,19 @@ fn main() {
         // parse and do nothing
         return;
     } else if args.mutation == "tree-shake" {
+        assert!(args.shake_init_strategy < 2);
+        assert!(args.shake_max_symbol_frequency <= 100);
+
         commands = tree_shake::tree_shake(
             commands,
             args.shake_max_depth,
+            args.shake_max_symbol_frequency,
+            args.shake_init_strategy,
             args.command_score_path,
             args.shake_debug,
         );
     } else if args.mutation == "tree-shake-idf" {
-        // commands = tree_shake_idf::tree_shake_idf(
-        //     commands,
-        //     args.symbol_score_path,
-        //     args.command_score_path,
-        // );
+        tree_shake_idf::print_commands_symbol_frequency(&commands, false);
     } else if args.mutation == "tree-rewrite" {
         commands = tree_rewrite::tree_rewrite(commands);
     } else if args.mutation == "remove-unused" {

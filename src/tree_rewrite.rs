@@ -1,12 +1,11 @@
-use smt2parser::concrete::{Command, QualIdentifier, Symbol, Term};
-use smt2parser::{concrete, rewriter};
+use smt2parser::concrete::{Command, Term};
+use smt2parser::concrete;
 // use std::collections::{HashMap, HashSet};
 
 use crate::pretty_print::print_prop_skeleton;
 use crate::term_match::{make_not_term, match_simple_app_term};
 use crate::term_rewrite_flat::flatten_assert;
 use crate::term_rewrite_label::remove_label_rec;
-use crate::term_rewrite_let::LetBindingReWriter;
 use crate::term_rewrite_prop::term_rewrite_prop;
 
 // fn replace_symbol_rec(term: Term, old: &Symbol, new: &Term, count: &mut usize) -> Term {

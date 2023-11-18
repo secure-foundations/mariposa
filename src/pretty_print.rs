@@ -76,10 +76,11 @@ pub fn print_prop_skeleton(term: &concrete::Term, indent: usize) {
     }
 }
 
+#[allow(dead_code)]
 pub fn print_command(cmd: &Command) {
     if let Command::Assert { term } = cmd {
         print_prop_skeleton(term, 0);
-    } else if let Command::DefineFun { sig, term } = cmd {
+    } else if let Command::DefineFun { .. } = cmd {
         panic!("TODO define fun")
     } else {
         println!("{}\n", cmd);

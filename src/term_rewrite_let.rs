@@ -42,6 +42,7 @@ fn let_binding_as_command(var: &Symbol, term0: &concrete::Term) -> Vec<concrete:
     ]
 }
 
+#[allow(dead_code)]
 pub struct LetBindingReWriter {
     let_bindings: HashMap<Symbol, (concrete::Term, usize)>,
     order: Vec<Symbol>,
@@ -49,6 +50,7 @@ pub struct LetBindingReWriter {
 }
 
 impl LetBindingReWriter {
+    #[allow(dead_code)]
     pub fn new() -> LetBindingReWriter {
         LetBindingReWriter {
             let_bindings: HashMap::new(),
@@ -122,6 +124,7 @@ impl LetBindingReWriter {
         }
     }
 
+    #[allow(dead_code)]
     pub fn rewrite_let_bindings(&mut self, mut term: concrete::Term) -> Vec<concrete::Command> {
         let mut commands = vec![];
         self.rewrite_let_bindings_rec(&mut term);

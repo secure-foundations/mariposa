@@ -45,7 +45,22 @@ def print_diff_stats(path1, path2):
 
 s_expr_start = re.compile(r"^\(([^ ]+) ")
 
-def get_scores_for_core(score_file, core_file):
+def load_tf(tf_file):
+    tf = dict()
+    with open(tf_file) as f:
+        for line in f.readlines():
+            line = line.strip().split(" ")
+            tf[line[0]] = int(line[1])
+    return tf
+
+def tokenize(line, tf):
+    line = re.split('\(|\)| ', line.strip())
+    line = {i: tf[i] for i in line if i in tf}
+    return line
+
+def get_scores_for_core(score_file, core_file, tf_file=None):
+    tf = load_tf(tf_file)
+
     # scores = dict()
     layers = dict()
     covered = set()
@@ -62,19 +77,47 @@ def get_scores_for_core(score_file, core_file):
                 layers[it] = set()
             nl = line[1].replace(" ", "").strip()
             olines[nl] = line[1]
-
             layers[it].add(nl)
 
+        max_core_layer = 0
+        overshot = 0 
+
         for it in sorted(layers.keys()):
-            print(f"===layer {it} summary===")
-            print(f"core asserts: {len(core_asserts & layers[it])}/{len(layers[it])}")
+            layer_scores = []
+            max_score = 0
             for nl in layers[it]:
                 covered.add(nl)
+                tokens = list(tokenize(olines[nl], tf).values())
+                if len(tokens) == 0:
+                    tokens = [0]
+                score = np.mean(tokens)
                 if nl in core_asserts:
-                    print("[c] ", end="")
-                print(olines[nl])
+                    max_score = max(max_score, score)
+                layer_scores.append((score, nl))
 
-    print("===missing summary===")
+            print(f"=== layer {it} summary ===")
+            if len(core_asserts & layers[it]) != 0:
+                max_core_layer = it
+            if it <= max_core_layer:
+                overshot += len(layers[it])
+            print(f"core asserts: {len(core_asserts & layers[it])}/{len(layers[it])}")
+            print(f"max core score: {max_score}")
+            print(f"asserts < max score: {np.sum([i[0] <= max_score for i in layer_scores])}")
+
+            # layer_scores.sort()
+            # for score, nl in layer_scores:
+                # if nl in core_asserts:
+                #     print(str(int(score)) + " [c] ")
+                # else:
+                #     print(str(int(score)))
+                #     print("")
+                #     print("\n\t".join())
+                # else:
+                #     print(olines[nl])
+                #     print("\t" + " ".join(tokenize(olines[nl], tf)))
+    print(f"=== max core layer {max_core_layer} ===")
+    print(f"approx asserts: {overshot}")
+    print("=== missing summary ===")
 
     for i in core_asserts - covered:
         print(olines[i])
@@ -99,7 +142,7 @@ if __name__ == "__main__":
     elif op == "diff-stats":
         print_diff_stats(sys.argv[2], sys.argv[3])
     elif op == "core":
-        get_scores_for_core(sys.argv[2], sys.argv[3])
+        get_scores_for_core(sys.argv[2], sys.argv[3], sys.argv[4])
 
     # a = get_asserts(sys.argv[1])
     # b = get_asserts(sys.argv[2])

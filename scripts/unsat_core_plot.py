@@ -189,11 +189,7 @@ def plot_shake_incomplete(proj):
         stats = qm.get_shake_stats(unify=True, clear_cache=True)
         dps.append(stats)
         if stats[5] > 0 and stats[5] < np.inf:
-            print(f"cp {qm.orig_path} temp/woot.smt2")
-            print(f"cp {qm.mini_path} temp/core.smt2")
-            print(f"cp {qm.shke_path} temp/out.smt2")
-            print(f"cp {qm.shke_log_path} temp/log.txt")
-            print("")
+            print(stats[5])
 
     dps = np.array(dps)
 
@@ -206,10 +202,7 @@ def plot_shake_incomplete(proj):
 def dump_baseline_unstable(proj):
     for qm in tqdm(proj.qms):
         if qm.orig_status == Stability.UNSTABLE:
-            print(f"cp {qm.orig_path} temp/woot.smt2")
-            print(f"cp {qm.mini_path} temp/core.smt2")
-            print(f"cp {qm.shke_path} temp/out.smt2")
-            print(f"cp {qm.shke_log_path} temp/log.txt")
+            qm.get_debug_cmds()
             print("")
 
 def plot_migration(proj):
@@ -384,13 +377,55 @@ def analyze_fs_dice():
             print("")
     # print(len(orig_asserts), len(mini_asserts), len(temp_asserts))
 
+def analyze_test_set():
+    load_sum_table()
+    pass
+
 if __name__ == "__main__":
+    ANA = Analyzer(.05, 60, .05, .95, 0.8, "cutoff")
+    CONFIG = Configer()
+    proj = CONFIG.load_known_project("shake_oracle_d_komodo")
+    exp = CONFIG.load_known_experiment("rewrite")
+
+    ext_proj = UNSAT_CORE_PROJECTS["d_komodo"]
+    
+    items, tally = load_proj_stability(proj, exp)
+
+    oitems = {i: 0 for i in items}
+
+    pairs = dict()
+    for i in tally:
+        qm = ext_proj.get_query_manager(i)
+        oitems[qm.orig_status] += 1 
+        cat = find_category(i, items)
+
+        if i in items[Stability.STABLE] and qm.orig_status == Stability.STABLE:
+            continue
+
+        key = (qm.orig_status, cat)
+        if key not in pairs:
+            pairs[key] = []
+        pairs[key].append(qm)
+
+    for k, v in pairs.items():
+    #     if k != (Stability.STABLE, Stability.UNSOLVABLE):
+    #         continue
+        print(k[0], "->", k[1])
+        print(len(v))
+    #     for i in v:
+    #         i.get_debug_cmds()
+    #         print("")
+    
+    # for i in items[Stability.UNSOLVABLE]:
+    #     base = os.path.basename(i)
+    #     qm = ext_proj.qm_index[base]
+    #     print(qm.orig_status, qm.mini_status)
+    #     print(i)
+
     # analyze_fs_dice()
-    # dump_baseline_unstable(UNSAT_CORE_PROJECTS["d_komodo"])
-    plot_shake_incomplete(UNSAT_CORE_PROJECTS["fs_dice"])
-    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["d_lvbkv"])
-    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["d_lvbkv"])
-    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["fs_vwasm"])
+    # dump_baseline_unstable(UNSAT_CORE_PROJECTS["fs_dice"])
+    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["d_komodo"])
+
     # for proj in UNSAT_CORE_PROJECTS.values():
     #     plot_shake_incomplete(proj)
     #     plot_migration(proj)

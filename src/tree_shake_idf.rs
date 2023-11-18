@@ -1,35 +1,100 @@
 use smt2parser::concrete;
 use smt2parser::concrete::{AttributeValue, Command, Symbol, Term};
 use std::collections::{HashMap, HashSet};
-use std::io::Write;
 use std::sync::Arc;
 
 use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
-use crate::tree_shake;
 
 type SymbolCount = HashMap<Symbol, usize>;
 
-struct UseCounter {
+// get the symbols defined in a command
+pub fn get_command_symbol_def(command: &concrete::Command) -> SymbolSet {
+    let mut symbols = HashSet::new();
+    match command {
+        Command::DeclareConst { symbol, sort: _ } => {
+            symbols.insert(symbol.clone());
+        }
+        Command::DeclareDatatypes { datatypes } => {
+            datatypes.iter().for_each(|x| {
+                symbols.insert(x.0.clone());
+                assert_eq!(x.2.parameters.len(), 0);
+                x.2.constructors.iter().for_each(|y| {
+                    symbols.insert(y.symbol.clone());
+                    y.selectors.iter().for_each(|z| {
+                        symbols.insert(z.0.clone());
+                    });
+                });
+            });
+        }
+        Command::DeclareFun { symbol, .. } => {
+            symbols.insert(symbol.clone());
+        }
+        Command::DefineFun { sig, .. } => {
+            symbols.insert(sig.name.clone());
+        }
+        Command::DeclareSort { .. } => {
+            // println!("Sort symbol not considered");
+            // symbols.insert(symbol.0.clone());
+        }
+        _ => (),
+    }
+
+    // if DEBUG_DEFS && symbols.len() > 0 {
+    //     println!("{}", command);
+    //     for s in &symbols {
+    //         println!("\t{}", s);
+    //     }
+    // }
+    symbols
+}
+
+fn get_commands_symbol_def_plain(commands: &Vec<concrete::Command>) -> SymbolSet {
+    let defs: SymbolSet = commands
+        .iter()
+        .map(|x| get_command_symbol_def(x))
+        .flatten()
+        .collect();
+    return defs;
+}
+
+pub fn get_commands_symbol_def(
+    commands: &Vec<concrete::Command>,
+    max_symbol_frequency: usize,
+) -> SymbolSet {
+    assert!(max_symbol_frequency <= 100);
+
+    if max_symbol_frequency == 100 {
+        return get_commands_symbol_def_plain(commands);
+    }
+
+    let (cmd_freq, use_cmd_count) = count_commands_symbol_frequency(commands, false);
+
+    cmd_freq
+        .into_iter()
+        .filter(|(_, count)| count * 100 / use_cmd_count <= max_symbol_frequency)
+        .map(|(symbol, _)| symbol)
+        .collect()
+}
+
+struct CommandUseCounter {
     defined_symbols: Arc<SymbolSet>,
     local_bindings: SymbolSet,
-    counts: SymbolCount,
-    df_counts: SymbolCount,
+    symbol_counts: SymbolCount,
     include_patterns: bool,
 }
 
-impl UseCounter {
+impl CommandUseCounter {
     fn new(defined_symbols: Arc<SymbolSet>, include_patterns: bool) -> Self {
         Self {
             defined_symbols,
             local_bindings: SymbolSet::new(),
-            counts: HashMap::new(),
-            df_counts: HashMap::new(),
+            symbol_counts: HashMap::new(),
             include_patterns,
         }
     }
 
     fn increment_symbol_count(&mut self, symbol: &Symbol) {
-        if let Some(count) = self.counts.get_mut(symbol) {
+        if let Some(count) = self.symbol_counts.get_mut(symbol) {
             *count += 1;
             return;
         }
@@ -39,7 +104,7 @@ impl UseCounter {
         }
 
         if self.defined_symbols.contains(symbol) {
-            *self.counts.entry(symbol.clone()).or_insert(0) += 1;
+            *self.symbol_counts.entry(symbol.clone()).or_insert(0) += 1;
         }
     }
 
@@ -51,7 +116,7 @@ impl UseCounter {
         self.local_bindings.remove(symbol);
     }
 
-    fn count_symbol_uses_rec(&mut self, term: &Term) {
+    fn count_symbol_use_rec(&mut self, term: &Term) {
         match term {
             Term::Constant(..) => (),
             Term::QualIdentifier(qual_identifier) => {
@@ -70,15 +135,15 @@ impl UseCounter {
                 } else {
                     panic!("TODO sorted QualIdentifier")
                 }
-                arguments.iter().for_each(|x| self.count_symbol_uses_rec(x));
+                arguments.iter().for_each(|x| self.count_symbol_use_rec(x));
             }
             Term::Let { var_bindings, term } => {
                 // remove local bindings
                 var_bindings.iter().for_each(|x| {
                     self.add_local_binding(&x.0);
-                    self.count_symbol_uses_rec(&x.1);
+                    self.count_symbol_use_rec(&x.1);
                 });
-                self.count_symbol_uses_rec(term);
+                self.count_symbol_use_rec(term);
                 var_bindings
                     .iter()
                     .for_each(|x| self.remove_local_binding(&x.0));
@@ -86,14 +151,14 @@ impl UseCounter {
             Term::Forall { vars, term } | Term::Exists { vars, term } => {
                 // no need for sort symbols right?
                 vars.iter().for_each(|x| self.add_local_binding(&x.0));
-                self.count_symbol_uses_rec(term);
+                self.count_symbol_use_rec(term);
                 vars.iter().for_each(|x| self.remove_local_binding(&x.0));
             }
             Term::Match { term: _, cases: _ } => {
                 panic!("TODO match cases")
             }
             Term::Attributes { term, attributes } => {
-                self.count_symbol_uses_rec(term);
+                self.count_symbol_use_rec(term);
 
                 if self.include_patterns {
                     attributes.into_iter().for_each(|f| {
@@ -106,7 +171,7 @@ impl UseCounter {
                                     self.increment_symbol_count(symbol);
                                 }
                                 AttributeValue::Terms(terms) => {
-                                    terms.iter().for_each(|x| self.count_symbol_uses_rec(&x));
+                                    terms.iter().for_each(|x| self.count_symbol_use_rec(&x));
                                 }
                                 AttributeValue::SExpr(ses) => {
                                     ses.iter().for_each(|se| {
@@ -122,18 +187,59 @@ impl UseCounter {
             }
         }
     }
-
-    fn process_command(&mut self, command: &Command) {
-        if let Command::Assert { term } = command {
-            self.count_symbol_uses_rec(term);
-        }
-
-
-    } 
 }
 
-pub fn count_symbol_uses(term: &Term, defined_symbols: Arc<SymbolSet>) -> SymbolCount {
-    let mut counter = UseCounter::new(defined_symbols, false);
-    counter.count_symbol_uses_rec(term);
-    counter.counts
+pub fn count_command_symbol_use(
+    command: &Command,
+    defined_symbols: Arc<SymbolSet>,
+    include_patterns: bool,
+) -> SymbolCount {
+    let mut counter = CommandUseCounter::new(defined_symbols, include_patterns);
+
+    if let Command::Assert { term } = command {
+        counter.count_symbol_use_rec(term);
+    } else if let Command::DefineFun { sig, term } = command {
+        sig.parameters
+            .iter()
+            .for_each(|arg| counter.add_local_binding(&arg.0));
+        counter.count_symbol_use_rec(term);
+        sig.parameters
+            .iter()
+            .for_each(|arg| counter.remove_local_binding(&arg.0));
+    }
+    return counter.symbol_counts;
+}
+
+pub fn count_commands_symbol_frequency(
+    commands: &Vec<Command>,
+    include_patterns: bool,
+) -> (SymbolCount, usize) {
+    let defined_symbols = Arc::new(get_commands_symbol_def_plain(commands));
+    let mut use_cmd_count = 0;
+
+    // this will only count each symbol at most once per command
+    let mut cmd_freq = HashMap::new();
+
+    commands.iter().for_each(|c| {
+        let uses = count_command_symbol_use(c, defined_symbols.clone(), include_patterns);
+        if uses.len() > 0 {
+            use_cmd_count += 1;
+        }
+        uses.iter().for_each(|(symbol, _)| {
+            *cmd_freq.entry(symbol.clone()).or_insert(0) += 1;
+        });
+    });
+    return (cmd_freq, use_cmd_count);
+}
+
+pub fn print_commands_symbol_frequency(commands: &Vec<Command>, include_patterns: bool) {
+    let (cmd_freq, use_cmd_count) = count_commands_symbol_frequency(commands, include_patterns);
+
+    let mut symbols: Vec<_> = cmd_freq.iter().collect();
+    symbols.sort_by(|a, b| b.1.cmp(a.1));
+
+    println!("MARIPOSA_USE_CMD_COUNT {}", use_cmd_count);
+    for (symbol, count) in symbols {
+        println!("{} {} {}", symbol, count, count * 100 / use_cmd_count);
+    }
 }
