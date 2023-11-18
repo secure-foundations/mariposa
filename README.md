@@ -6,6 +6,11 @@ Mariposa is a tool for testing and quantifying SMT-based proof stability.  Given
 * applies statistical tests to the data in order to assign a stability category
 * reports the stability category and relevant stability metrics
 
+For more details, please see our paper:
+* [Mariposa: Measuring SMT Instability in Automated Program Verification](https://www.andrew.cmu.edu/user/bparno/papers/mariposa.pdf).
+    Yi Zhou, Jay Bosamiya, Yoshiki Takashima, Jessica Li, Marijn Heule, and Bryan Parno.
+    Proceedings of the Formal Methods in Computer-Aided Design (FMCAD) Conference, October, 2023.
+    Full version available as a [CMU technical report](https://doi.org/10.1184/R1/23905905).
 
 ## The Mariposa Benchmark and Experimental Data
 
