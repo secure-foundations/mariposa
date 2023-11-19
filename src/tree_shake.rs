@@ -302,6 +302,10 @@ impl UseTracker {
                     self.add_local_binding(&p.0);
                 }
                 let uses = self.get_symbol_uses(term);
+                // do not remove local bindings
+                // for p in &sig.parameters {
+                //     self.remove_local_binding(&p.0);
+                // }
                 self.live_symbols = uses;
                 self.live_symbols.insert(sig.name.clone());
             }
@@ -310,7 +314,8 @@ impl UseTracker {
     }
 
     fn delayed_aggregate(&mut self, snowball: &SymbolSet, delayed: &mut SymbolSet) -> bool {
-        let mut modified = false;
+        let mut should_include = false;
+
         let mut cur_pattern_states = Vec::new();
         std::mem::swap(&mut self.pattern_states, &mut cur_pattern_states);
 
@@ -318,7 +323,9 @@ impl UseTracker {
             .into_iter()
             .partition(|s| s.check_match(snowball));
 
-        modified |= matched.len() != 0;
+        if matched.len() != 0 {
+            should_include = true;
+        }
 
         matched.into_iter().for_each(|m| {
             let mut child = self.fork(m.local_symbols);
@@ -333,7 +340,7 @@ impl UseTracker {
             // assert_eq!(no_pattern_states.len(), 0);
 
             self.live_symbols.extend(child_symbols.iter().cloned());
-            delayed.extend(child_symbols.into_iter());
+            // delayed.extend(child_symbols.into_iter());
             non_matched.append(&mut pattern_states);
             self.no_pattern_states.extend(no_pattern_states);
         });
@@ -347,22 +354,34 @@ impl UseTracker {
             .into_iter()
             .partition(|s| s.check_match(snowball));
 
-        modified |= matched.len() != 0;
+        if matched.len() != 0 {
+            should_include = true;
+        }
 
         matched.into_iter().for_each(|m| {
             self.live_symbols.extend(m.hidden_symbols.iter().cloned());
-            delayed.extend(m.hidden_symbols);
+            // delayed.extend(m.hidden_symbols);
         });
 
         self.no_pattern_states = non_matched;
 
-        modified |= !self.live_symbols.is_disjoint(&snowball);
-
-        if modified {
-            delayed.extend(self.live_symbols.iter().cloned());
+        if !self.live_symbols.is_disjoint(&snowball) {
+            should_include = true;
         }
 
-        modified
+        return should_include;
+        // if self.live_symbols.is_subset(&snowball) {
+        //     return (modified, true);
+        // }
+
+        // let mut should_add = false;
+        // if !self.live_symbols.is_disjoint(&snowball) {
+        //     // delayed.extend(self.live_symbols.iter().cloned());
+        //     modified = true;
+        //     should_add = true;
+        // }
+
+        // (modified, should_add)
     }
 
     fn debug(&self) {
@@ -410,7 +429,7 @@ pub fn tree_shake(
 
     if debug {
         for s in &snowball {
-            println!("[isb]\t{}", s);
+            println!("[isb] {}", s);
         }
     }
 
@@ -420,21 +439,34 @@ pub fn tree_shake(
         .collect();
 
     let mut poss = HashSet::new();
-    let mut pposs = HashSet::new();
+    // let mut pposs = HashSet::new();
     poss.insert(0);
 
     let mut iteration = 1;
     let mut stamps = HashMap::new();
+    let mut modified = true;
 
-    while poss != pposs {
+    while modified {
         let mut delayed = HashSet::new();
-        pposs = poss.clone();
+        modified = false;
+        let prev_len = snowball.len();
+
         for (pos, tracker) in trackers.iter_mut().enumerate() {
-            if tracker.delayed_aggregate(&snowball, &mut delayed) {
+            let should_include = tracker.delayed_aggregate(&snowball, &mut delayed);
+            // if commands[pos].to_string().contains("binder_x_39cef6c8a4c32c00bec831967af0f4b9_3") {
+            //     println!("debugging");
+            //     let contains = snowball.contains(&concrete::Symbol("HasType".to_string()));
+            //     println!("{}", contains);
+            //     tracker.debug();
+            //     println!("should add?? {}", should_add);
+            // }
+            if should_include {
+                delayed.extend(tracker.live_symbols.iter().cloned());
                 poss.insert(pos);
                 if !stamps.contains_key(&pos) {
                     stamps.insert(pos, iteration);
                 }
+                // println!("{} modified {}", iteration, &commands[pos]);
             } else {
                 if let Command::Assert { term: _ } = &commands[pos] {
                 } else {
@@ -444,12 +476,42 @@ pub fn tree_shake(
         }
 
         snowball.extend(delayed.into_iter());
+
+        if snowball.len() != prev_len {
+            modified = true;
+        }
+
         iteration += 1;
 
         if iteration > shake_max_depth {
             break;
         }
     }
+    // let mut delayed = HashSet::new();
+
+    // for (pos, tracker) in trackers.iter_mut().enumerate() {
+    //     if commands[pos].to_string().contains(":qid refinement_interpretation_Tm_refine_b1b46f7ae8d75af55fe6822ff1fb6bf2") {
+    //         println!("debugging");
+    //         let contains = snowball.contains(&concrete::Symbol("Tm_refine_b1b46f7ae8d75af55fe6822ff1fb6bf2".to_string()));
+    //         println!("{}", contains);
+    //     }
+
+    //     if tracker.delayed_aggregate(&snowball, &mut delayed) {
+    //         poss.insert(pos);
+    //         if !stamps.contains_key(&pos) {
+    //             stamps.insert(pos, iteration);
+    //         }
+    //     } else {
+    //         if let Command::Assert { term: _ } = &commands[pos] {
+    //         } else {
+    //             poss.insert(pos);
+    //         }
+    //     }
+    // }
+
+
+    // let contains = snowball.contains(&concrete::Symbol("Tm_refine_b1b46f7ae8d75af55fe6822ff1fb6bf2".to_string()));
+    // println!("{}", contains);
 
     if let Some(shake_log_path) = shake_log_path {
         let mut log_file = std::fs::File::create(shake_log_path).unwrap();
@@ -472,7 +534,7 @@ pub fn tree_shake(
         }
 
         for s in &snowball {
-            println!("[fsb]\t{}", s);
+            println!("[fsb] {}", s);
         }
     }
 

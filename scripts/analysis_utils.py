@@ -242,7 +242,7 @@ def _plot_time_scatter(rows, sp):
     
     # sp.scatter(scatters[:,0][[cats[Stability.Unk]], scatters[:,1][others], s=8, label="others")
     # print(pf, cfs, ps, css)
-    # print(percentage(bounded, len(scatters)), mworse, len(scatters))
+    # print(percent(bounded, len(scatters)), mworse, len(scatters))
     # print(weightstats.ttost_paired(np.array(ys), np.array(xs), -0.57, -0.03))
     # print(weightstats.ttost_paired(np.array(ys), np.array(xs), 1.002, 1.015, transform=np.log))
     sp.fill_between([0.01, 1000],  [0.01 * 1.5, 1000 * 1.5], [0.01, 1000], alpha=0.1, color="green", label=r"$\frac{x}{1.5} < y < 1.5x$")
@@ -417,7 +417,7 @@ def plot_pert_diff(rows, sp):
 
     for j in cutoffs:
         for k, v in categories[j].items():
-            points[k].append(percentage(len(v), total))
+            points[k].append(percent(len(v), total))
 
     for k in points:
         if k == "unsolvable":
@@ -491,8 +491,8 @@ def get_data_time_cutoff(name, rows, cutoffs, steps):
         cache_save(categories, f"data_time_cutoff_{name}")
 
     total = len(rows)
-    unstables = [percentage(len(categories[i]["unstable"]), total) for i in cutoffs]
-    unsolvables = [percentage(len(categories[i]["unsolvable"]), total) for i in cutoffs]
+    unstables = [percent(len(categories[i]["unstable"]), total) for i in cutoffs]
+    unsolvables = [percent(len(categories[i]["unsolvable"]), total) for i in cutoffs]
     
     diffs = [[] for _ in steps]
     for j, step in enumerate(steps):
@@ -502,7 +502,7 @@ def get_data_time_cutoff(name, rows, cutoffs, steps):
                 continue
             curr = categories[i]
             next = categories[i+step]
-            changes.append(percentage(len(curr["unstable"].intersection(next["unstable"])), total))
+            changes.append(percent(len(curr["unstable"].intersection(next["unstable"])), total))
         diffs[j] = changes
     
     # print("diffs = ", diffs)
@@ -761,7 +761,7 @@ def _plot_srs(exp, rows, sp):
 
         for k in range(len(group_blobs)):
             success = count_within_timeout(group_blobs[k], RCode.UNSAT, timeout=6e4)
-            dps[rows.index(query_row), k] = percentage(success, 61)
+            dps[rows.index(query_row), k] = percent(success, 61)
     end = 0
     mutations = [str(p) for p in exp.enabled_muts]
     

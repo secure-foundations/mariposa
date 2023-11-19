@@ -13,7 +13,7 @@ def get_asserts(filename):
         return cmds0
     with open(filename) as f:
         for line in f.readlines():
-            if line.startswith("(assert ") or line.startswith("(define-fun "):
+            if line.startswith("(assert "):
                 cmds0[normalize_line(line)] = line.strip()
     return cmds0
 
@@ -67,7 +67,8 @@ def parse_stamps(filename):
         line = line.split("|||")
         stamp = int(line[0].strip())
         nl = normalize_line(line[1])
-        cmds0[nl] = stamp
+        if nl.startswith("(assert"):
+            cmds0[nl] = stamp
     return cmds0
 
 def print_shake_layers(orig_path, mini_path, log_path, tf_file=None):
@@ -124,7 +125,7 @@ def shake_from_log(orig_path, log_path, out_path, max_depth):
     out_file = open(out_path, "w+")
 
     for line in open(orig_path):
-        if line.startswith("(assert ") or line.startswith("(define-fun "):
+        if line.startswith("(assert "):
             nl = normalize_line(line)
             if nl not in stamps or stamps[nl] > max_depth:
                 continue

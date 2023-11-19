@@ -80,6 +80,8 @@ def load_proj_stability(proj, exp):
 
         # it might be ok that some experiments are missing
         # not the other way around though
+        # for i in expected - tally:
+        #     print(f"[WARNING] {i} is missing in {proj.name}")
         assert tally.issubset(expected)
         cache_save(items, cat_cache_name)
 
@@ -410,89 +412,44 @@ UNSAT_CORE_PROJECTS = {
 #         qms += random.sample(p.qms, 100)
 #     return qms
 
-# def emit_shake_completeness_test():
-#     reset_shake_dirs()
-
-#     contents = []
-#     qms = get_shake_comp_test_qms()
-
-#     for qm in qms:
-#         contents.append(qm.emit_shake())
-
-#     random.shuffle(contents)
-#     print(BUILD_RULES)
-
-#     for i in contents:
-#         print(i)
-
-# def stat_shake_incomplete(qms):
-#     dps = []
-
-#     for qm in tqdm(qms):
-#         stats = qm.get_shake_stats(unify=True, clear_cache=True)
-#         dps.append(stats)
-#         if stats[5] > 0 and stats[5] < np.inf:
-#             print(stats[5])
-#             # qm.get_debug_cmds()
-
-#     dps = np.array(dps)
-
-#     nz = dps[:, 5] > 0
-#     nf = np.isfinite(dps[:, 5])
-
-#     misses = np.sum(np.logical_and(nz, nf))
-#     print("shake missed ", misses, "/", np.sum(nf), "/", len(qms))
-
-# def emit_oracle_test(proj):
-#         stats = qm.get_shake_stats()
-#         print(qm.orig_status, qm.mini_status, qm.extd_status, stats[4])
-#         print(qm.orig_status, qm.mini_status, qm.extd_status)
-
-def emit_build(contents):
-    random.seed(12345)
-    random.shuffle(contents)
-
-    with open("build.ninja", "w+") as f:
-        f.write(BUILD_RULES)
-        for i in contents:
-            f.write(i)
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="a separate tool managing/building unsat core experiments")
-    parser.add_argument("-p", "--project", required=True, help="the target project, use 'all' to run on all projects")
-    parser.add_argument("-a", "--action", required=True, help="the action to perform")
-    
-    args = parser.parse_args()
+    pass
+    # parser = argparse.ArgumentParser(description="a separate tool managing/building unsat core experiments")
+    # parser.add_argument("-p", "--project", required=True, help="the target project, use 'all' to run on all projects")
+    # parser.add_argument("-a", "--action", required=True, help="the action to perform")
 
-    if args.project != "all" and args.project not in UNSAT_CORE_PROJECTS:
-        print(f"unknown project {args.project}")
-        exit(1)
+    # args = parser.parse_args()
 
-    if args.project == "all":
-        projects = list(UNSAT_CORE_PROJECTS.values())
-    else:
-        projects = [UNSAT_CORE_PROJECTS[args.project]]
+    # if args.project != "all" and args.project not in UNSAT_CORE_PROJECTS:
+    #     print(f"unknown project {args.project}")
+    #     exit(1)
+
+    # if args.project == "all":
+    #     projects = list(UNSAT_CORE_PROJECTS.values())
+    # else:
+    #     projects = [UNSAT_CORE_PROJECTS[args.project]]
         
-    if args.action == "missing":
-        for p in projects:
-            p.print_missing_stats()
-        exit(0)
+    # if args.action == "missing":
+    #     for p in projects:
+    #         p.print_missing_stats()
+    #     exit(0)
 
-    if args.action == "mini":
-        func = lambda qm: qm.emit_create_mini()
-    elif args.action == "shake":
-        func = lambda qm: qm.emit_shake()
-    elif args.action == "strip":
-        func = lambda qm: qm.emit_strip()
-    elif args.action == "complete":
-        func = lambda qm: qm.emit_complete_mini()
-    # elif args.action == "oracle":
-    #     func = lambda qm: qm.shake_from_oracle()
+    # if args.action == "mini":
+    #     func = lambda qm: qm.emit_create_mini()
+    # elif args.action == "complete":
+    #     func = lambda qm: qm.emit_complete_mini()
+    # elif args.action == "strip":
+    #     func = lambda qm: qm.emit_strip()
+    # elif args.action == "shake":
+    #     func = lambda qm: qm.emit_shake()
 
-    contents = []
+    # # elif args.action == "oracle":
+    # #     func = lambda qm: qm.shake_from_oracle()
 
-    for p in projects:
-        for qm in p.qms:
-            contents.append(func(qm))
+    # contents = []
 
-    emit_build(contents)
+    # for p in projects:
+    #     for qm in p.qms:
+    #         contents.append(func(qm))
+
+    # emit_build(contents)

@@ -401,7 +401,7 @@ def analyze_test_set():
     #     print(i)
 
 if __name__ == "__main__":
-    analyze_test_set()
+    # analyze_test_set()
     
     # dump_baseline_unstable(UNSAT_CORE_PROJECTS["d_fvbkv"])
     # plot_migration(UNSAT_CORE_PROJECTS["d_fvbkv"])
@@ -409,6 +409,6 @@ if __name__ == "__main__":
     # for proj in UNSAT_CORE_PROJECTS.values():
     #     plot_shake_incomplete(proj)
 
-    # plot_all_shake_max_depth()
+    plot_all_shake_max_depth()
     # plot_all_context_retention()
     # plot_all_shake_context_retention()

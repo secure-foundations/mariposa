@@ -19,6 +19,7 @@ mod term_rewrite_let;
 mod term_rewrite_prop;
 mod tree_rewrite;
 mod tree_shake;
+mod tree_shake_old;
 mod tree_shake_idf;
 
 const DEFAULT_SEED: u64 = 1234567890;
@@ -549,6 +550,8 @@ fn main() {
             args.command_score_path,
             args.shake_debug,
         );
+    } else if args.mutation == "tree-shake-old" {
+        commands = tree_shake_old::tree_shake(commands, args.command_score_path);
     } else if args.mutation == "tree-shake-idf" {
         tree_shake_idf::print_commands_symbol_frequency(&commands, false);
     } else if args.mutation == "tree-rewrite" {
