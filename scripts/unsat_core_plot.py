@@ -182,22 +182,6 @@ def plot_all_shake_max_depth():
     plt.savefig(f"fig/context/shake_max_depth.png", dpi=200)
     plt.close()
 
-def plot_shake_incomplete(proj):
-    dps = []
-
-    for qm in tqdm(proj.qms):
-        stats = qm.get_shake_stats(unify=True, clear_cache=True)
-        dps.append(stats)
-        if stats[5] > 0 and stats[5] < np.inf:
-            print(stats[5])
-
-    dps = np.array(dps)
-
-    nz = dps[:, 5] > 0
-    nf = np.isfinite(dps[:, 5])
-
-    misses = np.sum(np.logical_and(nz, nf))
-    print(proj.name, "shake missed ", misses, "/", np.sum(nf), "/", len(proj.qms))
 
 def dump_baseline_unstable(proj):
     for qm in tqdm(proj.qms):
@@ -378,20 +362,14 @@ def analyze_fs_dice():
     # print(len(orig_asserts), len(mini_asserts), len(temp_asserts))
 
 def analyze_test_set():
-    load_sum_table()
-    pass
-
-if __name__ == "__main__":
     ANA = Analyzer(.05, 60, .05, .95, 0.8, "cutoff")
     CONFIG = Configer()
-    proj = CONFIG.load_known_project("shake_oracle_d_komodo")
+    proj = CONFIG.load_known_project("shake_oracle_d_fvbkv")
     exp = CONFIG.load_known_experiment("rewrite")
-
-    ext_proj = UNSAT_CORE_PROJECTS["d_komodo"]
-    
     items, tally = load_proj_stability(proj, exp)
-
     oitems = {i: 0 for i in items}
+
+    ext_proj = UNSAT_CORE_PROJECTS["d_fvbkv"]
 
     pairs = dict()
     for i in tally:
@@ -408,27 +386,28 @@ if __name__ == "__main__":
         pairs[key].append(qm)
 
     for k, v in pairs.items():
-    #     if k != (Stability.STABLE, Stability.UNSOLVABLE):
-    #         continue
+        if k[1] != Stability.UNSOLVABLE:
+            continue
         print(k[0], "->", k[1])
         print(len(v))
-    #     for i in v:
-    #         i.get_debug_cmds()
-    #         print("")
-    
+        for i in v:
+            i.get_debug_cmds()
+            print("")
+
     # for i in items[Stability.UNSOLVABLE]:
     #     base = os.path.basename(i)
     #     qm = ext_proj.qm_index[base]
     #     print(qm.orig_status, qm.mini_status)
     #     print(i)
 
-    # analyze_fs_dice()
-    # dump_baseline_unstable(UNSAT_CORE_PROJECTS["fs_dice"])
-    # plot_shake_incomplete(UNSAT_CORE_PROJECTS["d_komodo"])
+if __name__ == "__main__":
+    analyze_test_set()
+    
+    # dump_baseline_unstable(UNSAT_CORE_PROJECTS["d_fvbkv"])
+    # plot_migration(UNSAT_CORE_PROJECTS["d_fvbkv"])
 
     # for proj in UNSAT_CORE_PROJECTS.values():
     #     plot_shake_incomplete(proj)
-    #     plot_migration(proj)
 
     # plot_all_shake_max_depth()
     # plot_all_context_retention()

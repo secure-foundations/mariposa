@@ -4,14 +4,17 @@ import hashlib
 import numpy as np
 import re
 
+def normalize_line(line):
+    return line.replace(" ", "").strip()
+
 def get_asserts(filename):
     cmds0 = dict()
     if filename is None:
         return cmds0
     with open(filename) as f:
         for line in f.readlines():
-            if line.startswith("(assert "):
-                cmds0[line.replace(" ", "").strip()] = line.strip()
+            if line.startswith("(assert ") or line.startswith("(define-fun "):
+                cmds0[normalize_line(line)] = line.strip()
     return cmds0
 
 def get_name_hash(filename):
@@ -58,71 +61,75 @@ def tokenize(line, tf):
     line = {i: tf[i] for i in line if i in tf}
     return line
 
-def get_scores_for_core(score_file, core_file, tf_file=None):
-    tf = load_tf(tf_file)
+def parse_stamps(filename):
+    cmds0 = dict()
+    for line in open(filename):
+        line = line.split("|||")
+        stamp = int(line[0].strip())
+        nl = normalize_line(line[1])
+        cmds0[nl] = stamp
+    return cmds0
 
-    # scores = dict()
-    layers = dict()
+def print_shake_layers(orig_path, mini_path, log_path, tf_file=None):
+    # tf = load_tf(tf_file)
     covered = set()
-    olines = get_asserts(core_file)
-    core_asserts = key_set(olines)
 
-    # cores = set(core_asserts.keys())
-    with open(score_file) as f:
-        lines = f.readlines()
-        for line in lines:
-            line = line.strip().split("|||")
-            it = int(line[0])
-            if it not in layers:
-                layers[it] = set()
-            nl = line[1].replace(" ", "").strip()
-            olines[nl] = line[1]
-            layers[it].add(nl)
+    orig = get_asserts(orig_path)
+    mini = key_set(get_asserts(mini_path))
+    stamps = parse_stamps(log_path)
 
-        max_core_layer = 0
-        overshot = 0 
+    assert mini.issubset(key_set(orig))
+    assert key_set(stamps).issubset(key_set(orig))
 
-        for it in sorted(layers.keys()):
-            layer_scores = []
-            max_score = 0
-            for nl in layers[it]:
-                covered.add(nl)
-                tokens = list(tokenize(olines[nl], tf).values())
-                if len(tokens) == 0:
-                    tokens = [0]
-                score = np.mean(tokens)
-                if nl in core_asserts:
-                    max_score = max(max_score, score)
-                layer_scores.append((score, nl))
+    max_core_depth = 0
+    approx = 0 
 
-            print(f"=== layer {it} summary ===")
-            if len(core_asserts & layers[it]) != 0:
-                max_core_layer = it
-            if it <= max_core_layer:
-                overshot += len(layers[it])
-            print(f"core asserts: {len(core_asserts & layers[it])}/{len(layers[it])}")
-            print(f"max core score: {max_score}")
-            print(f"asserts < max score: {np.sum([i[0] <= max_score for i in layer_scores])}")
+    layers = dict()
 
-            # layer_scores.sort()
-            # for score, nl in layer_scores:
-                # if nl in core_asserts:
-                #     print(str(int(score)) + " [c] ")
-                # else:
-                #     print(str(int(score)))
-                #     print("")
-                #     print("\n\t".join())
-                # else:
-                #     print(olines[nl])
-                #     print("\t" + " ".join(tokenize(olines[nl], tf)))
-    print(f"=== max core layer {max_core_layer} ===")
-    print(f"approx asserts: {overshot}")
-    print("=== missing summary ===")
+    for (nl, depth) in stamps.items():
+        if depth not in layers:
+            layers[depth] = set()
+        layers[depth].add(nl) 
+        covered.add(nl)
 
-    for i in core_asserts - covered:
-        print(olines[i])
+    for depth in sorted(layers):
+        layer = layers[depth]
+        print(f"=== layer {depth} ===")
+        layer_core = mini & layer
+        if len(layer_core) != 0:
+            max_core_depth = depth
+        if depth <= max_core_depth:
+            approx += len(layer)
+        print(f"\tcore asserts: {len(layer_core)}/{len(layer)}")
 
+    print(f"=== summary ===")
+    print(f"\ttotal asserts: {len(orig)}")
+    print(f"\tapprox asserts: {approx}")
+    print(f"\tcore asserts: {len(mini)}")
+    print(f"\tmax core depth: {max_core_depth}")
+    missing = mini - covered
+    print(f"\tmissing core asserts: {len(missing)}")
 
+    print("=== missing ===")
+    for i in missing:
+        print(orig[i])
+
+def shake_from_log(orig_path, log_path, out_path, max_depth):
+    stamps = parse_stamps(log_path)
+    assert(len(stamps) != 0)
+    orig = get_asserts(orig_path)
+    assert key_set(stamps).issubset(key_set(orig))
+
+    # stats = self.get_shake_stats()
+    out_file = open(out_path, "w+")
+
+    for line in open(orig_path):
+        if line.startswith("(assert ") or line.startswith("(define-fun "):
+            nl = normalize_line(line)
+            if nl not in stamps or stamps[nl] > max_depth:
+                continue
+        out_file.write(line)
+    out_file.close()
 
 def key_set(d):
     return set(d.keys())
@@ -131,21 +138,12 @@ def value_set(d):
     return set(d.values())
 
 if __name__ == "__main__":
-    # a = get_asserts(sys.argv[1])
-    # b = get_asserts(sys.argv[2])
-    # for i in a.keys() - b.keys():
-    #     print(a[i])
-    # print(len(a), len(b), len(a.keys() & b.keys()))
     op = sys.argv[1]
     if op == "subset-check":
         check_assert_subset(sys.argv[2], sys.argv[3])
     elif op == "diff-stats":
         print_diff_stats(sys.argv[2], sys.argv[3])
-    elif op == "core":
-        get_scores_for_core(sys.argv[2], sys.argv[3], sys.argv[4])
-
-    # a = get_asserts(sys.argv[1])
-    # b = get_asserts(sys.argv[2])
-    # for i in a.keys() - b.keys():
-    #     print(a[i])
-    # print(len(a), len(b), len(a.keys() & b.keys()))        
+    elif op == "shake-layers":
+        print_shake_layers(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif op == "shake-from-log":
+        shake_from_log(sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5]))

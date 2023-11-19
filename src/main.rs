@@ -463,7 +463,7 @@ struct Args {
     #[arg(long)]
     shake_debug: bool,
 
-    #[arg(long, default_value_t = 0)]
+    #[arg(long, default_value_t = 1)]
     shake_init_strategy: u32,
 
     #[arg(long, default_value_t = 100)]
