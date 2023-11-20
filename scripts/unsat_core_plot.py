@@ -8,6 +8,7 @@ from unsat_core_build import *
 import plotly.graph_objects as go
 import plotly
 import re
+from copy import deepcopy
 
 # def plot_instability_change():
 #     fig, ax = plt.subplots()
@@ -40,7 +41,6 @@ import re
 #     plt.savefig("fig/context/instability_diff.png", dpi=200)
 #     plt.close()
 
-
 # def get_assert_size(query_path):
 #     size = 0
 #     for line in open(query_path).readlines():
@@ -48,10 +48,10 @@ import re
 #             size += len(line)
 #     return size
 
-def plot_all_context_retention():
+def plot_core_retention(projects):
     fig, ax = plt.subplots()
 
-    for proj in UNSAT_CORE_PROJECTS.values():
+    for proj in projects:
         pts = proj.get_assert_counts(True)
         xs, ys = get_cdf_pts(pts[:, 1] * 100 / pts[:, 0])
         plt.plot(xs, ys, marker=",", label=proj.name, linewidth=2)
@@ -65,15 +65,6 @@ def plot_all_context_retention():
     plt.ylim(0, 100)
     plt.xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
     plt.savefig("fig/context/retention_core.png", dpi=200)
-    plt.close()
-
-def plot_all_shake_context_retention():
-    figure, axis = setup_fig(len(UNSAT_CORE_PROJECTS), 2)
-
-    for i, proj in enumerate(UNSAT_CORE_PROJECTS.values()):
-        plot_shake_context_retention(axis[i], proj)
-
-    plt.savefig(f"fig/context/retention_shake.png", dpi=200)
     plt.close()
 
 def plot_shake_context_retention(sps, proj):
@@ -172,22 +163,6 @@ def plot_shake_max_depth(sp, proj):
     sp.grid(True)
     sp.legend()
     sp.set_title(f"Shake Assertion Max Depth Distribution {proj.name}")
-
-def plot_all_shake_max_depth():
-    figure, axis = setup_fig(len(UNSAT_CORE_PROJECTS), 1)
-
-    for i, proj in enumerate(UNSAT_CORE_PROJECTS.values()):
-        plot_shake_max_depth(axis[i], proj)
-
-    plt.savefig(f"fig/context/shake_max_depth.png", dpi=200)
-    plt.close()
-
-
-def dump_baseline_unstable(proj):
-    for qm in tqdm(proj.qms):
-        if qm.orig_status == Stability.UNSTABLE:
-            qm.get_debug_cmds()
-            print("")
 
 def plot_migration(proj):
     mini_cats = proj.mini_cats
@@ -401,14 +376,4 @@ def analyze_test_set():
     #     print(i)
 
 if __name__ == "__main__":
-    # analyze_test_set()
-    
-    # dump_baseline_unstable(UNSAT_CORE_PROJECTS["d_fvbkv"])
-    # plot_migration(UNSAT_CORE_PROJECTS["d_fvbkv"])
-
-    # for proj in UNSAT_CORE_PROJECTS.values():
-    #     plot_shake_incomplete(proj)
-
-    plot_all_shake_max_depth()
-    # plot_all_context_retention()
-    # plot_all_shake_context_retention()
+    pass

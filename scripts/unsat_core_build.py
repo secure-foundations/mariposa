@@ -2,9 +2,7 @@ from basic_utils import *
 from diff_smt import *
 from configer import *
 from db_utils import *
-from unsat_core_search import run_z3
 from cache_utils import *
-import argparse
 
 UNSAT_CORE_PROJECTS_NAMES = {
     "d_komodo": ("d_komodo_uc", "d_komodo_uc_ext", "d_komodo_shake", "d_komodo_uc_strip"),
@@ -46,7 +44,10 @@ rule format
 
 rule shake
     command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log
-    
+
+rule shake-special
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log --shake-max-symbol-frequency 25
+
 rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 """
@@ -279,6 +280,8 @@ build {self.strp_path}: strip {input_path}"""
                 e_depths = [np.inf]
                 e_misses = np.inf
 
+            # self.get_debug_cmds()
+
             data = [np.mean(o_depths), max(o_depths), o_misses,
                 np.mean(m_depths), max(m_depths), m_misses,
                 np.mean(e_depths), max(e_depths), e_misses]
@@ -398,13 +401,6 @@ UNSAT_CORE_PROJECTS = {
     name: ProjectCoreManager(name) for name in UNSAT_CORE_PROJECTS_NAMES
 }
 
-# def reset_shake_dirs():
-#     for p in UNSAT_CORE_PROJECTS.values():
-#         os.system(f"rm -r {p.shke.clean_dir}")
-#         os.system(f"mkdir -p {p.shke.clean_dir}")
-#     os.system("rm -r ./gen")
-#     os.system(f"mkdir ./gen")
-
 # def get_shake_comp_test_qms():
 #     random.seed(1234)
 #     qms = []
@@ -414,42 +410,3 @@ UNSAT_CORE_PROJECTS = {
 
 if __name__ == "__main__":
     pass
-    # parser = argparse.ArgumentParser(description="a separate tool managing/building unsat core experiments")
-    # parser.add_argument("-p", "--project", required=True, help="the target project, use 'all' to run on all projects")
-    # parser.add_argument("-a", "--action", required=True, help="the action to perform")
-
-    # args = parser.parse_args()
-
-    # if args.project != "all" and args.project not in UNSAT_CORE_PROJECTS:
-    #     print(f"unknown project {args.project}")
-    #     exit(1)
-
-    # if args.project == "all":
-    #     projects = list(UNSAT_CORE_PROJECTS.values())
-    # else:
-    #     projects = [UNSAT_CORE_PROJECTS[args.project]]
-        
-    # if args.action == "missing":
-    #     for p in projects:
-    #         p.print_missing_stats()
-    #     exit(0)
-
-    # if args.action == "mini":
-    #     func = lambda qm: qm.emit_create_mini()
-    # elif args.action == "complete":
-    #     func = lambda qm: qm.emit_complete_mini()
-    # elif args.action == "strip":
-    #     func = lambda qm: qm.emit_strip()
-    # elif args.action == "shake":
-    #     func = lambda qm: qm.emit_shake()
-
-    # # elif args.action == "oracle":
-    # #     func = lambda qm: qm.shake_from_oracle()
-
-    # contents = []
-
-    # for p in projects:
-    #     for qm in p.qms:
-    #         contents.append(func(qm))
-
-    # emit_build(contents)

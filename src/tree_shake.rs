@@ -313,7 +313,7 @@ impl UseTracker {
         }
     }
 
-    fn delayed_aggregate(&mut self, snowball: &SymbolSet, delayed: &mut SymbolSet) -> bool {
+    fn delayed_aggregate(&mut self, snowball: &SymbolSet) -> bool {
         let mut should_include = false;
 
         let mut cur_pattern_states = Vec::new();
@@ -370,18 +370,6 @@ impl UseTracker {
         }
 
         return should_include;
-        // if self.live_symbols.is_subset(&snowball) {
-        //     return (modified, true);
-        // }
-
-        // let mut should_add = false;
-        // if !self.live_symbols.is_disjoint(&snowball) {
-        //     // delayed.extend(self.live_symbols.iter().cloned());
-        //     modified = true;
-        //     should_add = true;
-        // }
-
-        // (modified, should_add)
     }
 
     fn debug(&self) {
@@ -450,9 +438,10 @@ pub fn tree_shake(
         let mut delayed = HashSet::new();
         modified = false;
         let prev_len = snowball.len();
+        let prev_poss_len = poss.len();
 
         for (pos, tracker) in trackers.iter_mut().enumerate() {
-            let should_include = tracker.delayed_aggregate(&snowball, &mut delayed);
+            let should_include = tracker.delayed_aggregate(&snowball);
             // if commands[pos].to_string().contains("binder_x_39cef6c8a4c32c00bec831967af0f4b9_3") {
             //     println!("debugging");
             //     let contains = snowball.contains(&concrete::Symbol("HasType".to_string()));
@@ -477,7 +466,7 @@ pub fn tree_shake(
 
         snowball.extend(delayed.into_iter());
 
-        if snowball.len() != prev_len {
+        if snowball.len() != prev_len || poss.len() != prev_poss_len {
             modified = true;
         }
 
@@ -487,31 +476,6 @@ pub fn tree_shake(
             break;
         }
     }
-    // let mut delayed = HashSet::new();
-
-    // for (pos, tracker) in trackers.iter_mut().enumerate() {
-    //     if commands[pos].to_string().contains(":qid refinement_interpretation_Tm_refine_b1b46f7ae8d75af55fe6822ff1fb6bf2") {
-    //         println!("debugging");
-    //         let contains = snowball.contains(&concrete::Symbol("Tm_refine_b1b46f7ae8d75af55fe6822ff1fb6bf2".to_string()));
-    //         println!("{}", contains);
-    //     }
-
-    //     if tracker.delayed_aggregate(&snowball, &mut delayed) {
-    //         poss.insert(pos);
-    //         if !stamps.contains_key(&pos) {
-    //             stamps.insert(pos, iteration);
-    //         }
-    //     } else {
-    //         if let Command::Assert { term: _ } = &commands[pos] {
-    //         } else {
-    //             poss.insert(pos);
-    //         }
-    //     }
-    // }
-
-
-    // let contains = snowball.contains(&concrete::Symbol("Tm_refine_b1b46f7ae8d75af55fe6822ff1fb6bf2".to_string()));
-    // println!("{}", contains);
 
     if let Some(shake_log_path) = shake_log_path {
         let mut log_file = std::fs::File::create(shake_log_path).unwrap();

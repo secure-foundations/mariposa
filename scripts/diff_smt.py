@@ -28,7 +28,6 @@ def check_assert_subset(orig_path, reduced_path):
         print(len(original), len(reduced))
         for i in key_set(reduced) - key_set(original):
             print(reduced[i])
-            break
         assert False
 
 def get_assert_count(filename):
@@ -64,8 +63,8 @@ def tokenize(line, tf):
 def parse_stamps(filename):
     cmds0 = dict()
     for line in open(filename):
-        line = line.split("|||")
-        stamp = int(line[0].strip())
+        line = line.strip().split("|||")
+        stamp = int(line[0])
         nl = normalize_line(line[1])
         if nl.startswith("(assert"):
             cmds0[nl] = stamp
