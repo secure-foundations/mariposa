@@ -292,10 +292,11 @@ build {self.strp_path}: strip {input_path}"""
 
         return data
 
-    # def shake_from_oracle(self, dir, fallback):
-    #     stats = self.get_shake_stats()
-    #     max_depth = fallback if stats[4] == np.inf else stats[4]
-    #     self.shake_from_log(dir, max_depth)
+    def shake_from_oracle(self, dir, fallback):
+        stats = self.get_shake_stats()
+        max_depth = fallback if stats[4] == np.inf else stats[4]
+        output_path = dir + "/" + self.base
+        shake_from_log(self.orig_path, self.shke_log_path, output_path, max_depth)
 
     def get_shake_assert_count(self, max_depth=np.inf):
         stamps = parse_stamps(self.shke_log_path)
@@ -344,7 +345,7 @@ class ProjectCoreManager:
             self.qms.append(qm)
             self.qm_index[qm.base] = qm
 
-    def print_missing_stats(self):
+    def stat_stat_missing(self):
         print(self.name)
         for qm in self.qms:
             missing = qm.get_missing_types()
@@ -353,21 +354,32 @@ class ProjectCoreManager:
                 for m in missing:
                     print("\t", str(m.value))
 
+    def stat_baseline(self, verbose=False):
+        # cats = self.orig_cats.keys()
+        # assert cats == self.mini_cats.keys()
+        for c, v in self.orig_cats.items():
+            if len(v) == 0:
+                continue
+            print(f"{c}:\t{len(v)}")
+
+        if not verbose:
+            return
+
+        for qm in self.qms:
+            if qm.orig_status == Stability.UNSTABLE:
+                qm.get_debug_cmds()
+
     def get_unstable_qms(self):
         return [qm for qm in self.qms if qm.orig_status == Stability.UNSTABLE]
 
-    # def emit_shake_unstable_oracle(self):
-    #     content = []
-    #     for qm in self.get_unstable_qms():
-    #         # print(qm.orig_status, qm.mini_status, qm.extd_status)
-    #         if qm.shke_exists:
-    #             qm.shake_from_oracle("data/shake_unstable_oracle/d_fvbkv/", 4)
-    #         else:
-    #             content.append(qm.emit_shake())
-
-    #     if len(content) > 0:
-    #         print("# there are queries that do not have shake files yet, run build to generate them first")
-    #     return content
+    def shake_from_oracle(self):
+        for qm in tqdm(self.get_unstable_qms()):
+            # print(qm.orig_status, qm.mini_status, qm.extd_status)
+            if not qm.shke_exists:
+                print("[ERROR] there are queries that do not have shake files")
+                exit(1)
+                
+            qm.shake_from_oracle("data/shake_unstable_oracle/d_lvbkv/", 4)
 
     def get_assert_counts(self, unify=False):
         if unify:

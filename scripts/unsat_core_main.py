@@ -29,8 +29,12 @@ def handle_build(args, projects):
         func = lambda qm: qm.emit_strip()
     elif args.action == "shake":
         func = lambda qm: qm.emit_shake()
-    elif args.action == "oracle":
-        func = lambda qm: qm.shake_from_oracle()
+    # elif args.action == "oracle":
+    #     func = lambda qm: qm.shake_from_oracle()
+    elif args.action == "shake-unstable-oracle":
+        for p in projects:
+            p.shake_from_oracle()
+        return
     elif args.action == "shake-clean":
         for p in projects:
             os.system(f"rm -r {p.shke.clean_dir}")
@@ -51,11 +55,11 @@ def handle_stats(args, projects):
     for p in projects:
         print(f"# {p.name}")
         if args.target == "missing":
-            p.print_missing_stats()
+            p.stat_missing()
         elif args.target == "shake-incomplete":
-            stat_shake_incomplete(p.qms, args.clear_cache)
-        elif args.target == "baseline-unstable":
-            stat_baseline_unstable(p)
+            stat_shake_incomplete(p.qms, args.clear_cache, args.verbose)
+        elif args.target == "baseline":
+            p.stat_baseline(args.verbose)
         else:
             print(f"[WARN] unknown target {args.target}")
 
@@ -92,7 +96,8 @@ if __name__ == "__main__":
     stats_parser = subparsers.add_parser('stats', help='dump stats (should not change the db or persistent files)')
     stats_parser.add_argument("-p", "--project", required=True, help="the target project, use 'all' to run on all projects")
     stats_parser.add_argument("-t", "--target", required=True, help="the target stats")
-    stats_parser.add_argument("-c", "--clear_cache", default=False, action='store_true',help="clear the cache")
+    stats_parser.add_argument("-c", "--clear_cache", default=False, action='store_true', help="clear the cache")
+    stats_parser.add_argument("-v", "--verbose", default=False, action='store_true', help="verbose")
 
     plot_parser = subparsers.add_parser('plot', help='plot stats')
     plot_parser.add_argument("-p", "--project", required=True, help="the target project, use 'all' to run on all projects")
