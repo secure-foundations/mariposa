@@ -10,9 +10,17 @@ use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::vec;
-mod tree_shake;
 mod core_export;
+mod pretty_print;
+mod term_match;
+mod term_rewrite_flat;
+mod term_rewrite_label;
+mod term_rewrite_let;
+mod term_rewrite_prop;
 mod tree_rewrite;
+mod tree_shake;
+mod tree_shake_old;
+mod tree_shake_idf;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -305,7 +313,6 @@ fn split_commands(
     return (splits, ignored);
 }
 
-
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
@@ -449,6 +456,27 @@ struct Args {
     /// file containing unsat core (produced by Z3)
     #[arg(long)]
     core_file_path: Option<String>,
+
+    ///the max depth of tree-shaking
+    #[arg(long, default_value_t = u32::MAX)]
+    shake_max_depth: u32,
+
+    #[arg(long)]
+    shake_debug: bool,
+
+    #[arg(long, default_value_t = 1)]
+    shake_init_strategy: u32,
+
+    #[arg(long, default_value_t = 100)]
+    shake_max_symbol_frequency: usize,
+
+    /// file to log the shake depth
+    #[arg(long)]
+    command_score_path: Option<String>,
+
+    /// file to log the symbol score
+    #[arg(long)]
+    symbol_score_path: Option<String>,
 }
 
 fn main() {
@@ -511,17 +539,33 @@ fn main() {
         // parse and do nothing
         return;
     } else if args.mutation == "tree-shake" {
-        commands = tree_shake::tree_shake(commands);
+        assert!(args.shake_init_strategy < 2);
+        assert!(args.shake_max_symbol_frequency <= 100);
+
+        commands = tree_shake::tree_shake(
+            commands,
+            args.shake_max_depth,
+            args.shake_max_symbol_frequency,
+            args.shake_init_strategy,
+            args.command_score_path,
+            args.shake_debug,
+        );
+    } else if args.mutation == "tree-shake-old" {
+        commands = tree_shake_old::tree_shake(commands, args.command_score_path);
+    } else if args.mutation == "tree-shake-idf" {
+        tree_shake_idf::print_commands_symbol_frequency(&commands, false);
     } else if args.mutation == "tree-rewrite" {
         commands = tree_rewrite::tree_rewrite(commands);
     } else if args.mutation == "remove-unused" {
         commands = tree_shake::remove_unused_symbols(commands);
     } else if args.mutation == "fun-assert" {
-        commands = commands
-            .into_iter()
-            .map(|x| tree_rewrite::fun_to_assert(x))
-            .flatten()
-            .collect();
+        // commands = commands
+        //     .into_iter()
+        //     .map(|x| tree_rewrite::fun_to_assert(x))
+        //     .flatten()
+        //     .collect();
+    } else {
+        panic!("[ERROR] unknown mutation {}", args.mutation);
     }
 
     manager.dump_non_info_commands(&commands);

@@ -291,7 +291,7 @@ def plot_presentation_pert_diff():
 
         for j in cutoffs:
             for k, v in categories[j].items():
-                points[k].append(percentage(len(v), len(rows)))
+                points[k].append(percent(len(v), len(rows)))
 
         for i, combos in enumerate([["unstable"], ["unstable", "shuffle"], ["unstable", "shuffle", "rename"], ["unstable", "shuffle", "rename", "reseed"], ["unstable", "reseed", "rename", "shuffle", "intersect"]]):
             fig, ax = plt.subplots()
@@ -427,7 +427,7 @@ def plot_presentation_time_scatter():
 
         # sp.scatter(scatters[:,0][[cats[Stability.Unk]], scatters[:,1][others], s=8, label="others")
         # print(pf, cfs, ps, css)
-        # print(percentage(bounded, len(scatters)), mworse, len(scatters))
+        # print(percent(bounded, len(scatters)), mworse, len(scatters))
         # print(weightstats.ttost_paired(np.array(ys), np.array(xs), -0.57, -0.03))
         # print(weightstats.ttost_paired(np.array(ys), np.array(xs), 1.002, 1.015, transform=np.log))
 

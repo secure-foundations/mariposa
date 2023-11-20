@@ -6,8 +6,11 @@ from plot_utils import *
 from configer import Configer
 from unsat_core_build import *
 import plotly.graph_objects as go
+import plotly
+import re
+from copy import deepcopy
 
-# def plot_instability_reduction():
+# def plot_instability_change():
 #     fig, ax = plt.subplots()
 #     x = 0
 
@@ -38,7 +41,6 @@ import plotly.graph_objects as go
 #     plt.savefig("fig/context/instability_diff.png", dpi=200)
 #     plt.close()
 
-
 # def get_assert_size(query_path):
 #     size = 0
 #     for line in open(query_path).readlines():
@@ -46,10 +48,10 @@ import plotly.graph_objects as go
 #             size += len(line)
 #     return size
 
-def plot_context_reduction():
+def plot_core_retention(projects):
     fig, ax = plt.subplots()
 
-    for proj in UNSAT_CORE_PROJECTS.values():
+    for proj in projects:
         pts = proj.get_assert_counts(True)
         xs, ys = get_cdf_pts(pts[:, 1] * 100 / pts[:, 0])
         plt.plot(xs, ys, marker=",", label=proj.name, linewidth=2)
@@ -60,44 +62,59 @@ def plot_context_reduction():
     plt.legend()
     plt.xscale("log")
     plt.xlim(0.001, 100)
-    plt.ylim(0)
+    plt.ylim(0, 100)
     plt.xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
-    plt.savefig("fig/context/context_retention.png", dpi=200)
+    plt.savefig("fig/context/retention_core.png", dpi=200)
     plt.close()
 
-#     fig, ax = plt.subplots()
+def plot_shake_context_retention(sps, proj):
+    if cache_exists(f"shake_retention_{proj.name}"):
+        pts = cache_load(f"shake_retention_{proj.name}")
+    else:
+        pts = np.zeros((len(proj.qms), 4))
+        for i, qm in enumerate(tqdm(proj.qms)):
+            o_asserts = get_assert_count(qm.orig_path)
+            m_asserts = get_assert_count(qm.mini_path)
+            stats = qm.get_shake_stats()
+            s_o_asserts = qm.get_shake_assert_count(stats[4])
+            s_p_asserts = qm.get_shake_assert_count()
+            pts[i] = o_asserts, m_asserts, s_o_asserts, s_p_asserts
+        cache_save(pts, f"shake_retention_{proj.name}")
 
-#     for k in PAIRS.keys():
-#         if os.path.exists(f"cache/{k}_assert_size.pkl"):
-#             pts = cache_load(f"{k}_assert_size.pkl")
-#         else:
-#             items0, items1, keep = get_basic_keep(k, PAIRS[k])
-#             pts = np.zeros((len(keep),), dtype=np.float64)
-#             for i, q in enumerate(tqdm(keep)):
-#                 orgi_path, mini_path = keep[q]
-#                 fs0 = get_assert_size(orgi_path)
-#                 fs1 = get_assert_size(mini_path)
-#                 pts[i] = fs1 / fs0
-#             cache_save(pts, f"{k}_assert_size.pkl")
-#         xs, ys = get_cdf_pts(pts * 100)
-#         plt.plot(xs, ys, marker=",", label=k, linewidth=2)
+    xs, ys = get_cdf_pts(pts[:, 1] * 100 / pts[:, 0])
+    sps[0].plot(xs, ys, marker=",", label="unsat-core", linewidth=2)
+    sps[1].plot(xs, ys, marker=",", label="unsat-core", linewidth=2)
 
-#     plt.ylabel("cumulative percentage of queries")
-#     plt.xlabel("percentage of assert bytes retained in unsat core (log scale)")
-#     plt.legend()
-#     plt.title("Unsat Core Size Retention")
-#     plt.ylim(0)
-#     plt.xscale("log")
-#     plt.xlim(0.001, 100)
-#     plt.xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
-#     # ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=3))
-#     plt.savefig("fig/context/size_retention.png", dpi=200)
-#     plt.close()
+    xs, ys = get_cdf_pts(pts[:, 2] * 100 / pts[:, 0])
+    sps[0].plot(xs, ys, marker=",", label="shake-oracle", linewidth=2)
+    sps[1].plot(xs, ys, marker=",", label="shake-oracle", linewidth=2)
+
+    xs, ys = get_cdf_pts(pts[:, 3] * 100 / pts[:, 0])
+    sps[0].plot(xs, ys, marker=",", label="shake-plain", linewidth=2)
+    sps[1].plot(xs, ys, marker=",", label="shake-plain", linewidth=2)
+
+    sps[0].set_ylabel("cumulative percentage of queries")
+    sps[0].set_xlabel("percentage of assertions retained in unsat core (log scale)")
+    sps[1].set_xlabel("percentage of assertions retained in unsat core")
+    
+    sps[0].set_title(f"Unsat Core Context Retention {proj.name}")
+
+    sps[0].legend()
+    sps[1].legend()
+
+    sps[0].set_xscale("log")
+    sps[0].set_xlim(0.001, 100)
+    sps[0].set_xticks([0.001, 0.01, 0.1, 1.0, 10, 100], ["0.001%", "0.01%", "0.1%", "1%", "10%", "100%"])
+
+    sps[1].set_xlim(0, 100)
+
+    sps[0].set_ylim(0, 100)
+    sps[1].set_ylim(0, 100)
 
 def filter_valid_dps(dps):
     return dps[dps != np.inf]
 
-def plot_shake_max_depth(proj):
+def plot_shake_max_depth(sp, proj):
     s_dps = []
     u_dps = []
     dps = []
@@ -116,54 +133,36 @@ def plot_shake_max_depth(proj):
 
     # xs, ys = get_cdf_pts(dps[:, 1])
     # x_max = np.max(xs)
-    # plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="original", drawstyle='steps-post')
+    # sp.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="original", drawstyle='steps-post')
     
     # xs, ys = get_cdf_pts(filter_valid_dps(dps[:, 4]))
     # x_max = max(np.max(xs), x_max)
-    # plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="core", linestyle="--", drawstyle='steps-post')
+    # sp.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="core", linestyle="--", drawstyle='steps-post')
 
     xs, ys = get_cdf_pts(u_dps[:, 1])
     x_max = np.max(xs)
-    plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable original", color="red", drawstyle='steps-post')
+    sp.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable original", color="red", drawstyle='steps-post')
 
     xs, ys = get_cdf_pts(filter_valid_dps(u_dps[:, 4]))
     x_max = max(np.max(xs), x_max)
-    plt.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable core", linestyle="--", color="red", drawstyle='steps-post')
+    sp.plot(np.insert(xs, 0, 0), np.insert(ys, 0, 0), marker=",", linewidth=2, label="unstable core", linestyle="--", color="red", drawstyle='steps-post')
 
     xs, ys = get_cdf_pts(s_dps[:, 1])
     x_max = max(np.max(xs), x_max)
-    plt.plot(xs, ys, marker=",", linewidth=2, label="stable original", color="blue", drawstyle='steps-post')
+    sp.plot(xs, ys, marker=",", linewidth=2, label="stable original", color="blue", drawstyle='steps-post')
 
     xs, ys = get_cdf_pts(filter_valid_dps(s_dps[:, 4]))
     x_max = max(np.max(xs), x_max)
-    plt.plot(xs, ys, marker=",", linewidth=2, label="stable core", linestyle="--", color="blue", drawstyle='steps-post')
+    sp.plot(xs, ys, marker=",", linewidth=2, label="stable core", linestyle="--", color="blue", drawstyle='steps-post')
 
-    plt.ylabel("cumulative percentage of queries")
-    plt.xlabel("maximum assertion depth")
-    plt.ylim(0, 100)
-    plt.xlim(left=0, right=x_max)
-    plt.xticks(np.arange(0, x_max+1, 1))
-    plt.grid(True)
-    plt.title(f"Shake Assertion Max Depth Distribution {proj.name}")
-
-    plt.legend()
-    plt.savefig(f"fig/context/shake_{proj.name}.png", dpi=200)
-    plt.close()
-
-def plot_shake_incomplete(proj):
-    dps = []
-
-    for qm in proj.qms:
-        stats = qm.get_shake_stats(unify=True)
-        dps.append(stats)
-
-    dps = np.array(dps)
-
-    nz = dps[:, 5] > 0
-    nf = np.isfinite(dps[:, 5])
-
-    misses = np.sum(np.logical_and(nz, nf))
-    print(proj.name, "shake missed ", misses, "/", np.sum(nf), "/", len(proj.qms))
+    sp.set_ylabel("cumulative percentage of queries")
+    sp.set_xlabel("maximum assertion depth")
+    sp.set_ylim(0, 100)
+    sp.set_xlim(left=0, right=x_max)
+    sp.set_xticks(np.arange(0, x_max+1, 1))
+    sp.grid(True)
+    sp.legend()
+    sp.set_title(f"Shake Assertion Max Depth Distribution {proj.name}")
 
 def plot_migration(proj):
     mini_cats = proj.mini_cats
@@ -247,7 +246,8 @@ def plot_migration(proj):
                     ])
 
     fig.update_layout(title_text=f"{proj.name} stability migration", font_size=10)
-    fig.write_image(f"fig/context/{proj.name}_migration.png", width=800, height=600, scale=2)
+    # fig.write_image(f"fig/context/migration/{proj.name}.png", width=800, height=600, scale=2)
+    plotly.offline.plot(fig, filename=f"fig/context/migration/{proj.name}.html")
 
 # def plot_shake_mean_depth(proj):
 #     s_dps = []
@@ -292,10 +292,88 @@ def plot_migration(proj):
 #     plt.savefig(f"fig/context/shake_mean_{proj.name}.png", dpi=200)
 #     plt.close()
 
-if __name__ == "__main__":
-    for proj in UNSAT_CORE_PROJECTS.values():
-        # plot_shake_incomplete(proj)
-        # plot_shake_max_depth(proj)
-        plot_migration(proj)
+def analyze_fs_dice():
+    proj = UNSAT_CORE_PROJECTS["fs_dice"]
+    for qm in proj.qms:
+        if qm.base == "queries-L0.Impl.Certificate-14.smt2":
+            break
 
-    # plot_context_reduction()
+    print(qm.orig_status)
+    print(qm.extd_status)
+    print(qm.extd_status)
+    # print(qm.get_shake_stats(True))
+    # qm.shake_from_log(4)
+    stamps = parse_stamps(qm.shke_log_path)
+
+    temp = "temp/shake.smt2"
+    qid_pattern = re.compile("qid [^\)]+")
+    orig_asserts = get_asserts(qm.orig_path)
+    mini_asserts = get_asserts(qm.mini_path)
+    temp_asserts = get_asserts(temp)
+
+    # os.system(f"cp {qm.orig_path} temp/woot.smt2")
+    # os.system(f"cp {qm.mini_path} temp/core.smt2")
+    # os.system(f"cp {qm.extd_path} temp/extd.smt2")
+
+    # for a in temp_asserts:
+    #     finds = re.findall(qid_pattern, mini_asserts[a])
+    #     for i in finds:
+    #         print(i)
+    #     if len(finds) != 0:
+    #         print("")
+
+    for a, c in temp_asserts.items() - mini_asserts.items():
+        finds = re.findall(qid_pattern, c)
+        if len(finds) != 0:
+            print(c)
+            if a in stamps:
+                print(stamps[a])
+            else:
+                print("inf")
+            for i in finds:
+                print(i)
+
+            print("")
+    # print(len(orig_asserts), len(mini_asserts), len(temp_asserts))
+
+def analyze_test_set():
+    ANA = Analyzer(.05, 60, .05, .95, 0.8, "cutoff")
+    CONFIG = Configer()
+    proj = CONFIG.load_known_project("shake_oracle_d_fvbkv")
+    exp = CONFIG.load_known_experiment("rewrite")
+    items, tally = load_proj_stability(proj, exp)
+    oitems = {i: 0 for i in items}
+
+    ext_proj = UNSAT_CORE_PROJECTS["d_fvbkv"]
+
+    pairs = dict()
+    for i in tally:
+        qm = ext_proj.get_query_manager(i)
+        oitems[qm.orig_status] += 1 
+        cat = find_category(i, items)
+
+        if i in items[Stability.STABLE] and qm.orig_status == Stability.STABLE:
+            continue
+
+        key = (qm.orig_status, cat)
+        if key not in pairs:
+            pairs[key] = []
+        pairs[key].append(qm)
+
+    for k, v in pairs.items():
+        if k[1] != Stability.UNSOLVABLE:
+            continue
+        print(k[0], "->", k[1])
+        print(len(v))
+        for i in v:
+            i.get_debug_cmds()
+            print("")
+
+    # for i in items[Stability.UNSOLVABLE]:
+    #     base = os.path.basename(i)
+    #     qm = ext_proj.qm_index[base]
+    #     print(qm.orig_status, qm.mini_status)
+    #     print(i)
+
+if __name__ == "__main__":
+    pass

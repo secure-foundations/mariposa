@@ -54,3 +54,12 @@ def line_count(filename):
         for i, _ in enumerate(f):
             pass
     return i + 1
+
+def percent(a, b):
+    return a * 100 / b
+
+def rd_percent(a, b):
+    return round(a * 100 / b, 2)
+
+def rd_percent_str(a, b):
+    return f"{rd_percent(a, b)}%"

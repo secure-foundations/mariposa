@@ -5,11 +5,10 @@
         "mutations": [
           "shuffle",
           "rename",
-          "reseed",
-          "quake"
+          "reseed"
         ],
-        "keep_mutants": true,
-        "num_mutants": 60,
+        "keep_mutants": false,
+        "num_mutants": 10,
         "init_seed": "",
         "exp_timeout": 60,
         "num_procs": 7,
@@ -487,15 +486,15 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "d_fvbkv_shake",
-        "framework": "dafny",
-        "clean_dir": "data/d_fvbkv_shake",
-        "artifact_solver_name": "z3_4_12_2"
-      },
-      {
         "name": "d_komodo_shake",
         "framework": "dafny",
         "clean_dir": "data/d_komodo_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_fvbkv_shake",
+        "framework": "dafny",
+        "clean_dir": "data/d_fvbkv_shake",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
@@ -514,6 +513,18 @@
         "name": "d_lvbkv_shake",
         "framework": "dafny",
         "clean_dir": "data/d_lvbkv_shake",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "d_komodo_uc_strip",
+        "framework": "dafny",
+        "clean_dir": "data/unsat_cores/d_komodo/strip",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "fs_dice_uc_strip",
+        "framework": "fstar",
+        "clean_dir": "data/unsat_cores/fs_dice/strip",
         "artifact_solver_name": "z3_4_12_2"
       },
       {
@@ -565,9 +576,27 @@
         "artifact_solver_name": "z3_4_12_2"
       },
       {
-        "name": "shake_unstable_test",
+        "name": "shake_oracle_d_komodo",
         "framework": "mixed",
-        "clean_dir": "data/shake_unstable_test",
+        "clean_dir": "data/shake_unstable_oracle/d_komodo",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "shake_oracle_d_fvbkv",
+        "framework": "mixed",
+        "clean_dir": "data/shake_unstable_oracle/d_fvbkv",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "shake_oracle_d_lvbkv",
+        "framework": "mixed",
+        "clean_dir": "data/shake_unstable_oracle/d_lvbkv",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "shake_oracle_fs_dice",
+        "framework": "mixed",
+        "clean_dir": "data/shake_unstable_oracle/fs_dice",
         "artifact_solver_name": "z3_4_12_2"
       }
     ]

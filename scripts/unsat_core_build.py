@@ -2,15 +2,13 @@ from basic_utils import *
 from diff_smt import *
 from configer import *
 from db_utils import *
-from unsat_core_search import run_z3
 from cache_utils import *
-from copy import deepcopy
 
 UNSAT_CORE_PROJECTS_NAMES = {
-    "d_komodo": ("d_komodo_uc", "d_komodo_uc_ext", "d_komodo_shake"),
+    "d_komodo": ("d_komodo_uc", "d_komodo_uc_ext", "d_komodo_shake", "d_komodo_uc_strip"),
     "d_fvbkv": ("d_fvbkv_uc", "d_fvbkv_uc_ext", "d_fvbkv_shake"),
     "d_lvbkv": ("d_lvbkv_uc", "d_lvbkv_uc_ext", "d_lvbkv_shake"),
-    "fs_dice": ("fs_dice_uc", "fs_dice_uc_ext", "fs_dice_shake"),
+    "fs_dice": ("fs_dice_uc", "fs_dice_uc_ext", "fs_dice_shake", "fs_dice_uc_strip"),
     "fs_vwasm": ("fs_vwasm_uc", "fs_vwasm_uc_ext", "fs_vwasm_shake"),
 }
 
@@ -45,7 +43,13 @@ rule format
     command = ./target/release/mariposa -i $in -o $out
 
 rule shake
-    command = ./target/release/mariposa -i $in -o $out -m tree-shake > $log
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log
+
+rule shake-special
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log --shake-max-symbol-frequency 25
+
+rule strip
+    command = ./target/release/mariposa -i $in -o $out -m remove-unused
 """
 
 def stem_file_paths(items):
@@ -77,6 +81,8 @@ def load_proj_stability(proj, exp):
 
         # it might be ok that some experiments are missing
         # not the other way around though
+        # for i in expected - tally:
+        #     print(f"[WARNING] {i} is missing in {proj.name}")
         assert tally.issubset(expected)
         cache_save(items, cat_cache_name)
 
@@ -94,15 +100,15 @@ def find_category(query, items):
 def percent(a, b):
     return round(a * 100 / b, 2)
 
-def parse_stamps(filename):
-    cmds0 = dict()
-    for line in open(filename):
-        line = line.split("|||")
-        stamp = int(line[0].strip())
-        line = line[1].replace(" ", "").strip().strip()
-        cmds0[line] = stamp
-    return cmds0
 
+class MissingTypes(str, Enum):
+    ORIG_EXP = "original file present but experiment missing"
+    MINI_FILE = "mini file missing"
+    MINI_EXP = "mini file present but experiment missing"
+    MINI_EXP_UNSOLVABLE = "mini file present but unsolvable"
+    EXTENDED_FILE = "extended file missing"
+    EXTENDED_EXP = "extended file present but experiment missing"
+    
 class QueryCoreManager:
     def __init__(self, orig_path, orig_status, mini_status, extd_status, proj=None):
         assert os.path.exists(orig_path)
@@ -128,8 +134,12 @@ class QueryCoreManager:
         self.extd_path = self.proj.extd.clean_dir + "/" + self.base
         self.shke_path = self.proj.shke.clean_dir + "/" + self.base
 
+        if proj.strp is not None:
+            self.strp_path = self.proj.strp.clean_dir + "/" + self.base
+
         self.mini_exists = os.path.exists(self.mini_path)
         self.extd_exists = os.path.exists(self.extd_path)
+        self.shke_exists = os.path.exists(self.shke_path)
 
         self.orig_status = orig_status
         self.mini_status = mini_status
@@ -137,6 +147,22 @@ class QueryCoreManager:
 
         self.mini_check_path = f"gen/{self.name_hash}.mini.check"
         self.extd_check_path = f"gen/{self.name_hash}.extd.check"
+
+    def get_missing_types(self):
+        missing = set()
+        if self.orig_status == None:
+            missing.add(MissingTypes.ORIG_EXP)
+        if not self.mini_exists:
+            missing.add(MissingTypes.MINI_FILE)
+        if self.mini_exists and self.mini_status == None:
+            missing.add(MissingTypes.MINI_EXP)
+        if self.mini_exists and self.mini_status == Stability.UNSOLVABLE:
+            missing.add(MissingTypes.MINI_EXP_UNSOLVABLE)
+        if not self.extd_exists:
+            missing.add(MissingTypes.EXTENDED_FILE)
+        if self.extd_exists and self.extd_status == None:
+            missing.add(MissingTypes.EXTENDED_EXP)
+        return missing
 
     # this can be tried on any query
     def emit_create_mini(self):
@@ -149,9 +175,25 @@ build {self.mini_path}: create-mini-query {self.inst_path} | {self.core_path}
     # this should be used when the original query is solvable
     # but the mini query is unsolvable (i.e. the mini query is incomplete)
     def emit_complete_mini(self):
-        return f"""
+        missing_types = self.get_missing_types()
+
+        if MissingTypes.ORIG_EXP in missing_types:
+            print("[ERROR] original query has no experiment", self.base)
+            exit(1)
+            
+        if MissingTypes.MINI_FILE in missing_types:
+            print("[WARN] mini query file missing", self.base)
+            return ""
+
+        if MissingTypes.MINI_EXP in missing_types:
+            print("[ERROR] mini query has no experiment", self.base)
+            exit(1)
+
+        if MissingTypes.MINI_EXP_UNSOLVABLE in missing_types:
+            return f"""
 build {self.extd_path}: complete-mini-query {self.orig_path} | {self.mini_path}
     hint = {self.mini_path}"""
+        return ""
 
     def emit_expensive_sanity_check(self):
         # the original query should always have stability info
@@ -184,15 +226,15 @@ build {self.fmt_path}: format {self.orig_path}"""
 build {self.shke_path}: shake {self.orig_path}
     log = {self.shke_log_path}"""
 
-    def get_core_missing_reason(self):
-        assert not self.mini_exists
-        if self.orig_status == Stability.UNSOLVABLE:
-            return "orig_unsolvable"
-        return "core_export_failed"
+    def emit_strip(self):
+        input_path = self.mini_path
+        if self.should_unify():
+            input_path = self.extd_path
+        if not os.path.exists(input_path):
+            return ""
 
-    def get_extd_missing_reason(self):
-        if not self.mini_exists:
-            return self.get_core_missing_reason()
+        return f"""
+build {self.strp_path}: strip {input_path}"""
 
     def reduce_from_mini(self):
         return f"python3 scripts/unsat_core_search.py reduce {self.mini_path} {self.extd_path}"
@@ -203,8 +245,18 @@ build {self.shke_path}: shake {self.orig_path}
     def reduce_from_extd(self):
         return f"python3 scripts/unsat_core_search.py reduce {self.extd_path} {self.extd_path}"
     
-    def get_shake_stats(self, unify=False):
-        if cache_exists(self.shke_stat_name):
+    def should_unify(self):
+        return self.mini_status in {Stability.UNSOLVABLE, None} and self.extd_exists
+    
+    def get_unify_path(self):
+        if self.should_unify():
+            return self.extd_path
+        if self.mini_exists:
+            return self.mini_path
+        return None
+
+    def get_shake_stats(self, unify=True, clear_cache=False):
+        if cache_exists(self.shke_stat_name) and not clear_cache:
             data = cache_load(self.shke_stat_name)
         else:
             stamps = parse_stamps(self.shke_log_path)
@@ -227,7 +279,8 @@ build {self.shke_path}: shake {self.orig_path}
             else:
                 e_depths = [np.inf]
                 e_misses = np.inf
-                print(e_misses)
+
+            # self.get_debug_cmds()
 
             data = [np.mean(o_depths), max(o_depths), o_misses,
                 np.mean(m_depths), max(m_depths), m_misses,
@@ -239,49 +292,48 @@ build {self.shke_path}: shake {self.orig_path}
 
         return data
 
-    # probably not the best ...
-    def shake_from_log(self, max_depth=np.inf):
+    def shake_from_oracle(self, dir, fallback):
+        stats = self.get_shake_stats()
+        max_depth = fallback if stats[4] == np.inf else stats[4]
+        output_path = dir + "/" + self.base
+        shake_from_log(self.orig_path, self.shke_log_path, output_path, max_depth)
+
+    def get_shake_assert_count(self, max_depth=np.inf):
         stamps = parse_stamps(self.shke_log_path)
         assert(len(stamps) != 0)
-        # orig_asserts = get_asserts(self.orig_path)
-        stats = self.get_shake_stats()
+        s_asserts = np.sum([1 for i in stamps if stamps[i] <= max_depth])
+        return s_asserts
 
-        o_asserts = 0
-        s_asserts = 0
-        out_file = open("data/shake_unstable_test/" + self.base, "w+")
-        
-        for line in open(self.orig_path):
-            if line.startswith("(assert "):
-                nline = line.replace(" ", "").strip()
-                o_asserts += 1
-                if nline not in stamps or stamps[nline] > max_depth:
-                    continue
-                s_asserts += 1
-            out_file.write(line)
-        out_file.close()
-
-    def should_unify(self):
-        return self.mini_status in {Stability.UNSOLVABLE, None} and self.extd_exists
-
-class MissingTypes(str, Enum):
-    ORIG_EXPERIMENT_MISSING = "original file present but experiment missing"
-    MINI_EXPERIMENT_MISSING = "mini file present but experiment missing"
-    MINI_FILE_MISSING = "mini file missing"
-    MINI_EXPERIMENT_UNSOLVABLE = "mini file present but unsolvable"
-    EXTENDED_FILE_MISSING = "extended file missing"
+    def get_debug_cmds(self):
+        print(f"cp {self.orig_path} temp/woot.smt2")
+        u_path = self.get_unify_path()
+        if u_path:
+            print(f"cp {u_path} temp/core.smt2")
+        else:
+            print("rm temp/core.smt2")
+        print(f"cp {self.shke_path} temp/out.smt2")
+        print(f"cp {self.shke_log_path} temp/log.txt")
 
 class ProjectCoreManager:
     def __init__(self, orig_name):
         self.name = orig_name
         c = Configer()
-        (mini_name, extd_name, shke_name) = UNSAT_CORE_PROJECTS_NAMES[orig_name]
+        sub_names = UNSAT_CORE_PROJECTS_NAMES[orig_name]
+        # mini_name, extd_name, shke_name, strp_name
         self.orig = c.load_known_project(orig_name)
-        self.mini = c.load_known_project(mini_name)
-        self.extd = c.load_known_project(extd_name)
-        self.shke = c.load_known_project(shke_name)
+        self.mini = c.load_known_project(sub_names[0])
+        self.extd = c.load_known_project(sub_names[1])
+        self.shke = c.load_known_project(sub_names[2])
+        if len(sub_names) > 3:
+            self.strp = c.load_known_project(sub_names[3])
+        else:
+            self.strp = None
+
         self.orig_cats, self.orig_tally = load_proj_stability(self.orig, BASELINE)
         self.mini_cats, self.mini_tally = load_proj_stability(self.mini, PLAIN_UC)
         self.extd_cats, self.extd_tally = load_proj_stability(self.extd, PLAIN_UC)
+
+        self.qm_index = dict()
 
         self.qms = []
         for orig_path in self.orig.list_queries():
@@ -291,101 +343,43 @@ class ProjectCoreManager:
             extd_status = find_category(base, self.extd_cats)
             qm = QueryCoreManager(orig_path, orig_status, mini_status, extd_status, self)
             self.qms.append(qm)
+            self.qm_index[qm.base] = qm
 
-    def emit_check_rules(self):
-        assert self.mini_tally.issubset(self.orig_tally)
-        content = []
-        for qm in tqdm(self.qms):
-            checks = qm.emit_sanity_check()
-            if checks != "":
-                content.append(checks)
-        return content
-
-    def emit_shake_rules(self):
-        content = []
+    def stat_stat_missing(self):
+        print(self.name)
         for qm in self.qms:
-            content.append(qm.emit_shake())
-        return content
-    
-    def emit_mini_rules(self):
-        content = []
+            missing = qm.get_missing_types()
+            if len(missing) > 0:
+                print(qm.base)
+                for m in missing:
+                    print("\t", str(m.value))
+
+    def stat_baseline(self, verbose=False):
+        # cats = self.orig_cats.keys()
+        # assert cats == self.mini_cats.keys()
+        for c, v in self.orig_cats.items():
+            if len(v) == 0:
+                continue
+            print(f"{c}:\t{len(v)}")
+
+        if not verbose:
+            return
+
         for qm in self.qms:
-            content.append(qm.emit_create_mini())
-        return content
+            if qm.orig_status == Stability.UNSTABLE:
+                qm.get_debug_cmds()
 
-    def emit_fix_missing(self):
-        missing = {k: set() for k in MissingTypes}
-        extended = set()
-        for qm in self.qms:
-            if qm.orig_status == None:
-                missing[MissingTypes.ORIG_EXPERIMENT_MISSING].add(qm)
-            if qm.mini_exists and qm.mini_status == None:
-                missing[MissingTypes.MINI_EXPERIMENT_MISSING].add(qm)
-            if qm.mini_exists and qm.mini_status == Stability.UNSOLVABLE:
-                missing[MissingTypes.MINI_EXPERIMENT_UNSOLVABLE].add(qm)
-            if not qm.mini_exists:
-                missing[MissingTypes.MINI_FILE_MISSING].add(qm)
-            if not qm.extd_exists:
-                missing[MissingTypes.EXTENDED_FILE_MISSING].add(qm)
-            else:
-                extended.add(qm)
+    def get_unstable_qms(self):
+        return [qm for qm in self.qms if qm.orig_status == Stability.UNSTABLE]
 
-        assert missing[MissingTypes.ORIG_EXPERIMENT_MISSING] == set()
-
-        # for qm in missing[MissingTypes.MINI_EXPERIMENT_MISSING]:
-        #     print(f"python3 scripts/main.py update -e {PLAIN_UC.name} -p {self.mini.name} -s {Z3_4_12_2} -q {qm.mini_path}")
-
-        # for qm in missing[MissingTypes.MINI_FILE_MISSING]:
-        #     print(qm.emit_create_mini())
-
-        for qm in missing[MissingTypes.EXTENDED_FILE_MISSING]:
-            if qm.mini_status == Stability.STABLE:
-                pass
-            else:
-                pass
-                # print(qm.orig_status, qm.mini_status)            
-
-        print(f"total: {len(self.orig_tally)}")
-
-        for k in missing:
-            print(f"{k}: {len(missing[k])}")
-
-    def get_stats(self):
-        print(f"# {self.name}")
-        # orig_unsolvable = set()
-        # for cat in cats:
-        #     oc = len(self.orig_cats[cat])
-        #     mc = len(self.mini_cats[cat])
-        #     ec = len(self.extd_cats[cat])
-
-        #     ptable.append([cat, 
-        #         oc, percent(oc, len(self.orig_tally)), 
-        #         mc, percent(mc, len(self.orig_tally)),
-        #         ec, percent(ec, len(self.orig_tally))])
-
-        # keep = self.orig_tally - self.orig_cats[Stability.UNSOLVABLE]
-
-        # unified = deepcopy(self.mini_cats)
-        # changed = set()
-        # for i in unified[Stability.UNSOLVABLE]:
-        #     new_cat = find_category(i, self.extd_cats)
-        #     if new_cat != None:
-        #         changed.add(i)
-        #         unified[new_cat].add(i)
-
-        # unified[Stability.UNSOLVABLE] -= changed
-
-        # for cat in cats:
-        #     oc = len(self.orig_cats[cat] & keep)
-        #     mc = len(self.mini_cats[cat] & keep)
-        #     ec = len(unified[cat] & keep)
-        #     ptable.append([cat, 
-        #         oc, percent(oc, len(keep)), 
-        #         mc, percent(mc, len(keep)),
-        #         ec, percent(ec, len(keep))])
-
-        # print(tabulate(ptable, headers=["", "orig", "", "mini", "", "extd", ""]))
-        # print("")        
+    def shake_from_oracle(self):
+        for qm in tqdm(self.get_unstable_qms()):
+            # print(qm.orig_status, qm.mini_status, qm.extd_status)
+            if not qm.shke_exists:
+                print("[ERROR] there are queries that do not have shake files")
+                exit(1)
+                
+            qm.shake_from_oracle("data/shake_unstable_oracle/d_lvbkv/", 4)
 
     def get_assert_counts(self, unify=False):
         if unify:
@@ -408,6 +402,10 @@ class ProjectCoreManager:
             cache_save(data, cache_path)
         return data
 
+    def get_query_manager(self, path):
+        path = os.path.basename(path)
+        return self.qm_index[path]
+
     def contains_query(self, query):
         return query.startswith(self.orig.clean_dir)
 
@@ -415,37 +413,12 @@ UNSAT_CORE_PROJECTS = {
     name: ProjectCoreManager(name) for name in UNSAT_CORE_PROJECTS_NAMES
 }
 
+# def get_shake_comp_test_qms():
+#     random.seed(1234)
+#     qms = []
+#     for p in UNSAT_CORE_PROJECTS.values():
+#         qms += random.sample(p.qms, 100)
+#     return qms
+
 if __name__ == "__main__":
-    p = UNSAT_CORE_PROJECTS["d_komodo"]
-    unstables = list()
-    for qm in p.qms:
-        if qm.orig_status == Stability.UNSTABLE:
-            stats = qm.get_shake_stats()
-            # assuming we have an oracle
-            qm.shake_from_log(3 if stats[4] == np.inf else stats[4])
-            # unstables.append(qm)
-            # print(qm.orig_status, qm.mini_status, qm.extd_status)
-            # print("; core max: ", stats[4])
-            # print("; core miss: ", stats[5])
-            # print("; shake: ", s_asserts, "/", o_asserts)
-    # random.seed(time.time())
-    # qm = random.choice(unstables)
-    # print(qm.orig_status, qm.mini_status, qm.extd_status)
-    # print(qm.orig_path)
-
-    # qm.shake_from_log(3)
-        # break
-            # print(qm.orig_path)
-    # contents = []
-
-    # for p in UNSAT_CORE_PROJECTS.values():
-        # contents += p.emit_shake_rules()
-        # contents += p.emit_check_rules()
-        # contents += p.emit_mini_rules()
-        # p.emit_fix_missing()
-        # pass
-
-    # random.shuffle(contents)
-    # print(BUILD_RULES)
-    # for i in contents:
-    #     print(i)
+    pass
