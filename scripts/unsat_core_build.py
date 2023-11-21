@@ -376,6 +376,7 @@ class ProjectCoreManager:
         for qm in self.qms:
             if qm.orig_status == Stability.UNSTABLE:
                 qm.get_debug_cmds()
+                print("")    
 
     def get_unstable_qms(self):
         return [qm for qm in self.qms if qm.orig_status == Stability.UNSTABLE]
@@ -391,7 +392,7 @@ class ProjectCoreManager:
 
             qm.shake_from_oracle(proj.clean_dir + "/" + qm.base, 4)
 
-    def stat_shake_oracle(self):
+    def stat_shake_oracle(self, verbose=False):
         proj = CONFIG.load_known_project("shake_oracle_" + self.name)
         cats, tally = load_proj_stability(proj, REWRITE)
         if cats == dict():
