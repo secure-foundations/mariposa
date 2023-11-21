@@ -19,8 +19,8 @@ mod term_rewrite_let;
 mod term_rewrite_prop;
 mod tree_rewrite;
 mod tree_shake;
-mod tree_shake_old;
 mod tree_shake_idf;
+mod tree_shake_old;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -553,7 +553,20 @@ fn main() {
     } else if args.mutation == "tree-shake-old" {
         commands = tree_shake_old::tree_shake(commands, args.command_score_path);
     } else if args.mutation == "tree-shake-idf" {
-        tree_shake_idf::print_commands_symbol_frequency(&commands, false);
+        let (cmd_freq, use_cmd_count) =
+            tree_shake_idf::count_commands_symbol_frequency(&commands, false);
+        let mut symbols: Vec<_> = cmd_freq.iter().collect();
+        symbols.sort_by(|a, b| b.1.cmp(a.1));
+        manager.dump(&format!("MARIPOSA_USE_CMD_COUNT {}\n", use_cmd_count));
+        for (symbol, count) in symbols {
+            manager.dump(&format!(
+                "{} {} {}\n",
+                symbol,
+                count,
+                count * 100 / use_cmd_count
+            ));
+        }
+        return;
     } else if args.mutation == "tree-rewrite" {
         commands = tree_rewrite::tree_rewrite(commands);
     } else if args.mutation == "remove-unused" {

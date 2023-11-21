@@ -70,12 +70,13 @@ def parse_stamps(filename):
             cmds0[nl] = stamp
     return cmds0
 
-def print_shake_layers(orig_path, mini_path, log_path, tf_file=None):
-    # tf = load_tf(tf_file)
+def print_shake_layers(orig_path, mini_path, log_path, tf_file):
+    tf = load_tf(tf_file)
     covered = set()
 
     orig = get_asserts(orig_path)
-    mini = key_set(get_asserts(mini_path))
+    m_asserts = get_asserts(mini_path)
+    mini = key_set(m_asserts)
     stamps = parse_stamps(log_path)
 
     assert mini.issubset(key_set(orig))
@@ -84,6 +85,7 @@ def print_shake_layers(orig_path, mini_path, log_path, tf_file=None):
     max_core_depth = 0
     approx = 0 
 
+    symbol_depth = dict()
     layers = dict()
 
     for (nl, depth) in stamps.items():
@@ -100,7 +102,30 @@ def print_shake_layers(orig_path, mini_path, log_path, tf_file=None):
             max_core_depth = depth
         if depth <= max_core_depth:
             approx += len(layer)
+        for l in layer:
+            tokens = tokenize(orig[l], tf)
+            for t in tokens:
+                if t not in symbol_depth:
+                    symbol_depth[t] = depth
+ 
+            # if l in layer_core:
+            #     print(f"[core] ", end="")
+            # print(orig[l])
+            # for t in tokens:
+            #     print(f"\t{t}:{tokens[t]}")
+            # print()
+ 
         print(f"\tcore asserts: {len(layer_core)}/{len(layer)}")
+
+    # core_symbols = dict()
+    # for l in m_asserts.values():
+    #     tokens = tokenize(l, tf)
+    #     for t in tokens:
+    #         if t in symbol_depth:
+    #             core_symbols[t] = symbol_depth[t]
+
+    # for t in sorted(core_symbols, key=lambda x: symbol_depth[x]):
+    #     print(f"{t}:{core_symbols[t]}")
 
     print(f"=== summary ===")
     print(f"\ttotal asserts: {len(orig)}")
@@ -113,6 +138,7 @@ def print_shake_layers(orig_path, mini_path, log_path, tf_file=None):
     print("=== missing ===")
     for i in missing:
         print(orig[i])
+
 
 def shake_from_log(orig_path, log_path, out_path, max_depth):
     stamps = parse_stamps(log_path)
@@ -144,6 +170,6 @@ if __name__ == "__main__":
     elif op == "diff-stats":
         print_diff_stats(sys.argv[2], sys.argv[3])
     elif op == "shake-layers":
-        print_shake_layers(sys.argv[2], sys.argv[3], sys.argv[4])
+        print_shake_layers(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
     elif op == "shake-from-log":
         shake_from_log(sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5]))

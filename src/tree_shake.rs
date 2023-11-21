@@ -6,8 +6,7 @@ use std::sync::Arc;
 
 use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
 use crate::tree_rewrite;
-use crate::tree_shake_idf::{get_commands_symbol_def, get_command_symbol_def};
-
+use crate::tree_shake_idf::{get_command_symbol_def, get_commands_symbol_def, get_commands_symbol_def_alt, AltSymbolSet};
 
 struct PatternState {
     local_symbols: SymbolSet,
@@ -24,10 +23,10 @@ fn print_symbol_set(prefix: &str, s: &SymbolSet) {
 }
 
 impl PatternState {
-    fn check_match(&self, symbols: &SymbolSet) -> bool {
+    fn check_match(&self, symbols: &AltSymbolSet) -> bool {
         // not using .any because we might want to debug ...
         for p in &self.matchable_patterns {
-            if p.is_subset(symbols) {
+            if symbols.is_superset(p) {
                 return true;
             }
         }
@@ -53,9 +52,10 @@ struct NoPatternState {
 }
 
 impl NoPatternState {
-    fn check_match(&self, symbols: &SymbolSet) -> bool {
-        // if there is any overlap with the matchable symbols 
-        !self.matchable_symbols.is_disjoint(symbols)
+    fn check_match(&self, symbols: &AltSymbolSet) -> bool {
+        // if there is any overlap with the matchable symbols
+        symbols.has_overlap(&self.matchable_symbols)
+        // !self.matchable_symbols.is_disjoint(symbols)
     }
 
     fn debug(&self) {
@@ -313,7 +313,7 @@ impl UseTracker {
         }
     }
 
-    fn delayed_aggregate(&mut self, snowball: &SymbolSet) -> bool {
+    fn delayed_aggregate(&mut self, snowball: &AltSymbolSet) -> bool {
         let mut should_include = false;
 
         let mut cur_pattern_states = Vec::new();
@@ -365,7 +365,7 @@ impl UseTracker {
 
         self.no_pattern_states = non_matched;
 
-        if !self.live_symbols.is_disjoint(&snowball) {
+        if snowball.has_overlap(&self.live_symbols) {
             should_include = true;
         }
 
@@ -397,28 +397,34 @@ pub fn tree_shake(
     debug: bool,
 ) -> Vec<concrete::Command> {
     tree_rewrite::truncate_commands(&mut commands);
-    let defs = Arc::new(get_commands_symbol_def(&commands, shake_max_symbol_frequency));
+    let (ref_trivial, ref_defined) = get_commands_symbol_def_alt(&commands, shake_max_symbol_frequency);
+    let ref_trivial = Arc::new(ref_trivial);
+    let defs = Arc::new(ref_defined);
 
-    let mut snowball = HashSet::new();
+    // let defs = Arc::new(get_commands_symbol_def(
+    //     &commands,
+    //     alt_defs.defined,
+    // ));
+
     let goal_command = commands.pop().unwrap();
 
-    if shake_init_strategy == 0 {
+    let live = if shake_init_strategy == 0 {
         // lazy evaluation match states on goal
         let tracker = UseTracker::new(defs.clone(), &goal_command, false);
-        snowball = tracker.live_symbols;
         // put the goal back immediately
         commands.push(goal_command.clone());
+        tracker.live_symbols
     } else {
         assert_eq!(shake_init_strategy, 1);
         // eager evaluation match states on goal
         let tracker = UseTracker::new(defs.clone(), &goal_command, true);
-        snowball = tracker.live_symbols;
-    }
+        tracker.live_symbols
+    };
+
+    let mut snowball = AltSymbolSet::new(live, ref_trivial, defs.clone());
 
     if debug {
-        for s in &snowball {
-            println!("[isb] {}", s);
-        }
+        snowball.debug();
     }
 
     let mut trackers: Vec<UseTracker> = commands
@@ -437,7 +443,7 @@ pub fn tree_shake(
     while modified {
         let mut delayed = HashSet::new();
         modified = false;
-        let prev_len = snowball.len();
+        let prev_len = snowball.defined.len();
         let prev_poss_len = poss.len();
 
         for (pos, tracker) in trackers.iter_mut().enumerate() {
@@ -464,9 +470,9 @@ pub fn tree_shake(
             }
         }
 
-        snowball.extend(delayed.into_iter());
+        snowball.extend(delayed);
 
-        if snowball.len() != prev_len || poss.len() != prev_poss_len {
+        if snowball.defined.len() != prev_len || poss.len() != prev_poss_len {
             modified = true;
         }
 
@@ -497,9 +503,7 @@ pub fn tree_shake(
             }
         }
 
-        for s in &snowball {
-            println!("[fsb] {}", s);
-        }
+        snowball.debug();
     }
 
     commands = commands
