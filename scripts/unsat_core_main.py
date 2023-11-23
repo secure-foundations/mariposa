@@ -77,7 +77,7 @@ def handle_plot(args, projects):
     elif args.target == "shake-depth":
         figure, axis = setup_fig(len(projects), 1)
         for i, proj in enumerate(projects):
-            plot_shake_max_depth(axis[i], proj)
+            plot_shake_max_depth(axis[i][0], proj)
         plt.savefig(f"fig/context/shake_max_depth.png", dpi=200)
         plt.close()
     elif args.target == "migration":
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     stats_parser = subparsers.add_parser('stats', help='dump stats (should not change the db or persistent files)')
     stats_parser.add_argument("-p", "--project", required=True, help="the target project, use 'all' to run on all projects")
     stats_parser.add_argument("-t", "--target", required=True, help="the target stats")
-    stats_parser.add_argument("-c", "--clear_cache", default=False, action='store_true', help="clear the cache")
+    stats_parser.add_argument("-c", "--clear-cache", default=False, action='store_true', help="clear the cache")
     stats_parser.add_argument("-v", "--verbose", default=False, action='store_true', help="verbose")
 
     plot_parser = subparsers.add_parser('plot', help='plot stats')

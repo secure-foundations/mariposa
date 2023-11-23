@@ -47,7 +47,7 @@ rule shake
     command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log
 
 rule shake-special
-    command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log --shake-max-symbol-frequency 25
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log --shake-max-symbol-frequency 15
 
 rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
@@ -233,6 +233,11 @@ build {self.fmt_path}: format {self.orig_path}"""
         return res
 
     def emit_shake(self):
+        if self.proj.name == "fs_dice":
+            return  f"""
+build {self.shke_path}: shake-special {self.orig_path}
+    log = {self.shke_log_path}"""
+        
         return f"""
 build {self.shke_path}: shake {self.orig_path}
     log = {self.shke_log_path}"""
@@ -390,7 +395,7 @@ class ProjectCoreManager:
                 print("[ERROR] there are queries that do not have shake files")
                 exit(1)
 
-            qm.shake_from_oracle(proj.clean_dir + "/" + qm.base, 4)
+            qm.shake_from_oracle(proj.clean_dir, 7)
 
     def stat_shake_oracle(self, verbose=False):
         proj = CONFIG.load_known_project("shake_oracle_" + self.name)
