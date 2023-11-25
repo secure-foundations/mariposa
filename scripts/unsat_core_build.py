@@ -400,10 +400,20 @@ class ProjectCoreManager:
     def stat_shake_oracle(self, verbose=False):
         proj = CONFIG.load_known_project("shake_oracle_" + self.name)
         cats, tally = load_proj_stability(proj, REWRITE)
+
         if cats == dict():
             print("[ERROR] no data for shake oracle " + self.name)
             return
+
         print_basic_stats(cats)
+
+        if not verbose:
+            return
+
+        for qm in self.qms:
+            if qm.orig_status == Stability.UNSTABLE:
+                qm.get_debug_cmds()
+                print("")    
 
     def get_assert_counts(self, unify=False):
         if unify:

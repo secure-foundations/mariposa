@@ -59,7 +59,7 @@ def handle_stats(args, projects):
         elif args.target == "shake-incomplete":
             stat_shake_incomplete(p.qms, args.clear_cache, args.verbose)
         elif args.target == "shake-unstable-oracle":
-            p.stat_shake_oracle()
+            p.stat_shake_oracle(args.verbose)
         elif args.target == "baseline":
             p.stat_baseline(args.verbose)
         else:
