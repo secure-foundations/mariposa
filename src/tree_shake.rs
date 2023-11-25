@@ -301,13 +301,20 @@ impl UseTracker {
                 for p in &sig.parameters {
                     self.add_local_binding(&p.0);
                 }
-                let uses = self.get_symbol_uses(term);
+                let local = self.local_symbols.clone();
+                let pattern_state = PatternState {
+                    local_symbols: local,
+                    hidden_term: term.clone().into(),
+                    matchable_patterns: vec![self.get_symbol_uses(term)],
+                };
+                self.pattern_states.push(pattern_state);
+                // let uses = self.get_symbol_uses(term);
                 // do not remove local bindings
                 // for p in &sig.parameters {
                 //     self.remove_local_binding(&p.0);
                 // }
-                self.live_symbols = uses;
-                self.live_symbols.insert(sig.name.clone());
+                // self.live_symbols = uses;
+                // self.live_symbols.insert(sig.name.clone());
             }
             _ => {}
         }

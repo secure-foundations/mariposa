@@ -15,6 +15,7 @@ UNSAT_CORE_PROJECTS_NAMES = {
 CONFIG = Configer()
 BASELINE = CONFIG.load_known_experiment("baseline")
 PLAIN_UC = CONFIG.load_known_experiment("min_asserts")
+REWRITE = CONFIG.load_known_experiment("rewrite")
 Z3_4_12_2 = CONFIG.load_known_solver("z3_4_12_2")
 
 BUILD_RULES = """
@@ -46,7 +47,7 @@ rule shake
     command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log
 
 rule shake-special
-    command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log --shake-max-symbol-frequency 25
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --command-score-path $log --shake-max-symbol-frequency 15
 
 rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
@@ -97,9 +98,19 @@ def find_category(query, items):
             return cat
     return None
 
-def percent(a, b):
-    return round(a * 100 / b, 2)
-
+def print_basic_stats(items):
+    tally = 0
+    rows = [["category", "count", "percent"]]
+    for cat in items:
+        cat_count = len(items[cat])
+        tally += cat_count
+        if cat_count > 0:
+            rows.append([cat.name, cat_count])
+    for row in rows:
+        if len(row) == 2:
+            row.append(rd_percent_str(row[1], tally))
+    rows.append(["total", tally, "100.00%"])
+    print(tabulate(rows, headers="firstrow")) 
 
 class MissingTypes(str, Enum):
     ORIG_EXP = "original file present but experiment missing"
@@ -222,6 +233,11 @@ build {self.fmt_path}: format {self.orig_path}"""
         return res
 
     def emit_shake(self):
+        if self.proj.name == "fs_dice":
+            return  f"""
+build {self.shke_path}: shake-special {self.orig_path}
+    log = {self.shke_log_path}"""
+        
         return f"""
 build {self.shke_path}: shake {self.orig_path}
     log = {self.shke_log_path}"""
@@ -345,7 +361,7 @@ class ProjectCoreManager:
             self.qms.append(qm)
             self.qm_index[qm.base] = qm
 
-    def stat_stat_missing(self):
+    def stat_missing(self):
         print(self.name)
         for qm in self.qms:
             missing = qm.get_missing_types()
@@ -357,10 +373,7 @@ class ProjectCoreManager:
     def stat_baseline(self, verbose=False):
         # cats = self.orig_cats.keys()
         # assert cats == self.mini_cats.keys()
-        for c, v in self.orig_cats.items():
-            if len(v) == 0:
-                continue
-            print(f"{c}:\t{len(v)}")
+        print_basic_stats(self.orig_cats)
 
         if not verbose:
             return
@@ -368,18 +381,39 @@ class ProjectCoreManager:
         for qm in self.qms:
             if qm.orig_status == Stability.UNSTABLE:
                 qm.get_debug_cmds()
+                print("")    
 
     def get_unstable_qms(self):
         return [qm for qm in self.qms if qm.orig_status == Stability.UNSTABLE]
 
     def shake_from_oracle(self):
+        proj = CONFIG.load_known_project("shake_oracle_" + self.name)
+
         for qm in tqdm(self.get_unstable_qms()):
             # print(qm.orig_status, qm.mini_status, qm.extd_status)
             if not qm.shke_exists:
                 print("[ERROR] there are queries that do not have shake files")
                 exit(1)
-                
-            qm.shake_from_oracle("data/shake_unstable_oracle/d_lvbkv/", 4)
+
+            qm.shake_from_oracle(proj.clean_dir, 7)
+
+    def stat_shake_oracle(self, verbose=False):
+        proj = CONFIG.load_known_project("shake_oracle_" + self.name)
+        cats, tally = load_proj_stability(proj, REWRITE)
+
+        if cats == dict():
+            print("[ERROR] no data for shake oracle " + self.name)
+            return
+
+        print_basic_stats(cats)
+
+        if not verbose:
+            return
+
+        for qm in self.qms:
+            if qm.orig_status == Stability.UNSTABLE:
+                qm.get_debug_cmds()
+                print("")    
 
     def get_assert_counts(self, unify=False):
         if unify:

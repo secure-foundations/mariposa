@@ -244,8 +244,7 @@ fn remove_debug_commands(commands: &mut Vec<concrete::Command>) -> usize {
                 }
             }
             concrete::Command::GetModel
-            | concrete::Command::GetValue { terms: _ }
-            | concrete::Command::GetInfo { flag: _ } => {
+            | concrete::Command::GetValue { terms: _ } => {
                 in_debug = true;
             }
             _ => {
@@ -304,6 +303,8 @@ fn split_commands(
             // write out to file
             let out_file_name = format!("{}.{}.smt2", &out_file_pre, splits);
             let mut manager = Manager::new(Some(out_file_name), 0, 100);
+            // println!("{} commands", stack.concat().len());
+            // println!("{} commands", stack[depth][stack[depth].len() - 1]);
             manager.dump_non_info_commands(&stack.concat());
             manager.dump_non_info_commands(&vec![concrete::Command::CheckSat]);
         } else {
@@ -363,6 +364,10 @@ impl Manager {
                     continue;
                 }
             }
+            if let concrete::Command::GetInfo { flag: _ } = command {
+                continue;
+            }
+
             writeln!(self.writer, "{}", command).unwrap();
         }
     }
@@ -564,7 +569,7 @@ fn main() {
         //     .map(|x| tree_rewrite::fun_to_assert(x))
         //     .flatten()
         //     .collect();
-    } else {
+    } else if args.mutation != "none" {
         panic!("[ERROR] unknown mutation {}", args.mutation);
     }
 

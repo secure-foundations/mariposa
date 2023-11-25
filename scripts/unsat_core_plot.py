@@ -337,7 +337,6 @@ def analyze_fs_dice():
     # print(len(orig_asserts), len(mini_asserts), len(temp_asserts))
 
 def analyze_test_set():
-    ANA = Analyzer(.05, 60, .05, .95, 0.8, "cutoff")
     CONFIG = Configer()
     proj = CONFIG.load_known_project("shake_oracle_d_fvbkv")
     exp = CONFIG.load_known_experiment("rewrite")

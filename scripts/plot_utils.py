@@ -22,7 +22,7 @@ def get_csum_pts(data):
     return np.sort(data), y
 
 def setup_fig(rows, columns):
-    figure, axis = plt.subplots(rows, columns)
+    figure, axis = plt.subplots(rows, columns, squeeze=False)
 
     figure.set_figheight(7.5 * rows)
     figure.set_figwidth(7.5 * columns)
