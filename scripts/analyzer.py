@@ -31,13 +31,17 @@ class Stability(str, Enum):
         em = {c: set() for c in Stability}
         return em
 
-def count_within_timeout(blob, rcode, timeout=1e6):
+def count_within_timeout(blob, rcode, timeout):
     if timeout == None:
         return np.sum(blob[0] == rcode.value)
-    success = blob[0] == rcode.value
-    none_timeout = blob[1] < timeout
-    success = np.sum(np.logical_and(success, none_timeout))
-    return success
+    else:
+        success = blob[0] == rcode.value
+        none_timeout = blob[1] < timeout
+        if rcode == RCode.TIMEOUT:
+#           print(timeout)
+            return np.sum(blob[1] >= timeout)
+        success = np.sum(np.logical_and(success, none_timeout))
+        return success
 
 class Analyzer:
     def __init__(self, confidence, timeout, r_solvable, r_stable, discount, method):
@@ -182,11 +186,11 @@ class Analyzer:
         mut_size = blob.shape[2]
 
         for i in range(len(mutations)):
-            count_unsat = count_within_timeout(blob[i], RCode.UNSAT)
+            count_unsat = count_within_timeout(blob[i], RCode.UNSAT, timeout=self._timeout)
             unsat_item = f"{count_unsat}/{mut_size} {round(count_unsat / (mut_size) * 100, 1)}%"
-            count_timeout = count_within_timeout(blob[i], RCode.TIMEOUT)
+            count_timeout = count_within_timeout(blob[i], RCode.TIMEOUT, timeout=self._timeout)
             timeout_item = f"{count_timeout}/{mut_size} {round(count_timeout / (mut_size) * 100, 1)}%"
-            count_unknown = count_within_timeout(blob[i], RCode.UNKNOWN)
+            count_unknown = count_within_timeout(blob[i], RCode.UNKNOWN, timeout=self._timeout)
             unknown_item = f"{count_unknown}/{mut_size} {round(count_unknown / (mut_size) * 100, 1)}%"
             times = blob[i][1] / 1000
             item = [mutations[i], votes[i].value, unsat_item, timeout_item, unknown_item, f"{round(np.mean(times), 2)}", f"{round(np.std(times), 2)}"]

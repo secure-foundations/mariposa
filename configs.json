@@ -171,6 +171,22 @@
         "num_procs": 7,
         "db_path": "./data/rewrite.db",
         "db_mode": "update"
+      },
+      {
+        "name": "ironfleet_test",
+        "mutations": [
+          "shuffle",
+          "rename",
+          "reseed",
+          "quake"
+        ],
+        "num_mutants": 60,
+        "keep_mutants": false,
+        "init_seed": "",
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/ironfleet_test.db",
+        "db_mode": "update"
       }
     ],
     "analyzers": [
@@ -597,6 +613,12 @@
         "name": "shake_oracle_fs_dice",
         "framework": "mixed",
         "clean_dir": "data/shake_unstable_oracle/fs_dice",
+        "artifact_solver_name": "z3_4_12_2"
+      },
+      {
+        "name": "ironfleet_test",
+        "framework": "verus",
+        "clean_dir": "data/ironfleet-comparison_clean",
         "artifact_solver_name": "z3_4_12_2"
       }
     ]
