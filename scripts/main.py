@@ -118,28 +118,26 @@ def start_server(args):
     s.serve_forever()
 
 def manager_mode(args):
-    c = Configer()
-    exp = c.load_known_experiment(args.experiment)
-    solver = c.load_known_solver(args.solver)
-    project = c.load_known_project(args.project)
-    check_existing_tables(exp, project, solver, 1, 1)
+    exp = ExpPart(args.experiment, 
+            args.project,
+            args.solver, Partition(1, 1))
 
     from multiprocessing.managers import BaseManager
-    from multiprocessing import process
+    # from multiprocessing import process
     import threading
     import multiprocessing
     
     job_queue = multiprocessing.Queue()
     res_queue = multiprocessing.Queue()
 
-    for i in range(1, args.partition_num + 1):
+    for i in range(1, args.total_parts + 1):
         wargs = copy.deepcopy(args)
-        wargs.partition_id = f"{i}/{args.partition_num}"
-        wargs.analysis_skip = True
+        wargs.partition_id = f"{i}/{args.total_parts}"
+        # wargs.analysis_skip = True
         job_queue.put(wargs)
 
     # NOTE: we assume number of workers is less than number of partitions
-    for i in range(args.partition_num):
+    for i in range(args.total_parts):
         job_queue.put(None)
 
     BaseManager.register('get_job_queue', callable=lambda:job_queue)
@@ -155,19 +153,19 @@ def manager_mode(args):
     print(f"python3 scripts/main.py worker --manager-addr {addr} --authkey {args.authkey}")
 
     # exit when expected number of results are collected
-    while res_queue.qsize() != args.partition_num:
+    while res_queue.qsize() != args.total_parts:
         time.sleep(10)
-        print(f"[INFO] {res_queue.qsize()}/{args.partition_num} partition message(s) received")
+        print(f"[INFO] {res_queue.qsize()}/{args.total_parts} partition message(s) received")
 
     workers = dict()
-    for i in range(args.partition_num):
-        (remote_db_path, part_id, part_num) = res_queue.get()
+
+    for i in range(args.total_parts):
+        (remote_db_path, part) = res_queue.get()
         if addr in remote_db_path:
             continue
         if remote_db_path not in workers:
             workers[remote_db_path] = []
-        workers[remote_db_path].append((part_id, part_num))
-    print("[DEBUG] ", workers)
+        workers[remote_db_path].append(part)
 
     for remote_db_path in workers:
         temp_db_path = f"{exp.db_path}.temp"
@@ -175,9 +173,9 @@ def manager_mode(args):
         print(f"[INFO] copying db: {command}")
         os.system(command)
         assert os.path.exists(temp_db_path)
-        for (part_id, part_num) in workers[remote_db_path]:
-            print(f"[INFO] importing partition {part_id}/{part_num} from {remote_db_path}")
-            import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
+        for part in workers[remote_db_path]:
+            print(f"[INFO] importing {part} from {remote_db_path}")
+            exp.import_tables(temp_db_path, temp_db_path, part)
         os.remove(temp_db_path)
 
 # def recovery_mode(args):
@@ -250,23 +248,23 @@ def worker_mode(args):
         wargs = queue.get()
         if wargs is None:
             break
-        (db_path, part_id, part_num) = multi_mode(wargs)
+        (db_path, part) = multi_mode(wargs)
         db_path = f"{get_self_ip()}:{os.path.abspath(db_path)}"
-        res_queue.put((db_path, part_id, part_num))
-        print(f"[INFO] worker {get_self_ip()} completed partition {part_id}th out of {part_num}")
+        res_queue.put((db_path, part))
+        print(f"[INFO] worker {get_self_ip()} completed {part}")
     print(f"[INFO] worker {get_self_ip()} finished")
 
-def update_mode(args):
-    c = Configer()
-    exp = c.load_known_experiment(args.experiment)
-    solver = c.load_known_solver(args.solver)
-    project = c.load_known_project(args.project)
+# def update_mode(args):
+#     c = Configer()
+#     exp = c.load_known_experiment(args.experiment)
+#     solver = c.load_known_solver(args.solver)
+#     project = c.load_known_project(args.project)
 
-    sanity = args.query.startswith(project.clean_dir)
-    message = f"[ERROR] query {args.query} does not belong to project {project.clean_dir}"
-    exit_with_on_fail(sanity, message)
-    r = Runner(exp)
-    r.update_project(project, solver, args.query)
+#     sanity = args.query.startswith(project.clean_dir)
+#     message = f"[ERROR] query {args.query} does not belong to project {project.clean_dir}"
+#     exit_with_on_fail(sanity, message)
+#     r = Runner(exp)
+#     r.update_project(project, solver, args.query)
 
 def load_project(project_name):
     m = ProjectManager()
@@ -291,7 +289,7 @@ if __name__ == '__main__':
     multi_parser.add_argument("--part", default="1/1", help="which part of the project to run mariposa on (probably should not be specified manually)")
 
     manager_parser = subparsers.add_parser('manager', help='sever pool manager mode.')
-    manager_parser.add_argument("--part-num", type=int, required=True, help="number of parts to split the project into")
+    manager_parser.add_argument("--total-parts", type=int, required=True, help="number of parts to split the project into")
 
     recovery_parser = subparsers.add_parser('recovery', help='recovery mode. recover the database from a crashed run (do not use unless on s190x cluster).')
 

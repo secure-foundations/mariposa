@@ -270,14 +270,14 @@ solver: {self.solver}"""
     #             applicable.append(table)
     #     return applicable
 
-    # def import_rows(self, other_db_path):
-    #     assert self.part.num == 1
-    #     con, cur = get_cursor(self.db_path)
-        # cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-        # cur.execute(f"INSERT INTO {exp_tname} SELECT * FROM OTHER_DB.{other_exp_tname}")
-        # cur.execute(f"INSERT INTO {sum_tname} SELECT * FROM OTHER_DB.{other_sum_tname}")
-
-        # con.commit()
-        # con.close()
+    def import_tables(self, other_db_path, part):
+        assert self.part.is_whole()
+        con, cur = get_cursor(self.db_path)
+        cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
+        other_exp_tname = get_table_prefix(self.proj, self.solver, part) + "_exp"
+        cur.execute(f"INSERT INTO {self.exp_table_name} SELECT * FROM OTHER_DB.{other_exp_tname}")
+        other_sum_tname = get_table_prefix(self.proj, self.solver, part) + "_sum"
+        cur.execute(f"INSERT INTO {self.sum_table_name} SELECT * FROM OTHER_DB.{other_sum_tname}")
+        conclude(con)
 
 # ExpConfig("main")
