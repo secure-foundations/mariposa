@@ -37,7 +37,7 @@ def single_mode(args):
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
 
         r = Runner()
-        r.run_project(exp)
+        r.run_project(exp, args.clear)
 
     exp.dump_status()
 
@@ -75,9 +75,10 @@ def multi_mode(args):
 
     if not args.analysis_only:
         r = Runner()
-        r.run_project(exp)
+        r.run_project(exp, args.clear)
 
-    exp.dump_status()
+    if not args.analysis_skip:
+        exp.dump_status()
 
     return (exp.db_path, args.part)
 
@@ -122,8 +123,9 @@ def manager_mode(args):
             args.project,
             args.solver, Partition(1, 1))
 
+    exp.check_tables(args.clear)
+
     from multiprocessing.managers import BaseManager
-    # from multiprocessing import process
     import threading
     import multiprocessing
     
@@ -132,8 +134,8 @@ def manager_mode(args):
 
     for i in range(1, args.total_parts + 1):
         wargs = copy.deepcopy(args)
-        wargs.partition_id = f"{i}/{args.total_parts}"
-        # wargs.analysis_skip = True
+        wargs.part = Partition(i, args.total_parts)
+        wargs.analysis_skip = True
         job_queue.put(wargs)
 
     # NOTE: we assume number of workers is less than number of partitions
@@ -175,7 +177,7 @@ def manager_mode(args):
         assert os.path.exists(temp_db_path)
         for part in workers[remote_db_path]:
             print(f"[INFO] importing {part} from {remote_db_path}")
-            exp.import_tables(temp_db_path, temp_db_path, part)
+            exp.import_tables(temp_db_path, part)
         os.remove(temp_db_path)
 
 # def recovery_mode(args):
@@ -281,7 +283,7 @@ if __name__ == '__main__':
     for sp in [update_parser, single_parser]:
         sp.add_argument("-q", "--query", required=True, help="the input query")
 
-    single_parser.add_argument("--clear", default=False, action='store_true', help="clear past data from single mode experiments")
+
     single_parser.add_argument("-e", "--experiment", default="single", help="the experiment configuration name in configs.json")
 
     multi_parser = subparsers.add_parser('multiple', help='multiple query mode. test an existing (preprocessed) project using the specified solver. the project is specified by a python expression that evaluates to a ProjectInfo object. ')
@@ -292,6 +294,9 @@ if __name__ == '__main__':
     manager_parser.add_argument("--total-parts", type=int, required=True, help="number of parts to split the project into")
 
     recovery_parser = subparsers.add_parser('recovery', help='recovery mode. recover the database from a crashed run (do not use unless on s190x cluster).')
+
+    for sp in [single_parser, multi_parser, manager_parser]:
+        sp.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment directory and database")
 
     for sp in [multi_parser, manager_parser, recovery_parser, update_parser]:
         sp.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")

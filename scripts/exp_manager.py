@@ -138,22 +138,20 @@ solver: {self.solver}"""
         print(f"[INFO] adding {len(tasks)} tasks")
         return tasks
 
-    def check_tables(self):
+    def check_tables(self, clear=False):
         con, cur = get_cursor(self.db_path)
 
-        if table_exists(cur, self.exp_table_name):
-            print(f"[INFO] {self.exp_table_name} already exists, remove it? [Y]")
-            exit_with_on_fail(input() == "Y", f"[INFO] aborting")
-            cur.execute(f"""DROP TABLE {self.exp_table_name}""")
-
-        if table_exists(cur, self.sum_table_name):
-            print(f"[INFO] {self.sum_table_name} already exists, remove it? [Y]")
-            exit_with_on_fail(input() == "Y", f"[INFO] aborting")
-            cur.execute(f"""DROP TABLE {self.sum_table_name}""")
+        for table_name in [self.exp_table_name, self.sum_table_name]:
+            if table_exists(cur, table_name):
+                if clear:
+                    print(f"[INFO] {table_name} already exists, removing")
+                else:
+                    print(f"[INFO] {table_name} already exists, remove it? [Y]")
+                    exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+                cur.execute(f"""DROP TABLE {table_name}""")
 
         create_exp_table(cur, self.exp_table_name)
         # create_sum_table(cur, self.sum_table_name)
-
         conclude(con)
 
     def populate_sum_table(self):
@@ -273,6 +271,10 @@ solver: {self.solver}"""
     def import_tables(self, other_db_path, part):
         assert self.part.is_whole()
         con, cur = get_cursor(self.db_path)
+
+        assert table_exists(cur, self.exp_table_name)
+        assert table_exists(cur, self.sum_table_name)
+
         cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
         other_exp_tname = get_table_prefix(self.proj, self.solver, part) + "_exp"
         cur.execute(f"INSERT INTO {self.exp_table_name} SELECT * FROM OTHER_DB.{other_exp_tname}")

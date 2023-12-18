@@ -90,9 +90,9 @@ class Runner:
     def __init__(self):
         self.task_queue = mp.Queue()
         
-    def run_project(self, epart):
+    def run_project(self, epart, clear):
         self.epart = epart
-        epart.check_tables()
+        epart.check_tables(clear)
         tasks = epart.build_tasks()
         random.shuffle(tasks)
 
