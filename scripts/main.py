@@ -1,12 +1,11 @@
 from runner import *
-from db_utils import *
 # from bisect_utils import *
 # from analysis_utils import *
-import shutil
-from basic_utils import *
-import argparse
+import shutil, argparse
+from exp_manager import *
+from project_manager import *
 from tabulate import tabulate
-from configer import *
+from solver_info import *
 
 # def import_database(other_server):
 #     remote_db_path = "data/mariposa2.db"
@@ -15,107 +14,72 @@ from configer import *
 #     import_tables(remote_db_path)
 
 def single_mode(args):
-    c = Configer()
-    exp = c.load_known_experiment(args.experiment)
-    solver = c.load_known_solver(args.solver)
-    project = create_single_mode_project(args.query, solver)
-    ana = c.load_known_analyzer(args.analyzer)
+    exp = ExpPart.single_mode_exp(args.query, args.solver)
 
-    if exp.db_path == "":
-        exp.db_path = f"{project.clean_dir}/test.db"
-
-    print(f"[INFO] single mode will use db {exp.db_path}")
-
-    if args.clear:
-        os.system(f"rm -rf gen/*")
-        print("[INFO] cleared all data from past experiments")
-
-    dir_exists = os.path.exists(project.clean_dir)
+    proj_root = exp.proj.root_dir
+    dir_exists = os.path.exists(proj_root)
 
     if args.analysis_only:
-        exit_with_on_fail(dir_exists, f"[ERROR] experiment dir {project.clean_dir} does not exist")
+        exit_with_on_fail(dir_exists, f"[ERROR] experiment dir {proj_root} does not exist")
     else:
         if dir_exists:
-            print(f"[INFO] experiment dir {project.clean_dir} exists, remove it? [Y]")
-            exit_with_on_fail(input() == "Y", f"[INFO] aborting")
-            shutil.rmtree(project.clean_dir, ignore_errors=True)
-        os.makedirs(project.clean_dir)
+            if args.clear:
+                print(f"[INFO] experiment dir {proj_root} exists, removing")
+                shutil.rmtree(proj_root, ignore_errors=True)
+            else:
+                print(f"[ERROR] experiment dir {proj_root} exists, aborting")
+                return 
+        os.makedirs(proj_root)
 
-        command = f"./target/release/mariposa -i '{args.query}' --chop  -o '{project.clean_dir}/split.smt2'"
+        command = f"./target/release/mariposa -i '{args.query}' --chop -o '{proj_root}/split.smt2'"
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
         print(result.stdout.decode('utf-8'), end="")
         exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
 
-        r = Runner(exp)
-        r.run_project(project, project.artifact_solver, 1, 1)
-    dump_status(project, project.artifact_solver, exp, ana)
+        r = Runner()
+        r.run_project(exp)
 
-def dump_multi_status(project, solver, exp, ana):
-    rows = load_sum_table(project, solver, cfg=exp)
-    items = ana.categorize_queries(rows)
-    ps, _ = get_category_percentages(items)
+    exp.dump_status()
 
-    print("project directory:", project.clean_dir)
-    print("solver used:", solver.path)
-    print("total queries:", len(rows))
+# def dump_multi_status(project, solver, exp, ana):
+#     rows = load_sum_table(project, solver, cfg=exp)
+#     items = ana.categorize_queries(rows)
+#     ps, _ = get_category_percentages(items)
 
-    pp_table = [["category", "count", "percentage"]]
-    for cat in [Stability.STABLE, Stability.INCONCLUSIVE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
-        pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
+#     print("project directory:", project.clean_dir)
+#     print("solver used:", solver.path)
+#     print("total queries:", len(rows))
 
-    print(tabulate(pp_table, tablefmt="github"))
-    print("")
-    print("listing unstable queries...")
+#     pp_table = [["category", "count", "percentage"]]
+#     for cat in [Stability.STABLE, Stability.INCONCLUSIVE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
+#         pp_table.append([cat.value, len(items[cat]), round(ps[cat], 2)])
 
-    for row in rows:
-        query = row[0]
-        if query not in items[Stability.UNSTABLE]:
-            continue
-        print("")
-        print("query:", row[0])
-        mutations, blob = row[1], row[2]
-        ana.dump_query_status(mutations, blob)
+#     print(tabulate(pp_table, tablefmt="github"))
+#     print("")
+#     print("listing unstable queries...")
 
-def parse_partition(partition):
-    import re
-    pattern = re.compile(r"(\d+)/(\d+)")
-    match = re.match(pattern, partition)
-    exit_with_on_fail(match is not None, f"[ERROR] invalid partition {partition}")
-    return int(match.group(1)), int(match.group(2))
+#     for row in rows:
+#         query = row[0]
+#         if query not in items[Stability.UNSTABLE]:
+#             continue
+#         print("")
+#         print("query:", row[0])
+#         mutations, blob = row[1], row[2]
+#         ana.dump_query_status(mutations, blob)
 
 def multi_mode(args):
-    part_id, part_num = parse_partition(args.partition_id)
-
-    c = Configer()
-    exp = c.load_known_experiment(args.experiment)
-    solver = c.load_known_solver(args.solver)
-    project = c.load_known_project(args.project)
-    ana = c.load_known_analyzer(args.analyzer)
+    exp = ExpPart(args.experiment, 
+            args.project, 
+            args.solver, 
+            args.part)
 
     if not args.analysis_only:
-        check_existing_tables(exp, project, solver, part_id, part_num)
-        r = Runner(exp)
-        r.run_project(project, solver, part_id, part_num)
+        r = Runner()
+        r.run_project(exp)
 
-    if not args.analysis_skip:
-        dump_multi_status(project, solver, exp, ana)
-    else:
-        print("[INFO] skipping analysis")
+    exp.dump_status()
 
-    return (exp.db_path, part_id, part_num)
-
-def flatten_path(base_dir, path):
-    assert base_dir in path
-    if not base_dir.endswith("/"):
-        base_dir += "/"
-    rest = path[len(base_dir):]
-    rest = rest.replace("/", "-")
-    return base_dir + rest
-
-def convert_path(src_path, src_dir, dst_dir):
-    dst_path = flatten_path(src_dir, src_path)
-    dst_path = dst_path.replace(src_dir, dst_dir)
-    return dst_path
+    return (exp.db_path, args.part)
 
 def preprocess_mode(args):
     if os.path.exists(args.out_dir):
@@ -216,60 +180,60 @@ def manager_mode(args):
             import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
         os.remove(temp_db_path)
 
-def recovery_mode(args):
-    #  -s z3_4_12_2 -p d_komodo_uc_trigger_10 -e min_asserts
-    c = Configer()
-    exp = c.load_known_experiment(args.experiment)
-    solver = c.load_known_solver(args.solver)
-    project = c.load_known_project(args.project)
+# def recovery_mode(args):
+#     #  -s z3_4_12_2 -p d_komodo_uc_trigger_10 -e min_asserts
+#     c = Configer()
+#     exp = c.load_known_experiment(args.experiment)
+#     solver = c.load_known_solver(args.solver)
+#     project = c.load_known_project(args.project)
 
-    for i in {1, 2 , 5, 6, 7, 8}:
-        temp_db_path = f"{exp.db_path}.{i}.temp"
-        remote_db_path = f"s190{i}:~/mariposa/{exp.db_path}"
-        if os.path.exists(temp_db_path):
-            continue
-        command = f"scp {remote_db_path} {temp_db_path}"
-        print(f"[INFO] copying db: {command}")
-        os.system(command)
-        assert os.path.exists(temp_db_path)
+#     for i in {1, 2 , 5, 6, 7, 8}:
+#         temp_db_path = f"{exp.db_path}.{i}.temp"
+#         remote_db_path = f"s190{i}:~/mariposa/{exp.db_path}"
+#         if os.path.exists(temp_db_path):
+#             continue
+#         command = f"scp {remote_db_path} {temp_db_path}"
+#         print(f"[INFO] copying db: {command}")
+#         os.system(command)
+#         assert os.path.exists(temp_db_path)
     
-    exp_tname = exp.get_exp_tname(project, solver)
-    sum_tname = exp.get_sum_tname(project, solver)
+#     exp_tname = exp.get_exp_tname(project, solver)
+#     sum_tname = exp.get_sum_tname(project, solver)
 
-    import re
-    pattern = re.compile(r"p(\d+)of(\d+)")
-    part_num = None
+#     import re
+#     pattern = re.compile(r"p(\d+)of(\d+)")
+#     part_num = None
     
-    imports = dict()
-    finished = set()
+#     imports = dict()
+#     finished = set()
 
-    for i in {1, 2 , 5, 6, 7, 8}:
-        temp_db_path = f"{exp.db_path}.{i}.temp"
-        print(f"[INFO] copying db {temp_db_path}")
-        tables = get_tables(temp_db_path)
-        imports[temp_db_path] = []
-        for table in tables:
-            if table.startswith(exp_tname + "_"):
-                partition = table[len(exp_tname) + 1:]
-                match = re.match(pattern, partition)
-                assert part_num is None or part_num == int(match.group(2))
-                part_num = int(match.group(2))
-                part_id = int(match.group(1))
-                if part_id in finished:
-                    print("[INFO] ignored duplicated part {part_id}")
-                    continue
-                finished.add(part_id)
-                imports[temp_db_path].append((part_id, part_num))
-    excepted = set(range(1, part_num + 1))
+#     for i in {1, 2 , 5, 6, 7, 8}:
+#         temp_db_path = f"{exp.db_path}.{i}.temp"
+#         print(f"[INFO] copying db {temp_db_path}")
+#         tables = get_tables(temp_db_path)
+#         imports[temp_db_path] = []
+#         for table in tables:
+#             if table.startswith(exp_tname + "_"):
+#                 partition = table[len(exp_tname) + 1:]
+#                 match = re.match(pattern, partition)
+#                 assert part_num is None or part_num == int(match.group(2))
+#                 part_num = int(match.group(2))
+#                 part_id = int(match.group(1))
+#                 if part_id in finished:
+#                     print("[INFO] ignored duplicated part {part_id}")
+#                     continue
+#                 finished.add(part_id)
+#                 imports[temp_db_path].append((part_id, part_num))
+#     excepted = set(range(1, part_num + 1))
 
-    if finished != excepted:
-        print("[WARN] some partitions are missing, aborting", excepted - finished)
-        return
+#     if finished != excepted:
+#         print("[WARN] some partitions are missing, aborting", excepted - finished)
+#         return
 
-    for temp_db_path in imports:
-        for (part_id, part_num) in imports[temp_db_path]:
-            print(f"[INFO] importing partition {part_id}/{part_num} from {temp_db_path}")
-            import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
+#     for temp_db_path in imports:
+#         for (part_id, part_num) in imports[temp_db_path]:
+#             print(f"[INFO] importing partition {part_id}/{part_num} from {temp_db_path}")
+#             import_entries(exp.db_path, temp_db_path, exp, project, solver, part_id, part_num)
 
 def worker_mode(args):
     from multiprocessing.managers import BaseManager
@@ -304,6 +268,10 @@ def update_mode(args):
     r = Runner(exp)
     r.update_project(project, solver, args.query)
 
+def load_project(project_name):
+    m = ProjectManager()
+    return m.load_project(project_name)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")
 
@@ -320,11 +288,11 @@ if __name__ == '__main__':
 
     multi_parser = subparsers.add_parser('multiple', help='multiple query mode. test an existing (preprocessed) project using the specified solver. the project is specified by a python expression that evaluates to a ProjectInfo object. ')
 
-    multi_parser.add_argument("--partition-id", default="1/1", help="which partition of the project to run mariposa on (probably should not be specified manually)")
-    
+    multi_parser.add_argument("--part", default="1/1", help="which part of the project to run mariposa on (probably should not be specified manually)")
+
     manager_parser = subparsers.add_parser('manager', help='sever pool manager mode.')
-    manager_parser.add_argument("--partition-num", type=int, required=True, help="number of partitions to split the project into")
-    
+    manager_parser.add_argument("--part-num", type=int, required=True, help="number of parts to split the project into")
+
     recovery_parser = subparsers.add_parser('recovery', help='recovery mode. recover the database from a crashed run (do not use unless on s190x cluster).')
 
     for sp in [multi_parser, manager_parser, recovery_parser, update_parser]:
@@ -353,6 +321,13 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if hasattr(args, "solver"):
+        args.solver = SolverInfo(args.solver)
+    if hasattr(args, "part"):
+        args.part = Partition.from_str(args.part)
+    if hasattr(args, "project"):
+        args.project = load_project(args.project)
+
     if args.sub_command == "preprocess":
         preprocess_mode(args)
     elif args.sub_command == "single":
@@ -369,6 +344,7 @@ if __name__ == '__main__':
         update_mode(args)
     elif args.sub_command is None:
         parser.print_help()
-# c = Configer()  
+
+# c = Configer()
 # p = c.load_known_project("d_fvbkv")
 # print(len(p.list_queries(200, 200)))

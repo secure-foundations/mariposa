@@ -1,0 +1,56 @@
+{
+    "default": {
+        "mutations": [
+            "shuffle",
+            "rename",
+            "reseed"
+        ],
+        "keep_mutants": false,
+        "num_mutants": 60,
+        "exp_timeout": 60,
+        "num_procs": 7,
+        "db_path": "./data/databases/default.db"
+    },
+    "single": {
+        "mutations": [
+            "shuffle",
+            "rename",
+            "reseed"
+        ],
+        "keep_mutants": true,
+        "num_mutants": 10,
+        "exp_timeout": 30,
+        "num_procs": 4,
+        "db_path": ""
+    },
+    "debug": {
+        "mutations": [
+            "shuffle",
+            "rename",
+            "reseed"
+        ],
+        "num_mutants": 10,
+        "keep_mutants": true,
+        "exp_timeout": 10,
+        "num_procs": 2,
+        "db_path": "./data/databases/debug.db"
+    },
+    "main": {
+        "db_path": "./data/databases/mariposa.db"
+    },
+    "min_asserts": {
+        "db_path": "./data/databases/uc.db"
+    },
+    "baseline": {
+        "db_path": "./data/databases/baseline.db"
+    },
+    "triggers": {
+        "db_path": "./data/databases/triggers.db"
+    },
+    "opaque": {
+        "db_path": "./data/databases/opaque.db"
+    },
+    "rewrite": {
+        "db_path": "./data/databases/rewrite.db"
+    }
+}
