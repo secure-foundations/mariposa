@@ -22,15 +22,15 @@ class Worker:
         self.exp_part = epart
 
     def __generate_mutant(self, task):
-        query_name = os.path.basename(mutant_path)
+        query_name = os.path.basename(task.origin_path)
+        gen_prefix = f"gen/{self.exp_part.exp_table_name}/{query_name}"
+        mutant_path = f"{gen_prefix}.{str(task.mut_seed)}.{task.perturb}.smt2"
+
         assert query_name.endswith(".smt2")
         query_name.replace(".smt2", "")
-        gen_prefix = f"gen/{self.exp_part.exp_table_name}/{query_name}"
 
         if task.perturb is None:
             return task.origin_path
-
-        mutant_path = f"{gen_prefix}.{str(task.mut_seed)}.{task.perturb}.smt2"
 
         command = f"{MARIPOSA_BIN_PATH} -i '{task.origin_path}' -m {task.perturb} -o '{mutant_path}' -s {task.mut_seed}"
 
