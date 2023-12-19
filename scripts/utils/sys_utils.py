@@ -5,7 +5,7 @@ def exit_with(msg):
     print(msg)
     sys.exit(1)
 
-def exit_with_on_fail(cond, msg):
+def san_check(cond, msg):
     if not cond:
         exit_with(msg)
 
@@ -38,7 +38,7 @@ def list_files(sub_root):
     return list_files_ext(sub_root, "")
 
 def list_files_ext(sub_root, ext):
-    exit_with_on_fail(os.path.isdir(sub_root), f"[ERROR] {sub_root} is not a directory")
+    san_check(os.path.isdir(sub_root), f"[ERROR] {sub_root} is not a directory")
     file_paths = []
     for root, _, files in os.walk(sub_root):
         for file in files:

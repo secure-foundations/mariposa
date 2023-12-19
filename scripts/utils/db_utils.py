@@ -71,21 +71,6 @@ def create_sum_table(cur, table_name):
         PRIMARY KEY (vanilla_path, mutations))""")
     print(f"[INFO] created table {table_name}")
 
-# def import_entries(cur_db_path, other_db_path, exp, project, solver, part_id, part_num):
-#     con, cur = get_cursor(cur_db_path)
-    
-#     exp_tname = exp.get_exp_tname(project, solver)
-#     sum_tname = exp.get_sum_tname(project, solver)
-
-#     if not table_exists(cur, sum_tname):
-#         create_summary_table(cur, sum_tname)
-
-#     if not table_exists(cur, exp_tname):
-#         create_experiment_table(cur, exp_tname)
-
-#     other_exp_tname = exp.get_exp_tname(project, solver, part_id, part_num)
-#     other_sum_tname = exp.get_sum_tname(project, solver, part_id, part_num)
-
 def get_vanilla_paths(cur, exp_table_name):
     res = cur.execute(f"""
         SELECT query_path, result_code, elapsed_milli
@@ -148,7 +133,7 @@ def get_mutant_rows(cur, exp_table_name, v_path, mutation):
 #     sum_exists = table_exists(cur, sum_tname)
 
 #     # check if table exists in the database
-#     exit_with_on_fail(exp_exists and sum_exists, f"[ERROR] table {exp_tname} or {sum_tname} does not exist")
+#     san_check(exp_exists and sum_exists, f"[ERROR] table {exp_tname} or {sum_tname} does not exist")
 
 #     # check if the query is already in the table
 #     cur.execute(f"SELECT * FROM {exp_tname} WHERE vanilla_path = '{query_path}'")
@@ -156,7 +141,7 @@ def get_mutant_rows(cur, exp_table_name, v_path, mutation):
 
 #     if len(rows0) > 0:
 #         print(f"[INFO] query {query_path} already in the table, remove it? [Y]")
-#         exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+#         san_check(input() == "Y", f"[INFO] aborting")
 #         cur.execute(f"DELETE FROM {exp_tname} WHERE vanilla_path = '{query_path}'")
 
 #     cur.execute(f"SELECT * FROM {sum_tname} WHERE vanilla_path = '{query_path}'")
@@ -164,58 +149,11 @@ def get_mutant_rows(cur, exp_table_name, v_path, mutation):
 
 #     if len(rows1) > 0:
 #         print(f"[INFO] query {query_path} already in the summary table, remove it? [Y]")
-#         exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+#         san_check(input() == "Y", f"[INFO] aborting")
 #         cur.execute(f"DELETE FROM {sum_tname} WHERE vanilla_path = '{query_path}'")
 
 #     con.commit()
 #     con.close()
 
-# def load_sum_table(project, solver, skip=set()):
-#     con, cur = get_cursor(cfg.db_path)
-#     sum_name = cfg.get_sum_tname(project, solver)
-#     # print(f"[INFO] loading {sum_name}")
-
-#     if not table_exists(cur, sum_name):
-#         print(f"[INFO] skipping {sum_name}")
-#         return None
-
-#     solver = str(solver)
-
-#     res = cur.execute(f"""SELECT * FROM {sum_name}""")
-#     rows = res.fetchall()
-
-#     nrows = []
-#     mut_size = cfg.num_mutant
-#     for row in rows:
-#         if row[0] in skip:
-#             continue
-#         mutations = ast.literal_eval(row[1])
-#         blob = np.frombuffer(row[2], dtype=int)
-#         blob = blob.reshape((len(mutations), 2, mut_size + 1))
-#         nrow = [row[0], mutations, blob]
-#         nrows.append(nrow)
-
-#     con.close()
-#     return nrows
-
 if __name__ == "__main__":
-    # import_tables()
-    # tables = get_tables("./data/mariposa.db")
-    # con, cur = get_cursor("./data/mariposa.db")
-    
-    # for table in tables:
-    #     old_table = table
-    #     table = table.lower()
-    #     if table.endswith("_summary"):
-    #         # main_d_komodo_z3_4_5_0_sum
-    #         table = "main_" + table.replace("_summary", "_sum")
-    #         rename_table(cur, old_table, table)
-    #     else:
-    #         table = "main_" + table + "_exp"
-    #         rename_table(cur, old_table, table)
-    # con.commit()
-    # con.close()
-
-    # if len(sys.argv) <= 1:
-    #     show_tables()
     pass

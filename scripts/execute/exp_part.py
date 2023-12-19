@@ -1,11 +1,13 @@
-from utils.sys_utils import *
-from utils.db_utils import *
-from project_manager import Project, Partition
-from solver_info import SolverInfo
 from enum import Enum
 import numpy as np
 import json, random
 from tabulate import tabulate
+
+from utils.sys_utils import *
+from utils.db_utils import *
+
+from execute.solver_runner import RCode, SolverRunner
+from configure.project import Project, Partition
 
 EXP_CONFIG_PATH = "configs/experiments.json"        
 
@@ -47,49 +49,36 @@ class ExpConfig:
 def get_table_prefix(proj, solver, part):
     return scrub(f"{proj.full_name}_{str(solver)}{part}")
 
-class RCode(Enum):
-    SAT = 1
-    UNSAT = 2
-    TIMEOUT = 3
-    UNKNOWN = 4
-    ERROR = 5
-
-    def __str__(self):
-        if self == RCode.SAT:
-            return "sat"
-        elif self == RCode.UNSAT:
-            return "unsat"
-        elif self == RCode.TIMEOUT:
-            return "timeout"
-        elif self == RCode.UNKNOWN:
-            return "unknown"
-        elif self == RCode.ERROR:
-            return "error"
-        assert False
-
-    @staticmethod
-    def empty_map():
-        return {r: 0 for r in RCode}
-
 EXPECTED_CODES = [RCode.UNSAT, RCode.UNKNOWN, RCode.TIMEOUT]
 
 class ExpTask:
-    def __init__(self, v_path, perturb, mut_seed):
+    """represents a single task, 
+    which is a single query with a single mutation"""
+    def __init__(self, v_path, g_path, perturb, mut_seed):
         self.origin_path = v_path
         self.perturb = perturb
         self.mut_seed = mut_seed
         self.quake = False
+        self.mutant_path = g_path
 
 class ExpPart(ExpConfig):
+    """represents a collection of tasks,
+    if part is not whole, it is one partition of the project
+    this class is used to generate tasks and populate the db
+    """
     def __init__(self, exp_name, proj, solver, part):
         super().__init__(exp_name)
         self.proj = proj
         self.part = part
-        self.solver = solver
+        self.solver = SolverRunner(solver)
 
         table_prefix = get_table_prefix(proj, solver, part)
         self.exp_table_name = table_prefix + "_exp"
         self.sum_table_name = table_prefix + "_sum"
+        self.gen_dir = f"gen/{self.exp_table_name}"
+
+        if not os.path.exists(self.gen_dir):
+            os.makedirs(self.gen_dir)
 
     def __str__(self):
         return f"""project: {self.proj.full_name}
@@ -108,19 +97,24 @@ solver: {self.solver}"""
         return exp
 
     def build_query_tasks(self, origin_path):
-        tasks = []
-        task = ExpTask(origin_path, None, None)
+        base = os.path.basename(origin_path)
+        base.replace(".smt2", "")
 
-        if Mutation.QUAKE in self.enabled_muts:
-            task.quake = True
-        tasks.append(task)
+        task = ExpTask(origin_path, origin_path, None, 0)
+        tasks = [task]
 
-        for perturb in self.enabled_muts:
-            if perturb == Mutation.QUAKE:
+        for m in self.enabled_muts:
+            if m == Mutation.QUAKE:
+                mutant_path = f"{self.gen_dir}/{base}.quake.smt2"
+                qtask = ExpTask(origin_path, mutant_path, Mutation.QUAKE, None)
+                qtask.quake = True
+                tasks.append(qtask)
                 continue
+
             for _ in range(self.num_mutant):
-                mut_seed = random.randint(0, 0xffffffffffffffff)
-                task = ExpTask(origin_path, perturb, mut_seed)
+                s = random.randint(0, 0xffffffffffffffff)
+                mut_path = f"{self.gen_dir}/{base}.{str(s)}.{m}.smt2"
+                task = ExpTask(origin_path, mut_path, m, s)
                 tasks.append(task)
         return tasks
 
@@ -147,7 +141,7 @@ solver: {self.solver}"""
                     print(f"[INFO] {table_name} already exists, removing")
                 else:
                     print(f"[INFO] {table_name} already exists, remove it? [Y]")
-                    exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+                    san_check(input() == "Y", f"[INFO] aborting")
                 cur.execute(f"""DROP TABLE {table_name}""")
 
         create_exp_table(cur, self.exp_table_name)
@@ -156,11 +150,6 @@ solver: {self.solver}"""
 
     def populate_sum_table(self):
         con, cur = get_cursor(self.db_path)
-
-        # if not table_exists(cur, self.exp_table_name):
-        #     print(f"[WARN] table {self.exp_table_name} does not exist")
-        #     con.close()
-        #     return
 
         vanilla_rows = get_vanilla_paths(cur, self.exp_table_name)
 
@@ -180,6 +169,7 @@ solver: {self.solver}"""
 
     def insert_exp_row(self, task, mutant_path, rcode, elapsed):
         con, cur = get_cursor(self.db_path)
+
         cur.execute(f"""INSERT INTO {self.exp_table_name}
             (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
             VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
@@ -250,6 +240,7 @@ solver: {self.solver}"""
             trow.append(round(np.mean(times), 2))
             trow.append(round(np.std(times), 2))
             table.append(trow)
+
         print(tabulate(table, headers="firstrow"))
 
     def dump_status(self):
@@ -281,5 +272,3 @@ solver: {self.solver}"""
         other_sum_tname = get_table_prefix(self.proj, self.solver, part) + "_sum"
         cur.execute(f"INSERT INTO {self.sum_table_name} SELECT * FROM OTHER_DB.{other_sum_tname}")
         conclude(con)
-
-# ExpConfig("main")

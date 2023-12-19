@@ -3,7 +3,8 @@
         "mutations": [
             "shuffle",
             "rename",
-            "reseed"
+            "reseed",
+            "quake"
         ],
         "keep_mutants": false,
         "num_mutants": 60,
@@ -24,13 +25,8 @@
         "db_path": ""
     },
     "debug": {
-        "mutations": [
-            "shuffle",
-            "rename",
-            "reseed"
-        ],
-        "num_mutants": 10,
         "keep_mutants": true,
+        "num_mutants": 10,
         "exp_timeout": 10,
         "num_procs": 2,
         "db_path": "./data/databases/debug.db"

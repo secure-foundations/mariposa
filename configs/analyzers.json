@@ -1,27 +1,20 @@
 {
   "default": {
-    "ana_timeout": null,
+    "timeout": -1,
     "confidence": 0.05,
     "r_solvable": 0.05,
     "r_stable": 0.95,
-    "discount": 0.8
+    "discount": 0.8,
+    "method": "z_test"
   },
   "verus_5sec": {
-    "ana_timeout": 5,
-    "confidence": 0.05,
-    "r_solvable": 0.05,
-    "r_stable": 0.95,
-    "discount": 0.8
+    "timeout": 5
   },
   "verus_2sec": {
-    "ana_timeout": 2,
-    "confidence": 0.05,
-    "r_solvable": 0.05,
-    "r_stable": 0.95,
-    "discount": 0.8
+    "timeout": 2
   },
   "debug": {
-    "ana_timeout": 5,
+    "timeout": 5,
     "confidence": 0.05,
     "r_solvable": 0.05,
     "r_stable": 0.95,

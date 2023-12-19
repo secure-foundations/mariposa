@@ -39,7 +39,7 @@ def split_query_context(query_path):
 
     return main_context, query_context
 
-def do_quake(query_path, output_path, timeout, repeat=4):
+def emit_quake_file(query_path, output_path, timeout, repeat=4):
     if not os.path.exists(output_path):
         try:
             os.makedirs("/".join(output_path.split("/")[:-1]))
@@ -55,5 +55,5 @@ def do_quake(query_path, output_path, timeout, repeat=4):
         out_file.write("".join(query_context))
 
 if __name__ == "__main__":
-    do_quake(sys.argv[1], sys.argv[2], 2)
+    emit_quake_file(sys.argv[1], sys.argv[2], 2)
 

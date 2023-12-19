@@ -16,7 +16,7 @@ class SolverInfo:
         self.date = obj["date"]
         self.path = obj["path"]
         self.type = SolverType(self.name.split("_")[0])
-        exit_with_on_fail(os.path.exists(self.path), 
+        san_check(os.path.exists(self.path), 
             f"[ERROR] solver binary {self.path} does not exist")
 
     def pretty_name(self):
@@ -32,4 +32,3 @@ class SolverInfo:
 
     def __eq__(self, other):
         return hash(self) == hash(other)
-

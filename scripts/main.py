@@ -1,17 +1,9 @@
-from runner import *
-# from bisect_utils import *
-# from analysis_utils import *
+from execute.runner import *
 import shutil, argparse
-from exp_manager import *
-from project_manager import *
-from tabulate import tabulate
-from solver_info import *
-
-# def import_database(other_server):
-#     remote_db_path = "data/mariposa2.db"
-#     os.system(f"rm {remote_db_path}")
-#     os.system(f"scp {other_server}:/home/yizhou7/mariposa/data/mariposa.db {remote_db_path}")
-#     import_tables(remote_db_path)
+from configure.project import *
+# from tabulate import tabulate
+from configure.solver import *
+from execute.exp_part import *
 
 def single_mode(args):
     exp = ExpPart.single_mode_exp(args.query, args.solver)
@@ -20,7 +12,7 @@ def single_mode(args):
     dir_exists = os.path.exists(proj_root)
 
     if args.analysis_only:
-        exit_with_on_fail(dir_exists, f"[ERROR] experiment dir {proj_root} does not exist")
+        san_check(dir_exists, f"[ERROR] experiment dir {proj_root} does not exist")
     else:
         if dir_exists:
             if args.clear:
@@ -34,7 +26,7 @@ def single_mode(args):
         command = f"./target/release/mariposa -i '{args.query}' --chop -o '{proj_root}/split.smt2'"
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
         print(result.stdout.decode('utf-8'), end="")
-        exit_with_on_fail(result.returncode == 0, "[ERROR] split failed")
+        san_check(result.returncode == 0, "[ERROR] split failed")
 
         r = Runner()
         r.run_project(exp, args.clear)
@@ -85,7 +77,7 @@ def multi_mode(args):
 def preprocess_mode(args):
     if os.path.exists(args.out_dir):
         print(f"[WARN] output directory {args.out_dir} already exists, remove it? [Y]")
-        exit_with_on_fail(input() == "Y", f"[INFO] aborting")
+        san_check(input() == "Y", f"[INFO] aborting")
         shutil.rmtree(args.out_dir)
     os.makedirs(args.out_dir)
 
@@ -264,7 +256,7 @@ def worker_mode(args):
 
 #     sanity = args.query.startswith(project.clean_dir)
 #     message = f"[ERROR] query {args.query} does not belong to project {project.clean_dir}"
-#     exit_with_on_fail(sanity, message)
+#     san_check(sanity, message)
 #     r = Runner(exp)
 #     r.update_project(project, solver, args.query)
 
@@ -348,6 +340,3 @@ if __name__ == '__main__':
     elif args.sub_command is None:
         parser.print_help()
 
-# c = Configer()
-# p = c.load_known_project("d_fvbkv")
-# print(len(p.list_queries(200, 200)))

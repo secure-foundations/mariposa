@@ -28,7 +28,7 @@ for i in {1, 2 , 4, 5, 6, 7, 8}:
         lines.append(f"rcp {zipped} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {zipped} && rm {zipped}'")
     else:
         # print(remote_count == file_count)
-        exit_with_on_fail(remote_count == file_count, f"[ERROR] file count mismatch {host}")
+        san_check(remote_count == file_count, f"[ERROR] file count mismatch {host}")
 
 with open("sync.sh", "w") as f:
     f.write("#!/bin/bash\n")

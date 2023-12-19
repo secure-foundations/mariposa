@@ -80,7 +80,7 @@ class Project:
     
     @staticmethod
     def single_mode_project(query_path):
-        exit_with_on_fail(query_path.endswith(".smt2"),
+        san_check(query_path.endswith(".smt2"),
                         '[ERROR] query must end with ".smt2"')
         query_path = query_path.replace(".smt2", "")
         query_id = scrub(os.path.basename(query_path))
@@ -105,7 +105,7 @@ class ProjectGroup:
             assert os.path.isdir(sub_dir)
             sub_name = f"{self.group_name}_{proj_dir}"
             self.projects[proj_dir] = Project(sub_name, sub_dir)
-        assert "original" in self.projects
+        # assert "original" in self.projects
 
     def get_projects(self):
         return list(self.projects.keys())
@@ -126,25 +126,19 @@ class ProjectManager:
     def load_project(self, proj_name):
         if proj_name not in self.all_projects:
             proj_name += "_original"
-        exit_with_on_fail(proj_name in self.all_projects, f"[ERROR] no project {proj_name}")
+        san_check(proj_name in self.all_projects, f"[ERROR] no project {proj_name}")
         return self.all_projects[proj_name]
 
-    # def get_sub_project(self, proj_name, sub_name="original"):
-    #     exit_with_on_fail(proj_name in self.projects, f"[ERROR] no project {proj_name}")
-    #     p = self.groups[proj_name]
-    #     exit_with_on_fail(sub_name in p.sub_projects, f"[ERROR] no sub-project {proj_name}_{sub_name}")
-    #     return p.sub_projects[sub_name]
-
-if __name__ == "__main__":
-    m = ProjectManager()
-    types = [tp.value for tp in ProjectType]
-    table = [[""] + types]
-    for pg in sorted(m.groups.values()):
-        row = [pg.group_name]
-        for tp in ProjectType:
-            if tp in pg.projects:
-                row.append(len(pg.projects[tp.value].list_queries()))
-            else:
-                row.append("-")
-        table.append(row)
-    print(tabulate(table, headers="firstrow", tablefmt="github"))
+    def print_available_projects(self):
+        print("Available projects:")
+        types = [tp.value for tp in ProjectType]
+        table = [[""] + types]
+        for pg in sorted(self.groups.values()):
+            row = [pg.group_name]
+            for tp in ProjectType:
+                if tp in pg.projects:
+                    row.append(len(pg.projects[tp.value].list_queries()))
+                else:
+                    row.append("-")
+            table.append(row)
+        print(tabulate(table, headers="firstrow", tablefmt="github"))
