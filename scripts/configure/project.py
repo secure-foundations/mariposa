@@ -33,7 +33,7 @@ class Partition:
     def __str__(self):
         if self.is_whole():
             return ""
-        return f"_{self.id}_of_{self.num}_"
+        return f"{self.id}_of_{self.num}"
     
     def __hash__(self):
         return hash(str(self))
@@ -57,8 +57,6 @@ class Partition:
         if match:
             id, num = match.group(1), match.group(2)
         else:
-            assert s.startswith("_") and s.endswith("_")
-            s = s[1:-1]
             [id, num] = s.split("_of_")
         return Partition(int(id), int(num))
 

@@ -96,7 +96,7 @@ def recovery_mode(args):
             available_db_paths.append(temp_db_path)
             continue
         
-        status = subprocess.call(['ssh', host, "test -f '{}'".format(exp.db_path)])
+        status = subprocess.call(['ssh', host, "test -f ~/mariposa/'{}'".format(exp.db_path)])
 
         if status == 0:
             command = f"scp {remote_db_path} {temp_db_path}"
@@ -123,6 +123,10 @@ def recovery_mode(args):
             assert part_nums == part.num
         assert part.id not in found_ids
         found_ids.add(part.id)
+    
+    if part_nums is None:
+        print(f"[WARN] no partitions found, aborting")
+        return
 
     missing_count = 0
     for missing_id in set(range(1, part_nums + 1)) - found_ids:

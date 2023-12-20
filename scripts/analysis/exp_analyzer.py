@@ -2,9 +2,6 @@ from execute.solver_runner import RCode
 from analysis.analyzer import *
 from tabulate import tabulate
 from utils.math_utils import *
-import numpy as np
-
-EXPECTED_CODES = [RCode.UNSAT, RCode.UNKNOWN, RCode.TIMEOUT]
 
 # def dump_multi_status(project, solver, exp, ana):
 #     rows = load_sum_table(project, solver, cfg=exp)
@@ -40,35 +37,10 @@ class ExpAnalyzer:
     def __getattr__(self, item):
         return getattr(self._exp, item)
 
-    def _print_query_plain_status(self, qstat):
-        print(qstat.query_path)
-        table = [["mutation"] + [str(rc) for rc in EXPECTED_CODES] 
-                 + ["mean", "std"]]
-        v_rcode, v_time = qstat.get_original_status()
-        print(f"original: {RCode(v_rcode)} {v_time / 1000} s")
-
-        for m in qstat.mutations:
-            trow = [m]
-            rcodes, times = qstat.get_mutation_status(m)
-            rcs = RCode.empty_map()
-            for rc in rcodes:
-                rc = RCode(rc)
-                assert rc in EXPECTED_CODES
-                rcs[rc] += 1
-            for rc in EXPECTED_CODES:
-                trow.append(rcs[rc])
-
-            times = times / 1000
-            trow.append(round(np.mean(times), 2))
-            trow.append(round(np.std(times), 2))
-            table.append(trow)
-
-        print(tabulate(table, headers="firstrow"))
-
     def print_plain_status(self):
         qss = self.load_sum_table()
         for qs in qss:
-            self._print_query_plain_status(qs)
+            qs.print_status()
             print("")
 
     def load_stability_stats(self, ana):
@@ -78,15 +50,19 @@ class ExpAnalyzer:
         assert total == len(qss) == len(tally)
 
         table = [["category", "count", "percentage"]]
+
         for cat, (c, p) in sorted(cps.items()):
             table.append([cat, c, round(p, 2)])
 
         print(tabulate(table, headers="firstrow", tablefmt="github"))
 
-        for q in cats[Stability.UNSTABLE]:
-            self._print_query_plain_status(q)
+        if len(cats[Stability.UNSTABLE]) > 0:
+            print("listing unstable queries...\n")
+
+        for qs in cats[Stability.UNSTABLE]:
+            qs.print_status()
 
     # def print_stability_status(self, ana):
     #     self.load_stability_stats(ana)
-    #     # for c in cats:
-    #     #     print(c.value, cats[c])
+        # for c in cats:
+        #     print(c.value, cats[c])

@@ -6,6 +6,7 @@ from utils.sys_utils import *
 from utils.db_utils import *
 
 from execute.solver_runner import SolverRunner
+from execute.exp_result import QueryExpResult
 from configure.project import Project, Partition
 
 EXP_CONFIG_PATH = "configs/experiments.json"        
@@ -46,7 +47,9 @@ class ExpConfig:
         self.db_path = obj["db_path"]
 
 def get_table_prefix(proj, solver, part):
-    return scrub(f"{proj.full_name}_{str(solver)}{part}")
+    if part.is_whole():
+        return scrub(f"{proj.full_name}_{str(solver)}")
+    return scrub(f"{proj.full_name}_{str(solver)}_{part}")
 
 class ExpTask:
     """represents a single task, 
@@ -57,33 +60,6 @@ class ExpTask:
         self.mut_seed = mut_seed
         self.quake = False
         self.mutant_path = g_path
-
-class QuerySummary:
-    def __init__(self, query_path, mutations, blob):
-        self.query_path = query_path
-        self.mutations = mutations
-
-        assert blob.shape[0] == len(mutations)
-        assert blob.shape[1] == 2
-
-        self.blob = blob
-
-    def __str__(self):
-        return f"query: {self.query_path}"
-    
-    def __hash__(self):
-        return hash(self.query_path)
-
-    def get_mutation_blob(self, mutation):
-        index = self.mutations.index(mutation)
-        return self.blob[index]
-
-    def get_mutation_status(self, mutation):
-        index = self.mutations.index(mutation)
-        return self.blob[index][0], self.blob[index][1]
-
-    def get_original_status(self):
-        return self.blob[0][0][0], self.blob[0][1][0]
 
 class ExpPart(ExpConfig):
     """represents a collection of tasks,
@@ -236,7 +212,7 @@ solver: {self.solver}"""
         for row in rows:
             blob = np.frombuffer(row[2], dtype=int)
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
-            summaries.append(QuerySummary(row[0], self.enabled_muts, blob))
+            summaries.append(QueryExpResult(row[0], self.proj.root_dir, self.enabled_muts, blob))
 
         return summaries
 
@@ -248,9 +224,9 @@ solver: {self.solver}"""
         assert table_exists(cur, self.sum_table_name)
 
         cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-        other_exp_tname = get_table_prefix(self.proj, self.solver, part) + "exp"
+        other_exp_tname = get_table_prefix(self.proj, self.solver, part) + "_exp"
         cur.execute(f"INSERT INTO {self.exp_table_name} SELECT * FROM OTHER_DB.{other_exp_tname}")
-        other_sum_tname = get_table_prefix(self.proj, self.solver, part) + "sum"
+        other_sum_tname = get_table_prefix(self.proj, self.solver, part) + "_sum"
         cur.execute(f"INSERT INTO {self.sum_table_name} SELECT * FROM OTHER_DB.{other_sum_tname}")
         conclude(con)
 
@@ -261,7 +237,7 @@ solver: {self.solver}"""
 
         for table in tables:
             if table.startswith(self.table_prefix):
-                part = table[len(self.table_prefix):-3]
+                part = table[len(self.table_prefix)+1:-4]
                 part = Partition.from_str(part)
                 if table.endswith("_exp"):
                     exps.add(part)

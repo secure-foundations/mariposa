@@ -1,21 +1,10 @@
 from execute.exp_part import *
 from execute.quake import emit_quake_file
+from execute.solver_runner import RCode
 import os
 import multiprocessing as mp
 
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
-
-def output_as_rcode(output):
-    if "unsat" in output:
-        return RCode.UNSAT
-    elif "sat" in output:
-        return RCode.SAT
-    elif "timeout" in output:
-        return RCode.TIMEOUT
-    elif "unknown" in output:
-        return RCode.UNKNOWN
-    return RCode.ERROR
-
 
 class Worker:
     def __init__(self, epart, worker_id):
