@@ -34,8 +34,8 @@
     "main": {
         "db_path": "./data/databases/mariposa.db"
     },
-    "min_asserts": {
-        "db_path": "./data/databases/uc.db"
+    "unsat_core": {
+        "db_path": "./data/databases/unsat_core.db"
     },
     "baseline": {
         "db_path": "./data/databases/baseline.db"

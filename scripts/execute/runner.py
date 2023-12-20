@@ -103,7 +103,7 @@ def run_tasks(worker, queue):
 
         worker.run_task(task)
 
-    elapsed = int((time.time() - start_time) / 3600)
+    elapsed = round((time.time() - start_time) / 3600, 2)
     print(f"[INFO] worker {worker.worker_id} finished in {elapsed} hours")
 
 class Runner:

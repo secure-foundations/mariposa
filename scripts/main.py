@@ -1,7 +1,7 @@
 import argparse
 from configure.project import ProjectManager, Partition
 from configure.solver import SolverInfo
-from analysis.analyzer import Analyzer
+from analysis.categorizer import Categorizer
 from cluster_modes import worker_mode, manager_mode, recovery_mode
 from local_modes import single_mode, multi_mode, preprocess_mode
 
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     if hasattr(args, "project"):
         args.project = load_project(args.project)
     if hasattr(args, "analyzer"):
-        args.analyzer = Analyzer(args.analyzer)
+        args.analyzer = Categorizer(args.analyzer)
 
     if args.sub_command == "preprocess":
         preprocess_mode(args)

@@ -45,7 +45,7 @@ class Partition:
         assert self.id <= self.num
         assert self.id > 0
         return self.num == 1 
-    
+
     @classmethod
     def from_str(cls, s):
         if s == "":
@@ -122,7 +122,7 @@ class ProjectManager:
         for group_root in os.listdir("data/projects/"):
             p = ProjectGroup(group_root, "data/projects/" + group_root)
             self.groups[group_root] = p
-        
+
         for pg in self.groups.values():
             for proj in pg.projects.values():
                 self.all_projects[proj.full_name] = proj
@@ -134,7 +134,7 @@ class ProjectManager:
         return self.all_projects[proj_name]
 
     def print_available_projects(self):
-        print("Available projects:")
+        print("available projects:")
         types = [tp.value for tp in ProjectType]
         table = [[""] + types]
         for pg in sorted(self.groups.values()):

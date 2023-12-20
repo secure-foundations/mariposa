@@ -27,7 +27,7 @@ def match_rcode(blob, rcode, timeout=np.inf):
     matches = blob[0] == rcode.value
     return np.sum(np.logical_and(matches, blob[1] < timeout))
 
-class Analyzer:
+class Categorizer:
     def __init__(self, name):
         objs = json.loads(open(ANALYZER_CONFIG_PATH).read())
         obj = objs["default"]
