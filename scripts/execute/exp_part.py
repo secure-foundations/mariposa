@@ -1,12 +1,11 @@
 from enum import Enum
 import numpy as np
 import json, random
-from tabulate import tabulate
 
 from utils.sys_utils import *
 from utils.db_utils import *
 
-from execute.solver_runner import RCode, SolverRunner
+from execute.solver_runner import SolverRunner
 from configure.project import Project, Partition
 
 EXP_CONFIG_PATH = "configs/experiments.json"        
@@ -49,8 +48,6 @@ class ExpConfig:
 def get_table_prefix(proj, solver, part):
     return scrub(f"{proj.full_name}_{str(solver)}{part}")
 
-EXPECTED_CODES = [RCode.UNSAT, RCode.UNKNOWN, RCode.TIMEOUT]
-
 class ExpTask:
     """represents a single task, 
     which is a single query with a single mutation"""
@@ -60,6 +57,33 @@ class ExpTask:
         self.mut_seed = mut_seed
         self.quake = False
         self.mutant_path = g_path
+
+class QuerySummary:
+    def __init__(self, query_path, mutations, blob):
+        self.query_path = query_path
+        self.mutations = mutations
+
+        assert blob.shape[0] == len(mutations)
+        assert blob.shape[1] == 2
+
+        self.blob = blob
+
+    def __str__(self):
+        return f"query: {self.query_path}"
+    
+    def __hash__(self):
+        return hash(self.query_path)
+
+    def get_mutation_blob(self, mutation):
+        index = self.mutations.index(mutation)
+        return self.blob[index]
+
+    def get_mutation_status(self, mutation):
+        index = self.mutations.index(mutation)
+        return self.blob[index][0], self.blob[index][1]
+
+    def get_original_status(self):
+        return self.blob[0][0][0], self.blob[0][1][0]
 
 class ExpPart(ExpConfig):
     """represents a collection of tasks,
@@ -72,9 +96,9 @@ class ExpPart(ExpConfig):
         self.part = part
         self.solver = SolverRunner(solver)
 
-        table_prefix = get_table_prefix(proj, solver, part)
-        self.exp_table_name = table_prefix + "_exp"
-        self.sum_table_name = table_prefix + "_sum"
+        self.table_prefix = get_table_prefix(proj, solver, part)
+        self.exp_table_name = self.table_prefix + "_exp"
+        self.sum_table_name = self.table_prefix + "_sum"
         self.gen_dir = f"gen/{self.exp_table_name}"
 
         if not os.path.exists(self.gen_dir):
@@ -145,26 +169,7 @@ solver: {self.solver}"""
                 cur.execute(f"""DROP TABLE {table_name}""")
 
         create_exp_table(cur, self.exp_table_name)
-        # create_sum_table(cur, self.sum_table_name)
-        conclude(con)
-
-    def populate_sum_table(self):
-        con, cur = get_cursor(self.db_path)
-
-        vanilla_rows = get_vanilla_paths(cur, self.exp_table_name)
-
-        cur.execute(f"""DROP TABLE IF EXISTS {self.sum_table_name}""")
         create_sum_table(cur, self.sum_table_name)
-
-        processed = set()
-        print(f"[INFO] post processing exp data")
-
-        for (v_path, v_rcode, v_time) in vanilla_rows:
-            if v_path in processed:
-                continue
-            processed.add(v_path)
-            self.insert_sum_row(cur, v_path, v_rcode, v_time)
-
         conclude(con)
 
     def insert_exp_row(self, task, mutant_path, rcode, elapsed):
@@ -194,6 +199,25 @@ solver: {self.solver}"""
         cur.execute(f"""INSERT INTO {self.sum_table_name}
         VALUES(?, ?, ?);""", (v_path, "", blob))
 
+    def populate_sum_table(self):
+        con, cur = get_cursor(self.db_path)
+
+        vanilla_rows = get_vanilla_paths(cur, self.exp_table_name)
+
+        cur.execute(f"""DROP TABLE IF EXISTS {self.sum_table_name}""")
+        create_sum_table(cur, self.sum_table_name)
+
+        processed = set()
+        print(f"[INFO] post processing exp data")
+
+        for (v_path, v_rcode, v_time) in vanilla_rows:
+            if v_path in processed:
+                continue
+            processed.add(v_path)
+            self.insert_sum_row(cur, v_path, v_rcode, v_time)
+
+        conclude(con)
+
     def load_sum_table(self):
         con, cur = get_cursor(self.db_path)
         sum_name = self.sum_table_name
@@ -204,60 +228,17 @@ solver: {self.solver}"""
 
         res = cur.execute(f"""SELECT * FROM {sum_name}""")
         rows = res.fetchall()
+        con.close()
 
-        nrows = []
+        summaries = []
         mut_size = self.num_mutant
 
         for row in rows:
             blob = np.frombuffer(row[2], dtype=int)
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
-            nrow = [row[0], self.enabled_muts, blob]
-            nrows.append(nrow)
+            summaries.append(QuerySummary(row[0], self.enabled_muts, blob))
 
-        con.close()
-        return nrows
-
-    def _dump_row_status(self, row):
-        print(f"query: {row[0]}")
-        table = [["mutation"] + [str(rc) for rc in EXPECTED_CODES] + ["mean", "std"]]
-        blob = row[2]
-        v_rcode, v_time = blob[0][0][0], blob[0][1][0]
-
-        print(f"original: {RCode(v_rcode)} {v_time / 1000} s")
-
-        for i, m in enumerate(row[1]):
-            trow = [m]
-            rcs = RCode.empty_map()
-            for rc in blob[i][0]:
-                rc = RCode(rc)
-                assert rc in EXPECTED_CODES
-                rcs[rc] += 1
-
-            for rc in EXPECTED_CODES:
-                trow.append(rcs[rc])
-
-            times = blob[i][1] / 1000
-            trow.append(round(np.mean(times), 2))
-            trow.append(round(np.std(times), 2))
-            table.append(trow)
-
-        print(tabulate(table, headers="firstrow"))
-
-    def dump_status(self):
-        rows = self.load_sum_table()
-
-        for r in rows:
-            self._dump_row_status(r)
-            print("")
-
-    # def probe_other_db(self, other_db_path):
-    #     assert self.part.num == 1
-    #     tables = get_tables(other_db_path)
-    #     applicable = []
-    #     for table in tables:
-    #         if table.startswith(self.exp_table_name):
-    #             applicable.append(table)
-    #     return applicable
+        return summaries
 
     def import_tables(self, other_db_path, part):
         assert self.part.is_whole()
@@ -267,8 +248,24 @@ solver: {self.solver}"""
         assert table_exists(cur, self.sum_table_name)
 
         cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-        other_exp_tname = get_table_prefix(self.proj, self.solver, part) + "_exp"
+        other_exp_tname = get_table_prefix(self.proj, self.solver, part) + "exp"
         cur.execute(f"INSERT INTO {self.exp_table_name} SELECT * FROM OTHER_DB.{other_exp_tname}")
-        other_sum_tname = get_table_prefix(self.proj, self.solver, part) + "_sum"
+        other_sum_tname = get_table_prefix(self.proj, self.solver, part) + "sum"
         cur.execute(f"INSERT INTO {self.sum_table_name} SELECT * FROM OTHER_DB.{other_sum_tname}")
         conclude(con)
+
+    def probe_other_db(self, other_db_path):
+        assert self.part.num == 1
+        tables = get_tables(other_db_path)
+        exps, sums = set(), set()
+
+        for table in tables:
+            if table.startswith(self.table_prefix):
+                part = table[len(self.table_prefix):-3]
+                part = Partition.from_str(part)
+                if table.endswith("_exp"):
+                    exps.add(part)
+                else: 
+                    assert table.endswith("_sum")
+                    sums.add(part)
+        return exps

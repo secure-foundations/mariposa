@@ -47,6 +47,9 @@ class SolverRunner:
 
     def __getattr__(self, item):
         return getattr(self._si, item)
+    
+    def __str__(self):
+        return str(self._si)
 
     def start_process(self, query_path, timeout):
         if self.type == SolverType.Z3:

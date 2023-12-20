@@ -5,7 +5,7 @@
     "r_solvable": 0.05,
     "r_stable": 0.95,
     "discount": 0.8,
-    "method": "z_test"
+    "method": "cutoff"
   },
   "verus_5sec": {
     "timeout": 5

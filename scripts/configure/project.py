@@ -33,13 +33,19 @@ class Partition:
     def __str__(self):
         if self.is_whole():
             return ""
-        return f"_{self.id}_of_{self.num}"
+        return f"_{self.id}_of_{self.num}_"
+    
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return self.id == other.id and self.num == other.num
 
     def is_whole(self):
         assert self.id <= self.num
         assert self.id > 0
         return self.num == 1 
-
+    
     @classmethod
     def from_str(cls, s):
         if s == "":

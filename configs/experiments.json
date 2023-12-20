@@ -48,5 +48,8 @@
     },
     "rewrite": {
         "db_path": "./data/databases/rewrite.db"
+    },
+    "bloat": {
+        "db_path": "./data/databases/bloat.db"
     }
 }

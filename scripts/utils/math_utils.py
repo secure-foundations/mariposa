@@ -14,5 +14,5 @@ def category_proportions(categories):
     percentages = dict()
     total = sum([len(i) for i in categories.values()])
     for c, i in categories.items():
-        percentages[c] = percent(len(i), total)
+        percentages[c] = (len(i), percent(len(i), total))
     return percentages, total

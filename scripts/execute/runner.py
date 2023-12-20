@@ -120,7 +120,7 @@ def run_tasks(worker, queue):
 class Runner:
     def __init__(self):
         self.task_queue = mp.Queue()
-        
+
     def run_project(self, epart, clear):
         self.epart = epart
         epart.check_tables(clear)
