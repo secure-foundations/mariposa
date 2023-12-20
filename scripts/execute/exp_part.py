@@ -66,7 +66,7 @@ class ExpPart(ExpConfig):
     if part is not whole, it is one partition of the project
     this class is used to generate tasks and populate the db
     """
-    def __init__(self, exp_name, proj, solver, part):
+    def __init__(self, exp_name, proj, solver, part=Partition(1, 1)):
         super().__init__(exp_name)
         self.proj = proj
         self.part = part
@@ -206,13 +206,14 @@ solver: {self.solver}"""
         rows = res.fetchall()
         con.close()
 
-        summaries = []
+        summaries = dict()
         mut_size = self.num_mutant
 
         for row in rows:
             blob = np.frombuffer(row[2], dtype=int)
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
-            summaries.append(QueryExpResult(row[0], self.proj.root_dir, self.enabled_muts, blob))
+            qr = QueryExpResult(row[0], self.proj.root_dir, self.enabled_muts, blob)
+            summaries[qr.query_path] = qr
 
         return summaries
 

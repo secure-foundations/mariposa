@@ -44,7 +44,7 @@ def multi_mode(args):
         r.run_project(exp, args.clear)
 
     if not args.analysis_skip:
-        ExpAnalyzer(exp).load_stability_stats(args.analyzer)
+        ExpAnalyzer(exp).print_stability_status(args.analyzer)
 
     return (exp.db_path, args.part)
 

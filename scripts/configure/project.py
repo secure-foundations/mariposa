@@ -108,11 +108,12 @@ class ProjectGroup:
             sub_dir = os.path.join(self.root_dir, proj_dir)
             assert os.path.isdir(sub_dir)
             sub_name = f"{self.group_name}_{proj_dir}"
-            self.projects[proj_dir] = Project(sub_name, sub_dir)
+            self.projects[ProjectType(proj_dir)] = Project(sub_name, sub_dir)
         # assert "original" in self.projects
-
-    def get_projects(self):
-        return list(self.projects.keys())
+    
+    def load_project(self, typ):
+        assert isinstance(typ, ProjectType)
+        return self.projects[typ]
 
 class ProjectManager:
     def __init__(self):
@@ -132,6 +133,10 @@ class ProjectManager:
             proj_name += "_original"
         san_check(proj_name in self.all_projects, f"[ERROR] no project {proj_name}")
         return self.all_projects[proj_name]
+    
+    def load_project_group(self, group_name):
+        san_check(group_name in self.groups, f"[ERROR] no project group {group_name}")
+        return self.groups[group_name]
 
     def print_available_projects(self):
         print("available projects:")

@@ -2,6 +2,7 @@ import argparse
 from configure.project import ProjectManager, Partition
 from configure.solver import SolverInfo
 from analysis.categorizer import Categorizer
+from analysis_modes import analysis_main
 from cluster_modes import worker_mode, manager_mode, recovery_mode
 from local_modes import single_mode, multi_mode, preprocess_mode
 
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     subparsers = parser.add_subparsers(dest='sub_command', help="mode to run mariposa in")
 
     subparsers.add_parser('info', help='print information about the current configuration or experiments')
+    subparsers.add_parser('analysis', help='analyze the results of experiments')
 
     update_parser = subparsers.add_parser('update', help='update mode. update an existing experiment by (adding) a single query.')
     single_parser = subparsers.add_parser('single', help='single query mode. run mariposa on a single query with ".smt2" file extension, which will be split into multiple ".smt2" files based on check-sat(s), the split queries will be stored under the "gen/" directory and tested using the specified solver.')
@@ -103,5 +105,7 @@ if __name__ == '__main__':
         update_mode(args)
     elif args.sub_command == "info":
         print_info()
+    elif args.sub_command == "analysis":
+        analysis_main(args)
     elif args.sub_command is None:
         parser.print_help()
