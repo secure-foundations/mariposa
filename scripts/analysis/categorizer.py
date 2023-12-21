@@ -2,7 +2,7 @@ import numpy as np
 from enum import Enum
 from statsmodels.stats.proportion import proportions_ztest
 from utils.sys_utils import *
-from utils.math_utils import *
+from utils.analyze_utils import *
 from execute.solver_runner import RCode
 import json
 # from tabulate import tabulate
@@ -149,9 +149,9 @@ class Categorizer:
         categories = Stability.empty_map()
         for qs in qss:
             res, votes = self.categorize_query(qs, muts)
-            categories[res].add(qs)
-        tally = set.union(*categories.values())
-        return categories, tally
+            categories[res].add(qs.base_name)
+        # tally = set.union(*categories.values())
+        return CategorizedItems(categories)
 
 #     def dump_query_status(self, mutations, blob):
 #         status, votes = self.categorize_query(blob)

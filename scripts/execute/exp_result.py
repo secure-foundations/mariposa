@@ -1,4 +1,5 @@
 from execute.solver_runner import RCode
+from utils.smt2_utils import count_asserts
 import numpy as np
 from tabulate import tabulate
 from os import path

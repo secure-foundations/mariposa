@@ -1,15 +1,18 @@
 import os, random, enum, re
+from utils.cache_utils import load_cache, has_cache, save_cache
+from tqdm import tqdm
+from utils.smt2_utils import *
 from utils.sys_utils import *
 from tabulate import tabulate
 
 class ProjectType(str, enum.Enum):
-    ORIGINAL = "original"
-    UNSAT_CORE = "unsat_core"
-    UNSAT_CORE_EXT = "unsat_core_ext"
-    SHAKE_FULL = "shake_full"
-    SHAKE_ORACLE = "shake_oracle"
-    BLOAT = "bloat"
-    REVEAL = "reveal"
+    ORIG = "original"
+    CORE = "unsat_core"
+    EXTD = "unsat_core_ext"
+    SHKF = "shake_full"
+    SHKO = "shake_oracle"
+    BLOT = "bloat"
+    REVL = "reveal"
 
     @classmethod
     def from_str(cls, s):
@@ -90,6 +93,19 @@ class Project:
         query_id = scrub(os.path.basename(query_path))
         root_dir = "gen/" + query_id
         return Project("single_" + query_id, root_dir)
+
+    def get_assert_counts(self, update=False):
+        cache_name = f"{self.full_name}.assert_counts"
+        if has_cache(cache_name) and not update:
+            counts = load_cache(cache_name)
+        else:
+            print(f"[INFO] loading assert counts for {self.full_name}")
+            counts = dict()
+            for query_path in tqdm(self.list_queries()):
+                base_name = os.path.basename(query_path)
+                counts[base_name] = count_asserts(query_path)
+            save_cache(cache_name, counts)
+        return counts
 
 class ProjectGroup:
     def __init__(self, name, root_dir):

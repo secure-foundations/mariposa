@@ -1,7 +1,7 @@
 from enum import Enum
 import numpy as np
 import json, random
-
+from typing import Dict, List
 from utils.sys_utils import *
 from utils.db_utils import *
 
@@ -194,7 +194,7 @@ solver: {self.solver}"""
 
         conclude(con)
 
-    def load_sum_table(self):
+    def load_sum_table(self) -> Dict[str, QueryExpResult]:
         con, cur = get_cursor(self.db_path)
         sum_name = self.sum_table_name
 
@@ -213,7 +213,7 @@ solver: {self.solver}"""
             blob = np.frombuffer(row[2], dtype=int)
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
             qr = QueryExpResult(row[0], self.proj.root_dir, self.enabled_muts, blob)
-            summaries[qr.query_path] = qr
+            summaries[qr.base_name] = qr
 
         return summaries
 

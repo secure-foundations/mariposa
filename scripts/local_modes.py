@@ -1,7 +1,7 @@
 import os, shutil, subprocess
 from utils.sys_utils import san_check, list_smt2_files, convert_path
 
-from analysis.exp_analyzer import ExpAnalyzer
+from analysis.basic_analyzer import ExpAnalyzer
 from execute.exp_part import ExpPart
 from execute.runner import Runner
 
@@ -44,7 +44,7 @@ def multi_mode(args):
         r.run_project(exp, args.clear)
 
     if not args.analysis_skip:
-        ExpAnalyzer(exp).print_stability_status(args.analyzer)
+        ExpAnalyzer(exp, args.analyzer).print_stability_status()
 
     return (exp.db_path, args.part)
 
