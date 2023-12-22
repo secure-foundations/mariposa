@@ -36,7 +36,7 @@ class BloatAnalyzer(GroupAnalyzer):
 
     def print_status(self):
         EXPECTED = [Stability.UNSTABLE, Stability.STABLE, Stability.UNSOLVABLE]
-        print(f"stability status origin vs. bloat {self.group_name}")
+        print(f"stability status original vs. bloat {self.group_name}")
         ocasts = self.orig.get_stability_status()
         bcasts = self.blot.get_stability_status()
         table = [["category", "original", "bloat"]]
@@ -45,7 +45,9 @@ class BloatAnalyzer(GroupAnalyzer):
             if cat not in EXPECTED:
                 assert ocs.count == 0 and bcs.count == 0
                 continue
-            table.append([cat, ocs.count, bcs.count])
+            oc = f"{ocs.count} ({round(ocs.percent, 2)}%)"
+            bc = f"{bcs.count} ({round(bcs.percent, 2)}%)"
+            table.append([cat, oc, bc])
         table.append(["total", ocasts.total, bcasts.total])
         print(tabulate(table, headers="firstrow", tablefmt="github", floatfmt=".2f"))
         print("")

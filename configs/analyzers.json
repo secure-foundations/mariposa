@@ -13,6 +13,9 @@
   "verus_2sec": {
     "timeout": 2
   },
+  "verus_3sec": {
+    "timeout": 3
+  },
   "debug": {
     "timeout": 5,
     "confidence": 0.05,
