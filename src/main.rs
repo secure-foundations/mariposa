@@ -244,8 +244,7 @@ fn remove_debug_commands(commands: &mut Vec<concrete::Command>) -> usize {
                 }
             }
             concrete::Command::GetModel
-            | concrete::Command::GetValue { terms: _ }
-            | concrete::Command::GetInfo { flag: _ } => {
+            | concrete::Command::GetValue { terms: _ } => {
                 in_debug = true;
             }
             _ => {
@@ -303,7 +302,7 @@ fn split_commands(
             splits += 1;
             // write out to file
             let out_file_name = format!("{}.{}.smt2", &out_file_pre, splits);
-            let mut manager = Manager::new(Some(out_file_name), 0, 100);
+            let mut manager = Manager::new(Some(out_file_name), 0, 100.0);
             manager.dump_non_info_commands(&stack.concat());
             manager.dump_non_info_commands(&vec![concrete::Command::CheckSat]);
         } else {
@@ -317,13 +316,13 @@ struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
     rng: ChaCha8Rng,
-    pattern_threshold: u64,
+    pattern_threshold: u32,
     removed_patterns: u64,
     total_patterns: u64,
 }
 
 impl Manager {
-    fn new(out_file_path: Option<String>, seed: u64, pattern_threshold: u64) -> Manager {
+    fn new(out_file_path: Option<String>, seed: u64, pattern_threshold: f32) -> Manager {
         let writer: BufWriter<Box<dyn std::io::Write>> = match out_file_path {
             Some(path) => {
                 let path = std::path::Path::new(&path);
@@ -334,11 +333,12 @@ impl Manager {
             }
             None => BufWriter::new(Box::new(stdout().lock())),
         };
+        let th = pattern_threshold * 100.0;
         Manager {
             writer,
             seed,
             rng: ChaCha8Rng::seed_from_u64(seed),
-            pattern_threshold,
+            pattern_threshold: th as u32,
             removed_patterns: 0,
             total_patterns: 0,
         }
@@ -363,6 +363,9 @@ impl Manager {
                     continue;
                 }
             }
+            if let concrete::Command::GetInfo { flag: _ } = command {
+                continue;
+            }
             writeln!(self.writer, "{}", command).unwrap();
         }
     }
@@ -378,21 +381,38 @@ impl Manager {
                 }
             }
             concrete::Term::Let {
-                var_bindings: _,
+                var_bindings,
                 term,
-            } => self.remove_pattern_rec_helper(&mut *term),
+            } => {
+                for var_binding in var_bindings.iter_mut() {
+                    self.remove_pattern_rec_helper(&mut var_binding.1)
+                }
+                self.remove_pattern_rec_helper(&mut *term)
+            },
             concrete::Term::Forall { vars: _, term } => self.remove_pattern_rec_helper(&mut *term),
             concrete::Term::Exists { vars: _, term } => self.remove_pattern_rec_helper(&mut *term),
             concrete::Term::Match { term, cases: _ } => self.remove_pattern_rec_helper(&mut *term),
             concrete::Term::Attributes { term, attributes } => {
                 self.remove_pattern_rec_helper(term);
-                let random = self.rng.gen_range(1..101);
                 let mut removed = false;
-                if random <= self.pattern_threshold {
-                    attributes.retain(|x| x.0 != concrete::Keyword("pattern".to_owned()));
-                    self.removed_patterns += 1;
-                    removed = true;
-                }
+
+                attributes.retain(|x| 
+                    if x.0 == concrete::Keyword("pattern".to_owned()) {
+                        self.total_patterns += 1;
+                        let random = self.rng.gen_range(1..10001);
+                        if random <= self.pattern_threshold {
+                            removed = true;
+                            self.removed_patterns += 1;
+                            false
+                        } else {
+                            true
+                        }
+                    } else {
+                        true
+                    }
+                );
+                removed = true;
+
                 if removed && attributes.len() == 0 {
                     attributes.push((
                         concrete::Keyword("qid".to_owned()),
@@ -401,7 +421,6 @@ impl Manager {
                         )),
                     ));
                 }
-                self.total_patterns += 1;
             }
             concrete::Term::Constant(_) => (),
             concrete::Term::QualIdentifier(_) => (),
@@ -450,8 +469,8 @@ struct Args {
     remove_debug: bool,
 
     ///the threshold (percentage of) patterns to be removed
-    #[arg(long, default_value_t = 100)]
-    pattern_threshold: u64,
+    #[arg(long, default_value_t = 100.0)]
+    pattern_threshold: f32,
 
     /// file containing unsat core (produced by Z3)
     #[arg(long)]
@@ -504,7 +523,7 @@ fn main() {
 
     let pattern_threshold = args.pattern_threshold;
 
-    if pattern_threshold > 100 {
+    if pattern_threshold > 100.0 {
         panic!("[INFO] pattern threshold must be between 0 and 100");
     }
 
