@@ -106,6 +106,7 @@ if __name__ == '__main__':
     setup_single(subparsers)
     setup_multi(subparsers)
     setup_manager(subparsers)
+    setup_worker(subparsers)
     setup_recovery(subparsers)
     setup_analysis(subparsers)
 
