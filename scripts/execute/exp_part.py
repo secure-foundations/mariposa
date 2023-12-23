@@ -140,7 +140,7 @@ solver: {self.solver}"""
                 if clear:
                     print(f"[INFO] {table_name} already exists, removing")
                 else:
-                    print(f"[INFO] {table_name} already exists, remove it? [Y]")
+                    print(f"[INFO] {table_name} already exists, remove it? [Y]", end=" ")
                     san_check(input() == "Y", f"[INFO] aborting")
                 cur.execute(f"""DROP TABLE {table_name}""")
 

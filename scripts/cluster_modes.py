@@ -36,7 +36,6 @@ def manager_mode(args):
     for i in range(1, args.total_parts + 1):
         wargs = copy.deepcopy(args)
         wargs.part = Partition(i, args.total_parts)
-        wargs.analysis_skip = True
         job_queue.put(wargs)
 
     # NOTE: we assume number of workers is less than number of partitions

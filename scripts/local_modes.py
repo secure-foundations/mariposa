@@ -11,16 +11,13 @@ def single_mode(args):
     proj_root = exp.proj.root_dir
     dir_exists = os.path.exists(proj_root)
 
-    if args.analysis_only:
-        san_check(dir_exists, f"[ERROR] experiment dir {proj_root} does not exist")
+    if dir_exists:
+        if args.clear:
+            print(f"[INFO] experiment dir {proj_root} exists, removing")
+            shutil.rmtree(proj_root, ignore_errors=True)
+        else:
+            print(f"[INFO] experiment dir {proj_root} exists")
     else:
-        if dir_exists:
-            if args.clear:
-                print(f"[INFO] experiment dir {proj_root} exists, removing")
-                shutil.rmtree(proj_root, ignore_errors=True)
-            else:
-                print(f"[ERROR] experiment dir {proj_root} exists, aborting")
-                return 
         os.makedirs(proj_root)
 
         command = f"./target/release/mariposa -i '{args.query}' --chop -o '{proj_root}/split.smt2'"
@@ -31,7 +28,7 @@ def single_mode(args):
         r = Runner()
         r.run_project(exp, args.clear)
 
-    ExpAnalyzer(exp).print_plain_status()
+    ExpAnalyzer(exp, args.analyzer).print_single_query_status()
 
 def multi_mode(args):
     exp = ExpPart(args.experiment, 
@@ -39,12 +36,8 @@ def multi_mode(args):
             args.solver, 
             args.part)
 
-    if not args.analysis_only:
-        r = Runner()
-        r.run_project(exp, args.clear)
-
-    if not args.analysis_skip:
-        ExpAnalyzer(exp, args.analyzer).print_stability_status()
+    r = Runner()
+    r.run_project(exp, args.clear)
 
     return (exp.db_path, args.part)
 

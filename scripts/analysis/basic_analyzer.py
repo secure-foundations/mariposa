@@ -59,7 +59,7 @@ class ExpAnalyzer:
             print(f"[ERROR] experiments are missing in {self.sum_table_name}:")
             sys.exit(1)
 
-    def print_stability_status(self, verbose=False):
+    def print_stability_status(self, verbosity=0):
         print(f"stability status for {self.proj.full_name} {self.exp_name}")
 
         table = [["category", "count", "percentage"]]
@@ -71,14 +71,23 @@ class ExpAnalyzer:
 
         print(tabulate(table, headers="firstrow", tablefmt="github", floatfmt=".2f"))
 
-        if not verbose:
+        if verbosity == 0:
             return
 
-        if len(self.__cats[Stability.UNSTABLE]) > 0:
-            print("listing unstable queries...\n")
+        for cat, cs in self.__cats.items():
+            if verbosity == 1 and cat != Stability.UNSTABLE:
+                continue
+            if len(cs) == 0:
+                print(f"\n[INFO] no {cat} queries found")
+                continue
+            print(f"\n[INFO] listing {cat} queries...\n")
+            for qs in cs:
+                self[qs].print_status()
 
-        for qs in self.__cats[Stability.UNSTABLE]:
-            self[qs].print_status()
+    def print_single_query_status(self):
+        assert self.__cats.total == 1
+        base_name = list(self.__qr_keys)[0]
+        self[base_name].print_status()
 
     def get_assert_count(self, base_name):
         return self.__assert_counts[base_name]

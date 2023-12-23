@@ -20,8 +20,8 @@
         ],
         "keep_mutants": true,
         "num_mutants": 10,
-        "exp_timeout": 30,
-        "num_procs": 4,
+        "exp_timeout": 20,
+        "num_procs": 7,
         "db_path": ""
     },
     "debug": {

@@ -28,6 +28,15 @@ class CatItem:
 
     def __contains__(self, item):
         return item in self.items
+    
+    def __len__(self):
+        return self.count
+    
+    def __item__(self, item):
+        return self.items[item]
+    
+    def __iter__(self):
+        return iter(self.items)
 
 class CategorizedItems:
     def __init__(self, categories):

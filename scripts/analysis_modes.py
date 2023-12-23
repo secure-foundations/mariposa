@@ -3,6 +3,9 @@ from configure.project import ProjectManager
 from analysis.core_analyzer import GroupCoreAnalyzer
 from analysis.bloat_analyzer import BloatAnalyzer
 from analysis.categorizer import Categorizer
+from analysis.basic_analyzer import ExpAnalyzer
+from execute.exp_part import ExpPart
+from configure.solver import SolverInfo
 from utils.analyze_utils import *
 import matplotlib.pyplot as plt
 from scipy.stats import gmean
@@ -111,8 +114,11 @@ def print_verus_stats(ana):
     print(tabulate(table, headers="firstrow", floatfmt=".2f"))
 
 def analysis_main(args):
-    ana = Categorizer("default")
+    exp = ExpPart(args.experiment, 
+            args.project, 
+            args.solver)
+    ExpAnalyzer(exp, args.analyzer).print_stability_status(args.verbose)
+
     # plot_verus_veri_times(ana)
     # plot_verus_assert_counts(ana)
-    get_bloat_stats(ana, "assert_counts")
     # print_verus_stats(ana)
