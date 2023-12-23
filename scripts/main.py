@@ -67,7 +67,6 @@ def setup_multi(subparsers):
     add_solver_option(p)
     add_experiment_option(p)
     add_clear_option(p)
-
     p.add_argument("--part", default="1/1", help="which part of the project to run mariposa on (probably should not be specified manually)")
 
 def setup_manager(subparsers):
@@ -75,8 +74,14 @@ def setup_manager(subparsers):
     add_project_option(p)
     add_solver_option(p)
     add_experiment_option(p)
+    add_clear_option(p)
     add_authkey_option(p)
     p.add_argument("--total-parts", type=int, required=True, help="number of parts to split the project into")
+
+def setup_worker(subparsers):
+    p = subparsers.add_parser('worker', help='server pool worker mode.')
+    add_authkey_option(p)
+    p.add_argument("--manager-addr", required=True, help="the address of the manager node")
 
 def setup_recovery(subparsers):
     p = subparsers.add_parser('recovery', help='recovery mode. recover an existing experiment by (adding) a single query.')
