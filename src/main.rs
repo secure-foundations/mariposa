@@ -1,10 +1,10 @@
 use clap::Parser;
+use pattern_removal::remove_patterns;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 // use smt2parser::shaking::SymbolCollector;
 use core::panic;
-use rand::Rng;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
@@ -21,6 +21,7 @@ mod tree_rewrite;
 mod tree_shake;
 mod tree_shake_idf;
 mod tree_shake_old;
+mod pattern_removal;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -243,8 +244,7 @@ fn remove_debug_commands(commands: &mut Vec<concrete::Command>) -> usize {
                     check_sat_depth_zero = true;
                 }
             }
-            concrete::Command::GetModel
-            | concrete::Command::GetValue { terms: _ } => {
+            concrete::Command::GetModel | concrete::Command::GetValue { terms: _ } => {
                 in_debug = true;
             }
             _ => {
@@ -315,10 +315,6 @@ fn split_commands(
 struct Manager {
     writer: BufWriter<Box<dyn std::io::Write>>,
     seed: u64,
-    rng: ChaCha8Rng,
-    pattern_threshold: u32,
-    removed_patterns: u64,
-    total_patterns: u64,
 }
 
 impl Manager {
@@ -337,10 +333,6 @@ impl Manager {
         Manager {
             writer,
             seed,
-            rng: ChaCha8Rng::seed_from_u64(seed),
-            pattern_threshold: th as u32,
-            removed_patterns: 0,
-            total_patterns: 0,
         }
     }
 
@@ -368,76 +360,6 @@ impl Manager {
             }
             writeln!(self.writer, "{}", command).unwrap();
         }
-    }
-
-    fn remove_pattern_rec_helper(&mut self, curr_term: &mut concrete::Term) {
-        match curr_term {
-            concrete::Term::Application {
-                qual_identifier: _,
-                arguments,
-            } => {
-                for argument in arguments.iter_mut() {
-                    self.remove_pattern_rec_helper(argument)
-                }
-            }
-            concrete::Term::Let {
-                var_bindings,
-                term,
-            } => {
-                for var_binding in var_bindings.iter_mut() {
-                    self.remove_pattern_rec_helper(&mut var_binding.1)
-                }
-                self.remove_pattern_rec_helper(&mut *term)
-            },
-            concrete::Term::Forall { vars: _, term } => self.remove_pattern_rec_helper(&mut *term),
-            concrete::Term::Exists { vars: _, term } => self.remove_pattern_rec_helper(&mut *term),
-            concrete::Term::Match { term, cases: _ } => self.remove_pattern_rec_helper(&mut *term),
-            concrete::Term::Attributes { term, attributes } => {
-                self.remove_pattern_rec_helper(term);
-                let mut removed = false;
-
-                attributes.retain(|x| 
-                    if x.0 == concrete::Keyword("pattern".to_owned()) {
-                        self.total_patterns += 1;
-                        let random = self.rng.gen_range(1..10001);
-                        if random <= self.pattern_threshold {
-                            removed = true;
-                            self.removed_patterns += 1;
-                            false
-                        } else {
-                            true
-                        }
-                    } else {
-                        true
-                    }
-                );
-                removed = true;
-
-                if removed && attributes.len() == 0 {
-                    attributes.push((
-                        concrete::Keyword("qid".to_owned()),
-                        visitors::AttributeValue::Symbol(concrete::Symbol(
-                            "mariposa-attribute-placeholder".to_owned(),
-                        )),
-                    ));
-                }
-            }
-            concrete::Term::Constant(_) => (),
-            concrete::Term::QualIdentifier(_) => (),
-        }
-    }
-
-    // patterns
-    fn remove_patterns(&mut self, commands: &mut Vec<concrete::Command>) {
-        commands.iter_mut().for_each(|x| {
-            if let concrete::Command::Assert { term } = x {
-                self.remove_pattern_rec_helper(term);
-            }
-        });
-        println!(
-            "[INFO] removed {} patterns out of {}",
-            self.removed_patterns, self.total_patterns
-        );
     }
 }
 
@@ -553,7 +475,8 @@ fn main() {
     } else if args.mutation == "unsat-core-remove-label" {
         core_export::remove_labels(&mut commands);
     } else if args.mutation == "remove-trigger" {
-        manager.remove_patterns(&mut commands);
+        // manager.remove_patterns(&mut commands);
+        remove_patterns(&mut commands, manager.seed, pattern_threshold);
     } else if args.mutation == "parse-only" {
         // parse and do nothing
         return;
@@ -596,6 +519,8 @@ fn main() {
         //     .map(|x| tree_rewrite::fun_to_assert(x))
         //     .flatten()
         //     .collect();
+    } else if args.mutation == "parse" {
+        // parse and dump
     } else {
         panic!("[ERROR] unknown mutation {}", args.mutation);
     }
