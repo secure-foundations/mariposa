@@ -74,20 +74,19 @@ class ExpAnalyzer:
         if verbosity == 0:
             return
 
+        self.print_detailed_status(verbosity)
+
+    def print_detailed_status(self, verbosity=2):
         for cat, cs in self.__cats.items():
             if verbosity == 1 and cat != Stability.UNSTABLE:
                 continue
             if len(cs) == 0:
-                print(f"\n[INFO] no {cat} queries found")
+                print(f"[INFO] no {cat} queries found")
                 continue
-            print(f"\n[INFO] listing {cat} queries...\n")
+            print(f"[INFO] listing {cat} queries...")
             for qs in cs:
+                print("\n")
                 self[qs].print_status()
-
-    def print_single_query_status(self):
-        assert self.__cats.total == 1
-        base_name = list(self.__qr_keys)[0]
-        self[base_name].print_status()
 
     def get_assert_count(self, base_name):
         return self.__assert_counts[base_name]

@@ -17,18 +17,20 @@ def single_mode(args):
             shutil.rmtree(proj_root, ignore_errors=True)
         else:
             print(f"[INFO] experiment dir {proj_root} exists")
-    else:
-        os.makedirs(proj_root)
+            ExpAnalyzer(exp, args.analyzer).print_detailed_status()
+            return
 
-        command = f"./target/release/mariposa -i '{args.query}' --chop -o '{proj_root}/split.smt2'"
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-        print(result.stdout.decode('utf-8'), end="")
-        san_check(result.returncode == 0, "[ERROR] split failed")
+    os.makedirs(proj_root)
 
-        r = Runner()
-        r.run_project(exp, args.clear)
+    command = f"./target/release/mariposa -i '{args.query}' --remove-debug --chop -o '{proj_root}/split.smt2'"
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+    print(result.stdout.decode('utf-8'), end="")
+    san_check(result.returncode == 0, "[ERROR] split failed")
 
-    ExpAnalyzer(exp, args.analyzer).print_single_query_status()
+    r = Runner()
+    r.run_project(exp, args.clear)
+
+    ExpAnalyzer(exp, args.analyzer).print_detailed_status()
 
 def multi_mode(args):
     exp = ExpPart(args.experiment, 

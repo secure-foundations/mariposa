@@ -95,7 +95,7 @@ def setup_analysis(subparsers):
     add_experiment_option(p)
     add_solver_option(p)
     add_analyzer_option(p)
-    p.add_argument("--verbose", type=int, required=True, help="level of verbosity for the analysis")
+    p.add_argument("--verbose", type=int, default=0, help="level of verbosity for the analysis")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="mariposa is a tool for testing SMT proof stability")

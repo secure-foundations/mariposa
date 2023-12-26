@@ -35,11 +35,11 @@ class QueryExpResult:
         return self.blob[0][0][0], self.blob[0][1][0]
 
     def print_status(self):
-        print(f"query path:\n\t'{self.query_path}'")
+        print(f"[INFO] to copy query path:\ncp '{self.query_path}' temp/woot.smt2")
         table = [["mutation"] + [str(rc) for rc in EXPECTED_CODES] 
                  + ["mean", "std"]]
         v_rcode, v_time = self.get_original_status()
-        print(f"{RCode(v_rcode)} in {v_time / 1000}s\n")
+        print(f"\nplain query {RCode(v_rcode)} in {v_time / 1000}s")
 
         for m in self.mutations:
             trow = [m]
