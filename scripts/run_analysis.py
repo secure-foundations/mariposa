@@ -1,29 +1,25 @@
 from tabulate import tabulate
-from configure.project import ProjectManager
-from analysis.core_analyzer import GroupCoreAnalyzer
+from configure.project import PM
+from analysis.core_analyzer import GroupCoreAnalyzer, CORE_PROJECTS, analyze_unsat_core
 from analysis.bloat_analyzer import BloatAnalyzer
 from analysis.categorizer import Categorizer
-from analysis.basic_analyzer import ExpAnalyzer
-from execute.exp_part import ExpPart
-from configure.solver import SolverInfo
+# from analysis.basic_analyzer import ExpAnalyzer
+# from execute.exp_part import ExpPart
+# from configure.solver import SolverInfo
 from utils.analyze_utils import *
 import matplotlib.pyplot as plt
 from scipy.stats import gmean
 
-def analyze_unsat_cores(args):
-    for pname in ["d_komodo", "d_lvbkv", "d_fvbkv", "fs_dice", "fs_vwasm"]:
-        if pname != "fs_vwasm":
-            continue
-        m = ProjectManager()
-        g = m.load_project_group(pname)
-        g = GroupCoreAnalyzer(g)
-        g.print_status()
+def emit_core_build():
+    for pname in CORE_PROJECTS:
+        g = GroupCoreAnalyzer(pname, ana=Categorizer("default"))
+        # g.print_status()
+        g.emit_build()
 
 def get_bloat_stats(ana, stat):
-    m = ProjectManager()
     counts = dict()
     for pname in ["v_ironfleet", "v_mimalloc", "v_noderep", "v_pagetable", "v_pmemlog"]:
-        g = m.load_project_group(pname)
+        g = PM.load_project_group(pname)
         g = BloatAnalyzer(g, ana)
         if stat == "assert_counts":
             ocounts, bcounts = g.get_assert_counts()
@@ -113,12 +109,11 @@ def print_verus_stats(ana):
 
     print(tabulate(table, headers="firstrow", floatfmt=".2f"))
 
-def analysis_main(args):
-    exp = ExpPart(args.experiment, 
-            args.project, 
-            args.solver)
-    ExpAnalyzer(exp, args.analyzer).print_stability_status(args.verbose)
+# def analysis_main(args):
+#     # plot_verus_veri_times(ana)
+#     # plot_verus_assert_counts(ana)
+#     # print_verus_stats(ana)
+#     analyze_unsat_cores(args)
 
-    # plot_verus_veri_times(ana)
-    # plot_verus_assert_counts(ana)
-    # print_verus_stats(ana)
+if __name__ == "__main__":
+    analyze_unsat_core()

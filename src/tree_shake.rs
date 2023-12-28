@@ -3,6 +3,7 @@ use smt2parser::concrete::{AttributeValue, Command, Term};
 use std::collections::{HashMap, HashSet};
 use std::io::Write;
 use std::sync::Arc;
+// use sha2::{Sha256, Digest};
 
 use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
 use crate::tree_rewrite;
@@ -388,6 +389,13 @@ impl UseTracker {
     }
 }
 
+// pub fn get_command_hash(cmd: &concrete::Command) -> String {
+//     let mut hasher = Sha256::new();
+//     hasher.update(cmd.to_string());
+//     let result = hasher.finalize();
+//     format!("{:x}", result)
+// }
+
 pub fn tree_shake(
     mut commands: Vec<concrete::Command>,
     shake_max_depth: u32,
@@ -484,6 +492,9 @@ pub fn tree_shake(
     }
 
     if let Some(shake_log_path) = shake_log_path {
+        let shake_log_path = std::path::Path::new(&shake_log_path);
+        let prefix = shake_log_path.parent().unwrap();
+        std::fs::create_dir_all(prefix).unwrap();
         let mut log_file = std::fs::File::create(shake_log_path).unwrap();
         for (pos, stamp) in stamps.iter() {
             writeln!(log_file, "{}|||{}", stamp, &commands[*pos]).unwrap();

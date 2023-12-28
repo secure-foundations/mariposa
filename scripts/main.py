@@ -1,10 +1,9 @@
 import argparse
-from configure.project import ProjectManager, Partition
+from configure.project import PM, Partition
 from configure.solver import SolverInfo
 from analysis.categorizer import Categorizer
-from analysis_modes import analysis_main
 from cluster_modes import worker_mode, manager_mode, recovery_mode
-from local_modes import single_mode, multi_mode, preprocess_mode
+from local_modes import single_mode, multi_mode, preprocess_mode, analysis_mode
 
 # def update_mode(args):
 #     c = Configer()
@@ -17,14 +16,6 @@ from local_modes import single_mode, multi_mode, preprocess_mode
 #     san_check(sanity, message)
 #     r = Runner(exp)
 #     r.update_project(project, solver, args.query)
-
-def load_project(project_name):
-    m = ProjectManager()
-    return m.load_project(project_name)
-
-def print_info():
-    m = ProjectManager()
-    m.print_available_projects()
 
 def add_query_option(parser):
     parser.add_argument("-q", "--query", required=True, help="the input query")
@@ -121,7 +112,7 @@ if __name__ == '__main__':
     if hasattr(args, "part"):
         args.part = Partition.from_str(args.part)
     if hasattr(args, "project"):
-        args.project = load_project(args.project)
+        args.project = PM.load_project(args.project)
     if hasattr(args, "analyzer"):
         args.analyzer = Categorizer(args.analyzer)
 
@@ -140,8 +131,8 @@ if __name__ == '__main__':
     # elif args.sub_command == "update":
     #     update_mode(args)
     elif args.sub_command == "info":
-        print_info()
+        PM.print_available_projects()
     elif args.sub_command == "analysis":
-        analysis_main(args)
+        analysis_mode(args)
     elif args.sub_command is None:
         parser.print_help()

@@ -413,7 +413,7 @@ struct Args {
 
     /// file to log the shake depth
     #[arg(long)]
-    command_score_path: Option<String>,
+    shake_log_path: Option<String>,
 
     /// file to log the symbol score
     #[arg(long)]
@@ -489,11 +489,11 @@ fn main() {
             args.shake_max_depth,
             args.shake_max_symbol_frequency,
             args.shake_init_strategy,
-            args.command_score_path,
+            args.shake_log_path,
             args.shake_debug,
         );
     } else if args.mutation == "tree-shake-old" {
-        commands = tree_shake_old::tree_shake(commands, args.command_score_path);
+        commands = tree_shake_old::tree_shake(commands, args.shake_log_path);
     } else if args.mutation == "tree-shake-idf" {
         let (cmd_freq, use_cmd_count) =
             tree_shake_idf::count_commands_symbol_frequency(&commands, false);

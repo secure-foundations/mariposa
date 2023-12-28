@@ -19,7 +19,7 @@ class ExpAnalyzer:
         self.__qr_keys = set(self.__qrs.keys())
         self.__cats = ana.categorize_queries(self.__qrs.values())
 
-        self.__assert_counts = exp.proj.get_assert_counts()
+        self.__assert_counts = None
         self.sanity_check()
 
     def __getattr__(self, item):
@@ -85,13 +85,17 @@ class ExpAnalyzer:
                 continue
             print(f"[INFO] listing {cat} queries...")
             for qs in cs:
-                print("\n")
+                print("")
                 self[qs].print_status()
 
     def get_assert_count(self, base_name):
+        if self.__assert_counts is None:
+            self.__assert_counts = self.proj.get_assert_counts()
         return self.__assert_counts[base_name]
 
     def get_assert_counts(self):
+        if self.__assert_counts is None:
+            self.__assert_counts = self.proj.get_assert_counts()
         data = np.array([c for c in self.__assert_counts.values()])
         return data
     

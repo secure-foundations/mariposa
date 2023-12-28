@@ -95,16 +95,16 @@ class Project:
         return Project("single_" + query_id, root_dir)
 
     def get_assert_counts(self, update=False):
-        cache_name = f"{self.full_name}.assert_counts"
-        if has_cache(cache_name) and not update:
-            counts = load_cache(cache_name)
+        cache_path = f"asserts/{self.full_name}"
+        if has_cache(cache_path) and not update:
+            counts = load_cache(cache_path)
         else:
             print(f"[INFO] loading assert counts for {self.full_name}")
             counts = dict()
             for query_path in tqdm(self.list_queries()):
                 base_name = os.path.basename(query_path)
                 counts[base_name] = count_asserts(query_path)
-            save_cache(cache_name, counts)
+            save_cache(cache_path, counts)
         return counts
 
 class ProjectGroup:
@@ -167,3 +167,5 @@ class ProjectManager:
                     row.append("-")
             table.append(row)
         print(tabulate(table, headers="firstrow", tablefmt="github"))
+
+PM = ProjectManager()

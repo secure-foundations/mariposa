@@ -14,13 +14,11 @@
     },
     "single": {
         "mutations": [
-            "shuffle",
-            "rename",
-            "reseed"
+            "all"
         ],
         "keep_mutants": true,
-        "num_mutants": 10,
-        "exp_timeout": 20,
+        "num_mutants": 20,
+        "exp_timeout": 45,
         "num_procs": 7,
         "db_path": ""
     },

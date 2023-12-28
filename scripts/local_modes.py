@@ -62,3 +62,9 @@ def preprocess_mode(args):
     print(f"[INFO] emitted to preprocess.sh, running using gnu parallel")
     os.system("cat preprocess.sh | parallel")
     os.system("rm preprocess.sh")
+    
+def analysis_mode(args):
+    exp = ExpPart(args.experiment, 
+            args.project, 
+            args.solver)
+    ExpAnalyzer(exp, args.analyzer).print_stability_status(args.verbose)

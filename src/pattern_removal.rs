@@ -70,7 +70,7 @@ impl PatternRemover {
                 if removed && attributes.len() == 0 {
                     attributes.push((
                         concrete::Keyword("qid".to_owned()),
-                        visitors::AttributeValue::Symbol(concrete::Symbol(
+                        concrete::AttributeValue::Symbol(concrete::Symbol(
                             "mariposa-attribute-placeholder".to_owned(),
                         )),
                     ));
@@ -97,6 +97,6 @@ impl PatternRemover {
 
 pub fn remove_patterns(commands: &mut Vec<concrete::Command>, seed: u64, pattern_threshold: f32) {
     let defs = Arc::new(get_commands_symbol_def(commands, 100));
-    let mut remover = PatternRemover::new(defs, seed, th);
+    let mut remover = PatternRemover::new(defs, seed, pattern_threshold);
     remover.remove_patterns(commands);
 }

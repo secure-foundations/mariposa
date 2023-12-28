@@ -1,9 +1,11 @@
+import os
+
 def normalize_line(line):
     return line.replace(" ", "").strip()
 
 def get_asserts(filename):
     cmds = dict()
-    if filename is None:
+    if filename is None or not os.path.exists(filename):
         return cmds
     with open(filename) as f:
         for line in f.readlines():

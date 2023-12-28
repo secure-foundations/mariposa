@@ -58,4 +58,3 @@ class QueryExpResult:
             table.append(trow)
 
         print(tabulate(table, headers="firstrow"))
-        print("")
