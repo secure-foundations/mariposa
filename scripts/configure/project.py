@@ -11,6 +11,7 @@ class ProjectType(str, enum.Enum):
     EXTD = "unsat_core_ext"
     SHKF = "shake_full"
     SHKO = "shake_oracle"
+    SHKP = "shake_partial"
     BLOT = "bloat"
     REVL = "reveal"
 

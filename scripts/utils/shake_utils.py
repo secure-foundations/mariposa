@@ -1,5 +1,5 @@
 from utils.smt2_utils import *
-import subprocess, os
+import os
 
 def parse_shake_log(filename):
     cmds = dict()
@@ -14,7 +14,7 @@ def parse_shake_log(filename):
 def key_set(d):
     return set(d.keys())
 
-def __emit_partial_shake_file(output_path, fmt_contents, stamps, max_depth):
+def emit_partial_shake_file(output_path, fmt_contents, stamps, max_depth):
     if os.path.exists(output_path):
         print(f"[WARN] {output_path} already exists")
 
@@ -27,28 +27,162 @@ def __emit_partial_shake_file(output_path, fmt_contents, stamps, max_depth):
         out_file.write(line)
     out_file.close()
     
-SHAKE_TIMEOUT = 6000
+SHAKE_TIMEOUT = 60
+NUM_SHAKE_PROCESSES = 4
 
-def shake_partial(output_path, fmt_path, log_path, initial_depth):
+class ShakeTask:
+    def __init__(self, name_hash, fmt_contents, stamps, depth):
+        self.name_hash = name_hash
+        self.fmt_contents = fmt_contents
+        self.stamps = stamps
+        self.depth = depth
+
+    def run_task(self, solver):
+        temp_file = f"gen/{self.name_hash}.{self.depth}.smt2"
+        emit_partial_shake_file(temp_file, self.fmt_contents, self.stamps, self.depth)
+        rcode, elapsed = solver.run(temp_file, SHAKE_TIMEOUT)
+        return rcode, elapsed, self.depth, temp_file
+
+def run_shake_tasks(solver, task_queue, result_queue):
+    while task_queue.qsize() > 0:
+        task = task_queue.get()
+
+        if task is None:
+            break
+
+        rc, et, depth, temp_file = task.run_task(solver)
+
+        result_queue.put((rc, et, depth, temp_file))
+
+# def shake_partial(output_path, fmt_path, log_path):
+#     import multiprocessing as mp
+#     from execute.solver_runner import RCode, SolverRunner
+#     from configure.solver import SolverInfo
+#     import time
+
+#     fmt_contents = list(open(fmt_path).readlines())
+#     stamps = parse_shake_log(log_path)
+#     max_depth = max(stamps.values())
+
+#     name_hash = get_name_hash(fmt_path)
+
+#     task_queue = mp.Queue()
+#     result_queue = mp.Queue()
+
+#     solver = SolverRunner(SolverInfo("z3_4_12_2"))
+
+#     for depth in range(max_depth + 1):
+#         task_queue.put(ShakeTask(name_hash, fmt_contents, stamps, depth))
+
+#     processes = []
+
+#     for _ in range(NUM_SHAKE_PROCESSES):
+#         p = mp.Process(target=run_shake_tasks, 
+#                        args=(solver, task_queue, result_queue))
+#         p.start()
+#         processes.append(p)
+    
+#     out_content = []
+#     expected = max_depth + 1
+
+#     print(task_queue.qsize())
+
+#     while expected > 0:
+#         rc, et, d, path = result_queue.get()
+#         print(f"[INFO] {d} {path} {RCode(rc)} {et}")
+#         out_content.append(f"{d}\t{path}\t{RCode(rc)}\t{et}\n")
+#         expected -= 1
+
+#         if RCode(rc) == RCode.UNSAT:
+#             # drain task queue
+#             while not task_queue.empty():
+#                 t = task_queue.get()
+#                 print(f"[INFO] {t.depth} cancelled")
+#                 expected -= 1
+#                 out_content.append(f"{t.depth} cancelled {expected}\n")
+#         else:
+#             os.remove(path)
+
+#     for _ in range(NUM_SHAKE_PROCESSES):
+#         task_queue.put(None)
+
+#     for p in processes:
+#         p.join()
+
+#     log_file = open(output_path, "w+")
+#     for line in out_content:
+#         log_file.write(line)
+#     log_file.close()
+#     print(f"[INFO] {output_path}")
+
+def shake_partial(output_path, fmt_path, log_path):
+    import multiprocessing as mp
     from execute.solver_runner import RCode, SolverRunner
     from configure.solver import SolverInfo
 
     fmt_contents = list(open(fmt_path).readlines())
     stamps = parse_shake_log(log_path)
     max_depth = max(stamps.values())
-    initial_depth = min(max_depth, initial_depth)
 
     name_hash = get_name_hash(fmt_path)
-    temp_file = f"gen/{name_hash}.smt2"
-    __emit_partial_shake_file(temp_file, fmt_contents, stamps, initial_depth)
+
+    task_queue = mp.Queue()
+    result_queue = mp.Queue()
 
     solver = SolverRunner(SolverInfo("z3_4_12_2"))
-    rcode, elapsed = solver.run(temp_file, SHAKE_TIMEOUT)
-    rcode = RCode(rcode)
-    # if rcode == RCode.TIMEOUT:
 
-    print(rcode, elapsed)
+    for depth in range(max_depth + 1):
+        task_queue.put(ShakeTask(name_hash, fmt_contents, stamps, depth))
+
+    processes = []
+
+    for _ in range(NUM_SHAKE_PROCESSES):
+        p = mp.Process(target=run_shake_tasks, 
+                       args=(solver, task_queue, result_queue))
+        p.start()
+        processes.append(p)
     
+    out_content = []
+    expected = max_depth + 1
+
+    print(task_queue.qsize())
+
+    while expected > 0:
+        rc, et, d, path = result_queue.get()
+        print(f"[INFO] {d} {path} {RCode(rc)} {et}")
+        out_content.append(f"{d}\t{path}\t{RCode(rc)}\t{et}\n")
+        expected -= 1
+
+        if RCode(rc) == RCode.UNSAT:
+            # drain task queue
+            while not task_queue.empty():
+                t = task_queue.get()
+                print(f"[INFO] {t.depth} cancelled")
+                expected -= 1
+                out_content.append(f"{t.depth} cancelled {expected}\n")
+                
+                while result_queue.qsize() > 0:
+                    rc, et, d, path = result_queue.get()
+                    print(f"[INFO] {d} {path} {RCode(rc)} {et}")
+                    out_content.append(f"{d}\t{path}\t{RCode(rc)}\t{et}\n")
+                break
+        else:
+            os.remove(path)
+
+    for _ in range(NUM_SHAKE_PROCESSES):
+        task_queue.put(None)
+
+    for p in processes:
+        p.kill()
+
+    log_file = open(output_path, "w+")
+    for line in out_content:
+        log_file.write(line)
+
+    log_file.close()
+    print(f"[INFO] {output_path}")
+
+
 # class ShakeRunner:
 #     def __init__(self, out_path, fmt_path=None, log_path=None):
 #         # if fmt_path is None and log_path is None:

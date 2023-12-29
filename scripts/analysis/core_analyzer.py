@@ -33,7 +33,7 @@ rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 
 rule shake-partial
-    command = python3 scripts/run_shake.py $out $in $log $depth
+    command = python3 scripts/run_shake.py $out $in $log
 """
 
 # rule create-core
@@ -136,12 +136,18 @@ class CoreQueryStatus:
     log = {self.shk_log_path}
 """
 
-    def partial_shake(self, fallback):
-        oracle = self.get_shake_stats().unified_max_depth
-        if np.isnan(oracle):
-            oracle = fallback
+    def ninja_shk_partial(self):
+        log_path = self.shk_partial_path.replace(".smt2", ".shkp_log")
+        return f"""build {log_path}: shake-partial {self.shk_full_path}
+    log = {self.shk_log_path}
+"""
 
-        shake_partial(self.shk_oracle_path, self.shk_full_path, self.shk_log_path, oracle)
+    def partial_shake(self):
+        log_path = self.shk_partial_path.replace(".smt2", ".shkp_log")
+        # oracle = self.get_shake_stats().unified_max_depth
+        # if np.isnan(oracle):
+        #     oracle = fallback
+        shake_partial(log_path, self.shk_full_path, self.shk_log_path)
 
 class GroupCoreAnalyzer(GroupAnalyzer):
     def __init__(self, name, ana):
@@ -176,7 +182,7 @@ class GroupCoreAnalyzer(GroupAnalyzer):
 
             cqs = CoreQueryStatus(_qrs, _sss)
             cqs.shk_full_path = f"data/projects/{self.group_name}/{PType.SHKF.value}/{base_name}"
-            cqs.shk_oracle_path = f"data/projects/{self.group_name}/{PType.SHKO.value}/{base_name}"
+            cqs.shk_partial_path = f"data/projects/{self.group_name}/{PType.SHKP.value}/{base_name}"
             self.qrs[base_name] = cqs
 
     def get_shake_stats(self, clear=False):
@@ -248,11 +254,14 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             f.write(cqs.ninja_shk_query())
             f.write("\n")
         f.close()
-        
-    def build_shake_oracle(self):
+
+        f = open(f"scripts/ninja/shkp.{self.group_name}.build.ninja", "w")
+        f.write(CORE_BUILD_RULES)
+        f.write("\n")
         for cqs in self.qrs.values():
-            cqs.partial_shake(3)
-            break
+            f.write(cqs.ninja_shk_partial())
+            f.write("\n")
+        f.close()
 
 CORE_PROJECTS = ["d_komodo", "d_lvbkv", "d_fvbkv", "fs_dice", "fs_vwasm"]
 
