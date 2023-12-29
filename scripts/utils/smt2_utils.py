@@ -1,9 +1,8 @@
-import os
-
 def normalize_line(line):
     return line.replace(" ", "").strip()
 
 def get_asserts(filename):
+    import os
     cmds = dict()
     if filename is None or not os.path.exists(filename):
         return cmds

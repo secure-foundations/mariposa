@@ -7,7 +7,7 @@ from os import path
 EXPECTED_CODES = [RCode.UNSAT, RCode.UNKNOWN, RCode.TIMEOUT]
 
 class QueryExpResult:
-    def __init__(self, query_path, proj_root, mutations, blob):
+    def __init__(self, query_path, proj_root, mutations=[], blob=np.array([[]])):
         self.base_name = path.basename(query_path)
         self.query_path = path.join(proj_root, self.base_name)
         self.mutations = mutations

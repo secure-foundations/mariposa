@@ -116,4 +116,6 @@ def print_verus_stats(ana):
 #     analyze_unsat_cores(args)
 
 if __name__ == "__main__":
-    analyze_unsat_core()
+    # analyze_unsat_core()
+    g = GroupCoreAnalyzer("d_komodo", ana=Categorizer("default"))
+    g.build_shake_oracle()

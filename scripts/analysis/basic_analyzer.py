@@ -20,7 +20,6 @@ class ExpAnalyzer:
         self.__cats = ana.categorize_queries(self.__qrs.values())
 
         self.__assert_counts = None
-        self.sanity_check()
 
     def __getattr__(self, item):
         return getattr(self._exp, item)
@@ -44,20 +43,6 @@ class ExpAnalyzer:
 
     def get_stability_status(self):
         return self.__cats
-
-    def sanity_check(self):
-        expected = set(self.proj.list_queries())
-        actual = set([qr.query_path for qr in self.__qrs.values()])
-
-        if actual - expected != set():
-            print(f"[WARN] {len(actual-expected)} queries files are missing in {self.sum_table_name}")
-
-        if expected - actual != set():
-            print(f"[ERROR] {len(expected-actual)} experiments are missing in {self.sum_table_name}:")
-            for q in expected - actual:
-                print(f"[ERROR] missing: {q}")
-            print(f"[ERROR] experiments are missing in {self.sum_table_name}:")
-            sys.exit(1)
 
     def print_stability_status(self, verbosity=0):
         print(f"stability status for {self.proj.full_name} {self.exp_name}")
@@ -123,7 +108,7 @@ class GroupAnalyzer:
         elif typ == PType.BLOT:
             exp_name = "bloat"
         else:
-            assert False
+            return None
 
         proj = gp.load_project(typ)
         exp = ExpPart(exp_name, proj, "z3_4_12_2")

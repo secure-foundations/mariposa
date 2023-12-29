@@ -199,8 +199,8 @@ solver: {self.solver}"""
         sum_name = self.sum_table_name
 
         if not table_exists(cur, sum_name):
-            print(f"[INFO] skipping {sum_name}")
-            return None
+            print(f"[WARN] {sum_name} is empty, skipping")
+            return
 
         res = cur.execute(f"""SELECT * FROM {sum_name}""")
         rows = res.fetchall()
@@ -215,7 +215,25 @@ solver: {self.solver}"""
             qr = QueryExpResult(row[0], self.proj.root_dir, self.enabled_muts, blob)
             summaries[qr.base_name] = qr
 
+        self._sanity_check_summary(set(summaries.keys()))
+
         return summaries
+
+    def _sanity_check_summary(self, actual):
+        expected = set([os.path.basename(q) for q in self.proj.list_queries()])
+        missing = actual - expected
+        if missing != set():
+            print(f"[WARN] queries files are missing in {self.sum_table_name}")
+            for q in missing:
+                print(f"[WARN] missing: {q}")
+
+        missing = expected - actual
+        if missing != set():
+            print(f"[ERROR] experiments are missing in {self.sum_table_name}:")
+            for q in missing:
+                print(f"[ERROR] missing: {q}")
+            print(f"[ERROR] {len(missing)} experiments are missing in {self.sum_table_name}")
+            sys.exit(1)
 
     def import_tables(self, other_db_path, part):
         assert self.part.is_whole()

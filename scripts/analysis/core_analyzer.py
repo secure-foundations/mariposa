@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from configure.project import PM, ProjectType as PType
 from analysis.basic_analyzer import GroupAnalyzer
 from analysis.categorizer import Categorizer, Stability
-from utils.shake_utils import parse_shake_log, key_set, count_asserts
+from utils.shake_utils import parse_shake_log, key_set, count_asserts, shake_partial
 from utils.analyze_utils import CategorizedItems, get_cdf_pts
 from utils.smt2_utils import *
 from utils.cache_utils import *
@@ -33,7 +33,7 @@ rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 
 rule shake-partial
-    command = python3 scripts/utils/shake_utils.py shake-early $in $log $depth $out
+    command = python3 scripts/run_shake.py $out $in $log $depth
 """
 
 # rule create-core
@@ -104,7 +104,7 @@ class CoreQueryStatus:
 
         return self.get_stability(PType.EXTD)
 
-    def get_shake_stats(self, clear=False):
+    def get_shake_stats(self, clear=False) -> ShakeStats:
         if has_cache(self.shk_stat_name) and not clear:
             return load_cache(self.shk_stat_name)
 
@@ -136,12 +136,20 @@ class CoreQueryStatus:
     log = {self.shk_log_path}
 """
 
+    def partial_shake(self, fallback):
+        oracle = self.get_shake_stats().unified_max_depth
+        if np.isnan(oracle):
+            oracle = fallback
+
+        shake_partial(self.shk_oracle_path, self.shk_full_path, self.shk_log_path, oracle)
+
 class GroupCoreAnalyzer(GroupAnalyzer):
     def __init__(self, name, ana):
         gp = PM.load_project_group(name)
         super().__init__(gp, ana)
         self.core = self.load_stability_status(gp, PType.CORE)
         self.extd = self.load_stability_status(gp, PType.EXTD)
+        self.shko = self.load_stability_status(gp, PType.SHKO)
 
         assert self.core.base_names() - self.orig.base_names() == set()
         assert self.extd.base_names() - self.orig.base_names() == set()
@@ -168,6 +176,7 @@ class GroupCoreAnalyzer(GroupAnalyzer):
 
             cqs = CoreQueryStatus(_qrs, _sss)
             cqs.shk_full_path = f"data/projects/{self.group_name}/{PType.SHKF.value}/{base_name}"
+            cqs.shk_oracle_path = f"data/projects/{self.group_name}/{PType.SHKO.value}/{base_name}"
             self.qrs[base_name] = cqs
 
     def get_shake_stats(self, clear=False):
@@ -239,6 +248,11 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             f.write(cqs.ninja_shk_query())
             f.write("\n")
         f.close()
+        
+    def build_shake_oracle(self):
+        for cqs in self.qrs.values():
+            cqs.partial_shake(3)
+            break
 
 CORE_PROJECTS = ["d_komodo", "d_lvbkv", "d_fvbkv", "fs_dice", "fs_vwasm"]
 
