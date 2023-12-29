@@ -6,7 +6,6 @@
 /data/s_komodo/
 /target
 /gen
-ninja
 .ninja*
 __pycache__/
 bin
