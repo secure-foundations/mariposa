@@ -119,6 +119,7 @@ def shake_partial(output_path, fmt_path, log_path):
     import multiprocessing as mp
     from execute.solver_runner import RCode, SolverRunner
     from configure.solver import SolverInfo
+    import time
 
     fmt_contents = list(open(fmt_path).readlines())
     stamps = parse_shake_log(log_path)
@@ -127,6 +128,7 @@ def shake_partial(output_path, fmt_path, log_path):
     name_hash = get_name_hash(fmt_path)
 
     task_queue = mp.Queue()
+    # lock = mp.Lock()
     result_queue = mp.Queue()
 
     solver = SolverRunner(SolverInfo("z3_4_12_2"))
@@ -145,8 +147,6 @@ def shake_partial(output_path, fmt_path, log_path):
     out_content = []
     expected = max_depth + 1
 
-    print(task_queue.qsize())
-
     while expected > 0:
         rc, et, d, path = result_queue.get()
         print(f"[INFO] {d} {path} {RCode(rc)} {et}")
@@ -156,18 +156,22 @@ def shake_partial(output_path, fmt_path, log_path):
         if RCode(rc) == RCode.UNSAT:
             # drain task queue
             while not task_queue.empty():
-                t = task_queue.get()
-                print(f"[INFO] {t.depth} cancelled")
-                expected -= 1
-                out_content.append(f"{t.depth} cancelled {expected}\n")
-                
-                while result_queue.qsize() > 0:
-                    rc, et, d, path = result_queue.get()
-                    print(f"[INFO] {d} {path} {RCode(rc)} {et}")
-                    out_content.append(f"{d}\t{path}\t{RCode(rc)}\t{et}\n")
-                break
-        else:
-            os.remove(path)
+                try:
+                    t = task_queue.get(block=False)
+                    out_content.append(f"[INFO] cancelled {t.depth}\n")
+                except mp.queues.Empty:
+                    break
+
+            grace_period = int(et * 0.8 /1000) + 1
+            time.sleep(grace_period)
+            print("[INFO] grace period", grace_period)
+            out_content.append(f"[INFO] grace period {grace_period}\n")
+
+            while result_queue.qsize() > 0:
+                rc, et, d, path = result_queue.get()
+                print(f"[INFO] {d} {path} {RCode(rc)} {et}")
+                out_content.append(f"[INFO] report {d}\t{path}\t{RCode(rc)}\t{et}\n")
+            break
 
     for _ in range(NUM_SHAKE_PROCESSES):
         task_queue.put(None)
@@ -182,6 +186,7 @@ def shake_partial(output_path, fmt_path, log_path):
     log_file.close()
     print(f"[INFO] {output_path}")
 
+    os.system(f"rm gen/{name_hash}.*.smt2")
 
 # class ShakeRunner:
 #     def __init__(self, out_path, fmt_path=None, log_path=None):
