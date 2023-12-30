@@ -36,15 +36,9 @@ class Worker:
 
     def run_quake_task(self, task):
         self.solver.start_process(task.mutant_path, self.timeout)
-        skip = False
 
         for i in range(self.num_mutant):
-            if skip:
-                rcode = RCode.TIMEOUT.value
-                # std_out = "Mariposa: quake timeout"
-                elapsed = self.exp.timeout * 1000
-            else:
-                rcode, elapsed, skip = self.solver.run_quake_iteration(self.timeout)    
+            rcode, elapsed = self.solver.run_quake_iteration(self.timeout)    
 
             mutant_path = task.mutant_path + "." + str(i)
             self.insert_exp_row(task, mutant_path, rcode, elapsed)

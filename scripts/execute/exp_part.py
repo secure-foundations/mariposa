@@ -5,7 +5,7 @@ from typing import Dict, List
 from utils.sys_utils import *
 from utils.db_utils import *
 
-from execute.solver_runner import SolverRunner
+from execute.solver_runner import SolverRunner, RCode
 from execute.exp_result import QueryExpResult
 from configure.project import Project, Partition
 
@@ -167,7 +167,12 @@ solver: {self.solver}"""
         
         for (i, m) in enumerate(mutations):
             rows = get_mutant_rows(cur, self.exp_table_name, v_path, m)
-            assert len(rows) == self.num_mutant
+
+            if len(rows) < self.num_mutant:
+                print(f"[WARN] {v_path} {m} has {len(rows)} mutants, expected {self.num_mutant}")
+                print(f"[INFO] filling with {self.num_mutant - len(rows)} rcode '{RCode.ERROR}'")
+                blob[i][0] = RCode.ERROR.value
+
             for (j, row) in enumerate(rows):
                 blob[i][0][j + 1] = row[0]
                 blob[i][1][j + 1] = row[1]

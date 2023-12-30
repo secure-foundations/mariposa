@@ -1,5 +1,5 @@
 from execute.solver_runner import RCode
-from utils.smt2_utils import count_asserts
+from utils.sys_utils import san_check
 import numpy as np
 from tabulate import tabulate
 from os import path
@@ -45,9 +45,11 @@ class QueryExpResult:
             trow = [m]
             rcodes, times = self.get_mutation_status(m)
             rcs = RCode.empty_map()
+
             for rc in rcodes:
                 rc = RCode(rc)
-                assert rc in EXPECTED_CODES
+                if rc not in EXPECTED_CODES:
+                    print(f"[WARN] unexpected rcode '{rc}' in {self.query_path}")
                 rcs[rc] += 1
             for rc in EXPECTED_CODES:
                 trow.append(rcs[rc])

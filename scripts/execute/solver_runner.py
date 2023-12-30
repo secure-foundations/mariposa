@@ -67,22 +67,28 @@ class SolverRunner:
 
         poll_obj = select.poll()
         poll_obj.register(p.stdout, select.POLLIN)
+        self.failed = False
 
         self.proc = p
         self.poll_obj = poll_obj
 
     def run_quake_iteration(self, timeout):
+        if self.failed:
+            return RCode.ERROR.value, 0 
+
         start_time = time.time()
         poll_result = self.poll_obj.poll((timeout + 1) * 1000)
         elapsed = time.time() - start_time
-        failed = False
+
         std_out = ""
 
         if poll_result:
             outputs = []
             while "[INFO] mariposa-quake" not in std_out:
-                std_out = self.proc.stdout.readline().decode("utf-8").strip()
-                # print(std_out, i)
+                # try:
+                std_out = self.proc.stdout.readline()
+                # except 
+                std_out = std_out.decode("utf-8").strip()
                 outputs.append(std_out)
                 if std_out == "":
                     break
@@ -90,10 +96,10 @@ class SolverRunner:
             rcode = output_as_rcode(std_out)
         else:
             assert std_out == ""
-            print(f"[WARN] solver timeout in quake")
-            failed = True
+            print(f"[INFO] solver timeout in quake, elapsed {elapsed}, early termination")
+            self.failed = True
             rcode = RCode.TIMEOUT
-        return rcode.value, elapsed, failed
+        return rcode.value, elapsed
 
     def end_process(self):
         self.proc.stdout.close()
