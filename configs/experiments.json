@@ -18,7 +18,7 @@
         ],
         "keep_mutants": true,
         "num_mutants": 20,
-        "exp_timeout": 45,
+        "exp_timeout": 60,
         "num_procs": 7,
         "db_path": ""
     },
@@ -49,5 +49,8 @@
     },
     "bloat": {
         "db_path": "./data/databases/bloat.db"
+    },
+    "shake": {
+        "db_path": "./data/databases/shake.db"
     }
 }
