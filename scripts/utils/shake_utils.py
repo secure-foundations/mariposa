@@ -150,7 +150,7 @@ def shake_partial(output_path, fmt_path, log_path):
     while expected > 0:
         rc, et, d, path = result_queue.get()
         print(f"[INFO] {d} {path} {RCode(rc)} {et}")
-        out_content.append(f"{d}\t{path}\t{RCode(rc)}\t{et}\n")
+        out_content.append(f"[INFO] report {d}\t{path}\t{RCode(rc)}\t{et}\n")
         expected -= 1
 
         if RCode(rc) == RCode.UNSAT:
