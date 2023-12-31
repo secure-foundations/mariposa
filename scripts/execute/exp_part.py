@@ -199,6 +199,14 @@ solver: {self.solver}"""
 
         conclude(con)
 
+    def sum_table_exists(self):
+        if not os.path.exists(self.db_path):
+            return False
+        con, cur = get_cursor(self.db_path)
+        res = table_exists(cur, self.sum_table_name)
+        con.close()
+        return res
+
     def load_sum_table(self) -> Dict[str, QueryExpResult]:
         con, cur = get_cursor(self.db_path)
         sum_name = self.sum_table_name

@@ -1,4 +1,5 @@
 import numpy as np
+from tabulate import tabulate
 
 def is_ratio(x):
     return type(x) == float and 0 < x < 1
@@ -66,6 +67,13 @@ class CategorizedItems:
             if item in self._items[c]:
                 return c
         return None
+
+    def print_status(self):
+        table = [["category", "count", "percentage"]]
+        for c, i in self._items.items():
+            table.append([c, i.count, i.percent])
+        table.append(["total", self.total, 100])
+        print(tabulate(table, headers="firstrow", tablefmt="github", floatfmt=".2f"))
 
 def get_cdf_pts(data):
     n = len(data)

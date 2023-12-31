@@ -5,10 +5,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from execute.exp_result import QueryExpResult
 from configure.project import PM, ProjectType as PType
 from analysis.basic_analyzer import GroupAnalyzer
 from analysis.categorizer import Categorizer, Stability
-from utils.shake_utils import parse_shake_log, key_set, count_asserts, shake_partial
+from execute.solver_runner import RCode
+from utils.sys_utils import san_check
+from utils.shake_utils import parse_shake_log, key_set, count_asserts, parse_shake_partial_log, shake_oracle
 from utils.analyze_utils import CategorizedItems, get_cdf_pts
 from utils.smt2_utils import *
 from utils.cache_utils import *
@@ -33,7 +36,7 @@ rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 
 rule shake-partial
-    command = python3 scripts/run_shake.py $out $in $log
+    command = python3 scripts/run_shake.py partial $out $in $log
 """
 
 # rule create-core
@@ -62,26 +65,41 @@ class ShakeStats:
         self.missed_asserts = np.nan
 
 class CoreQueryStatus:
-    def __init__(self, qrs, sss):
+    def __init__(self, group_path, qrs, sss):
+        self.group_path = group_path
         oqr = qrs[PType.ORIG]
         self.name_hash = get_name_hash(oqr.query_path)
         self.base_name = oqr.base_name
 
-        self.qrs = qrs
+        self.qrs: Dict[PType, QueryExpResult] = qrs
         self.sss = sss
 
-        # self.inst_path = f"gen/{self.name_hash}.inst.smt2"
+        self.inst_path = f"gen/{self.name_hash}.inst.smt2"
+        self._core_path = f"gen/{self.name_hash}.core"
+
         # self.fmt_path = f"cache/fmt/{self.name_hash}.fmt.smt2"
         self.shk_log_path = f"cache/shk/{self.name_hash}.shk"
         self.shk_stat_name = f"shk/{self.name_hash}.stat"
+        self.shkp_log_path = self.get_path(PType.SHKP).replace(".smt2", ".shkp_log")
+
+    def __lt__(self, other):
+        return self.base_name.__lt__(other.base_name)
+
+    def print_status(self, typ):
+        if self.qrs[typ] is not None:
+            self.qrs[typ].print_status()
+        else:
+            print(f"[INFO] no {typ} result found for {self.base_name}")
+            san_check(not os.path.exists(self.get_path(typ)), "query file found but no result")
 
     def get_stability(self, typ):
         return self.sss[typ]
 
     def get_path(self, typ):
-        if typ == PType.SHKF:
-            return self.shk_full_path
-        return self.qrs[typ].query_path
+        path = f"{self.group_path}/{typ.value}/{self.base_name}"
+        if typ in self.qrs and self.qrs[typ] is not None:
+            assert path == self.qrs[typ].query_path
+        return path
 
     def get_unified_query_path(self):
         css = self.get_stability(PType.CORE)
@@ -128,26 +146,82 @@ class CoreQueryStatus:
         save_cache(self.shk_stat_name, stats)
         return stats
 
+    def read_shake_partial_log(self):
+        oqr = self.qrs[PType.ORIG]
+        vcode, vtime = oqr.get_original_status()
+        depths = parse_shake_partial_log(self.shkp_log_path)
+
+        if len(depths) == 0:
+            return
+        fastest = min(depths.values())
+        
+        if vtime < fastest:
+            print(f"[INFO] {vtime} {fastest}")
+
+        # return depths
+        # if len(depths) == 0:
+        #     print(self.get_stability(PType.ORIG))
+        #     print(self.shkp_log_path)
+        # #     print(self.base_name)
+        # #     print("")
+        #     return
+
+        # interesting = False
+        # candidate = None
+
+        # for d, t in depths.items():
+        #     if t == fastest:
+        #         candidate = d
+        #         break
+
+        # shake_oracle(self.get_path(PType.SHKP), self.get_path(PType.SHKF), 
+        #              self.shk_log_path, candidate)
+
+        # if fastest > 2000:
+        #     maybes = []
+        #     for d, t in depths.items():
+        #         if d < candidate and ((t - fastest) / fastest) < 0.3:
+        #             maybes.append((d, t))
+        #     if len(maybes) != 0:
+        #         print("candidate:", candidate, fastest)
+        #         print(f"python3 scripts/run_shake.py oracle temp/out.{candidate}.smt2", self.get_path(PType.SHKF), self.shk_log_path, candidate)
+        #         depth, time = min(maybes, key=lambda x: x[0])
+        #         print(f"maybe:", depth, time)
+        #         print(f"python3 scripts/run_shake.py oracle temp/out.{depth}.smt2", self.get_path(PType.SHKF), self.shk_log_path, depth)
+        #         print("----------------")
+        # open(self.shkp_log_path, "w+").writelines(lines)
+        # print(f"[INFO] {self.shkp_log_path}")
+
     def ninja_fmt_query(self):
         return f"build {self.fmt_path}: format {self.get_path(PType.ORIG)}"
 
+    def ninja_core(self):
+        return f"""build {self.inst_path}: instrument-query {self.get_path(PType.ORIG)}
+"""
+
     def ninja_shk_query(self):
-        return f"""build {self.shk_full_path}: shake {self.get_path(PType.ORIG)}
+        return f"""build {self.get_path(PType.SHKF)}: shake {self.get_path(PType.ORIG)}
     log = {self.shk_log_path}
 """
 
     def ninja_shk_partial(self):
-        log_path = self.shk_partial_path.replace(".smt2", ".shkp_log")
-        return f"""build {log_path}: shake-partial {self.shk_full_path}
+        return f"""build {self.shkp_log_path}: shake-partial {self.get_path(PType.SHKF)}
     log = {self.shk_log_path}
 """
 
-    def partial_shake(self):
-        log_path = self.shk_partial_path.replace(".smt2", ".shkp_log")
-        # oracle = self.get_shake_stats().unified_max_depth
-        # if np.isnan(oracle):
-        #     oracle = fallback
-        shake_partial(log_path, self.shk_full_path, self.shk_log_path)
+    # def partial_shake(self):
+    #     # oracle = self.get_shake_stats().unified_max_depth
+    #     # if np.isnan(oracle):
+    #     #     oracle = fallback
+    #     shake_partial(log_path, self.shk_full_path, self.shk_log_path)
+
+def maybe_add_query_result(_qrs, _sss, base_name, other, typ):
+    if other is not None and base_name in other:
+        _qrs[typ] = other[base_name]
+        _sss[typ] = other.get_stability(base_name)
+    else:
+        _qrs[typ] = None
+        _sss[typ] = None
 
 class GroupCoreAnalyzer(GroupAnalyzer):
     def __init__(self, name, ana):
@@ -155,34 +229,30 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         super().__init__(gp, ana)
         self.core = self.load_stability_status(gp, PType.CORE)
         self.extd = self.load_stability_status(gp, PType.EXTD)
-        self.shko = self.load_stability_status(gp, PType.SHKO)
+        self.shkp = self.load_stability_status(gp, PType.SHKP)
 
-        assert self.core.base_names() - self.orig.base_names() == set()
-        assert self.extd.base_names() - self.orig.base_names() == set()
+        for sub in [self.core, self.extd, self.shkp]:
+            if sub is None:
+                continue
+            assert sub.base_names() - self.orig.base_names() == set()
+
+        self.data_path = f"data/projects/{self.group_name}"
 
         self.qrs: Dict[str, CoreQueryStatus] = dict()
 
         for base_name in self.orig.base_names():
-            oqr = self.orig[base_name]
-            oss = self.orig.get_stability(base_name)
+            # this must present
+            assert self.orig.get_stability(base_name) is not None
 
-            cqr = self.core[base_name] if base_name in self.core else None
-            css = self.core.get_stability(base_name)
+            _qrs = dict()
+            _sss = dict()
 
-            eqr = self.extd[base_name] if base_name in self.extd else None
-            ess = self.extd.get_stability(base_name)
+            maybe_add_query_result(_qrs, _sss, base_name, self.orig, PType.ORIG)
+            maybe_add_query_result(_qrs, _sss, base_name, self.core, PType.CORE)
+            maybe_add_query_result(_qrs, _sss, base_name, self.extd, PType.EXTD)
+            maybe_add_query_result(_qrs, _sss, base_name, self.shkp, PType.SHKP)
 
-            _qrs = {PType.ORIG: oqr, 
-                   PType.CORE: cqr, 
-                   PType.EXTD: eqr}
-
-            _sss = {PType.ORIG: oss,
-                   PType.CORE: css, 
-                   PType.EXTD: ess}
-
-            cqs = CoreQueryStatus(_qrs, _sss)
-            cqs.shk_full_path = f"data/projects/{self.group_name}/{PType.SHKF.value}/{base_name}"
-            cqs.shk_partial_path = f"data/projects/{self.group_name}/{PType.SHKP.value}/{base_name}"
+            cqs = CoreQueryStatus(self.data_path, _qrs, _sss)
             self.qrs[base_name] = cqs
 
     def get_shake_stats(self, clear=False):
@@ -240,6 +310,34 @@ class GroupCoreAnalyzer(GroupAnalyzer):
 
         print(tabulate(table, headers="firstrow", tablefmt="github", floatfmt=".2f"))
 
+    def read_shake_partial_logs(self):
+        for cqs in self.qrs.values():
+            cqs.read_shake_partial_log()
+
+    def analyze_shake_partial(self):
+        cats = Stability.empty_map()
+        for cqs in self.qrs.values():
+            oss = cqs.get_stability(PType.ORIG)
+            sss = cqs.get_stability(PType.SHKP)
+            depths = cqs.read_shake_partial_log()
+            if sss != Stability.STABLE:
+                cqs.print_status(PType.SHKP)
+                for d in depths:
+                    print(d, depths[d]/1000)
+                print("")
+        #     if len(depths) == 0:
+        #         cats[Stability.UNSOLVABLE].add(cqs.base_name)
+        #         continue
+        #     orc, ot = cqs.qrs[PType.ORIG].get_original_status()
+        #     # print(ot, min(depths.values()))
+        #     if orc == RCode.UNSAT.value and ot < min(depths.values()):
+        #         print("activated")
+        #         cats[oss].add(cqs.base_name)
+        #     else:
+        #         cats[sss].add(cqs.base_name)
+        # cats = CategorizedItems(cats)
+        # cats.print_status()
+
     # def print_shake_completeness(self):
     #     df = self.get_shake_stats()
     #     no_cores = df.loc[np.isnan(df['missed_asserts'])].shape[0]
@@ -247,10 +345,10 @@ class GroupCoreAnalyzer(GroupAnalyzer):
     #     print(rdf)
 
     def emit_build(self):
-        f = open(f"scripts/ninja/core.{self.group_name}.build.ninja", "w")
+        f = open(f"scripts/ninja/shkf.{self.group_name}.build.ninja", "w")
         f.write(CORE_BUILD_RULES)
         f.write("\n")
-        for cqs in self.qrs.values():
+        for cqs in sorted(self.qrs.values()):
             f.write(cqs.ninja_shk_query())
             f.write("\n")
         f.close()
@@ -258,7 +356,7 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         f = open(f"scripts/ninja/shkp.{self.group_name}.build.ninja", "w")
         f.write(CORE_BUILD_RULES)
         f.write("\n")
-        for cqs in self.qrs.values():
+        for cqs in sorted(self.qrs.values()):
             f.write(cqs.ninja_shk_partial())
             f.write("\n")
         f.close()
@@ -279,8 +377,6 @@ def stat_context_retention(pname):
     assert x_end >= 0 and x_end <= 100
     save_cache(f"ctx_ret/{pname}.df", (xs, ys, x_end, y_end))
     return xs, ys, x_end, y_end
-
-# def stat_shake_depth(pname):
 
 def plot_context_retention():
     fig, ax = plt.subplots()
@@ -340,4 +436,11 @@ def plot_shake_max_depth():
 
 def analyze_unsat_core():
     # plot_context_retention()
-    plot_shake_max_depth()
+    # plot_shake_max_depth()
+
+    for pname in CORE_PROJECTS:
+        if pname != "d_komodo":
+            continue
+        g = GroupCoreAnalyzer(pname, ana=Categorizer("default"))
+        g.read_shake_partial_logs()
+        # g.analyze_shake_partial()

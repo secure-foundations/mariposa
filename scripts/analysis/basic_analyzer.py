@@ -107,11 +107,17 @@ class GroupAnalyzer:
             exp_name = "unsat_core"
         elif typ == PType.BLOT:
             exp_name = "bloat"
+        elif typ == PType.SHKP:
+            exp_name = "shake"
         else:
-            return None
+            assert False
 
         proj = gp.load_project(typ)
         exp = ExpPart(exp_name, proj, "z3_4_12_2")
+
+        if not exp.sum_table_exists():
+            return None
+
         exp = ExpAnalyzer(exp, self.ana)
 
         return exp
