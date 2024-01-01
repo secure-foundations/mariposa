@@ -46,7 +46,10 @@ class CategorizedItems:
         total = sum([len(i) for i in categories.values()])
 
         for c, i in categories.items():
-            self._items[c] = CatItem(c, i, percent(len(i), total))
+            if total == 0:
+                self._items[c] = CatItem(c, i, 0)
+            else:
+                self._items[c] = CatItem(c, i, percent(len(i), total))
 
         self.tally = set.union(*categories.values())
         # check disjointness

@@ -1,7 +1,7 @@
 from tabulate import tabulate
 
 from typing import Dict
-from configure.project import ProjectType as PType
+from configure.project import PM, ProjectType as PType
 from execute.exp_part import ExpPart
 from analysis.categorizer import *
 from execute.exp_result import QueryExpResult
@@ -10,12 +10,12 @@ from utils.smt2_utils import *
 from utils.cache_utils import *
 
 class ExpAnalyzer:
-    def __init__(self, exp: ExpPart, ana):
+    def __init__(self, exp: ExpPart, ana, enable_dummy=False):
         assert exp.part.is_whole()
         self._exp = exp
         self.ana = ana
 
-        self.__qrs: Dict[str, QueryExpResult] = exp.load_sum_table()
+        self.__qrs: Dict[str, QueryExpResult] = exp.load_sum_table(enable_dummy)
         self.__qr_keys = set(self.__qrs.keys())
         self.__cats = ana.categorize_queries(self.__qrs.values())
 
@@ -91,14 +91,14 @@ class ExpAnalyzer:
         return np.array(data) / 1000
 
 class GroupAnalyzer:
-    def __init__(self, gp, ana):
+    def __init__(self, group_name, ana):
         self.ana = ana
         self.qrs = dict()
-        self.group_name = gp.group_name
-        self.orig: ExpAnalyzer = self.load_stability_status(gp, PType.ORIG)
+        self.group_name = group_name
+        self.orig: ExpAnalyzer = self.load_stability_status(PType.ORIG)
         self.group = dict()
 
-    def load_stability_status(self, gp, typ):
+    def load_stability_status(self, typ):
         if typ == PType.ORIG:
             exp_name = "baseline"
         elif typ == PType.CORE:
@@ -112,12 +112,8 @@ class GroupAnalyzer:
         else:
             assert False
 
-        proj = gp.load_project(typ)
+        proj = PM.load_project(self.group_name, typ, enable_dummy=True)
         exp = ExpPart(exp_name, proj, "z3_4_12_2")
-
-        if not exp.sum_table_exists():
-            return None
-
-        exp = ExpAnalyzer(exp, self.ana)
+        exp = ExpAnalyzer(exp, self.ana, enable_dummy=True)
 
         return exp

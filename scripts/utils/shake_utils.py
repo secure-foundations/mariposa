@@ -1,4 +1,5 @@
 from utils.smt2_utils import *
+import pickle
 import os
 
 def parse_shake_log(filename):
@@ -31,19 +32,15 @@ SHAKE_TIMEOUT = 60
 NUM_SHAKE_PROCESSES = 4
 
 class ShakeTask:
-    def __init__(self, orig_path, name_hash, fmt_contents, stamps, depth):
-        self.orig_path = orig_path
+    def __init__(self, name_hash, fmt_contents, stamps, depth):
         self.name_hash = name_hash
         self.fmt_contents = fmt_contents
         self.stamps = stamps
         self.depth = depth
 
     def run_task(self, solver):
-        if self.depth != -1:
-            temp_file = f"gen/{self.name_hash}.{self.depth}.smt2"
-            emit_partial_shake_file(temp_file, self.fmt_contents, self.stamps, self.depth)
-        else:
-            temp_file = self.orig_path
+        temp_file = f"gen/{self.name_hash}.{self.depth}.smt2"
+        emit_partial_shake_file(temp_file, self.fmt_contents, self.stamps, self.depth)
         rcode, elapsed = solver.run(temp_file, SHAKE_TIMEOUT)
         return rcode, elapsed, self.depth, temp_file
 
@@ -76,10 +73,13 @@ def shake_partial(output_path, orig_path, fmt_path, log_path, remove=True):
 
     solver = SolverRunner(SolverInfo("z3_4_12_2"))
     
-    task_queue.put(ShakeTask(orig_path, name_hash, fmt_contents, stamps, -1))
+    rcode, elapsed = solver.run(orig_path, SHAKE_TIMEOUT)
+
+    # task_queue.put(ShakeTask(orig_path, name_hash, fmt_contents, stamps, -1))
+    results = {-1: (rcode, elapsed, orig_path)}
 
     for depth in range(max_depth + 1):
-        task_queue.put(ShakeTask(orig_path, name_hash, fmt_contents, stamps, depth))
+        task_queue.put(ShakeTask(name_hash, fmt_contents, stamps, depth))
 
     processes = []
 
@@ -95,11 +95,11 @@ def shake_partial(output_path, orig_path, fmt_path, log_path, remove=True):
     while expected > 0:
         rc, et, d, path = result_queue.get()
         print(f"[INFO] {d} {path} {RCode(rc)} {et}")
-        out_content.append(f"[INFO] report {d}\t{path}\t{RCode(rc)}\t{et}\n")
+        results[d] = (rc, et, path)
         expected -= 1
 
         if RCode(rc) == RCode.UNSAT:
-            # drain task queue
+            # drain task queue when one unsat is found
             while not task_queue.empty():
                 try:
                     t = task_queue.get(block=False)
@@ -107,15 +107,14 @@ def shake_partial(output_path, orig_path, fmt_path, log_path, remove=True):
                 except mp.queues.Empty:
                     break
 
-            grace_period = int(et * 0.8 /1000) + 1
+            grace_period = int(et / 1000) + 1
             time.sleep(grace_period)
             print("[INFO] grace period", grace_period)
-            out_content.append(f"[INFO] grace period {grace_period}\n")
 
             while result_queue.qsize() > 0:
                 rc, et, d, path = result_queue.get()
                 print(f"[INFO] {d} {path} {RCode(rc)} {et}")
-                out_content.append(f"[INFO] report {d}\t{path}\t{RCode(rc)}\t{et}\n")
+                results[d] = (rc, et, path)
             break
 
     for _ in range(NUM_SHAKE_PROCESSES):
@@ -124,11 +123,7 @@ def shake_partial(output_path, orig_path, fmt_path, log_path, remove=True):
     for p in processes:
         p.kill()
 
-    log_file = open(output_path, "w+")
-    for line in out_content:
-        log_file.write(line)
-
-    log_file.close()
+    pickle.dump(results, open(output_path, "wb+"))
     print(f"[INFO] {output_path}")
 
     if remove:
@@ -140,19 +135,3 @@ def shake_oracle(output_path, fmt_path, log_path, depth):
     emit_partial_shake_file(output_path, fmt_contents, stamps, depth)
     print(f"[INFO] {output_path} generated")
 
-def parse_shake_partial_log(shkp_log_path):
-    import re
-    lines = open(shkp_log_path).readlines()
-    lines = [line.strip() for line in lines]
-    depths = dict()
-    for line in lines:
-        assert line.startswith("[INFO]")
-        if not line.startswith("[INFO] report"):
-            continue
-        items = re.split(r'\t| ', line)[2:]
-        if items[2] != "unsat":
-            assert items[2] in {"sat", "unknown", "timeout"}
-            continue
-        d, time = int(items[0]), int(items[3])
-        depths[d] = time
-    return depths

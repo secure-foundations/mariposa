@@ -127,10 +127,6 @@ class ProjectGroup:
             sub_name = f"{self.group_name}_{proj_dir}"
             self.projects[ProjectType(proj_dir)] = Project(sub_name, sub_dir)
         # assert "original" in self.projects
-    
-    def load_project(self, typ):
-        assert isinstance(typ, ProjectType)
-        return self.projects[typ]
 
 class ProjectManager:
     def __init__(self):
@@ -145,15 +141,14 @@ class ProjectManager:
             for proj in pg.projects.values():
                 self.all_projects[proj.full_name] = proj
 
-    def load_project(self, proj_name):
+    def load_project(self, proj_name, proj_typ, enable_dummy=False):
+        proj_name = proj_name + "_" + proj_typ.value
         if proj_name not in self.all_projects:
-            proj_name += "_original"
-        san_check(proj_name in self.all_projects, f"[ERROR] no project {proj_name}")
+            if enable_dummy:
+                print(f"[WARNING] no project {proj_name}, using _empty project!")
+                return Project(proj_name, "data/projects/_empty")
+            exit_with(f"[ERROR] no project {proj_name}")
         return self.all_projects[proj_name]
-    
-    def load_project_group(self, group_name):
-        san_check(group_name in self.groups, f"[ERROR] no project group {group_name}")
-        return self.groups[group_name]
 
     def print_available_projects(self):
         print("available projects:")

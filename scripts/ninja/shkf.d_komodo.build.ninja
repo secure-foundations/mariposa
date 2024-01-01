@@ -18,7 +18,7 @@ rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 
 rule shake-partial
-    command = python3 scripts/run_shake.py $out $in $log
+    command = python3 scripts/run_shake.py partial $out $in $full $log
 
 build data/projects/d_komodo/shake_full/verified-ARMdef.s.dfyCheckWellformed___module.__default.AddrInL2PageTable.smt2: shake data/projects/d_komodo/original/verified-ARMdef.s.dfyCheckWellformed___module.__default.AddrInL2PageTable.smt2
     log = cache/shk/c451cc8eea92c38a0ea665c74551236cb30d15cb7b914c9f1c4c3c080b782bbe.shk

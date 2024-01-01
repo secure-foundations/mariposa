@@ -19,7 +19,8 @@ def emit_core_build():
 def get_bloat_stats(ana, stat):
     counts = dict()
     for pname in ["v_ironfleet", "v_mimalloc", "v_noderep", "v_pagetable", "v_pmemlog"]:
-        g = PM.load_project_group(pname)
+        # g = PM.load_project_group(pname)
+        # TODO: fix this
         g = BloatAnalyzer(g, ana)
         if stat == "assert_counts":
             ocounts, bcounts = g.get_assert_counts()

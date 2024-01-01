@@ -207,19 +207,23 @@ solver: {self.solver}"""
         con.close()
         return res
 
-    def load_sum_table(self) -> Dict[str, QueryExpResult]:
+    def load_sum_table(self, enable_dummy=False) -> Dict[str, QueryExpResult]:
         con, cur = get_cursor(self.db_path)
         sum_name = self.sum_table_name
+        summaries = dict()
 
         if not table_exists(cur, sum_name):
-            print(f"[WARN] {sum_name} is empty, skipping")
-            return
+            san_check(enable_dummy, f"[ERROR] {sum_name} does not exist")
+            print(f"[WARN] {sum_name} does not exist, creating dummy data!")
+            for path in self.proj.list_queries():
+                qr = QueryExpResult(path, self.proj.root_dir)
+                summaries[qr.base_name] = qr
+            return summaries
 
         res = cur.execute(f"""SELECT * FROM {sum_name}""")
         rows = res.fetchall()
         con.close()
 
-        summaries = dict()
         mut_size = self.num_mutant
 
         for row in rows:

@@ -11,7 +11,7 @@ from analysis.basic_analyzer import GroupAnalyzer
 from analysis.categorizer import Categorizer, Stability
 from execute.solver_runner import RCode
 from utils.sys_utils import san_check
-from utils.shake_utils import parse_shake_log, key_set, count_asserts, parse_shake_partial_log, shake_oracle
+from utils.shake_utils import parse_shake_log, key_set, count_asserts, shake_oracle
 from utils.analyze_utils import CategorizedItems, get_cdf_pts
 from utils.smt2_utils import *
 from utils.cache_utils import *
@@ -36,7 +36,7 @@ rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 
 rule shake-partial
-    command = python3 scripts/run_shake.py partial $out $in $log
+    command = python3 scripts/run_shake.py partial $out $in $full $log
 """
 
 # rule create-core
@@ -205,7 +205,8 @@ class CoreQueryStatus:
 """
 
     def ninja_shk_partial(self):
-        return f"""build {self.shkp_log_path}: shake-partial {self.get_path(PType.SHKF)}
+        return f"""build {self.shkp_log_path}: shake-partial {self.get_path(PType.ORIG)}
+    full = {self.get_path(PType.SHKF)}
     log = {self.shk_log_path}
 """
 
@@ -216,7 +217,7 @@ class CoreQueryStatus:
     #     shake_partial(log_path, self.shk_full_path, self.shk_log_path)
 
 def maybe_add_query_result(_qrs, _sss, base_name, other, typ):
-    if other is not None and base_name in other:
+    if base_name in other:
         _qrs[typ] = other[base_name]
         _sss[typ] = other.get_stability(base_name)
     else:
@@ -224,26 +225,23 @@ def maybe_add_query_result(_qrs, _sss, base_name, other, typ):
         _sss[typ] = None
 
 class GroupCoreAnalyzer(GroupAnalyzer):
-    def __init__(self, name, ana):
-        gp = PM.load_project_group(name)
-        super().__init__(gp, ana)
-        self.core = self.load_stability_status(gp, PType.CORE)
-        self.extd = self.load_stability_status(gp, PType.EXTD)
-        self.shkp = self.load_stability_status(gp, PType.SHKP)
+    def __init__(self, group_name, ana):
+        super().__init__(group_name, ana)
+        self.core = self.load_stability_status(PType.CORE)
+        self.extd = self.load_stability_status(PType.EXTD)
+        self.shkp = self.load_stability_status(PType.SHKP)
 
         for sub in [self.core, self.extd, self.shkp]:
-            if sub is None:
-                continue
+            if sub is None: continue
             assert sub.base_names() - self.orig.base_names() == set()
 
         self.data_path = f"data/projects/{self.group_name}"
 
         self.qrs: Dict[str, CoreQueryStatus] = dict()
 
-        for base_name in self.orig.base_names():
-            # this must present
-            assert self.orig.get_stability(base_name) is not None
+        assert len(self.orig.base_names()) != 0
 
+        for base_name in self.orig.base_names():
             _qrs = dict()
             _sss = dict()
 
@@ -439,8 +437,9 @@ def analyze_unsat_core():
     # plot_shake_max_depth()
 
     for pname in CORE_PROJECTS:
-        if pname != "d_komodo":
-            continue
+        # if pname != "d_komodo":
+        #     continue
         g = GroupCoreAnalyzer(pname, ana=Categorizer("default"))
-        g.read_shake_partial_logs()
+        # g.read_shake_partial_logs()
+        g.emit_build()
         # g.analyze_shake_partial()

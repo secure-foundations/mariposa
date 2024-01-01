@@ -1,5 +1,5 @@
 import argparse
-from configure.project import PM, Partition
+from configure.project import PM, Partition, ProjectType
 from configure.solver import SolverInfo
 from analysis.categorizer import Categorizer
 from cluster_modes import worker_mode, manager_mode, recovery_mode
@@ -27,7 +27,8 @@ def add_experiment_option(parser):
     parser.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from configs.json)")
 
 def add_project_option(parser):
-    parser.add_argument("-p", "--project", required=True, help="the project name (from configs.json) to run mariposa on")
+    parser.add_argument("-p", "--project", required=True, help="the project name under data/projects/")
+    parser.add_argument("-t", "--type", defualt=ProjectType.ORIG, help="the project type under the project subroot")
 
 def add_clear_option(parser):
     parser.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment directory and database")
@@ -112,7 +113,7 @@ if __name__ == '__main__':
     if hasattr(args, "part"):
         args.part = Partition.from_str(args.part)
     if hasattr(args, "project"):
-        args.project = PM.load_project(args.project)
+        args.project = PM.load_project(args.project, args.type)
     if hasattr(args, "analyzer"):
         args.analyzer = Categorizer(args.analyzer)
 

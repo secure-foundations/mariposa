@@ -18,7 +18,7 @@ rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 
 rule shake-partial
-    command = python3 scripts/run_shake.py $out $in $log
+    command = python3 scripts/run_shake.py partial $out $in $full $log
 
 build data/projects/fs_dice/shake_full/queries-ASN1.Base-1.smt2: shake data/projects/fs_dice/original/queries-ASN1.Base-1.smt2
     log = cache/shk/118c80f3d3963eac2b9419f9a95e37d4e603e7fde26f6fa033b7bf462f6a229e.shk

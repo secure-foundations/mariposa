@@ -7,13 +7,14 @@ from os import path
 EXPECTED_CODES = [RCode.UNSAT, RCode.UNKNOWN, RCode.TIMEOUT]
 
 class QueryExpResult:
-    def __init__(self, query_path, proj_root, mutations=[], blob=np.array([[]])):
+    def __init__(self, query_path, proj_root, mutations=[], blob=None):
         self.base_name = path.basename(query_path)
         self.query_path = path.join(proj_root, self.base_name)
         self.mutations = mutations
 
-        assert blob.shape[0] == len(mutations)
-        assert blob.shape[1] == 2
+        if blob is not None:        
+            assert blob.shape[0] == len(mutations)
+            assert blob.shape[1] == 2
 
         self.blob = blob
 

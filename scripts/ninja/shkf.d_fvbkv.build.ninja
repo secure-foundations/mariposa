@@ -18,7 +18,7 @@ rule strip
     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 
 rule shake-partial
-    command = python3 scripts/run_shake.py $out $in $log
+    command = python3 scripts/run_shake.py partial $out $in $full $log
 
 build data/projects/d_fvbkv/shake_full/Betree-Betree.i.dfy.CheckWellformed__Betree.__default.Betree.smt2: shake data/projects/d_fvbkv/original/Betree-Betree.i.dfy.CheckWellformed__Betree.__default.Betree.smt2
     log = cache/shk/ca7f40c6076f94b968c4152866a1edcb8fbbaa5ebf40277b2919957c174b84c9.shk
