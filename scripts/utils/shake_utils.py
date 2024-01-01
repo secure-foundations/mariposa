@@ -74,8 +74,8 @@ def shake_partial(output_path, orig_path, fmt_path, log_path, remove=True):
     solver = SolverRunner(SolverInfo("z3_4_12_2"))
     
     rcode, elapsed = solver.run(orig_path, SHAKE_TIMEOUT)
+    print(f"[INFO] {orig_path} {RCode(rcode)} {elapsed}")
 
-    # task_queue.put(ShakeTask(orig_path, name_hash, fmt_contents, stamps, -1))
     results = {-1: (rcode, elapsed, orig_path)}
 
     for depth in range(max_depth + 1):
@@ -129,9 +129,11 @@ def shake_partial(output_path, orig_path, fmt_path, log_path, remove=True):
     if remove:
         os.system(f"rm gen/{name_hash}.*.smt2")
 
+def load_shake_partial(output_path):
+    return pickle.load(open(output_path, "rb"))
+
 def shake_oracle(output_path, fmt_path, log_path, depth):
     fmt_contents = list(open(fmt_path).readlines())
     stamps = parse_shake_log(log_path)
     emit_partial_shake_file(output_path, fmt_contents, stamps, depth)
     print(f"[INFO] {output_path} generated")
-
