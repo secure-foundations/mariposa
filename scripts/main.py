@@ -28,7 +28,7 @@ def add_experiment_option(parser):
 
 def add_project_option(parser):
     parser.add_argument("-p", "--project", required=True, help="the project name under data/projects/")
-    parser.add_argument("-t", "--type", defualt=ProjectType.ORIG, help="the project type under the project subroot")
+    parser.add_argument("-t", "--type", default=ProjectType.ORIG, help="the project type under the project subroot")
 
 def add_clear_option(parser):
     parser.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment directory and database")
