@@ -1,5 +1,6 @@
 import numpy as np
-from tabulate import tabulate
+
+from utils.sys_utils import san_check
 
 def is_ratio(x):
     return type(x) == float and 0 < x < 1
@@ -40,40 +41,62 @@ class CatItem:
         return iter(self.items)
 
 class CategorizedItems:
-    def __init__(self, categories):
+    def __init__(self, categories=[]):
         self._items = dict()
+        for c in categories:
+            self._items[c] = set()
+        self._allow_unknown = len(categories) == 0
+        self.finalized = False
 
-        total = sum([len(i) for i in categories.values()])
+    def add_item(self, cat, item):
+        assert not self.finalized
+        if cat not in self._items:
+            san_check(self._allow_unknown, 
+                    f"[ERROR] unknown category {cat}")
+            self._items[cat] = set()
+        self._items[cat].add(item)
 
-        for c, i in categories.items():
+    def finalize(self):
+        assert not self.finalized
+        total = sum([len(i) for i in self._items.values()])
+        self.tally = set.union(*self._items.values())
+
+        for c, its in self._items.items():
             if total == 0:
-                self._items[c] = CatItem(c, i, 0)
+                self._items[c] = CatItem(c, its, 0)
             else:
-                self._items[c] = CatItem(c, i, percent(len(i), total))
-
-        self.tally = set.union(*categories.values())
+                self._items[c] = CatItem(c, its, percent(len(its), total))
         # check disjointness
         assert len(self.tally) == total
+        self.finalized = True
         self.total = total
 
     def __getitem__(self, item):
+        assert self.finalized
         return self._items[item]
 
     def items(self):
+        assert self.finalized
         return self._items.items()
     
     def __iter__(self):
+        assert self.finalized
         return iter(self._items.keys())
 
     def get_category(self, item):
+        assert self.finalized
         for c in self._items:
             if item in self._items[c]:
                 return c
         return None
 
-    def print_status(self):
+    def print_status(self, skip_empty=False):
+        from tabulate import tabulate
+        assert self.finalized
         table = [["category", "count", "percentage"]]
         for c, i in self._items.items():
+            if skip_empty and i.count == 0:
+                continue
             table.append([c, i.count, i.percent])
         table.append(["total", self.total, 100])
         print(tabulate(table, headers="firstrow", tablefmt="github", floatfmt=".2f"))

@@ -1,5 +1,3 @@
-from tabulate import tabulate
-
 from typing import Dict
 from configure.project import PM, ProjectType as PType
 from execute.exp_part import ExpPart
@@ -47,14 +45,7 @@ class ExpAnalyzer:
     def print_stability_status(self, verbosity=0):
         print(f"stability status for {self.proj.full_name} {self.exp_name}")
 
-        table = [["category", "count", "percentage"]]
-
-        for cat, cs in self.__cats.items():
-            table.append([cat, cs.count, cs.percent])
-
-        table.append(["total", self.__cats.total, 100])
-
-        print(tabulate(table, headers="firstrow", tablefmt="github", floatfmt=".2f"))
+        self.__cats.print_status(skip_empty=True)
 
         if verbosity == 0:
             return

@@ -1,4 +1,3 @@
-from tabulate import tabulate
 from typing import Dict
 from tqdm import tqdm
 import numpy as np
@@ -11,7 +10,7 @@ from analysis.basic_analyzer import GroupAnalyzer
 from analysis.categorizer import Categorizer, Stability
 from execute.solver_runner import RCode
 from utils.sys_utils import san_check
-from utils.shake_utils import parse_shake_log, key_set, count_asserts, shake_oracle
+from utils.shake_utils import parse_shake_log, key_set, count_asserts, load_shake_partial
 from utils.analyze_utils import CategorizedItems, get_cdf_pts
 from utils.smt2_utils import *
 from utils.cache_utils import *
@@ -147,50 +146,38 @@ class CoreQueryStatus:
         return stats
 
     def read_shake_partial_log(self):
-        oqr = self.qrs[PType.ORIG]
-        vcode, vtime = oqr.get_original_status()
-        depths = parse_shake_partial_log(self.shkp_log_path)
+        data = dict()
+        MAGIC = 4444
 
-        if len(depths) == 0:
-            return
-        fastest = min(depths.values())
+        for d, (rc, t, _) in load_shake_partial(self.shkp_log_path).items():
+            if rc == RCode.UNSAT.value:
+                if d == -1: 
+                    d = MAGIC
+                data[d] = t
+
+        if len(data) == 0:
+            return "no unsat"
+
+        if len(data) == 1 and MAGIC in data:
+            return "only original"
         
-        if vtime < fastest:
-            print(f"[INFO] {vtime} {fastest}")
+        oss = self.get_stability(PType.ORIG)
 
-        # return depths
-        # if len(depths) == 0:
-        #     print(self.get_stability(PType.ORIG))
-        #     print(self.shkp_log_path)
-        # #     print(self.base_name)
-        # #     print("")
-        #     return
+        best = min(data.values())
+        chosen = max(data.keys()) + 1
 
-        # interesting = False
-        # candidate = None
+        for depth, time in data.items():
+            if time <= best * 1.5:
+                # print(depth, time)
+                chosen = min(chosen, depth)
+                best = time
 
-        # for d, t in depths.items():
-        #     if t == fastest:
-        #         candidate = d
-        #         break
+        if chosen == MAGIC:
+            # if oss == Stability.UNSTABLE:
+            #     self.print_status(PType.ORIG)
+            return oss.value + " (original)"
 
-        # shake_oracle(self.get_path(PType.SHKP), self.get_path(PType.SHKF), 
-        #              self.shk_log_path, candidate)
-
-        # if fastest > 2000:
-        #     maybes = []
-        #     for d, t in depths.items():
-        #         if d < candidate and ((t - fastest) / fastest) < 0.3:
-        #             maybes.append((d, t))
-        #     if len(maybes) != 0:
-        #         print("candidate:", candidate, fastest)
-        #         print(f"python3 scripts/run_shake.py oracle temp/out.{candidate}.smt2", self.get_path(PType.SHKF), self.shk_log_path, candidate)
-        #         depth, time = min(maybes, key=lambda x: x[0])
-        #         print(f"maybe:", depth, time)
-        #         print(f"python3 scripts/run_shake.py oracle temp/out.{depth}.smt2", self.get_path(PType.SHKF), self.shk_log_path, depth)
-        #         print("----------------")
-        # open(self.shkp_log_path, "w+").writelines(lines)
-        # print(f"[INFO] {self.shkp_log_path}")
+        return "others"
 
     def ninja_fmt_query(self):
         return f"build {self.fmt_path}: format {self.get_path(PType.ORIG)}"
@@ -290,30 +277,26 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         self.orig.print_stability_status()
 
         print("")
-        unified = Stability.empty_map()
-        
+        unified = CategorizedItems()
+
         for base_name, cqs in self.qrs.items():
             ss = cqs.get_unified_stability()
             if ss != None:
-                unified[ss].add(base_name)
-                
-        unified = CategorizedItems(unified)
-        
-        table = [["category", "count", "percentage"]]
+                unified.add_item(ss, base_name)
 
-        for cat, cs in unified.items():
-            table.append([cat, cs.count, cs.percent])
-
-        table.append(["total", unified.total, 100])
-
-        print(tabulate(table, headers="firstrow", tablefmt="github", floatfmt=".2f"))
+        unified.finalize()
+        unified.print_status()
 
     def read_shake_partial_logs(self):
+        cats = CategorizedItems()
+        print("????")
         for cqs in self.qrs.values():
-            cqs.read_shake_partial_log()
+            cat = cqs.read_shake_partial_log()
+            cats.add_item(cat, cqs.base_name)
+        cats.finalize()
+        cats.print_status()
 
     def analyze_shake_partial(self):
-        cats = Stability.empty_map()
         for cqs in self.qrs.values():
             oss = cqs.get_stability(PType.ORIG)
             sss = cqs.get_stability(PType.SHKP)
@@ -343,10 +326,14 @@ class GroupCoreAnalyzer(GroupAnalyzer):
     #     print(rdf)
 
     def emit_build(self):
+        import random
         f = open(f"scripts/ninja/shkf.{self.group_name}.build.ninja", "w")
         f.write(CORE_BUILD_RULES)
         f.write("\n")
-        for cqs in sorted(self.qrs.values()):
+        qrs = list(self.qrs.values())
+        random.shuffle(qrs)
+
+        for cqs in qrs:
             f.write(cqs.ninja_shk_query())
             f.write("\n")
         f.close()
@@ -354,7 +341,7 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         f = open(f"scripts/ninja/shkp.{self.group_name}.build.ninja", "w")
         f.write(CORE_BUILD_RULES)
         f.write("\n")
-        for cqs in sorted(self.qrs.values()):
+        for cqs in qrs:
             f.write(cqs.ninja_shk_partial())
             f.write("\n")
         f.close()
@@ -437,9 +424,10 @@ def analyze_unsat_core():
     # plot_shake_max_depth()
 
     for pname in CORE_PROJECTS:
-        # if pname != "d_komodo":
-        #     continue
+        if pname != "d_komodo":
+            continue
+        # print(pname)
         g = GroupCoreAnalyzer(pname, ana=Categorizer("default"))
-        # g.read_shake_partial_logs()
-        g.emit_build()
+        g.read_shake_partial_logs()
+        # g.emit_build()
         # g.analyze_shake_partial()

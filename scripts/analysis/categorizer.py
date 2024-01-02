@@ -5,7 +5,6 @@ from utils.sys_utils import *
 from utils.analyze_utils import *
 from execute.solver_runner import RCode
 import json
-# from tabulate import tabulate
 
 ANALYZER_CONFIG_PATH = "configs/analyzers.json"
 
@@ -19,9 +18,9 @@ class Stability(str, Enum):
     def __str__(self):
         return super().__str__()
 
-    def empty_map():
-        em = {c: set() for c in Stability}
-        return em
+    # def empty_map():
+    #     em = {c: set() for c in Stability}
+    #     return em
 
 def match_rcode(blob, rcode, timeout=np.inf):
     matches = blob[0] == rcode.value
@@ -142,30 +141,12 @@ class Categorizer:
         if len(ress) == 1:
             return ress.pop(), votes
         # ress -= {Stability.UNKNOWN}
-
         return Stability.UNSTABLE, votes
 
-    def categorize_queries(self, qss, muts=None):
-        categories = Stability.empty_map()
+    def categorize_queries(self, qss, muts=None) -> CategorizedItems:
+        cats = CategorizedItems([c for c in Stability])
         for qs in qss:
-            res, votes = self.categorize_query(qs, muts)
-            categories[res].add(qs.base_name)
-        # tally = set.union(*categories.values())
-        return CategorizedItems(categories)
-
-#     def dump_query_status(self, mutations, blob):
-#         status, votes = self.categorize_query(blob)
-#         table = [["overall", status, "x", "x", "x", "x", "x"]]
-#         mut_size = blob.shape[2]
-
-#         for i in range(len(mutations)):
-#             count_unsat = match_rcode(blob[i], RCode.UNSAT)
-#             unsat_item = f"{count_unsat}/{mut_size} {round(count_unsat / (mut_size) * 100, 1)}%"
-#             count_timeout = match_rcode(blob[i], RCode.TIMEOUT)
-#             timeout_item = f"{count_timeout}/{mut_size} {round(count_timeout / (mut_size) * 100, 1)}%"
-#             count_unknown = match_rcode(blob[i], RCode.UNKNOWN)
-#             unknown_item = f"{count_unknown}/{mut_size} {round(count_unknown / (mut_size) * 100, 1)}%"
-#             times = blob[i][1] / 1000
-#             item = [mutations[i], votes[i].value, unsat_item, timeout_item, unknown_item, f"{round(np.mean(times), 2)}", f"{round(np.std(times), 2)}"]
-#             table.append(item)
-#         print(tabulate(table, headers=["mutation", "status", "unsat", "timeout", "unknown", "mean(second)", "std(second)"], tablefmt="github"))
+            res, _ = self.categorize_query(qs, muts)
+            cats.add_item(res, qs.base_name)
+        cats.finalize()
+        return cats
