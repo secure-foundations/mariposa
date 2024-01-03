@@ -51,7 +51,10 @@ class Worker:
         if task.quake:
             self.run_quake_task(task)
         else:
-            rcode, elapsed = self.solver.run(mutant_path, self.timeout)
+            seeds = None
+            if task.perturb == Mutation.RESEED:
+                seeds = task.mut_seed
+            rcode, elapsed = self.solver.run(mutant_path, self.timeout, seeds)
             self.insert_exp_row(task, mutant_path, rcode, elapsed)
 
         if not self.keep_mutants and task.perturb is not None:

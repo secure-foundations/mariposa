@@ -14,12 +14,13 @@
     },
     "single": {
         "mutations": [
-            "all"
+            "shuffle",
+            "quake"
         ],
         "keep_mutants": true,
-        "num_mutants": 20,
+        "num_mutants": 30,
         "exp_timeout": 60,
-        "num_procs": 7,
+        "num_procs": 6,
         "db_path": ""
     },
     "debug": {

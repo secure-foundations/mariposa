@@ -112,18 +112,20 @@ class SolverRunner:
             out, err, elapsed = subprocess_run(command)
             rcode = output_as_rcode(out)
         else:
-            # self.solver_type == SolverType.CVC5:
-            # seed_options = ""
-            # if self.perturb == Mutation.RESEED:
-            #     mutant_path = self.origin_path
-            #     seed_options = f"--sat-random-seed {self.mut_seed} --seed {self.mut_seed}"
-            # command = f"{self.solver.path} --incremental --quiet --tlimit-per {self.exp.timeout * 1000} '{mutant_path}' {seed_options}"
-            # out, err, elapsed = subprocess_run(command)
-            # if elapsed >= self.exp_part.timeout * 1000:
-            #     rcode = RCode.TIMEOUT
-            # else:
-            #     rcode = output_as_rcode(out)     
-            assert False
+            assert self.type == SolverType.CVC5
+            seed_options = ""
+
+            if seeds is not None:
+                query_path = self.origin_path
+                seed_options = f"--sat-random-seed {seeds} --seed {seeds}"
+
+            command = f"{self.path} --incremental --quiet --tlimit-per {timelimit * 1000} '{query_path}' {seed_options}"
+            out, err, elapsed = subprocess_run(command, timeout=timelimit + 1)
+
+            if elapsed >= timelimit * 1000 or "interrupted by SIGTERM" in out:
+                rcode = RCode.TIMEOUT
+            else:
+                rcode = output_as_rcode(out)     
 
         if rcode == RCode.ERROR:
             print("[INFO] solver error: {} {} {}".format(command, out, err))

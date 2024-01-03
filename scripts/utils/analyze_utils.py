@@ -59,7 +59,10 @@ class CategorizedItems:
     def finalize(self):
         assert not self.finalized
         total = sum([len(i) for i in self._items.values()])
-        self.tally = set.union(*self._items.values())
+        if total != 0:
+            self.tally = set.union(*self._items.values())
+        else:
+            self.tally = set()
 
         for c, its in self._items.items():
             if total == 0:

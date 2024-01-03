@@ -54,7 +54,7 @@ def run_shake_tasks(solver, task_queue, result_queue):
 
         result_queue.put((rc, et, depth, temp_file))
 
-def shake_partial(output_path, orig_path, fmt_path, log_path, remove=True):
+def run_shake_prelim(output_path, orig_path, fmt_path, log_path, remove=True):
     import multiprocessing as mp
     from execute.solver_runner import RCode, SolverRunner
     from configure.solver import SolverInfo
@@ -130,7 +130,7 @@ def shake_partial(output_path, orig_path, fmt_path, log_path, remove=True):
 
 SHAKE_DEPTH_MAGIC = 4444
 
-def load_shake_partial_log(shkp_log_path):
+def load_shake_prelim(shkp_log_path):
     from execute.solver_runner import RCode
     data = pickle.load(open(shkp_log_path, "rb"))
     result = dict()
@@ -143,7 +143,8 @@ def load_shake_partial_log(shkp_log_path):
 
     return result
 
-def shake_oracle(output_path, fmt_path, log_path, depth):
+def emit_shake_partial(output_path, fmt_path, log_path, depth):
+    assert depth >= 0 and depth != SHAKE_DEPTH_MAGIC
     fmt_contents = list(open(fmt_path).readlines())
     stamps = parse_shake_log(log_path)
     __emit_partial_shake_file(output_path, fmt_contents, stamps, depth)

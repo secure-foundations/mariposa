@@ -9,7 +9,7 @@ from configure.project import PM, ProjectType as PType
 from analysis.basic_analyzer import GroupAnalyzer
 from analysis.categorizer import Categorizer, Stability
 from utils.sys_utils import san_check
-from utils.shake_utils import parse_shake_log, key_set, count_asserts, load_shake_partial_log, shake_oracle, SHAKE_DEPTH_MAGIC
+from utils.shake_utils import parse_shake_log, key_set, count_asserts, load_shake_prelim, emit_shake_partial, SHAKE_DEPTH_MAGIC
 from utils.analyze_utils import CategorizedItems, get_cdf_pts
 from utils.smt2_utils import *
 from utils.cache_utils import *
@@ -145,35 +145,36 @@ class CoreQueryStatus:
         return stats
 
     def read_shake_partial_log(self):
-        data = load_shake_partial_log(self.shkp_log_path)
-        # oss = self.get_stability(PType.ORIG)
-        # pss = self.get_stability(PType.SHKP)
+        data = load_shake_prelim(self.shkp_log_path)
+        oss = self.get_stability(PType.ORIG)
 
         if len(data) == 0:
+            # do nothing if no depth succeeded
+            return "???", oss.value
+
+        chosen_depth = min(data.keys())
+
+        if chosen_depth == SHAKE_DEPTH_MAGIC:
+            # do nothing if the original query is the only left
+            return "skip", oss.value
+
+        return "shake", oss.value
+
+    def generate_shake_partial(self):
+        data = load_shake_prelim(self.shkp_log_path)
+
+        if len(data) == 0:
+            # do nothing if no depth succeeded
             return
 
-        orig = 1e10
+        chosen_depth = min(data.keys())
 
-        if SHAKE_DEPTH_MAGIC in data:
-            orig = data[SHAKE_DEPTH_MAGIC]
-
-        if orig < 1000:
+        if chosen_depth == SHAKE_DEPTH_MAGIC:
+            # do nothing if the original query is the only one left
             return
-
-        fast_time = min(data.values())
-        fast_depth = SHAKE_DEPTH_MAGIC
-
-        for k, v in data.items():
-            if v < fast_time * 1.15:
-                fast_depth = min(fast_depth, k)
 
         shkp_path = self.get_path(PType.SHKP)
-        # shake_oracle(shkp_path, self.get_path(PType.SHKF), self.shk_log_path, fast_depth)
-
-        old_path = shkp_path.replace("shake_partial/", "shake_partial_saved/")
-        cur = get_asserts(shkp_path)
-        prev = get_asserts(old_path)
-        print(len(cur), len(prev), len(key_set(cur) & key_set(prev)))
+        emit_shake_partial(shkp_path, self.get_path(PType.SHKF), self.shk_log_path, chosen_depth)
 
     def ninja_fmt_query(self):
         return f"build {self.fmt_path}: format {self.get_path(PType.ORIG)}"
@@ -284,22 +285,44 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         unified.print_status()
 
     def read_shake_partial_logs(self):
-        # cats_0 = CategorizedItems()
-        # cats_1 = CategorizedItems()
-        ct = 0
+        cats_0 = CategorizedItems()
+        cats_1 = CategorizedItems()
+        cats_2 = CategorizedItems()
         for cqs in self.qrs.values():
             cqs.read_shake_partial_log()
-        #     (f, cat) = cqs.read_shake_partial_log()
-        #     if f == "<1":
-        #         cats_0.add_item(cat, cqs.base_name)
-        #     elif f == ">=1":
-        #         cats_1.add_item(cat, cqs.base_name)
-        # cats_0.finalize()
-        # cats_0.print_status()
-        # print("")
+            (f, cat) = cqs.read_shake_partial_log()
+            if f == "skip":
+                cats_0.add_item(cat, cqs.base_name)
+            elif f == "shake":
+                cats_1.add_item(cat, cqs.base_name)
+            else:
+                cats_2.add_item(cat, cqs.base_name)
+        print("skip")
+        cats_0.finalize()
+        cats_0.print_status()
+        print("")
+        print("shake")
+        cats_1.finalize()
+        cats_1.print_status()
+        print("")
+        print("???")
+        cats_2.finalize()
+        cats_2.print_status()
 
-        # cats_1.finalize()
-        # cats_1.print_status()
+    def generate_shake_partial(self):
+        for cqs in self.qrs.values():
+            cqs.generate_shake_partial()
+
+    def analyze_partial(self):
+        cats = CategorizedItems()
+        for cqs in self.qrs.values():
+            pss = cqs.get_stability(PType.SHKP)
+            oss = cqs.get_stability(PType.ORIG)
+            if pss == None:
+                pss = oss
+            cats.add_item(pss, cqs.base_name)
+        cats.finalize()
+        cats.print_status()
 
     # def print_shake_completeness(self):
     #     df = self.get_shake_stats()
@@ -410,6 +433,7 @@ def analyze_unsat_core():
             continue
         # print(pname)
         g = GroupCoreAnalyzer(pname, ana=Categorizer("default"))
-        g.read_shake_partial_logs()
+        # g.read_shake_partial_log()
+        # g.generate_shake_partial()
+        g.analyze_partial()
         # g.emit_build()
-        # g.analyze_shake_partial()

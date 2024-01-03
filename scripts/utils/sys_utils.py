@@ -9,10 +9,12 @@ def san_check(cond, msg):
     if not cond:
         exit_with(msg)
 
-def subprocess_run(command, debug=False, cwd=None):
+def subprocess_run(command, timeout=None, debug=False, cwd=None):
     if debug:
         print(command)
     start_time = time.time()
+    if timeout is not None:
+        command = f"timeout {timeout}s {command}"
     res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
     # milliseconds
     elapsed = round((time.time() - start_time) * 1000)
@@ -67,12 +69,3 @@ def line_count(filename):
         for i, _ in enumerate(f):
             pass
     return i + 1
-
-# def percent(a, b):
-#     return a * 100 / b
-
-# def rd_percent(a, b):
-#     return round(a * 100 / b, 2)
-
-# def rd_percent_str(a, b):
-#     return f"{rd_percent(a, b)}%"
