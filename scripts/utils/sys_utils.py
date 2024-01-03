@@ -28,7 +28,7 @@ def check_serenity_status():
     print("[INFO] building mariposa...")
     stdout, _, _ = subprocess_run("git rev-parse --abbrev-ref HEAD")
     if stdout != "master":
-        print("[WARNING] not on master branch")
+        print("[WARN] not on master branch")
     os.system("cargo build --release")
 
 def list_smt2_files(sub_root):

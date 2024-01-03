@@ -15,10 +15,9 @@ def parse_shake_log(filename):
 def key_set(d):
     return set(d.keys())
 
-def emit_partial_shake_file(output_path, fmt_contents, stamps, max_depth):
+def __emit_partial_shake_file(output_path, fmt_contents, stamps, max_depth):
     if os.path.exists(output_path):
         print(f"[WARN] {output_path} already exists")
-
     out_file = open(output_path, "w+")
     for line in fmt_contents:
         if line.startswith("(assert "):
@@ -40,7 +39,7 @@ class ShakeTask:
 
     def run_task(self, solver):
         temp_file = f"gen/{self.name_hash}.{self.depth}.smt2"
-        emit_partial_shake_file(temp_file, self.fmt_contents, self.stamps, self.depth)
+        __emit_partial_shake_file(temp_file, self.fmt_contents, self.stamps, self.depth)
         rcode, elapsed = solver.run(temp_file, SHAKE_TIMEOUT)
         return rcode, elapsed, self.depth, temp_file
 
@@ -129,11 +128,23 @@ def shake_partial(output_path, orig_path, fmt_path, log_path, remove=True):
     if remove:
         os.system(f"rm gen/{name_hash}.*.smt2")
 
-def load_shake_partial(output_path):
-    return pickle.load(open(output_path, "rb"))
+SHAKE_DEPTH_MAGIC = 4444
+
+def load_shake_partial_log(shkp_log_path):
+    from execute.solver_runner import RCode
+    data = pickle.load(open(shkp_log_path, "rb"))
+    result = dict()
+    for d, (rc, t, _) in data.items():
+        # select only unsat
+        if rc == RCode.UNSAT.value:
+            if d == -1: 
+                d = SHAKE_DEPTH_MAGIC
+            result[d] = t
+
+    return result
 
 def shake_oracle(output_path, fmt_path, log_path, depth):
     fmt_contents = list(open(fmt_path).readlines())
     stamps = parse_shake_log(log_path)
-    emit_partial_shake_file(output_path, fmt_contents, stamps, depth)
+    __emit_partial_shake_file(output_path, fmt_contents, stamps, depth)
     print(f"[INFO] {output_path} generated")

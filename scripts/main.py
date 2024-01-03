@@ -28,7 +28,7 @@ def add_experiment_option(parser):
 
 def add_project_option(parser):
     parser.add_argument("-p", "--project", required=True, help="the project name under data/projects/")
-    parser.add_argument("-t", "--type", default=ProjectType.ORIG, help="the project type under the project subroot")
+    parser.add_argument("--ptype", default=ProjectType.ORIG, help="the project type under the project subroot")
 
 def add_clear_option(parser):
     parser.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment directory and database")
@@ -112,8 +112,10 @@ if __name__ == '__main__':
         args.solver = SolverInfo(args.solver)
     if hasattr(args, "part"):
         args.part = Partition.from_str(args.part)
+    if hasattr(args, "ptype"):
+        args.ptype = ProjectType(args.ptype)
     if hasattr(args, "project"):
-        args.project = PM.load_project(args.project, args.type)
+        args.project = PM.load_project(args.project, args.ptype)
     if hasattr(args, "analyzer"):
         args.analyzer = Categorizer(args.analyzer)
 

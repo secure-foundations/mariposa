@@ -98,8 +98,11 @@ class CategorizedItems:
             if skip_empty and i.count == 0:
                 continue
             table.append([c, i.count, i.percent])
+        # sort table by percentage
+        table = [table[0]] + sorted(table[1:], key=lambda x: x[2], reverse=True)
         table.append(["total", self.total, 100])
-        print(tabulate(table, headers="firstrow", tablefmt="github", floatfmt=".2f"))
+        print(tabulate(table, headers="firstrow", 
+                       tablefmt="github", floatfmt=".2f"))
 
 def get_cdf_pts(data):
     n = len(data)

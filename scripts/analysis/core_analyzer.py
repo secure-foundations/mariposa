@@ -8,9 +8,8 @@ from execute.exp_result import QueryExpResult
 from configure.project import PM, ProjectType as PType
 from analysis.basic_analyzer import GroupAnalyzer
 from analysis.categorizer import Categorizer, Stability
-from execute.solver_runner import RCode
 from utils.sys_utils import san_check
-from utils.shake_utils import parse_shake_log, key_set, count_asserts, load_shake_partial
+from utils.shake_utils import parse_shake_log, key_set, count_asserts, load_shake_partial_log, shake_oracle, SHAKE_DEPTH_MAGIC
 from utils.analyze_utils import CategorizedItems, get_cdf_pts
 from utils.smt2_utils import *
 from utils.cache_utils import *
@@ -146,38 +145,35 @@ class CoreQueryStatus:
         return stats
 
     def read_shake_partial_log(self):
-        data = dict()
-        MAGIC = 4444
-
-        for d, (rc, t, _) in load_shake_partial(self.shkp_log_path).items():
-            if rc == RCode.UNSAT.value:
-                if d == -1: 
-                    d = MAGIC
-                data[d] = t
+        data = load_shake_partial_log(self.shkp_log_path)
+        # oss = self.get_stability(PType.ORIG)
+        # pss = self.get_stability(PType.SHKP)
 
         if len(data) == 0:
-            return "no unsat"
+            return
 
-        if len(data) == 1 and MAGIC in data:
-            return "only original"
-        
-        oss = self.get_stability(PType.ORIG)
+        orig = 1e10
 
-        best = min(data.values())
-        chosen = max(data.keys()) + 1
+        if SHAKE_DEPTH_MAGIC in data:
+            orig = data[SHAKE_DEPTH_MAGIC]
 
-        for depth, time in data.items():
-            if time <= best * 1.5:
-                # print(depth, time)
-                chosen = min(chosen, depth)
-                best = time
+        if orig < 1000:
+            return
 
-        if chosen == MAGIC:
-            # if oss == Stability.UNSTABLE:
-            #     self.print_status(PType.ORIG)
-            return oss.value + " (original)"
+        fast_time = min(data.values())
+        fast_depth = SHAKE_DEPTH_MAGIC
 
-        return "others"
+        for k, v in data.items():
+            if v < fast_time * 1.15:
+                fast_depth = min(fast_depth, k)
+
+        shkp_path = self.get_path(PType.SHKP)
+        # shake_oracle(shkp_path, self.get_path(PType.SHKF), self.shk_log_path, fast_depth)
+
+        old_path = shkp_path.replace("shake_partial/", "shake_partial_saved/")
+        cur = get_asserts(shkp_path)
+        prev = get_asserts(old_path)
+        print(len(cur), len(prev), len(key_set(cur) & key_set(prev)))
 
     def ninja_fmt_query(self):
         return f"build {self.fmt_path}: format {self.get_path(PType.ORIG)}"
@@ -288,36 +284,22 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         unified.print_status()
 
     def read_shake_partial_logs(self):
-        cats = CategorizedItems()
-        print("????")
+        # cats_0 = CategorizedItems()
+        # cats_1 = CategorizedItems()
+        ct = 0
         for cqs in self.qrs.values():
-            cat = cqs.read_shake_partial_log()
-            cats.add_item(cat, cqs.base_name)
-        cats.finalize()
-        cats.print_status()
+            cqs.read_shake_partial_log()
+        #     (f, cat) = cqs.read_shake_partial_log()
+        #     if f == "<1":
+        #         cats_0.add_item(cat, cqs.base_name)
+        #     elif f == ">=1":
+        #         cats_1.add_item(cat, cqs.base_name)
+        # cats_0.finalize()
+        # cats_0.print_status()
+        # print("")
 
-    def analyze_shake_partial(self):
-        for cqs in self.qrs.values():
-            oss = cqs.get_stability(PType.ORIG)
-            sss = cqs.get_stability(PType.SHKP)
-            depths = cqs.read_shake_partial_log()
-            if sss != Stability.STABLE:
-                cqs.print_status(PType.SHKP)
-                for d in depths:
-                    print(d, depths[d]/1000)
-                print("")
-        #     if len(depths) == 0:
-        #         cats[Stability.UNSOLVABLE].add(cqs.base_name)
-        #         continue
-        #     orc, ot = cqs.qrs[PType.ORIG].get_original_status()
-        #     # print(ot, min(depths.values()))
-        #     if orc == RCode.UNSAT.value and ot < min(depths.values()):
-        #         print("activated")
-        #         cats[oss].add(cqs.base_name)
-        #     else:
-        #         cats[sss].add(cqs.base_name)
-        # cats = CategorizedItems(cats)
-        # cats.print_status()
+        # cats_1.finalize()
+        # cats_1.print_status()
 
     # def print_shake_completeness(self):
     #     df = self.get_shake_stats()

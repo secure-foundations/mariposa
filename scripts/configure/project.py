@@ -121,7 +121,8 @@ class ProjectGroup:
     def _load_projects(self):
         for proj_dir in os.listdir(self.root_dir):
             if not ProjectType.has(proj_dir):
-                print(f"[WARNING] unknown sub project {proj_dir} for project {self.name}")
+                print(f"[WARN] unknown sub project {proj_dir} for project {self.group_name}")
+                continue
             sub_dir = os.path.join(self.root_dir, proj_dir)
             assert os.path.isdir(sub_dir)
             sub_name = f"{self.group_name}_{proj_dir}"
@@ -145,7 +146,7 @@ class ProjectManager:
         proj_name = proj_name + "_" + proj_typ.value
         if proj_name not in self.all_projects:
             if enable_dummy:
-                print(f"[WARNING] no project {proj_name}, using _empty project!")
+                print(f"[WARN] no project {proj_name}, using _empty project!")
                 return Project(proj_name, "data/projects/_empty")
             exit_with(f"[ERROR] no project {proj_name}")
         return self.all_projects[proj_name]
