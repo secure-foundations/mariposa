@@ -118,7 +118,6 @@ class SolverRunner:
             seed_options = ""
 
             if seeds is not None:
-                query_path = self.origin_path
                 seed_options = f"--sat-random-seed {seeds} --seed {seeds}"
 
             command = f"{self.path} --incremental --quiet --tlimit-per {timelimit * 1000} '{query_path}' {seed_options}"

@@ -4,6 +4,8 @@ from execute.solver_runner import RCode
 import os
 import multiprocessing as mp
 
+from configure.solver import SolverType
+
 MARIPOSA_BIN_PATH = "./target/release/mariposa"
 
 class Worker:
@@ -45,15 +47,21 @@ class Worker:
         self.solver.end_process()
 
     def run_task(self, task):
+        cvc_reseed = task.perturb == Mutation.RESEED and \
+            self.solver.type == SolverType.CVC5
         mutant_path = task.mutant_path
-        self.__generate_mutant(task)
+
+        if not cvc_reseed:
+            self.__generate_mutant(task)
 
         if task.quake:
             self.run_quake_task(task)
         else:
-            seeds = None
-            if task.perturb == Mutation.RESEED:
+            if cvc_reseed:
                 seeds = task.mut_seed
+                mutant_path = task.origin_path
+            else:
+                seeds = None
             rcode, elapsed = self.solver.run(mutant_path, self.timeout, seeds)
             self.insert_exp_row(task, mutant_path, rcode, elapsed)
 
