@@ -65,9 +65,8 @@ class Worker:
             rcode, elapsed = self.solver.run(mutant_path, self.timeout, seeds)
             self.insert_exp_row(task, mutant_path, rcode, elapsed)
 
-        if not self.keep_mutants and task.perturb is not None:
-            assert mutant_path != task.origin_path
-            os.remove(mutant_path)
+        if not self.keep_mutants and mutant_path != task.origin_path:
+            os.system(f"rm {mutant_path}")
 
 def print_eta(elapsed, cur_size, init_size):
     from datetime import timedelta
