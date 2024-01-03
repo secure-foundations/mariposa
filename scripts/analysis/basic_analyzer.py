@@ -84,7 +84,6 @@ class ExpAnalyzer:
 class GroupAnalyzer:
     def __init__(self, group_name, ana):
         self.ana = ana
-        self.qrs = dict()
         self.group_name = group_name
         self.orig: ExpAnalyzer = self.load_stability_status(PType.ORIG)
         self.group = dict()

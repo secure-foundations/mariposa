@@ -52,6 +52,7 @@ class SolverRunner:
         return str(self._si)
 
     def start_process(self, query_path, timeout):
+        assert timeout < 1000
         if self.type == SolverType.Z3:
             args = [self.path, query_path]
         elif self.type == SolverType.CVC5:
@@ -59,7 +60,7 @@ class SolverRunner:
                 "--incremental", 
                 "-q",
                 "--tlimit-per", 
-                str(timeout),
+                str(timeout * 1000),
                 query_path]
         else:
             assert False
@@ -93,6 +94,7 @@ class SolverRunner:
                 if std_out == "":
                     break
             std_out = "".join(outputs)
+            # print(std_out)
             rcode = output_as_rcode(std_out)
         else:
             assert std_out == ""
