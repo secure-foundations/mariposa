@@ -53,5 +53,8 @@
     },
     "shake": {
         "db_path": "./data/databases/shake.db"
+    },
+    "baseline_cvc": {
+        "db_path": "./data/databases/cvc.db"
     }
 }
