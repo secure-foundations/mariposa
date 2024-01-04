@@ -1,32 +1,14 @@
 from configure.project import ProjectType as PType
 from analysis.basic_analyzer import GroupAnalyzer, ExpAnalyzer
 from analysis.categorizer import Stability, Categorizer
+from utils.analyze_utils import print_sets_diff
 from tabulate import tabulate
 
 class BloatAnalyzer(GroupAnalyzer):
     def __init__(self, group_name, ana):
         super().__init__(group_name, ana)
         self.blot: ExpAnalyzer = self.load_stability_status(PType.BLOT)
-        # self.print_diff()
-
-    def print_diff(self):
-        print("[INFO] diffing:", self.group_name)
-        
-        diff = self.orig.base_names() - self.blot.base_names()
-
-        if len(diff) != 0:
-            print("[INFO] queries in orig but not in bolt:")
-            for qn in diff:
-                print("\t" + qn)
-            print(f"[INFO] {len(diff)} missing")
-        
-        diff = self.blot.base_names() - self.orig.base_names()
-
-        if len(diff) != 0:
-            print("[INFO] queries in blot but not in orig:")
-            for qn in diff:
-                print("\t" + qn)
-            print(f"[INFO] {len(diff)} missing")
+        # print_sets_diff(self.orig.base_names(), self.blot.base_names(), "orig", "blot")
 
     def get_assert_counts(self, typ):
         if typ == PType.ORIG:
@@ -41,24 +23,14 @@ class BloatAnalyzer(GroupAnalyzer):
         else:
             assert typ == PType.BLOT
             return self.blot.get_veri_times()
-        
+
     def print_status(self):
-        EXPECTED = [Stability.UNSTABLE, Stability.STABLE, Stability.UNSOLVABLE]
-        print(f"stability status original vs. bloat {self.group_name}")
+        print(f"stability status {self.group_name} original vs. bloat")
         ocasts = self.orig.get_stability_status()
         bcasts = self.blot.get_stability_status()
-        table = [["category", "original", "bloat"]]
-        for cat in EXPECTED:
-            ocs, bcs = ocasts[cat], bcasts[cat]
-            if cat not in EXPECTED:
-                assert ocs.count == 0 and bcs.count == 0
-                continue
-            oc = f"{ocs.count} ({round(ocs.percent, 2)}%)"
-            bc = f"{bcs.count} ({round(bcs.percent, 2)}%)"
-            table.append([cat, oc, bc])
-        table.append(["total", ocasts.total, bcasts.total])
-        print(tabulate(table, headers="firstrow", tablefmt="github", floatfmt=".2f"))
-        print("")
+        ocasts.print_compare_status(bcasts, skip_empty=True,
+                                    cats=[Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE], 
+                                    this_name="original", that_name="bloat")
 
 BLOAT_PROJECTS = ["v_ironfleet", "v_mimalloc", "v_noderep", "v_pagetable", "v_pmemlog"]
 
@@ -140,6 +112,8 @@ BLOAT_PROJECTS = ["v_ironfleet", "v_mimalloc", "v_noderep", "v_pagetable", "v_pm
     # print(tabulate(table, headers="firstrow", floatfmt=".2f"))
 
 def analyze_bloat():
-    ana = Categorizer("default")
-    g = BloatAnalyzer("v_mimalloc", ana)
-    g.print_status()
+    ana = Categorizer("60sec")
+    for pname in BLOAT_PROJECTS:
+        g = BloatAnalyzer(pname, ana)
+        g.print_status()
+        print("")

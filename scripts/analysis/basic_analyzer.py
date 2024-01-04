@@ -87,6 +87,7 @@ class GroupAnalyzer:
         self.group_name = group_name
         self.orig: ExpAnalyzer = self.load_stability_status(PType.ORIG)
         self.group = dict()
+        self.group_path = f"data/projects/{self.group_name}"
 
     def load_stability_status(self, typ):
         if typ == PType.ORIG:
@@ -99,6 +100,8 @@ class GroupAnalyzer:
             exp_name = "bloat"
         elif typ == PType.SHKP:
             exp_name = "shake"
+        elif typ == PType.REVL:
+            exp_name = "opaque"
         else:
             assert False
 

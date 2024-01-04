@@ -219,7 +219,6 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             if sub is None: continue
             assert sub.base_names() - self.orig.base_names() == set()
 
-        self.data_path = f"data/projects/{self.group_name}"
 
         self.qrs: Dict[str, CoreQueryStatus] = dict()
 
@@ -234,7 +233,7 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             maybe_add_query_result(_qrs, _sss, base_name, self.extd, PType.EXTD)
             maybe_add_query_result(_qrs, _sss, base_name, self.shkp, PType.SHKP)
 
-            cqs = CoreQueryStatus(self.data_path, _qrs, _sss)
+            cqs = CoreQueryStatus(self.group_path, _qrs, _sss)
             self.qrs[base_name] = cqs
 
     def get_shake_stats(self, clear=False):
@@ -271,18 +270,34 @@ class GroupCoreAnalyzer(GroupAnalyzer):
 
     def print_status(self):
         print(f"core stability status for {self.group_name}")
-        self.orig.print_stability_status()
-
-        print("")
         unified = CategorizedItems()
 
         for base_name, cqs in self.qrs.items():
             ss = cqs.get_unified_stability()
-            if ss != None:
+            if cqs.get_stability(PType.ORIG) == Stability.UNSOLVABLE:
+                continue
+            if ss is not None:
                 unified.add_item(ss, base_name)
-
         unified.finalize()
-        unified.print_status()
+
+        adjusted = CategorizedItems()
+        for base_name, cqs in self.qrs.items():
+            if base_name not in unified.tally:
+                continue
+            ss = cqs.get_stability(PType.ORIG)
+            adjusted.add_item(ss, base_name)
+        adjusted.finalize()
+
+        # adjusted.print_compare_status(unified, 
+        #                             cats=[Stability.STABLE, Stability.UNSTABLE],
+        #                             skip_empty=True,
+        #                             this_name="original", that_name="unified")
+
+        migration = adjusted.get_migration_status(unified)
+        # migration.print_status()
+        for c in migration:
+            print(f"{c}")
+            migration[c].print_status()
 
     def read_shake_partial_logs(self):
         cats_0 = CategorizedItems()
@@ -429,11 +444,11 @@ def analyze_unsat_core():
     # plot_shake_max_depth()
 
     for pname in CORE_PROJECTS:
-        if pname != "d_komodo":
-            continue
         # print(pname)
-        g = GroupCoreAnalyzer(pname, ana=Categorizer("default"))
+        g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
+        g.print_status()
+        print("")
         # g.read_shake_partial_log()
         # g.generate_shake_partial()
-        g.analyze_partial()
+        # g.analyze_partial()
         # g.emit_build()

@@ -226,10 +226,16 @@ solver: {self.solver}"""
 
         mut_size = self.num_mutant
 
+        special_convert = "opaque" in self.exp_name
+        # print(self.exp_name, special_convert)
+
         for row in rows:
             blob = np.frombuffer(row[2], dtype=int)
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
-            qr = QueryExpResult(row[0], self.proj.root_dir, self.enabled_muts, blob)
+            path = row[0]
+            if special_convert:
+                path = path.replace(".dfyxxx", ".dfy.").replace(".1.smt2", ".smt2")
+            qr = QueryExpResult(path, self.proj.root_dir, self.enabled_muts, blob)
             summaries[qr.base_name] = qr
 
         self._sanity_check_summary(set(summaries.keys()))

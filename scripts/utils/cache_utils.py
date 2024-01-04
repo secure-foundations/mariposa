@@ -13,6 +13,8 @@ def save_cache(name, obj):
         pickle.dump(obj, f)
 
 def load_cache(name):
+    if not has_cache(name):
+        return None
     path = get_cache_path(name)
     with open(path, 'rb') as f:
         return pickle.load(f)
