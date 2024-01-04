@@ -14,12 +14,14 @@
     },
     "single": {
         "mutations": [
-            "rename"
+            "shuffle",
+            "rename",
+            "reseed"
         ],
         "keep_mutants": true,
-        "num_mutants": 30,
-        "exp_timeout": 5,
-        "num_procs": 2,
+        "num_mutants": 5,
+        "exp_timeout": 60,
+        "num_procs": 5,
         "db_path": ""
     },
     "debug": {
@@ -55,5 +57,8 @@
     },
     "baseline_cvc": {
         "db_path": "./data/databases/cvc.db"
+    },
+    "synthetic": {
+        "db_path": "./data/databases/synthetic.db"
     }
 }

@@ -1,11 +1,18 @@
-[WARN] unknown sub project shake_partial.temp for project d_komodo
-[INFO] v_ironfleet original vs. bloat
+[INFO] v_ironfleet z3 vs. bloat
 [INFO] analyzer 60sec
 | category   |   original |          |   bloat |          |
 |------------|------------|----------|---------|----------|
 | stable     |        361 | 99.45 %  |     363 | 99.73 %  |
 | unstable   |          2 | 0.55 %   |       1 | 0.27 %   |
 | total      |        363 | 100.00 % |     364 | 100.00 % |
+
+[INFO] analyzer 60sec
+| category   |     cvc |              |   bloat |           |
+|------------|---------|--------------|---------|-----------|
+| stable     |     332 | 91.46 %      |     334 | 91.76 %   |
+| unsolvable |      23 | 6.34 %       |      23 | 6.32 %    |
+| unstable   |       8 | 2.2 %        |       7 | 1.92 %    |
+| total      |     363 | 100.00 %     |     364 | 100.00 %  |
 
 [INFO] v_mimalloc original vs. bloat
 [INFO] analyzer 60sec

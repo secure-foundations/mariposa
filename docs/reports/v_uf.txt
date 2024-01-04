@@ -1,4 +1,3 @@
-[WARN] unknown sub project shake_partial.temp for project d_komodo
 [INFO] v_uf_original baseline
 [INFO] analyzer default
 | category   |   count | percentage   |

@@ -8,6 +8,9 @@ class BloatAnalyzer(GroupAnalyzer):
     def __init__(self, group_name, ana):
         super().__init__(group_name, ana)
         self.blot: ExpAnalyzer = self.load_stability_status(PType.BLOT)
+        # self.orig_c: ExpAnalyzer = self.load_stability_status(PType.ORIG_CVC)
+        # self.blot_c: ExpAnalyzer = self.load_stability_status(PType.BLOT_CVC)
+
         # print_sets_diff(self.orig.base_names(), self.blot.base_names(), "orig", "blot")
 
     def get_assert_counts(self, typ):
