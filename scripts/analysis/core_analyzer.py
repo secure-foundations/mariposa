@@ -454,7 +454,7 @@ def plot_shake_max_depth():
 
 def analyze_unsat_core():
     # plot_context_retention()
-    # plot_shake_max_depth()
+    # plot_shake_max_depth()    
 
     for pname in CORE_PROJECTS:
         if pname != "d_komodo": continue

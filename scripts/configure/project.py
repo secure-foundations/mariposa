@@ -16,6 +16,7 @@ class ProjectType(str, enum.Enum):
     REVL = "reveal"
 
     ORIG_CVC = "original_cvc"
+    BLOT_CVC = "bloat_cvc"
 
     @classmethod
     def from_str(cls, s):
