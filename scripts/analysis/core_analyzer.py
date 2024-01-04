@@ -330,15 +330,27 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             cqs.generate_shake_partial()
 
     def analyze_partial(self):
-        cats = CategorizedItems()
-        for cqs in self.qrs.values():
-            pss = cqs.get_stability(PType.SHKP)
-            oss = cqs.get_stability(PType.ORIG)
-            if pss == None:
-                pss = oss
-            cats.add_item(pss, cqs.base_name)
-        cats.finalize()
-        cats.print_status()
+        # cats = CategorizedItems()
+        # for cqs in self.qrs.values():
+        #     pss = cqs.get_stability(PType.SHKP)
+        #     oss = cqs.get_stability(PType.ORIG)
+        #     if pss == None:
+        #         pss = oss
+        #     cats.add_item(pss, cqs.base_name)
+        # cats.finalize()
+        # cats.print_status()
+
+        oqrs = self.orig.get_stability_status()
+        sqrs = self.shkp.get_stability_status()
+        oqrs.print_compare_status(sqrs, 
+            cats=[Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE],
+            skip_empty=True,
+            this_name="original", that_name="partial")
+
+        migration = oqrs.get_migration_status(sqrs)
+        for c in migration:
+            print(f"[INFO] original {c} mitigation")
+            migration[c].print_status()
 
     # def print_shake_completeness(self):
     #     df = self.get_shake_stats()
@@ -445,11 +457,12 @@ def analyze_unsat_core():
     # plot_shake_max_depth()
 
     for pname in CORE_PROJECTS:
+        if pname != "d_komodo": continue
         # print(pname)
         g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
-        g.print_status()
-        print("")
+        # g.print_status()
+        # print("")
         # g.read_shake_partial_log()
         # g.generate_shake_partial()
-        # g.analyze_partial()
+        g.analyze_partial()
         # g.emit_build()

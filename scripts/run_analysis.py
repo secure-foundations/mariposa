@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from scipy.stats import gmean
 
 if __name__ == "__main__":
-    # analyze_unsat_core()
+    analyze_unsat_core()
     # analyze_bloat()
-    analyze_reveal()
-
+    # analyze_reveal()
