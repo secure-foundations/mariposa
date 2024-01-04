@@ -1,0 +1,42 @@
+[WARN] unknown sub project shake_partial.temp for project d_komodo
+[INFO] v_ironfleet original vs. bloat
+[INFO] analyzer 60sec
+| category   |   original |          |   bloat |          |
+|------------|------------|----------|---------|----------|
+| stable     |        361 | 99.45 %  |     363 | 99.73 %  |
+| unstable   |          2 | 0.55 %   |       1 | 0.27 %   |
+| total      |        363 | 100.00 % |     364 | 100.00 % |
+
+[INFO] v_mimalloc original vs. bloat
+[INFO] analyzer 60sec
+| category   |   original |          |   bloat |          |
+|------------|------------|----------|---------|----------|
+| stable     |        732 | 98.39 %  |     729 | 97.98 %  |
+| unstable   |         12 | 1.61 %   |      15 | 2.02 %   |
+| total      |        744 | 100.00 % |     744 | 100.00 % |
+
+[INFO] v_noderep original vs. bloat
+[INFO] analyzer 60sec
+| category   |   original |          |   bloat |          |
+|------------|------------|----------|---------|----------|
+| stable     |        253 | 99.22 %  |     251 | 98.43 %  |
+| unstable   |          2 | 0.78 %   |       4 | 1.57 %   |
+| total      |        255 | 100.00 % |     255 | 100.00 % |
+
+[INFO] v_pagetable original vs. bloat
+[INFO] analyzer 60sec
+| category   |   original |          |   bloat |          |
+|------------|------------|----------|---------|----------|
+| stable     |        325 | 98.48 %  |     325 | 97.89 %  |
+| unstable   |          4 | 1.21 %   |       6 | 1.81 %   |
+| unsolvable |          1 | 0.3 %    |       1 | 0.3 %    |
+| total      |        330 | 100.00 % |     332 | 100.00 % |
+
+[INFO] v_pmemlog original vs. bloat
+[INFO] analyzer 60sec
+| category   |   original |          |   bloat |          |
+|------------|------------|----------|---------|----------|
+| stable     |        121 | 100.0 %  |     120 | 99.17 %  |
+| unstable   |          0 | 0.0 %    |       1 | 0.83 %   |
+| total      |        121 | 100.00 % |     121 | 100.00 % |
+

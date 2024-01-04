@@ -3,7 +3,6 @@ from analysis.basic_analyzer import GroupAnalyzer, ExpAnalyzer
 from analysis.categorizer import Stability, Categorizer
 from utils.analyze_utils import print_sets_diff
 from utils.cache_utils import *
-from tabulate import tabulate
 
 class RevalAnalyzer(GroupAnalyzer):
     def __init__(self, group_name, ana):

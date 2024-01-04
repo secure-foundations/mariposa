@@ -1,0 +1,106 @@
+[WARN] unknown sub project shake_partial.temp for project d_komodo
+[INFO] d_komodo adjusted vs. unified
+[INFO] analyzer 60sec
+| category   |   adjusted |          |   unified |          |
+|------------|------------|----------|-----------|----------|
+| stable     |       1860 | 93.47 %  |      1955 | 98.24 %  |
+| unstable   |        130 | 6.53 %   |        35 | 1.76 %   |
+| total      |       1990 | 100.00 % |      1990 | 100.00 % |
+[INFO] adjusted stable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |    1842 | 99.03 %      |
+| unstable   |      18 | 0.97 %       |
+| total      |    1860 | 100.00 %     |
+[INFO] adjusted unstable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |     113 | 86.92 %      |
+| unstable   |      17 | 13.08 %      |
+| total      |     130 | 100.00 %     |
+
+[WARN] d_lvbkv_shake_partial_z3_4_12_2_sum does not exist, creating dummy data!
+[INFO] d_lvbkv adjusted vs. unified
+[INFO] analyzer 60sec
+| category   |   adjusted |          |   unified |          |
+|------------|------------|----------|-----------|----------|
+| stable     |       5039 | 95.94 %  |      5180 | 98.63 %  |
+| unstable   |        213 | 4.06 %   |        72 | 1.37 %   |
+| total      |       5252 | 100.00 % |      5252 | 100.00 % |
+[INFO] adjusted stable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |    5008 | 99.38 %      |
+| unstable   |      31 | 0.62 %       |
+| total      |    5039 | 100.00 %     |
+[INFO] adjusted unstable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |     172 | 80.75 %      |
+| unstable   |      41 | 19.25 %      |
+| total      |     213 | 100.00 %     |
+
+[WARN] d_fvbkv_shake_partial_z3_4_12_2_sum does not exist, creating dummy data!
+[INFO] d_fvbkv adjusted vs. unified
+[INFO] analyzer 60sec
+| category   |   adjusted |          |   unified |          |
+|------------|------------|----------|-----------|----------|
+| stable     |       4963 | 96.67 %  |      5054 | 98.44 %  |
+| unstable   |        171 | 3.33 %   |        80 | 1.56 %   |
+| total      |       5134 | 100.00 % |      5134 | 100.00 % |
+[INFO] adjusted stable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |    4929 | 99.31 %      |
+| unstable   |      34 | 0.69 %       |
+| total      |    4963 | 100.00 %     |
+[INFO] adjusted unstable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |     125 | 73.1 %       |
+| unstable   |      46 | 26.9 %       |
+| total      |     171 | 100.00 %     |
+
+[WARN] no project fs_dice_shake_partial, using _empty project!
+[WARN] fs_dice_shake_partial_z3_4_12_2_sum does not exist, creating dummy data!
+[INFO] fs_dice adjusted vs. unified
+[INFO] analyzer 60sec
+| category   |   adjusted |          |   unified |          |
+|------------|------------|----------|-----------|----------|
+| stable     |       1474 | 98.27 %  |      1491 | 99.4 %   |
+| unstable   |         26 | 1.73 %   |         9 | 0.6 %    |
+| total      |       1500 | 100.00 % |      1500 | 100.00 % |
+[INFO] adjusted stable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |    1469 | 99.66 %      |
+| unstable   |       5 | 0.34 %       |
+| total      |    1474 | 100.00 %     |
+[INFO] adjusted unstable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |      22 | 84.62 %      |
+| unstable   |       4 | 15.38 %      |
+| total      |      26 | 100.00 %     |
+
+[WARN] fs_vwasm_shake_partial_z3_4_12_2_sum does not exist, creating dummy data!
+[INFO] fs_vwasm adjusted vs. unified
+[INFO] analyzer 60sec
+| category   |   adjusted |          |   unified |          |
+|------------|------------|----------|-----------|----------|
+| stable     |       1726 | 99.88 %  |      1722 | 99.65 %  |
+| unstable   |          2 | 0.12 %   |         6 | 0.35 %   |
+| total      |       1728 | 100.00 % |      1728 | 100.00 % |
+[INFO] adjusted stable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |    1721 | 99.71 %      |
+| unstable   |       5 | 0.29 %       |
+| total      |    1726 | 100.00 %     |
+[INFO] adjusted unstable mitigation
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |       1 | 50.0 %       |
+| unstable   |       1 | 50.0 %       |
+| total      |       2 | 100.00 %     |
+

@@ -43,7 +43,8 @@ class ExpAnalyzer:
         return self.__cats
 
     def print_stability_status(self, verbosity=0):
-        print(f"stability status for {self.proj.full_name} {self.exp_name}")
+        print(f"[INFO] {self.proj.full_name} {self.exp_name}")
+        print(f"[INFO] analyzer {self.ana.name}")
 
         self.__cats.print_status(skip_empty=True)
 
@@ -61,7 +62,7 @@ class ExpAnalyzer:
                 continue
             print(f"[INFO] listing {cat} queries...")
             for qs in cs:
-                print("")
+                self[qs].enforce_timeout(self.ana._timeout)
                 self[qs].print_status()
 
     def get_assert_count(self, base_name):

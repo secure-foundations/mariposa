@@ -1,6 +1,7 @@
 import numpy as np
 from enum import Enum
 from statsmodels.stats.proportion import proportions_ztest
+from execute.exp_part import Mutation
 from utils.sys_utils import *
 from utils.analyze_utils import *
 from execute.solver_runner import RCode
@@ -31,6 +32,7 @@ class Categorizer:
         objs = json.loads(open(ANALYZER_CONFIG_PATH).read())
         obj = objs["default"]
         obj.update(objs[name])
+        self.name = name
 
         self.confidence = float(obj["confidence"])
         timeout = int(obj["timeout"])
@@ -142,8 +144,10 @@ class Categorizer:
             return ress.pop(), votes
         # ress -= {Stability.UNKNOWN}
         return Stability.UNSTABLE, votes
-
-    def categorize_queries(self, qss, muts=None) -> CategorizedItems:
+    
+    # [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
+    def categorize_queries(self, qss, 
+                           muts=None) -> CategorizedItems:
         cats = CategorizedItems([c for c in Stability])
         for qs in qss:
             res, _ = self.categorize_query(qs, muts)

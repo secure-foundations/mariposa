@@ -101,7 +101,7 @@ class SolverRunner:
             print(f"[INFO] solver timeout in quake, elapsed {elapsed}, early termination")
             self.failed = True
             rcode = RCode.TIMEOUT
-        return rcode.value, elapsed
+        return rcode.value, elapsed * 1000
 
     def end_process(self):
         self.proc.stdout.close()

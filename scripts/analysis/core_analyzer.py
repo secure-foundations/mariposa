@@ -269,7 +269,8 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         return df
 
     def print_status(self):
-        print(f"core stability status for {self.group_name}")
+        print(f"[INFO] {self.group_name} adjusted vs. unified")
+        print(f"[INFO] analyzer {self.ana.name}")
         unified = CategorizedItems()
 
         for base_name, cqs in self.qrs.items():
@@ -288,15 +289,15 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             adjusted.add_item(ss, base_name)
         adjusted.finalize()
 
-        # adjusted.print_compare_status(unified, 
-        #                             cats=[Stability.STABLE, Stability.UNSTABLE],
-        #                             skip_empty=True,
-        #                             this_name="original", that_name="unified")
+        adjusted.print_compare_status(unified, 
+                                    # cats=[Stability.STABLE, Stability.UNSTABLE],
+                                    skip_empty=True,
+                                    this_name="adjusted", that_name="unified")
 
         migration = adjusted.get_migration_status(unified)
         # migration.print_status()
         for c in migration:
-            print(f"{c}")
+            print(f"[INFO] adjusted {c} mitigation")
             migration[c].print_status()
 
     def read_shake_partial_logs(self):

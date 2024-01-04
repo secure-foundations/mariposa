@@ -2,7 +2,7 @@ from configure.project import ProjectType as PType
 from analysis.basic_analyzer import GroupAnalyzer, ExpAnalyzer
 from analysis.categorizer import Stability, Categorizer
 from utils.analyze_utils import print_sets_diff
-from tabulate import tabulate
+from utils.cache_utils import *
 
 class BloatAnalyzer(GroupAnalyzer):
     def __init__(self, group_name, ana):
@@ -25,7 +25,8 @@ class BloatAnalyzer(GroupAnalyzer):
             return self.blot.get_veri_times()
 
     def print_status(self):
-        print(f"stability status {self.group_name} original vs. bloat")
+        print(f"[INFO] {self.group_name} original vs. bloat")
+        print(f"[INFO] analyzer {self.ana.name}")
         ocasts = self.orig.get_stability_status()
         bcasts = self.blot.get_stability_status()
         ocasts.print_compare_status(bcasts, skip_empty=True,
