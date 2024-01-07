@@ -7,7 +7,7 @@
 | total      |        363 | 100.00 % |     364 | 100.00 % |
 
 [INFO] analyzer 60sec
-| category   |     cvc |              |   bloat |           |
+| category   |     cvc |              |   cvc_bloat |           |
 |------------|---------|--------------|---------|-----------|
 | stable     |     332 | 91.46 %      |     334 | 91.76 %   |
 | unsolvable |      23 | 6.34 %       |      23 | 6.32 %    |

@@ -68,6 +68,7 @@ class CategorizedItems:
             self._items[c] = set()
         self._allow_unknown = len(categories) == 0
         self.finalized = False
+        self.tally = set()
 
     def add_item(self, cat, item):
         assert not self.finalized
@@ -75,16 +76,12 @@ class CategorizedItems:
             san_check(self._allow_unknown, 
                     f"[ERROR] unknown category {cat}")
             self._items[cat] = set()
+        self.tally.add(item)
         self._items[cat].add(item)
 
     def finalize(self):
         assert not self.finalized
         total = sum([len(i) for i in self._items.values()])
-        if total != 0:
-            self.tally = set.union(*self._items.values())
-        else:
-            self.tally = set()
-
         for c, its in self._items.items():
             if total == 0:
                 self._items[c] = CatItem(c, its, 0)
@@ -213,3 +210,7 @@ def get_cdf_pts(data):
     n = len(data)
     y = np.arange(n) * 100 / float(n) 
     return np.sort(data), np.insert(y[1:], n-1, 100)
+
+def tex_fmt_percent(x):
+    assert x >= 0 and x <= 100
+    return f"%.1f" % x + r"\%"

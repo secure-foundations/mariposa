@@ -64,7 +64,7 @@ class QueryExpResult:
     def print_status(self):
         print(f"[INFO] to copy query path:\ncp '{self.query_path}' temp/woot.smt2")
         if self.timeout != None:
-            print(f"[INFO] alternative timeout: {self.timeout}s")
+            print(f"[INFO] alternative timeout: {self.timeout/1000}s")
         table = [["mutation"] + [str(rc) for rc in EXPECTED_CODES] 
                  + ["mean", "std"]]
         v_rcode, v_time = self.get_original_status()

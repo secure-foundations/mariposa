@@ -3,6 +3,7 @@ from configure.project import PM
 from analysis.core_analyzer import analyze_unsat_core
 from analysis.bloat_analyzer import analyze_bloat
 from analysis.reval_analyzer import analyze_reveal
+from analysis.synth_analyzer import analyze_synth
 # from analysis.basic_analyzer import ExpAnalyzer
 # from execute.exp_part import ExpPart
 # from configure.solver import SolverInfo
@@ -12,5 +13,6 @@ from scipy.stats import gmean
 
 if __name__ == "__main__":
     analyze_unsat_core()
+    # analyze_synth()
     # analyze_bloat()
     # analyze_reveal()

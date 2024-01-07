@@ -1,0 +1,1477 @@
+
+rule instrument-query
+    command = ./target/release/mariposa -i $in -o $out -m unsat-core-label-assert
+
+rule create-mini-query
+    command = ./target/release/mariposa -i $in -o $out -m unsat-core-reduce-assert --core-file-path $core
+
+rule format
+    command = ./target/release/mariposa -i $in -o $out
+
+rule z3-dump-core
+    command = ./solvers/z3-4.12.2 $in -T:150 > $out
+
+rule shake
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --shake-log-path $log
+
+rule shake-special
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --shake-log-path $log --shake-max-symbol-frequency 25
+
+rule strip
+    command = ./target/release/mariposa -i $in -o $out -m remove-unused
+
+rule shake-partial
+    command = python3 scripts/run_shake.py partial $out $in $full $log
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.10.smt2
+    log = cache/shk/d61ac98d8afcf5f92e0b2bd044cc76596012d74ff208653b732d19193736260a.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.31.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.31.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.31.smt2
+    log = cache/shk/5ce8fecbbb6d31e7dcc6ebcc2d1fdcdd3fb70277ea8c4e14409fe669281ab48a.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.4.smt2
+    log = cache/shk/38df1c169ec8c610334e7de2c01dfd64e63122de45697b5007220de9c296deb9.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.36.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.36.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.36.smt2
+    log = cache/shk/e07eeeae310121d3e7d1b31b90e348fa5b1ef965eaba6c81dd924a44612a448a.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.3.smt2
+    log = cache/shk/ec88fe0def1ffdb134cb4a8df59aeead5f45f59d81e80c53524725528a7e7adf.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.2.smt2
+    log = cache/shk/332afc9c0a3535fc59eb26eb865bbe5ee109c3ae50edd55790f20a0aa1c4b64c.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.15.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.15.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.15.smt2
+    log = cache/shk/1b33892916200c436b3aef120a20a7dbb14fdd13bde7dd450c8285a2490e5d4f.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.7.smt2
+    log = cache/shk/0cbc9f03ed386b23ee2a9cd6dddc1797ee26deb5abba44b32974a129e9f3b308.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.11.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.11.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.11.smt2
+    log = cache/shk/dd7e9e88bd920a753da992662bcacd3b791d6a335fabc4b91812666af4dd7cfa.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.12.smt2
+    log = cache/shk/e4b4cbbba40fe8127549c06e164d3a05eda46f6914d63ff2f3e0b75742abf233.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.9.smt2
+    log = cache/shk/60b2f073850602354ce98f11bf218a43d76eaf39b72ed72fcdb22b2c134ec96e.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.18.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.18.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.18.smt2
+    log = cache/shk/35c097f700481ea13e6c52fa24bd5a3fcdfa098948cbf79f16e1c30cdc051b57.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.10.smt2
+    log = cache/shk/15e9fdbb9ed8041a7f322564424b595b4c665c30a9efd068f2a7a23dbb5ec1c4.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.47.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.47.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.47.smt2
+    log = cache/shk/288f5cc7381f27e7d2d88037396ba489848de22d8274eabd1a201d4fabcee2f9.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.33.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.33.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.33.smt2
+    log = cache/shk/7cf592effc09befdc9631e669561e758411a434f4d13984d439c3722be0ef402.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.37.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.37.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.37.smt2
+    log = cache/shk/cbf35ed89841779c82e0b9a764e31be91b6db7dcd670039fd3ee71816523dd48.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.19.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.19.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.19.smt2
+    log = cache/shk/e8e4e9a300b2de9ffbfd435bb180a5b71cef94bd3b1590ecf9ee09ddaed3a19a.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.19.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.19.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.19.smt2
+    log = cache/shk/09c94642214a3a34388c6b01f6540fb79dcd36d5ad2119a5fd462780f2c3af1c.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.15.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.15.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.15.smt2
+    log = cache/shk/bfa91ba8099686119ebc9b461af8fb0f46079d9073a1c4d30db323c09e4ae1ea.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.51.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.51.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.51.smt2
+    log = cache/shk/1cf5c0413362bfb1045007594f174dc01d0674fe0a61c27ae8190720c39d6925.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.7.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.7.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.7.smt2
+    log = cache/shk/26f3ae1f0475f82f627c7ff5ae5a4c4707fde6ec4c4eff006d96080ce8497b9e.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.32.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.32.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.32.smt2
+    log = cache/shk/5df9f1a3162d05a5e2e41d739257be6780e98b9f8206d9cbb81af1149cd7caa4.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.14.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.14.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.14.smt2
+    log = cache/shk/610e1fb8443fdd0b75abc84a1410377225a7270a370c70fb4aaffb05569209a0.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.49.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.49.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.49.smt2
+    log = cache/shk/9c6932ea7b33474d01695fe487b8cdc208fb3c1ef5ffb4759e5fcfe3028c637f.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.20.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.20.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.20.smt2
+    log = cache/shk/62eb0eb23978120d66f5482967673ba1bdaabb4a71225141ce6ac43ad01ee11d.shk
+
+build data/projects/v_ironfleet/shake_partial/keys_t.3.shkp_log: shake-partial data/projects/v_ironfleet/original/keys_t.3.smt2
+    full = data/projects/v_ironfleet/shake_full/keys_t.3.smt2
+    log = cache/shk/7b0c05a57b32369a2f35bb448aa42d258fa99c950cca557d7818ddb4edc8a8e2.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.23.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.23.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.23.smt2
+    log = cache/shk/173085ad03f272e17f383f664475a5b5db18c5a02f5fe61d093108d2b085c464.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.44.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.44.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.44.smt2
+    log = cache/shk/30d00ac553caf54caa15b8ad97ee33339f4922e82148cf97513a45d591894b46.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.3.smt2
+    log = cache/shk/4465e176a31f037364c9cd1a2d874934a3a9e55033194e17dab3d88ab2a5813e.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.19.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.19.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.19.smt2
+    log = cache/shk/bfa76f5c85a463b627ab3f776311b0c4745c0fe7334de2a954a0b6a7c4237c1e.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.40.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.40.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.40.smt2
+    log = cache/shk/d58ed54fa548d7b6f330b7e84c53ed310f587e15895751769e8b63aafb2a9371.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.7.smt2
+    log = cache/shk/39937fadb7f7f393c7a295f8be2bbc4534999128c3c12c87ad55e4ff5aa6bc16.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.24.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.24.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.24.smt2
+    log = cache/shk/e4679582f565ab0b6692166d50be039bfc36bd1ef4486027f1d948f3c62f95f9.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.52.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.52.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.52.smt2
+    log = cache/shk/f4df3d6bb1d6611b78ef0e9958a2f2b4ba2eb6fd3d48e2302ba65507a45ef200.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.17.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.17.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.17.smt2
+    log = cache/shk/3d05258420fd68f85ef65ae7473c06077d7162300eaabe76f449f7a70c935dd8.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.16.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.16.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.16.smt2
+    log = cache/shk/8af5d2f3694a257bd148ce951be8d76c6e6b5a9d2a07c4e25e04dac3ccb579dc.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.26.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.26.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.26.smt2
+    log = cache/shk/68009f07e96a3e8631fe72ad0aa0637696ac012992ec585e5524f1436124bc40.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.5.smt2
+    log = cache/shk/f014d91fe8af6f9a983e47e8cd5ab7d9b3b182730ed65421524f377973d09948.shk
+
+build data/projects/v_ironfleet/shake_partial/net_sht_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/net_sht_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/net_sht_v.4.smt2
+    log = cache/shk/5bfc9047ed384d00d14f0a0d4f85e9924b8551e5d716925c42652b7d027cd421.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.48.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.48.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.48.smt2
+    log = cache/shk/9df38c7402ef7595292a65739e920724b426f63dcd23115a30e65f6a3414329a.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.11.smt2
+    log = cache/shk/6ba356a862eea635d65ef787f5605183072ce81c55b631e62be9f24c59361ca7.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.11.smt2
+    log = cache/shk/fc289ed01971f66c0dfec7dbbb757f7930cb4cf995b064635da63dad98f12ed5.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.7.smt2
+    log = cache/shk/7ba9ecf38384195d0cf437a0df4f206dcf967bcab27d1981d6d2945d6e50946c.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.46.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.46.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.46.smt2
+    log = cache/shk/105bf60a9ab7e5765a042e3500f0a4918d22f9767e58f4abcbd48b7b0300f934.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.34.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.34.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.34.smt2
+    log = cache/shk/d12f811af61ad88e1e6c533369874f105153848421fe87ab2e5c6ee43382860f.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.2.smt2
+    log = cache/shk/831e3bf52fb1709dd321dd025640ea7a54c63081b175d2b8fbddc74e2c5ba986.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.4.smt2
+    log = cache/shk/af16ee9c1544488923582a79f2a2e9f8bf853e2adeb4a59a306e7af0f71eb1a3.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.16.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.16.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.16.smt2
+    log = cache/shk/1a956afcb7493a932b626d0801234615d81423f109797af89531cffa89059aeb.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.38.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.38.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.38.smt2
+    log = cache/shk/801d0c743c666b49bfb82aa671401c1fe866a3490e2155cccc6ec8fba8690e19.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.26.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.26.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.26.smt2
+    log = cache/shk/b12b8af9118f3ee59e8f19b863b47e02928e7a456124f34e9ceef6b97f47fd22.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.15.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.15.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.15.smt2
+    log = cache/shk/b1b4e7aed959fd222ea9aaaefb0b28281e8dfe40495d957d18d59f4c712c405f.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.1.smt2
+    log = cache/shk/4c173814ec85dc35f46dedf7fcdee04c1bd54779bb330f127edf5249dcdac285.shk
+
+build data/projects/v_ironfleet/shake_partial/io_t.4.shkp_log: shake-partial data/projects/v_ironfleet/original/io_t.4.smt2
+    full = data/projects/v_ironfleet/shake_full/io_t.4.smt2
+    log = cache/shk/7b8fdaa14d2f9cee7a9b4b54604e9fe3702b12dd042793770496350f0cead2a5.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.28.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.28.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.28.smt2
+    log = cache/shk/38b67bbc1dc6bc40b0895b197903cca263fc5e07ca94b2e54f719163cb11f598.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.21.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.21.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.21.smt2
+    log = cache/shk/b92694620e4ea19b74b484af30a5c13412dba8a664734ee5ab468bb93d08cc62.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.10.smt2
+    log = cache/shk/48c778609f3af31ff520eb626446551c9385b1611b16ac9503cf223caabbdb22.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.29.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.29.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.29.smt2
+    log = cache/shk/5a0eb4854e450d5f2ca5a3972e141c8fedb43a7a48d9a97bd6616e4dc1ba1a4c.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.11.smt2
+    log = cache/shk/d0f9756ff8a3b9b944a21433208b7bbe4dd74f677a7ea7b9392d3feb892a1753.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.41.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.41.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.41.smt2
+    log = cache/shk/f7d4aa9067573adae18bfb38c5d8518476cd279414853aeba6ba8b367e3a8d31.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.6.smt2
+    log = cache/shk/d7178a5b7f5ec7e683d662ee1ad42805233d085c8eb36d075ae7e79f2367c6e7.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.43.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.43.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.43.smt2
+    log = cache/shk/0cd3b955466309927d9404830801a9f139624673cea5bb5d9f4f507320ed3b78.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.12.smt2
+    log = cache/shk/9bccf06f2a492e96a3f6656ddfc4ecac8f8ac15f126dd460b04275b1d1f33495.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.34.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.34.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.34.smt2
+    log = cache/shk/1627563d101430b900c1e39f3e1de1db5abbefcc08d9457ddd5c5cf9aaa50f85.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.30.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.30.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.30.smt2
+    log = cache/shk/3058e811b289c0682e9671aff3ec9c3512ba28376f61136bcb515c91b8e0c78a.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.5.smt2
+    log = cache/shk/0c60cc31b49e4363e6cb9c8a8e422f87ba779473b1ac6b64cd007abe5739b075.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.44.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.44.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.44.smt2
+    log = cache/shk/6964ab77bbc8f7d3baf4b5fe6470697e850ba37eea66f19c405af338dca47421.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.14.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.14.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.14.smt2
+    log = cache/shk/1b10b00312227c71c5c1c114d6a59715de8a179cdca51cbd2e4f79e908751132.shk
+
+build data/projects/v_ironfleet/shake_partial/endpoint_hashmap_t.1.shkp_log: shake-partial data/projects/v_ironfleet/original/endpoint_hashmap_t.1.smt2
+    full = data/projects/v_ironfleet/shake_full/endpoint_hashmap_t.1.smt2
+    log = cache/shk/3927a2b067d0af813c8c1bb5bcbfb98c3b3acbd5b1375c24ff35bbf944e0fccb.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.18.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.18.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.18.smt2
+    log = cache/shk/d234ff535419269fdbc986455275990a5666a55980cc03f82fe1e01db93f66aa.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.17.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.17.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.17.smt2
+    log = cache/shk/33e2b85348f11202e10ec826b96555aaf4d75e8c93c1c046b383c3695c97c434.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.40.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.40.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.40.smt2
+    log = cache/shk/520a462a1a1ac1dc9f243a792d3dbb71019f9f9f2bddfecf381b2a011818f796.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.9.smt2
+    log = cache/shk/7d4dd1d70fc2d5fa76ca4a99b31f399a918d59bae5ce0456aadc6acbe70b2fe5.shk
+
+build data/projects/v_ironfleet/shake_partial/io_t.1.shkp_log: shake-partial data/projects/v_ironfleet/original/io_t.1.smt2
+    full = data/projects/v_ironfleet/shake_full/io_t.1.smt2
+    log = cache/shk/f071ed26b42407242726f23852a3dbc1f70a7fa5d7d91758630434fcc016d614.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.5.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.5.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.5.smt2
+    log = cache/shk/5dd6ed3bf3033ccc07c49e27705b07c00cd9860350ed5aafc3ef076c7087109d.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.10.smt2
+    log = cache/shk/c6ae5b6d27aa790cb41c371f50220ac81e650472251f2ba7477b63b5aec4f8e2.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.3.smt2
+    log = cache/shk/a678c2875c61b5c92006875984e135dd53ffc38285a9ffbd6b8e7ca7276d4e35.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.7.smt2
+    log = cache/shk/d16c8a3e539a8345734a398b571c79759dd793c468d7586b44a79ab43196762d.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.27.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.27.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.27.smt2
+    log = cache/shk/8e4b51498b929d022a8c868df8a18651c9ace14c6894334ec76e22e467d61e7e.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.27.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.27.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.27.smt2
+    log = cache/shk/69b39dac04262fa237a3f902a17b271feee2299e1480626817e24432de99c7f3.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.7.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.7.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.7.smt2
+    log = cache/shk/38b36912404c6afddc2d5051605df039ed838d79dfd8aa4f416ec3c9c22cebbf.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.8.smt2
+    log = cache/shk/fe348d5e3d6b95766fcbd0e740d5098a9d2a362d03ec72b65dbd72a39ff411a1.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.53.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.53.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.53.smt2
+    log = cache/shk/73b98fc875f260d8bb8ac4790292f0eccee02271a4118323478d8c3503614ead.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.42.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.42.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.42.smt2
+    log = cache/shk/ae73dbebe64ae5c1a176dd58e6ab2dcd18c7820028924e3878eef129bd1e3a9b.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.24.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.24.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.24.smt2
+    log = cache/shk/0af4e598be9dc3b0b8ef1b1b8a291ff7ac3ad64534f0f47f2d34ba1686cef078.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.1.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.1.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.1.smt2
+    log = cache/shk/f4cf1ade22b0117b01652066ea6ea61f7dfc5a5cf47dbd113430de3fdeb80bfb.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.18.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.18.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.18.smt2
+    log = cache/shk/7c56941db3d4b31ff96c274f0cbf7625a549ac7ddb97a77fb880d2a50fb94176.shk
+
+build data/projects/v_ironfleet/shake_partial/net_sht_v__send_packet_seq.1.shkp_log: shake-partial data/projects/v_ironfleet/original/net_sht_v__send_packet_seq.1.smt2
+    full = data/projects/v_ironfleet/shake_full/net_sht_v__send_packet_seq.1.smt2
+    log = cache/shk/8cac93e9a221e9c7f9a88a21486a1e9131dbede2cd42cc451b06023c6705c432.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.18.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.18.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.18.smt2
+    log = cache/shk/b5b8b1a0103984472fa168f3cb87be3ad48ac435ba8293c93b88d784edb11304.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.11.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.11.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.11.smt2
+    log = cache/shk/59d8ea383dcaacc393e9945431ce54703aa3dd02b65576fa06241a22ec64da7e.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.41.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.41.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.41.smt2
+    log = cache/shk/ea0c34daeaaf944ffe7450b3da763f61a5283e7f12dc44b07838570582d40904.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.4.smt2
+    log = cache/shk/c278ca078346ee44245196c8fc3518150ccefefa6977effbfe8b51ac1f3d170e.shk
+
+build data/projects/v_ironfleet/shake_partial/io_t.3.shkp_log: shake-partial data/projects/v_ironfleet/original/io_t.3.smt2
+    full = data/projects/v_ironfleet/shake_full/io_t.3.smt2
+    log = cache/shk/700419186f6ec69715d9f5c2c727b95774b6addf83cc9079612545154fdd04ba.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.29.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.29.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.29.smt2
+    log = cache/shk/a0e6b4302daf11736caad3ed7cb7657db9aea82d553328a45c2989957801aae5.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.1.smt2
+    log = cache/shk/1d7ead73a0b4d6f73eb5a88961361807229d875befd56e843e38f92761c15f06.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.8.smt2
+    log = cache/shk/5067190a646a20565292538ccdce8416dd5730efaf1a56601a880e0fd0e5cc91.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.4.smt2
+    log = cache/shk/ee4d9e2ebacd57beec4e3e8abc5a893fc22b9acd284c7769cfd5591cc30139a3.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.27.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.27.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.27.smt2
+    log = cache/shk/7e67b327789488d4354c43ac694f6e9fc1f4c4e1a2575d7021a6a3e58bd652a1.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.12.smt2
+    log = cache/shk/397ec677614e9bed12406a3adf9d48231fe7b56642066f33ffb66e07c163f1ec.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.47.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.47.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.47.smt2
+    log = cache/shk/44d7e407a62533c2f3ca034d35bec6fed04925d5c74b570133b3da37d8d515c9.shk
+
+build data/projects/v_ironfleet/shake_partial/main_t.2.shkp_log: shake-partial data/projects/v_ironfleet/original/main_t.2.smt2
+    full = data/projects/v_ironfleet/shake_full/main_t.2.smt2
+    log = cache/shk/cc7fa7c9027687bee720acaa041388fd1907ef2543c98448da22cbc87cfb99f9.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.49.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.49.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.49.smt2
+    log = cache/shk/3cb10d8575d9eabaf210adee614ff3a309e59d8bc221d1e81c998d5433856156.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_vlib!verus_extra.seq_lib_v.lemma_seq_fold_left_sum_le._01.1.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_vlib!verus_extra.seq_lib_v.lemma_seq_fold_left_sum_le._01.1.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_vlib!verus_extra.seq_lib_v.lemma_seq_fold_left_sum_le._01.1.smt2
+    log = cache/shk/92caf576090d64ae3f9b6b7b1ca811c799e7a2cbb57024e8322491279dacd2a4.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.21.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.21.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.21.smt2
+    log = cache/shk/27fb86e9ecefca256a77900aa01368f8231091773c4c98baedb0176d431f4b3a.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.12.smt2
+    log = cache/shk/5069cbbbf8f0a574af572dc31be13efeddae64f72adc53ab54962912d425daf4.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.22.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.22.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.22.smt2
+    log = cache/shk/907857951d95ecfcb35e1e582483a1a44a6e86af4a7bf2a3ac6f571023390f02.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.35.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.35.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.35.smt2
+    log = cache/shk/a4eda22cbda42420a349c13148f342d2f5151351d816d9276a87e5d1d22b953f.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__choose_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__choose_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__choose_v.1.smt2
+    log = cache/shk/e3918b47eec741ee41cf34ba3675473ef97593e0df183e42cbbeb8b7902b2707.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.46.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.46.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.46.smt2
+    log = cache/shk/14e4613bf9e7f2814e003fe67840f15ed2b8c614396c941a39f95d46218d4c96.shk
+
+build data/projects/v_ironfleet/shake_partial/keys_t.5.shkp_log: shake-partial data/projects/v_ironfleet/original/keys_t.5.smt2
+    full = data/projects/v_ironfleet/shake_full/keys_t.5.smt2
+    log = cache/shk/6ef4f1f8bd9611d260b64f57bbd79065ea32822b590fc8b103cd0ce626ff2909.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.19.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.19.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.19.smt2
+    log = cache/shk/7afb23153b2e59c4d8f06670ec6aa9b295d8fcdcc04508f8ab8e2e707f8809fe.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.14.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.14.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.14.smt2
+    log = cache/shk/4c07a9ecbb5397e0e4c502892c330f6736138c01913f86eccb5f8414e00992ac.shk
+
+build data/projects/v_ironfleet/shake_partial/keys_t.2.shkp_log: shake-partial data/projects/v_ironfleet/original/keys_t.2.smt2
+    full = data/projects/v_ironfleet/shake_full/keys_t.2.smt2
+    log = cache/shk/5da8c10d1f4bd0456fcd22a0a12f07cd999a785cfdf2ead04be66a55dd9d77f8.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.44.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.44.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.44.smt2
+    log = cache/shk/c715661834567dbed1892316b9d212cc61efa9a1193fe69d5c4ff31300689a25.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.15.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.15.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.15.smt2
+    log = cache/shk/ac10279e13d35dcc603628490c8a443ac093a39babf5c2aa4f5ee82da42244c5.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.14.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.14.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.14.smt2
+    log = cache/shk/00b141f880addd2e2ac1b37b56f8b3d920696406e77e65536a649365f917eaf2.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.6.smt2
+    log = cache/shk/111256b5639ae0cf5b0384f95add57fac66da8eb8b95f76ae45643268f83f7ec.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.12.smt2
+    log = cache/shk/4fb7e93a3622937ef425cf693340131f4d3f836c53cc23addc4646dfc5ce3513.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.8.smt2
+    log = cache/shk/5d16b0a121ef124cc3371a979c06af5bf01c72d094dca818308801583df73fd0.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.25.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.25.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.25.smt2
+    log = cache/shk/2b95a43abf27b991cfce588b187da831f6ca0bd0ecda3015152160191d8194eb.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.2.smt2
+    log = cache/shk/c12593391e5067f7d135e5edd70591f48ff821e77716fd0ef399b7e82e02c615.shk
+
+build data/projects/v_ironfleet/shake_partial/net_sht_v__sht_marshal_data_injective.1.shkp_log: shake-partial data/projects/v_ironfleet/original/net_sht_v__sht_marshal_data_injective.1.smt2
+    full = data/projects/v_ironfleet/shake_full/net_sht_v__sht_marshal_data_injective.1.smt2
+    log = cache/shk/9bba47135aae5f7785ee561b6a700e7c4837fb2d5efde877240a16fafaa70f7e.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.1.smt2
+    log = cache/shk/59b7576945cae995081f8d3780024dbd1e94c96a879458935bb82b32dcd4450f.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.16.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.16.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.16.smt2
+    log = cache/shk/22c41afbd002fce4b5e613b77c2d9acdc1ab2b8bad2e5acb616e2b0f1f8a9da1.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.13.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.13.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.13.smt2
+    log = cache/shk/cde1b11642e3c7f88d33efd07366e1f129f13fb2a690bbc885c64c91ecaf7f32.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.3.smt2
+    log = cache/shk/8e2b23e4476b704ae1efcb201db94dfb31ac0a48bbb69413565b2e80a3af9792.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.50.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.50.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.50.smt2
+    log = cache/shk/612ecee5a2ecf06c2afbb8bfd1e6a8085ce7b781e94a5e19386c671bd0238fed.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.6.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.6.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.6.smt2
+    log = cache/shk/b075abb2cb7a321b9675e7276f4a0af7a6d0245b9afcd47aa434ba56ad2da255.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.50.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.50.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.50.smt2
+    log = cache/shk/9b7d2c11248d08affc7775d2cb6555839bd34c7ac09b550b3957339777c719d0.shk
+
+build data/projects/v_ironfleet/shake_partial/keys_t.4.shkp_log: shake-partial data/projects/v_ironfleet/original/keys_t.4.smt2
+    full = data/projects/v_ironfleet/shake_full/keys_t.4.smt2
+    log = cache/shk/90782a1fbf6bfae62b3dc6bcaac68f3a9bc34181fb7b80f0effeedd20930957d.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.6.smt2
+    log = cache/shk/f62347fa8da583a3e67d606c4cd42987c129b294e36097257a37e1e82bc61789.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.8.smt2
+    log = cache/shk/44a89383e3e3dac65ff722ff9068334b45adfd12f4488db84b11ec5fae40653e.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.52.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.52.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.52.smt2
+    log = cache/shk/8741f450e9085e7bead840537cd5be12e93318e079429b9534b9bc72fb633b34.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.20.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.20.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.20.smt2
+    log = cache/shk/52723c66bbfd3b7a6ef32b82cbb33c8ae8746eb6076680083c0852e99eac3bf2.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.2.smt2
+    log = cache/shk/5d85711052601c68209970d37bc62994255d565d49a587154ecb8bb22718eadd.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.21.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.21.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.21.smt2
+    log = cache/shk/b02588caf0f12422c2c9db55dd3188f2adcd28bd50b08a21d30fec37dc66f445.shk
+
+build data/projects/v_ironfleet/shake_partial/keys_t.6.shkp_log: shake-partial data/projects/v_ironfleet/original/keys_t.6.smt2
+    full = data/projects/v_ironfleet/shake_full/keys_t.6.smt2
+    log = cache/shk/d007bdc8f95cd67f4442feecb7c082111eb7b7b9180d0d695db56bee0e311885.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.13.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.13.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.13.smt2
+    log = cache/shk/9573677d5076eb98fd4b45d1570342cc6ac0050c024babc715d2c196b48a45ad.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.2.smt2
+    log = cache/shk/3287b640f5347092c06de598ba0452d870d6ad295c48a37a60056b168ef8f14b.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.5.smt2
+    log = cache/shk/33b76c3c3c11675c475b51283478c20a85e14e6ae034b03c35aa6c9a7717e3d3.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.40.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.40.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.40.smt2
+    log = cache/shk/051d63acf0d9d0547d46466ebc5846efaa2ecbbd2c3f3b48f6aa240b66730d15.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.10.smt2
+    log = cache/shk/18404d03e61e2d6d0b4900bef4573c543e6c633cdbbb5081d64e13e746afe1b6.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.4.smt2
+    log = cache/shk/76c1edce15503bf3fde52d727f19769cf460ed366667a17d95093b65a2555ae6.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.6.smt2
+    log = cache/shk/1344abb5edc6e67c0abcc0f2ebb401bf9fa4680c7a7f720ff3b51006dee71bbd.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.48.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.48.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.48.smt2
+    log = cache/shk/cd9bfb0fa1026da06bf31e4774dcb66af0d812999ec115ece5f22d6c70ec5962.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.26.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.26.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.26.smt2
+    log = cache/shk/f9906bd87e540f9aa988174ec9fb5c47b1c0f79454650023a10156c748d872ba.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.31.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.31.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.31.smt2
+    log = cache/shk/688c61801931629feba4ef4d708c8365af93fd03d2735cc9f8b11256ef1c2611.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.7.smt2
+    log = cache/shk/f16d11d9018bac3f7e5dbad07525793590a19902b433802c5f1cb4746f656bc5.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.2.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.2.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.2.smt2
+    log = cache/shk/e69d74d148d4d5e490a90470c0673c2f96e653fb943aec2dda6ece0d3bc77dee.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.23.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.23.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.23.smt2
+    log = cache/shk/3fd5615fc0168b601d1cef6271da40c777ceab09a927f37ec7f9a1836a9eb409.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.1.smt2
+    log = cache/shk/6ec62237f46a0d7e60e0941a8cb7326bd5366937fe518b131ae1ee9f0e6c9e68.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.4.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.4.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.4.smt2
+    log = cache/shk/749d26eb83358f89ebac7505d8a6332b6eed397b407361738ecb58661bb239ec.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.14.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.14.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.14.smt2
+    log = cache/shk/c38746de2ec171fe799e18ac537b0ba58563e3439ebe20bdcb4399e7ed71698f.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.10.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.10.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.10.smt2
+    log = cache/shk/be9257288803d9b246d104bb6468cc37e0f5331931ed2a786837ac86e41bd9fa.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.33.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.33.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.33.smt2
+    log = cache/shk/ba49f5dca93d4632ed6d81ca9af650f37c1bb126231ba410ab4df0ba26533866.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.32.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.32.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.32.smt2
+    log = cache/shk/ae0e9e30274c668515756861bf7939d239adf955816de47614599a24fdefa78d.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.2.smt2
+    log = cache/shk/f2d1f480f9ee7c9a9b7cd398cc3781f27dc2319ac27f4f149c75dc6e5a9c91af.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.12.smt2
+    log = cache/shk/f85c52e6f3113d6367ab195aa46f31c0a861373a98661030c0c91ee20e2bfb4f.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.5.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.5.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.5.smt2
+    log = cache/shk/e68380eca3927a4a381635177cc6cf26412c810eb1581738cc3f4db7f235ab8c.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.7.smt2
+    log = cache/shk/3aec96f1e1039c8b2667e7fc951e6bfde3e42c884a4be8c044cdefbb3fcefd44.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.8.smt2
+    log = cache/shk/9b723c1b0a84b59af9d73ec48c19d3a18dac1c55899d9d9e0800b85b63e8c20c.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_t.2.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_t.2.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_t.2.smt2
+    log = cache/shk/43caa15bffbd061001745d062a9d50ac701f8fbbe583606f09c1b28444edde28.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.8.smt2
+    log = cache/shk/4cceb0626eb2da0343b16aa4f7b4d16c1f916411d2c88007e965195ec121cde4.shk
+
+build data/projects/v_ironfleet/shake_partial/keys_t.8.shkp_log: shake-partial data/projects/v_ironfleet/original/keys_t.8.smt2
+    full = data/projects/v_ironfleet/shake_full/keys_t.8.smt2
+    log = cache/shk/9fd9c3ce844932935915cf9eca21f860aaba141cc15d1964895eca315f1dd9dd.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.24.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.24.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.24.smt2
+    log = cache/shk/49e78f79cfa1df4d916c818f65ab74fca44e59be4dff0c2b5aabddfa36d4c1da.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.21.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.21.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.21.smt2
+    log = cache/shk/a97090765b5532f4c506825ea0d0f934c2345db9e9fb62a098e54df919f547e1.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.4.smt2
+    log = cache/shk/57f9a72224aab697009b74caa545e8a897d7f2a2118ee685c60249a1db696a49.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.8.smt2
+    log = cache/shk/bb062429a6ef3437af2fd09812defc941f177db0866617f4749cb692e0e3fbac.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.13.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.13.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.13.smt2
+    log = cache/shk/8a51ef7ae84635995925221edc4ad423eea2131506357554f7ff8d7c1770e45f.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.1.smt2
+    log = cache/shk/98a0ab3385a7a794969d64bf12a7c2508bfadf1fafced2515afb66e97b3ed155.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.11.smt2
+    log = cache/shk/23bf15a2182bf3f28e1d88c0c5c4e428df8bf6063ffa973252284b7403ee73f0.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.17.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.17.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.17.smt2
+    log = cache/shk/eb320e0c410996389e41636e650d07365251057a05999d93d12e73d96c75eebb.shk
+
+build data/projects/v_ironfleet/shake_partial/net_sht_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/net_sht_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/net_sht_v.1.smt2
+    log = cache/shk/a7a4b2bfc0c2bfa1244f6121410c0bb1829f01e1c74013ec552363e9cfe4b231.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.39.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.39.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.39.smt2
+    log = cache/shk/1a1a0efd949e0ffe01cb3c11f52fe3c3b28d5fe5ba813489645ef05a62cbeef6.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.4.smt2
+    log = cache/shk/bf118b17565c8259e76a73002a5d89805e8bd4eee00174fc1e4406fd40e033ac.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.23.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.23.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.23.smt2
+    log = cache/shk/1509ba24a322bd99dd5622e85f569451fce933904d29e35f52ba39ae959ab7e0.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.22.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.22.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.22.smt2
+    log = cache/shk/4fa51de53a88cdbc16f0ce9212f19bf9fc121a362eab778b3361ff5508090fce.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.11.smt2
+    log = cache/shk/20b80527bf887a905cbb8ea82c17ba8f03583b17e5c88c6f6a9aa14b272c44fb.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.29.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.29.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.29.smt2
+    log = cache/shk/f8046eb84607602b16ff94019c92d4474081f3708ca99409d308444c38958257.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.14.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.14.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.14.smt2
+    log = cache/shk/710414a6023d242ad4617eecef26165ff78c19620d9903c8491f8f05d15ee234.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.1.smt2
+    log = cache/shk/16222f84052be659cf3edc05763225dc6db40e1a7f35494516a13ca1f8be5fe2.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.15.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.15.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.15.smt2
+    log = cache/shk/4508b7f7f8a456754afe339f27b82c0c66bc4f68832b5873e288d9d85e4b5108.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.15.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.15.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.15.smt2
+    log = cache/shk/bf0e003736ad82a31501c3803e1ca963d5c123dded41d4259eec2836f945f7a8.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.8.smt2
+    log = cache/shk/6e7748a1a06f3a10241b7044538e30c17e1567a9427cc9c990a70e50cc01c8c7.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.17.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.17.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.17.smt2
+    log = cache/shk/c22d54985b754c831ddc92027da5e725944385382ab9dea3b25a38c4d4d7aecc.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.29.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.29.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.29.smt2
+    log = cache/shk/73d10a95b67d597b50e8a73192c1f0538e014252c92cb4d80df930571855233a.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.23.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.23.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.23.smt2
+    log = cache/shk/0fffb2f3ef57fc98b4c333768540e05e5415bd9f64b0b37deb39e42e7799242e.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.5.smt2
+    log = cache/shk/c40db701a726079407345b91a617af4e74eb61b534e8b65ad726962a53cb5bbb.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.16.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.16.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.16.smt2
+    log = cache/shk/e61b3cfeabb4aed942dd76184c40d1dc3e43d4e7c7828897ec0fce8f48541869.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.6.smt2
+    log = cache/shk/f60974a52b6963c0a87d5ef0578e626ffc2789a856ab74713eca62233847e8c4.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.6.smt2
+    log = cache/shk/4aba82f6ba913d8904160f94518405e0e6afd17be5b123f336f0b6a244043d73.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.8.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.8.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.8.smt2
+    log = cache/shk/9b9a8ff282e7d220f8bd03afa6920693a70f711e565f04b2ad21a8838486730b.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.41.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.41.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.41.smt2
+    log = cache/shk/301487ae321ae5b74eeb63f6633c52f011d4143f7145aa85b6676f9e91f27199.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.30.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.30.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.30.smt2
+    log = cache/shk/1ed2ac599f6c4c64eef3dbdd78c1dd9ac08f59a4aee079f677db9a0e8283f3f3.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.13.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.13.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.13.smt2
+    log = cache/shk/a09878bb349d41547700f128c1c4a8b9238a997fca932bfb561c6add62bd5793.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.42.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.42.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.42.smt2
+    log = cache/shk/da55173d0d75b5808469c03e06c77d773049c1b857148c32d3f3390c5d8ccaa4.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.20.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.20.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.20.smt2
+    log = cache/shk/3e0185bf712bb745a64dc20bce207a14613417e34e494903470421ccfa64cd34.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.9.smt2
+    log = cache/shk/80fbe0d1857df0841c6a5ed2f2c779701696f1bcbfdff347573f5616fa116d28.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.22.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.22.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.22.smt2
+    log = cache/shk/1cd1d21a23ed3aef72d43361521b43e8a739dfc962b3212839417f684f4fa974.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.14.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.14.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.14.smt2
+    log = cache/shk/484d8c43835265d176ff560b3aed82753527f4aa5e2b60ebb4aa65c6588f1637.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.10.smt2
+    log = cache/shk/89540dbc76a813b84e38cd1372d1a56292635dfb2eee4f769221c670f2aea861.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.2.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.2.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.2.smt2
+    log = cache/shk/f7f6a239702dd4d0b386443ea1c49dbd326dda8a8cb4ee4d2fcc9a89497d19f3.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.17.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.17.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.17.smt2
+    log = cache/shk/134da06f10aae6e05a6d297a32536d49181151e95706a84f6fb3bd7d3f73121d.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.21.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.21.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.21.smt2
+    log = cache/shk/abab059ca61fe2c36d31450d818b819d943c769f590f36086d890d4aa74ecc90.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.10.smt2
+    log = cache/shk/4b806ec893c9282fa634bc4644d805eaea6931ec848e6d66e58b63237639b298.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.32.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.32.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.32.smt2
+    log = cache/shk/6f0319c7c56a98a0be1cc4c5f29405832e567c638f9eb8efd145f4106cf4a653.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.9.smt2
+    log = cache/shk/432bc0742025f8b9230ee0a3bc0060ebabf0ade2ba4b68e4418298e3dd234dfc.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.24.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.24.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.24.smt2
+    log = cache/shk/cf686263e41920244db207159bed4d7912e036fefa68894c4d725a24f9d43c6e.shk
+
+build data/projects/v_ironfleet/shake_partial/keys_t.7.shkp_log: shake-partial data/projects/v_ironfleet/original/keys_t.7.smt2
+    full = data/projects/v_ironfleet/shake_full/keys_t.7.smt2
+    log = cache/shk/29777e421ce54d5ed6b66a16279f62e7ebb2a4f2838298d18562d98f2a773f06.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.8.smt2
+    log = cache/shk/01fcba24b13b8b773768a43811dee0b6af7e348852bc6b68440169d9f4e72611.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.5.smt2
+    log = cache/shk/82b45c6256d36f4f62be2daf2d8d6b8fbef5661df9d12a50d45da1b370677078.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.53.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.53.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.53.smt2
+    log = cache/shk/556ba74f402ca33b49e6f80a2e2dd7c4058d1423bf81666a0a846459dea69c63.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.35.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.35.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.35.smt2
+    log = cache/shk/97245b1fe55e30b5adc108a043c9cc8393dfe45f4631976d4157ff30ad6c3bd4.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.39.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.39.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.39.smt2
+    log = cache/shk/353ed414c899ec60abd4b2a7e276612c2a11eed9b5e0d1e8a52667c2dc7fcb68.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.17.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.17.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.17.smt2
+    log = cache/shk/fa9d382344492c0a55203527463ce6688d9ead0c1b31a558da286dbef619cdab.shk
+
+build data/projects/v_ironfleet/shake_partial/io_t.2.shkp_log: shake-partial data/projects/v_ironfleet/original/io_t.2.smt2
+    full = data/projects/v_ironfleet/shake_full/io_t.2.smt2
+    log = cache/shk/628fee463445cbba2011427fbc8c2e7c600ede9961af126dd3244419228e3ad0.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.37.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.37.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.37.smt2
+    log = cache/shk/6ece47b1c4dae98a408375fe8a0f1519846ce61135ac2bf1efbdbe5a023134c4.shk
+
+build data/projects/v_ironfleet/shake_partial/io_t.5.shkp_log: shake-partial data/projects/v_ironfleet/original/io_t.5.smt2
+    full = data/projects/v_ironfleet/shake_full/io_t.5.smt2
+    log = cache/shk/dbf70881a7ef359344d40cfa4f18b461a447834765745e3a29fb98bf57be3954.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.12.smt2
+    log = cache/shk/6c158ba333f87608095a71c8f401e5061a9a49045c15cf52e7ee1f45cea26316.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.1.smt2
+    log = cache/shk/35ad7d9bc47cb57d57f38320556caf5d150c15bba73fb0c919fca166e5fd5e6a.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.9.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.9.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.9.smt2
+    log = cache/shk/e2e6be58c86be7cc82b2bcbc5fc254ce2bc741fdb89eebf5d2ec95cf3c7c0bcd.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.4.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.4.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.4.smt2
+    log = cache/shk/898f278909f642f306d7a901404a28f8af8643ab705dd45957be645e979c4595.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.38.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.38.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.38.smt2
+    log = cache/shk/b894f8f81130b1d0581791c47c0e04dc084bc7958eb3493ecfde3a143c8be383.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.12.smt2
+    log = cache/shk/4654d78c7c9a2bf3f1b11a7cdefa30d9a341fef6bcd2274c8c2d98619def9e0d.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.11.smt2
+    log = cache/shk/f066a3de944a91ac673ee96ea09d5e7c6a974c32c5269d08275886d0810b3ea6.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.28.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.28.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.28.smt2
+    log = cache/shk/dffc1ce266ae9b7e71adbad5ea36d8117bd1d3bfc4820f73b0b5058fd95f8365.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.35.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.35.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.35.smt2
+    log = cache/shk/5b0087fbeb9e2f83615eeff1c7b8f51df56aca35c7b8d1169fcaef2695681f0a.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.4.smt2
+    log = cache/shk/01258d6af826d8ee29623cb35e345273f468493b8a74f37efafc941582a11a8f.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.6.smt2
+    log = cache/shk/37e9894ab09858f7cacaaed6ebc1dbfe2dd6a89982335905e8ae176aff98b3e7.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.31.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.31.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.31.smt2
+    log = cache/shk/4d0b11fc451a64cc3b09678807188f3b5dfdc8e19b25c8e89f75aeea742f8b8a.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.10.smt2
+    log = cache/shk/8f3687a1fecf522d2470ddd24b6538c31868deafce2f1c2ce0f162a44ed59bef.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.9.smt2
+    log = cache/shk/32043f17f0581ba4b9fa185c0a2a2bc66e0082413a6d442634744454842dac2e.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.28.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.28.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.28.smt2
+    log = cache/shk/4b476a57e7fe769016a6712d51cee5ce1234edede13eb076193c91aecf245335.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.11.smt2
+    log = cache/shk/acc6c25c5e21f18d073996764edcf07ed287970e119a5fe61f3122ef09189996.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.52.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.52.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.52.smt2
+    log = cache/shk/514c48f66648cf05f14ebc89d1bf0dde02ac678110eaa2de1795be7813abcd97.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.2.smt2
+    log = cache/shk/8fc3e77e1a44b0c69091dc70ea5a72078502fff141efde02b9e59837935ab1a9.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.25.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.25.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.25.smt2
+    log = cache/shk/5f5689245c0406597871788e34f1b91bb4b3a6081c904b4ac06badbe8e08abcd.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.5.smt2
+    log = cache/shk/0c296ca3dbba32d97c99340d50fd53ab5c3960b89da2f4bc26ca79408d7fe9f5.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.51.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.51.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.51.smt2
+    log = cache/shk/598f328ed575a6b6c002e34952a87808b86f854f04d2e5c6b878b7e6d82c35be.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.10.smt2
+    log = cache/shk/81a06125b8915d4672dd43cf0ba9cb0648039ebe2ad4c1e5ea4f955949083e39.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.6.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.6.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.6.smt2
+    log = cache/shk/a5e915cb4362b34f2446e4f67103a6a4f06c91e76a68a855aa1b5009cadb5995.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.25.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.25.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.25.smt2
+    log = cache/shk/030cff8adb3a957518b4fe5f504f9ca5b57d994c32bc0e05b2caf9cd725f208e.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.21.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.21.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.21.smt2
+    log = cache/shk/597b81a654b83c147b1fa6a4b36c6b41fe83bacc533353747b2575f7539c6a99.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.47.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.47.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.47.smt2
+    log = cache/shk/f5e5e4ffaa46df51af3d3ed5c9af298cc848050dcff1cba6e16350c3a473f39b.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.18.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.18.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.18.smt2
+    log = cache/shk/075d57278c04de70e9ed00fda2c3c4c0a1226cd572fa8097d0b1f489ce211b2a.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.13.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.13.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.13.smt2
+    log = cache/shk/3d085a3294d0fb32ee208d001fbee2ddb48dfaae8054b702cad74d402f2e06ad.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.11.smt2
+    log = cache/shk/debbcc912d37a8f56cf6b160a775ca80854298c362b95c1b9257e209b9ddca5c.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.12.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.12.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.12.smt2
+    log = cache/shk/198a3351c83371a2a2c9bf993381e4f87a23786f8966ca7e9eb6754b401a8acf.shk
+
+build data/projects/v_ironfleet/shake_partial/args_t.1.shkp_log: shake-partial data/projects/v_ironfleet/original/args_t.1.smt2
+    full = data/projects/v_ironfleet/shake_full/args_t.1.smt2
+    log = cache/shk/4afda706245e63da7a213ad96d7db1e016a03eb64db1c4cbaaeca8fbf8c1ecaa.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.3.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.3.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.3.smt2
+    log = cache/shk/11e94b2b6bda3d49705b5a7aaf3996f9d035583aa64b1487d3a0fd959c8b1426.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.5.smt2
+    log = cache/shk/47097db7599122344ed0e0020b631d5a3aa8fa4d8bf0a12ec205d4e424283eea.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.17.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.17.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.17.smt2
+    log = cache/shk/6ac261a01c4ede88b39b07adee167808d2ec3e410efa675d2fce374c5245c790.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.39.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.39.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.39.smt2
+    log = cache/shk/d9c3ed2654a617059f1d1db9a587aa5e31d6f6f394ef322084f79989a48c9d4f.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.2.smt2
+    log = cache/shk/fd5c8b8615f6f46a344dc93a2feeabab8a56d338d0843eb582308a49785c3503.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.19.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.19.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.19.smt2
+    log = cache/shk/d06935e5da695295ce2c3aa02e0df662aaae237a441458115aa8dfdbd2589fb4.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.6.smt2
+    log = cache/shk/7e6c7bab1e4692078c3c4e57ce30686cfa0300ebdfbece25855e610e747abadc.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.3.smt2
+    log = cache/shk/ae5481d5b8c14752101cb2ebcb687ca69dcda3abf3a081cef0df3f1bc0b2a6a9.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.9.smt2
+    log = cache/shk/29edf545ec1092e17a3eb6598538c20ed9d3cc2d43b89a3338300fb143c7273e.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.25.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.25.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.25.smt2
+    log = cache/shk/2b36e4903351973a8c8684591d1baf21ba01120ac4bdaccb45fc73b420d968e4.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.30.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.30.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.30.smt2
+    log = cache/shk/7f249a975ca6ab08b832cd317738cfb14d4a815cf1328fbaa9cc75c9975e7ca2.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.23.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.23.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.23.smt2
+    log = cache/shk/b672dba832cd968c92a1259a43375fd319e77d53dd7ac1725a3f726c65a83e97.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.55.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.55.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.55.smt2
+    log = cache/shk/4142d1a196152d741f669b6c5f5b7f23b7a3335d9c17f43f99166c5e7c899866.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.1.smt2
+    log = cache/shk/19dd118fc69bcf5326d07ebac532be116ff368d6556ed544da46b127e6025307.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.9.smt2
+    log = cache/shk/cf8e787b1ee9f05ddc1703d5a7e1da0822dc0837f9fab80083b9ec510f778fc4.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v__impl&%2__host_noreceive_noclock_next.1.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v__impl&%2__host_noreceive_noclock_next.1.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v__impl&%2__host_noreceive_noclock_next.1.smt2
+    log = cache/shk/1531fa0dc1fdaa42f9e7d0c8b13497b79dd8a07ad6b69a4b58bec8f6d03e0dd7.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.48.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.48.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.48.smt2
+    log = cache/shk/4bcae5997ff0ba30f7beab119495bc33e846bf30cb8839f55f4dc461c03b52ae.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.14.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.14.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.14.smt2
+    log = cache/shk/716e8145e559426abe8faf1f66496b49ce76d5077d62d986a1b6445756c39f99.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.49.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.49.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.49.smt2
+    log = cache/shk/9528a47c59f69a68b0d1318b4459d9c4ccc9053f8adad23c59254fa57d6b7027.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.20.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.20.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.20.smt2
+    log = cache/shk/4d5d82896b895c35e8221d8553b3915f867cce318769076ac834a557d01f4c83.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.3.smt2
+    log = cache/shk/05d734cb1ab39413b593a0e10496b74e25a32f3e92f5a0604bba5b5e56146b1c.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.16.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.16.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.16.smt2
+    log = cache/shk/c2ee527fff5341bf85525ab4c5a8e7524b04c852b0474c778efdb9979ba5d8dc.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.5.smt2
+    log = cache/shk/c8800d3d1da87eed2f4a079e1e84f0483e1dceda6125dbcfa1c459f2fbab99a1.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.54.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.54.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.54.smt2
+    log = cache/shk/8a55d8df3831a121ed5e5af3426dd5e14ae4faa8ec9c236208e66403618f3818.shk
+
+build data/projects/v_ironfleet/shake_partial/net_sht_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/net_sht_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/net_sht_v.3.smt2
+    log = cache/shk/d30d3219fec3655ed70968a74688578c4010e8120fb51a0b8340a4220934e53a.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.15.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.15.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.15.smt2
+    log = cache/shk/04325227fdb7f6a4ddfbc85861240849d63a90ec38e8060310efa6c1626ca191.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.16.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.16.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.16.smt2
+    log = cache/shk/9ab0570e7f8e65256b58a9ab94a836a8a917be4174fa1694cbd0d189eca8fe4a.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.45.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.45.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.45.smt2
+    log = cache/shk/c10688e96a79a562da563a93ffddf17ad134e857a12de886b0a65e2fbe9bb5e4.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.20.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.20.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.20.smt2
+    log = cache/shk/2e338f932884275cd4ebd2611107cd293d81b05455246cf66be2ad0ea810e73d.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.2.smt2
+    log = cache/shk/3d24b98ef876821faa530baba0c4481c3c594939171b1930b32465f963f6ca4a.shk
+
+build data/projects/v_ironfleet/shake_partial/args_t.2.shkp_log: shake-partial data/projects/v_ironfleet/original/args_t.2.smt2
+    full = data/projects/v_ironfleet/shake_full/args_t.2.smt2
+    log = cache/shk/cbc772224bcff6fb747130330941a0ecd37b92b52d8e415fa400d21f5393d549.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.45.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.45.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.45.smt2
+    log = cache/shk/1dc0b9fc331a695e920401aafb50e75561683150d89be84f23f1982c544c2a86.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.15.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.15.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.15.smt2
+    log = cache/shk/d43e5e44e48fe96749387b973a865398d32d88c8fc0883d5e6750b4fc3e148bc.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.12.smt2
+    log = cache/shk/77ea7873c877d91adda418a47838d729cdd98a04dcfaf18feaa3137d7ebd0d60.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.3.smt2
+    log = cache/shk/ec86551639ff6a0387a66a6f2acc937aa606671a6f35d64e8429e1e6fdab96fd.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.6.smt2
+    log = cache/shk/92abb81354d9c86d5ddaf214a66a8cd2c9242bd46983e8be8aa0a84d9e3e70a6.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.13.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.13.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.13.smt2
+    log = cache/shk/2f5ec0596d940808d38aa4483b50baae134c30626adf1ed699a02834b53e819b.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.5.smt2
+    log = cache/shk/c4679280e0e8d7c1e8f6a73fce2b0c9fc8e88486f74ed9cb64d8cefc481ea123.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.14.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.14.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.14.smt2
+    log = cache/shk/fc955dedc2a8241cc149d20f30b4d1f1d21315d8b27beffd5db6e2db6bae1408.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.14.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.14.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.14.smt2
+    log = cache/shk/6b2ab4db7076cba0202783215e451ff8218a32fe38e067ada28fa88a009dc931.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.51.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.51.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.51.smt2
+    log = cache/shk/4f87b1f8f519245cc8ff9e0370d06d817e7beeb475334a606ea78ca7f6c8a568.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.31.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.31.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.31.smt2
+    log = cache/shk/bf3b6be00e9312996bd0259784f69ec63be4202bee501399a9d7627f46be2876.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.13.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.13.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.13.smt2
+    log = cache/shk/ea81ba2c66f5f912e13bb302142b38f357e41716471a433ee6127e08fa8a7010.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.19.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.19.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.19.smt2
+    log = cache/shk/301eeb2767e8de9cf2e005fb3ee91d6484f16fc82ad9b9bae7e402d2747d6ebc.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.11.smt2
+    log = cache/shk/4cf5d7d00eb109725de7ac6b5e732abdd00ba5058c0fbb2ed9bea7256e21b592.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.37.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.37.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.37.smt2
+    log = cache/shk/58401f779f1f1306d7ce8a96b78c5384cb91ad257283ce8f510123654a804849.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.9.smt2
+    log = cache/shk/a6fb0229ffdddef948a7c5a26bd64a26d83a7e8c3536fc36574d18412b5a71fb.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.50.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.50.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.50.smt2
+    log = cache/shk/8a8ea35f0a086b55951c1a14502988462bf9e9b05c67a4f8a541d7b9ada300d0.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.7.smt2
+    log = cache/shk/ea5ed8cabca936a328cd3544c7ff6592179c36c351df1f18d9a9163390d01ac9.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.42.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.42.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.42.smt2
+    log = cache/shk/46dca9fbbf2576efb877b22fa918ab8346441f474482aa21a6899b85ca4dfc6b.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_state_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_state_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_state_v.7.smt2
+    log = cache/shk/d7a57564c887a00a552ffc857a850229c14f9fe853b9ae3120d4caa2bb6abb00.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.22.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.22.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.22.smt2
+    log = cache/shk/6a77b9e7e44756bbc9a2df9b35bb497b6b6e3b410a64bdf5a02c43d474a9cdfd.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.12.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.12.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.12.smt2
+    log = cache/shk/5608f3815f444a0d7ecd8ad1220d64e760d1f84f9c23eeb5aac3764a470d2fb2.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.9.smt2
+    log = cache/shk/fe34408cfb02f9672cbeb2e147f5ca196a4fb06430f4521273190f300b5609bc.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.10.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.10.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.10.smt2
+    log = cache/shk/3f49941124e6c5918dae691db725df6de644d81faa2c990193321c9cb8a79948.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.54.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.54.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.54.smt2
+    log = cache/shk/5b7b047603eae308570764b256d9d0c4292f90ba7bca5cbb7748e3b6129ff696.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.3.smt2
+    log = cache/shk/9da8d76e4bd0493993650afbe976f4fa16edb9c48a5996909661888e7c2f896f.shk
+
+build data/projects/v_ironfleet/shake_partial/keys_t.1.shkp_log: shake-partial data/projects/v_ironfleet/original/keys_t.1.smt2
+    full = data/projects/v_ironfleet/shake_full/keys_t.1.smt2
+    log = cache/shk/971a690fc98837339ad0eb520bf28161f64d8882ba05a7eefb9391611e8cabf7.shk
+
+build data/projects/v_ironfleet/shake_partial/keys_t.9.shkp_log: shake-partial data/projects/v_ironfleet/original/keys_t.9.smt2
+    full = data/projects/v_ironfleet/shake_full/keys_t.9.smt2
+    log = cache/shk/ec45b635d26c8d364d142a00e99bfd3b28d668edc4cfe05a6262474292d43177.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.27.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.27.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.27.smt2
+    log = cache/shk/b3acc34fdcb55d790c7b2e3ef0272583b02b9a7d69f2713b66d32cd97de33ae6.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.7.smt2
+    log = cache/shk/3260fa90dc93390ec7872f5aac73963b29901d377ae6e77b7fd664cab1652560.shk
+
+build data/projects/v_ironfleet/shake_partial/net_sht_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/net_sht_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/net_sht_v.2.smt2
+    log = cache/shk/6f15a5bb7b515e85d69fa371c6391262764cd13b7b88fca119c76110cd404e8b.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.34.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.34.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.34.smt2
+    log = cache/shk/b3c085080703f6007109f0fb6e45ff68d15682a7b7b9d6d8e5630fcd7bd7872d.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v__impl&%2__host_next_receive_packet.1.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v__impl&%2__host_next_receive_packet.1.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v__impl&%2__host_next_receive_packet.1.smt2
+    log = cache/shk/8a75968cba55936e2a801f17d8ba470d92ab883cae46fd5f642410f8d47e805d.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.28.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.28.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.28.smt2
+    log = cache/shk/bc52f15bbc41f52964b67571565de186be8bd4546e46a8f6c634eaa906ecc4b7.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.19.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.19.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.19.smt2
+    log = cache/shk/2760577453794bf260cb45363d5166df9c45086bacfe6b45a100623b534fa28b.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.8.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.8.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.8.smt2
+    log = cache/shk/9d1ad7b5be99b585511d175158a0e87b364d2b53264be09edf13cc18c7754882.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.46.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.46.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.46.smt2
+    log = cache/shk/e6faf78c270a8de1d5fdb7e0000f83219c0b0a58c9eb87d6f4def8aafb16c945.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.54.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.54.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.54.smt2
+    log = cache/shk/df1723cf5efd4e0d33a5f51be9652dab8a3e06a7c2924b717c0bc61c2dbc1805.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.43.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.43.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.43.smt2
+    log = cache/shk/9c30e2014f7457d867e8deb87f304cd707a08a86ab358a716ff388656d788ee6.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.3.smt2
+    log = cache/shk/a2c258ee2a3c3868b7bf20c3ba320e6cb91196fe166008eb8a388d216913cfb6.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.13.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.13.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.13.smt2
+    log = cache/shk/b3fd1b69ad9056b85ecd53ce95f4f3b16aaa3dd5c77ba128b9c4ad6dae649789.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.12.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.12.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.12.smt2
+    log = cache/shk/edd00491c26b542403eed2cf72789fed73a1c4d00477c46779148706e8a782f5.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.36.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.36.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.36.smt2
+    log = cache/shk/282cf6ca56fde2c697e5282fcba6eb24609ba2cafd6a082dd405ee66c8ef1473.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.36.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.36.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.36.smt2
+    log = cache/shk/c775dc6df6761f08de3cbb943fccf9262c4fd8667ce2d630468d70dad1ce4bf3.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_t.9.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_t.9.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_t.9.smt2
+    log = cache/shk/8f3d62301fa7844f267451fd18cd895d0d3f08a4228f6a6be6c11423f5186372.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.8.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.8.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.8.smt2
+    log = cache/shk/46747e4790d0ce3bd0824a7c07ee279ebd002443cc62657622e3b548c6cd6732.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.38.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.38.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.38.smt2
+    log = cache/shk/193ebbd6c3b9ebcbdcbbb3c91297495fe3b77f48e796c081b97870c2f11f409a.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.10.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.10.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.10.smt2
+    log = cache/shk/90fb36997e7b2bb402b4f4397ca5ed6bc36e2daab6330f86b137c5b3d1bca7b5.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.18.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.18.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.18.smt2
+    log = cache/shk/a5b17970d5263567e451ea4de85b621700f38effcf540c4152031c893bab0145.shk
+
+build data/projects/v_ironfleet/shake_partial/args_t.3.shkp_log: shake-partial data/projects/v_ironfleet/original/args_t.3.smt2
+    full = data/projects/v_ironfleet/shake_full/args_t.3.smt2
+    log = cache/shk/231a199d4d03d5a97a9b3283093471cbfc1c87388b6db3260633360068a5f3cf.shk
+
+build data/projects/v_ironfleet/shake_partial/single_delivery_model_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/single_delivery_model_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/single_delivery_model_v.1.smt2
+    log = cache/shk/d226b624719d6a4f9064da596d9dc04fdcfd793e15f9b4e4af006e66b79c048b.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.4.smt2
+    log = cache/shk/d39479e5e2c5bb65611f40d8ce7af3d8a273f23e8025dd6139f2187efdff3d67.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.18.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.18.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.18.smt2
+    log = cache/shk/9ab3fa6af14267644e888fed9211c7cf9b7af509b9960833bad3527e29a980aa.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.53.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.53.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.53.smt2
+    log = cache/shk/a5a8ce85b0755143db07721f0f68d1e2a8d64d455014cb0c95328ed99b51a0b6.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.23.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.23.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.23.smt2
+    log = cache/shk/ed500a5d8541f18f475d77cf04014b1ac2a37f7923102a67db7dda5ed7a0d7d2.shk
+
+build data/projects/v_ironfleet/shake_partial/main_t.1.shkp_log: shake-partial data/projects/v_ironfleet/original/main_t.1.smt2
+    full = data/projects/v_ironfleet/shake_full/main_t.1.smt2
+    log = cache/shk/45722dc54eb4a6494145f9c97fd4a5716efdaf0048aa1cc8339bf2bb46d5b929.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.15.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.15.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.15.smt2
+    log = cache/shk/7bd6adfe99e3db475b891b1931c1b780f94866ab9352f6e552585584f84fe63e.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.16.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.16.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.16.smt2
+    log = cache/shk/a4a53e01f4928a3408c6c3823e46b1a2f70eecd583f7d02286b050634fe47904.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.1.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.1.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.1.smt2
+    log = cache/shk/e1d048422edea567acc81f9f26513faf0b30bd58070918579ae7bd34150302bd.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.33.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.33.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.33.smt2
+    log = cache/shk/5acfe777c1467bebbc700b7c165c234d3d64861c6765106e34420e855e83ef46.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.9.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.9.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.9.smt2
+    log = cache/shk/2ff5bd0934645103ffa233bbc09114b1b876090b2dc8f49e4fcebc32829bdbc1.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.24.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.24.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.24.smt2
+    log = cache/shk/0c8997002a7328d087525b6a5b79cd20410c25701be7928814f06f774069ab30.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.3.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.3.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.3.smt2
+    log = cache/shk/594c283c95981fd48dba0b07661689bbf91af9fa723f698ba9deb576a68c66dc.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.6.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.6.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.6.smt2
+    log = cache/shk/206caa100e256a2c9ba0857d904062bd31feead09accdb66cbdae2280602c927.shk
+
+build data/projects/v_ironfleet/shake_partial/delegation_map_v.45.shkp_log: shake-partial data/projects/v_ironfleet/original/delegation_map_v.45.smt2
+    full = data/projects/v_ironfleet/shake_full/delegation_map_v.45.smt2
+    log = cache/shk/d3f108006e270511e6783acd84a885ab2d0224e710720cd0c07de86dca1e8f9e.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.1.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.1.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.1.smt2
+    log = cache/shk/47b736f4ec6c25ed5044b24a2885ed19525faae1201c1c6568393782c6eb0ce1.shk
+
+build data/projects/v_ironfleet/shake_partial/seq_is_unique_v.11.shkp_log: shake-partial data/projects/v_ironfleet/original/seq_is_unique_v.11.smt2
+    full = data/projects/v_ironfleet/shake_full/seq_is_unique_v.11.smt2
+    log = cache/shk/207478f8951b8ca73004fc9235a99a295d7e73ac9c3febfe0cadb27b0641d1f5.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_t.1.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_t.1.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_t.1.smt2
+    log = cache/shk/cf33563a56549bc3d06dcf9b5f66e432bf4eeffcfe9bc96115f78447b2cae791.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.2.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.2.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.2.smt2
+    log = cache/shk/7b60b0e5ce87cb47bc953a43059996564f50dc25e45cf768fa013ef9d47e726f.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.13.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.13.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.13.smt2
+    log = cache/shk/28b57217b785d873c7e3f732e9d98171c5e3b93a7c0b31c97ac15bd347989437.shk
+
+build data/projects/v_ironfleet/shake_partial/net_sht_v__send_packet_seq.2.shkp_log: shake-partial data/projects/v_ironfleet/original/net_sht_v__send_packet_seq.2.smt2
+    full = data/projects/v_ironfleet/shake_full/net_sht_v__send_packet_seq.2.smt2
+    log = cache/shk/25d816a82dedb7ead4c6beea4f3639a8b57010796d4765e60f87d824e813160d.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.3.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.3.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.3.smt2
+    log = cache/shk/be2bf0cdfdb09fa26b4938b3f155c35af9da283fad91e0a60ed2b27ad9701bbf.shk
+
+build data/projects/v_ironfleet/shake_partial/cmessage_v.5.shkp_log: shake-partial data/projects/v_ironfleet/original/cmessage_v.5.smt2
+    full = data/projects/v_ironfleet/shake_full/cmessage_v.5.smt2
+    log = cache/shk/88d612352116caba3b2695b96a681455b08ad6409097f767f7c3be2adcece641.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.24.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.24.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.24.smt2
+    log = cache/shk/0050dc4110b85645762beaa0308ce06cbfaf07935888276bb69d3622ec7e5e28.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.43.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.43.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.43.smt2
+    log = cache/shk/448cbc56400672af722a6b191d17d4c380bcb56d8c72528011afed58593340a1.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.30.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.30.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.30.smt2
+    log = cache/shk/cbc37760106761a25dd514c01cb15b73bd2c8477162311eccaf71844852648f4.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.7.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.7.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.7.smt2
+    log = cache/shk/1e207001916a5c520ab6c258f1e0c0ce6c70fd133e8911fd0d781a4614850fc5.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__set_lib_ext_v.4.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__set_lib_ext_v.4.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__set_lib_ext_v.4.smt2
+    log = cache/shk/2557794e7c44f9e154d74213668a9e19d1a0be065011a03d7f0f719d1f837df1.shk
+
+build data/projects/v_ironfleet/shake_partial/verus_extra__seq_lib_v.15.shkp_log: shake-partial data/projects/v_ironfleet/original/verus_extra__seq_lib_v.15.smt2
+    full = data/projects/v_ironfleet/shake_full/verus_extra__seq_lib_v.15.smt2
+    log = cache/shk/86a313f02927330c4a1ee9e723fe09db91425d2841db54ec987cd5e58c0844be.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.26.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.26.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.26.smt2
+    log = cache/shk/9ae9350a1756df8aa3df4ad9f87256210e070ce49128de4ce5ca7698c237dc9f.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_v.22.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_v.22.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_v.22.smt2
+    log = cache/shk/cc8245577a191dbc68f53bded7b98c17e78fe09eac2f1c3d4bbd269d62896ed6.shk
+
+build data/projects/v_ironfleet/shake_partial/host_protocol_t.20.shkp_log: shake-partial data/projects/v_ironfleet/original/host_protocol_t.20.smt2
+    full = data/projects/v_ironfleet/shake_full/host_protocol_t.20.smt2
+    log = cache/shk/1047943782c7834a06c383f718a5d8912dfed06fbf73267e3d4bec58b4befb4f.shk
+
+build data/projects/v_ironfleet/shake_partial/marshal_ironsht_specific_v.22.shkp_log: shake-partial data/projects/v_ironfleet/original/marshal_ironsht_specific_v.22.smt2
+    full = data/projects/v_ironfleet/shake_full/marshal_ironsht_specific_v.22.smt2
+    log = cache/shk/8455a30d468e098435fed09140429a16d62839c9c792d6130d9e87caeae86285.shk
+
+build data/projects/v_ironfleet/shake_partial/host_impl_v.13.shkp_log: shake-partial data/projects/v_ironfleet/original/host_impl_v.13.smt2
+    full = data/projects/v_ironfleet/shake_full/host_impl_v.13.smt2
+    log = cache/shk/733a67f70f27557a95f8d8f42a33f438bf69253714a9f20f852246bf76ea7fd4.shk
+

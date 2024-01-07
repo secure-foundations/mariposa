@@ -1,0 +1,1015 @@
+
+rule instrument-query
+    command = ./target/release/mariposa -i $in -o $out -m unsat-core-label-assert
+
+rule create-mini-query
+    command = ./target/release/mariposa -i $in -o $out -m unsat-core-reduce-assert --core-file-path $core
+
+rule format
+    command = ./target/release/mariposa -i $in -o $out
+
+rule z3-dump-core
+    command = ./solvers/z3-4.12.2 $in -T:150 > $out
+
+rule shake
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --shake-log-path $log
+
+rule shake-special
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --shake-log-path $log --shake-max-symbol-frequency 25
+
+rule strip
+    command = ./target/release/mariposa -i $in -o $out -m remove-unused
+
+rule shake-partial
+    command = python3 scripts/run_shake.py partial $out $in $full $log
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._14.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._14.1.smt2
+    log = cache/shk/f3c39bfe0cbdec1ceaa4846bd018041f93114136f302ae17fe8d83eeadc73b35.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__mem.1.smt2: shake data/projects/v_pagetable/original/spec_t__mem.1.smt2
+    log = cache/shk/c71cbaf500a0e8d0ee0618ec78529e415002a3d29ed19b8fb9a234667e05039a.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.13.smt2: shake data/projects/v_pagetable/original/impl_u__l0.13.smt2
+    log = cache/shk/728481297666a36f4b43fd56de891f9153118d6394f2910a3f1f6a063c3b2179.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.7.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.7.smt2
+    log = cache/shk/9331d3b4589404ea2b79422e34dd7d7d6d42b3b95d6dfaf27b762d3150c2cb47.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_ranges_disjoint_interp_aux_interp_of_entry._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_ranges_disjoint_interp_aux_interp_of_entry._01.1.smt2
+    log = cache/shk/3fe3e8b87a9a70a83c79e4d5fc6db88bfc7f1925ce97d2d8c07d2f9d98d07aa8.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._05.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._05.1.smt2
+    log = cache/shk/afa2a65ce67e8cbadaa0b47bea4d6b6b1e8513025609fd5486acb998529e3e37.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0main!impl_u.l0.ambient_arith._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l0main!impl_u.l0.ambient_arith._01.1.smt2
+    log = cache/shk/9cec9e45ffa53a2550d9b9dff60e8c3460cc5b380fd11e5c1abd1f5328c62f66.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._01.1.smt2
+    log = cache/shk/6668a53df9eff58a7820188515e3f32a48dec9178118329af7d1b887eebe3018.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.38.smt2: shake data/projects/v_pagetable/original/impl_u__l1.38.smt2
+    log = cache/shk/8ced5e72cb9cb816ea2f9bcf5bf653578e00d161736775e9ef4e5c14218c3b29.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.46.smt2: shake data/projects/v_pagetable/original/impl_u__l1.46.smt2
+    log = cache/shk/223947811b39484bfb9f448d6ba88793949f308f36a4e5906b8ba2b061b2d200.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._05.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._05.1.smt2
+    log = cache/shk/14eb00546c22e8e04f8f392080bf7ea1d845776f7ab9b6e96481fd01a1067c06.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.leq_add_aligned_less._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.leq_add_aligned_less._01.1.smt2
+    log = cache/shk/a0190b630ec51717cda92d5feba2ae55f13ec4ac57255759b7a7b99a51a5499a.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.5.smt2: shake data/projects/v_pagetable/original/definitions_u.5.smt2
+    log = cache/shk/dc5917aefbc8e77834caa4051e96a9c732553c9c5ef3c33c1d40a6d0243782c3.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._02.1.smt2
+    log = cache/shk/47c15051ee0313ff773da30d688a0f5515da5f536e377d3547bce8aabe77e466.shk
+
+build data/projects/v_pagetable/shake_full/extra.5.smt2: shake data/projects/v_pagetable/original/extra.5.smt2
+    log = cache/shk/a9cef3756129aadbc38505c115d239d274875ebb5a79867b8d794c561b55a5a3.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.3.smt2: shake data/projects/v_pagetable/original/definitions_t.3.smt2
+    log = cache/shk/b16040c04bb843e0441f23f8aeb51c61b26a4a561d342bea56a38afffdeb0c2c.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__impl_spec.1.smt2: shake data/projects/v_pagetable/original/spec_t__impl_spec.1.smt2
+    log = cache/shk/c5390cfd0fb1884827e525c8ca1f20c3110b22d57efe2ea2b86264e31386a7c9.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._20.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._20.1.smt2
+    log = cache/shk/d5ffe4010486bf77d1acd1fb699d752c4f3c932c383ea2961588a240b43fc296.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.9.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.9.smt2
+    log = cache/shk/f6dd27736e7e7880b82cc15fb439506af0af96d13123684e4245e838d6326262.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.impl&%2.entry_base._01.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.impl&%2.entry_base._01.1.smt2
+    log = cache/shk/05b95e7368579a452c3a6d2064563674d374972dfd9154975903661d5f7d6c2e.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.7.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.7.smt2
+    log = cache/shk/28db0c49aa410d4c32aeea2e2f06ae3ff7640e49f38869b3e2cb19e238c020ff.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.8.smt2: shake data/projects/v_pagetable/original/definitions_t.8.smt2
+    log = cache/shk/9a566a94f8d4e2a547df99896a8cbb831a988d581995951943082b5a197e685d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.28.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.28.smt2
+    log = cache/shk/8cea79d6aa72808981219e384a188f20fbabdc3ddcb2dc5fb914c95aaa947e45.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.54.smt2: shake data/projects/v_pagetable/original/impl_u__l1.54.smt2
+    log = cache/shk/56589f1217218b8fe9d263a053868de81866f136c0f15d29f29e389338de976e.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._13.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._13.1.smt2
+    log = cache/shk/46f9ff759bfad8a996a31d5b81205f9d1d87cd4e7ddf47c4f40d9cc6b39932a9.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.18.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.18.smt2
+    log = cache/shk/0f0f8e494925c1b54f24fd3f19c5613dc2dd6853af45073667d7a681c1d787ce.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._06.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._06.1.smt2
+    log = cache/shk/094e5300d4ed0061154edea28837da2a8be423b4270aacebdf3dd8a6372af3f2.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.9.smt2: shake data/projects/v_pagetable/original/impl_u__l1.9.smt2
+    log = cache/shk/4236a41de71729cc0545bf9085cae947b4d36553ef3b08e7646d141dd7db4ca8.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._06.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._06.1.smt2
+    log = cache/shk/510adb8127bfa3479b82bc1bfea95e56eb94a942decdaf9c05c936583f23e4c5.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.12.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.12.smt2
+    log = cache/shk/cfc65064ed4adff4cbb65cb472b942ea01c92da0995dad5e03a6db73e050a778.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_index_from_base_and_addr._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_index_from_base_and_addr._02.1.smt2
+    log = cache/shk/929e8e0fb159bb556730467b9877e79218ce55355c3205a8de9ae5f39490c677.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.27.smt2: shake data/projects/v_pagetable/original/impl_u__l1.27.smt2
+    log = cache/shk/f5998bd24da24320f661e8058cc6540f027809d3108a374c5edcd9749b1c4c6c.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.10.smt2: shake data/projects/v_pagetable/original/impl_u__l1.10.smt2
+    log = cache/shk/fe12f98561412706795d9d3600efc8e220c1403c0d61f3ad1cc122f5d9bdd2fe.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._05.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._05.1.smt2
+    log = cache/shk/fdd4a799078b71bc35b9195871ef1866b4c0d151bb938018d777fe86cb38cc15.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.15.smt2: shake data/projects/v_pagetable/original/impl_u__l0.15.smt2
+    log = cache/shk/e3662ad10529812be088bdd10c949de080f235729ed104e4910d7060ac0447d0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_addr_mask_when_hp_pat_is_zero._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_addr_mask_when_hp_pat_is_zero._02.1.smt2
+    log = cache/shk/c1e492af85dae0fa0fb926bdd9476097631985f9166387b1a66c10e991b87321.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.7.smt2: shake data/projects/v_pagetable/original/definitions_u.7.smt2
+    log = cache/shk/d4ce2d051e19b05b76b0cfa69f5083478bf3354bd04186f28a98d9a83dbea931.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.14.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.14.smt2
+    log = cache/shk/2b15c425474de04b0bfe72c760f2f3e62f62384a94bed58b7f05f9545df80e93.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.10.smt2: shake data/projects/v_pagetable/original/impl_u__l0.10.smt2
+    log = cache/shk/2c35d7e3d5a371f03669ad969ba1410641ee63cee695cc45b7097aa6e9e0c8d0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._08.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._08.1.smt2
+    log = cache/shk/68b4ab8363dd33d09cf88ff768aa3187a156e57684fabf3eca63eccc87c2c6c4.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinement.3.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinement.3.smt2
+    log = cache/shk/cb83f10136b9fd109b753a3454b293e49bc76493336764f6948fc42597532d49.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.22.smt2: shake data/projects/v_pagetable/original/impl_u__l1.22.smt2
+    log = cache/shk/e22f2c800202f9ae91afd265a24ab2f83cfd0541100fc20a3297de184d9a06a0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._07.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._07.1.smt2
+    log = cache/shk/559bbf686c97247f7ebee2f4d338577a4fdb8426777994cfaebb7589a4a01f02.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._07.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._07.1.smt2
+    log = cache/shk/ecbf2af7010fb8050361812dfb18721dc64a41ff885207b3673a7adf51f96df7.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._01.1.smt2
+    log = cache/shk/a59f612a42f8355e94c55862ae33c20aea49a44430f021098f56873bb7b6ee56.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1__impl&%1__lemma_no_mapping_in_interp_of_entry_implies_no_mapping_in_interp.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1__impl&%1__lemma_no_mapping_in_interp_of_entry_implies_no_mapping_in_interp.1.smt2
+    log = cache/shk/886a778fd0e07f46d0367bbcc7b66f47b36ec55311b98cef1b9925e2983b956f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.29.smt2: shake data/projects/v_pagetable/original/impl_u__l1.29.smt2
+    log = cache/shk/ea4b21e14d387947a0245b6580f1c9a07386f987bfe90c45697544fc29b7eb0f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.15.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.15.smt2
+    log = cache/shk/a2eb4070f239c21e3a89ee3faf7776b6bfd3f73b66f1020f421606b42f76d9a5.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.3.smt2: shake data/projects/v_pagetable/original/impl_u__l0.3.smt2
+    log = cache/shk/e64bd1308a95e70a6ac63c5969c100cf35d0c8be5d971b9766db92ec92f93c5f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.20.smt2: shake data/projects/v_pagetable/original/impl_u__l1.20.smt2
+    log = cache/shk/4f75b741aa5690136d34b3758ff305b6c21329156a9ed03afa4a666713a7536e.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mult_leq_mono2._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mult_leq_mono2._01.1.smt2
+    log = cache/shk/a275834c2300f44e11d61e65fd589630905aca3987cc2c4c907997675b94e6c4.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.2.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.2.smt2
+    log = cache/shk/39822bfe38403ed4618c38ef49c4bab13ef026f81214fa580768d959565a273f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.6.smt2: shake data/projects/v_pagetable/original/impl_u__l0.6.smt2
+    log = cache/shk/2e485ca90d03abf03051c66e012a9280671b226692b81f8abd7beb3b8e0b3a17.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinement.2.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinement.2.smt2
+    log = cache/shk/d2e5dd848c7e57672579fc59231d1be20dbe90c9d0f2203c7152ee66c1ee215f.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.13.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.13.smt2
+    log = cache/shk/6e50f5bc91a4e800b42747ca6cd7573ed914f18e401ad2b936f1c5cf66e3e2c0.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.less_mul_cancel._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.less_mul_cancel._01.1.smt2
+    log = cache/shk/b05d244acf018ab95b229ea46b875026a6af2c9e9d3310660c7e3de5d2cd27fe.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.4.smt2: shake data/projects/v_pagetable/original/definitions_u.4.smt2
+    log = cache/shk/6c1aecd14b6f7e2a2a0d1c2e88e7d3a58c24e98dfa4de53c04210512b2dc14c9.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.6.smt2: shake data/projects/v_pagetable/original/definitions_t.6.smt2
+    log = cache/shk/96c81c13f82b315f32a683025f0b19fd11fe2ecc17326b5deca1421a68142e65.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.14.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.14.smt2
+    log = cache/shk/364b253ed5e6e591f4858dd9bf7b0eed721857fb2e3a32c8a711ecd1fcbb3003.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.22.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.22.smt2
+    log = cache/shk/b8683ea50cfb76c418a254d0d89b211ce55b30706015df779169eb1164d09b59.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.5.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.5.smt2
+    log = cache/shk/fa138d59bc4e92c5ca718d6ac0f5737074d1bb15aab54f85c26323a7ef46df91.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.20.smt2: shake data/projects/v_pagetable/original/impl_u__l0.20.smt2
+    log = cache/shk/6d29df6265f1265a7c676b014af51fbbe6ba1c6adcfa6ba78a0ba76615d794e8.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.6.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.6.smt2
+    log = cache/shk/9737bd3f06bef5675ea048d7ae8586f76dfc71d474aada7b5d89697f1b77de50.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.8.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.8.smt2
+    log = cache/shk/5454d7234d69effaa5ddefd8dda94f705406322441c4755ff896ce5073d5c638.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.22.smt2: shake data/projects/v_pagetable/original/definitions_t.22.smt2
+    log = cache/shk/b6924ed42b38a3dbeb67ac346a59e5c2729eab5f05b735aea173ffefe4bcdf24.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.1.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.1.smt2
+    log = cache/shk/b28416b3463bb7400642d6d1055be86b2d1983b43586da06b3888d05c89919f4.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.8.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.8.smt2
+    log = cache/shk/ced63732c40edd1a7348a517239fe971f7e9fd803409f157777210c709271f13.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.25.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.25.smt2
+    log = cache/shk/2f2b2b231a7f1834e4fbe8bec092774db745ee6546c84c3756e49f44db5d0a3d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.17.smt2: shake data/projects/v_pagetable/original/impl_u__l0.17.smt2
+    log = cache/shk/d721affe1c88626412ee13cf922a7c017ff4d9137ff6bdf22ec88477ee6a6a1b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._09.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._09.1.smt2
+    log = cache/shk/24b022ed2db46879bdc321fd24368729dcb3f411c4bac620862f6572af3d6009.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0main!impl_u.l0.ambient_lemmas1._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l0main!impl_u.l0.ambient_lemmas1._01.1.smt2
+    log = cache/shk/2f2d7b2db3aa00837debc083206582eec20cb483aa6053b26b992d8af47a2a96.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.51.smt2: shake data/projects/v_pagetable/original/impl_u__l1.51.smt2
+    log = cache/shk/7b3ab3df26c98114dfc42a27a8b3ca0de4273e3f0d1c18095a3534bbf1880093.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.30.smt2: shake data/projects/v_pagetable/original/impl_u__l1.30.smt2
+    log = cache/shk/7dec9b4ca9b85f59b934964f7b504becd66b63145d75c198d72ca522d2080b04.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.23.smt2: shake data/projects/v_pagetable/original/impl_u__l1.23.smt2
+    log = cache/shk/fb812739857f384fcf1783328c32d0a8a91173b831ee216d009aa27958bf9e82.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_no_entries_implies_interp_at_aux_no_entries._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_no_entries_implies_interp_at_aux_no_entries._01.1.smt2
+    log = cache/shk/db38327c5dba6f624d67b30a32b81a6870488928feeb6d6e1cfe1e34a63ba2dc.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._07.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._07.1.smt2
+    log = cache/shk/231429efb18f76ce094b62ff8884bd93841770cd55e51601a86d20beebe9d886.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.lemma_aligned_iff_eq_mul_div._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.lemma_aligned_iff_eq_mul_div._01.1.smt2
+    log = cache/shk/db4553de4418ad8c1d232dd29e6e618e1a2386e3bcd97b59de5c4184395fda56.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.11.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.11.smt2
+    log = cache/shk/2914e0c0d1f9d129f1dad09f0c4bf400077ede225b4b914f8e8e126b406ad1a9.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._09.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._09.1.smt2
+    log = cache/shk/36f4c2d8398e30a055db3bad2327f0b4858153f01a86992e96c81a5fcab53b5b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.11.smt2: shake data/projects/v_pagetable/original/impl_u__l1.11.smt2
+    log = cache/shk/e5d0c06e3ee566bfad208afaf63b48824c9945a69cb28cc9e9cf579c5b152ac0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1__impl&%1__lemma_interp_of_entry_contains_mapping_implies_interp_aux_contains_mapping.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1__impl&%1__lemma_interp_of_entry_contains_mapping_implies_interp_aux_contains_mapping.1.smt2
+    log = cache/shk/4de4b5ce29d72c433b0436d0e2f0c56563388b9f2fe034bff550691679ee799e.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.10.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.10.smt2
+    log = cache/shk/3f58b1d11aad1e88d9c552d0e95c9ce5c71e68c842671df6d779595490f38096.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.4.smt2: shake data/projects/v_pagetable/original/impl_u__l1.4.smt2
+    log = cache/shk/ac491d7c0b41ead5989794c9c1002153ead697f6d3e5b3ae51d84ab03a3dbca4.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_addr_mask_when_hp_pat_is_zero._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_addr_mask_when_hp_pat_is_zero._01.1.smt2
+    log = cache/shk/7baca50b276535a566878f8887c96e1cb0dc5d01d6532aee95a47abef41f0d13.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.impl&%3.lemma_entry_sizes_aligned._01.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.impl&%3.lemma_entry_sizes_aligned._01.1.smt2
+    log = cache/shk/3223430315dd9d408164d92869a2a7bc16948888c10113511d957adaffc891b7.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.9.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.9.smt2
+    log = cache/shk/2ad23df0cdd1e9fa0e07228ee113946a66024e871cc3e59acf027fb11b7dab52.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.33.smt2: shake data/projects/v_pagetable/original/impl_u__l1.33.smt2
+    log = cache/shk/ab87e205478050a8e0c34bac06907be1a658d00f5cab19b1794c444a3eaa6be5.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.12.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.12.smt2
+    log = cache/shk/70044453c249fa1a69e1654dd85226e74c7e857f99ed8346113a6d9ccf54c79d.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.6.smt2: shake data/projects/v_pagetable/original/definitions_u.6.smt2
+    log = cache/shk/462742e7a3704daf71ec4bc9964588b75189e595f1b799caae57ea3a9699660d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexing.2.smt2: shake data/projects/v_pagetable/original/impl_u__indexing.2.smt2
+    log = cache/shk/4984c45264aa7e59df4f010adee47dd46470056fe796bb0ea84fb571db5af038.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._24.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._24.1.smt2
+    log = cache/shk/0b61c811df6a875f7059133ea90a14a92f174994f077c68b326810965e450538.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._02.1.smt2
+    log = cache/shk/92b16992df29641745c61a0d5fd1d3a0b5de0b261c21bc7ab507df9c0f7c92bd.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.10.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.10.smt2
+    log = cache/shk/07eb848ce33ad3ac1ac65b728cb57635b78afc925aa204b916d0a321193a787e.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.5.smt2: shake data/projects/v_pagetable/original/impl_u__l0.5.smt2
+    log = cache/shk/22aba5d90683a2fc23fbc2310b4eaf9decc02a4f3df5f13a521563c97ea28860.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.6.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.6.smt2
+    log = cache/shk/b201d10f84591de58e1962da485d3b4a0ce9decdec2b15ae387b42526943d1d1.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.19.smt2: shake data/projects/v_pagetable/original/impl_u__l1.19.smt2
+    log = cache/shk/d88df97a7f2ed418ecf405cecd842c7b6f6f0ea16b4f7f5df16ad1d46f6477b9.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._03.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._03.1.smt2
+    log = cache/shk/b30a8594fa81928eb09252579b901104611ad41e5170b05b8d2f38cebb2ff71d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.10.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.10.smt2
+    log = cache/shk/90b5e6797c34240aeb866f001f5e46a3f51fb8ae935d658abb6f449361d1a7d7.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.34.smt2: shake data/projects/v_pagetable/original/impl_u__l1.34.smt2
+    log = cache/shk/c5d2c3ef995137af9dd7e3beb3f1172b0b6c461f1cd61c2f1a7e9087ed71aeb5.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.48.smt2: shake data/projects/v_pagetable/original/impl_u__l1.48.smt2
+    log = cache/shk/a663e643aa9b63d82360057a8e5ddd7d258cfe92081afe43c96337b1cf5809bf.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.17.smt2: shake data/projects/v_pagetable/original/definitions_t.17.smt2
+    log = cache/shk/c976ab9a3b00004b9c74a5656d568c373d92719da8c052982be7f2d9505c2e9b.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.9.smt2: shake data/projects/v_pagetable/original/definitions_t.9.smt2
+    log = cache/shk/4357778367d29a9eee9f6ddd429817d1e31852e16d0fc8244f49a0a12f940b1b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._01.1.smt2
+    log = cache/shk/2cd541c2aa2998a0f7f343d28e9845c045ccd43ea6b728794c562c7ec09192c1.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.6.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.6.smt2
+    log = cache/shk/59e2e3dc6542c9c25323c7149bb015000116d8e43cbcbb24cd1eff22e7103377.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.42.smt2: shake data/projects/v_pagetable/original/impl_u__l1.42.smt2
+    log = cache/shk/c9ae04d2ed70930ae53a4058f2d83d2429978f5ebd9712c7cfbd80116c19614f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.1.smt2
+    log = cache/shk/41ace0a3476886e9e93935167fe8f0cbf85ded2c45fd1c3f3f09e4c247e6a2e3.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mult_leq_mono1._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mult_leq_mono1._01.1.smt2
+    log = cache/shk/b40d0fb6f514ed5730d3da825c6ce9ce1728fb4f71befc55531d18137e5b41aa.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._04.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._04.1.smt2
+    log = cache/shk/3078de35467c62f3d1640ebdb9a120e673452c95cd4f970f07bdcce3a4717310.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.23.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.23.smt2
+    log = cache/shk/3eeea3f5d65887f898866ff75cd7ddb9309e25c2ca8cde0fd95d07195bb031a1.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.43.smt2: shake data/projects/v_pagetable/original/impl_u__l1.43.smt2
+    log = cache/shk/478d0b585b9c64f19c0020b61dddb9d614cfd29dd03a6042375b842748ec2abe.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.27.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.27.smt2
+    log = cache/shk/a400c0e521b58932bcef0fd207738a58dac182969ca985ad8383ecd331c5698d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._04.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._04.1.smt2
+    log = cache/shk/71d5fe6556f9991c341ca524da707bcc7348f99ea005a89ddc8c6aa2b55a6b54.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_zero_entry_facts._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_zero_entry_facts._02.1.smt2
+    log = cache/shk/23ea71d23ed035f0855fde56f85137431ab5c33dc1143f9c14afc0a79a42407d.shk
+
+build data/projects/v_pagetable/shake_full/extra.2.smt2: shake data/projects/v_pagetable/original/extra.2.smt2
+    log = cache/shk/bbd72570c5ce9f92f44702dc2f297d396ffc6763bc335771f77772026e1afa04.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.2.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.2.smt2
+    log = cache/shk/637bafa10a9d6535c7e062f622a9b8ec7eae723e51d1770ca85ef7cc656cc245.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.1.smt2: shake data/projects/v_pagetable/original/definitions_u.1.smt2
+    log = cache/shk/f6a42790551733af0c7bab2ca61faa7d0f35501c003ee7d2d6d506024831c1bd.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.24.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.24.smt2
+    log = cache/shk/11bfed8527367e4a3d3d4343c7104f025cc4fd8cb82b4fd3df304986204e0ffd.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.13.smt2: shake data/projects/v_pagetable/original/impl_u__l1.13.smt2
+    log = cache/shk/c7c2d70b0b5f38a40c933950c8a118d98cfe6dd2c0d411cb32810572270fe2e2.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.aligned_transitive._02.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.aligned_transitive._02.1.smt2
+    log = cache/shk/0a247df4631413d35952ffb6e50d4d5767993f7f69d1bc07989ad5d58f9df2a0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.24.smt2: shake data/projects/v_pagetable/original/impl_u__l0.24.smt2
+    log = cache/shk/f8d2191596f513f33bab3979ff6d69c68fd1d3fd3ac3f027e53c28d5ec4fb1c7.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._10.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._10.1.smt2
+    log = cache/shk/69201e63e880925d1b97609db6db30af9275eae26c5745afa148dd37034525ed.shk
+
+build data/projects/v_pagetable/shake_full/extra.6.smt2: shake data/projects/v_pagetable/original/extra.6.smt2
+    log = cache/shk/fc53c2aeead05b05da4a59585fb9b07ce35adcc74f616b23f7f9aae13285550f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_interp_of_entries_disjoint._03.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_interp_of_entries_disjoint._03.1.smt2
+    log = cache/shk/19d01a98fbd93e9c47933444173ddb46cbcf51f42f41e845b5e6f7263b0ee788.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.13.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.13.smt2
+    log = cache/shk/a2d08e59a13e677ca213b47fd5b9acd2a71e2c1352d490429f42fe0d8aee16da.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.7.smt2: shake data/projects/v_pagetable/original/impl_u__l1.7.smt2
+    log = cache/shk/5eb2adc958828180c62390ccd46293b76d297d5fab8cf2188b7499aabf93ef19.shk
+
+build data/projects/v_pagetable/shake_full/definitions_tmain!definitions_t.MAX_PHYADDR._01.1.smt2: shake data/projects/v_pagetable/original/definitions_tmain!definitions_t.MAX_PHYADDR._01.1.smt2
+    log = cache/shk/ccddf7611e3ec120bacd7a24ce95d2f9595b5bd6c4553451ad18fb12dba3df24.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._23.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._23.1.smt2
+    log = cache/shk/06c12690cddbf32c8072cfe61d150c0f06f86c5269241addd0993cb71ac9f5ec.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.7.smt2: shake data/projects/v_pagetable/original/definitions_t.7.smt2
+    log = cache/shk/45779aa7ffcfe7493e7679ca409c4716521fe92225f7aaff0aea3c24bac3254a.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.9.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.9.smt2
+    log = cache/shk/39b2950c20b18cb6da2b5ad03c5446928c991c2491f6e78d41fb60714c0a0825.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.16.smt2: shake data/projects/v_pagetable/original/impl_u__l0.16.smt2
+    log = cache/shk/866cde1a44be95d235d8a6a759dfa85fb825f4b4fbf82a6b882e966b967b9009.shk
+
+build data/projects/v_pagetable/shake_full/extra.3.smt2: shake data/projects/v_pagetable/original/extra.3.smt2
+    log = cache/shk/b81e03104ef14a70e9980fa3277be77455684d06abf7d40bcb4aa502567449f7.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.12.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.12.smt2
+    log = cache/shk/12524b660e008d03f9c46a0f8e55877a046cf34a7cb88ae0023ecf5f50784b94.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.18.smt2: shake data/projects/v_pagetable/original/definitions_t.18.smt2
+    log = cache/shk/fd827480d843f00087d544722867fb6d0c019c32d6005c6c707762d8a70017b1.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._03.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._03.1.smt2
+    log = cache/shk/75bc8d99b60d307e639e7caf02e90d70e40da393d7390c576e86ce596d38eb22.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._15.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._15.1.smt2
+    log = cache/shk/91fb55dcc73a78c2f6b4d0f3be67ebd781cf512e5598c39761a9e0240f46787d.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__memmain!spec_t.mem.impl&%1.check_overflow._03.1.smt2: shake data/projects/v_pagetable/original/spec_t__memmain!spec_t.mem.impl&%1.check_overflow._03.1.smt2
+    log = cache/shk/accb6f474ec1de5dab1b316bc56c1ce0dd532082945e2b9b5f3b8df827a30b18.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.8.smt2: shake data/projects/v_pagetable/original/impl_u__l1.8.smt2
+    log = cache/shk/8bcb8159a32ce713cf5772ecfbd18b834a56511281ea6fb3e23231fe6529a883.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._16.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._16.1.smt2
+    log = cache/shk/91179839979cb5258db176254fe5e67f745b7ef8919c3f94e28c42a8ed96ce97.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._04.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._04.1.smt2
+    log = cache/shk/feddf82f16d07665a711c4716745d532acd76f2c0874b42e106a38b67f8c6449.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.overflow_bounds._02.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.overflow_bounds._02.1.smt2
+    log = cache/shk/af78ecfcbbdf874d7493330559261b5ddf23a56e55a5aa023cc0ee52d26ed04f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index_support._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index_support._02.1.smt2
+    log = cache/shk/9358eb1a4e3a32896c6c64d6858ad578b4f0d38511fda0532cc4f1091f315907.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._05.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._05.1.smt2
+    log = cache/shk/641fd5b8b695fcf08f4398fba1aeae62a263e3359ad8f05e5d88e0bf1fdaf831.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.impl&%3.lemma_entry_sizes_increase._01.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.impl&%3.lemma_entry_sizes_increase._01.1.smt2
+    log = cache/shk/13db0ebeb2882d07125ed42f84c644efd4675a8b1589ee3e59fc892ac791a4a1.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__memmain!spec_t.mem.impl&%1.check_overflow._02.1.smt2: shake data/projects/v_pagetable/original/spec_t__memmain!spec_t.mem.impl&%1.check_overflow._02.1.smt2
+    log = cache/shk/d2d57c84de16ed35af630d48b039117716ea72dadbabdb9c76bc1b01de6518f0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.20.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.20.smt2
+    log = cache/shk/644879415e0066e2a20ce4aa8ece0c83a3da32fcbb20a4129f4c8bdff87ac4db.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.aligned_transitive._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.aligned_transitive._01.1.smt2
+    log = cache/shk/4bc9abc71ef28ffea1a78feaa2035d2a0e3f37cc72cb9c4be81f8eaac700766d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.8.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.8.smt2
+    log = cache/shk/b8f5b4f60d6a1636019f911541a4c6fd29fc7f1c210fe2e8cc743475ba65452c.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.14.smt2: shake data/projects/v_pagetable/original/impl_u__l1.14.smt2
+    log = cache/shk/ec45d1d5354ed3801a7f32ecf9c93e03f6dab808777d116cc50ca654193cc6d5.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.11.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.11.smt2
+    log = cache/shk/a439cb7543c7c4c0c66d0d2c1438a5320c7b35942266c5f9682ec3c9ef530133.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.44.smt2: shake data/projects/v_pagetable/original/impl_u__l1.44.smt2
+    log = cache/shk/74b9af2c17a1b24abf5601cd7c80b3e052013d6e3f77b5d6fe269db3bec62850.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.3.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.3.smt2
+    log = cache/shk/eead7d694904659fda5d0589ee4b92960b5ed0304e5c348b215a2d71d2af3fa9.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.8.smt2: shake data/projects/v_pagetable/original/definitions_u.8.smt2
+    log = cache/shk/b22288190475eebb8cd6fd4e4511535285275a03d1f24529e5069d614d9364bc.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.12.smt2: shake data/projects/v_pagetable/original/definitions_u.12.smt2
+    log = cache/shk/8dde802677d25445fc928e9756412e92edebc59e016dfdb42e9737fa009e4b8a.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.14.smt2: shake data/projects/v_pagetable/original/impl_u__l0.14.smt2
+    log = cache/shk/17061ff059bb637456e1f7dfcaa61f1809b30ed6e43b899a43b2246e4df4e654.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.7.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.7.smt2
+    log = cache/shk/65c37557660d6ad5e56e536bac0ec09b30e7b33be1e8124d525b8b2729be878b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.11.smt2: shake data/projects/v_pagetable/original/impl_u__l0.11.smt2
+    log = cache/shk/9e556a3104718caab333898fb7cf781902bdd52bf892390ef1c86f17a4d055c4.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.3.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.3.smt2
+    log = cache/shk/7ceb5bf1cc6733ad4e96f4649e7b0f9865a24890eb9e58597ece760029eb981f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.40.smt2: shake data/projects/v_pagetable/original/impl_u__l1.40.smt2
+    log = cache/shk/93c01277cdecdb14777ddf71ca765e3b064a6d9717b74fd01b073afe64e78580.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_index_from_base_and_addr._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_index_from_base_and_addr._01.1.smt2
+    log = cache/shk/74aca93979046750dae879a89418e5134c8c46b2c204e5cc21aba416be5ba8e0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.5.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.5.smt2
+    log = cache/shk/ce762b9f73a6b5d497a1021e5bfe25e82a97a85e871230804ffa46c042b41000.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._11.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._11.1.smt2
+    log = cache/shk/2b36ccecd9e06c94aa4031c41eca7d4f5b9ad922ee8f150e049b8a7b6d8cba12.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mult_leq_mono_both._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mult_leq_mono_both._01.1.smt2
+    log = cache/shk/7e7701496ce2a8ccd4af08276c76ead84c6a12bcf2803a953a74eac9b4f2e235.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl.4.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl.4.smt2
+    log = cache/shk/9a68e65bc644ec8c6c864cbc605dfc314f0ffe5ecdacb3e29918ead50a3a814e.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.2.smt2: shake data/projects/v_pagetable/original/definitions_u.2.smt2
+    log = cache/shk/67a4c33c65386953b0400a88a5fac251f55b87e9caec07be25e3cc102db6adcb.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinement.7.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinement.7.smt2
+    log = cache/shk/fa965197103d68bbbbccd044a8463c5dc5f460d9f366cccc531bca6309b56b81.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._03.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._03.1.smt2
+    log = cache/shk/4c99ceb2d827445231ef892c1ae1d9f925a4d525e0e9a7974ae1d0c3335b4083.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.2.smt2: shake data/projects/v_pagetable/original/definitions_t.2.smt2
+    log = cache/shk/6f7006f9ca54217051afe597776131bd84c4f349560c70b2033645a2a3e0a94c.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.12.smt2: shake data/projects/v_pagetable/original/impl_u__l1.12.smt2
+    log = cache/shk/119b88fa4f7cf92080482679727c112b7a9101e7c36e885d4b87dce4169baaed.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.3.smt2: shake data/projects/v_pagetable/original/definitions_u.3.smt2
+    log = cache/shk/38e6d1b538fd516a1c9db2240715aab10abc03d4022d9ffa052dfa4ae79a858d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._05.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._05.1.smt2
+    log = cache/shk/a92361211db571cbcd1cf4d7e55c56edb070c1e770027430ca7e607a3c4d3424.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.div_mul_cancel._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.div_mul_cancel._01.1.smt2
+    log = cache/shk/7bdb23d1aad88d162ac35a68655a722107ec76e5db0969678a75ba5c8b7a7db2.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.1.smt2: shake data/projects/v_pagetable/original/impl_u__l0.1.smt2
+    log = cache/shk/d5b56efb8766c34d9fcb40d16098d9ea2cab4a87ba54b9e799d8bdc061498ce7.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_index_from_base_and_addr._03.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_index_from_base_and_addr._03.1.smt2
+    log = cache/shk/0df8ce11115b1d22092f59c9dd239b8ebbb16fcf7b9615ec0d5d10315339ee3e.shk
+
+build data/projects/v_pagetable/shake_full/extra.1.smt2: shake data/projects/v_pagetable/original/extra.1.smt2
+    log = cache/shk/3f0e10882492aeabae96529b3543a6a2306db3bb08b9d46aea66f1e681fd66b0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.23.smt2: shake data/projects/v_pagetable/original/impl_u__l0.23.smt2
+    log = cache/shk/9a548b40c706dadbe5a40a4a7e74604501bb921619272e5848796c3ee8b67ebc.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.8.smt2: shake data/projects/v_pagetable/original/impl_u__l0.8.smt2
+    log = cache/shk/5565da9e72f46970fdeb8f9e21469e7c5629c42bb4cbff5d02cc4243f606d88b.shk
+
+build data/projects/v_pagetable/shake_full/extra.7.smt2: shake data/projects/v_pagetable/original/extra.7.smt2
+    log = cache/shk/9c09656f2215aa575e25e69289099ead11c1f4e6afc73d2625ef205574dd2a1e.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.7.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.7.smt2
+    log = cache/shk/f81ab17878477c8608d146165b857810302e6e323bcd84a8a08d42a13edf84d0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.18.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.18.smt2
+    log = cache/shk/a75ec88148e81c8c3e65bc67e97711bd1bcb77fe050fb9f2d995391b32213b49.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._19.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._19.1.smt2
+    log = cache/shk/3b76428ecdfa2cf1fcf26a1fb185b9536ca7683933cf47cf9a51fa9903c47b44.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.impl&%2.next_entry_base._01.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.impl&%2.next_entry_base._01.1.smt2
+    log = cache/shk/404b737c8e0cdcfaad73a28f2b2c0d65f16c022a1fa317bbd19e5510238461ab.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._17.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._17.1.smt2
+    log = cache/shk/ffa0136f9536b11826acf59940d2445cf4a28ea164d56ae94b82848d58cd1f7c.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.17.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.17.smt2
+    log = cache/shk/0bb4acd716769b86ff7266e04f22dd7f2adbc191ba35796503813f2da02afc07.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.17.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.17.smt2
+    log = cache/shk/485a3a53babff55900d648aaf22b6cadd09ea6e43f4ad41e6268e6097acd0453.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.19.smt2: shake data/projects/v_pagetable/original/definitions_t.19.smt2
+    log = cache/shk/36066a268354c2b612168bf80f6450df0db97bfe80d8ee4f7adaf667a34c677e.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._10.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._10.1.smt2
+    log = cache/shk/6db052e962c15784321d31089029d9139baa88d6e7325a85133a83661b5b659d.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__mem.2.smt2: shake data/projects/v_pagetable/original/spec_t__mem.2.smt2
+    log = cache/shk/761d816c91fccdbaf40efd674505f23c1fff63ecb05fffc6278ecbd261cba140.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.x86_arch_inv._01.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.x86_arch_inv._01.1.smt2
+    log = cache/shk/a4f99064aad72e33ed621950f4aee893c1cb49b76d41a168fed934e4ee3fefcc.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.31.smt2: shake data/projects/v_pagetable/original/impl_u__l1.31.smt2
+    log = cache/shk/c1d2cc61c8fcaf432fe956bf091ef3782ad0798db7817d9f317185b39bc12d0f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.16.smt2: shake data/projects/v_pagetable/original/impl_u__l1.16.smt2
+    log = cache/shk/2ecccf5349d107a893f89c34531cdbd91604e3d6edeeba7c5986ca999184cd2a.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.7.smt2: shake data/projects/v_pagetable/original/impl_u__l0.7.smt2
+    log = cache/shk/7aa6b671804304179aa6686d81877517ea692e0c9589d6084161447b4f334fbf.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.21.smt2: shake data/projects/v_pagetable/original/impl_u__l0.21.smt2
+    log = cache/shk/fd047c87fc7a7e4ad9a04ad117701f8eb87309563722dc86c6fd4dd4622085ec.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.2.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.2.smt2
+    log = cache/shk/7741cfa19f5547bd1d9378929a9b4e1daf661b8056e47356d6a3005f89ffef1b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.5.smt2: shake data/projects/v_pagetable/original/impl_u__l1.5.smt2
+    log = cache/shk/ffea7b0541715bf02f96f8639232a7f8778791c200967c9ac863d5483a72cebe.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._03.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._03.1.smt2
+    log = cache/shk/4e6bd32ddcc5248049d544642e6ffcee2e4ed984fee8f6be88445f532a83eec9.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mod_less_eq._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mod_less_eq._01.1.smt2
+    log = cache/shk/12f243aeaec76fd2a0b6baaa713177ce43438fcc2aa20ae6e20cfe151176fdd1.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.23.smt2: shake data/projects/v_pagetable/original/definitions_t.23.smt2
+    log = cache/shk/e71957a5fc2b60abab8155cb854ceec8153ebb09b33a71e993d74f1f251653cb.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1__impl&%1__lemma_resolve_refines.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1__impl&%1__lemma_resolve_refines.1.smt2
+    log = cache/shk/3d8198542b7fa6553547f330ab17714e4bb186658c65f3e307076115a6fba020.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._03.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._03.1.smt2
+    log = cache/shk/91ca371914c8c14869480e87dc41724f3bb133ad8ed7c61284568ef453a2b290.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.9.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.9.smt2
+    log = cache/shk/fb789c5fd20fbbb9ef17f78e8bbc7468587fa7473c682a8df6b28b84a141c3cf.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.lemma_maxphyaddr_facts._01.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.lemma_maxphyaddr_facts._01.1.smt2
+    log = cache/shk/0456f31d7088486a004e73064097209a588d44915b40e8b55246e1583b1c1b2b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.15.smt2: shake data/projects/v_pagetable/original/impl_u__l1.15.smt2
+    log = cache/shk/b3faefc9ac0835307da1aa8200e90bfc771e528e0c8c485ae73cb63f4c11d6cb.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.21.smt2: shake data/projects/v_pagetable/original/impl_u__l1.21.smt2
+    log = cache/shk/801969556b5b3a6239529ee3d8ab3113a3b24659cf79a6068e1658a033cfbb8d.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.15.smt2: shake data/projects/v_pagetable/original/definitions_t.15.smt2
+    log = cache/shk/eb10d2a889c2aa8452987cf62abd1594c3919868585cb46ce5a4a533cfbdc01f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.4.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.4.smt2
+    log = cache/shk/9841b7aa1916c1f01a4f55eb5a6010b8ba4b99b2e89e6813ecd36e27e3a552aa.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.4.smt2: shake data/projects/v_pagetable/original/definitions_t.4.smt2
+    log = cache/shk/fb3d73ffc2fdf402b6a08c81681f122f4cf64de7cb658c755057f4057d9c6e69.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1.1.smt2
+    log = cache/shk/d3e4eb61d5b849e2f0cd46b58b5d7f88bd960c111ea0881832b0b59fcecd8ca8.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._01.1.smt2
+    log = cache/shk/6db64448ef0596e2f1c87c4e6cdddd1ef418954f8f2d6b60a25c73c4a6b96f70.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.4.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.4.smt2
+    log = cache/shk/bbab28d7e7d1d5a9c677b33e05102dfa5aed0e3366f8ac8f74ee7bebb319555a.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinement.5.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinement.5.smt2
+    log = cache/shk/0084562c016f8de784c6eea782dc326c1181747d95a805d8b002d66883b2390c.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.6.smt2: shake data/projects/v_pagetable/original/impl_u__l1.6.smt2
+    log = cache/shk/0dd86aa1344509c151bcc4da6dc6db2dda94af372ee3ffcda18e1a2d87d0028a.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.15.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.15.smt2
+    log = cache/shk/310f47587a9baa9cb24e5f989c69380bfeb2120a06a4d119448e2e9821afeb66.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.11.smt2: shake data/projects/v_pagetable/original/definitions_u.11.smt2
+    log = cache/shk/db43aaf044cfcda95713ad06f1c967a707e7a3ea8dde9452883ca52c6b2bacbe.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.1.smt2
+    log = cache/shk/ed31c0aa30edf4e51f058ef7124df463afaec4070dcb6ab7e2f0b13224efb235.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mult_less_mono_both1._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mult_less_mono_both1._01.1.smt2
+    log = cache/shk/6efcb13be108adf415ab3e2b943aaa29c88d034095d45453e0f0a7245bbc6e6a.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.overflow_bounds._01.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.overflow_bounds._01.1.smt2
+    log = cache/shk/b93ac3c54f704b2043d49d44f64b54c44c52697511117af1b8a0359b351c0ac7.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.2.smt2: shake data/projects/v_pagetable/original/impl_u__l0.2.smt2
+    log = cache/shk/a6fa50491ed30fd717f711f931e049eb32a8dafeced1be7a83e01803fbae115d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.lemma_page_aligned_implies_mask_dir_addr_is_identity._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.lemma_page_aligned_implies_mask_dir_addr_is_identity._01.1.smt2
+    log = cache/shk/668330dcd35dbf5743cdf64938bb1e228b28b15783fdb290027dd7516a41798a.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.21.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.21.smt2
+    log = cache/shk/d6c07aee22a1b77bceb521399f9786182cc0766995a8c4a3d82b6e3238d1ad11.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mod_of_mul._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mod_of_mul._01.1.smt2
+    log = cache/shk/7dc62deb83c9581407bf258f7d3e16492eaf8b3033b29c50af516ceaac5f7c07.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.49.smt2: shake data/projects/v_pagetable/original/impl_u__l1.49.smt2
+    log = cache/shk/181dd80e32f33b8c9e1f72e36f4bcd70107986e1c95ac54b72a501776b906652.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.5.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.5.smt2
+    log = cache/shk/3453db2e1ea4a1962bc922fa92f7d40ae2353a98d3b5eeacaaee6e701a87042b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._01.1.smt2
+    log = cache/shk/33184a5602d9fe79b99534a9040c2d01f9a88e3ac332bc11f6d89de7defc5a88.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.55.smt2: shake data/projects/v_pagetable/original/impl_u__l1.55.smt2
+    log = cache/shk/5903a936d785354e18933a5bf22f473fbac32d25f3b725366642e6290730190a.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_interp_of_entries_disjoint._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_interp_of_entries_disjoint._02.1.smt2
+    log = cache/shk/627f4eb80788ecd38b354cb8f43c616f0a309a2859012d81a3d906a7c3ded163.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.13.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.13.smt2
+    log = cache/shk/036f1d222a5366ba3ef2e3ba6702a55744b2fd2e6a7ac70fedb33f8826331623.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__memmain!spec_t.mem.impl&%1.check_overflow._01.1.smt2: shake data/projects/v_pagetable/original/spec_t__memmain!spec_t.mem.impl&%1.check_overflow._01.1.smt2
+    log = cache/shk/7534bcf4b1b1eb07a190a8e9d2626a06be173e9fe20febaf44c979bd2db6a3cd.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._02.1.smt2
+    log = cache/shk/e6b9f90464bcd01fa94ed4ac1307f79aa92f429ffe123416d0055ff25ab30bbb.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.19.smt2: shake data/projects/v_pagetable/original/impl_u__l0.19.smt2
+    log = cache/shk/ec4dd99ef462b546066dd79dde604bc419f4e276d89c2266df55dd7112461f43.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._02.1.smt2
+    log = cache/shk/eaeff932e42106c3ec157be681fd04d0bcc35291a24e4f509de777ec0e4e378a.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.aligned_zero._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.aligned_zero._01.1.smt2
+    log = cache/shk/72ef19288843149df31deb1d82d38667f86933eea84a77930666f31cf39a183a.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.20.smt2: shake data/projects/v_pagetable/original/definitions_t.20.smt2
+    log = cache/shk/d96f5ce6698d07dee125bbf4ae99d5b1db887bdb67f841a54196f13c6dcef572.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.13.smt2: shake data/projects/v_pagetable/original/definitions_t.13.smt2
+    log = cache/shk/bea500907081b168992d4af3a0b0910db19fa2fdc10edbe4b48a344c0a255123.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.25.smt2: shake data/projects/v_pagetable/original/definitions_t.25.smt2
+    log = cache/shk/6d6c8a38a39ad10ed6962e08690f13e0a44b1dcb8c2e6e9256b561cb09549883.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.26.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.26.smt2
+    log = cache/shk/80b22e7140f1de821dda3684f4da22ba61adc13bdca60bae03df061d1857f025.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.12.smt2: shake data/projects/v_pagetable/original/definitions_t.12.smt2
+    log = cache/shk/1dc72bfa03f01d169459f9ae4626b34e4cf4a9f316b87ddf7cfe8624ab6e1d33.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.16.smt2: shake data/projects/v_pagetable/original/definitions_t.16.smt2
+    log = cache/shk/e8645902f6b8593edf876cafd1aa27e9de90663ba611f6fc644a88331f6640be.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.30.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.30.smt2
+    log = cache/shk/e7e3912ffcc9083bb21552d49e0c774ee9d8c8590236841053c2a43e3333a769.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.26.smt2: shake data/projects/v_pagetable/original/impl_u__l1.26.smt2
+    log = cache/shk/f8c0f8758222b6195b3df4485c19f2f53ee8ff2d1111585ab1cd7e8732c03fa2.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.25.smt2: shake data/projects/v_pagetable/original/impl_u__l1.25.smt2
+    log = cache/shk/612dbcf603b43f73aa45df5daffe45d6865dc68c89ef9efea683e619bff8a208.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._12.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._12.1.smt2
+    log = cache/shk/eb202a0c6a9026bed38a3c8c14adddb92785bd26d8c45690061a77eb8309c0dc.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._08.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._08.1.smt2
+    log = cache/shk/ba9608e7e30f374b860e3fb04acd07df84406fd3031513b121956ad3e453dd26.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinement.4.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinement.4.smt2
+    log = cache/shk/0a9f540e5a308f180399ec0a4a50b3edf8d4577cedf77ea74c0dce1e5df8e16a.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.6.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.6.smt2
+    log = cache/shk/55ffdae778f04b34b086f8759a0d28e5344dd0a7e12340fb8c642ba01886d7e0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._22.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._22.1.smt2
+    log = cache/shk/28e31d693977046bdfc890ce77f694d2e10ef902b9cf6c3d81b7cf495368563f.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.28.smt2: shake data/projects/v_pagetable/original/impl_u__l1.28.smt2
+    log = cache/shk/2a07720bf46cdaac483ed7aff7ea60a9ee83eb1e72b91aec3b3095582ee3f461.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.12.smt2: shake data/projects/v_pagetable/original/impl_u__l0.12.smt2
+    log = cache/shk/1c3fa2442dbc4be17442b80f1adf62d7af5b29cb4e37582013896f2125c61976.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.8.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.8.smt2
+    log = cache/shk/3280865519852c7a71f6b0cea2828dc75537291e4e9b88987b4fd509ad8c88d7.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.2.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.2.smt2
+    log = cache/shk/3ab4aef950b72eeb046cf4eafd3159d976294506f34b7f6121983961daf0d74e.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.3.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.3.smt2
+    log = cache/shk/33f95e6cb4be160e8027068b47d06f6f3b93bde20d43111da10c52d2e41f65b6.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._01.1.smt2
+    log = cache/shk/4f91158b1971822b3681e3f7b1dac042a7279c25f17dd1ee623ac78f96c2c926.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.36.smt2: shake data/projects/v_pagetable/original/impl_u__l1.36.smt2
+    log = cache/shk/edb2721ff8c2535689f93f0d670b75b9c3508ccc6d82f202bdc5da18ae0380ef.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.1.smt2: shake data/projects/v_pagetable/original/definitions_t.1.smt2
+    log = cache/shk/f4de2690b8b89c56a96caa162369e790c505e427f78d9524c8e068030c742eed.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexing.3.smt2: shake data/projects/v_pagetable/original/impl_u__indexing.3.smt2
+    log = cache/shk/d4dfdb41ae9cc673a7685083c2420d538264a0dc427733a52abc312e9caff2cf.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.lemma_aligned_iff_eq_mul_div._02.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.lemma_aligned_iff_eq_mul_div._02.1.smt2
+    log = cache/shk/0cdc5003d1faf2c31d9d83b25c4ac33158e17d77d77d47e70c18c5755a005377.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.47.smt2: shake data/projects/v_pagetable/original/impl_u__l1.47.smt2
+    log = cache/shk/f17e9ceb2e59985750b09868fad4aeb1f480bd76eb100bad382b34e54f498dac.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._10.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._10.1.smt2
+    log = cache/shk/da58ff9d9996357dea17a48c2b64a4f9045a25a495e6773d57f38ea3433b3fff.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_interp_of_entries_disjoint._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_interp_of_entries_disjoint._01.1.smt2
+    log = cache/shk/f36e75aa021da45e8127848ff974c6886221fffcd03249b6d2cb6766fbbbd870.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.16.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.16.smt2
+    log = cache/shk/97522b054fc61f4259696f77ed7e19baa86f2dcaf2e5c78d6751f17d41167e61.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.11.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.11.smt2
+    log = cache/shk/dcdb116e5be74f0b8d00da02832df161c0b4dba9ba6009b74f8ae041c93a1d91.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.45.smt2: shake data/projects/v_pagetable/original/impl_u__l1.45.smt2
+    log = cache/shk/cf232ca91e1a05afb11a9b0ab601f5366062a1c815c2e31cf547101f8d11d2ed.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.50.smt2: shake data/projects/v_pagetable/original/impl_u__l1.50.smt2
+    log = cache/shk/e6a98b7b862e8f80dc6a40bbe15d40e441d04157a3d7cf1a19e39bf9309c0546.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.37.smt2: shake data/projects/v_pagetable/original/impl_u__l1.37.smt2
+    log = cache/shk/9de5636255508ddb2b4a4ba568b0f19c9f85f7c0e896a12c4bd7b9a2d619d255.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.10.smt2: shake data/projects/v_pagetable/original/definitions_t.10.smt2
+    log = cache/shk/7bffda2ebbf1367700bb1a06313f5bc783b30557d7b18a18230eb849f435affa.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.2.smt2: shake data/projects/v_pagetable/original/impl_u__l1.2.smt2
+    log = cache/shk/f378374b8165905bac4d1b4bf4d15b21cd9c6f914f2a9fe0073fa4c887ab2c95.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.56.smt2: shake data/projects/v_pagetable/original/impl_u__l1.56.smt2
+    log = cache/shk/d3f3f41e73ec4901679fcdd262ebb17bb860fce99a7f7e3bae6f09f461a89bb8.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._21.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._21.1.smt2
+    log = cache/shk/47231e121e23bacc225457b276499553134fb7fd701c84e77cd7a66ed33857c5.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.impl&%2.index_for_vaddr._01.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.impl&%2.index_for_vaddr._01.1.smt2
+    log = cache/shk/d860d17c0a2a956a2ec77cb27e8f15a77ad6bede977606cc16f7d3bd5cce35fc.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinement.6.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinement.6.smt2
+    log = cache/shk/3c3cf33dbd0420e891436d1523e909a2cef0b82cae68946cb8ba4ffcf6ad2685.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._12.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._12.1.smt2
+    log = cache/shk/db90bdd650e01b07d2941ee3b423e6b478ad12960dd64c38df17dae20dd48da7.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.16.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.16.smt2
+    log = cache/shk/32e008118feb42bc76f4a2489360e89f88094af525e7f7d0310a3a5d0722630b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.24.smt2: shake data/projects/v_pagetable/original/impl_u__l1.24.smt2
+    log = cache/shk/697b6e0fecbd2a5b0e501cad1a9c306400f1dfa765a9268b74a68b7c0e98bfd4.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.3.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.3.smt2
+    log = cache/shk/6b01db27ba00f77fc8e7adb38ecc67a43d10ecf74a770b6e67cac62ab6c7d063.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.3.smt2: shake data/projects/v_pagetable/original/impl_u__l1.3.smt2
+    log = cache/shk/44f22d6e7fc34b38e723b6830dc41c2ccd5c6b1d6b03670c099f1092edc8d9b4.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._06.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._06.1.smt2
+    log = cache/shk/469059ef00322d50cad336e17f6029133b48d9cdb35ef9ab5e72579c712c36df.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_zero_entry_facts._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_zero_entry_facts._01.1.smt2
+    log = cache/shk/35fdff49acc4b9298ae6a9371ce6a104dc6742f3c74763eaf61006eff79ee8d6.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.19.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.19.smt2
+    log = cache/shk/2174b7edcb7ebdc07203e6b069424d712c8345fafc91dee5785a0dcd5fca5f4b.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.5.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.5.smt2
+    log = cache/shk/f2ab81a0f763e9b002b2cf9e2cf93e5a0f87751a6db20eb9e5c930f0973fd928.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.24.smt2: shake data/projects/v_pagetable/original/definitions_t.24.smt2
+    log = cache/shk/3909d2f845f9808f7f77e8d7ec9a679fecc521580a24e83e0c4de46c7fda06e1.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.10.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.10.smt2
+    log = cache/shk/0b69b2d64a1a2bd7d2eece4bd755163b3c40c8e241309c4dc409ec8942c2c166.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.39.smt2: shake data/projects/v_pagetable/original/impl_u__l1.39.smt2
+    log = cache/shk/016d38bc2e7bd76e07b2979614ea3a49c776eac64d0e3a1d549f317ecfa77cd5.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__os_refinement.4.smt2: shake data/projects/v_pagetable/original/impl_u__os_refinement.4.smt2
+    log = cache/shk/c9059e0a892f1312b3b1ab364ca2a2a9130ad65d736d5badd3008f65dfc74e25.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.5.smt2: shake data/projects/v_pagetable/original/definitions_t.5.smt2
+    log = cache/shk/7ca3388c55362cf539b99b8c6015cb58e3f25888e8ea7b2bb324553acdcf64d9.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.14.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.14.smt2
+    log = cache/shk/2730faee81ff1c8863119f68f6b17e6a4f43e21741ee75d16b15e36ebffbd38b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._02.1.smt2
+    log = cache/shk/90eb4177e95a56dbb93f65005b39b1c38c79d7be696077d95c3a388cc12b1427.shk
+
+build data/projects/v_pagetable/shake_full/extra.4.smt2: shake data/projects/v_pagetable/original/extra.4.smt2
+    log = cache/shk/6005a82619dbf9152eb725b8f4365ea88e035179194818a4471ecff64332fc4c.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinement.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinement.1.smt2
+    log = cache/shk/5ce892aa7594f5ee0872b69221e9737e2a2f69ad438b28eb726b4aba2e74d84b.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mul_distributive._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mul_distributive._01.1.smt2
+    log = cache/shk/fe08b8abf3339a5cb4d98fc1c9c44f7c7df26c9d0e6ba43bc10aea5b1dccd0b9.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hardware.1.smt2: shake data/projects/v_pagetable/original/spec_t__hardware.1.smt2
+    log = cache/shk/d83051380e97b2b36fa0d5f2094b9a7dd92f2615747d33a92c590b6616dad0ac.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._03.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.lemma_aligned_addr_mask_facts._03.1.smt2
+    log = cache/shk/87c39ca404070fad3b3fda19ee06687e0fb0caeb5aedf9d38b7a08cb56f2157d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.18.smt2: shake data/projects/v_pagetable/original/impl_u__l0.18.smt2
+    log = cache/shk/e4e8980b78ce07212456b7261e202d7d043fe88f34fa528e6b58bd709f3c0605.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._13.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._13.1.smt2
+    log = cache/shk/b29bf8d3a32196ec4bcf265fcfcc36a531385a6f6e309a853cf55a9cebfcc670.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._04.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_inv_implies_interp_aux_inv._04.1.smt2
+    log = cache/shk/c560fe76002ac80208e6ada4dcc846cf49489415f75684b77423df30af5ea2c9.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.52.smt2: shake data/projects/v_pagetable/original/impl_u__l1.52.smt2
+    log = cache/shk/56c5be4f678d99aadb6a4f92e6bfae0288d0079719375f6fb63d689c27e01859.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._05.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._05.1.smt2
+    log = cache/shk/31548fedf92899b40196427bfd38a6329d90e3272c44624ebb8a62c230c87ab4.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.41.smt2: shake data/projects/v_pagetable/original/impl_u__l1.41.smt2
+    log = cache/shk/8d069c88e28f43b275dd80c0b17de246e180d4ea6f225356f1517923ff7fef0a.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.11.smt2: shake data/projects/v_pagetable/original/definitions_t.11.smt2
+    log = cache/shk/ba2d1e5be5d47534d82d4559a719bc4857a21d671f43610a91201f3c80c33e2d.shk
+
+build data/projects/v_pagetable/shake_full/definitions_umain!definitions_u.impl&%2.next_entry_base._02.1.smt2: shake data/projects/v_pagetable/original/definitions_umain!definitions_u.impl&%2.next_entry_base._02.1.smt2
+    log = cache/shk/c9ca41fd35e8a5ea3945f302e3a5f144129c167a36d08faacde2d2d67c30ee86.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.18.smt2: shake data/projects/v_pagetable/original/impl_u__l1.18.smt2
+    log = cache/shk/e2164bf7f3de9f66bfb9adfe9a22b52e9f654f24f2ffd4e268b7190bd854a64b.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.35.smt2: shake data/projects/v_pagetable/original/impl_u__l1.35.smt2
+    log = cache/shk/951c54ee0b9014b6b5edcfc838833aa8572dfd4070853d67d3e5991b7eaf794a.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.53.smt2: shake data/projects/v_pagetable/original/impl_u__l1.53.smt2
+    log = cache/shk/3cade21439605ad835229ab941061dfcba4c0c157d8b45df4329f470ba534613.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.32.smt2: shake data/projects/v_pagetable/original/impl_u__l1.32.smt2
+    log = cache/shk/87c3bc0a7b62a6aae132e54474a0bce204c908ee56c6166b41a8dcd0eab2f287.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mod_mult_zero_implies_mod_zero._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mod_mult_zero_implies_mod_zero._01.1.smt2
+    log = cache/shk/51c16ac0cd26b9df8b29622073100eab5ced70928068838be45d61d768f921d3.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.22.smt2: shake data/projects/v_pagetable/original/impl_u__l0.22.smt2
+    log = cache/shk/7ca33e3ab77e896bc901208c15013caa22893a646db4daac8dbca25ccc567db0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._15.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._15.1.smt2
+    log = cache/shk/0a37c45d0ed8f789a537ab8a68b78d4b5212fe7e692fc45512393bef4bec30c2.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._18.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._18.1.smt2
+    log = cache/shk/e6e12cda85512d23cd62a21eea2cbfa4b67352aeb09bae42b70d24b47ca4b7b2.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index_support._01.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index_support._01.1.smt2
+    log = cache/shk/4a9a61c042fa8ad0454bc6977d4e26b7f0faad62f1de87b95832334d74a68917.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._11.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_refinementmain!impl_u.l2_refinement.lemma_page_table_walk_interp_aux._11.1.smt2
+    log = cache/shk/c3beef13d1c5f6801729b493c627d9fef67b74388a7b0674d7c99b9fd8965fd0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._09.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._09.1.smt2
+    log = cache/shk/cc045f50bec505d9da55c4595354e483e9a471680225c00088f5e49081088f1d.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.21.smt2: shake data/projects/v_pagetable/original/definitions_t.21.smt2
+    log = cache/shk/3db715501bc4c2e82986933d3609773e125692460c3890be3887cf684b37244d.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mul_commute._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mul_commute._01.1.smt2
+    log = cache/shk/13ac4c04325eb51a2a1848cf34ecc27ebd7608ff4713da69c6811a01a740312d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.29.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.29.smt2
+    log = cache/shk/4083bce79912ea1ebc7506fc92ca53ab15064a25bdd3fa144a15936bb885a16e.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._08.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._08.1.smt2
+    log = cache/shk/31c82205550863061e00d2b59297f736d730e701b45a69649fe0d44cfc83e7be.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.9.smt2: shake data/projects/v_pagetable/original/definitions_u.9.smt2
+    log = cache/shk/77442eacac75788f7e17a27b66f67c29dbde792c1ba2b2e69513d6f19390bf0e.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_zero_entry_facts._03.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_zero_entry_facts._03.1.smt2
+    log = cache/shk/206208941e2a7e7fa315fc34f0f49f6e1084a6028db43c787a870abeb04e5562.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1.17.smt2: shake data/projects/v_pagetable/original/impl_u__l1.17.smt2
+    log = cache/shk/2045eb2235533257dc99f7aefa0be1e36b1a7e850badaa5fc17547b67e1720f0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._04.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_addr_mask_is_address._04.1.smt2
+    log = cache/shk/cb58e5076f4135ed2abbcdd041cff135f9eb6dcdb322481c593d08e35ccfd77a.shk
+
+build data/projects/v_pagetable/shake_full/definitions_t.14.smt2: shake data/projects/v_pagetable/original/definitions_t.14.smt2
+    log = cache/shk/eea1134e9f194b29fa66ee8199fafde5c21f21b09eabc89569eae902e4e14f90.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexing.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexing.1.smt2
+    log = cache/shk/21ea19054840a43dbc17add927c7db8a3057176ccb43993781c1bfbe913547c0.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._04.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._04.1.smt2
+    log = cache/shk/c4b8095c2535dc1ccf6f9fed704c948b71ef9dd25c9db2436c3ac55cb283515c.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._02.1.smt2: shake data/projects/v_pagetable/original/impl_u__indexingmain!impl_u.indexing.lemma_entry_base_from_index._02.1.smt2
+    log = cache/shk/7e57c3efb0161c374a983300c4d2d3c5e7ce638e2dfef158080324d5b9197810.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._14.1.smt2: shake data/projects/v_pagetable/original/impl_u__l2_implmain!impl_u.l2_impl.impl&%0.lemma_new_entry_mb0_bits_are_zero._14.1.smt2
+    log = cache/shk/364b417de4469b5653a00961efc609903dd2fcae8fb15fbd2718fcad88774c27.shk
+
+build data/projects/v_pagetable/shake_full/extramain!extra.mult_less_mono_both2._01.1.smt2: shake data/projects/v_pagetable/original/extramain!extra.mult_less_mono_both2._01.1.smt2
+    log = cache/shk/fd70cf37bde9ce36b4986dce59189c281f603d9a0da12884990f7cb99e61cb40.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1__impl&%1__lemma_resolve_structure_assertions.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1__impl&%1__lemma_resolve_structure_assertions.1.smt2
+    log = cache/shk/081c919e05f4e81b34be93c2bbcfd5a811b48b1db747a251599e927231115cf9.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.4.smt2: shake data/projects/v_pagetable/original/impl_u__l0.4.smt2
+    log = cache/shk/0a8146b441ddc87ba92e95e0eb94145a02d9e9a459129f776b0624ed787395cd.shk
+
+build data/projects/v_pagetable/shake_full/definitions_u.10.smt2: shake data/projects/v_pagetable/original/definitions_u.10.smt2
+    log = cache/shk/bfe35c15b845cc73e01ec6cf150fea036f4d4a2ffd40da0d7c953c3f53089750.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l1main!impl_u.l1.impl&%1.lemma_interp_of_entries_disjoint._04.1.smt2: shake data/projects/v_pagetable/original/impl_u__l1main!impl_u.l1.impl&%1.lemma_interp_of_entries_disjoint._04.1.smt2
+    log = cache/shk/1333f7b4c0cc302e32819b8868ccdfbe4747a3aabfaeae6c80781329b0c8ecea.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l0.9.smt2: shake data/projects/v_pagetable/original/impl_u__l0.9.smt2
+    log = cache/shk/94af79a445c97e971105bd8652d8132d8dbf509d6ed806968143baca7fc6070f.shk
+
+build data/projects/v_pagetable/shake_full/spec_t__hlspec.1.smt2: shake data/projects/v_pagetable/original/spec_t__hlspec.1.smt2
+    log = cache/shk/2e98ee08555be9fe4ed8ba399098caf2069cb2ded0abb68631eefad9a202048d.shk
+
+build data/projects/v_pagetable/shake_full/impl_u__l2_impl__PT.15.smt2: shake data/projects/v_pagetable/original/impl_u__l2_impl__PT.15.smt2
+    log = cache/shk/dcc6e18a3279aa6c598bad44144276ba237bf7bd83738f7dfc1d160311c59932.shk
+

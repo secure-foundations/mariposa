@@ -27,7 +27,7 @@ class ExpAnalyzer:
 
     def __contains__(self, base_name):
         return base_name in self.__qr_keys
-        
+    
     def base_names(self):
         return self.__qr_keys
 

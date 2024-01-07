@@ -14,6 +14,7 @@ class ProjectType(str, enum.Enum):
     SHKP = "shake_partial"
     BLOT = "bloat"
     REVL = "reveal"
+    INST = "inst"
 
     ORIG_CVC = "original_cvc"
     BLOT_CVC = "bloat_cvc"

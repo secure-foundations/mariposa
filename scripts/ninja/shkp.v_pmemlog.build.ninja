@@ -1,0 +1,509 @@
+
+rule instrument-query
+    command = ./target/release/mariposa -i $in -o $out -m unsat-core-label-assert
+
+rule create-mini-query
+    command = ./target/release/mariposa -i $in -o $out -m unsat-core-reduce-assert --core-file-path $core
+
+rule format
+    command = ./target/release/mariposa -i $in -o $out
+
+rule z3-dump-core
+    command = ./solvers/z3-4.12.2 $in -T:150 > $out
+
+rule shake
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --shake-log-path $log
+
+rule shake-special
+    command = ./target/release/mariposa -i $in -o $out -m tree-shake --shake-log-path $log --shake-max-symbol-frequency 25
+
+rule strip
+    command = ./target/release/mariposa -i $in -o $out -m remove-unused
+
+rule shake-partial
+    command = python3 scripts/run_shake.py partial $out $in $full $log
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.23.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.23.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.23.smt2
+    log = cache/shk/64e4f07c7ed2fcb412c4079c786673438a59d676d8140e071f835d25abc15972.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.41.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.41.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.41.smt2
+    log = cache/shk/836810ed71a20d00887e3b3772372bdc6ebcf4f1c91d10a96093b18533bbfd5c.shk
+
+build data/projects/v_pmemlog/shake_partial/math.18.shkp_log: shake-partial data/projects/v_pmemlog/original/math.18.smt2
+    full = data/projects/v_pmemlog/shake_full/math.18.smt2
+    log = cache/shk/b6670e670507d547cc0fce7d2a94a26c9402693e75c2c6c08f933f0bc47ebcf0.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.44.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.44.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.44.smt2
+    log = cache/shk/5d474b7cf04286c2a7412b71eee199d511abef7d095eda333ae8ae2ab5f7cfe1.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.11.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.11.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.11.smt2
+    log = cache/shk/7150059cf471cd8ab44e74116e0957ac95a99474545af2c5971f18a926e1b047.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.18.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.18.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.18.smt2
+    log = cache/shk/9ff2f2e296d875643ec7e2e9634bb297eb7fc5983aae46a80b992a2daad3f71a.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.12.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.12.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.12.smt2
+    log = cache/shk/c843c2da0244e55c70478ab8af4c7e75f9430533161ead36210da9cbc9578cfc.shk
+
+build data/projects/v_pmemlog/shake_partial/main_t.3.shkp_log: shake-partial data/projects/v_pmemlog/original/main_t.3.smt2
+    full = data/projects/v_pmemlog/shake_full/main_t.3.smt2
+    log = cache/shk/624c1593e10e7441c845873000a8cc27d04df88dd65c69d6f320246a4f160b71.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.48.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.48.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.48.smt2
+    log = cache/shk/962363cd63714b1062253d34fd648827b1b6fdc5e0427897815b244cddaeae21.shk
+
+build data/projects/v_pmemlog/shake_partial/math.19.shkp_log: shake-partial data/projects/v_pmemlog/original/math.19.smt2
+    full = data/projects/v_pmemlog/shake_full/math.19.smt2
+    log = cache/shk/87c105b1cda84a6d79762105299341c8917fa99d76b67cc917080d7c41e40fc8.shk
+
+build data/projects/v_pmemlog/shake_partial/math.24.shkp_log: shake-partial data/projects/v_pmemlog/original/math.24.smt2
+    full = data/projects/v_pmemlog/shake_full/math.24.smt2
+    log = cache/shk/28576ca503cf08c2d60bfbc061df24ad896a52a40bffae8695030d7095af52e8.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.22.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.22.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.22.smt2
+    log = cache/shk/992ecafdf2c4b2b05f140e7117007011cd0b90d67d1d0672dceaad518bbff590.shk
+
+build data/projects/v_pmemlog/shake_partial/math.22.shkp_log: shake-partial data/projects/v_pmemlog/original/math.22.smt2
+    full = data/projects/v_pmemlog/shake_full/math.22.smt2
+    log = cache/shk/3ee6f37083846abd288ea6ada62e5625f5162df70b9c70f35f855d42b1c88cca.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.3.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.3.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.3.smt2
+    log = cache/shk/2128d8fd069ae3383ea171f6ec0e8491870490fad96aae86d27566d964ea19bb.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_strictly_increases._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_strictly_increases._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_strictly_increases._01.1.smt2
+    log = cache/shk/b333589ac8c02200f71f1ca1b373bf5f4ee99a0cffa6c2f730659b14c95dfafd.shk
+
+build data/projects/v_pmemlog/shake_partial/main_t.2.shkp_log: shake-partial data/projects/v_pmemlog/original/main_t.2.smt2
+    full = data/projects/v_pmemlog/shake_full/main_t.2.smt2
+    log = cache/shk/90f16cab13983558cc053537cd0b8439136e50820f14ed051b8bd54803b13795.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.24.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.24.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.24.smt2
+    log = cache/shk/e064aaa9c9f8029737bd97a3bdfcd99d036d457c46b0b61c92b0c2e70da7f412.shk
+
+build data/projects/v_pmemlog/shake_partial/pmemspec_t.8.shkp_log: shake-partial data/projects/v_pmemlog/original/pmemspec_t.8.smt2
+    full = data/projects/v_pmemlog/shake_full/pmemspec_t.8.smt2
+    log = cache/shk/94ca3c09f4d0f40b93c920a5b70f0f06007a243b4d14bbe00edd6c2ac1f1e9e6.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_unary_negation._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_unary_negation._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_unary_negation._01.1.smt2
+    log = cache/shk/0e6890ae145144f8914f7830e13edb9fb5b4460b4164b0eb5cd9abe6adb80d4e.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.9.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.9.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.9.smt2
+    log = cache/shk/2c7023f40ded9c782c206efbe501e493b52377fef51f734d63624f8300794398.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.14.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.14.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.14.smt2
+    log = cache/shk/b9647a1e7bced36ffc451f3098f6b734c10b9dc22a6770d5f20a5bddcd806f19.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.15.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.15.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.15.smt2
+    log = cache/shk/ecf005e263bd4113339b8e3a6f9800de39287537629dff35ffb50c339b485cad.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.49.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.49.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.49.smt2
+    log = cache/shk/9df1a877da627a777d751f26f18a071091fae5c99bd6ca4abdaa6cf2e48a9386.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_inequality_converse._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_inequality_converse._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_inequality_converse._01.1.smt2
+    log = cache/shk/b24cba408b0e6da502feb324f1c5df83534290bdeb0b94871bddc06690d024e6.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.42.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.42.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.42.smt2
+    log = cache/shk/a9509005ae01ec3b259e06fe9f05124f07153ffb8480ffc036db4da021570530.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.46.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.46.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.46.smt2
+    log = cache/shk/f681cce500ccd6147e1310a9194b555fd98bf0b4bc7ccdd6a385b18af9c83ce2.shk
+
+build data/projects/v_pmemlog/shake_partial/pmemspec_t.1.shkp_log: shake-partial data/projects/v_pmemlog/original/pmemspec_t.1.smt2
+    full = data/projects/v_pmemlog/shake_full/pmemspec_t.1.smt2
+    log = cache/shk/eccd31c6d4734cc13dd6185bec6542996e7b0362bc700ec179dfd1f53bbf5d9c.shk
+
+build data/projects/v_pmemlog/shake_partial/math.15.shkp_log: shake-partial data/projects/v_pmemlog/original/math.15.smt2
+    full = data/projects/v_pmemlog/shake_full/math.15.smt2
+    log = cache/shk/02abd709898dcb4fb863a5eb76922595ea079c359d99e265f1be25942b05ad95.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_is_associative._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_is_associative._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_is_associative._01.1.smt2
+    log = cache/shk/6afbf7614a8ce890d76ee2e826a2f559fa93b81d10d25fb6415f15e7d7370c43.shk
+
+build data/projects/v_pmemlog/shake_partial/math.16.shkp_log: shake-partial data/projects/v_pmemlog/original/math.16.smt2
+    full = data/projects/v_pmemlog/shake_full/math.16.smt2
+    log = cache/shk/f194ffafb6e5164e3c7d4bb40864042b44e1c7f23f3d92e157b2b8ddaca63587.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_nonzero._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_nonzero._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_nonzero._01.1.smt2
+    log = cache/shk/f616ebee4da5caf5eb123c99a04706de5069c5e95398895d03be0b5762c708be.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_fundamental_div_mod_converse_helper_1._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_fundamental_div_mod_converse_helper_1._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_fundamental_div_mod_converse_helper_1._01.1.smt2
+    log = cache/shk/1e927de6ecec1eccc8906cf4cc0ce71fabdf87d3aceff1eb7fe7a2d5964fba77.shk
+
+build data/projects/v_pmemlog/shake_partial/math.29.shkp_log: shake-partial data/projects/v_pmemlog/original/math.29.smt2
+    full = data/projects/v_pmemlog/shake_full/math.29.smt2
+    log = cache/shk/c324eabde413cba7a438b3eabc9fabba51ea09a14927516dfca33fcce3a6c48e.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_is_distributive_sub._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_is_distributive_sub._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_is_distributive_sub._01.1.smt2
+    log = cache/shk/d137cfd4dccad34f5de7686f25348b018c3a89e3a11d56cfa05bb3de91adad83.shk
+
+build data/projects/v_pmemlog/shake_partial/math.2.shkp_log: shake-partial data/projects/v_pmemlog/original/math.2.smt2
+    full = data/projects/v_pmemlog/shake_full/math.2.smt2
+    log = cache/shk/ae43bd1a3b89f24bd1b15f0220cbebb2e593c4c84bbd66a7b53e0b5779896b4b.shk
+
+build data/projects/v_pmemlog/shake_partial/math.9.shkp_log: shake-partial data/projects/v_pmemlog/original/math.9.smt2
+    full = data/projects/v_pmemlog/shake_full/math.9.smt2
+    log = cache/shk/76e99235baec51adb411518a67ca2e62abf55d74322a46b66b40d28553c5254f.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_div_equal._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_div_equal._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_div_equal._01.1.smt2
+    log = cache/shk/8cc47f22ae7dc19b23f78bf3fadf6a5d0f8dbf6d85504b5f2d97f9b400152785.shk
+
+build data/projects/v_pmemlog/shake_partial/main_t.7.shkp_log: shake-partial data/projects/v_pmemlog/original/main_t.7.smt2
+    full = data/projects/v_pmemlog/shake_full/main_t.7.smt2
+    log = cache/shk/642c216d7f138cc24a1e1fecabfb857c62405dc669d9e8f2e8be913b47b09f4d.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.4.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.4.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.4.smt2
+    log = cache/shk/a5eefde93a10a9961cec790f6087e9d70001e62127326bf0ff689a2b4ce48997.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_is_distributive_add_other_way._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_is_distributive_add_other_way._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_is_distributive_add_other_way._01.1.smt2
+    log = cache/shk/1cb1a83f64c0fc966a6ca9e1d2f179175a23f85c25289f5cf1a4e8c26b647bd3.shk
+
+build data/projects/v_pmemlog/shake_partial/math.10.shkp_log: shake-partial data/projects/v_pmemlog/original/math.10.smt2
+    full = data/projects/v_pmemlog/shake_full/math.10.smt2
+    log = cache/shk/21ea43633c5a3aeb8aa6869e925b085aa1dabd872c41dc84b4aa3361d968fbcc.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.35.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.35.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.35.smt2
+    log = cache/shk/9d8974d4f715ed2cf132d810dd6b43c6576329a749e68b90dfdf2404890596ca.shk
+
+build data/projects/v_pmemlog/shake_partial/math.12.shkp_log: shake-partial data/projects/v_pmemlog/original/math.12.smt2
+    full = data/projects/v_pmemlog/shake_full/math.12.smt2
+    log = cache/shk/7de5d421fe660d4170a35ce4a58016ff396d494db8106d17cac671fbb2ca4a48.shk
+
+build data/projects/v_pmemlog/shake_partial/math.20.shkp_log: shake-partial data/projects/v_pmemlog/original/math.20.smt2
+    full = data/projects/v_pmemlog/shake_full/math.20.smt2
+    log = cache/shk/ed5aac6fe17237ada27805ad0c153dbc81127f0f354a721fbeb345f6df1b5209.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.34.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.34.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.34.smt2
+    log = cache/shk/80a0fd592a135cefe84a4146398d1afc493278016fdd038f0aab09aee2fcc86e.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.47.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.47.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.47.smt2
+    log = cache/shk/11d3633f569f23e06e56aed7213103e51c0ae404d1a035c91f0f3ab9841c3e6d.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.16.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.16.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.16.smt2
+    log = cache/shk/3054640890280c1d59773357eac2ac06aea36bc821c81472b6a4225b957cb27c.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.2.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.2.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.2.smt2
+    log = cache/shk/f252c681d0e53971823786911847dfb75461865bfd273a642c374bdc08ed365d.shk
+
+build data/projects/v_pmemlog/shake_partial/math.27.shkp_log: shake-partial data/projects/v_pmemlog/original/math.27.smt2
+    full = data/projects/v_pmemlog/shake_full/math.27.smt2
+    log = cache/shk/b0c79b03880c49308170cf60d0986f664a5c0f5c0df88eb85421a10464603485.shk
+
+build data/projects/v_pmemlog/shake_partial/math.23.shkp_log: shake-partial data/projects/v_pmemlog/original/math.23.smt2
+    full = data/projects/v_pmemlog/shake_full/math.23.smt2
+    log = cache/shk/6cabfb28dc65eb5656a5a08f49aeb97e84c811b8d220a9194c75d7bcac7af248.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.19.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.19.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.19.smt2
+    log = cache/shk/2540e4488a58018177d58e6dc69eef6b4f87059b74682cc4901862c2f4d78b58.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.8.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.8.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.8.smt2
+    log = cache/shk/f3169f7f26053ea58ed41570157f00e2c1eb62ee0400bf1b85ee3c06dcc8aee9.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.17.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.17.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.17.smt2
+    log = cache/shk/4948f1827d818727e8567eb4c95deaabe573e0697f464a7328752517dcc30ef6.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.43.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.43.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.43.smt2
+    log = cache/shk/804d7d4dc7206daa7ec4a66062fd7539e21ffbf0575723c171247fe64a538040.shk
+
+build data/projects/v_pmemlog/shake_partial/math.11.shkp_log: shake-partial data/projects/v_pmemlog/original/math.11.smt2
+    full = data/projects/v_pmemlog/shake_full/math.11.smt2
+    log = cache/shk/0e26396b6835fe10850d4592a71614c712c701c75543e1c0fda258cc8b93c76e.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.26.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.26.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.26.smt2
+    log = cache/shk/90e536ab79f1d4154ddbf75e4393523fba649a9366169175dbfb20f59fe8293a.shk
+
+build data/projects/v_pmemlog/shake_partial/pmemspec_t.2.shkp_log: shake-partial data/projects/v_pmemlog/original/pmemspec_t.2.smt2
+    full = data/projects/v_pmemlog/shake_full/pmemspec_t.2.smt2
+    log = cache/shk/17cd4d7cf221c2b4230feb0f2d9997db129f997c2544b8dd5a4265c79c13df96.shk
+
+build data/projects/v_pmemlog/shake_partial/math.3.shkp_log: shake-partial data/projects/v_pmemlog/original/math.3.smt2
+    full = data/projects/v_pmemlog/shake_full/math.3.smt2
+    log = cache/shk/d2b0459b89af7d0ba811d5f81bd237a1d7882d13d5aca018eb054700ce473070.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_is_distributive_sub_other_way._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_is_distributive_sub_other_way._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_is_distributive_sub_other_way._01.1.smt2
+    log = cache/shk/b4a077b05957a430869c74a3382ea4222f47331613da8cc2cf6a461013aeff33.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.20.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.20.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.20.smt2
+    log = cache/shk/8f8be89724953b46ff2c65c619a119f26b3f0a6d413b13433055dc8a2c68e063.shk
+
+build data/projects/v_pmemlog/shake_partial/math.14.shkp_log: shake-partial data/projects/v_pmemlog/original/math.14.smt2
+    full = data/projects/v_pmemlog/shake_full/math.14.smt2
+    log = cache/shk/0af292a47d1bb1211252548a6e902be63329b9f0ed8cd0c22000a2dde6e53434.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.31.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.31.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.31.smt2
+    log = cache/shk/50d98b892825facefa2a0c322c162a5892dd48f616e16d5010c5bf46ef404e55.shk
+
+build data/projects/v_pmemlog/shake_partial/pmemspec_t.6.shkp_log: shake-partial data/projects/v_pmemlog/original/pmemspec_t.6.smt2
+    full = data/projects/v_pmemlog/shake_full/pmemspec_t.6.smt2
+    log = cache/shk/fbc595962796bddd8059dc6a3700ed8f6da14f18e6bf8464c999edf3769f1095.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.40.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.40.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.40.smt2
+    log = cache/shk/01486be097a33d48c459cd4d87542eeb654294c437d6673bbe68bde67c7eb8c6.shk
+
+build data/projects/v_pmemlog/shake_partial/math.8.shkp_log: shake-partial data/projects/v_pmemlog/original/math.8.smt2
+    full = data/projects/v_pmemlog/shake_full/math.8.smt2
+    log = cache/shk/fe914b6b4c4f67a5dc9e9035a668b4a5d8a835b7c7aea998fcf7c8bca8b5f31c.shk
+
+build data/projects/v_pmemlog/shake_partial/math.28.shkp_log: shake-partial data/projects/v_pmemlog/original/math.28.smt2
+    full = data/projects/v_pmemlog/shake_full/math.28.smt2
+    log = cache/shk/f5fafbce0a94b14e2111a3002d026d8f5f5d5bd8efa58274ab316cb7ca7579a2.shk
+
+build data/projects/v_pmemlog/shake_partial/main_t.4.shkp_log: shake-partial data/projects/v_pmemlog/original/main_t.4.smt2
+    full = data/projects/v_pmemlog/shake_full/main_t.4.smt2
+    log = cache/shk/d1eda68ddd7e8d6d7feeb6b50d6fbee110aa1bd351e0ff98f6af46c6f40a8df0.shk
+
+build data/projects/v_pmemlog/shake_partial/main_t.1.shkp_log: shake-partial data/projects/v_pmemlog/original/main_t.1.smt2
+    full = data/projects/v_pmemlog/shake_full/main_t.1.smt2
+    log = cache/shk/67b9d45bb97688e4545498ef19ce2a4c8fe714872cd376366aaaab032b37da14.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.38.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.38.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.38.smt2
+    log = cache/shk/735834c6d46eb849ddd4a628ced2df826c903cfded6524d1b5dc8d01f6129f84.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.21.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.21.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.21.smt2
+    log = cache/shk/2f48c1abb45ec4ed29a2fa6b3d5159a6bd58110f7f45a242f39c364cc75cc697.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.7.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.7.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.7.smt2
+    log = cache/shk/154b18dd0cb144da562b79d38a17b8eb7a8ae2a9f8bb95eb5eac2667f6afd90e.shk
+
+build data/projects/v_pmemlog/shake_partial/pmemspec_t.5.shkp_log: shake-partial data/projects/v_pmemlog/original/pmemspec_t.5.smt2
+    full = data/projects/v_pmemlog/shake_full/pmemspec_t.5.smt2
+    log = cache/shk/77da97745c2e00e83a430f599da3ec77687ad3fd640a09f24309b806b3293962.shk
+
+build data/projects/v_pmemlog/shake_partial/math.26.shkp_log: shake-partial data/projects/v_pmemlog/original/math.26.smt2
+    full = data/projects/v_pmemlog/shake_full/math.26.smt2
+    log = cache/shk/6e1e544c88e1fe2ed552a9babe1fd58a8209da49a421241b760ea1f4195e2825.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.28.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.28.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.28.smt2
+    log = cache/shk/6aa0f1aa8708f1009a66750c28f54d8cfb3d780d9db3d14de404bb20c4291f23.shk
+
+build data/projects/v_pmemlog/shake_partial/math.30.shkp_log: shake-partial data/projects/v_pmemlog/original/math.30.smt2
+    full = data/projects/v_pmemlog/shake_full/math.30.smt2
+    log = cache/shk/283844c292268d744f9f7c923b270b45c0ce923454e7b2d27c95e27b42f0b12c.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_strict_inequality._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_strict_inequality._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_strict_inequality._01.1.smt2
+    log = cache/shk/72d3df969c16228fe12aa85c8b5d6e40daa57437715507b08952917672ae6d2e.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.1.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.1.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.1.smt2
+    log = cache/shk/41fbf7766980dd6be7da0213da5201357b72987cbb0666a0ca74df6a8b32853b.shk
+
+build data/projects/v_pmemlog/shake_partial/math.31.shkp_log: shake-partial data/projects/v_pmemlog/original/math.31.smt2
+    full = data/projects/v_pmemlog/shake_full/math.31.smt2
+    log = cache/shk/7c9f7716cda8407d48bafdb8cccc7dde7653eece40a6f6e642c2ace7a73a90ed.shk
+
+build data/projects/v_pmemlog/shake_partial/main_t.6.shkp_log: shake-partial data/projects/v_pmemlog/original/main_t.6.smt2
+    full = data/projects/v_pmemlog/shake_full/main_t.6.smt2
+    log = cache/shk/9aa09d8bc6eda8b757a1aaf3667022ad25bb447bed2132f4ac708f2f65a7bb7d.shk
+
+build data/projects/v_pmemlog/shake_partial/pmemspec_t.7.shkp_log: shake-partial data/projects/v_pmemlog/original/pmemspec_t.7.smt2
+    full = data/projects/v_pmemlog/shake_full/pmemspec_t.7.smt2
+    log = cache/shk/554bcf6b2d841e7dad05610200aa109a41097651a3f6d99b34dffaaa29acebca.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_fundamental_div_mod_converse_helper_2._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_fundamental_div_mod_converse_helper_2._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_fundamental_div_mod_converse_helper_2._01.1.smt2
+    log = cache/shk/ec7a54509488d82d149bf43a1bc9643f09c282b0e020042b948b14f9fb3bf571.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.32.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.32.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.32.smt2
+    log = cache/shk/282f9020ed9b5e5549f719f9612b97764ac87a2f55dd453ea28ec6cb42e47b26.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_strictly_positive._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_strictly_positive._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_strictly_positive._01.1.smt2
+    log = cache/shk/652920f7361f81f22c5f7c5a9a222dd32189401ac7b19e798bf397b86e3054d4.shk
+
+build data/projects/v_pmemlog/shake_partial/pmemspec_t.3.shkp_log: shake-partial data/projects/v_pmemlog/original/pmemspec_t.3.smt2
+    full = data/projects/v_pmemlog/shake_full/pmemspec_t.3.smt2
+    log = cache/shk/c8db4b4cb81baa2ece829e649c26369bdbc9a3c2696d0b842df4b6bacede7f78.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_fundamental_div_mod._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_fundamental_div_mod._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_fundamental_div_mod._01.1.smt2
+    log = cache/shk/d3a23dae5eabdd2f0fa00b315bc55dc2ff843d0c474fd941c4e2579292f04c78.shk
+
+build data/projects/v_pmemlog/shake_partial/math.5.shkp_log: shake-partial data/projects/v_pmemlog/original/math.5.smt2
+    full = data/projects/v_pmemlog/shake_full/math.5.smt2
+    log = cache/shk/106884183ed1ed83a025757a16799969d71702bf7722aa4cb756c64622d2a0a1.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.25.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.25.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.25.smt2
+    log = cache/shk/f5bd4d06c8cae32e55abfa1919310bec278a2f52fac0b575a59968098985f2a9.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_small_mod._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_small_mod._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_small_mod._01.1.smt2
+    log = cache/shk/76020e13dbe5ce9c936883a24d355913b714dee761d91190a01528de9cc30fcc.shk
+
+build data/projects/v_pmemlog/shake_partial/math.13.shkp_log: shake-partial data/projects/v_pmemlog/original/math.13.smt2
+    full = data/projects/v_pmemlog/shake_full/math.13.smt2
+    log = cache/shk/4933c5b7a75873a9e509fdfa482d15085ddf9865d14f496de8a6f443e0b8d2ed.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_one_to_one._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_one_to_one._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_one_to_one._01.1.smt2
+    log = cache/shk/84a02d5806a2bd71409fa2e597c2f092506868d1d42f192091c1a1a7a9fdcda3.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_left_inequality._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_left_inequality._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_left_inequality._01.1.smt2
+    log = cache/shk/2599dc63bcf77e5845403546e4f661d5cbae3dc8c23c94e5b52e497e442b82b6.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_is_distributive._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_is_distributive._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_is_distributive._01.1.smt2
+    log = cache/shk/f6fa278c99b8c4c6c229765ec684f4d52c8832633073310e856bc963087e0982.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.36.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.36.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.36.smt2
+    log = cache/shk/feed7fa5d2ca6579baeb8fb2fb305092fc62d7e0eaaf6446f8432a90958f433a.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.13.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.13.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.13.smt2
+    log = cache/shk/66aa28705f03f24e805508945f68eae2a6e27576e1e6e3fb69ffe94ff15e6a51.shk
+
+build data/projects/v_pmemlog/shake_partial/math.25.shkp_log: shake-partial data/projects/v_pmemlog/original/math.25.smt2
+    full = data/projects/v_pmemlog/shake_full/math.25.smt2
+    log = cache/shk/57eba095f8b128fd97a11d8817379d29df55ba0c0cd688ea8609c8e41b07e084.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.50.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.50.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.50.smt2
+    log = cache/shk/398f956dd40504328633f973b9772223969519a29c241aeab11a8b9d9f585c74.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mod_wrapped_len._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mod_wrapped_len._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mod_wrapped_len._01.1.smt2
+    log = cache/shk/a6fe075603c434a5223604b5c772c97b95e9151e8d6dfa717dc20b0b8135f309.shk
+
+build data/projects/v_pmemlog/shake_partial/math.17.shkp_log: shake-partial data/projects/v_pmemlog/original/math.17.smt2
+    full = data/projects/v_pmemlog/shake_full/math.17.smt2
+    log = cache/shk/90aa7b6d242a71246645c6df7970f654500e9d27e25997125b19270fa92ef676.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.10.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.10.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.10.smt2
+    log = cache/shk/f1d1a0c6ee99ddfdd1d69c97b78f169152263597c2480c2a01edcd7a55e2e6e8.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_increases._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_increases._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_increases._01.1.smt2
+    log = cache/shk/72a7493c261ff37d2aaa841ab9626fbb2d594fa578211ef003754f60a4795642.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.39.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.39.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.39.smt2
+    log = cache/shk/b59dfe7b977c7f69b398f1d01fd22ae12c94c2798189a4d5552180ccd12bf56e.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_is_distributive_add._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_is_distributive_add._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_is_distributive_add._01.1.smt2
+    log = cache/shk/364e8613c9b8e2b7ec660773bf1aff705f36901271a293e28fd4aca00ccf7b7f.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.33.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.33.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.33.smt2
+    log = cache/shk/7b9a2eb88607b4e6557556f82dc8489e403b6aa1f2b38001ae6c1298ded72e01.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.27.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.27.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.27.smt2
+    log = cache/shk/3ec816337ca4d3f132c61d6c55663f37217c3924bbca9e912e31f4de44e0d284.shk
+
+build data/projects/v_pmemlog/shake_partial/pmemspec_t.4.shkp_log: shake-partial data/projects/v_pmemlog/original/pmemspec_t.4.smt2
+    full = data/projects/v_pmemlog/shake_full/pmemspec_t.4.smt2
+    log = cache/shk/4ec58e50be1d1933f569b6536a39513ef972676a339bfd18b1609b6d4f88ad0b.shk
+
+build data/projects/v_pmemlog/shake_partial/math.4.shkp_log: shake-partial data/projects/v_pmemlog/original/math.4.smt2
+    full = data/projects/v_pmemlog/shake_full/math.4.smt2
+    log = cache/shk/175cc62715b74d0954fc6238f3887c3a88bf0d5c57fce790ce9fd6269c7c74e6.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.51.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.51.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.51.smt2
+    log = cache/shk/81714e72fe8459ebbb1646810ee359a99927778bbc230ce10cf14167e33cb617.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.30.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.30.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.30.smt2
+    log = cache/shk/99317b3099e5f3391a60d8e401c8d33d1b72cb7c05e383a0f0de3b498f19d86e.shk
+
+build data/projects/v_pmemlog/shake_partial/math.1.shkp_log: shake-partial data/projects/v_pmemlog/original/math.1.smt2
+    full = data/projects/v_pmemlog/shake_full/math.1.smt2
+    log = cache/shk/c950b7505303701d61de844d665c14362b86784ae035dbcd7be6a247639d1b8b.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.5.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.5.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.5.smt2
+    log = cache/shk/0c579c270d4694bbd4e5da1da3a1ce4c2b9c53804c62693a8f907accb6efa7e0.shk
+
+build data/projects/v_pmemlog/shake_partial/main_t.5.shkp_log: shake-partial data/projects/v_pmemlog/original/main_t.5.smt2
+    full = data/projects/v_pmemlog/shake_full/main_t.5.smt2
+    log = cache/shk/c4cb5ab8704b1eee63840c6184164da7a02de77a3f41dfa189a6e49174d5c75d.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.6.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.6.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.6.smt2
+    log = cache/shk/6354cd49a4ba176db63abc16c55efc8dcc99db84ef4800f231cfbdf634746e7e.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_strict_upper_bound._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_strict_upper_bound._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_strict_upper_bound._01.1.smt2
+    log = cache/shk/d8816c8596f94d024b7dd17f1acd09a08c67321cb849e399a33bdfaded532cd6.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_mul_ordering._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_mul_ordering._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_mul_ordering._01.1.smt2
+    log = cache/shk/81f4452b8671bca8ac33660592ecdf04e1a9b73d3bbd1ee2e6b2525b83a4adcc.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.37.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.37.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.37.smt2
+    log = cache/shk/23d3c332118c787aa2d0270d9e81a526bda8b7ca77efcd0b37e54aeab0b31adf.shk
+
+build data/projects/v_pmemlog/shake_partial/math.21.shkp_log: shake-partial data/projects/v_pmemlog/original/math.21.smt2
+    full = data/projects/v_pmemlog/shake_full/math.21.smt2
+    log = cache/shk/6a76aa166142afe29d59015b391486c99512f3eadb781035182505ca12e31657.shk
+
+build data/projects/v_pmemlog/shake_partial/math.7.shkp_log: shake-partial data/projects/v_pmemlog/original/math.7.smt2
+    full = data/projects/v_pmemlog/shake_full/math.7.smt2
+    log = cache/shk/5c3e0561ff27a5ca1eeaca6f6e254505c9f43a0194fb3451883c57f3bcd558ac.shk
+
+build data/projects/v_pmemlog/shake_partial/mathlib!math.lemma_small_div._01.1.shkp_log: shake-partial data/projects/v_pmemlog/original/mathlib!math.lemma_small_div._01.1.smt2
+    full = data/projects/v_pmemlog/shake_full/mathlib!math.lemma_small_div._01.1.smt2
+    log = cache/shk/61b7e950076926805d9d9ce6910c85e72bb25afb23551ad7c0b94c8b9cc6c37a.shk
+
+build data/projects/v_pmemlog/shake_partial/math.6.shkp_log: shake-partial data/projects/v_pmemlog/original/math.6.smt2
+    full = data/projects/v_pmemlog/shake_full/math.6.smt2
+    log = cache/shk/c26522a2cab538020f6aad0cd274cc5c1404d47c69372494ce4a6be934a4e725.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.29.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.29.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.29.smt2
+    log = cache/shk/54c1294566d868dccbfa24b7dacc59d1a98274d255b1253201cb28d811031269.shk
+
+build data/projects/v_pmemlog/shake_partial/logimpl_v.45.shkp_log: shake-partial data/projects/v_pmemlog/original/logimpl_v.45.smt2
+    full = data/projects/v_pmemlog/shake_full/logimpl_v.45.smt2
+    log = cache/shk/083e0cc4ff3a0e3c76d26758df09a69f02aa36c4543cb302c01a9f484a2532be.shk
+
