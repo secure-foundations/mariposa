@@ -120,8 +120,13 @@ class CategorizedItems:
     def filter_out(self, allowed):
         assert self.finalized
         new_cats = CategorizedItems()
+        new_total = 0
+        new_tally = self.tally - allowed
         for c, its in self._items.items():
             new_cats._items[c] = its.items - allowed
+            new_total += len(new_cats._items[c])
+        new_cats.total = new_total
+        new_cats.tally = new_tally
         new_cats.finalize()
         return new_cats
 
