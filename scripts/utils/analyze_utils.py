@@ -200,8 +200,8 @@ class CategorizedItems:
                 continue
             if skip_empty and both_zero:
                 continue
-            rows[c] = [this.count, f"{round(this.percent, 2)} %",
-                          that.count, f"{round(that.percent, 2)} %"]
+            rows[c] = [this.count, f"{tex_fmt_percent(this.percent)}",
+                          that.count, f"{tex_fmt_percent(that.percent)}"]
         for c in cats:
             if c not in rows:
                 continue
@@ -209,7 +209,7 @@ class CategorizedItems:
 
         table.append(["total", self.total, "100.00 %", other.total, "100.00 %"])
         print(tabulate(table, headers="firstrow", 
-                       tablefmt="github", floatfmt=".2f"))
+                       tablefmt="latex_raw", floatfmt=".2f"))
 
 def get_cdf_pts(data):
     n = len(data)

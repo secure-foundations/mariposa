@@ -45,6 +45,8 @@ class ExpConfig:
 
         # where do we store the db?
         self.db_path = obj["db_path"]
+        
+        self.shake = obj["shake"]
 
 def get_table_prefix(proj, solver, part):
     if part.is_whole():
@@ -60,6 +62,7 @@ class ExpTask:
         self.mut_seed = mut_seed
         self.quake = False
         self.mutant_path = g_path
+        self.shake_cmd  = None
 
 class ExpPart(ExpConfig):
     """represents a collection of tasks,

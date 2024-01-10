@@ -5,6 +5,7 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 // use smt2parser::shaking::SymbolCollector;
 use core::panic;
+use std::f32::consts::E;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
@@ -411,6 +412,9 @@ struct Args {
     #[arg(long, default_value_t = 100)]
     shake_max_symbol_frequency: usize,
 
+    #[arg(long, default_value = "false")]
+    mut_then_shake: bool,
+
     /// file to log the shake depth
     #[arg(long)]
     shake_log_path: Option<String>,
@@ -450,6 +454,32 @@ fn main() {
     }
 
     let mut manager = Manager::new(args.out_file_path, args.seed, pattern_threshold);
+
+    if args.mut_then_shake {
+        if args.mutation == "shuffle" {
+            shuffle_asserts(&mut commands, manager.seed);
+        } else if args.mutation == "rename" {
+            commands = normalize_symbols(commands, manager.seed);
+        } else if args.mutation == "reseed" {
+            let smt_seed = manager.seed as u32;
+            let sat_seed = (manager.seed >> 32) as u32;
+            manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
+            manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
+        } else {
+            panic!("[ERROR] mut_then_shake does not allow mutation {}", args.mutation);
+        }
+        commands = tree_shake::tree_shake(
+            commands,
+            args.shake_max_depth,
+            args.shake_max_symbol_frequency,
+            args.shake_init_strategy,
+            args.shake_log_path,
+            args.shake_debug,
+        );
+        manager.dump_non_info_commands(&commands);
+        manager.flush();
+        return;
+    }
 
     if args.mutation == "shuffle" {
         shuffle_asserts(&mut commands, manager.seed);

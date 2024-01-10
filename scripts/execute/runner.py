@@ -28,13 +28,16 @@ class Worker:
 
         if task.perturb is None:
             return
-
-        command = f"{MARIPOSA_BIN_PATH} -i '{task.origin_path}' -m {task.perturb} -o '{mutant_path}' -s {task.mut_seed}"
+            
+        command = f"{MARIPOSA_BIN_PATH} -i '{task.origin_path}' -m {task.perturb} -o '{mutant_path}' -s {task.mut_seed}"            
 
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
 
         san_check(result.returncode == 0 and os.path.exists(mutant_path),
                   f"[ERROR] MARIPOSA failed: {command}")
+
+        # if self._exp.shake:
+            # command = f"{MARIPOSA_BIN_PATH} -i '{mutant_path}' -o '{mutant_path}' -m tree-shake "
 
     def run_quake_task(self, task):
         self.solver.start_process(task.mutant_path, self.timeout)

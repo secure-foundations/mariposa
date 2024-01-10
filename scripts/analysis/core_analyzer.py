@@ -202,11 +202,8 @@ build {self.get_path(PType.CORE)}: create-mini-query {self.inst_path} | {self._c
     log = {self.shk_log_path}
 """
 
-    # def partial_shake(self):
-    #     # oracle = self.get_shake_stats().unified_max_depth
-    #     # if np.isnan(oracle):
-    #     #     oracle = fallback
-    #     shake_partial(log_path, self.shk_full_path, self.shk_log_path)
+    def shake_oracle(self):
+        pass
 
 def maybe_add_query_result(_qrs, _sss, base_name, other, typ):
     if base_name in other:
@@ -221,9 +218,10 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         super().__init__(group_name, ana)
         self.core = self.load_stability_status(PType.CORE)
         self.extd = self.load_stability_status(PType.EXTD)
-        self.shkp = self.load_stability_status(PType.SHKP)
+        # self.shkp = self.load_stability_status(PType.SHKP)
 
-        for sub in [self.core, self.extd, self.shkp]:
+        # for sub in [self.core, self.extd, self.shkp]:
+        for sub in [self.core, self.extd]:
             if sub is None: continue
             assert sub.base_names() - self.orig.base_names() == set()
 
@@ -238,7 +236,7 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             maybe_add_query_result(_qrs, _sss, base_name, self.orig, PType.ORIG)
             maybe_add_query_result(_qrs, _sss, base_name, self.core, PType.CORE)
             maybe_add_query_result(_qrs, _sss, base_name, self.extd, PType.EXTD)
-            maybe_add_query_result(_qrs, _sss, base_name, self.shkp, PType.SHKP)
+            # maybe_add_query_result(_qrs, _sss, base_name, self.shkp, PType.SHKP)
 
             cqs = CoreQueryStatus(self.group_path, _qrs, _sss)
             self.qrs[base_name] = cqs
@@ -394,11 +392,53 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             print(f"[INFO] original {c} mitigation")
             migration[c].print_status()
 
-    # def print_shake_completeness(self):
-    #     df = self.get_shake_stats()
-    #     no_cores = df.loc[np.isnan(df['missed_asserts'])].shape[0]
-    #     rdf = df.loc[df['missed_asserts'] > 0]
-    #     print(rdf)
+    def print_shake_completeness(self):
+        df = self.get_shake_stats()
+        # no_cores = df.loc[np.isnan(df.missed_asserts)].shape[0]
+        # rdf = df.loc[df.missed_asserts > 0]
+        # print(rdf)
+        ratio = df.shke_asserts / df.orig_asserts * 100
+        xs, ys = get_cdf_pts(ratio)
+        end_idx = np.argwhere(~np.isnan(xs)).max()
+        x_end, y_end = xs[end_idx], ys[end_idx]
+        assert y_end >=0 and y_end <= 100
+        assert x_end >= 0 and x_end <= 100
+        xs[np.isnan(xs)] = np.inf
+        # print(np.percentile(xs, 25))
+        # print(np.percentile(xs, 75))
+        st, ed = np.percentile(xs, 10), np.percentile(xs, 90)
+        print(f"%.2f %.2f %s" % (st, ed, self.group_name))
+            
+    def plot_shake_max_depth(self, sp):
+        df = self.get_shake_stats()
+        pname = self.group_name
+        xs, ys = get_cdf_pts(df.shke_max_depth - df.unified_max_depth)
+        end_idx = np.argwhere(~np.isnan(xs)).max()
+        x_end, y_end = xs[end_idx], ys[end_idx]
+
+        p = sp.plot(xs, ys, label=pname + "_core", linestyle="dashed")
+        color = p[0].get_color()
+        sp.plot(x_end, y_end, marker="o", color=color)
+
+        xs[np.isnan(xs)] = np.inf
+        print(np.percentile(xs, 50))
+        sp.plot([np.percentile(xs, 50)], [50], marker="o", color=color)
+
+        # xs, ys = get_cdf_pts(df.shke_max_depth)
+        # sp.plot(xs, ys, label=pname + "_full", color=color)
+        # x_max = xs.max()
+        # end_idx = np.argwhere(~np.isnan(xs)).max()
+        # x_end, y_end = xs[end_idx], ys[end_idx]
+        # sp.plot(x_end, y_end, marker="o", color=color)
+
+        sp.set_ylabel("cumulative percentage of queries")
+        sp.set_xlabel("assertion maximum shake depth")
+        # sp.set_ylim(100)
+        # sp.set_xlim(left=0, right=x_max)
+        # sp.set_xticks(np.arange(0, x_max+1, 1))
+        sp.grid(True)
+        sp.legend()
+        sp.set_title(f"Assertion Max Shake Depth {pname}")
 
     def emit_build(self):
         import random
@@ -524,45 +564,24 @@ def plot_shake_max_depth():
     for i, pname in enumerate(CORE_PROJECTS):
         sp = ax[i][0]
         g = GroupCoreAnalyzer(pname, ana=Categorizer("default"))
-        df = g.get_shake_stats()
-        xs, ys = get_cdf_pts(df.unified_max_depth)
-        end_idx = np.argwhere(~np.isnan(xs)).max()
-        x_end, y_end = xs[end_idx], ys[end_idx]
-
-        p = sp.plot(xs, ys, label=pname + "_core", linestyle="dashed")
-        color = p[0].get_color()
-        sp.plot(x_end, y_end, marker="o", color=color)
-
-        xs, ys = get_cdf_pts(df.shke_max_depth)
-        sp.plot(xs, ys, label=pname + "_full", color=color)
-        x_max = xs.max()
-        end_idx = np.argwhere(~np.isnan(xs)).max()
-        x_end, y_end = xs[end_idx], ys[end_idx]
-        sp.plot(x_end, y_end, marker="o", color=color)
-
-        sp.set_ylabel("cumulative percentage of queries")
-        sp.set_xlabel("assertion maximum shake depth")
-        sp.set_ylim(0, 100)
-        sp.set_xlim(left=0, right=x_max)
-        sp.set_xticks(np.arange(0, x_max+1, 1))
-        sp.grid(True)
-        sp.legend()
-        sp.set_title(f"Assertion Max Shake Depth {pname}")
+        g.plot_shake_max_depth(sp)
+        # break
 
     plt.savefig("fig/context/shake_max_depth.png", dpi=200)
     plt.close()
 
 def analyze_unsat_core():
     # plot_context_retention()
-    # plot_shake_max_depth()    
+    # plot_shake_max_depth() 
     # plot_stability_change()
 
     for pname in CORE_PROJECTS:
-    # # for pname in ["v_ironfleet", "v_mimalloc", "v_noderep", "v_pagetable", "v_pmemlog"]:
+    # for pname in ["v_ironfleet", "v_mimalloc", "v_noderep", "v_pagetable", "v_pmemlog"]:
         # if pname != "d_komodo": continue
         print(pname)
         g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
-        g.print_status()
+        g.print_shake_completeness()
+        # g.print_status()
         # print("")
     #     # g.read_shake_partial_log()
     #     # g.generate_shake_partial()

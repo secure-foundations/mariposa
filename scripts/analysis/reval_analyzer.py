@@ -1,8 +1,10 @@
 from configure.project import ProjectType as PType
 from analysis.basic_analyzer import GroupAnalyzer, ExpAnalyzer
 from analysis.categorizer import Stability, Categorizer
-from utils.analyze_utils import print_sets_diff
+from utils.analyze_utils import print_sets_diff, get_cdf_pts, tex_fmt_percent
 from utils.cache_utils import *
+import numpy as np
+import matplotlib.pyplot as plt
 
 class RevalAnalyzer(GroupAnalyzer):
     def __init__(self, group_name, ana):
@@ -29,13 +31,60 @@ class RevalAnalyzer(GroupAnalyzer):
     def print_status(self):
         print(f"[INFO] {self.group_name} original vs. reveal")
         print(f"[INFO] excluded {len(self.duplicated)} duplicated queries")
+        # dps = []
+        # for q in self.orig.base_names() & self.revl.base_names() - self.duplicated:
+        #     rcount = self.revl.get_assert_count(q)
+        #     ocount = self.orig.get_assert_count(q)
+        #     # dps.append(self.revl.get_assert_count(q) / self.orig.get_assert_count(q))
+        #     dps.append((rcount - ocount) / ocount)
+        # dps = np.array(dps)
+        # print(min(dps), max(dps), np.mean(dps) * 100, np.median(dps))
+        # xs, ys = get_cdf_pts(dps)
+        # fig, ax = plt.subplots()
+        
+        # ax.plot(xs, ys, label="cdf")
+        # ax.set_xlabel("assert count ratio")
+        # ax.set_ylabel("cdf")
+        # ax.set_title(f"{self.group_name} original vs. reveal")
+        # ax.legend()
+        # plt.savefig(f"fig/orig_revl.png")
+        
+        remove = (self.orig.base_names() - self.revl.base_names()) | self.duplicated
+
         ocasts = self.orig.get_stability_status()
-        ocasts = ocasts.filter_out(self.duplicated)
+        ocasts = ocasts.filter_out(remove)
         rcasts = self.revl.get_stability_status()
-        rcasts = rcasts.filter_out(self.duplicated)
+        rcasts = rcasts.filter_out(remove)
         ocasts.print_compare_status(rcasts, skip_empty=True,
                                     cats=[Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE], 
-                                    this_name="original", that_name="reveal")
+                                    this_name="original", that_name="transparent")
+
+        # migration = ocasts.get_migration_status(rcasts)
+        # data = dict()
+        # tally = [""]
+        # cats = [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]
+        # for c in cats:
+        #     print(f"[INFO] adjusted {c} mitigation")
+        #     # migration[c].print_status()
+        #     tally += [migration[c].total, ""]
+        #     row = []
+        #     for c2 in [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
+        #        row += [migration[c][c2]]
+        #         # print(f"[INFO] {c} -> {c2} {migration[c][c2].percent}")
+        #     data[c] = row
+        # df = pd.DataFrame(data, index=["stable", "unstable", "unsolvable"])
+        # # df = df.transpose()
+        # table = []
+        # from tabulate import tabulate
+        # for cat in cats:
+        #     r = df.loc[cat]
+        #     row = [str(cat)]
+        #     for i in r:
+        #         row += [i.count, tex_fmt_percent(i.percent)]
+        #     table.append(row)
+        # header = ["category", "stable", "", "unstable", "", "unsolvable", ""]
+        # table = [tally] + table
+        # print(tabulate(table, headers=header, tablefmt="latex_raw"))
 
 OPAQUE_PROJECTS = ["d_lvbkv"]
 
