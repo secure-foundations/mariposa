@@ -3,12 +3,13 @@ from analysis.basic_analyzer import GroupAnalyzer, ExpAnalyzer
 from analysis.categorizer import Stability, Categorizer
 from utils.analyze_utils import print_sets_diff
 from utils.cache_utils import *
+from analysis.core_analyzer import PROJECT_COLORS, PROJECT_LABELS, tabulate_stability_change
 
 class BloatAnalyzer(GroupAnalyzer):
     def __init__(self, group_name, ana):
         super().__init__(group_name, ana)
         self.blot: ExpAnalyzer = self.load_stability_status(PType.BLOT)
-        # self.orig_c: ExpAnalyzer = self.load_stability_status(PType.ORIG_CVC)
+        self.orig_c: ExpAnalyzer = self.load_stability_status(PType.ORIG_CVC)
         # self.blot_c: ExpAnalyzer = self.load_stability_status(PType.BLOT_CVC)
 
         # print_sets_diff(self.orig.base_names(), self.blot.base_names(), "orig", "blot")
@@ -32,11 +33,20 @@ class BloatAnalyzer(GroupAnalyzer):
         print(f"[INFO] analyzer {self.ana.name}")
         ocasts = self.orig.get_stability_status()
         bcasts = self.blot.get_stability_status()
-        ocasts.print_compare_status(bcasts, skip_empty=True,
-                                    cats=[Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE], 
-                                    this_name="original", that_name="bloat")
 
-BLOAT_PROJECTS = ["v_ironfleet", "v_mimalloc", "v_noderep", "v_pagetable", "v_pmemlog"]
+        # cvco_asts = self.orig_c.get_stability_status()
+        # cvcb_cats = self.orig_c.get_stability_status()
+
+        # ocasts.print_compare_status(bcasts, skip_empty=True,
+        #                             cats=[Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE], 
+        #                             this_name="original", that_name="bloat")
+
+        # cvco_asts.print_compare_status(cvcb_cats, skip_empty=True,
+        #                     cats=[Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE], 
+        #                     this_name="original(cvc)", that_name="bloat(cvc)")
+        print("")
+
+BLOAT_PROJECTS = ["v_ironfleet", "v_noderep", "v_pagetable", "v_pmemlog", "v_mimalloc"]
 
 # def plot_verus_assert_counts(ana):
 #     fig, ax = plt.subplots(5, 1, squeeze=False)
@@ -115,9 +125,22 @@ BLOAT_PROJECTS = ["v_ironfleet", "v_mimalloc", "v_noderep", "v_pagetable", "v_pm
 
     # print(tabulate(table, headers="firstrow", floatfmt=".2f"))
 
+def plot_stability_change(projects, ana):
+    data = dict()
+    for pname in projects:
+        g = BloatAnalyzer(pname, ana=ana)
+        unified = g.orig.get_stability_status()
+        original = g.blot.get_stability_status()
+        data[pname] = [
+                    (original[Stability.STABLE].percent, unified[Stability.STABLE].percent),
+                    (original[Stability.UNSTABLE].percent, unified[Stability.UNSTABLE].percent),
+                    (original[Stability.UNSOLVABLE].percent, unified[Stability.UNSOLVABLE].percent),
+                    unified.total]
+    tabulate_stability_change(data)
+
 def analyze_bloat():
     ana = Categorizer("60sec")
-    for pname in BLOAT_PROJECTS:
-        g = BloatAnalyzer(pname, ana)
-        g.print_status()
-        print("")
+    plot_stability_change(BLOAT_PROJECTS, ana)
+    # for pname in BLOAT_PROJECTS:
+    #     g = BloatAnalyzer(pname, ana)
+    #     g.print_status()

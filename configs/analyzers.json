@@ -10,13 +10,13 @@
   "60sec": {
     "timeout": 60
   },
-  "verus_5sec": {
+  "5sec": {
     "timeout": 5
   },
-  "verus_2sec": {
+  "2sec": {
     "timeout": 2
   },
-  "verus_3sec": {
+  "3sec": {
     "timeout": 3
   },
   "debug": {

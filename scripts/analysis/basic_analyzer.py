@@ -91,23 +91,36 @@ class GroupAnalyzer:
         self.group_path = f"data/projects/{self.group_name}"
 
     def load_stability_status(self, typ):
+        solver = "z3_4_12_2"
         if typ == PType.ORIG:
-            exp_name = "baseline"
+            if self.group_name == "v_uf":
+                exp_name = "synthetic"
+            else:
+                exp_name = "baseline"
         elif typ == PType.CORE:
             exp_name = "unsat_core"
         elif typ == PType.EXTD:
             exp_name = "unsat_core"
         elif typ == PType.BLOT:
             exp_name = "bloat"
+        elif typ == PType.BLOT_CVC:
+            exp_name = "bloat"
+            solver = "cvc5_1_0_7"
         elif typ == PType.SHKP:
             exp_name = "shake"
+        elif typ == PType.SHKO:
+            exp_name = "rewrite"
         elif typ == PType.REVL:
             exp_name = "opaque"
+        elif typ == PType.ORIG_CVC:
+            exp_name = "baseline_cvc"
+            solver = "cvc5_1_0_7"
         else:
+            print(f"[ERROR] unknown project type {typ}")
             assert False
 
         proj = PM.load_project(self.group_name, typ, enable_dummy=True)
-        exp = ExpPart(exp_name, proj, "z3_4_12_2")
+        exp = ExpPart(exp_name, proj, solver)
         exp = ExpAnalyzer(exp, self.ana, enable_dummy=True)
 
         return exp
