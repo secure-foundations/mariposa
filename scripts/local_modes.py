@@ -22,7 +22,7 @@ def single_mode(args):
 
     os.makedirs(proj_root)
 
-    command = f"./target/release/mariposa -i '{args.query}' --remove-debug --chop -o '{proj_root}/split.smt2'"
+    command = f"./target/release/mariposa -i '{args.query}' --chop -o '{proj_root}/split.smt2'"
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     print(result.stdout.decode('utf-8'), end="")
     san_check(result.returncode == 0, "[ERROR] split failed")
@@ -60,8 +60,8 @@ def preprocess_mode(args):
         temp.write(command)
     temp.close()
     print(f"[INFO] emitted to preprocess.sh, running using gnu parallel")
-    os.system("cat preprocess.sh | parallel")
-    os.system("rm preprocess.sh")
+    # os.system("cat preprocess.sh | parallel")
+    # os.system("rm preprocess.sh")
 
 def analysis_mode(args):
     exp = ExpPart(args.experiment, 

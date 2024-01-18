@@ -41,6 +41,6 @@ def analyze_recollect():
 if __name__ == "__main__":
     # analyze_unsat_core()
     # analyze_synth()
-    analyze_bloat()
-    # analyze_reveal()
+    # analyze_bloat()
+    analyze_reveal()
     # analyze_recollect()

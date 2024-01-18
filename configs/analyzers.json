@@ -19,6 +19,9 @@
   "3sec": {
     "timeout": 3
   },
+  "30sec": {
+    "timeout": 30
+  },
   "debug": {
     "timeout": 5,
     "confidence": 0.05,

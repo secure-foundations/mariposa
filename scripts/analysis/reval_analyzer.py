@@ -49,12 +49,12 @@ class RevalAnalyzer(GroupAnalyzer):
         # ax.legend()
         # plt.savefig(f"fig/orig_revl.png")
         
-        remove = (self.orig.base_names() - self.revl.base_names()) | self.duplicated
+        # remove = (self.orig.base_names() - self.revl.base_names()) | self.duplicated
 
         ocasts = self.orig.get_stability_status()
-        ocasts = ocasts.filter_out(remove)
+        # ocasts = ocasts.filter_out(remove)
         rcasts = self.revl.get_stability_status()
-        rcasts = rcasts.filter_out(remove)
+        # rcasts = rcasts.filter_out(remove)
         ocasts.print_compare_status(rcasts, skip_empty=True,
                                     cats=[Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE], 
                                     this_name="original", that_name="transparent")

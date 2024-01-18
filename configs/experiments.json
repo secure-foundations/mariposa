@@ -70,5 +70,13 @@
             "reseed"
         ],
         "db_path": "./data/databases/ironsht.db"
+    },
+    "verus_nl": {
+        "mutations": [
+            "shuffle",
+            "rename",
+            "reseed"
+        ],
+        "db_path": "./data/databases/verus_nl.db"
     }
 }
