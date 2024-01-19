@@ -309,6 +309,7 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         missing = self.orig.base_names() - unified.tally
         for base_name in missing:
             unified.add_item("missing", base_name)
+            assert False
         unified.finalize()
         return unified
 
@@ -576,15 +577,15 @@ plt.rcParams['text.usetex'] = True
 plt.rcParams["font.family"] = "serif"
 
 def stat_context_retention(pname):
-    if has_cache(f"ctx_ret/{pname}.df"):
-        return load_cache(f"ctx_ret/{pname}.df")
-
+    # if has_cache(f"ctx_ret/{pname}.df"):
+    #     return load_cache(f"ctx_ret/{pname}.df")
     g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
     df = g.get_shake_stats()
     ratio = df.unified_asserts / df.orig_asserts * 100
+    ratio[np.isnan(ratio)] = 100
     xs, ys = get_cdf_pts(ratio)
-    xs.flip()
-    end_idx = np.argwhere(~np.isnan(xs)).max()
+    # end_idx = np.argwhere(~np.isnan(xs)).max()
+    end_idx = len(xs) - 1
     x_end, y_end = xs[end_idx], ys[end_idx]
     assert y_end >=0 and y_end <= 100
     assert x_end >= 0 and x_end <= 100
@@ -597,7 +598,7 @@ def plot_context_retention():
 
     sp = ax[0]
     
-    for pname in CORE_PROJECTS_VERUS:
+    for pname in CORE_PROJECTS:
         g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
         color = PROJECT_COLORS[pname]
         df = g.get_shake_stats()
@@ -628,14 +629,15 @@ def plot_context_retention():
     sp.set_ylabel("Cumulative Percentage (\%) of Queries")
 
     sp = ax[1]
-    for pname in CORE_PROJECTS_VERUS:
+    for pname in CORE_PROJECTS:
         xs, ys, x_end, y_end = stat_context_retention(pname)
         color = PROJECT_COLORS[pname]
         sp.plot(xs, ys, label=PROJECT_LABELS[pname], color=color)
-        sp.plot(x_end*1.05, y_end, marker="o", fillstyle='none', color=color, markersize=4)
-        xs[np.isnan(xs)] = np.inf
+        # sp.plot(x_end*1.05, y_end, marker="o", fillstyle='none', color=color, markersize=4)
+        # xs[np.isnan(xs)] = np.inf
 
         st, ed = np.percentile(xs, 50), np.percentile(xs, 90)
+        print(100 - st, pname)
         # print(f"%.2f %.2f %s" % (st, ed, pname))
         sp.plot(st, 50, color=color, marker="o",  markersize=4)
         # sp.plot(ed, 90, color=color=color, marker="o",  markersize=4)
@@ -671,7 +673,8 @@ def plot_context_retention():
     # fig.suptitle("Core Query (Adjusted) Context Retention")
 
     plt.tight_layout()
-    plt.savefig("fig/context/retention_core_verus.png", dpi=200)
+    plt.savefig("fig/context/retention_core.png", dpi=200)
+    # plt.savefig("fig/context/retention_core_verus.png", dpi=200)
     plt.close()
 
 
@@ -704,6 +707,8 @@ def tabulate_stability_change(data):
 
 def tabulate_core_stability_change(ana):
     data = dict()
+    total = 0
+    total_sb = 0
     for pname in CORE_PROJECTS:
         g = GroupCoreAnalyzer(pname, ana=ana)
         original = g.orig.get_stability_status()
@@ -714,7 +719,13 @@ def tabulate_core_stability_change(ana):
                     (original[Stability.UNSTABLE].percent, unified[Stability.UNSTABLE].percent),
                     (original[Stability.UNSOLVABLE].percent, unified[Stability.UNSOLVABLE].percent),
                     original.total]
+        us = len(original[Stability.UNSTABLE])
+        sb = len(original[Stability.UNSTABLE].items & unified[Stability.STABLE].items)
+        total += us
+        total_sb += sb
+    print(total_sb, total)
 
+    # print(original[Stability.UNSTABLE].count)
     tabulate_stability_change(data)
 
 def plot_shake_max_depth_overall():
@@ -805,13 +816,22 @@ def plot_shake_max_depth_project(pname):
 
 def analyze_oracle():
     row = []
+    total = 0
+    total_sb = 0    
+
     for pname in CORE_PROJECTS:
         g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
+        original = g.orig.get_stability_status()
         cats = g.shko.get_stability_status()
         # print(pname)
         rt = cats[Stability.STABLE].percent
+        us = len(original[Stability.UNSTABLE])
+        sb = len(original[Stability.UNSTABLE].items & cats[Stability.STABLE].items)
+        
+        total += us
+        total_sb += sb
         row += ["%.1f" % rt]
-
+    print(total_sb, total)
     print(row)
     # g.generate_shake_oracle()
 
@@ -819,10 +839,10 @@ def analyze_unsat_core():
     ana = Categorizer("60sec")
     # plot_context_retention()
     # plot_shake_max_depth() 
-    tabulate_core_stability_change(ana)
+    # tabulate_core_stability_change(ana)
     # plot_shake_max_depth_overall()
     # plot_shake_max_depth_project("d_lvbkv")
-    # analyze_oracle()
+    analyze_oracle()
 
     for pname in CORE_PROJECTS:
         if pname != "d_komodo": continue

@@ -36,6 +36,7 @@ class QueryExpResult:
         return self.blob[index]
 
     def get_mutation_status(self, mutation):
+        # print(self.mutations)
         index = self.mutations.index(mutation)
         return self.blob[index][0], self.blob[index][1]
 

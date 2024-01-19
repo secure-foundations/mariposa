@@ -78,5 +78,12 @@
             "reseed"
         ],
         "db_path": "./data/databases/verus_nl.db"
+    },
+    "verus_uf": {
+        "mutations": [
+            "rename"
+        ],
+        "num_mutants": 30,
+        "db_path": "./data/databases/verus_uf.db"
     }
 }

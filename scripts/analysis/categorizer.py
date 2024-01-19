@@ -146,8 +146,9 @@ class Categorizer:
         return Stability.UNSTABLE, votes
     
     # [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
-    def categorize_queries(self, qss, muts=None
-                        #    muts=[Mutation.SHUFFLE.value, Mutation.RENAME.value, Mutation.RESEED.value]
+    def categorize_queries(self, qss, 
+                        #    muts=None
+                           muts=[Mutation.SHUFFLE.value, Mutation.RENAME.value, Mutation.RESEED.value]
                            ) -> CategorizedItems:
         cats = CategorizedItems([c for c in Stability])
         for qs in qss:
