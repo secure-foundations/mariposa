@@ -144,7 +144,7 @@ def load_shake_prelim(shkp_log_path):
     return result
 
 def emit_shake_partial(output_path, fmt_path, log_path, depth):
-    assert depth >= 0 and depth != SHAKE_DEPTH_MAGIC
+    assert depth >= 0
     fmt_contents = list(open(fmt_path).readlines())
     stamps = parse_shake_log(log_path)
     __emit_partial_shake_file(output_path, fmt_contents, stamps, depth)

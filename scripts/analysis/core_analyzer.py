@@ -218,11 +218,28 @@ build {self.get_path(PType.CORE)}: create-mini-query {self.inst_path} | {self._c
     log = {self.shk_log_path}
 """
 
-    def shake_oracle(self, depth):
+    def shake_oracle(self):
+        ostatus = self.get_stability(PType.ORIG)
+        sst = self.get_shake_stats()
+        chosen = sst.unified_max_depth
+
+        if np.isnan(sst.unified_max_depth):
+            return
+        # data = load_shake_prelim(self.shkp_log_path)
+        # fast_depth = 8
+        # fast_time = 1e10
+        # for i, v in data.items():
+        #     if v < fast_time:
+        #         fast_depth = i
+        #         fast_time = v
+        # chosen = fast_depth
+        # print(data)
+        # print(f"[INFO] {qr.base_name} no unified max depth, chosen {chosen}")
+
         emit_shake_partial(self.get_path(PType.SHKO), 
                            self.get_path(PType.SHKF), 
                            self.shk_log_path, 
-                           depth)
+                           chosen)
 
 def maybe_add_query_result(_qrs, _sss, base_name, other, typ):
     if base_name in other:
@@ -446,20 +463,7 @@ class GroupCoreAnalyzer(GroupAnalyzer):
 
     def generate_shake_oracle(self):
         for qr in self.qrs.values():
-            if qr.get_stability(PType.ORIG) != Stability.UNSTABLE:
-                continue
-            sst = qr.get_shake_stats()
-            chosen = sst.unified_max_depth
-            if np.isnan(sst.unified_max_depth):
-                data = load_shake_prelim(qr.shkp_log_path)
-                fast_depth = 8
-                fast_time = 1e10
-                for i, v in data.items():
-                    if v < fast_time:
-                        fast_depth = i
-                        fast_time = v
-                chosen = fast_depth
-            qr.shake_oracle(chosen)
+            qr.shake_oracle()
 
     def plot_shake_max_depth(self, sp):
         df = self.get_shake_stats()
@@ -592,13 +596,13 @@ def stat_context_retention(pname):
     save_cache(f"ctx_ret/{pname}.df", (xs, ys, x_end, y_end))
     return xs, ys, x_end, y_end
 
-def plot_context_retention():
+def plot_context_retention(projects):
     fig, ax = plt.subplots(1, 2)
     fig.set_size_inches(10, 5)
 
     sp = ax[0]
     
-    for pname in CORE_PROJECTS:
+    for pname in projects:
         g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
         color = PROJECT_COLORS[pname]
         df = g.get_shake_stats()
@@ -629,7 +633,7 @@ def plot_context_retention():
     sp.set_ylabel("Cumulative Percentage (\%) of Queries")
 
     sp = ax[1]
-    for pname in CORE_PROJECTS:
+    for pname in projects:
         xs, ys, x_end, y_end = stat_context_retention(pname)
         color = PROJECT_COLORS[pname]
         sp.plot(xs, ys, label=PROJECT_LABELS[pname], color=color)
@@ -673,8 +677,13 @@ def plot_context_retention():
     # fig.suptitle("Core Query (Adjusted) Context Retention")
 
     plt.tight_layout()
-    plt.savefig("fig/context/retention_core.png", dpi=200)
-    # plt.savefig("fig/context/retention_core_verus.png", dpi=200)
+
+    if projects == CORE_PROJECTS:
+        plt.savefig("fig/context/retention_core.png", dpi=200)
+    else:
+        assert projects == CORE_PROJECTS_VERUS
+        plt.savefig("fig/context/retention_core_verus.png", dpi=200)
+
     plt.close()
 
 
@@ -836,21 +845,21 @@ def analyze_oracle():
     # g.generate_shake_oracle()
 
 def analyze_unsat_core():
-    ana = Categorizer("60sec")
-    # plot_context_retention()
+    # ana = Categorizer("60sec")
+    # plot_context_retention(CORE_PROJECTS_VERUS)
     # plot_shake_max_depth() 
     # tabulate_core_stability_change(ana)
     # plot_shake_max_depth_overall()
     # plot_shake_max_depth_project("d_lvbkv")
-    analyze_oracle()
+    # analyze_oracle()
 
     for pname in CORE_PROJECTS:
-        if pname != "d_komodo": continue
+        if pname != "d_lvbkv": continue
         # print(pname)
-        # g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
+        g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
         # g.plot_shake_max_depth(sp)
         # g.print_shake_completeness()
-        # g.generate_shake_oracle()
+        g.generate_shake_oracle()
         # g.print_status()
         # g.read_shake_partial_log()
         # g.generate_shake_partial()

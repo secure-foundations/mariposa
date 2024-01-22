@@ -39,8 +39,8 @@ def analyze_recollect():
         #     print(qr.base_name)
 
 if __name__ == "__main__":
-    # analyze_unsat_core()
-    analyze_synth()
+    analyze_unsat_core()
+    # analyze_synth()
     # analyze_bloat()
     # analyze_reveal()
     # analyze_recollect()

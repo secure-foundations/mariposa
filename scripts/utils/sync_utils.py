@@ -17,7 +17,7 @@ cur_host = subprocess_run("hostname")[0]
 
 lines = []
 
-for i in {1, 2 , 4, 5, 6, 7, 8}:
+for i in {1, 2, 4, 5, 6}:
     host = f"s190{i}"
     if host == cur_host:
         continue

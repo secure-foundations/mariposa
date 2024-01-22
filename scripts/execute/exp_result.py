@@ -35,6 +35,9 @@ class QueryExpResult:
         index = self.mutations.index(mutation)
         return self.blob[index]
 
+    def is_dummy(self):
+        return self.blob is None
+    
     def get_mutation_status(self, mutation):
         # print(self.mutations)
         index = self.mutations.index(mutation)

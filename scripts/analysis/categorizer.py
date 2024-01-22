@@ -2,6 +2,7 @@ import numpy as np
 from enum import Enum
 from statsmodels.stats.proportion import proportions_ztest
 from execute.exp_part import Mutation
+from execute.exp_result import QueryExpResult
 from utils.sys_utils import *
 from utils.analyze_utils import *
 from execute.solver_runner import RCode
@@ -126,7 +127,10 @@ class Categorizer:
             return Stability.STABLE
         return Stability.INCONCLUSIVE
 
-    def categorize_query(self, qs, muts=None):
+    def categorize_query(self, qs: QueryExpResult, muts=None):
+        if qs.is_dummy():
+            return Stability.INCONCLUSIVE, None
+
         votes = dict()
 
         if muts is None:
@@ -144,11 +148,11 @@ class Categorizer:
             return ress.pop(), votes
         # ress -= {Stability.UNKNOWN}
         return Stability.UNSTABLE, votes
-    
+
     # [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
     def categorize_queries(self, qss, 
-                        #    muts=None
-                           muts=[Mutation.SHUFFLE.value, Mutation.RENAME.value, Mutation.RESEED.value]
+                           muts=None,
+                        #    muts=[Mutation.SHUFFLE.value, Mutation.RENAME.value, Mutation.RESEED.value]
                            ) -> CategorizedItems:
         cats = CategorizedItems([c for c in Stability])
         for qs in qss:

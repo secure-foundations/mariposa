@@ -216,10 +216,12 @@ solver: {self.solver}"""
         summaries = dict()
 
         if not table_exists(cur, sum_name):
-            san_check(enable_dummy, f"[ERROR] {sum_name} does not exist")
+            san_check(enable_dummy, f"[ERROR] {sum_name} does not exist in {self.db_path}")
             print(f"[WARN] {sum_name} does not exist, creating dummy data!")
             for path in self.proj.list_queries():
                 qr = QueryExpResult(path, self.proj.root_dir)
+                if qr.mutations == []:
+                    qr.mutations = self.enabled_muts
                 summaries[qr.base_name] = qr
             return summaries
 
@@ -239,6 +241,8 @@ solver: {self.solver}"""
             if special_convert:
                 path = path.replace(".dfyxxx", ".dfy.").replace(".1.smt2", ".smt2")
             qr = QueryExpResult(path, self.proj.root_dir, self.enabled_muts, blob)
+            if qr.mutations == []:
+                qr.mutations = self.enabled_muts
             summaries[qr.base_name] = qr
 
         self._sanity_check_summary(set(summaries.keys()))

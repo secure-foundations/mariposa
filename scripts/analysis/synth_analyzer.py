@@ -288,52 +288,51 @@ available = {
 
 def analyze_synth():
     import random, os
-    tbr = set()
-    for q in os.listdir("data/projects/v_uf/original/"):
-        seed = int(q.split("_")[0])
-        tbr.add(seed)
-        if seed in original_failed:
-            os.system(f"rm data/projects/v_uf/original/{q}")
-
-    print(len(tbr & step_6))
+# n.py analysis -s z3_4_12_2 -p v_uf --ptype original -e verus_uf
     # assert tbr & original_failed == original_failed
     # assert tbr & step_6 == step_6
     
-    # solver = SolverInfo("z3_4_12_2")
-    # ptype = ProjectType("original")
-    # project = PM.load_project("v_nl", ptype)
-    # analyzer = Categorizer("60sec")
+    solver = SolverInfo("z3_4_12_2")
+    project = PM.load_project("v_uf", ProjectType("original"))
+    analyzer = Categorizer("60sec")
 
-    # exp = ExpPart("synthetic", project, solver)
-    # exp = ExpAnalyzer(exp, analyzer)
+    exp = ExpPart("verus_uf", project, solver)
+    exp = ExpAnalyzer(exp, analyzer)
 
+
+    project = PM.load_project("v_uf", ProjectType.INSR)
+
+    exp2 = ExpPart("synthetic", project, solver)
+    exp2 = ExpAnalyzer(exp2, analyzer)
+    
     # print(len(available))
-    # # ostables = set()    
-    # # ounstables = set()
-    # exps = set()
-    # for basename in exp.base_names():
-    #     print(basename)
-        # bhash = int(basename.split("_")[0])
-    # print(len(exps & available))
-        # print(basename)
-    #     # print(bhash)
-    #     if bhash in original_failed:
-    #         continue
-    #     if exp.get_stability(basename) == Stability.STABLE:
-    #         ostables.add(bhash)
-    #     elif exp.get_stability(basename) == Stability.UNSTABLE:
-    #         ounstables.add(bhash)
+    ostables = set()    
+    ounstables = set()
+    exps = set()
+    # print(len(exps & step_6))
+
+    for basename in exp.base_names():
+        bhash = int(basename.split("_")[0])
+        # exps.add(bhash)
+        if bhash in original_failed:
+            continue
+        if exp.get_stability(basename) == Stability.STABLE:
+            ostables.add(bhash)
+        elif exp.get_stability(basename) == Stability.UNSTABLE:
+            ounstables.add(bhash)
     
     # print(len(ostables))
     # print(len(ounstables))
                 
-    # ostables = set(random.sample(ostables, 50))
-    # ounstables = set(random.sample(ounstables, 50))
-    # print(ostables)
+    ostables = set(random.sample(ostables, 50))
+    ounstables = set(random.sample(ounstables, 50))
 
-    # print(len(ostables & step_6))
-    # print(len(ounstables & step_6))
-            
+    print(len(ostables & step_6))
+    print(len(ounstables & step_6))
+
+    for q in exp2.base_names():
+        print(exp2[q].get_original_status)
+
     # print(len(filtered))
     # print(len(filtered))
     # #     if exp.get_stability(basename) == "unstable":

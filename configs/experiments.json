@@ -71,6 +71,14 @@
         ],
         "db_path": "./data/databases/ironsht.db"
     },
+    "oracle": {
+        "mutations": [
+            "shuffle",
+            "rename",
+            "reseed"
+        ],
+        "db_path": "./data/databases/oracle.db"
+    },
     "verus_nl": {
         "mutations": [
             "shuffle",
