@@ -216,6 +216,15 @@ def get_cdf_pts(data):
     y = np.arange(n) * 100 / float(n) 
     return np.sort(data), np.insert(y[1:], n-1, 100)
 
-def tex_fmt_percent(x):
-    assert x >= 0 and x <= 100
-    return f"%.1f" % x + r"\%"
+def tex_fmt_percent(x, signed=False):
+    assert x >= -100 and x <= 100
+    res = f"%.1f" % x + r"\%"
+    if x < 0:
+        assert signed
+        res = "-" + res
+    elif signed:
+        res = "+" + res
+    return res
+
+def tex_double_column(x):
+    return r"\multicolumn{2}{c}{" + x + r"}"

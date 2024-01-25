@@ -4,15 +4,20 @@
 use super::{model::*, syntax::*};
 use plotters::prelude::*;
 use std::collections::*;
+use std::io::BufRead;
+//use std::io::{BufRead, Seek};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 /// Helper function to process files.
 pub fn process_file(config: ModelConfig, path: &std::path::Path) -> std::io::Result<Model> {
     let file = std::io::BufReader::new(std::fs::File::open(path)?);
+    let line_count = file.lines().count();
+    let file = std::io::BufReader::new(std::fs::File::open(path)?);
+    //file.seek(std::io::SeekFrom::Start(0)).expect("Failed to rewind input file pointer");
     // Inject non-default configurations here with Model::new(config).
     let mut model = Model::new(config);
-    if let Err(le) = model.process(path.to_str().map(String::from), file) {
+    if let Err(le) = model.process(path.to_str().map(String::from), file, line_count) {
         eprintln!("Error at {:?}: {:?}", le.position, le.error);
     }
     Ok(model)

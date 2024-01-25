@@ -12,6 +12,7 @@ use std::collections::BTreeMap;
 pub struct Lexer<R> {
     reader: R,
     path_name: Option<String>,
+    line_count: usize,
     current_offset: usize,
     current_line: usize,
     current_column: usize,
@@ -23,10 +24,11 @@ impl<R> Lexer<R>
 where
     R: std::io::BufRead,
 {
-    pub fn new(path_name: Option<String>, reader: R) -> Self {
+    pub fn new(path_name: Option<String>, reader: R, line_count: usize) -> Self {
         Self {
             path_name,
             reader,
+            line_count,
             current_offset: 0,
             current_line: 0,
             current_column: 0,
@@ -48,6 +50,10 @@ where
             position: self.current_position(),
             error,
         }
+    }
+
+    pub fn line_count(&self) -> usize {
+        self.line_count
     }
 
     fn consume_byte(&mut self) {
@@ -119,7 +125,7 @@ where
                     let s = String::from_utf8(bytes).map_err(RawError::InvalidUtf8String)?;
                     return Ok(Symbol(s));
                 }
-                if *c == b'\n' {
+                if *c == b'\n' || *c == b'\r' {
                     return Err(RawError::UnexpectedChar(Some(*c as char), vec!['|']));
                 }
                 bytes.push(*c);
@@ -135,7 +141,7 @@ where
                 self.skip_spaces();
                 break;
             }
-            if c == b'\n' || c == b';' || c == b'(' || c == b')' {
+            if c == b'\n' || c == b'\r' || c == b';' || c == b'(' || c == b')' {
                 break;
             }
             bytes.push(c);
@@ -154,7 +160,7 @@ where
                 self.skip_spaces();
                 break;
             }
-            if c == b'\n' || c == b'#' || c == b';' || c == b'(' || c == b')' {
+            if c == b'\n' || c == b'\r' || c == b'#' || c == b';' || c == b'(' || c == b')' {
                 break;
             }
             bytes.push(c);
@@ -171,7 +177,7 @@ where
                 self.skip_spaces();
                 break;
             }
-            if *c == b'\n' {
+            if *c == b'\n' || *c == b'\r' {
                 break;
             }
             bytes.push(*c);
@@ -210,6 +216,21 @@ where
                 self.skip_spaces();
                 Ok(())
             }
+            Some(b'\r') => {
+                self.consume_byte();
+                match self.peek_byte() {
+                    Some(b'\n') => {
+                        self.consume_byte();
+                        self.skip_spaces();
+                        Ok(())
+                    }
+                    c => Err(RawError::UnexpectedChar(
+                        c.cloned().map(char::from),
+                        vec!['\r'],
+                    )),
+                }
+            }
+            None => Ok(()), // Allow EOF to count as EOL
             c => Err(RawError::UnexpectedChar(
                 c.cloned().map(char::from),
                 vec!['\n'],
@@ -221,6 +242,8 @@ where
         let mut bytes = Vec::new();
         while let Some(c) = self.peek_byte() {
             if *c == b'\n' {
+                break;
+            } else if *c == b'\r' {
                 break;
             }
             bytes.push(*c);
@@ -240,7 +263,7 @@ where
                 self.skip_spaces();
                 break;
             }
-            if *c == b'\n' {
+            if *c == b'\n' || *c == b'\r' {
                 break;
             }
             let item = f(self)?;

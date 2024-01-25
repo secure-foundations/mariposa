@@ -68,6 +68,9 @@ class ExpAnalyzer:
     def get_assert_count(self, base_name):
         if self.__assert_counts is None:
             self.__assert_counts = self.proj.get_assert_counts()
+        if base_name not in self.__assert_counts:
+            print(f"[WARN] no assert count for {base_name}")
+            return None
         return self.__assert_counts[base_name]
 
     def get_assert_counts(self):
@@ -90,37 +93,48 @@ class GroupAnalyzer:
         self.group = dict()
         self.group_path = f"data/projects/{self.group_name}"
 
-    def load_stability_status(self, typ):
+    def load_stability_status(self, ptyp):
         solver = "z3_4_12_2"
-        if typ == PType.ORIG:
+        if ptyp == PType.ORIG:
+            exp_name = "baseline"
             if self.group_name == "v_uf":
                 exp_name = "synthetic"
-            else:
-                exp_name = "baseline"
-        elif typ == PType.CORE:
+            elif self.group_name == "d_ironsht":
+                exp_name = "ironsht"
+        elif ptyp == PType.CORE:
             exp_name = "unsat_core"
-        elif typ == PType.EXTD:
+        elif ptyp == PType.EXTD:
             exp_name = "unsat_core"
-        elif typ == PType.BLOT:
+        elif ptyp == PType.BLOT:
             exp_name = "bloat"
-        elif typ == PType.BLOT_CVC:
+            if self.group_name == "d_ironsht":
+                exp_name = "ironsht"
+        elif ptyp == PType.BLOT_CVC:
             exp_name = "bloat"
             solver = "cvc5_1_0_7"
-        elif typ == PType.SHKP:
+        elif ptyp == PType.SHKP:
             exp_name = "shake"
-        elif typ == PType.SHKO:
-            exp_name = "rewrite"
-        elif typ == PType.REVL:
+        elif ptyp == PType.SHKO:
+            exp_name = "oracle"
+        elif ptyp == PType.REVL:
             exp_name = "opaque"
-        elif typ == PType.ORIG_CVC:
+        elif ptyp == PType.ORIG_CVC:
             exp_name = "baseline_cvc"
             solver = "cvc5_1_0_7"
+        elif ptyp == PType.NLE:
+            exp_name = "verus_nl"
         else:
-            print(f"[ERROR] unknown project type {typ}")
+            print(f"[ERROR] unknown project type {ptyp}")
             assert False
 
-        proj = PM.load_project(self.group_name, typ, enable_dummy=True)
+        proj = PM.load_project(self.group_name, ptyp, enable_dummy=True)
         exp = ExpPart(exp_name, proj, solver)
         exp = ExpAnalyzer(exp, self.ana, enable_dummy=True)
 
         return exp
+    
+# class ComparisonAnalyzer:
+#     def __init__(self, left: ExpAnalyzer, right: ExpAnalyzer):
+#         self.left = left
+#         self.right = right
+

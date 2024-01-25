@@ -17,6 +17,8 @@ class ProjectType(str, enum.Enum):
     INST = "inst"
     INSN = "inst_nl"
     INSR = "inst_rc"
+    QF = "qf"
+    NLE = "nle"
 
     ORIG_CVC = "original_cvc"
     BLOT_CVC = "bloat_cvc"

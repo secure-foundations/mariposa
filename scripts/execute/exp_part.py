@@ -71,7 +71,7 @@ class ExpPart(ExpConfig):
     """
     def __init__(self, exp_name, proj, solver, part=Partition(1, 1)):
         super().__init__(exp_name)
-        self.proj = proj
+        self.proj: Project = proj
         self.part = part
         self.solver = SolverRunner(solver)
 

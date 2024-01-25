@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use once_cell::sync::Lazy;
+use petgraph::algo::is_cyclic_directed;
+use petgraph::graph::Graph;
+use petgraph::visit::DfsPostOrder;
+use petgraph::Direction;
 use smt2parser::concrete::Symbol;
-use std::collections::{BTreeMap, BTreeSet, BinaryHeap, HashSet};
+use std::{collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet}, f32::consts::E, fmt::Error};
 use structopt::StructOpt;
 
 use crate::{
@@ -183,6 +187,16 @@ pub struct QuantInstantiation {
     proof_deps: BTreeSet<ProofRef>,
 }
 
+/// Data about how much work a quantifier created
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+pub struct QuantCost {
+    pub quant: String,
+    /// Raw number of times this quantifier was instantiated
+    pub instantiations: u64,
+    /// Heuristic cost metric from previous Z3 profilers
+    pub cost: u64,
+}
+
 /// Main state of the Z3 tracer.
 #[derive(Default, Debug)]
 pub struct Model {
@@ -231,11 +245,16 @@ impl Model {
     }
 
     /// Process some input.
-    pub fn process<R>(&mut self, path_name: Option<String>, input: R) -> Result<()>
+    pub fn process<R>(
+        &mut self,
+        path_name: Option<String>,
+        input: R,
+        line_count: usize,
+    ) -> Result<()>
     where
         R: std::io::BufRead,
     {
-        let lexer = Lexer::new(path_name, input);
+        let lexer = Lexer::new(path_name, input, line_count);
         let config = self.config.parser_config.clone();
         Parser::new(config, lexer, self).parse()
     }
@@ -295,6 +314,172 @@ impl Model {
             .ok_or_else(|| RawError::UndefinedIdent(id.clone()))?
             .term;
         Ok(t)
+    }
+
+    /// Calculate the cost imposed by each quantifier
+    pub fn quant_costs(&self) -> Vec<QuantCost> {
+        // Select instantations that resulted from a trigger match
+        let quantifier_inst_matches =
+            self.instantiations()
+                .iter()
+                .filter(|(_, quant_inst)| match quant_inst.frame {
+                    QiFrame::Discovered { .. } => false,
+                    QiFrame::NewMatch { .. } => true,
+                });
+
+        if quantifier_inst_matches.clone().next().is_none() {
+            return Vec::new();
+        }
+
+        // Track which instantiations caused which enodes to appear
+        let mut term_blame = HashMap::new();
+        for (qi_key, quant_inst) in quantifier_inst_matches.clone() {
+            for inst in &quant_inst.instances {
+                for node_ident in &inst.enodes {
+                    term_blame.insert(node_ident, qi_key);
+                }
+            }
+        }
+
+        // Create a graph over QuantifierInstances,
+        // where U->V if U produced an e-term that
+        // triggered U
+        let mut graph = Graph::<QiKey, ()>::new();
+        let mut node_map = HashMap::new();
+        for (qi_key, _) in quantifier_inst_matches.clone() {
+            let index = graph.add_node(*qi_key);
+            node_map.insert(qi_key, index);
+        }
+        for (qi_key, quant_inst) in quantifier_inst_matches.clone() {
+            match &quant_inst.frame {
+                QiFrame::Discovered { .. } => {
+                    panic!("We filtered out all of the Discovered instances already!")
+                }
+                QiFrame::NewMatch { used: u, .. } => {
+                    for used in u.iter() {
+                        match used {
+                            MatchedTerm::Trigger(t) => {
+                                match term_blame.get(&t) {
+                                    None => (), //println!("Nobody to blame for {:?}", t),
+                                    Some(qi_responsible) =>
+                                    // Quantifier instantiation that produced the triggering term
+                                    {
+                                        let qi_responsible_index =
+                                            node_map.get(qi_responsible).unwrap();
+                                        let qi_key_index = node_map.get(qi_key).unwrap();
+                                        graph.add_edge(*qi_responsible_index, *qi_key_index, ());
+                                        ()
+                                    }
+                                }
+                            }
+                            MatchedTerm::Equality(_t1, _t2) => (), // TODO: Unclear whether/how to use this case
+                        }
+                    }
+                }
+            }
+        }
+
+        // Compute the in-degree of each QuantifierInstance
+        let mut in_degree: HashMap<QiKey, u64> = HashMap::new();
+        let (some_qi_key, _) = quantifier_inst_matches.clone().next().unwrap();
+        let some_index = node_map.get(&some_qi_key).unwrap();
+        let mut dfs = DfsPostOrder::new(&graph, *some_index);
+        for qi_root in graph.externals(Direction::Incoming) {
+            // For each root of the graph
+            dfs.move_to(qi_root); // Keep visit map from the previous DFS traversal
+            while let Some(index) = dfs.next(&graph) {
+                let qi_key = &graph[index];
+                match in_degree.get_mut(&graph[index]) {
+                    None => {
+                        in_degree.insert(*qi_key, 1);
+                        ()
+                    }
+                    Some(count) => *count += 1,
+                }
+            }
+        }
+
+        // Compute the cost of each QuantifierInstance
+        //   cost(i) = 1 + sum_{(i, n) \in edges} cost(n) / in-degree(n)
+        // i.e., the cost of an instance is shared equally by all
+        // instances that caused it
+        // See 4.3.1 of "Programming with Triggers" by Michał Moskal,
+        // SMT Workshop 2009 (https://moskal.me/pdf/prtrig.pdf)
+        let mut qi_cost: HashMap<QiKey, u64> = HashMap::new();
+        let mut dfs = DfsPostOrder::new(&graph, *some_index);
+        for qi_root in graph.externals(Direction::Incoming) {
+            dfs.move_to(qi_root); // Keep visit map from the previous DFS traversal
+            while let Some(index) = dfs.next(&graph) {
+                let qi_key = &graph[index];
+                let mut sum = 0;
+                for neighbor in graph.neighbors_directed(index, Direction::Outgoing) {
+                    let neighbor_key = &graph[neighbor];
+                    if let Some(neighbor_cost) = qi_cost.get(neighbor_key) {
+                        sum += neighbor_cost / in_degree.get(neighbor_key).unwrap();
+                    }
+                }
+                qi_cost.insert(*qi_key, 1 + sum);
+            }
+        }
+
+        // Z3 sometimes produces a trace with a bogus cycle of quantifier instantiations
+        // Check to see if that happened here
+        let cyclic = is_cyclic_directed(&graph);
+        let mut warned = false;
+
+        // Finally, compute the cost of each quantifier
+        //   = sum_{i \in instances} cost(i)
+        let mut quant_cost: HashMap<String, QuantCost> = HashMap::new();
+        for (qi_key, quant_inst) in quantifier_inst_matches.clone() {
+            let quant_id = quant_inst.frame.quantifier();
+            let qi_cost_opt = qi_cost.get(qi_key);
+            if qi_cost_opt.is_none() {
+                if cyclic {
+                    // When the graph is cyclic, some nodes may not make it into qi_cost
+                    // This is a known issue, so warn (once) but don't panic
+                    if !warned {
+                        eprintln!("WARNING: Z3 produced a malformed proof trace, so quantifier costs may be undercounted");
+                        warned = true;
+                    }
+                    continue;
+                } else {
+                    // This is some other unexpected internal errror
+                    panic!(
+                        "failed to find qi_key {:?} for quant_id {:?} in qi_cost",
+                        qi_key, quant_id
+                    );
+                }
+            }
+            let qi_cost = qi_cost_opt.unwrap();
+            let quant_term = self
+                .term(&quant_id)
+                .expect(format!("failed to find {:?} in the profiler's model", quant_id).as_str());
+            let quant_name = match quant_term {
+                Term::Quant { name, .. } => name,
+                Term::App { name, .. } => name,
+                _ => {
+                    dbg!(&quant_term);
+                    panic!("Term for quantifier isn't a Quant");
+                }
+            };
+            match quant_cost.get_mut(quant_name) {
+                None => {
+                    let cost = QuantCost {
+                        quant: quant_name.to_string(),
+                        instantiations: 1,
+                        cost: *qi_cost,
+                    };
+                    quant_cost.insert(quant_name.clone(), cost);
+                    ()
+                }
+                Some(cost) => {
+                    cost.instantiations += 1;
+                    cost.cost += qi_cost;
+                    ()
+                }
+            }
+        }
+        quant_cost.into_values().collect::<Vec<_>>()
     }
 
     // Obtain a writeable entry in the current scope. The first time, this will trigger a
@@ -380,7 +565,17 @@ impl Model {
 
     /// Display a term given by id.
     pub fn id_to_sexp(&self, venv: &BTreeMap<u64, Symbol>, id: &Ident) -> RawResult<String> {
-        self.term_to_sexp(venv, self.term(id)?)
+        let t = self.term(id)?;
+        // if let Term::Var { index } = t {
+        //     if let Some(s) = venv.get(index) {
+        //         return Ok(format!("|{}|", s));
+        //     }
+        // }
+        return self.term_to_sexp(venv, t);
+    }
+
+    pub fn id_to_sexp_mod(&self, venv: &BTreeMap<u64, String>, id: &Ident) -> RawResult<String> {
+        self.term_to_sexp_mod(venv, self.term(id)?)
     }
 
     /// Display a term by id.
@@ -390,14 +585,33 @@ impl Model {
             App {
                 meaning: Some(meaning),
                 ..
-            } => Ok(meaning.sexp.clone()),
+            } => {
+                // print!("{:?} :: ", meaning);
+                Ok(meaning.sexp.clone())}
             App {
                 name,
                 args,
                 meaning: None,
             } => {
+                let name = if name.contains("!") || name.contains("'") {
+                    // let mut iter = name.char_indices();
+                    // let mut new_name = String::new();
+                    // let idx = name.find('!').unwrap();
+                    // let slice = &name[0..idx];
+                    // String::from(slice)
+                    return Err(RawError::InvalidEndOfInstance);
+                } else {
+                    name.to_string()
+                };
+
+                let name = if name.contains('#') {
+                    format!("|{}|", name)
+                } else {
+                    name.to_string()
+                };
+
                 if args.is_empty() {
-                    Ok(name.to_string())
+                    Ok(name)
                 } else {
                     Ok(format!(
                         "({} {})",
@@ -483,6 +697,121 @@ impl Model {
             Builtin { name } => Ok(name.clone().unwrap_or_else(String::new)),
         }
     }
+
+    pub fn term_to_sexp_mod(&self, venv: &BTreeMap<u64, String>, term: &Term) -> RawResult<String> {
+        use Term::*;
+        match term {
+            App {
+                meaning: Some(meaning),
+                ..
+            } => Ok(meaning.sexp.clone()),
+            App {
+                name,
+                args,
+                meaning: None,
+            } => {
+                if args.is_empty() {
+                    Ok(if name.contains('#') && !name.contains('|') {
+                        format!("|{}|", name)
+                    } else {
+                        name.to_string()
+                    })              
+                  } else {
+                    Ok(format!(
+                        "({} {})",
+                        if name.contains('#') && !name.contains('|') {
+                            format!("|{}|", name)
+                        } else {
+                            name.to_string()
+                        },
+                        args.iter()
+                            .map(|id| self.term_to_sexp_mod(venv, self.term(id)?))
+                            .collect::<RawResult<Vec<_>>>()?
+                            .join(" ")
+                    ))
+                }
+            }
+            Var { index } => match venv.get(index) {
+                Some(s) => Ok(format!("{}", s)),
+                None => Ok(format!("_{}", index)),
+            },
+            // Quant {
+            //     name,
+            //     params,
+            //     triggers,
+            //     body,
+            //     var_names,
+            // } => {
+            //     let mut venv = venv.clone();
+            //     let vars = match var_names {
+            //         None => format!("{}", params),
+            //         Some(var_names) => {
+            //             for (i, vn) in var_names.iter().enumerate() {
+            //                 venv.insert(i as u64, vn.name.clone().0);
+            //             }
+            //             var_names
+            //                 .iter()
+            //                 .map(|vn| format!("({} {})", vn.name, vn.sort))
+            //                 .collect::<Vec<_>>()
+            //                 .join(" ")
+            //         }
+            //     };
+            //     let patterns = triggers
+            //         .iter()
+            //         .map(|id| Ok(format!(":pattern {}", self.id_to_sexp_mod(&venv, id)?)))
+            //         .collect::<RawResult<Vec<_>>>()?
+            //         .join(" ");
+            //     Ok(format!(
+            //         "(QUANT ({}) (! {} :qid {} {}))",
+            //         vars,
+            //         self.id_to_sexp_mod(&venv, body)?,
+            //         name,
+            //         patterns
+            //     ))
+            // }
+            _ => {
+                // println!("term: {:?}", term);
+                return Err(RawError::InvalidEndOfInstance);
+                // panic!("term_to_sexp_mod called on non-app term")
+            }
+
+            // Lambda {
+            //     name,
+            //     params,
+            //     triggers,
+            //     body,
+            // } => {
+            //     let vars = format!("{}", params);
+            //     let patterns = triggers
+            //         .iter()
+            //         .map(|id| Ok(format!(":pattern {}", self.id_to_sexp(venv, id)?)))
+            //         .collect::<RawResult<Vec<_>>>()?
+            //         .join(" ");
+            //     Ok(format!(
+            //         "(LAMBDA ({}) (! {} :qid {} {}))",
+            //         vars,
+            //         self.id_to_sexp(venv, body)?,
+            //         name,
+            //         patterns
+            //     ))
+            // }
+            // Proof {
+            //     name,
+            //     args,
+            //     property,
+            // } => Ok(format!(
+            //     "(PROOF {} {}{})",
+            //     name,
+            //     args.iter()
+            //         .map(|id| Ok(self.id_to_sexp(venv, id)? + " "))
+            //         .collect::<RawResult<Vec<_>>>()?
+            //         .join(""),
+            //     self.id_to_sexp(venv, property)?,
+            // )),
+            // Builtin { name } => Ok(name.clone().unwrap_or_else(String::new)),
+        }
+    }
+
 
     fn append_id_subterms(&self, deps: &mut BTreeSet<Ident>, id: &Ident) -> RawResult<()> {
         deps.insert(id.clone());
@@ -732,10 +1061,10 @@ impl Model {
         let c1 = self.term_equality_class(id1);
         let c2 = self.term_equality_class(id2);
         if c1 != c2 {
-            println!(
-                "{}: @{} {:?} -> {:?} =/= {:?} <- {:?}",
-                self.processed_logs, self.current_scope.level, id1, c1, c2, id2
-            );
+            // println!(
+            //     "{}: @{} {:?} -> {:?} =/= {:?} <- {:?}",
+            //     self.processed_logs, self.current_scope.level, id1, c1, c2, id2
+            // );
             return None;
         }
         let index = std::cmp::max(

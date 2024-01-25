@@ -1,6 +1,7 @@
 from configure.project import ProjectType as PType
 from analysis.basic_analyzer import GroupAnalyzer, ExpAnalyzer
 from analysis.categorizer import Stability, Categorizer
+from analysis.core_analyzer import get_stability_scores
 from utils.analyze_utils import print_sets_diff, get_cdf_pts, tex_fmt_percent
 from utils.cache_utils import *
 import numpy as np
@@ -48,16 +49,21 @@ class RevalAnalyzer(GroupAnalyzer):
         # ax.set_title(f"{self.group_name} original vs. reveal")
         # ax.legend()
         # plt.savefig(f"fig/orig_revl.png")
-        
-        # remove = (self.orig.base_names() - self.revl.base_names()) | self.duplicated
+
+        remove = (self.orig.base_names() - self.revl.base_names())
+        # | self.duplicated
 
         ocasts = self.orig.get_stability_status()
-        # ocasts = ocasts.filter_out(remove)
+        ocasts = ocasts.filter_out(remove)
         rcasts = self.revl.get_stability_status()
         # rcasts = rcasts.filter_out(remove)
-        ocasts.print_compare_status(rcasts, skip_empty=True,
-                                    cats=[Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE], 
-                                    this_name="original", that_name="transparent")
+
+        scores = get_stability_scores(rcasts, ocasts)
+        print(scores)
+
+        # ocasts.print_compare_status(rcasts, skip_empty=True,
+        #                             cats=[Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE], 
+        #                             this_name="original", that_name="transparent")
 
         # migration = ocasts.get_migration_status(rcasts)
         # data = dict()

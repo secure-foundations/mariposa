@@ -62,7 +62,8 @@ fn core_to_hashset(file_path: String) -> HashSet<String> {
     let last_line = lines.last().unwrap();
     // last_line could be timeout -- if so, throw error
     if last_line == "timeout" {
-        panic!("file timed out")
+        return HashSet::new();
+        // panic!("file timed out")
     }
     // strip the first and last character
     let last_line = &last_line[1..last_line.len() - 1];
@@ -205,6 +206,9 @@ pub fn label_asserts(commands: &mut Vec<concrete::Command>) {
 
 pub fn reduce_asserts(commands: Vec<concrete::Command>, core_file_path: String) -> Vec<concrete::Command> {
     let core = core_to_hashset(core_file_path);
+    if core.len() == 0 {
+        return commands;
+    }
     let mut commands = commands
         .into_iter()
         .filter(|x| should_keep_command(x, &core))

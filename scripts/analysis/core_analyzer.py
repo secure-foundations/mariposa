@@ -10,7 +10,7 @@ from analysis.basic_analyzer import GroupAnalyzer
 from analysis.categorizer import Categorizer, Stability
 from utils.sys_utils import san_check
 from utils.shake_utils import parse_shake_log, key_set, count_asserts, load_shake_prelim, emit_shake_partial, SHAKE_DEPTH_MAGIC
-from utils.analyze_utils import CategorizedItems, get_cdf_pts, tex_fmt_percent
+from utils.analyze_utils import CategorizedItems, get_cdf_pts, tex_double_column, tex_fmt_percent
 from utils.smt2_utils import *
 from utils.cache_utils import *
 
@@ -38,10 +38,13 @@ rule strip
 
 rule shake-partial
     command = python3 scripts/run_shake.py partial $out $in $full $log
-"""
 
-# rule create-core
-#     command = python3 scripts/unsat_core_search.py create-core $in $out
+rule z3-trace
+    command = ./solvers/z3-4.12.2 $in -T:150 trace=true trace_file_name=$out
+    
+rule instantiate
+    command = ./target/release/mariposa -i $in --trace-log $log -o $out
+"""
 
 # rule complete-mini-query
 #     command = python3 scripts/unsat_core_search.py complete $in $hint $out > $out.log
@@ -82,6 +85,7 @@ class CoreQueryStatus:
         self.shk_log_path = f"cache/shk/{self.name_hash}.shk"
         self.shk_stat_name = f"shk/{self.name_hash}.stat"
         self.shkp_log_path = self.get_path(PType.SHKP).replace(".smt2", ".shkp_log")
+        self.trace_path = f"cache/trace/{self.name_hash}.trace"
 
     def __lt__(self, other):
         return self.base_name.__lt__(other.base_name)
@@ -207,8 +211,25 @@ build {self.get_path(PType.CORE)}: create-mini-query {self.inst_path} | {self._c
     core = {self._core_path}
 """
 
+    def ninja_create_trace(self):
+        if self.get_unified_query_path() is None:
+            return ""
+        if self.get_unified_stability() != Stability.UNSTABLE:
+            return ""
+
+        return f"""build {self.trace_path}: z3-trace {self.get_unified_query_path()} 
+
+build {self.get_path(PType.QF)}: instantiate {self.get_unified_query_path()} | {self.trace_path}
+    log = {self.trace_path}
+"""
+
     def ninja_shk_query(self):
         return f"""build {self.get_path(PType.SHKF)}: shake {self.get_path(PType.ORIG)}
+    log = {self.shk_log_path}
+"""
+
+    def ninja_shk_query_special(self):
+        return f"""build {self.get_path(PType.SHKF)}: shake-special {self.get_path(PType.ORIG)}
     log = {self.shk_log_path}
 """
 
@@ -219,7 +240,6 @@ build {self.get_path(PType.CORE)}: create-mini-query {self.inst_path} | {self._c
 """
 
     def shake_oracle(self):
-        ostatus = self.get_stability(PType.ORIG)
         sst = self.get_shake_stats()
         chosen = sst.unified_max_depth
 
@@ -334,17 +354,8 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         print(f"[INFO] {self.group_name} original vs. core")
         print(f"[INFO] analyzer {self.ana.name}")
 
-        unified = self.get_unified_stability_status()
-
-        # adjusted = CategorizedItems()
-        # for base_name, cqs in self.qrs.items():
-        #     if base_name not in unified.tally:
-        #         continue
-        #     ss = cqs.get_stability(PType.ORIG)
-        #     adjusted.add_item(ss, base_name)
-        # adjusted.finalize()
-
         original = self.orig.get_stability_status()
+        unified = self.get_unified_stability_status()
         
         original.print_compare_status(unified, 
                                     # cats=[Stability.STABLE, Stability.UNSTABLE],
@@ -378,45 +389,22 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         table = [tally] + table
         print(tabulate(table, headers=header, tablefmt="latex_raw"))
 
-    def read_shake_partial_logs(self):
-        cats_0 = CategorizedItems()
-        cats_1 = CategorizedItems()
-        cats_2 = CategorizedItems()
-        for cqs in self.qrs.values():
-            (f, cat) = cqs.read_shake_partial_log()
-            if f == "skip":
-                cats_0.add_item(cat, cqs.base_name)
-            elif f == "shake":
-                cats_1.add_item(cat, cqs.base_name)
-            else:
-                cats_2.add_item(cat, cqs.base_name)
-        print("skip")
-        cats_0.finalize()
-        cats_0.print_status()
-        print("")
-        print("shake")
-        cats_1.finalize()
-        cats_1.print_status()
-        print("")
-        print("???")
-        cats_2.finalize()
-        cats_2.print_status()
+    def analyze_oracle(self):
+        adjusted = CategorizedItems()
+        for base_name, qr in self.qrs.items():
+            st = qr.get_stability(PType.SHKO)
+            if st is None:
+                st = qr.get_stability(PType.ORIG)
+            adjusted.add_item(st, base_name)
+        adjusted.finalize()
+        scores = get_stability_scores(self.orig.get_stability_status(), adjusted)
+        print(scores)
 
     def generate_shake_partial(self):
         for cqs in self.qrs.values():
             cqs.generate_shake_partial()
 
     def analyze_partial(self):
-        # cats = CategorizedItems()
-        # for cqs in self.qrs.values():
-        #     pss = cqs.get_stability(PType.SHKP)
-        #     oss = cqs.get_stability(PType.ORIG)
-        #     if pss == None:
-        #         pss = oss
-        #     cats.add_item(pss, cqs.base_name)
-        # cats.finalize()
-        # cats.print_status()
-
         oqrs = self.orig.get_stability_status()
         sqrs = self.shkp.get_stability_status()
         oqrs.print_compare_status(sqrs, 
@@ -434,32 +422,13 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         # for q in ocats[Stability.UNSTABLE]:
         missed = 0
         counts = 0
-        for qr in self.qrs.values():
-            if qr.get_stability(PType.ORIG) != Stability.STABLE:
-                continue
+        for qr in tqdm(self.qrs.values()):
             counts = counts + 1
             st = qr.get_shake_stats()
             missed_asserts = st.missed_asserts
             if missed_asserts != 0 and not np.isnan(missed_asserts):
                 missed += 1
         print(f"[INFO] {missed} / {counts} queries missed")
-            # print(qr.get_stability(PType.SHKO))
-
-        # df = self.get_shake_stats()
-        # # no_cores = df.loc[np.isnan(df.missed_asserts)].shape[0]
-        # # rdf = df.loc[df.missed_asserts > 0]
-        # # print(rdf)
-        # ratio = df.shke_asserts / df.orig_asserts * 100
-        # xs, ys = get_cdf_pts(ratio)
-        # end_idx = np.argwhere(~np.isnan(xs)).max()
-        # x_end, y_end = xs[end_idx], ys[end_idx]
-        # assert y_end >=0 and y_end <= 100
-        # assert x_end >= 0 and x_end <= 100
-        # xs[np.isnan(xs)] = np.inf
-        # # print(np.percentile(xs, 25))
-        # # print(np.percentile(xs, 75))
-        # st, ed = np.percentile(xs, 10), np.percentile(xs, 90)
-        # print(f"%.2f %.2f %s" % (st, ed, self.group_name))
 
     def generate_shake_oracle(self):
         for qr in self.qrs.values():
@@ -493,7 +462,6 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         sp.plot(xs, ys,  label="Reducible Difference", color=color, linestyle="dotted")
         end_idx = np.argwhere(~np.isnan(xs)).max()
 
-        # offset = ys[np.argmax(xs > 0)]
         xs[np.isnan(xs)] = np.inf
         print(np.percentile(xs, 10))
 
@@ -507,7 +475,6 @@ class GroupCoreAnalyzer(GroupAnalyzer):
         sp.set_xticks(np.arange(0, x_max+1, 1))
         sp.grid(True)
         sp.legend()
-        # sp.set_title(f"Assertion Max Shake Depth {pname}")
 
     def emit_build(self):
         import random
@@ -523,14 +490,24 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             f.write("\n")
         f.close()
 
+        f = open(f"scripts/ninja/inst.{self.group_name}.build.ninja", "w")
+        f.write(CORE_BUILD_RULES)
+        f.write("\n")
+
+        for cqs in qrs:
+            f.write(cqs.ninja_create_trace())
+            f.write("\n")
+        f.close()
+
         f = open(f"scripts/ninja/shkf.{self.group_name}.build.ninja", "w")
         f.write(CORE_BUILD_RULES)
         f.write("\n")
-        qrs = list(self.qrs.values())
-        random.shuffle(qrs)
 
         for cqs in qrs:
-            f.write(cqs.ninja_shk_query())
+            if self.group_name == "fs_dice":
+                f.write(cqs.ninja_shk_query_special())
+            else:
+                f.write(cqs.ninja_shk_query())
             f.write("\n")
         f.close()
 
@@ -541,9 +518,6 @@ class GroupCoreAnalyzer(GroupAnalyzer):
             f.write(cqs.ninja_shk_partial())
             f.write("\n")
         f.close()
-
-# class PrettyInfo:
-#     def
 
 CORE_PROJECTS = ["d_komodo", "d_lvbkv", "d_fvbkv", "fs_dice", "fs_vwasm"]
 CORE_PROJECTS_VERUS = ["v_ironfleet", "v_mimalloc", "v_noderep", "v_pagetable", "v_pmemlog"]
@@ -560,25 +534,25 @@ PROJECT_LABELS = {
     "v_noderep": r"NodeRep$_V$",
     "v_pagetable": r"PageTable$_V$",
     "v_pmemlog": r"PMemLog$_V$",
+    "total": "Total",
 } 
 
 PROJECT_COLORS = {
-    "d_komodo": "#800080",
-    "d_fvbkv": "#008080",
-    "d_lvbkv": "#FF4500",
+    "d_komodo": "#FFAA33",
+    "d_fvbkv": "#800080",
+    "d_lvbkv": "#808000",
     "fs_vwasm": "#708090",
-    "fs_dice": "#800000",
+    "fs_dice":  "#FF4500",
     "v_ironfleet": "#4682B4",
-    "v_mimalloc": "#808000",
+    "v_mimalloc": "#800000",
     "v_noderep": "#DAA520",
     "v_pagetable": "#191970",
     "v_pmemlog": "#008B8B",
-# "#CD5C5C"
-# "#CD853F"
 }
 
 plt.rcParams['text.usetex'] = True
 plt.rcParams["font.family"] = "serif"
+plt.rcParams["font.size"] = 14
 
 def stat_context_retention(pname):
     # if has_cache(f"ctx_ret/{pname}.df"):
@@ -596,19 +570,19 @@ def stat_context_retention(pname):
     save_cache(f"ctx_ret/{pname}.df", (xs, ys, x_end, y_end))
     return xs, ys, x_end, y_end
 
-def plot_context_retention(projects):
-    fig, ax = plt.subplots(1, 2)
-    fig.set_size_inches(10, 5)
+def plot_context_retention(projects, ana):
+    fig, ax = plt.subplots(1, 1, squeeze=False)
+    fig.set_size_inches(5, 5)
 
-    sp = ax[0]
-    
+    sp = ax[0][0]
+
     for pname in projects:
-        g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
+        g = GroupCoreAnalyzer(pname, ana)
         color = PROJECT_COLORS[pname]
         df = g.get_shake_stats()
         df.orig_asserts
         xs, ys = get_cdf_pts(df.orig_asserts)
-        sp.plot(xs, ys, label=PROJECT_LABELS[pname], color=color, linewidth=2)
+        sp.plot(xs, ys, label=PROJECT_LABELS[pname], color=color, linewidth=1.5)
         
         med = np.percentile(xs, 50)
         sp.plot(med, 50, marker="o", color=color, markersize=4)
@@ -621,22 +595,33 @@ def plot_context_retention(projects):
             sp.text(med*0.9, 50, s=lbl, horizontalalignment='right', verticalalignment='top')
 
     sp.set_xlim(1e1, 1e5)
-
     sp.set_ylim(0, 100)
     sp.set_yticks([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
-
     sp.set_xscale("log")
 
     sp.legend()
     sp.grid(True)
     sp.set_xlabel("Orginal Query Assertion Count (log scale)")
     sp.set_ylabel("Cumulative Percentage (\%) of Queries")
+    plt.tight_layout()
 
-    sp = ax[1]
+    if projects == CORE_PROJECTS:
+        plt.savefig("fig/context/original_ctx_size.pdf")
+    else:
+        assert projects == CORE_PROJECTS_VERUS
+        plt.savefig("fig/context/original_ctx_size_verus.pdf")
+
+    plt.close()
+
+    fig, ax = plt.subplots(1, 1, squeeze=False)
+    fig.set_size_inches(5, 5)
+
+    sp = ax[0][0]
+
     for pname in projects:
         xs, ys, x_end, y_end = stat_context_retention(pname)
         color = PROJECT_COLORS[pname]
-        sp.plot(xs, ys, label=PROJECT_LABELS[pname], color=color)
+        sp.plot(xs, ys, label=PROJECT_LABELS[pname], color=color, linewidth=1.5)
         # sp.plot(x_end*1.05, y_end, marker="o", fillstyle='none', color=color, markersize=4)
         # xs[np.isnan(xs)] = np.inf
 
@@ -662,96 +647,108 @@ def plot_context_retention(projects):
     sp.grid(True)
     sp.set_xlabel("Relevance Ratio (log scale)")
 
-        # sp.boxplot(all_data, showfliers=False, vert=False)
-        # sp.set_xscale("log")
-        # sp.invert_xaxis()
-        # sp.set_xlim(100, 0.001)
-
-        # sp.set_xticks([100, 10, 1, 0.1, 0.01],
-        #               ["0\%", "90\%", "99\%", "99.9\%", "99.99\%"])
-        # sp.set_yticks(np.arange(1, len(gp)+1), [PROJECT_LABELS[pname] for pname in gp])
-
-    # fig.suptitle("assertion counts in queries")
-    # fig.supylabel("Percentage (\%) of Queries with\n Irrelevance Ratios $>$ Treshold", 
-                #   horizontalalignment ="center")
-    # fig.suptitle("Core Query (Adjusted) Context Retention")
-
     plt.tight_layout()
 
     if projects == CORE_PROJECTS:
-        plt.savefig("fig/context/retention_core.png", dpi=200)
+        plt.savefig("fig/context/retention_core.pdf")
     else:
         assert projects == CORE_PROJECTS_VERUS
-        plt.savefig("fig/context/retention_core_verus.png", dpi=200)
+        plt.savefig("fig/context/retention_core_verus.pdf")
 
     plt.close()
 
-
 def tabulate_stability_change(data):
-    header = ["stability"]
-    for p in data:
-        header.append(r"\multicolumn{2}{c}{" + PROJECT_LABELS[p] + r"}")
-    print(" & ".join(header) + r"\\")
-    header = [""]
-    for p in data:
-        count = f'{data[p][-1]:,}'
-        header.append(r"\multicolumn{2}{c}{" + count + r"}")
-    print(" & ".join(header) + r"\\")
+    print(r"\toprule")
 
-    for i, c in enumerate(["stable ratio (\%)", "unstable ratio (\%)", "unsolvable ratio (\%)"]):
+    row = [""]
+    for p in data:
+        row.append(tex_double_column(PROJECT_LABELS[p]))
+    print(" & ".join(row) + r"\\")
+
+    row = [""]
+    for p in data:
+        count = f'{data[p]["total"]:,}'
+        row.append(tex_double_column(count))
+    print(" & ".join(row) + r"\\")
+
+    sep = ""
+    for i in range(1, len(data)+1):
+        sep += "\cmidrule(r){%d-%d}"% (i*2, i*2 + 1)
+    print(sep)
+
+    for (s, c) in zip([Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE],
+        ["Stable Ratio (\%)", "Unstable Ratio (\%)", "Unsolvable Ratio (\%)"]):
         row = [c]
         for pname in data:
-            o, c = data[pname][i]
-            diff = c-o
-            if diff > 0:
-                diff = r"$+\textbf{"+ "%.1f" % (c-o) + r"}$"
-            else:
-                diff = r"$-\textbf{"+ "%.1f" % (o-c) + r"}$"
-            row += ["$" + "%.1f" % o + "$", diff]
+            o, c = data[pname][s]
+            row += [tex_fmt_percent(o), tex_fmt_percent(c - o, signed=True)]
         print(" & ".join(row) + r"\\")
-        # table.append(row)
-    # from tabulate import tabulate
 
-    # print(tabulate(table, tablefmt="latex_raw"))
+    print(sep)
 
-def tabulate_core_stability_change(ana):
+    row = ["$P1$"]
+    for p in data:
+        score = "%.1f" % (data[p]["p1"])
+        row.append(tex_double_column(score))
+    print(" & ".join(row) + r"\\")
+
+    row = ["$P2$"]
+    for p in data:
+        score = "%.1f" % (data[p]["p2"])
+        row.append(tex_double_column(score))
+    print(" & ".join(row) + r"\\")
+    print(r"\bottomrule")
+
+def get_stability_scores(prev: CategorizedItems, curr: CategorizedItems):
+    assert prev.tally == curr.tally
+    p1 = len(prev[Stability.STABLE].items & curr[Stability.STABLE].items) / len(prev[Stability.STABLE].items) * 100
+    p2 = len(prev[Stability.UNSTABLE].items & curr[Stability.STABLE].items) / len(prev[Stability.UNSTABLE].items) * 100
+
+    scores = {"p1": p1, "p2": p2}
+
+    for cat in [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
+        scores[cat.value] = (prev[cat].percent, curr[cat].percent)
+
+    scores["total"] = prev.total
+    return scores
+
+def tabulate_core_stability_change_projects(ana):
     data = dict()
-    total = 0
-    total_sb = 0
+    orig_total = CategorizedItems()
+    unified_total = CategorizedItems()
+    
     for pname in CORE_PROJECTS:
         g = GroupCoreAnalyzer(pname, ana=ana)
         original = g.orig.get_stability_status()
         unified = g.get_unified_stability_status()
-        assert original.tally == unified.tally
-        data[pname] = [
-                    (original[Stability.STABLE].percent, unified[Stability.STABLE].percent),
-                    (original[Stability.UNSTABLE].percent, unified[Stability.UNSTABLE].percent),
-                    (original[Stability.UNSOLVABLE].percent, unified[Stability.UNSOLVABLE].percent),
-                    original.total]
-        us = len(original[Stability.UNSTABLE])
-        sb = len(original[Stability.UNSTABLE].items & unified[Stability.STABLE].items)
-        total += us
-        total_sb += sb
-    print(total_sb, total)
+        data[pname] = get_stability_scores(original, unified)
 
-    # print(original[Stability.UNSTABLE].count)
+        for cat in [Stability.STABLE, Stability.UNSTABLE, Stability.UNSOLVABLE]:
+            for base_name in original[cat]:
+                orig_total.add_item(cat, pname + base_name)
+            for base_name in unified[cat]:
+                unified_total.add_item(cat, pname + base_name)
+
+    orig_total.finalize()
+    unified_total.finalize()
+    data["total"] = get_stability_scores(orig_total, unified_total)
+
     tabulate_stability_change(data)
 
-def plot_shake_max_depth_overall():
+def plot_shake_max_depth_overall(ana):
     fig, ax = plt.subplots(1, 1, squeeze=False)
     fig.set_size_inches(5, 5)
 
     sp0 = ax[0][0]
     colors = []
 
-    if has_cache("shake_max_depth"):
+    if has_cache("shake_max_depth") and False:
         all_data = load_cache("shake_max_depth")
     else:
         all_data = []
         for pname in CORE_PROJECTS:
-            g = GroupCoreAnalyzer(pname, ana=Categorizer("default"))
+            g = GroupCoreAnalyzer(pname, ana=ana)
             color = PROJECT_COLORS[pname]
-
             df = g.get_shake_stats()
             all_data.append(df.shke_max_depth)
             xs = df.unified_max_depth
@@ -823,42 +820,45 @@ def plot_shake_max_depth_project(pname):
     plt.tight_layout()  
     plt.savefig(f"fig/context/shake_max_depth_{pname}.png", dpi=200)
 
-def analyze_oracle():
-    row = []
-    total = 0
-    total_sb = 0    
+# def analyze_oracle():
+#     row = []
+#     total = 0
+#     total_sb = 0    
 
-    for pname in CORE_PROJECTS:
-        g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
-        original = g.orig.get_stability_status()
-        cats = g.shko.get_stability_status()
-        # print(pname)
-        rt = cats[Stability.STABLE].percent
-        us = len(original[Stability.UNSTABLE])
-        sb = len(original[Stability.UNSTABLE].items & cats[Stability.STABLE].items)
+#     for pname in CORE_PROJECTS:
+#         g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
+#         original = g.orig.get_stability_status()
+#         cats = g.shko.get_stability_status()
+#         # print(pname)
+#         rt = cats[Stability.STABLE].percent
+#         us = len(original[Stability.UNSTABLE])
+#         sb = len(original[Stability.UNSTABLE].items & cats[Stability.STABLE].items)
         
-        total += us
-        total_sb += sb
-        row += ["%.1f" % rt]
-    print(total_sb, total)
-    print(row)
-    # g.generate_shake_oracle()
+#         total += us
+#         total_sb += sb
+#         row += ["%.1f" % rt]
+#     print(total_sb, total)
+#     print(row)
+#     # g.generate_shake_oracle()
 
 def analyze_unsat_core():
-    # ana = Categorizer("60sec")
-    # plot_context_retention(CORE_PROJECTS_VERUS)
+    ana = Categorizer("60sec")
+    # plot_context_retention(CORE_PROJECTS, ana)
     # plot_shake_max_depth() 
-    # tabulate_core_stability_change(ana)
+    # tabulate_core_stability_change_projects(ana)
     # plot_shake_max_depth_overall()
     # plot_shake_max_depth_project("d_lvbkv")
-    # analyze_oracle()
+
+    g = GroupCoreAnalyzer("fs_dice", ana=ana)
+    # g.generate_shake_oracle()
+    # g.print_shake_completeness()
+    g.analyze_oracle()
+    # g.plot_shake_max_depth(sp)
+    # g.emit_build()
+    return
 
     for pname in CORE_PROJECTS:
-        if pname != "d_lvbkv": continue
-        # print(pname)
-        g = GroupCoreAnalyzer(pname, ana=Categorizer("60sec"))
-        # g.plot_shake_max_depth(sp)
-        # g.print_shake_completeness()
+        g = GroupCoreAnalyzer(pname, ana=ana)
         g.generate_shake_oracle()
         # g.print_status()
         # g.read_shake_partial_log()

@@ -18,7 +18,7 @@ pub struct Ident {
 }
 
 /// The hexadecimal index of a quantifier instantiation (QI).
-#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Copy)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
 pub struct QiKey {
     pub key: u64,
     pub version: usize,
@@ -354,12 +354,12 @@ impl std::str::FromStr for Ident {
     fn from_str(value: &str) -> Result<Self, Error> {
         match value.find('!') {
             None => {
-                let mut lexer = crate::lexer::Lexer::new(None, value.as_ref());
+                let mut lexer = crate::lexer::Lexer::new(None, value.as_ref(), value.len());
                 lexer.read_ident().map_err(|e| lexer.make_error(e))
             }
             Some(pos) => {
                 // The extended syntax `foo#4!7` is meant to be used for testing and debugging.
-                let mut lexer = crate::lexer::Lexer::new(None, &value.as_bytes()[0..pos]);
+                let mut lexer = crate::lexer::Lexer::new(None, &value.as_bytes()[0..pos], pos);
                 let mut id = lexer.read_ident().map_err(|e| lexer.make_error(e))?;
                 id.version = value[pos + 1..]
                     .parse()
@@ -393,7 +393,7 @@ impl std::str::FromStr for VarName {
     type Err = Error;
 
     fn from_str(value: &str) -> Result<Self, Error> {
-        let mut lexer = crate::lexer::Lexer::new(None, value.as_ref());
+        let mut lexer = crate::lexer::Lexer::new(None, value.as_ref(), value.len());
         lexer.read_var_name().map_err(|e| lexer.make_error(e))
     }
 }

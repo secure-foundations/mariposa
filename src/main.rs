@@ -5,7 +5,6 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 // use smt2parser::shaking::SymbolCollector;
 use core::panic;
-use std::f32::consts::E;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
@@ -23,6 +22,7 @@ mod tree_shake;
 mod tree_shake_idf;
 mod tree_shake_old;
 mod pattern_removal;
+mod inst_convert;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -419,6 +419,9 @@ struct Args {
     #[arg(long)]
     shake_log_path: Option<String>,
 
+    #[arg(long)]
+    trace_log: Option<String>,
+
     /// file to log the symbol score
     #[arg(long)]
     symbol_score_path: Option<String>,
@@ -428,6 +431,13 @@ fn main() {
     let args = Args::parse();
 
     let in_file_path = args.in_file_path;
+
+    if args.trace_log.is_some() {
+        inst_convert::convert_insts(
+            &in_file_path,
+            &args.trace_log.unwrap(), &args.out_file_path.unwrap(), args.shake_debug);
+        return;
+    }
 
     let mut commands: Vec<concrete::Command> = parse_commands_from_file(&in_file_path, args.chop);
 
