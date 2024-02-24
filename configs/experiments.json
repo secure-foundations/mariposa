@@ -3,97 +3,25 @@
         "mutations": [
             "shuffle",
             "rename",
-            "reseed",
-            "quake"
+            "reseed"
         ],
         "keep_mutants": false,
         "num_mutants": 60,
         "exp_timeout": 60,
-        "num_procs": 7,
-        "db_path": "./data/databases/default.db",
-        "shake": false
+        "num_procs": 7
     },
     "single": {
-        "mutations": [
-            "shuffle",
-            "rename",
-            "reseed"
-        ],
         "keep_mutants": true,
         "num_mutants": 5,
-        "exp_timeout": 60,
-        "num_procs": 5,
-        "db_path": ""
+        "exp_timeout": 30,
+        "num_procs": 5
     },
-    "debug": {
-        "keep_mutants": true,
-        "num_mutants": 10,
-        "exp_timeout": 10,
-        "num_procs": 2,
-        "db_path": "./data/databases/debug.db"
-    },
-    "main": {
-        "db_path": "./data/databases/mariposa.db"
-    },
-    "unsat_core": {
-        "db_path": "./data/databases/unsat_core.db"
-    },
-    "baseline": {
-        "db_path": "./data/databases/baseline.db"
-    },
-    "triggers": {
-        "db_path": "./data/databases/triggers.db"
-    },
-    "opaque": {
-        "db_path": "./data/databases/opaque.db"
-    },
-    "rewrite": {
-        "db_path": "./data/databases/rewrite.db"
-    },
-    "bloat": {
-        "db_path": "./data/databases/bloat.db"
-    },
-    "shake": {
-        "db_path": "./data/databases/shake.db",
-        "shake": true
-    },
-    "baseline_cvc": {
-        "db_path": "./data/databases/cvc.db"
-    },
-    "synthetic": {
-        "db_path": "./data/databases/synthetic.db"
-    },
-    "ironsht": {
+    "quake": {
         "mutations": [
             "shuffle",
             "rename",
-            "reseed"
-        ],
-        "num_procs": 5,
-        "db_path": "./data/databases/ironsht.db"
-    },
-    "oracle": {
-        "mutations": [
-            "shuffle",
-            "rename",
-            "reseed"
-        ],
-        "db_path": "./data/databases/oracle.db"
-    },
-    "verus_nl": {
-        "mutations": [
-            "shuffle",
-            "rename",
-            "reseed"
-        ],
-        "num_procs": 7,
-        "db_path": "./data/databases/verus_nl.db"
-    },
-    "verus_uf": {
-        "mutations": [
-            "rename"
-        ],
-        "num_mutants": 30,
-        "db_path": "./data/databases/verus_uf.db"
+            "reseed",
+            "quake"
+        ]
     }
 }

@@ -1,4 +1,4 @@
-usage: cvc5-1.0.3 [options] [input-file]
+usage: cvc5-1.1.1 [options] [input-file]
 
 Without an input file, or with `-', cvc5 reads from standard input.
 
@@ -15,6 +15,8 @@ Most commonly-used cvc5 options:
   --rlimit=N             set resource limit
   --rlimit-per=N | --reproducible-resource-limit=N
                          set resource limit per query
+  --safe-options         do not allow setting any option that is not common or
+                         regular [*]
   --stats                give statistics on exit [*]
   --tlimit=MS            set time limit in milliseconds of wall clock time
   --tlimit-per=MS        set time limit per query in milliseconds
@@ -22,6 +24,7 @@ Most commonly-used cvc5 options:
   --verbosity=N          the verbosity level of cvc5
   --copyright            show cvc5 copyright information
   --help | -h            full command line reference
+  --help-regular | -H    regular command line reference
   --interactive          force interactive shell/non-interactive mode [*]
   --print-success        print the "success" output required of SMT-LIBv2 [*]
   --seed=N | -s N        seed for random number generator
@@ -233,6 +236,10 @@ From the Bitvector Theory module:
   --bv-assert-input      assert input assertions on user-level 0 instead of
                          assuming them in the bit-vector SAT solver (EXPERTS
                          only) [*]
+  --bv-eager-eval        perform eager context-dependent evaluation for
+                         applications of bv kinds in the equality engine [*]
+  --bv-eq-engine         enable equality engine when possible in bitvector
+                         theory (EXPERTS only) [*]
   --bv-gauss-elim        simplify formula via Gaussian Elimination if applicable
                          (EXPERTS only) [*]
   --bv-intro-pow2        introduce bitvector powers of two as a preprocessing
@@ -297,11 +304,14 @@ From the Expression module:
                          (default false for text interface) (EXPERTS only) [*]
 
 From the Finite Field Theory module:
-  --ff-field-polys       include field polynomials in Groebner basis computation
-                         (EXPERTS only) [*]
-  --ff-incrementality=MODE
-                         how incrementally to compute Groebner bases, see
-                         --ff-incrementality=help (EXPERTS only)
+  --ff-bitsum            parse bitsums (EXPERTS only) [*]
+  --ff-disjunctive-bit   leave disjunctive bit constraints (or (= x 1) (= x 0))
+                         alone; otherwise, preprocess to (= (* x x) x) (EXPERTS
+                         only) [*]
+  --ff-field-polys       include field polynomials in Groebner basis
+                         computation; don't do this (EXPERTS only) [*]
+  --ff-solver=MODE       which field solver (default: 'gb'; see
+                         --ff-solver=help) (EXPERTS only)
   --ff-trace-gb          use a traced groebner basis engine (EXPERTS only) [*]
 
 From the Floating-Point module:
@@ -334,10 +344,6 @@ From the Driver module:
   --segv-spin            spin on segfault/other crash waiting for gdb (EXPERTS
                          only) [*]
   --show-trace-tags      show all available tags for tracing (EXPERTS only)
-  --stdin-input-per-line when piping from stdin, feed the input to the parser
-                         one line at a time. This avoids potential memory issues
-                         when parsing tokens split over multiple lines. (EXPERTS
-                         only) [*]
   --use-portfolio        Use internal portfolio mode based on the logic (EXPERTS
                          only) [*]
 
@@ -358,8 +364,16 @@ From the Parallel module:
                          number of literals in a cube; if no partition size is
                          set, then the partition conflict size is chosen to be
                          log2(number of requested partitions) (EXPERTS only)
+  --partition-start-time=N
+                         time to start creating partitions in seconds (EXPERTS
+                         only)
   --partition-strategy=MODE | --partition=MODE
                          choose partition strategy mode (EXPERTS only)
+  --partition-time-interval=N
+                         time to wait between scatter partitions (EXPERTS only)
+  --partition-tlimit=N   time limit for partitioning in seconds (EXPERTS only)
+  --partition-when=MODE  choose when to partition (EXPERTS only)
+  --random-partitioning  create random partitions (EXPERTS only) [*]
   --write-partitions-to=output | --partitions-out=output
                          set the output channel for writing partitions (EXPERTS
                          only)
@@ -367,7 +381,10 @@ From the Parallel module:
 From the Parser module:
   --filesystem-access    limits the file system access if set to false (EXPERTS
                          only) [*]
-  --global-declarations  force all declarations and definitions to be global [*]
+  --fresh-declarations   use API interface for fresh constants when parsing
+                         declarations and definitions [*]
+  --global-declarations  force all declarations and definitions to be global
+                         when parsing [*]
   --semantic-checks      enable semantic checks, including type checks (EXPERTS
                          only) [*]
 
@@ -384,12 +401,17 @@ From the Printing module:
                          models
 
 From the Proof module:
+  --alf-print-reference  Print reference to original file instead of redeclaring
+                         (EXPERTS only) [*]
   --check-proof-steps    Check proof steps for satisfiability, for refutation
                          soundness testing. Note this checks only steps for
                          non-core proof rules (EXPERTS only) [*]
   --lfsc-expand-trust    Print the children of trusted proof steps (EXPERTS
                          only) [*]
   --lfsc-flatten         Flatten steps in the LFSC proof (EXPERTS only) [*]
+  --opt-res-reconstruction-size
+                         Optimize resolution reconstruction to reduce proof size
+                         [*]
   --print-dot-clusters   Whether the proof node clusters (e.g. SAT, CNF, INPUT)
                          will be printed when using the dot format or not. [*]
   --proof-alethe-res-pivots
@@ -415,6 +437,9 @@ From the Proof module:
                          (EXPERTS only) [*]
   --proof-prune-input    Prune unused input assumptions from final scope
                          (EXPERTS only) [*]
+  --proof-rewrite-rcons-limit=N
+                         the matching recursion limit for reconstructing proofs
+                         of theory rewrites
 
 From the SAT Layer module:
   --minisat-dump-dimacs  instead of solving minisat dumps the asserted clauses
@@ -422,6 +447,8 @@ From the SAT Layer module:
   --minisat-simplification=MODE
                          Simplifications to be performed by Minisat. (EXPERTS
                          only)
+  --preregister-mode=MODE
+                         Modes for when to preregister literals. (EXPERTS only)
   --random-freq=P | --random-frequency=P
                          sets the frequency of random decisions in the sat
                          solver (P=0.0 by default) (EXPERTS only)
@@ -430,15 +457,13 @@ From the SAT Layer module:
   --restart-int-inc=F    sets the restart interval increase factor for the sat
                          solver (F=3.0 by default) (EXPERTS only)
   --sat-random-seed=N    sets the random seed for the sat solver
+  --sat-solver=MODE      choose which sat solver to use, see --sat-solver=help
+                         (EXPERTS only)
 
 From the Quantifiers module:
   --cbqi                 enable conflict-based quantifier instantiation [*]
   --cbqi-all-conflict    add all available conflicting instances during
                          conflict-based instantiation [*]
-  --cbqi-eager-check-rd  optimization, eagerly check relevant domain of matched
-                         position (EXPERTS only) [*]
-  --cbqi-eager-test      optimization, test cbqi instances eagerly (EXPERTS
-                         only) [*]
   --cbqi-mode=MODE       what effort to apply conflict find mechanism
   --cbqi-skip-rd         optimization, skip instances based on possibly
                          irrelevant portions of quantified formulas (EXPERTS
@@ -673,6 +698,10 @@ From the Quantifiers module:
                          mode for SyGuS grammar construction
   --sygus-grammar-norm   statically normalize sygus grammars based on flattening
                          (linearization) (EXPERTS only) [*]
+  --sygus-grammar-use-disj
+                         use disjunctions in internally generated grammars. this
+                         is set to false when solving abduction queries.
+                         (EXPERTS only) [*]
   --sygus-inference      attempt to preprocess arbitrary inputs to sygus
                          conjectures (EXPERTS only) [*]
   --sygus-inst           Enable SyGuS instantiation quantifiers module [*]
@@ -705,6 +734,8 @@ From the Quantifiers module:
                          mode for dumping external files corresponding to
                          interesting satisfiability queries with sygus-query-gen
                          (EXPERTS only)
+  --sygus-query-gen-filter-solved
+                         do not print queries that are solved (EXPERTS only) [*]
   --sygus-query-gen-thresh=N
                          number of points that we allow to be equal for
                          enumerating satisfiable queries with sygus-query-gen
@@ -721,8 +752,6 @@ From the Quantifiers module:
                          timeout (in milliseconds) for the satisfiability check
                          to repair constants in sygus candidate solutions
                          (EXPERTS only)
-  --sygus-rr-synth       use sygus to enumerate candidate rewrite rules (EXPERTS
-                         only) [*]
   --sygus-rr-synth-accel add dynamic symmetry breaking clauses based on
                          candidate rewrites (EXPERTS only) [*]
   --sygus-rr-synth-check use satisfiability check to verify correctness of
@@ -738,18 +767,11 @@ From the Quantifiers module:
   --sygus-rr-synth-filter-order
                          filter candidate rewrites based on variable ordering
                          (EXPERTS only) [*]
-  --sygus-rr-synth-input synthesize rewrite rules based on the input formula
-                         (EXPERTS only) [*]
   --sygus-rr-synth-input-nvars=N
                          the maximum number of variables per type that appear in
                          rewrites from sygus-rr-synth-input (EXPERTS only)
-  --sygus-rr-synth-input-use-bool
-                         synthesize Boolean rewrite rules based on the input
-                         formula (EXPERTS only) [*]
   --sygus-rr-synth-rec   synthesize rewrite rules over all sygus grammar types
                          recursively (EXPERTS only) [*]
-  --sygus-rr-verify      use sygus to verify the correctness of rewrite rules
-                         via sampling (EXPERTS only) [*]
   --sygus-sample-fp-uniform
                          sample floating-point values uniformly instead of in a
                          biased fashion (EXPERTS only) [*]
@@ -767,6 +789,9 @@ From the Quantifiers module:
                          number of rounds of enumeration to use during solution
                          reconstruction (negative means unlimited) (EXPERTS
                          only)
+  --sygus-si-rcons-p=P   the parameter of the geometric distribution used to
+                         determine the number of unification patterns generated
+                         by single invocation techniques. (EXPERTS only)
   --sygus-stream         enumerate a stream of solutions instead of terminating
                          after the first one [*]
   --sygus-unif-cond-independent-no-repeat-sol
@@ -784,14 +809,14 @@ From the Quantifiers module:
   --sygus-verify-timeout=N
                          timeout (in milliseconds) for verifying satisfiability
                          of synthesized terms
-  --term-db-cd           register terms in term database based on the SAT
-                         context (EXPERTS only) [*]
   --term-db-mode=MODE    which ground terms to consider for instantiation
   --trigger-active-sel=MODE
                          selection mode to activate triggers (EXPERTS only)
   --trigger-sel=MODE     selection mode for triggers
   --user-pat=MODE        policy for handling user-provided patterns for
                          quantifier instantiation
+  --user-pool=MODE       policy for handling user-provided pools for quantifier
+                         instantiation (EXPERTS only)
   --var-elim-quant       enable simple variable elimination for quantified
                          formulas [*]
   --var-ineq-elim-quant  enable variable elimination based on infinite
@@ -815,6 +840,8 @@ From the SMT Layer module:
                          using abstract values, as required by the SMT-LIB
                          standard (EXPERTS only) [*]
   --ackermann            eliminate functions by ackermannization [*]
+  --bv-to-int-use-pow2   use internal pow2 operator when translating shift notes
+                         (EXPERTS only) [*]
   --bvand-integer-granularity=N
                          granularity to use in --solve-bv-as-int mode and for
                          iand operator (experimental) (EXPERTS only)
@@ -858,9 +885,8 @@ From the SMT Layer module:
                          to variables (EXPERTS only) [*]
   --on-repeat-ite-simp   do the ite simplification pass again if repeating
                          simplification (EXPERTS only) [*]
-  --print-unsat-cores-full
-                         when printing unsat cores, include unlabeled assertions
-                         [*]
+  --print-cores-full     print all formulas regardless of whether they are
+                         named, e.g. in unsat cores [*]
   --produce-abducts      support the get-abduct command [*]
   --produce-assertions | --interactive-mode
                          keep an assertions list. Note this option is always
@@ -888,7 +914,7 @@ From the SMT Layer module:
                          choose simplification mode, see --simplification=help
   --simplification-bcp   apply Boolean constant propagation as a substituion
                          during simplification (EXPERTS only) [*]
-  --solve-bv-as-int=MODE mode for translating BVAnd to integer (EXPERTS only)
+  --solve-bv-as-int=MODE mode for translating BVAnd to integer
   --solve-int-as-bv=N    attempt to solve a pure integer satisfiable problem by
                          bitblasting in sufficient bitwidth (experimental)
   --solve-real-as-int    attempt to solve a pure real satisfiable problem as an
@@ -896,6 +922,9 @@ From the SMT Layer module:
   --sort-inference       calculate sort inference of input problem, convert the
                          input based on monotonic sorts [*]
   --static-learning      use static learning (on by default) [*]
+  --timeout-core-timeout=N
+                         timeout (in milliseconds) for satisfiability checks for
+                         timeout cores (EXPERTS only)
   --unconstrained-simp   turn on unconstrained simplification (see
                          Bruttomesso/Brummayer PhD thesis). Fully supported only
                          in (subsets of) the logic QF_ABV. [*]
@@ -920,7 +949,7 @@ From the Strings Theory module:
                          only) [*]
   --strings-deq-ext      use extensionality for string disequalities [*]
   --strings-eager-eval   perform eager context-dependent evaluation for
-                         applications of string kinds [*]
+                         applications of string kinds in the equality engine [*]
   --strings-eager-len-re use regular expressions for eager length conflicts [*]
   --strings-eager-reg    do registration lemmas for terms during
                          preregistration. If false, do registration lemmas for
@@ -945,6 +974,9 @@ From the Strings Theory module:
                          only)
   --strings-process-loop-mode=MODE
                          determines how to process looping string equations
+  --strings-re-posc-eager
+                         eager reduction of positive membership into
+                         concatentation (EXPERTS only) [*]
   --strings-regexp-inclusion
                          use regular expression inclusion for finding conflicts
                          and avoiding regular expression unfolding [*]

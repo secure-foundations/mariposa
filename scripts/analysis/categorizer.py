@@ -1,162 +1,169 @@
-import numpy as np
-from enum import Enum
-from statsmodels.stats.proportion import proportions_ztest
-from execute.exp_part import Mutation
-from execute.exp_result import QueryExpResult
-from utils.sys_utils import *
-from utils.analyze_utils import *
-from execute.solver_runner import RCode
-import json
 
-ANALYZER_CONFIG_PATH = "configs/analyzers.json"
+from utils.system_utils import san_check
+from utils.analysis_utils import percent
 
-class Stability(str, Enum):
-    # UNKNOWN = "unknown"
-    UNSOLVABLE = "unsolvable"
-    UNSTABLE = "unstable"
-    INCONCLUSIVE = "inconclusive"
-    STABLE = "stable"
+class CatItem:
+    def __init__(self, cat, items, percent):
+        self.category = cat
+        self.items = items
+        self.percent = percent
+        self.count = len(items)
 
-    def __str__(self):
-        return super().__str__()
-
-    # def empty_map():
-    #     em = {c: set() for c in Stability}
-    #     return em
-
-def match_rcode(blob, rcode, timeout=np.inf):
-    matches = blob[0] == rcode.value
-    return np.sum(np.logical_and(matches, blob[1] < timeout))
+    def __contains__(self, item):
+        return item in self.items
+    
+    def __len__(self):
+        return self.count
+    
+    def __iter__(self):
+        return iter(self.items)
 
 class Categorizer:
-    def __init__(self, name):
-        objs = json.loads(open(ANALYZER_CONFIG_PATH).read())
-        obj = objs["default"]
-        obj.update(objs[name])
-        self.name = name
+    def __init__(self, categories=[]):
+        self._items = dict()
+        for c in categories:
+            self._items[c] = set()
+        self._allow_unknown = len(categories) == 0
+        self.finalized = False
+        self.tally = set()
 
-        self.confidence = float(obj["confidence"])
-        timeout = int(obj["timeout"])
-        self._timeout = timeout * 1000 if timeout != -1 else np.inf
-        self.r_solvable = float(obj["r_solvable"])
-        self.r_stable = float(obj["r_stable"])
-        self.discount = float(obj["discount"])
-        
-        method = obj["method"]
+    def add_item(self, cat, item):
+        assert not self.finalized
+        if cat not in self._items:
+            san_check(self._allow_unknown, 
+                    f"[ERROR] unknown category {cat}")
+            self._items[cat] = set()
+        self.tally.add(item)
+        self._items[cat].add(item)
 
-        if method == "strict":
-            self.categorize_group = self._categorize_strict
-        elif method == "z_test":
-            self.categorize_group = self._categorize_z_test
-        elif method == "cutoff":
-            self.categorize_group = self._categorize_cutoff
+    def finalize(self):
+        assert not self.finalized
+        total = sum([len(i) for i in self._items.values()])
+        for c, its in self._items.items():
+            if total == 0:
+                self._items[c] = CatItem(c, its, 0)
+            else:
+                self._items[c] = CatItem(c, its, percent(len(its), total))
+        # check disjointness
+        assert len(self.tally) == total
+        self.finalized = True
+        self.total = total
 
-    def _categorize_cutoff(self, group_blob):
-        size = len(group_blob[0])
-        success = match_rcode(group_blob, RCode.UNSAT, self._timeout)
-        sr = success / size
-
-        if sr < self.r_solvable:
-            return Stability.UNSOLVABLE
-
-        if sr >= self.r_stable:
-            return Stability.STABLE
-
-        return Stability.UNSTABLE
-
-    def _categorize_strict(self, group_blob):
-        size = len(group_blob[0])
-        unsat_indices = group_blob[0] == RCode.UNSAT.value
-        success = match_rcode(group_blob, RCode.UNSAT, self._timeout)
-        
-        if success == 0:
-            if match_rcode(group_blob, RCode.UNKNOWN, self._timeout) == size:
-                return Stability.UNKNOWN
-            return Stability.UNSOLVABLE
-
-        if success == size:
-            return Stability.STABLE
-
-        if np.mean(group_blob[1][unsat_indices]) < self._timeout * self.discount:
-            return Stability.UNSTABLE
-
-        return Stability.STABLE
-
-    def _categorize_z_test(self, group_blob):
-        size =  group_blob.shape[1]
-
-        unsat_indices = group_blob[0] == RCode.UNSAT.value
-        if self._timeout == None:
-            nto_indices = np.ones(size, dtype=bool)
-        else:
-            nto_indices = group_blob[1] < self._timeout
-        valid_indices = np.logical_and(unsat_indices, nto_indices)
-        success = np.sum(valid_indices)
-
-        value = self.r_solvable/100
-        _, p_value = proportions_ztest(count=success,
-                                        nobs=size,
-                                        value=value, 
-                                        alternative='smaller',
-                                        prop_var=value)
-        if p_value <= self.confidence:
-            return Stability.UNSOLVABLE
-
-        value = self.r_stable/100
-        _, p_value = proportions_ztest(count=success, 
-                                        nobs=size,
-                                        value=value,
-                                        alternative='smaller',
-                                        prop_var=value)
-
-        if self._timeout == None:
-            if p_value <= self.confidence:
-                return Stability.UNSTABLE
-        else:
-            if p_value <= self.confidence and \
-                np.mean(group_blob[1][valid_indices]) < self._timeout * self.discount:
-                return Stability.UNSTABLE
+    def __getitem__(self, item):
+        assert self.finalized
+        if item not in self._items:
+            return CatItem(item, set(), 0)
+        return self._items[item]
     
-        _, p_value = proportions_ztest(count=success, 
-                                        nobs=size,
-                                        value=value,
-                                        alternative='larger',
-                                        prop_var=value)
+    def items(self):
+        assert self.finalized
+        return self._items.items()
+    
+    def keys(self):
+        assert self.finalized
+        return set(self._items.keys())
 
-        if p_value <= self.confidence:
-            return Stability.STABLE
-        return Stability.INCONCLUSIVE
+    def __iter__(self):
+        assert self.finalized
+        return iter(self._items.keys())
 
-    def categorize_query(self, qs: QueryExpResult, muts=None):
-        if qs.is_dummy():
-            return Stability.INCONCLUSIVE, None
+    def get_category(self, item):
+        assert self.finalized
+        for c in self._items:
+            if item in self._items[c]:
+                return c
+        return None
+    
+    def filter_out(self, allowed):
+        assert self.finalized
+        new_cats = Categorizer()
+        new_total = 0
+        new_tally = self.tally - allowed
+        for c, its in self._items.items():
+            new_cats._items[c] = its.items - allowed
+            new_total += len(new_cats._items[c])
+        new_cats.total = new_total
+        new_cats.tally = new_tally
+        new_cats.finalize()
+        return new_cats
 
-        votes = dict()
+    def print_status(self, skip_empty=False):
+        from tabulate import tabulate
+        assert self.finalized
+        table = [["category", "count", "percentage"]]
+        for c, i in self._items.items():
+            if skip_empty and i.count == 0:
+                continue
+            table.append([c, i.count, f"{round(i.percent, 2)} %"])
+        # sort table by percentage
+        table = [table[0]] + sorted(table[1:], key=lambda x: x[2], reverse=True)
+        table.append(["total", self.total, "100.00 %"])
+        print(tabulate(table, headers="firstrow", 
+                       tablefmt="github", floatfmt=".2f"))
 
-        if muts is None:
-            muts = qs.mutations
+    def __san_check_comparison(self, other):
+        assert self.finalized and other.finalized
 
-        for m in muts:
-            mblob = qs.get_mutation_status(m)
-            votes[m] = self.categorize_group(mblob)
+        san_check(self.keys().intersection(other.keys()) != set(),
+            "comparison with no common categories!")
+        
+        san_check(self.tally.intersection(other.tally) != set(),
+            "comparison with no common items!")
 
-        ress = set(votes.values())
-        if ress == {Stability.INCONCLUSIVE}:
-            return Stability.INCONCLUSIVE, votes
-        ress -= {Stability.INCONCLUSIVE}
-        if len(ress) == 1:
-            return ress.pop(), votes
-        # ress -= {Stability.UNKNOWN}
-        return Stability.UNSTABLE, votes
+    def get_migration_status(self, that):
+        self.__san_check_comparison(that)
+        san_check(that.tally.issubset(self.tally), 
+            "migration with item this < that!")
+        all_cats = self.keys().union(that.keys())
+        migrations = dict()
+        # CategorizedItems()
+        missing = self.tally - that.tally
 
-    # [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
-    def categorize_queries(self, qss, 
-                        #    muts=None,
-                           muts=[Mutation.SHUFFLE.value, Mutation.RENAME.value, Mutation.RESEED.value]
-                           ) -> CategorizedItems:
-        cats = CategorizedItems([c for c in Stability])
-        for qs in qss:
-            res, _ = self.categorize_query(qs, muts)
-            cats.add_item(res, qs.base_name)
-        cats.finalize()
-        return cats
+        for c0 in all_cats:
+            mc0 = Categorizer() 
+            for c1 in all_cats:
+                common = self[c0].items.intersection(that[c1].items)
+                if len(common) == 0:
+                    continue
+                for item in common:
+                    mc0.add_item(c1, item)
+            common = self[c0].items.intersection(missing)
+            for item in common:
+                mc0.add_item("missing", item)
+            mc0.finalize()
+            migrations[c0] = mc0
+
+        return migrations
+
+    # def print_compare_status(self, other, 
+    #                          cats=None, skip_empty=False, 
+    #                          this_name="this", that_name="that"):
+    #     from tabulate import tabulate
+    #     self.__san_check_comparison(other)
+
+    #     all_cats = self.keys().union(other.keys())
+
+    #     if cats is None:
+    #         cats = all_cats
+
+    #     table = [["category", this_name, "", that_name, ""]]
+    #     rows = dict()
+
+    #     for c in all_cats:
+    #         this, that = self[c], other[c]
+    #         both_zero = this.count == 0 and that.count == 0
+    #         if c not in cats:
+    #             san_check(both_zero, f"[ERROR] unexpected category {c} is not zero")
+    #             continue
+    #         if skip_empty and both_zero:
+    #             continue
+    #         rows[c] = [this.count, f"{tex_fmt_percent(this.percent, True)}",
+    #                       that.count, f"{tex_fmt_percent(that.percent, True)}"]
+    #     for c in cats:
+    #         if c not in rows:
+    #             continue
+    #         table.append([c] + rows[c])
+
+    #     table.append(["total", self.total, "100.00 %", other.total, "100.00 %"])
+    #     print(tabulate(table, headers="firstrow", 
+    #                    tablefmt="latex_raw", floatfmt=".2f"))
