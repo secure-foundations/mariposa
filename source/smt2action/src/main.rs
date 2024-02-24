@@ -3,8 +3,6 @@ use pattern_removal::remove_patterns;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
-// use smt2parser::shaking::SymbolCollector;
-use core::panic;
 use smt2parser::{concrete, renaming, visitors, CommandStream};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
@@ -22,7 +20,6 @@ mod tree_shake;
 mod tree_shake_idf;
 mod tree_shake_old;
 mod pattern_removal;
-mod inst_convert;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -364,6 +361,12 @@ impl Manager {
     }
 }
 
+enum Action {
+    Shuffle,
+    Rename,
+    Reseed,
+}
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = "mariposa query mutator")]
 struct Args {
@@ -371,9 +374,9 @@ struct Args {
     #[arg(short, long)]
     in_file_path: String,
 
-    /// mutation to perform
+    /// action to perform
     #[arg(short, long, default_value = "none")]
-    mutation: String,
+    action: String,
 
     /// output file path
     #[arg(short, long)]
@@ -384,11 +387,11 @@ struct Args {
     seed: u64,
 
     /// split the input file into multiple files based on check-sats
-    #[arg(long, default_value = "false", conflicts_with = "mutation")]
+    #[arg(long, default_value = "false", conflicts_with = "action")]
     chop: bool,
 
     /// remove debug commands from input file (Verus/Dafny)
-    #[arg(long, default_value = "false", conflicts_with = "mutation")]
+    #[arg(long, default_value = "false", conflicts_with = "action")]
     remove_debug: bool,
 
     ///the threshold (percentage of) patterns to be removed
@@ -412,9 +415,6 @@ struct Args {
     #[arg(long, default_value_t = 100)]
     shake_max_symbol_frequency: usize,
 
-    #[arg(long, default_value = "false")]
-    mut_then_shake: bool,
-
     /// file to log the shake depth
     #[arg(long)]
     shake_log_path: Option<String>,
@@ -432,17 +432,10 @@ fn main() {
 
     let in_file_path = args.in_file_path;
 
-    if args.trace_log.is_some() {
-        inst_convert::convert_insts(
-            &in_file_path,
-            &args.trace_log.unwrap(), &args.out_file_path.unwrap(), args.shake_debug);
-        return;
-    }
-
     let mut commands: Vec<concrete::Command> = parse_commands_from_file(&in_file_path, args.chop);
 
     if args.chop {
-        if args.mutation != "none" {
+        if args.action != "none" {
             panic!("[ERROR] chop and mutate are incompatible");
         }
         if (&args.out_file_path).is_none() {
@@ -466,17 +459,17 @@ fn main() {
     let mut manager = Manager::new(args.out_file_path, args.seed, pattern_threshold);
 
     if args.mut_then_shake {
-        if args.mutation == "shuffle" {
+        if args.action == "shuffle" {
             shuffle_asserts(&mut commands, manager.seed);
-        } else if args.mutation == "rename" {
+        } else if args.action == "rename" {
             commands = normalize_symbols(commands, manager.seed);
-        } else if args.mutation == "reseed" {
+        } else if args.action == "reseed" {
             let smt_seed = manager.seed as u32;
             let sat_seed = (manager.seed >> 32) as u32;
             manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
             manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
         } else {
-            panic!("[ERROR] mut_then_shake does not allow mutation {}", args.mutation);
+            panic!("[ERROR] mut_then_shake does not allow action {}", args.action);
         }
         commands = tree_shake::tree_shake(
             commands,
@@ -491,36 +484,36 @@ fn main() {
         return;
     }
 
-    if args.mutation == "shuffle" {
+    if args.action == "shuffle" {
         shuffle_asserts(&mut commands, manager.seed);
-    } else if args.mutation == "rename" {
+    } else if args.action == "rename" {
         commands = normalize_symbols(commands, manager.seed);
-    } else if args.mutation == "reseed" {
+    } else if args.action == "reseed" {
         let smt_seed = manager.seed as u32;
         let sat_seed = (manager.seed >> 32) as u32;
         manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
         manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
-    } else if args.mutation == "all" {
+    } else if args.action == "all" {
         shuffle_asserts(&mut commands, manager.seed);
         commands = normalize_symbols(commands, manager.seed);
         let smt_seed = manager.seed as u32;
         let sat_seed = (manager.seed >> 32) as u32;
         manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
         manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
-    } else if args.mutation == "unsat-core-label-assert" {
+    } else if args.action == "unsat-core-label-assert" {
         core_export::label_asserts(&mut commands);
-    } else if args.mutation == "unsat-core-reduce-assert" {
+    } else if args.action == "unsat-core-reduce-assert" {
         let core_path = args.core_file_path.unwrap();
         commands = core_export::reduce_asserts(commands, core_path)
-    } else if args.mutation == "unsat-core-remove-label" {
+    } else if args.action == "unsat-core-remove-label" {
         core_export::remove_labels(&mut commands);
-    } else if args.mutation == "remove-trigger" {
+    } else if args.action == "remove-trigger" {
         // manager.remove_patterns(&mut commands);
         remove_patterns(&mut commands, manager.seed, pattern_threshold);
-    } else if args.mutation == "parse-only" {
+    } else if args.action == "parse-only" {
         // parse and do nothing
         return;
-    } else if args.mutation == "tree-shake" {
+    } else if args.action == "tree-shake" {
         assert!(args.shake_init_strategy < 2);
         assert!(args.shake_max_symbol_frequency <= 100);
 
@@ -532,9 +525,9 @@ fn main() {
             args.shake_log_path,
             args.shake_debug,
         );
-    } else if args.mutation == "tree-shake-old" {
+    } else if args.action == "tree-shake-old" {
         commands = tree_shake_old::tree_shake(commands, args.shake_log_path);
-    } else if args.mutation == "tree-shake-idf" {
+    } else if args.action == "tree-shake-idf" {
         let (cmd_freq, use_cmd_count) =
             tree_shake_idf::count_commands_symbol_frequency(&commands, false);
         let mut symbols: Vec<_> = cmd_freq.iter().collect();
@@ -549,20 +542,20 @@ fn main() {
             ));
         }
         return;
-    } else if args.mutation == "tree-rewrite" {
+    } else if args.action == "tree-rewrite" {
         commands = tree_rewrite::tree_rewrite(commands);
-    } else if args.mutation == "remove-unused" {
+    } else if args.action == "remove-unused" {
         commands = tree_shake::remove_unused_symbols(commands);
-    } else if args.mutation == "fun-assert" {
+    } else if args.action == "fun-assert" {
         // commands = commands
         //     .into_iter()
         //     .map(|x| tree_rewrite::fun_to_assert(x))
         //     .flatten()
         //     .collect();
-    } else if args.mutation == "parse" {
+    } else if args.action == "parse" {
         // parse and dump
     } else {
-        panic!("[ERROR] unknown mutation {}", args.mutation);
+        panic!("[ERROR] unknown action {}", args.action);
     }
 
     manager.dump_non_info_commands(&commands);
