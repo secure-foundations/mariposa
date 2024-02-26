@@ -1,7 +1,0 @@
-/target
-__pycache__
-**/*.rs.bk
-.class
-.o
-.idea
-.ipynb_checkpoints

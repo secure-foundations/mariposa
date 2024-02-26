@@ -4,7 +4,7 @@
 /data/cs_komodo/
 /data/cvc5_cdafny/
 /data/s_komodo/
-/source/smt2build/target
+/source/smt2action/target
 /gen
 .ninja*
 __pycache__/
