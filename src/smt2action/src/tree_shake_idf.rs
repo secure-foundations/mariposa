@@ -67,12 +67,12 @@ pub struct AltSymbolSet {
 
 impl AltSymbolSet {
     pub fn new(
-        mut init: SymbolSet,
+        init: SymbolSet,
         ref_trivial: Arc<SymbolSet>,
         ref_defined: Arc<SymbolSet>,
     ) -> Self {
-        let mut trivial = SymbolSet::new();
-        let mut defined = SymbolSet::new();
+        let trivial = SymbolSet::new();
+        let defined = SymbolSet::new();
 
         let mut result = Self {
             trivial,

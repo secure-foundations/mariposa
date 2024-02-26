@@ -9,19 +9,18 @@ use smt2parser::{concrete, renaming, visitors, CommandStream};
 // use std::collections::{BTreeMap, HashSet};
 // use std::vec;
 // mod pretty_print;
-// mod term_match;
 // mod term_rewrite_flat;
 // mod term_rewrite_label;
 // mod term_rewrite_let;
 // mod term_rewrite_prop;
-// mod tree_rewrite;
-// mod tree_shake;
-// mod tree_shake_idf;
-// mod tree_shake_old;
 // mod pattern_removal;
 mod core_export;
 mod query_io;
 mod query_mutate;
+mod term_match;
+
+mod tree_shake;
+mod tree_shake_idf;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -120,19 +119,23 @@ struct Args {
     // /// remove debug commands (limited support)
     // #[arg(long, default_value_t = true)]
     // remove_debug: bool,
+    /// lower the asserts to check-sat (experimental)
+    #[arg(long, default_value_t = false)]
+    lower_asserts: bool,
+
     /// seed for randomness
     #[arg(long, default_value_t = DEFAULT_SEED)]
     seed: u64,
 
-    /// (z3) unsat core file path (not a query)
+    /// (z3) unsat core log path (not a query!)
     #[arg(long)]
-    core_file_path: Option<String>,
+    core_log_path: Option<String>,
 
     /// the threshold (percentage of) patterns to be removed
     #[arg(long, default_value_t = 100.0)]
     pattern_threshold: f32,
 
-    ///the max depth of tree-shaking
+    /// the max depth of tree-shake
     #[arg(long, default_value_t = u32::MAX)]
     shake_max_depth: u32,
 
@@ -182,17 +185,6 @@ fn parse_query(args: &Args) -> (Vec<concrete::Command>, usize) {
     (commands, plain_total)
 }
 
-fn handle_mutate(args: &Args, action: Action, commands: &mut Vec<concrete::Command>) {
-    if action == Action::Shuffle {
-        query_mutate::shuffle_asserts(commands, args.seed);
-    } else if action == Action::Rename {
-        query_mutate::normalize_symbols(commands, args.seed);
-    } else if action == Action::Compose {
-        query_mutate::shuffle_asserts(commands, args.seed);
-        query_mutate::normalize_symbols(commands, args.seed);
-    }
-}
-
 fn main() {
     let args = Args::parse();
     let action = parse_action(&args);
@@ -237,22 +229,44 @@ fn main() {
     }
 
     match action {
-        Action::Shuffle | Action::Rename | Action::Compose => {
-            handle_mutate(&args, action, &mut commands);
+        Action::Shuffle => {
+            query_mutate::shuffle_commands(&mut commands, args.seed, args.lower_asserts);
+        }
+        Action::Rename => {
+            query_mutate::rename_symbols(&mut commands, args.seed);
+        }
+        Action::Compose => {
+            query_mutate::shuffle_commands(&mut commands, args.seed, args.lower_asserts);
+            query_mutate::rename_symbols(&mut commands, args.seed);
         }
         Action::LabelCore => {
             core_export::label_asserts(&mut commands);
         }
         Action::ReduceCore => {
-            if args.core_file_path.is_none() {
-                println!("error: reduce-core requires a core file path");
+            if args.core_log_path.is_none() {
+                println!("error: reduce-core requires a (z3) core log file");
                 exit(1);
             }
-            let core_file_path = args.core_file_path.unwrap();
+            let core_file_path = args.core_log_path.unwrap();
             if !core_export::reduce_asserts(&mut commands, &core_file_path) {
-                println!("error: reduce-core core file empty");
+                println!(
+                    "error: nonexistent or empty (z3) core log file {}",
+                    core_file_path
+                );
                 exit(1);
             }
+        }
+        Action::Shake => {
+            assert!(args.shake_init_strategy < 2);
+            assert!(args.shake_max_symbol_frequency <= 100);
+            commands = tree_shake::tree_shake(
+                commands,
+                args.shake_max_depth,
+                args.shake_max_symbol_frequency,
+                args.shake_init_strategy,
+                args.shake_log_path,
+                args.shake_debug,
+            );
         }
         _ => {
             panic!("unimplemented action: {}", action);
@@ -269,19 +283,6 @@ fn main() {
     // } else if args.action == "remove-trigger" {
     //     // manager.remove_patterns(&mut commands);
     //     remove_patterns(&mut commands, manager.seed, pattern_threshold);
-    // } else if args.action == "tree-shake" {
-    //     assert!(args.shake_init_strategy < 2);
-    //     assert!(args.shake_max_symbol_frequency <= 100);
-    //     commands = tree_shake::tree_shake(
-    //         commands,
-    //         args.shake_max_depth,
-    //         args.shake_max_symbol_frequency,
-    //         args.shake_init_strategy,
-    //         args.shake_log_path,
-    //         args.shake_debug,
-    //     );
-    // } else if args.action == "tree-shake-old" {
-    //     commands = tree_shake_old::tree_shake(commands, args.shake_log_path);
     // } else if args.action == "tree-shake-idf" {
     //     let (cmd_freq, use_cmd_count) =
     //         tree_shake_idf::count_commands_symbol_frequency(&commands, false);

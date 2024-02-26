@@ -129,6 +129,41 @@ pub fn parse_commands_from_file(
     (commands, plain_total)
 }
 
+// pub fn format_check_file(file_path: &String) -> bool {
+//     let file = File::open(file_path).unwrap();
+//     let reader = BufReader::new(file);
+//     for line in reader.lines() {
+//         let line = line.unwrap();
+//         if !line.starts_with("(") {
+//             return false;
+//         }
+//     }
+//     true
+// }
+
+pub fn find_goal_command_index(commands: &Vec<concrete::Command>) -> usize {
+    let mut i = commands.len() - 1;
+    // TODO: more robust pattern matching?
+    while i > 0 {
+        let command = &commands[i];
+        if let concrete::Command::Assert { term: _ } = command {
+            if let concrete::Command::CheckSat = &commands[i + 1] {
+                // break;
+            } else {
+                panic!("expected check-sat after the goal assert");
+            }
+            break;
+        }
+        i -= 1;
+    }
+    i
+}
+
+pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
+    let i = find_goal_command_index(commands);
+    commands.truncate(i + 1);
+}
+
 pub struct QueryPrinter {
     writer: BufWriter<Box<dyn std::io::Write>>,
     out_file_path: Option<String>,

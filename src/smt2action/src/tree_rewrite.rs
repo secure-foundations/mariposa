@@ -78,29 +78,6 @@ use crate::term_rewrite_prop::term_rewrite_prop;
 //     }
 // }
 
-pub fn find_goal_command_index(commands: &Vec<concrete::Command>) -> usize {
-    let mut i = commands.len() - 1;
-    // TODO: more robust pattern matching?
-    while i > 0 {
-        let command = &commands[i];
-        if let Command::Assert { term: _ } = command {
-            if let Command::CheckSat = &commands[i + 1] {
-                // break;
-            } else {
-                panic!("expected check-sat after the goal assert");
-            }
-            break;
-        }
-        i -= 1;
-    }
-    i
-}
-
-pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
-    let i = find_goal_command_index(commands);
-    commands.truncate(i + 1);
-}
-
 // pub fn fun_to_assert(command: concrete::Command) -> Vec<concrete::Command> {
 //     if let Command::DefineFun { sig, term } = &command {
 //         if sig.parameters.len() == 0 {
@@ -483,4 +460,25 @@ pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> 
 
     commands.push(Command::CheckSat);
     return commands;
+}
+
+pub fn remove_unused_symbols(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
+    // println!("computing def symbols: ");
+    let defs = Arc::new(get_commands_symbol_def(&commands, 100));
+
+    // println!("computing use symbols: ");
+    let uses: SymbolSet = commands
+        .iter()
+        .map(|c| UseTracker::new(defs.clone(), &c, true).live_symbols)
+        .flatten()
+        .collect();
+
+    // remove all commands that define a symbol that is not used
+
+    commands = commands
+        .into_iter()
+        .filter(|c| uses.is_disjoint(&get_command_symbol_def(c)))
+        .collect();
+
+    commands
 }

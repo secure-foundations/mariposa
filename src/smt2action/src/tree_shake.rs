@@ -3,10 +3,9 @@ use smt2parser::concrete::{AttributeValue, Command, Term};
 use std::collections::{HashMap, HashSet};
 use std::io::Write;
 use std::sync::Arc;
-// use sha2::{Sha256, Digest};
 
+use crate::query_io;
 use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
-use crate::tree_rewrite;
 use crate::tree_shake_idf::{get_command_symbol_def, get_commands_symbol_def, get_commands_symbol_def_alt, AltSymbolSet};
 
 struct PatternState {
@@ -389,13 +388,6 @@ impl UseTracker {
     }
 }
 
-// pub fn get_command_hash(cmd: &concrete::Command) -> String {
-//     let mut hasher = Sha256::new();
-//     hasher.update(cmd.to_string());
-//     let result = hasher.finalize();
-//     format!("{:x}", result)
-// }
-
 pub fn tree_shake(
     mut commands: Vec<concrete::Command>,
     shake_max_depth: u32,
@@ -404,7 +396,7 @@ pub fn tree_shake(
     shake_log_path: Option<String>,
     debug: bool,
 ) -> Vec<concrete::Command> {
-    tree_rewrite::truncate_commands(&mut commands);
+    query_io::truncate_commands(&mut commands);
     let (ref_trivial, ref_defined) = get_commands_symbol_def_alt(&commands, shake_max_symbol_frequency);
     let ref_trivial = Arc::new(ref_trivial);
     let defs = Arc::new(ref_defined);
@@ -530,26 +522,5 @@ pub fn tree_shake(
     }
 
     commands.push(Command::CheckSat);
-    commands
-}
-
-pub fn remove_unused_symbols(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
-    // println!("computing def symbols: ");
-    let defs = Arc::new(get_commands_symbol_def(&commands, 100));
-
-    // println!("computing use symbols: ");
-    let uses: SymbolSet = commands
-        .iter()
-        .map(|c| UseTracker::new(defs.clone(), &c, true).live_symbols)
-        .flatten()
-        .collect();
-
-    // remove all commands that define a symbol that is not used
-
-    commands = commands
-        .into_iter()
-        .filter(|c| uses.is_disjoint(&get_command_symbol_def(c)))
-        .collect();
-
     commands
 }
