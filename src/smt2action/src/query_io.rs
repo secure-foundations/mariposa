@@ -106,6 +106,11 @@ where
         .collect()
 }
 
+struct ParseResult {
+    commands: Vec<concrete::Command>,
+    plain_total: usize,
+}
+
 pub fn parse_commands_from_file(
     file_path: &String,
     keep_comments: bool,
