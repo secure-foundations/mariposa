@@ -1,8 +1,7 @@
 import os
 import subprocess
 from utils.system_utils import *
-
-MARIPOSA_BIN = "src/smt2action/target/release/mariposa" 
+from base.runner import MARIPOSA
 
 class BasicCoreBuilder:
     def __init__(self, input_query, solver, output_query, timeout, clear=False):
@@ -45,7 +44,7 @@ class BasicCoreBuilder:
             return
 
         subprocess.run([
-            MARIPOSA_BIN,
+            MARIPOSA,
             "-i", self.input_query,
             "-o", self.lbl_query, 
             "--action=label-core",
@@ -82,7 +81,7 @@ class BasicCoreBuilder:
             return
 
         subprocess.run([
-            MARIPOSA_BIN,
+            MARIPOSA,
             "-i", self.lbl_query,
             "--action=reduce-core",
             f"--core-log-path={self.core_log}",

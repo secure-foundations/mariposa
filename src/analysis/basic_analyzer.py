@@ -1,18 +1,16 @@
 from typing import Dict
-from basics.project import PM, QueryType as QType
-from basics.experiment import Experiment, QueryExpResult
-from analysis.query_analyzer import *
+# from base.project import PM, QueryType as QType
+from base.exper import Experiment, QueryExpResult
+from query.analyzer import *
 from utils.system_utils import *
 from utils.analysis_utils import *
-from utils.query_utils import *
 from utils.cache_utils import *
 
-class BasicAnalyzer(Experiment):
-    def __init__(self, ename, proj, solver, ana, enable_dummy=False):
-        super().__init__(ename, proj, solver)
+class BasicAnalyzer:
+    def __init__(self, exp: Experiment, ana, enable_dummy=False):
+        self.exp = exp
         self.ana = ana
-
-        self.__qrs: Dict[str, QueryExpResult] = self.load_sum_table(enable_dummy)
+        self.__qrs: Dict[str, QueryExpResult] = self.exp.load_sum_table(enable_dummy)
         self.__qr_keys = list(sorted(self.__qrs.keys()))
         self.__cats = ana.categorize_queries(self.__qrs.values())
 
@@ -37,7 +35,7 @@ class BasicAnalyzer(Experiment):
         return self.__cats
 
     def print_status(self, verbosity=0):
-        log_info(f"{self.proj.full_name} {self.exp_name}")
+        log_info(f"{self.exp.proj.full_name} {self.exp_name}")
         log_info(f"analyzer {self.ana.name}")
 
         self.__cats.print_status(skip_empty=True)
@@ -52,9 +50,9 @@ class BasicAnalyzer(Experiment):
             if verbosity == 1 and cat != Stability.UNSTABLE:
                 continue
             if len(cs) == 0:
-                log_info(f"no {cat} queries found")
+                log_info(f"no {cat.value} queries found")
                 continue
-            log_info(f"listing {cat} queries...")
+            log_info(f"listing {cat.value} queries...")
             for qs in cs:
                 self[qs].enforce_timeout(self.ana._timeout)
                 self[qs].print_status()

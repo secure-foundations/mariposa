@@ -81,6 +81,15 @@ class SolverRunner:
         tokens = self.name.split("_")
         version = ".".join(tokens[1:])
         return f"{tokens[0].upper()} {version}"
+    
+    @staticmethod
+    def get_runner(name):
+        if name.startswith("z3"):
+            return Z3Runner(name)
+        elif name.startswith("cvc5"):
+            return CVC5Runner(name)
+        else:
+            assert False
 
     # def start_process(self, query_path, timeout):
     #     assert timeout < 1000

@@ -1,7 +1,7 @@
 import argparse
 from basics.project import PM, Partition, QueryType
 from basics.solver import Solver
-from analysis.query_analyzer import QueryAnalyzer
+from query.analyzer import QueryAnalyzer
 from utils.option_utils import *
 # from cluster_modes import worker_mode, manager_mode, recovery_mode
 # from local_modes import single_mode, multi_mode, preprocess_mode, analysis_mode
@@ -24,13 +24,6 @@ from utils.option_utils import *
 #     p.add_argument("--out-dir", required=True, help="the output directory to store preprocessed files, flattened and split")
 #     p.add_argument("--clean-debug", required=False, help="if queries fail during the verification process, remove the debug queries that arise during error localization", action='store_true')
 
-def setup_single(subparsers):
-    p = subparsers.add_parser('single', help='single query mode. run mariposa on a single query with ".smt2" file extension, which will be split into multiple ".smt2" files based on check-sat(s), the split queries will be stored under the "gen/" directory and tested using the specified solver.')
-    add_query_option(p)
-    add_solver_option(p)
-    add_analyzer_option(p)
-    add_clear_option(p)
-    p.add_argument("-e", "--experiment", default="single", help="the experiment configuration name in configs.json")
 
 def setup_multi(subparsers):
     p = subparsers.add_parser('multiple', help='multiple query mode. test an existing (preprocessed) project using the specified solver')
@@ -58,33 +51,6 @@ def setup_recovery(subparsers):
     add_project_option(p)
     add_solver_option(p)
     add_experiment_option(p)
-
-# def single_mode(args):
-#     exp = Experiment.single_mode_exp(args.query, args.solver)
-
-#     proj_root = exp.proj.root_dir
-#     dir_exists = os.path.exists(proj_root)
-
-#     if dir_exists:
-#         if args.clear:
-#             print(f"[INFO] experiment dir {proj_root} exists, removing")
-#             shutil.rmtree(proj_root, ignore_errors=True)
-#         else:
-#             print(f"[INFO] experiment dir {proj_root} exists")
-#             BasicAnalyzer(exp, args.analyzer).print_detailed_status()
-#             return
-
-#     os.makedirs(proj_root)
-
-#     command = f"./target/release/mariposa -i '{args.query}' --chop -o '{proj_root}/split.smt2'"
-#     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-#     print(result.stdout.decode('utf-8'), end="")
-#     san_check(result.returncode == 0, "split failed")
-
-#     r = Runner()
-#     r.run_project(exp, args.clear)
-
-#     BasicAnalyzer(exp, args.analyzer).print_detailed_status()
 
 # def multi_mode(args):
 #     exp = Experiment(args.experiment, 
@@ -119,12 +85,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if hasattr(args, "solver"):
-        args.solver = Solver(args.solver)
-    if hasattr(args, "part"):
-        args.part = Partition.from_str(args.part)
-    else:
-        args.part = Partition(1, 1)
     if hasattr(args, "ptype"):
         args.ptype = QueryType(args.ptype)
     if hasattr(args, "project"):

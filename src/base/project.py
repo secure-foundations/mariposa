@@ -105,7 +105,7 @@ def full_proj_name(name, ptyp):
     return name + "." + str(ptyp)
 
 class Project:
-    def __init__(self, name, ptyp: ProjectType, part=Partition(1, 1)):
+    def __init__(self, name, ptyp: ProjectType=ProjectType.from_str("base.z3"), part=Partition(1, 1)):
         self.group_name = name
         self.full_name = full_proj_name(name, ptyp)
         self.ptype = ptyp
@@ -138,12 +138,12 @@ class Project:
                         'query must end with ".smt2"')
         query_path = query_path.replace(".smt2", "")
         query_id = scrub(os.path.basename(query_path))
-        root_dir = "gen/" + query_id
-        return Project("single_" + query_id, root_dir)
+        p = Project("single_" + query_id)
+        p.sub_root = "gen/" + query_id
+        return p
 
     def is_whole(self):
         return self.part.is_whole()
-    
 
 class ProjectGroup:
     def __init__(self, name, groot):

@@ -6,10 +6,12 @@ import os
 from utils.system_utils import *
 from utils.database_utils import *
 
-from base.solver import Solver, RCode
+from base.solver import SolverRunner, RCode
 from base.project import Project, Partition
 
-EXP_CONFIG_PATH = "./configs/expers.json"        
+EXP_CONFIG_PATH = "./config/expers.json"     
+   
+MARIPOSA = "src/smt2action/target/release/mariposa" 
 
 class Mutation(str, Enum):
     SHUFFLE = "shuffle"
@@ -34,7 +36,6 @@ class QueryExpResult:
             assert blob.shape[1] == 2
 
         self.timeout = None
-
         self.blob = blob
 
     def __str__(self):
@@ -83,7 +84,7 @@ class QueryExpResult:
         for m in self.mutations:
             trow = [m]
             rcodes, times = self.get_mutation_status(m)
-            rcs = RCode.empty_map()
+            rcs = {rc: 0 for rc in EXPECTED_CODES}
 
             for rc in rcodes:
                 rc = RCode(rc)
@@ -114,7 +115,6 @@ class ExpTask:
         self.mut_seed = mut_seed
         self.quake = False
         self.mutant_path = g_path
-        self.shake_cmd  = None
 
 class Experiment:
     """
@@ -122,16 +122,17 @@ class Experiment:
     defined by (a project, a solver, an experiment config)
     the project.part may not be whole
     """
-    def __init__(self, name: str, proj: Project, solver: Solver):
+    def __init__(self, name: str, proj: Project, solver: SolverRunner):
         self.__init_config(name)
         self.proj: Project = proj
-        self.solver = solver
+        self.solver: SolverRunner = solver
         self.is_whole = proj.is_whole()
 
         self.table_prefix = get_table_prefix(proj, solver)
         self.exp_table_name = self.table_prefix + "_exp"
         self.sum_table_name = self.table_prefix + "_sum"
         self.gen_dir = f"gen/{self.exp_table_name}"
+        self.db_path = f"data/dbs/{self.exp_table_name}.db"
 
         if not os.path.exists(self.gen_dir):
             os.makedirs(self.gen_dir)
@@ -156,25 +157,20 @@ class Experiment:
 
         # how long do we wait? (seconds)
         self.timeout = obj["exp_timeout"]
-
-        # where do we store the db?
-        self.db_path = obj["db_path"]
         
-        self.shake = obj["shake"]
-
     def __str__(self):
         return f"""project: {self.proj.full_name}
 part: {self.part}
 experiment: {self.exp_name}
 db_path: {self.db_path}
-sub_root: {self.proj.root_dir}
+sub_root: {self.proj.sub_root}
 solver: {self.solver}"""
 
     @staticmethod
     def single_mode_exp(query_path, solver):
         proj = Project.single_mode_project(query_path)
         exp = Experiment("single", proj, solver)
-        exp.db_path = f"{proj.root_dir}/single.db"
+        exp.db_path = f"{proj.sub_root}/single.db"
         return exp
 
     def build_query_tasks(self, origin_path):
@@ -299,7 +295,7 @@ solver: {self.solver}"""
             san_check(enable_dummy, f"[ERROR] {sum_name} does not exist in {self.db_path}")
             print(f"[WARN] {sum_name} does not exist, creating dummy data!")
             for path in self.proj.list_queries():
-                qr = QueryExpResult(path, self.proj.root_dir)
+                qr = QueryExpResult(path, self.proj.sub_root)
                 if qr.mutations == []:
                     qr.mutations = self.enabled_muts
                 summaries[qr.base_name] = qr
@@ -325,7 +321,7 @@ solver: {self.solver}"""
             path = row[0]
             if special_convert:
                 path = path.replace(".dfyxxx", ".dfy.").replace(".1.smt2", ".smt2")
-            qr = QueryExpResult(path, self.proj.root_dir, self.enabled_muts, blob)
+            qr = QueryExpResult(path, self.proj.sub_root, self.enabled_muts, blob)
             if qr.mutations == []:
                 qr.mutations = self.enabled_muts
             summaries[qr.base_name] = qr

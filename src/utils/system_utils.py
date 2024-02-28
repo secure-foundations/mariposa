@@ -8,13 +8,13 @@ class BColors:
     ENDC = '\033[0m'
 
 def log_info(msg):
-    print(f"{BColors.INFO}[INFO]: {msg} {BColors.ENDC}")
+    print(f"{BColors.INFO}[INFO] {msg} {BColors.ENDC}")
 
 def log_warn(msg):
-    print(f"{BColors.WARNING}[WARN]: {msg} {BColors.ENDC}")
+    print(f"{BColors.WARNING}[WARN] {msg} {BColors.ENDC}")
 
 def log_error(msg):
-    print(f"{BColors.ERROR}[ERROR]: {msg} {BColors.ENDC}")
+    print(f"{BColors.ERROR}[ERROR] {msg} {BColors.ENDC}")
 
 def exit_with(msg):
     log_error(msg)

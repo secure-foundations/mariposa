@@ -20,12 +20,11 @@ def add_experiment_option(parser):
     parser.add_argument("-e", "--experiment", required=True, help="the experiment configuration name (from exps.json)")
 
 def add_project_option(parser, required=True):
-    parser.add_argument("-p", "--project", required=required, help="the project name under data/projects/")
-    parser.add_argument("--ptype", default=None, help="the sub project type")
-    parser.add_argument("--part", default="1/1", help="which part of the project to run mariposa on (probably should not be specified manually)")
+    parser.add_argument("--new-group-name", required=required, help="the project group name to be created under data/projects/ (only for preprocess!)")
 
 def add_input_dir_option(parser):
-    parser.add_argument("-i", "--input-dir", required=False, help="the input directory")
+    parser.add_argument("-i", "--input-dir", required=True, help="the input directory")
+    parser.add_argument("--part", default="1/1", help="which part of the project to run mariposa on (probably should not be specified manually)")
 
 def add_output_dir_option(parser):
     parser.add_argument("-o", "--output-dir", required=False, help="the output directory")

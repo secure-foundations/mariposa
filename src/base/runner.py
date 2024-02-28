@@ -1,11 +1,12 @@
 import os
 import multiprocessing as mp
 
-from basics.experiment import *
-from basics.solver import SolverType, RCode
-from utils.query_utils import emit_quake_file
+from base.exper import *
+from base.solver import SolverType
+from query.query_utils import emit_quake_query
 
-MARIPOSA_BIN_PATH = "./target/release/mariposa"
+MARIPOSA = "./src/smt2action/target/release/mariposa"
+QUERY_WIZARD = "./src/query_wizard.py"
 
 class Worker:
     def __init__(self, epart, worker_id):
@@ -19,7 +20,7 @@ class Worker:
         mutant_path = task.mutant_path
 
         if task.perturb == Mutation.QUAKE:
-            emit_quake_file(task.origin_path, 
+            emit_quake_query(task.origin_path, 
                 task.mutant_path, 
                 self.timeout, 
                 self.num_mutant)
@@ -27,8 +28,8 @@ class Worker:
 
         if task.perturb is None:
             return
-            
-        command = f"{MARIPOSA_BIN_PATH} -i '{task.origin_path}' -m {task.perturb} -o '{mutant_path}' -s {task.mut_seed}"            
+    
+        command = f"{MARIPOSA} -i '{task.origin_path}' -a {task.perturb} -o '{mutant_path}' -s {task.mut_seed}"            
 
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
 
@@ -49,8 +50,6 @@ class Worker:
         self.solver.end_process()
 
     def run_task(self, task):
-        cvc_reseed = task.perturb == Mutation.RESEED and \
-            self.solver.type == SolverType.CVC5
         mutant_path = task.mutant_path
 
         # if not cvc_reseed:
@@ -59,11 +58,8 @@ class Worker:
         if task.quake:
             self.run_quake_task(task)
         else:
-            if cvc_reseed:
-                seeds = task.mut_seed
-                mutant_path = task.origin_path
-            else:
-                seeds = None
+            seeds = task.mut_seed
+            mutant_path = task.origin_path
             rcode, elapsed = self.solver.run(mutant_path, self.timeout, seeds)
             self.insert_exp_row(task, mutant_path, rcode.value, elapsed)
 

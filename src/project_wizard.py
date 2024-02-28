@@ -2,11 +2,9 @@
 
 import argparse, shutil
 from base.project import PM, Project, ProjectType
+from base.runner import MARIPOSA, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
-
-MARIPOSA = "./src/smt2action/target/release/mariposa"
-QUERY_WIZARD = "./src/query_wizard.py"
 
 NINJA_BUILD_RULES = f"""
 rule split
@@ -55,40 +53,40 @@ rule get-proof
 # rule check-subset
 #     command = python3 scripts/diff_smt.py subset-check $in $sub && touch $out
 
-def set_up_known_project(p):
-    add_project_option(p, required=False)
-    add_input_dir_option(p)
-    add_clear_option(p)
-
 def set_up_preprocess(subparsers):
     p = subparsers.add_parser('preprocess', help='preprocess the project')
     add_input_dir_option(p)
-    add_output_dir_option(p)
-    add_project_option(p, required=False)
+    add_project_option(p, required=True)
+    add_clear_option(p)
+
+# def set_up_sync(subparsers):
 
 def set_up_build_core(subparsers):
-    p = subparsers.add_parser('build-core', help='create unsat core project form a base project')
-    set_up_known_project(p)
+    p = subparsers.add_parser('build-core', help='create unsat core project form a base project. the output directory is set using the project manager conventions.')
+    add_input_dir_option(p)
     add_solver_option(p)
     add_timeout_option(p)
+    add_clear_option(p)
 
 def set_up_convert_smt_lib(subparsers):
-    p = subparsers.add_parser('convert-smtlib', help='convert a verus query to smt-lib standard (cvc5) format')
-    set_up_known_project(p)
+    p = subparsers.add_parser('convert-smtlib', help='convert a verus query to smt-lib standard (cvc5) format, by default, the output directory is set using the project manager conventions')
+    add_input_dir_option(p)
+    add_clear_option(p)
 
 class NinjaPasta:
     def __init__(self, args):
         self.ninja_stuff = []
         self.target_count = 0
 
-        self.out_dir = None
+        self.output_dir = None
         self.clear = args.clear
         
         if args.sub_command == "preprocess":
             self.handle_preprocess(args)
             return
 
-        proj = load_known_input_project(args)
+        if args.input_dir:
+            self.in_proj = PM.get_project_by_path(args.input_dir)
 
         if args.sub_command == "build-core":
             self.handle_build_core(args)
@@ -100,20 +98,26 @@ class NinjaPasta:
             parser.print_help()
 
     def handle_preprocess(self, args):
-        self.out_dir = args.output_dir
+        import re
+
+        san_check(re.match("^[a-z0-9_]*$", args.new_group_name),
+                    "invalid project name in preprocess")
+
+        out_proj = Project(args.new_group_name)
+        self.output_dir = out_proj.sub_root
+        log_info(f"output directory is set to {self.output_dir}")
 
         for in_path in list_smt2_files(args.input_dir):
-            out_path = convert_path(in_path, args.input_dir, args.output_dir)
+            out_path = convert_path(in_path, args.input_dir, self.output_dir)
             self.ninja_stuff += [f"build {out_path}: split {in_path}\n"]
             self.target_count += 1
 
     def handle_build_core(self, args):
-        in_proj = load_known_input_project(args)
-        out_proj = PM.get_core_project(in_proj, build=True)
+        out_proj = PM.get_core_project(self.in_proj, build=True)
 
         output_dir = out_proj.sub_root
-        self.out_dir = output_dir
-        log_info(f"output directory is set to {self.out_dir}")
+        self.output_dir = output_dir
+        log_info(f"output directory is set to {self.output_dir}")
 
         for in_path in list_smt2_files(args.input_dir):
             base_name = os.path.basename(in_path)
@@ -122,17 +126,16 @@ class NinjaPasta:
             self.target_count += 1
 
     def handle_convert_smt_lib(self, args):
-        in_proj = load_known_input_project(args)
-        out_proj = PM.get_cvc5_counterpart(in_proj, build=True)
+        out_proj = PM.get_cvc5_counterpart(self.in_proj, build=True)
 
-        log_info(f"converting queries in {in_proj.sub_root}")
+        log_info(f"converting queries in {self.in_proj.sub_root}")
 
-        self.out_dir = out_proj.sub_root
-        log_info(f"output directory is set to {self.out_dir}")
+        self.output_dir = out_proj.sub_root
+        log_info(f"output directory is set to {self.output_dir}")
 
-        for in_path in list_smt2_files(in_proj.sub_root):
+        for in_path in list_smt2_files(self.in_proj.sub_root):
             base_name = os.path.basename(in_path)
-            out_path = os.path.join(self.out_dir, base_name)
+            out_path = os.path.join(self.output_dir, base_name)
             self.ninja_stuff += [f"build {out_path}: convert-smtlib {in_path}\n"]
             self.target_count += 1
 
@@ -141,35 +144,22 @@ class NinjaPasta:
             log_info("no targets to build")
             return
 
-        create_output_dir(self.out_dir, self.clear)
+        create_output_dir(self.output_dir, self.clear)
 
         ninja_stuff = [NINJA_BUILD_RULES] + self.ninja_stuff
         with open("build.ninja", "w+") as f:
             f.write("\n".join(ninja_stuff))
 
         log_info(f"generated {self.target_count} targets in build.ninja")
-        print("run `ninja -j 6` to start building? [Y]", end=" ")
+        print("run `ninja -j 6 -k 0` to start building? [Y]", end=" ")
 
         if input() != "Y":
             print("exiting")
             sys.exit(0)
 
-        os.system("ninja -j 6")
+        os.system("ninja -j 6 -k 0")
 
-        log_info(f"generated {get_file_count(self.out_dir)} files in {self.out_dir}")
-
-def load_known_input_project(args) -> Project:
-    has_in_dir = hasattr(args, "input_dir") and os.path.isdir(args.input_dir)
-    has_proj = hasattr(args, "project") and args.project is not None
-
-    san_check(not (has_in_dir and has_proj), "should not specify both an input directory and a project")
-
-    san_check(has_in_dir or has_proj, "must specify either an input directory or a project")
-
-    if has_in_dir:
-        return PM.get_project_by_path(args.input_dir)
-
-    return PM.get_project(args.project, args.ptype)
+        log_info(f"generated {get_file_count(self.output_dir)} files in {self.output_dir}")
 
 def create_output_dir(out_dir, clear):
     if not can_overwrite_dir(out_dir):
@@ -178,12 +168,6 @@ def create_output_dir(out_dir, clear):
             san_check(input() == "Y", f"aborting")
         shutil.rmtree(out_dir)
     os.makedirs(out_dir)
-
-def reparse_args(args):
-    if hasattr(args, "ptype"):
-        args.ptype = ProjectType.from_str(args.ptype)
-
-    return args
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Project Wizard operates on the single-project level. Typically, the input is a project/directory (containing a set of queries), and the output is another project (with a set of queries), or with a set of log files. Project Wizard is a thin wrapper around the Query Wizard and the Rust code base.")
@@ -196,10 +180,5 @@ if __name__ == "__main__":
     # set_up_get_proof(subparsers)
 
     args = parser.parse_args()
-    args = reparse_args(args)
-
-    # if hasattr(args, "ptype"):
-    #     args.ptype = ProjectType.from_str(args.ptype)
-    
     ninja = NinjaPasta(args)
     ninja.finalize()
