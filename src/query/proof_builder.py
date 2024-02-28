@@ -1,7 +1,5 @@
 import os
-import shutil
-import subprocess
-from solver.runner import CVC5Runner
+from base.solver import CVC5Runner
 from utils.system_utils import *
 
 class ProofBuilder:

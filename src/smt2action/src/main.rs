@@ -80,11 +80,11 @@ enum Action {
     )]
     Shake,
 
-    #[strum(
-        serialize = "convert",
-        message = "convert the query file from z3 to cvc5 compatible format"
-    )]
-    Convert,
+    // #[strum(
+    //     serialize = "convert",
+    //     message = "convert the query file from z3 to cvc5 compatible format"
+    // )]
+    // Convert,
 
     #[strum(serialize = "help", message = "get help on the allowed actions")]
     Help,
@@ -109,7 +109,7 @@ struct Args {
     out_query_path: Option<String>,
 
     /// action to perform
-    #[arg(long, default_value = "check")]
+    #[arg(short, long, default_value = "check")]
     action: String,
 
     /// convert comments into set-info (limited support)
@@ -215,7 +215,7 @@ fn main() {
             query_io::split_commands(commands, &args.out_query_path.unwrap());
 
         println!(
-            "query file {} check-sat command(s) ignored, rest is split into {} file(s),",
+            "query file {} check-sat command(s) ignored, rest is split into {} file(s)",
             skipped_checks, included_checks
         );
         return;

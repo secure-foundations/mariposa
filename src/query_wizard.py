@@ -1,12 +1,11 @@
-import argparse
+#!/usr/bin/env python3.8
+
+import argparse, os
 from utils.option_utils import *
 from query.core_builder import BasicCoreBuilder
 from query.proof_builder import ProofBuilder
-from query.query_utils import convert_verus_smtlib
-from solver.runner import SolverRunner
-
-def add_timeout_option(parser):
-    parser.add_argument("--timeout", default=150, help="the timeout (seconds) for the solver")
+from query.query_utils import convert_verus_smtlib, emit_quake_query
+from base.solver import SolverRunner
 
 def setup_build_core(subparsers):
     p = subparsers.add_parser('build-core', help='create core query form a given query')
@@ -34,14 +33,14 @@ def run_build_core(args):
 def run_get_proof(args):
     ProofBuilder(args.input_query_path, args.output_log_path,  args.timeout, args.clear).run()
 
-# def setup_quake(subparsers):
-#     p = subparsers.add_parser('quake', help='emit quake file')
-#     add_input_option(p)
-#     add_output_option(p)
-#     parser.add_argument("--quake-count", default=4, help="number of times to perform quake")
+def setup_quake(subparsers):
+    p = subparsers.add_parser('quake', help='emit quake file')
+    add_input_query_option(p)
+    add_output_query_option(p)
+    parser.add_argument("--quake-count", default=4, help="number of iterations to perform quake")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Query Wizard operates on the single-query level. Typically, the input is a single smt2 query, and the output is a new query and/or a log file.")
+    parser = argparse.ArgumentParser(description="Mariposa Query Wizard operates on the single-query level. Typically, the input is a single smt2 query, and the output is a new query and/or a log file. Please note there are operations that in the Rust codebase that are not exposed here. Instead, use the built binary directly.")
     subparsers = parser.add_subparsers(dest='sub_command', help="the sub-command to run")
 
     setup_build_core(subparsers)
@@ -53,13 +52,22 @@ if __name__ == "__main__":
     if hasattr(args, "solver"):
         args.solver = SolverRunner(args.solver)
 
+    if hasattr(args, "output_query_path"):
+        directory = "/".join(args.output_query_path.split("/")[:-1])
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
     if args.sub_command == "build-core":
         run_build_core(args)
     elif args.sub_command == "convert-smtlib":
-        convert_verus_smtlib(args.input, args.output)
+        convert_verus_smtlib(args.input_query_path, 
+                             args.output_query_path)
     elif args.sub_command == "get-proof":
         run_get_proof(args)
+    elif args.sub_command == "quake":
+        emit_quake_query(args.input_query_path, 
+                         args.output_query_path, 
+                         args.timeout, 
+                         args.quake_count)
     else:
         parser.print_help()
-
-

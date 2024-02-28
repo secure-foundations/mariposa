@@ -49,6 +49,10 @@ def output_as_rcode(output):
         return RCode.UNKNOWN
     return RCode.ERROR
 
+class SolverType(Enum):
+    Z3 = "z3"
+    CVC5 = "cvc5"
+
 class SolverRunner:
     def __init__(self, name):
         self.proc = None
@@ -61,7 +65,7 @@ class SolverRunner:
         self.name = name
         self.date = obj["date"]
         self.path = obj["path"]
-        self.styp = self.name.split("_")[0]
+        self.styp = SolverType(self.name.split("_")[0])
         assert os.path.exists(self.path)
 
     def __str__(self):
@@ -135,10 +139,6 @@ class SolverRunner:
     #     self.proc.terminate()
     #     self.poll_obj = None
 
-def get_name_hash(filename):
-    import hashlib
-    return hashlib.sha256(filename.encode()).hexdigest()
-
 class Z3Runner(SolverRunner):
     def __init__(self, name):
         super().__init__(name)
@@ -150,12 +150,15 @@ class Z3Runner(SolverRunner):
 
         out, err, elapsed = subprocess_run(command)
         rcode = output_as_rcode(out)
-        
+
+        return rcode, elapsed
+
 class CVC5Runner(SolverRunner):
     def __init__(self, name):
         super().__init__(name)
 
     def run(self, query_path, time_limit, seeds=None, more_options=[]):
+        assert time_limit < 1000
         options = [
             "--quiet",
             f"--tlimit-per={time_limit * 1000}",

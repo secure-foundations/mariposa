@@ -37,12 +37,6 @@ def subprocess_run(command, timeout=None, debug=False, cwd=None):
     stderr = res.stderr.decode("utf-8").strip()
     return stdout, stderr, elapsed
 
-def list_smt2_files(sub_root):
-    return list_files_ext(sub_root, ".smt2")
-
-def list_files(sub_root):
-    return list_files_ext(sub_root, "")
-
 def list_files_ext(sub_root, ext):
     san_check(os.path.isdir(sub_root), f"[ERROR] {sub_root} is not a directory")
     file_paths = []
@@ -51,6 +45,12 @@ def list_files_ext(sub_root, ext):
             if file.endswith(ext):
                 file_paths.append(os.path.join(root, file))
     return file_paths
+
+def list_smt2_files(sub_root):
+    return list_files_ext(sub_root, ".smt2")
+
+def list_files(sub_root):
+    return list_files_ext(sub_root, "")
 
 def flatten_path(base_dir, path):
     assert base_dir in path
