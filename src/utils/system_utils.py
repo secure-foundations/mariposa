@@ -52,12 +52,18 @@ def list_smt2_files(sub_root):
 def list_files(sub_root):
     return list_files_ext(sub_root, "")
 
+def get_file_count(sub_root):
+    return len(list_files(sub_root))
+
 def flatten_path(base_dir, path):
     assert base_dir in path
     if not base_dir.endswith("/"):
         base_dir += "/"
     rest = path[len(base_dir):]
     rest = rest.replace("/", "-")
+    rest = rest.replace("!", "_")
+    rest = rest.replace("&", "_")
+    rest = rest.replace(" ", "_")
     return base_dir + rest
 
 def convert_path(src_path, src_dir, dst_dir):
@@ -88,3 +94,11 @@ def read_last_line(filename):
             exit_with(f"failed to read last line of {filename}")
         last = f.readline().decode()
     return last
+
+def can_overwrite_dir(path):
+    if not os.path.exists(path):
+        return True
+    san_check(os.path.isdir(path), f"{path} is not a directory!")
+    if len(os.listdir(path)) == 0:
+        return True
+    return False

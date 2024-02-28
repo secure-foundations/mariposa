@@ -72,9 +72,9 @@ class BasicCoreBuilder:
         lines = cf.readlines()
         cf.close()
 
-        if len(lines) <= 1:
+        if len(lines) <= 1 or "unsat\n" not in lines:
             os.remove(self.core_log)
-            exit_with(f"failed to run {self.solver} on {self.lbl_query}, no core log created")
+            exit_with(f"failed to run {self.solver_path} on {self.lbl_query}, no core log created")
 
     def __create_core_query(self):
         if os.path.exists(self.output_query):

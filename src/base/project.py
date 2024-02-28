@@ -51,8 +51,8 @@ def partition(a, n):
 
 class _ProjectType(enum.Enum):
     BASE = "base" # baseline
-    CORE = "core" # core
-    EXTD = "extd" # core ext
+    CORE = "core" # unsat core
+    EXTD = "extd" # unsat core extension
     SHKF = "shkf" # shake full
     SHKO = "shko" # shake oracle
     SHKP = "shkp" # shake partial
@@ -89,18 +89,35 @@ class ProjectType:
         except:
             return None
 
+    def base_to_core(self):
+        san_check(self.qtyp == _ProjectType.BASE,
+                        "currently only a base project can be converted to core project")
+        san_check(self.styp == SolverType.Z3, 
+                  "currently only z3-sourced project can be converted to core project")
+        return ProjectType(_ProjectType.CORE, self.styp)
+
+    def z3_to_cvc5(self):
+        san_check(self.styp == SolverType.Z3,
+                  "currently only z3-sourced project can be converted to cvc5 project")
+        return ProjectType(self.qtyp, SolverType.CVC5)
+
 def full_proj_name(name, ptyp):
     return name + "." + str(ptyp)
 
 class Project:
     def __init__(self, name, ptyp: ProjectType, part=Partition(1, 1)):
+        self.group_name = name
         self.full_name = full_proj_name(name, ptyp)
-        self.ptyp = ptyp
-        self.sub_root = PROJS_ROOT + name + "/" + str(ptyp)
+        self.ptype = ptyp
+        self.sub_root = os.path.join(PROJS_ROOT, name, str(ptyp))
         self.part = part
 
     def __lt__(self, other):
         return self.full_name < other.full_name
+    
+    def __eq__(self, other):
+        return self.full_name == other.full_name and \
+            self.part == other.part
 
     def set_partition(self, part):
         self.part = part
@@ -123,12 +140,10 @@ class Project:
         query_id = scrub(os.path.basename(query_path))
         root_dir = "gen/" + query_id
         return Project("single_" + query_id, root_dir)
-    
+
     def is_whole(self):
         return self.part.is_whole()
-
-    def is_z3_based(self):
-        return self.ptyp.styp == SolverType.Z3
+    
 
 class ProjectGroup:
     def __init__(self, name, groot):
@@ -176,13 +191,25 @@ class ProjectManager:
         san_check(proj, f"no such sub-project {ptyp} under {group_name}")
         return proj
     
-    def get_project_by_path(self, path):
+    def get_project_by_path(self, path) -> Project:
         san_check(path.startswith(PROJS_ROOT), f"invalid path {path}")
         items = os.path.normpath(path).split(os.sep)[-2:]
-        san_check(len(items) == 2, f"invalid path {path}")
+        san_check(len(items) == 2, f"invalid project path {path}")
         ptype = ProjectType.from_str(items[1])
         san_check(ptype, f"invalid project type {items[1]}")
         return self.get_project(items[0], ptype)
+
+    def get_core_project(self, proj: Project, build=False) -> Project:
+        core_ptype = proj.ptype.base_to_core()
+        if not build:
+            return self.get_project(proj.group_name, core_ptype)
+        return Project(proj.group_name, core_ptype)
+
+    def get_cvc5_counterpart(self, proj: Project, build=False) -> Project:
+        cvc5_ptype = proj.ptype.z3_to_cvc5()
+        if not build:
+            return self.get_project(proj.group_name, cvc5_ptype)
+        return Project(proj.group_name, cvc5_ptype)
 
     def list_projects(self):
         print("available projects:")
