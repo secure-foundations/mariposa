@@ -124,7 +124,7 @@ struct Args {
     lower_asserts: bool,
 
     /// seed for randomness
-    #[arg(long, default_value_t = DEFAULT_SEED)]
+    #[arg(short, long, default_value_t = DEFAULT_SEED)]
     seed: u64,
 
     /// (z3) unsat core log path (not a query!)

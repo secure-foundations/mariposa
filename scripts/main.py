@@ -52,14 +52,6 @@ def setup_recovery(subparsers):
     add_solver_option(p)
     add_experiment_option(p)
 
-# def multi_mode(args):
-#     exp = Experiment(args.experiment, 
-#             args.project, 
-#             args.solver)
-#     r = Runner()
-#     r.run_project(exp, args.clear)
-#     return (exp.db_path, args.part)
-
 # def setup_analysis(subparsers):
 #     p = subparsers.add_parser('analysis', help='analyze the results of experiments')
 #     add_project_option(p)

@@ -1,12 +1,12 @@
+import json
 import numpy as np
 from enum import Enum
 from statsmodels.stats.proportion import proportions_ztest
+
 from utils.analysis_utils import *
 from base.solver import RCode
 from base.exper import Mutation, QueryExpResult
-import json
-
-ANALYZER_CONFIG_PATH = "config/analyzers.json"
+from base.defs import ANALYZER_CONFIG_PATH
 
 class Stability(Enum):
     UNSOLVABLE = "unsolvable"
@@ -15,7 +15,13 @@ class Stability(Enum):
     STABLE = "stable"
 
     def __str__(self):
-        return super().__str__()
+        return self.value
+    
+    def __hash__(self):
+        return hash(str(self))
+    
+    def __eq__(self, other):
+        return str(self) == str(other)
 
 def match_rcode(blob, rcode, timeout=np.inf):
     matches = blob[0] == rcode.value
@@ -150,6 +156,6 @@ class QueryAnalyzer:
         cats = Categorizer([c for c in Stability])
         for qs in qss:
             res, _ = self.categorize_query(qs, muts)
-            cats.add_item(res, qs.base_name)
+            cats.add_item(res.value, qs.base_name)
         cats.finalize()
         return cats

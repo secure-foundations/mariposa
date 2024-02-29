@@ -1,17 +1,14 @@
-from enum import Enum
+import os, json, random
 import numpy as np
-import json, random
+
 from typing import Dict
-import os
+from enum import Enum
+
 from utils.system_utils import *
 from utils.database_utils import *
-
-from base.solver import SolverRunner, RCode
+from base.solver import SolverRunner, RCode, EXPECTED_CODES
 from base.project import Project, Partition
-
-EXP_CONFIG_PATH = "./config/expers.json"     
-   
-MARIPOSA = "src/smt2action/target/release/mariposa" 
+from base.defs import EXPER_CONFIG_PATH
 
 class Mutation(str, Enum):
     SHUFFLE = "shuffle"
@@ -22,8 +19,6 @@ class Mutation(str, Enum):
 
     def __str__(self):
         return str.__str__(self)
-
-EXPECTED_CODES = [RCode.UNSAT, RCode.UNKNOWN, RCode.TIMEOUT]
 
 class QueryExpResult:
     def __init__(self, query_path, proj_root, mutations=[], blob=None):
@@ -131,14 +126,11 @@ class Experiment:
         self.table_prefix = get_table_prefix(proj, solver)
         self.exp_table_name = self.table_prefix + "_exp"
         self.sum_table_name = self.table_prefix + "_sum"
-        self.gen_dir = f"gen/{self.exp_table_name}"
-        self.db_path = f"data/dbs/{self.exp_table_name}.db"
-
-        if not os.path.exists(self.gen_dir):
-            os.makedirs(self.gen_dir)
+        self.gen_dir = os.path.join(proj.get_gen_dir(), name)
+        self.db_path = os.path.join(proj.get_db_dir(), f"{name}.db")
 
     def __init_config(self, name):
-        objs = json.loads(open(EXP_CONFIG_PATH).read())
+        objs = json.loads(open(EXPER_CONFIG_PATH).read())
         obj = objs["default"]
         obj.update(objs[name])
 
@@ -157,8 +149,8 @@ class Experiment:
 
         # how long do we wait? (seconds)
         self.timeout = obj["exp_timeout"]
-        
-    def __str__(self):
+
+    def debug(self):
         return f"""project: {self.proj.full_name}
 part: {self.part}
 experiment: {self.exp_name}
@@ -196,6 +188,9 @@ solver: {self.solver}"""
         return tasks
 
     def build_tasks(self):
+        if not os.path.exists(self.gen_dir):
+            os.makedirs(self.gen_dir)
+        
         tasks = []
         origin_paths = self.proj.list_queries()
         log_info(f"running {len(origin_paths)} original queries")
@@ -211,7 +206,10 @@ solver: {self.solver}"""
         log_info(f"adding {len(tasks)} tasks")
         return tasks
 
-    def check_tables(self, clear=False):
+    def init_db(self, clear):
+        create_dir(self.gen_dir, True)
+        create_dir(self.proj.get_db_dir(), clear)
+
         con, cur = get_cursor(self.db_path)
 
         for table_name in [self.exp_table_name, self.sum_table_name]:

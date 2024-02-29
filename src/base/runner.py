@@ -2,14 +2,12 @@ import os
 import multiprocessing as mp
 
 from base.exper import *
+from base.defs import MARIPOSA
 from base.solver import SolverType
 from query.query_utils import emit_quake_query
 
-MARIPOSA = "./src/smt2action/target/release/mariposa"
-QUERY_WIZARD = "./src/query_wizard.py"
-
 class Worker:
-    def __init__(self, epart, worker_id):
+    def __init__(self, epart: Experiment, worker_id):
         self.worker_id = worker_id
         self._exp = epart
         
@@ -36,9 +34,6 @@ class Worker:
         san_check(result.returncode == 0 and os.path.exists(mutant_path),
                   f"[ERROR] MARIPOSA failed: {command}")
 
-        # if self._exp.shake:
-            # command = f"{MARIPOSA_BIN_PATH} -i '{mutant_path}' -o '{mutant_path}' -m tree-shake "
-
     def run_quake_task(self, task):
         self.solver.start_process(task.mutant_path, self.timeout)
 
@@ -50,21 +45,22 @@ class Worker:
         self.solver.end_process()
 
     def run_task(self, task):
-        mutant_path = task.mutant_path
+        actual_path = task.mutant_path
 
-        # if not cvc_reseed:
-        #     self.__generate_mutant(task)
+        if task.perturb == Mutation.RESEED:
+            actual_path = task.origin_path
+        else:
+            self.__generate_mutant(task)
 
         if task.quake:
             self.run_quake_task(task)
         else:
             seeds = task.mut_seed
-            mutant_path = task.origin_path
-            rcode, elapsed = self.solver.run(mutant_path, self.timeout, seeds)
-            self.insert_exp_row(task, mutant_path, rcode.value, elapsed)
+            rcode, elapsed = self.solver.run(actual_path, self.timeout, seeds)
+            self.insert_exp_row(task, task.mutant_path, rcode.value, elapsed)
 
-        if not self.keep_mutants and mutant_path != task.origin_path:
-            os.system(f"rm '{mutant_path}'")
+        if not self.keep_mutants and actual_path != task.origin_path:
+            os.system(f"rm '{actual_path}'")
 
 def print_eta(elapsed, cur_size, init_size):
     from datetime import timedelta
@@ -114,7 +110,7 @@ class Runner:
 
     def run_project(self, epart, clear):
         self.epart = epart
-        epart.check_tables(clear)
+        epart.init_db(clear=clear)
         tasks = epart.build_tasks()
         random.shuffle(tasks)
 

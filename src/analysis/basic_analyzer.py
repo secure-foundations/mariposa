@@ -12,7 +12,7 @@ class BasicAnalyzer:
         self.ana = ana
         self.__qrs: Dict[str, QueryExpResult] = self.exp.load_sum_table(enable_dummy)
         self.__qr_keys = list(sorted(self.__qrs.keys()))
-        self.__cats = ana.categorize_queries(self.__qrs.values())
+        self.__cats: Categorizer = ana.categorize_queries(self.__qrs.values())
 
     def __getitem__(self, base_name):
         return self.__qrs[base_name]
@@ -35,41 +35,41 @@ class BasicAnalyzer:
         return self.__cats
 
     def print_status(self, verbosity=0):
-        log_info(f"{self.exp.proj.full_name} {self.exp_name}")
-        log_info(f"analyzer {self.ana.name}")
+        log_info(f"exp: {self.exp.exp_name}")
+        log_info(f"proj: {self.exp.proj.full_name}")
+        log_info(f"ana: {self.ana.name}")
 
         self.__cats.print_status(skip_empty=True)
 
         if verbosity == 0:
             return
 
-        self.print_detailed_status(verbosity)
-
-    def print_detailed_status(self, verbosity=2):
         for cat, cs in self.__cats.items():
             if verbosity == 1 and cat != Stability.UNSTABLE:
                 continue
             if len(cs) == 0:
                 log_info(f"no {cat.value} queries found")
                 continue
+
             log_info(f"listing {cat.value} queries...")
+
             for qs in cs:
                 self[qs].enforce_timeout(self.ana._timeout)
                 self[qs].print_status()
 
-    def get_assert_counts(self, update=False):
-        from tqdm import tqdm
-        cache_path = f"asserts/{self.proj.full_name}"
-        if has_cache(cache_path) and not update:
-            counts = load_cache(cache_path)
-        else:
-            log_info(f"assert counts for {self.proj.full_name}")
-            counts = dict()
-            for query_path in tqdm(self.proj.list_queries()):
-                base_name = os.path.basename(query_path)
-                counts[base_name] = count_asserts(query_path)
-            save_cache(cache_path, counts)
-        return counts
+    # def get_assert_counts(self, update=False):
+    #     from tqdm import tqdm
+    #     cache_path = f"asserts/{self.proj.full_name}"
+    #     if has_cache(cache_path) and not update:
+    #         counts = load_cache(cache_path)
+    #     else:
+    #         log_info(f"assert counts for {self.proj.full_name}")
+    #         counts = dict()
+    #         for query_path in tqdm(self.proj.list_queries()):
+    #             base_name = os.path.basename(query_path)
+    #             counts[base_name] = count_asserts(query_path)
+    #         save_cache(cache_path, counts)
+    #     return counts
 
     # def get_veri_times(self):
     #     data = []

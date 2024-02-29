@@ -1,4 +1,5 @@
 import os, sys, time
+import shutil
 import subprocess
 
 class BColors:
@@ -95,10 +96,20 @@ def read_last_line(filename):
         last = f.readline().decode()
     return last
 
-def can_overwrite_dir(path):
+def create_dir(path, clear):
     if not os.path.exists(path):
-        return True
+        os.makedirs(path)
+        return
+
     san_check(os.path.isdir(path), f"{path} is not a directory!")
+
     if len(os.listdir(path)) == 0:
-        return True
-    return False
+        return
+
+    san_check(clear, f"directory {path} already exists!")
+
+    print(f"directory {path} already exists, remove it? [Y]", end=" ")
+    san_check(input() == "Y", f"aborting")
+    shutil.rmtree(path)
+
+    os.makedirs(path)

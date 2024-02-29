@@ -1,11 +1,8 @@
-from enum import Enum
+import time, os, json
 import subprocess, select
-import time
 
-import os, json
+from base.defs import SOLVER_CONFIG_PATH
 from enum import Enum
-
-SOLVER_CONFIG_PATH = "./config/solvers.json"
 
 def subprocess_run(command, debug=False):
     if debug:
@@ -37,6 +34,8 @@ class RCode(Enum):
         elif self == RCode.ERROR:
             return "error"
         assert False
+
+EXPECTED_CODES = [RCode.UNSAT, RCode.UNKNOWN, RCode.TIMEOUT]
 
 def output_as_rcode(output):
     if "unsat" in output:

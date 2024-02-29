@@ -1,14 +1,7 @@
 import os, random, enum, re
 from utils.system_utils import *
 from base.solver import SolverType
-
-PROJS_ROOT = "data/projs/"
-LOG_ROOT = "data/logs/"
-
-# class ProjectType(enum.Enum):
-    # ORIG = "original"
-    # BLOT = "bloat"
-    # REVL = "reveal"
+from base.defs import DB_ROOT, GEN_ROOT, LOG_ROOT, PROJ_ROOT
 
 class Partition:
     def __init__(self, id, num):
@@ -109,7 +102,7 @@ class Project:
         self.group_name = name
         self.full_name = full_proj_name(name, ptyp)
         self.ptype = ptyp
-        self.sub_root = os.path.join(PROJS_ROOT, name, str(ptyp))
+        self.sub_root = os.path.join(PROJ_ROOT, name, str(ptyp))
         self.part = part
 
     def __lt__(self, other):
@@ -118,6 +111,21 @@ class Project:
     def __eq__(self, other):
         return self.full_name == other.full_name and \
             self.part == other.part
+
+    def get_db_dir(self):
+        san_check(self.sub_root.startswith(PROJ_ROOT), 
+                  f"invalid sub_root {self.sub_root}")
+        return self.sub_root.replace(PROJ_ROOT, DB_ROOT)
+    
+    # def get_log_dir(self):
+    #     san_check(self.sub_root.startswith(PROJ_ROOT), 
+    #         f"invalid sub_root {self.sub_root}")
+    #     return self.sub_root.replace(PROJ_ROOT, LOG_ROOT)
+
+    def get_gen_dir(self):
+        san_check(self.sub_root.startswith(PROJ_ROOT), 
+                  f"invalid sub_root {self.sub_root}")
+        return self.sub_root.replace(PROJ_ROOT, GEN_ROOT)
 
     def set_partition(self, part):
         self.part = part
@@ -180,8 +188,8 @@ class ProjectManager:
         self.groups = dict()
         self.all_projects = dict()
 
-        for groot in os.listdir(PROJS_ROOT):
-            p = ProjectGroup(groot, PROJS_ROOT + groot)
+        for groot in os.listdir(PROJ_ROOT):
+            p = ProjectGroup(groot, PROJ_ROOT + groot)
             self.groups[groot] = p
 
     def get_project(self, group_name, ptyp: ProjectType, enable_dummy=False):
@@ -192,7 +200,7 @@ class ProjectManager:
         return proj
     
     def get_project_by_path(self, path) -> Project:
-        san_check(path.startswith(PROJS_ROOT), f"invalid path {path}")
+        san_check(path.startswith(PROJ_ROOT), f"invalid path {path}")
         items = os.path.normpath(path).split(os.sep)[-2:]
         san_check(len(items) == 2, f"invalid project path {path}")
         ptype = ProjectType.from_str(items[1])

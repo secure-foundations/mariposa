@@ -1,8 +1,8 @@
 #!/usr/bin/env python3.8
 
-import argparse, shutil
-from base.project import PM, Project, ProjectType
-from base.runner import MARIPOSA, QUERY_WIZARD
+import argparse
+from base.project import PM, Project
+from base.defs import MARIPOSA, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
 
@@ -144,7 +144,7 @@ class NinjaPasta:
             log_info("no targets to build")
             return
 
-        create_output_dir(self.output_dir, self.clear)
+        create_dir(self.output_dir, self.clear)
 
         ninja_stuff = [NINJA_BUILD_RULES] + self.ninja_stuff
         with open("build.ninja", "w+") as f:
@@ -160,14 +160,6 @@ class NinjaPasta:
         os.system("ninja -j 6 -k 0")
 
         log_info(f"generated {get_file_count(self.output_dir)} files in {self.output_dir}")
-
-def create_output_dir(out_dir, clear):
-    if not can_overwrite_dir(out_dir):
-        if not clear:
-            print(f"output directory {out_dir} already exists, remove it? [Y]", end=" ")
-            san_check(input() == "Y", f"aborting")
-        shutil.rmtree(out_dir)
-    os.makedirs(out_dir)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Project Wizard operates on the single-project level. Typically, the input is a project/directory (containing a set of queries), and the output is another project (with a set of queries), or with a set of log files. Project Wizard is a thin wrapper around the Query Wizard and the Rust code base.")
