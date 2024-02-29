@@ -3,7 +3,7 @@ import multiprocessing as mp
 
 from base.exper import *
 from base.defs import MARIPOSA
-from query.query_utils import emit_quake_query
+from utils.query_utils import emit_quake_query
 
 class Worker:
     def __init__(self, exp: Experiment, worker_id):
@@ -25,7 +25,7 @@ class Worker:
 
         if task.perturb is None:
             return
-    
+
         command = f"{MARIPOSA} -i '{task.origin_path}' -a {task.perturb} -o '{mutant_path}' -s {task.mut_seed}"            
 
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
@@ -38,15 +38,15 @@ class Worker:
 
         for i in range(self.num_mutant):
             rcode, elapsed = self.solver.run_quake_iteration(self.timeout)    
-
             mutant_path = task.mutant_path + "." + str(i)
-            self.insert_exp_row(task, mutant_path, rcode, elapsed)
+            self.insert_exp_row(task, mutant_path, rcode.value, elapsed)
         self.solver.end_process()
 
     def run_task(self, task):
         actual_path = task.mutant_path
+        is_reseed = task.perturb == Mutation.RESEED
 
-        if task.perturb == Mutation.RESEED:
+        if is_reseed:
             actual_path = task.origin_path
         else:
             self.__generate_mutant(task)
@@ -54,7 +54,7 @@ class Worker:
         if task.quake:
             self.run_quake_task(task)
         else:
-            seeds = task.mut_seed
+            seeds = task.mut_seed if is_reseed else None
             rcode, elapsed = self.solver.run(actual_path, self.timeout, seeds)
             self.insert_exp_row(task, task.mutant_path, rcode.value, elapsed)
 

@@ -17,13 +17,13 @@ rule shake
     command = {MARIPOSA} -i $in -o $out -a shake --shake-log-path $log
 
 rule build-core
-    command = {QUERY_WIZARD} build-core -i $in -o $out
+    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 150
     
 rule convert-smtlib
     command = {QUERY_WIZARD} convert-smtlib -i $in -o $out
 
 rule get-proof
-    command = {QUERY_WIZARD} get-proof -i $in -o $out
+    command = {QUERY_WIZARD} get-proof -i $in -o $out --timeout 150
 """
 
 # rule instantiate

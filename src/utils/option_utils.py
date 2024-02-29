@@ -10,7 +10,7 @@ def add_output_query_option(parser):
     parser.add_argument("-o", "--output-query-path", required=True, help="the query path")
 
 def add_timeout_option(parser):
-    parser.add_argument("--timeout", default=150, help="the timeout (seconds) for the solver")
+    parser.add_argument("--timeout", default=60, help="the timeout (seconds) for the solver")
 
 def add_output_log_option(parser):
     parser.add_argument("--output-log-path", required=True, help="the query path")

@@ -148,10 +148,9 @@ class QueryAnalyzer:
         # ress -= {Stability.UNKNOWN}
         return Stability.UNSTABLE, votes
 
-    # [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
+    # [Mutation.SHUFFLE.value, Mutation.RENAME.value, Mutation.RESEED.value]
     def categorize_queries(self, qss, 
-                        #    muts=None,
-                           muts=[Mutation.SHUFFLE.value, Mutation.RENAME.value, Mutation.RESEED.value]
+                           muts=None,
                            ) -> Categorizer:
         cats = Categorizer([c for c in Stability])
         for qs in qss:

@@ -61,12 +61,12 @@ class _ProjectType(enum.Enum):
         return self.value == other.value
 
 class ProjectType:
-    def __init__(self, qtyp: _ProjectType, styp: SolverType):
-        self.qtyp = qtyp
-        self.styp = styp
+    def __init__(self, qtyp: _ProjectType, stype: SolverType):
+        self.qtype = qtyp
+        self.stype = stype
 
     def __str__(self):
-        return f"{self.qtyp.value}.{self.styp.value}"
+        return f"{self.qtype.value}.{self.stype.value}"
 
     def __hash__(self):
         return hash(str(self))
@@ -83,16 +83,16 @@ class ProjectType:
             return None
 
     def base_to_core(self):
-        log_check(self.qtyp == _ProjectType.BASE,
+        log_check(self.qtype == _ProjectType.BASE,
                         "currently only a base project can be converted to core project")
-        log_check(self.styp == SolverType.Z3, 
+        log_check(self.stype == SolverType.Z3, 
                   "currently only z3-sourced project can be converted to core project")
-        return ProjectType(_ProjectType.CORE, self.styp)
+        return ProjectType(_ProjectType.CORE, self.stype)
 
     def z3_to_cvc5(self):
-        log_check(self.styp == SolverType.Z3,
+        log_check(self.stype == SolverType.Z3,
                   "currently only z3-sourced project can be converted to cvc5 project")
-        return ProjectType(self.qtyp, SolverType.CVC5)
+        return ProjectType(self.qtype, SolverType.CVC5)
 
 def full_proj_name(name, ptyp):
     return name + "." + str(ptyp)

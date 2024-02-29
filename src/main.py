@@ -25,11 +25,11 @@ def run_single(args):
     exp = Experiment.single_mode_exp(in_query, args.solver)
     output_dir = exp.proj.sub_root
 
-    if os.path.exists(output_dir) and not args.clear:
-        log_info(f"output directory {output_dir} already exists")
+    if exp.sum_table_exists() and args.clear == False:
+        log_warn(f"experiment results already exists for {output_dir}")
         BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
-    
+
     overwrite_dir(output_dir, args.clear)
     command = f"{MARIPOSA} -i {in_query} -o {exp.proj.sub_root}/split.smt2 -a split"
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
@@ -53,14 +53,21 @@ def setup_multi(subparsers):
     add_clear_option(p)
 
     add_analyzer_option(p)
+    add_verbose_option(p)
 
 def run_multi(args):
     proj = PM.get_project_by_path(args.input_dir)
     exp = Experiment(args.experiment, proj, args.solver)
+    
+    if exp.sum_table_exists() and args.clear == False:
+        log_warn(f"experiment results already exists for {exp.proj.sub_root}")
+        BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
+        return
+
     r = Runner()
     r.run_project(exp, args.clear)
-    BasicAnalyzer(exp, args.analyzer).print_status(0)
 
+    BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
     return (exp.db_path, args.part)
 
 if __name__ == '__main__':

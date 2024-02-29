@@ -1,19 +1,10 @@
 import time, os, json
 import subprocess, select
-
-from base.defs import SOLVER_CONFIG_PATH
 from enum import Enum
 
-def subprocess_run(command, debug=False):
-    if debug:
-        print(command)
-    start_time = time.time()
-    res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # output milliseconds
-    elapsed = round((time.time() - start_time) * 1000)
-    stdout = res.stdout.decode("utf-8").strip()
-    stderr = res.stderr.decode("utf-8").strip()
-    return stdout, stderr, elapsed
+from base.defs import SOLVER_CONFIG_PATH
+from utils.query_utils import QUAKE_MESSAGE
+from utils.system_utils import log_check, log_warn, subprocess_run
 
 class RCode(Enum):
     SAT = 1
@@ -64,7 +55,7 @@ class Solver:
         self.name = name
         self.date = obj["date"]
         self.path = obj["path"]
-        self.styp = SolverType(self.name.split("_")[0])
+        self.stype = SolverType(self.name.split("_")[0])
         assert os.path.exists(self.path)
 
     def __str__(self):
@@ -90,72 +81,80 @@ class Solver:
         else:
             assert False
 
-    # def start_process(self, query_path, timeout):
-    #     assert timeout < 1000
-    #     if self.type == SolverType.Z3:
-    #         args = [self.path, query_path]
-    #     elif self.type == SolverType.CVC5:
-    #         args = [self.path, 
-    #             "--incremental", 
-    #             "-q",
-    #             "--tlimit-per", 
-    #             str(timeout * 1000),
-    #             query_path]
-    #     else:
-    #         assert False
-    #     p = subprocess.Popen(args, stdout=subprocess.PIPE)
+    def start_process(self, query_path, timeout):
+        log_check(timeout < 1000, "timeout should be in seconds")
+        log_check(self.stype == SolverType.Z3, "interactive mode only supported for z3 solver")
 
-    #     poll_obj = select.poll()
-    #     poll_obj.register(p.stdout, select.POLLIN)
-    #     self.failed = False
+        args = [self.path, query_path]
+        # elif self.type == SolverType.CVC5:
+        #     args = [self.path, 
+        #         "--incremental", 
+        #         "-q",
+        #         "--tlimit-per", 
+        #         str(timeout * 1000),
+        #         query_path]
+        # else:
+        #     assert False
+        p = subprocess.Popen(args, stdout=subprocess.PIPE)
 
-    #     self.proc = p
-    #     self.poll_obj = poll_obj
+        poll_obj = select.poll()
+        poll_obj.register(p.stdout, select.POLLIN)
+        self.failed = False
 
-    # def run_quake_iteration(self, timeout):
-    #     if self.failed:
-    #         return RCode.ERROR.value, 0 
+        self.proc = p
+        self.poll_obj = poll_obj
 
-    #     start_time = time.time()
-    #     poll_result = self.poll_obj.poll((timeout + 1) * 1000)
-    #     elapsed = time.time() - start_time
+    def run_quake_iteration(self, timeout):
+        if self.failed:
+            return RCode.ERROR, 0 
 
-    #     std_out = ""
+        start_time = time.time()
+        poll_result = self.poll_obj.poll((timeout + 1) * 1000)
+        elapsed = time.time() - start_time
 
-    #     if poll_result:
-    #         outputs = []
-    #         while "[INFO] mariposa-quake" not in std_out:
-    #             # try:
-    #             std_out = self.proc.stdout.readline()
-    #             # except 
-    #             std_out = std_out.decode("utf-8").strip()
-    #             outputs.append(std_out)
-    #             if std_out == "":
-    #                 break
-    #         std_out = "".join(outputs)
-    #         # print(std_out)
-    #         rcode = output_as_rcode(std_out)
-    #     else:
-    #         assert std_out == ""
-    #         print(f"[INFO] solver timeout in quake, elapsed {elapsed}, early termination")
-    #         self.failed = True
-    #         rcode = RCode.TIMEOUT
-    #     return rcode.value, elapsed * 1000
+        std_out = ""
 
-    # def end_process(self):
-    #     self.proc.stdout.close()
-    #     self.proc.terminate()
-    #     self.poll_obj = None
+        if poll_result:
+            outputs = []
+            while QUAKE_MESSAGE not in std_out:
+                # try:
+                std_out = self.proc.stdout.readline()
+                # except 
+                std_out = std_out.decode("utf-8").strip()
+                outputs.append(std_out)
+
+                if std_out == "":
+                    break
+
+            std_out = "".join(outputs)
+            # print(std_out)
+            rcode = output_as_rcode(std_out)
+        else:
+            assert std_out == ""
+            log_warn(f"solver timeout in quake, elapsed {elapsed}, early termination")
+            self.failed = True
+            rcode = RCode.TIMEOUT
+
+        return rcode, elapsed * 1000
+
+    def end_process(self):
+        self.proc.stdout.close()
+        self.proc.terminate()
+        self.poll_obj = None
 
 class Z3Solver(Solver):
     def __init__(self, name):
         super().__init__(name)
 
     def run(self, query_path, time_limit, seeds=None):
-        command = f"{self.path} '{query_path}' -T:{time_limit}"
+        command = [self.path, 
+                   f"'{query_path}'",
+                   f"-T:{time_limit}"]
         if seeds is not None:
-            command += f" sat.random_seed={seeds}"
+            command += [f"sat.random_seed={seeds}",
+                f"smt.random_seed={seeds}"]
 
+        command = " ".join(command)
         out, err, elapsed = subprocess_run(command)
         rcode = output_as_rcode(out)
 
@@ -168,9 +167,9 @@ class CVC5Solver(Solver):
     def run(self, query_path, time_limit, seeds=None, more_options=[]):
         assert time_limit < 1000
         options = [
+            f"'{query_path}'",
             "--quiet",
             f"--tlimit-per={time_limit * 1000}",
-            query_path
         ]
 
         if seeds is not None:

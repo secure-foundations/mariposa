@@ -4,7 +4,7 @@ import argparse, os
 from utils.option_utils import *
 from query.core_builder import BasicCoreBuilder
 from query.proof_builder import ProofBuilder
-from query.query_utils import convert_verus_smtlib, emit_quake_query
+from utils.query_utils import convert_verus_smtlib, emit_quake_query
 
 def setup_build_core(subparsers):
     p = subparsers.add_parser('build-core', help='create core query form a given query')
@@ -32,10 +32,11 @@ def run_build_core(args):
 def run_get_proof(args):
     ProofBuilder(args.input_query_path, args.output_log_path,  args.timeout, args.clear).run()
 
-def setup_quake(subparsers):
-    p = subparsers.add_parser('quake', help='emit quake file')
+def setup_emit_quake(subparsers):
+    p = subparsers.add_parser('emit-quake', help='emit quake file')
     add_input_query_option(p)
     add_output_query_option(p)
+    add_timeout_option(p)
     parser.add_argument("--quake-count", default=4, help="number of iterations to perform quake")
 
 if __name__ == "__main__":
@@ -45,12 +46,13 @@ if __name__ == "__main__":
     setup_build_core(subparsers)
     setup_convert_smt_lib(subparsers)
     setup_get_proof(subparsers)
+    setup_emit_quake(subparsers)
 
     args = deep_parse_args(parser)
 
     if hasattr(args, "output_query_path"):
-        directory = "/".join(args.output_query_path.split("/")[:-1])
-        if not os.path.exists(directory):
+        directory = os.path.dirname(args.output_query_path)
+        if directory != "" and not os.path.exists(directory):
             os.makedirs(directory)
 
     if args.sub_command == "build-core":
@@ -60,7 +62,7 @@ if __name__ == "__main__":
                              args.output_query_path)
     elif args.sub_command == "get-proof":
         run_get_proof(args)
-    elif args.sub_command == "quake":
+    elif args.sub_command == "emit-quake":
         emit_quake_query(args.input_query_path, 
                          args.output_query_path, 
                          args.timeout, 

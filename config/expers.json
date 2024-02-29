@@ -11,6 +11,12 @@
         "num_procs": 7
     },
     "debug": {
+        "mutations": [
+            "shuffle",
+            "rename",
+            "reseed",
+            "quake"
+        ],
         "keep_mutants": true,
         "num_mutants": 5,
         "exp_timeout": 10,

@@ -30,6 +30,8 @@ _PARTIAL_ORDER_ALT = [
     "(assert (forall ((x Height) (y Height)) (! (= (height_lt x y) (and (partial-order x y) (not (= x y)))) :pattern ((height_lt x y)) :qid prelude_height_lt :skolemid skolem_prelude_height_lt)))"
 ]
 
+QUAKE_MESSAGE = "[INFO] mariposa-quake"
+
 def convert_verus_smtlib(in_file, out_file):
     lines = open(in_file, 'r').readlines()
     lines = [line.strip() for line in lines]
@@ -88,7 +90,7 @@ def __split_query_context(query_path):
 
     # add push/pop
     query_context.insert(0, "(push 1)\n")
-    query_context.append("(echo \"[INFO] mariposa-quake\")\n")
+    query_context.append(f"(echo \"{QUAKE_MESSAGE}\")\n")
     query_context.append("(pop 1)\n")
 
     return main_context, query_context

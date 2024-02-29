@@ -108,9 +108,3 @@ def get_mutant_rows(cur, exp_table_name, v_path, mutation):
         WHERE vanilla_path = ?
         AND perturbation = ?""", (v_path, mutation))
     return res.fetchall()
-
-if __name__ == "__main__":
-    import sys
-
-    if sys.argv[1] == "split":
-        split_zip_db(sys.argv[2])
