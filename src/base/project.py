@@ -83,14 +83,14 @@ class ProjectType:
             return None
 
     def base_to_core(self):
-        san_check(self.qtyp == _ProjectType.BASE,
+        log_check(self.qtyp == _ProjectType.BASE,
                         "currently only a base project can be converted to core project")
-        san_check(self.styp == SolverType.Z3, 
+        log_check(self.styp == SolverType.Z3, 
                   "currently only z3-sourced project can be converted to core project")
         return ProjectType(_ProjectType.CORE, self.styp)
 
     def z3_to_cvc5(self):
-        san_check(self.styp == SolverType.Z3,
+        log_check(self.styp == SolverType.Z3,
                   "currently only z3-sourced project can be converted to cvc5 project")
         return ProjectType(self.qtyp, SolverType.CVC5)
 
@@ -113,7 +113,7 @@ class Project:
             self.part == other.part
 
     def get_db_dir(self):
-        san_check(self.sub_root.startswith(PROJ_ROOT), 
+        log_check(self.sub_root.startswith(PROJ_ROOT), 
                   f"invalid sub_root {self.sub_root}")
         return self.sub_root.replace(PROJ_ROOT, DB_ROOT)
     
@@ -123,7 +123,7 @@ class Project:
     #     return self.sub_root.replace(PROJ_ROOT, LOG_ROOT)
 
     def get_gen_dir(self):
-        san_check(self.sub_root.startswith(PROJ_ROOT), 
+        log_check(self.sub_root.startswith(PROJ_ROOT), 
                   f"invalid sub_root {self.sub_root}")
         return self.sub_root.replace(PROJ_ROOT, GEN_ROOT)
 
@@ -142,7 +142,7 @@ class Project:
 
     @staticmethod
     def single_mode_project(query_path):
-        san_check(query_path.endswith(".smt2"),
+        log_check(query_path.endswith(".smt2"),
                         'query must end with ".smt2"')
         query_path = query_path.replace(".smt2", "")
         query_id = scrub(os.path.basename(query_path))
@@ -194,17 +194,17 @@ class ProjectManager:
 
     def get_project(self, group_name, ptyp: ProjectType, enable_dummy=False):
         group = self.groups.get(group_name)
-        san_check(group, f"no such project group {group_name}")
+        log_check(group, f"no such project group {group_name}")
         proj = group.get_project(ptyp)
-        san_check(proj, f"no such sub-project {ptyp} under {group_name}")
+        log_check(proj, f"no such sub-project {ptyp} under {group_name}")
         return proj
     
     def get_project_by_path(self, path) -> Project:
-        san_check(path.startswith(PROJ_ROOT), f"invalid path {path}")
+        log_check(path.startswith(PROJ_ROOT), f"invalid path {path}")
         items = os.path.normpath(path).split(os.sep)[-2:]
-        san_check(len(items) == 2, f"invalid project path {path}")
+        log_check(len(items) == 2, f"invalid project path {path}")
         ptype = ProjectType.from_str(items[1])
-        san_check(ptype, f"invalid project type {items[1]}")
+        log_check(ptype, f"invalid project type {items[1]}")
         return self.get_project(items[0], ptype)
 
     def get_core_project(self, proj: Project, build=False) -> Project:

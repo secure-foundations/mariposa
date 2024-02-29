@@ -6,7 +6,7 @@ from enum import Enum
 
 from utils.system_utils import *
 from utils.database_utils import *
-from base.solver import SolverRunner, RCode, EXPECTED_CODES
+from base.solver import Solver, RCode, EXPECTED_CODES
 from base.project import Project, Partition
 from base.defs import EXPER_CONFIG_PATH
 
@@ -117,10 +117,10 @@ class Experiment:
     defined by (a project, a solver, an experiment config)
     the project.part may not be whole
     """
-    def __init__(self, name: str, proj: Project, solver: SolverRunner):
+    def __init__(self, name: str, proj: Project, solver: Solver):
         self.__init_config(name)
         self.proj: Project = proj
-        self.solver: SolverRunner = solver
+        self.solver: Solver = solver
         self.is_whole = proj.is_whole()
 
         self.table_prefix = get_table_prefix(proj, solver)
@@ -165,7 +165,23 @@ solver: {self.solver}"""
         exp.db_path = f"{proj.sub_root}/single.db"
         return exp
 
-    def build_query_tasks(self, origin_path):
+    def __create_db(self, clear):
+        pre_create_file(self.db_path, clear)
+        con, cur = get_cursor(self.db_path)
+
+        for table_name in [self.exp_table_name, self.sum_table_name]:
+            if table_exists(cur, table_name):
+                if clear:
+                    log_info(f"{table_name} already exists, removing")
+                else:
+                    confirm_input(f"{table_name} already exists, remove it?")
+                cur.execute(f"""DROP TABLE {table_name}""")
+
+        create_exp_table(cur, self.exp_table_name)
+        create_sum_table(cur, self.sum_table_name)
+        conclude(con)
+
+    def __build_query_tasks(self, origin_path):
         base = os.path.basename(origin_path)
         base.replace(".smt2", "")
 
@@ -185,18 +201,16 @@ solver: {self.solver}"""
                 mut_path = f"{self.gen_dir}/{base}.{str(s)}.{m}.smt2"
                 task = ExpTask(origin_path, mut_path, m, s)
                 tasks.append(task)
+
         return tasks
 
-    def build_tasks(self):
-        if not os.path.exists(self.gen_dir):
-            os.makedirs(self.gen_dir)
-        
+    def __build_tasks(self):
         tasks = []
         origin_paths = self.proj.list_queries()
         log_info(f"running {len(origin_paths)} original queries")
 
         for origin_path in origin_paths:
-            tasks.extend(self.build_query_tasks(origin_path))
+            tasks.extend(self.__build_query_tasks(origin_path))
 
         if not self.proj.is_whole():
             log_info(f"running ONLY {self.proj.part} in {self.proj.full_name}")
@@ -206,24 +220,12 @@ solver: {self.solver}"""
         log_info(f"adding {len(tasks)} tasks")
         return tasks
 
-    def init_db(self, clear):
-        create_dir(self.gen_dir, True)
-        create_dir(self.proj.get_db_dir(), clear)
-
-        con, cur = get_cursor(self.db_path)
-
-        for table_name in [self.exp_table_name, self.sum_table_name]:
-            if table_exists(cur, table_name):
-                if clear:
-                    print(f"[INFO] {table_name} already exists, removing")
-                else:
-                    print(f"[INFO] {table_name} already exists, remove it? [Y]", end=" ")
-                    san_check(input() == "Y", f"[INFO] aborting")
-                cur.execute(f"""DROP TABLE {table_name}""")
-
-        create_exp_table(cur, self.exp_table_name)
-        create_sum_table(cur, self.sum_table_name)
-        conclude(con)
+    # this is called by the runner
+    # should not call this for analysis
+    def create_tasks(self, clear):
+        self.__create_db(clear)
+        overwrite_dir(self.gen_dir, True)
+        return self.__build_tasks()
 
     def insert_exp_row(self, task, mutant_path, rcode, elapsed):
         con, cur = get_cursor(self.db_path)
@@ -266,15 +268,15 @@ solver: {self.solver}"""
         create_sum_table(cur, self.sum_table_name)
 
         processed = set()
-        print(f"[INFO] post processing exp data")
 
         for (v_path, v_rcode, v_time) in vanilla_rows:
             if v_path in processed:
                 continue
             processed.add(v_path)
             self.insert_sum_row(cur, v_path, v_rcode, v_time)
-
         conclude(con)
+
+        log_info("done post processing exp data")
 
     def sum_table_exists(self):
         if not os.path.exists(self.db_path):
@@ -290,7 +292,7 @@ solver: {self.solver}"""
         summaries = dict()
 
         if not table_exists(cur, sum_name):
-            san_check(enable_dummy, f"[ERROR] {sum_name} does not exist in {self.db_path}")
+            log_check(enable_dummy, f"[ERROR] {sum_name} does not exist in {self.db_path}")
             print(f"[WARN] {sum_name} does not exist, creating dummy data!")
             for path in self.proj.list_queries():
                 qr = QueryExpResult(path, self.proj.sub_root)

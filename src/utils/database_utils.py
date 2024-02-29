@@ -1,15 +1,15 @@
 import sqlite3, os
+from utils.system_utils import log_info, log_check, log_check
 
 def split_zip_db(db_path):
-    from sys_utils import san_check
     import glob
 
     DB_ROOT = "data/databases"
 
-    san_check(db_path.startswith(DB_ROOT), 
+    log_check(db_path.startswith(DB_ROOT), 
               f"[WARN] {db_path} not under {DB_ROOT}, skipping")
 
-    san_check(os.path.exists(db_path), 
+    log_check(os.path.exists(db_path), 
         f"[WARN] {db_path} does not exist, skipping")
 
     base_name = os.path.basename(db_path)
@@ -18,18 +18,15 @@ def split_zip_db(db_path):
     splits = glob.glob(split_pattern)
 
     if len(splits) > 0:
-        print(f"[WARN] {base_name} split already exists, remove? [Y]", end=" ")
-        san_check(input() == "Y", f"[INFO] aborting")
+        log_check(f"{base_name} split already exists, remove?")
         os.system(f"rm {split_pattern}")
 
-    print(f"[INFO] splitting {db_path} into 50MB chunks")
     os.system(f"cd {DB_ROOT} && tar cvzf - {base_name} | split --bytes=50MB - {base_name}.tar.gz.")
 
     splits = glob.glob(split_pattern)
-    san_check(len(splits) > 0, f"[WARN] {base_name} split failed!")
+    log_check(len(splits) > 0, f"[WARN] {base_name} split failed!")
 
-    print(f"[INFO] {base_name} split into {len(splits)} chunks: ")
-    print("\t" + " ".join(splits))
+    log_info(f"{base_name} split into {len(splits)} chunks " + "\t" + " ".join(splits))
 
 # def merge_unzipped_db():
     # os.system("cd data && mv mariposa.db mariposa.temp.db")
@@ -87,7 +84,7 @@ def create_exp_table(cur, table_name):
         elapsed_milli INTEGER, 
         check_sat_id INTEGER,
         timestamp DEFAULT CURRENT_TIMESTAMP)""")
-    print(f"[INFO] created table {table_name}")
+    log_info(f"created table {table_name}")
 
 def create_sum_table(cur, table_name):
     cur.execute(f"""CREATE TABLE {table_name} (
@@ -95,7 +92,7 @@ def create_sum_table(cur, table_name):
         mutations TEXT,
         summaries BLOB,
         PRIMARY KEY (vanilla_path, mutations))""")
-    print(f"[INFO] created table {table_name}")
+    log_info(f"created table {table_name}")
 
 def get_vanilla_paths(cur, exp_table_name):
     res = cur.execute(f"""

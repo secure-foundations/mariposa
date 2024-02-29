@@ -100,7 +100,7 @@ class NinjaPasta:
     def handle_preprocess(self, args):
         import re
 
-        san_check(re.match("^[a-z0-9_]*$", args.new_group_name),
+        log_check(re.match("^[a-z0-9_]*$", args.new_group_name),
                     "invalid project name in preprocess")
 
         out_proj = Project(args.new_group_name)
@@ -144,21 +144,16 @@ class NinjaPasta:
             log_info("no targets to build")
             return
 
-        create_dir(self.output_dir, self.clear)
+        overwrite_dir(self.output_dir, self.clear)
 
         ninja_stuff = [NINJA_BUILD_RULES] + self.ninja_stuff
         with open("build.ninja", "w+") as f:
             f.write("\n".join(ninja_stuff))
 
         log_info(f"generated {self.target_count} targets in build.ninja")
-        print("run `ninja -j 6 -k 0` to start building? [Y]", end=" ")
-
-        if input() != "Y":
-            print("exiting")
-            sys.exit(0)
+        confirm_input(f"run `ninja -j 6 -k 0` to start building?")
 
         os.system("ninja -j 6 -k 0")
-
         log_info(f"generated {get_file_count(self.output_dir)} files in {self.output_dir}")
 
 if __name__ == "__main__":
@@ -171,6 +166,6 @@ if __name__ == "__main__":
     p = subparsers.add_parser('info-proj', help='list known projects (from the current file system)')
     # set_up_get_proof(subparsers)
 
-    args = parser.parse_args()
+    args = deep_parse_args(parser)
     ninja = NinjaPasta(args)
     ninja.finalize()

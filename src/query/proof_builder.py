@@ -1,10 +1,10 @@
 import os
-from base.solver import CVC5Runner
+from base.solver import CVC5Solver
 from utils.system_utils import *
 
 class ProofBuilder:
     def __init__(self, input_query, output_proof, timeout, clear=False):
-        self.solver: CVC5Runner = CVC5Runner("cvc5_1_1_1")
+        self.solver: CVC5Solver = CVC5Solver("cvc5_1_1_1")
 
         if not os.path.exists(input_query):
             log_warn(f"input query {input_query} does not exist")
@@ -53,12 +53,12 @@ class ProofBuilder:
         with open(self.opt_query, "w") as opt_file:
             opt_file.writelines(lines)
 
-        san_check(os.path.exists(self.opt_query), 
+        log_check(os.path.exists(self.opt_query), 
                     f"failed to create {self.opt_query}")
 
     def __run_solver(self):
         rcode, elapsed = self.solver.run(self.opt_query, self.timeout)
         print(rcode, elapsed)
 
-        san_check(os.path.exists(self.output_proof), 
+        log_check(os.path.exists(self.output_proof), 
                 f"failed to create {self.output_proof}")

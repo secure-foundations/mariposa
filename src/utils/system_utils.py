@@ -8,8 +8,8 @@ class BColors:
     ERROR = '\033[91m'
     ENDC = '\033[0m'
 
-def log_info(msg):
-    print(f"{BColors.INFO}[INFO] {msg} {BColors.ENDC}")
+def log_info(msg, end="\n"):
+    print(f"{BColors.INFO}[INFO] {msg} {BColors.ENDC}", end=end)
 
 def log_warn(msg):
     print(f"{BColors.WARNING}[WARN] {msg} {BColors.ENDC}")
@@ -21,9 +21,14 @@ def exit_with(msg):
     log_error(msg)
     sys.exit(1)
 
-def san_check(cond, msg):
+def log_check(cond, msg):
     if not cond:
+        log_error("check failed!")
         exit_with(msg)
+
+def confirm_input(msg):
+    log_info(f"{msg} [Y]", end=" ")
+    log_check(input() == "Y", f"aborting")
 
 def subprocess_run(command, timeout=None, debug=False, cwd=None):
     if debug:
@@ -39,7 +44,7 @@ def subprocess_run(command, timeout=None, debug=False, cwd=None):
     return stdout, stderr, elapsed
 
 def list_files_ext(sub_root, ext):
-    san_check(os.path.isdir(sub_root), f"[ERROR] {sub_root} is not a directory")
+    log_check(os.path.isdir(sub_root), f"[ERROR] {sub_root} is not a directory")
     file_paths = []
     for root, _, files in os.walk(sub_root):
         for file in files:
@@ -96,20 +101,36 @@ def read_last_line(filename):
         last = f.readline().decode()
     return last
 
-def create_dir(path, clear):
+def overwrite_dir(path, over_write):
     if not os.path.exists(path):
+        # non-existent directory, we can create it
         os.makedirs(path)
         return
 
-    san_check(os.path.isdir(path), f"{path} is not a directory!")
+    log_check(os.path.isdir(path), f"{path} is not a directory!")
 
     if len(os.listdir(path)) == 0:
+        # empty directory, we can safely overwrite
         return
 
-    san_check(clear, f"directory {path} already exists!")
+    if not over_write:
+        confirm_input(f"directory {path} already exists, remove it?")
 
-    print(f"directory {path} already exists, remove it? [Y]", end=" ")
-    san_check(input() == "Y", f"aborting")
     shutil.rmtree(path)
 
     os.makedirs(path)
+
+def create_dir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+def pre_create_file(path, force_clear):
+    dir_path = os.path.dirname(path)
+    create_dir(dir_path)
+
+    if os.path.exists(path):
+        if not force_clear:
+            confirm_input(f"file {path} already exists, remove it?")
+        os.remove(path)
+    
+

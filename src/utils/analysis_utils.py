@@ -1,6 +1,6 @@
 import numpy as np
 
-from utils.system_utils import san_check
+from utils.system_utils import log_check
 
 def is_ratio(x):
     return type(x) == float and 0 < x < 1
@@ -73,7 +73,7 @@ class Categorizer:
     def add_item(self, cat, item):
         assert not self.finalized
         if cat not in self._items:
-            san_check(self._allow_unknown, 
+            log_check(self._allow_unknown, 
                     f"[ERROR] unknown category {cat}")
             self._items[cat] = set()
         self.tally.add(item)
@@ -147,15 +147,15 @@ class Categorizer:
     def __san_check_comparison(self, other):
         assert self.finalized and other.finalized
 
-        san_check(self.keys().intersection(other.keys()) != set(),
+        log_check(self.keys().intersection(other.keys()) != set(),
             "comparison with no common categories!")
         
-        san_check(self.tally.intersection(other.tally) != set(),
+        log_check(self.tally.intersection(other.tally) != set(),
             "comparison with no common items!")
 
     def get_migration_status(self, that):
         self.__san_check_comparison(that)
-        san_check(that.tally.issubset(self.tally), 
+        log_check(that.tally.issubset(self.tally), 
             "migration with item this < that!")
         all_cats = self.keys().union(that.keys())
         migrations = dict()

@@ -52,7 +52,7 @@ class SolverType(Enum):
     Z3 = "z3"
     CVC5 = "cvc5"
 
-class SolverRunner:
+class Solver:
     def __init__(self, name):
         self.proc = None
         self.poll_obj = None
@@ -84,9 +84,9 @@ class SolverRunner:
     @staticmethod
     def get_runner(name):
         if name.startswith("z3"):
-            return Z3Runner(name)
+            return Z3Solver(name)
         elif name.startswith("cvc5"):
-            return CVC5Runner(name)
+            return CVC5Solver(name)
         else:
             assert False
 
@@ -147,7 +147,7 @@ class SolverRunner:
     #     self.proc.terminate()
     #     self.poll_obj = None
 
-class Z3Runner(SolverRunner):
+class Z3Solver(Solver):
     def __init__(self, name):
         super().__init__(name)
 
@@ -161,7 +161,7 @@ class Z3Runner(SolverRunner):
 
         return rcode, elapsed
 
-class CVC5Runner(SolverRunner):
+class CVC5Solver(Solver):
     def __init__(self, name):
         super().__init__(name)
 

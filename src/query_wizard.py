@@ -5,7 +5,6 @@ from utils.option_utils import *
 from query.core_builder import BasicCoreBuilder
 from query.proof_builder import ProofBuilder
 from query.query_utils import convert_verus_smtlib, emit_quake_query
-from base.solver import SolverRunner
 
 def setup_build_core(subparsers):
     p = subparsers.add_parser('build-core', help='create core query form a given query')
@@ -47,10 +46,7 @@ if __name__ == "__main__":
     setup_convert_smt_lib(subparsers)
     setup_get_proof(subparsers)
 
-    args = parser.parse_args()
-
-    if hasattr(args, "solver"):
-        args.solver = SolverRunner(args.solver)
+    args = deep_parse_args(parser)
 
     if hasattr(args, "output_query_path"):
         directory = "/".join(args.output_query_path.split("/")[:-1])
