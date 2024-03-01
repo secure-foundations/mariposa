@@ -19,15 +19,19 @@ def add_output_log_option(parser):
 def add_solver_option(parser):
     parser.add_argument("-s", "--solver", default="z3_4_12_2", help="the solver name (from solvers.json) to use")
 
-def add_experiment_option(parser):
+def add_experiment_options(parser):
     parser.add_argument("-e", "--experiment", default="default", help="the experiment configuration name (from exps.json)")
+    add_solver_option(parser)
+    add_analyzer_options(parser)
+    add_clear_option(parser)
 
-def add_project_option(parser, required=True):
-    parser.add_argument("--new-group-name", required=required, help="the project group name to be created under data/projects/ (only for preprocess!)")
+def add_new_project_option(parser):
+    parser.add_argument("--new-project-name", required=True, help="the project group name to be created under data/projects/ (only for preprocess!)")
 
-def add_input_dir_option(parser):
+def add_input_dir_option(parser, is_known=True):
     parser.add_argument("-i", "--input-dir", required=True, help="the input directory")
     parser.add_argument("--part", default="1/1", help="which part of the project to run mariposa on (probably should not be specified manually)")
+    parser.add_argument("--is-known-project", default=is_known, action='store_true', help="allow a directory but not define a project")
 
 def add_output_dir_option(parser):
     parser.add_argument("-o", "--output-dir", required=False, help="the output directory")
@@ -35,7 +39,7 @@ def add_output_dir_option(parser):
 def add_clear_option(parser):
     parser.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment directory and database")
 
-def add_analyzer_option(parser):
+def add_analyzer_options(parser):
     parser.add_argument("--analyzer", default="default", help="the analyzer name (from config/expers.json) to use")
     parser.add_argument("--verbose", type=int, default=0, help="level of verbosity for the analysis")
 
@@ -53,9 +57,10 @@ def deep_parse_args(args):
 
     if hasattr(args, "analyzer"):
         args.analyzer = QueryAnalyzer(args.analyzer)
-    
-    if hasattr(args, "input_dir"):
+
+    if hasattr(args, "input_dir") and args.is_known_project:
         args.input_proj = PM.get_project_by_path(args.input_dir)
+        args.input_proj.part = args.part
 
     single = args.sub_command == "single"
 

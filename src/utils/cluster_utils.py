@@ -1,9 +1,12 @@
 import copy
 import os, subprocess, time
+from analysis.basic_analyzer import BasicAnalyzer
+from base.defs import S190X_HOSTS, SYNC_ZIP
 
 from base.project import Partition
+from utils.local_utils import handle_multiple
 from utils.option_utils import deep_parse_args
-from utils.system_utils import log_check, log_info, log_warn
+from utils.system_utils import exit_with, get_file_count, is_flat_dir, log_check, log_info, log_warn, subprocess_run
 
 def get_self_ip():
     import socket
@@ -20,15 +23,24 @@ def start_server(args):
     s = m.get_server()
     s.serve_forever()
 
-def run_manager(args):
+def __spinoff_server(args):
+    import threading
+    addr = get_self_ip()
+
+    st = threading.Thread(target=start_server, args=[args])
+    st.setDaemon(True)
+    st.start()
+
+    log_info("starting manager, run the following command on workers:")
+    print(f"src/main.py worker --manager-addr {addr} --authkey {args.authkey}")
+
+def handle_manager(args):
     wargs = copy.deepcopy(args)
     args = deep_parse_args(args)
     exp = args.experiment
-
     exp.create_db(clear=args.clear)
 
     from multiprocessing.managers import BaseManager
-    import threading
     import multiprocessing
     
     job_queue = multiprocessing.Queue()
@@ -46,14 +58,7 @@ def run_manager(args):
     BaseManager.register('get_job_queue', callable=lambda:job_queue)
     BaseManager.register('get_res_queue', callable=lambda:res_queue)
 
-    addr = get_self_ip()
-
-    st = threading.Thread(target=start_server, args=[args])
-    st.setDaemon(True)
-    st.start()
-
-    log_info("starting manager, run the following command on workers:")
-    print(f"src/main.py worker --manager-addr {addr} --authkey {args.authkey}")
+    __spinoff_server(args)
 
     # exit when expected number of results are collected
     while res_queue.qsize() != args.total_parts:
@@ -64,8 +69,6 @@ def run_manager(args):
 
     for i in range(args.total_parts):
         (remote_db_path, part) = res_queue.get()
-        if addr in remote_db_path:
-            continue
         if remote_db_path not in workers:
             workers[remote_db_path] = []
         workers[remote_db_path].append(part)
@@ -75,17 +78,45 @@ def run_manager(args):
         command = f"scp -r {remote_db_path} {temp_db_path}"
         log_info(f"copying db: {command}")
         os.system(command)
-        assert os.path.exists(temp_db_path)
+        log_check(os.path.exists(temp_db_path), f"failed to copy db {remote_db_path}!")
         for part in workers[remote_db_path]:
             log_info(f"importing {part} from {remote_db_path}")
             exp.import_tables(temp_db_path, part)
         os.remove(temp_db_path)
+    log_info(f"done importing")
 
-def recovery_mode(args, exp):
+    BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
+
+def handle_worker(args):
+    args = deep_parse_args(args)
+    from multiprocessing.managers import BaseManager
+    import os.path
+
+    BaseManager.register('get_job_queue')
+    BaseManager.register('get_res_queue')
+    m = BaseManager(address=(args.manager_addr, 50000), authkey=args.authkey.encode('utf-8'))
+    m.connect()
+
+    queue = m.get_job_queue()
+    res_queue = m.get_res_queue()
+
+    while queue.qsize() > 0:
+        wargs = queue.get()
+        if wargs is None:
+            break
+        (db_path, part) = handle_multiple(wargs)
+        db_path = f"{get_self_ip()}:{os.path.abspath(db_path)}"
+        res_queue.put((db_path, part))
+        log_info(f"worker {get_self_ip()} completed {part}")
+    log_info(f"worker {get_self_ip()} finished")
+
+def handle_recovery(args):
+    args = deep_parse_args(args)
+    exp = args.experiment
+
     available_db_paths = []
-    for i in {1, 2, 5, 6, 7, 8}:
-        temp_db_path = f"{exp.db_path}.{i}.temp"
-        host = f"s190{i}"
+    for host in S190X_HOSTS:
+        temp_db_path = f"{exp.db_path}.{host}.temp"
         remote_db_path = f"{host}:~/mariposa/{exp.db_path}"
 
         if os.path.exists(temp_db_path):
@@ -141,4 +172,39 @@ def recovery_mode(args, exp):
 
     log_info(f"done importing")
 
+def handle_sync(args):
+    args = deep_parse_args(args)
+    input_dir = args.input_dir
+    log_check(is_flat_dir(input_dir), 
+              f"{input_dir} is not a flat directory")
+    file_count = get_file_count(input_dir)
 
+    if os.path.exists(SYNC_ZIP):
+        os.remove(SYNC_ZIP)
+
+    cur_host = subprocess_run("hostname")[0]
+
+    lines = []
+
+    for host in S190X_HOSTS:
+        if host == cur_host:
+            continue
+
+        # very basic check if file count matches
+        remote_count = subprocess_run(f"ssh -t {host} 'ls -l mariposa/{input_dir} | wc -l'")[0]
+        if "No such file or directory" in remote_count:
+            lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
+        else:
+            if remote_count != file_count and args.clear:
+                subprocess_run(f"ssh -t {host} 'rm -r {input_dir}'")
+            else:
+                exit_with(f"file count mismatch {host}")
+
+    os.system(f"zip -r {SYNC_ZIP} {input_dir}")
+
+    with open("sync.sh", "w") as f:
+        f.write("#!/bin/bash\n")
+        f.write("\n".join(lines))
+        f.close()
+
+    log_info(f"{len(lines)} commands written to sync.sh")

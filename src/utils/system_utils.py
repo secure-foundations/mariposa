@@ -61,6 +61,12 @@ def list_files(sub_root):
 def get_file_count(sub_root):
     return len(list_files(sub_root))
 
+def is_flat_dir(sub_root):
+    for root, dirs, _ in os.walk(sub_root):
+        if len(dirs) > 0:
+            return False
+    return True
+
 def flatten_path(base_dir, path):
     assert base_dir in path
     if not base_dir.endswith("/"):
@@ -133,4 +139,3 @@ def pre_create_file(path, force_clear):
             confirm_input(f"file {path} already exists, remove it?")
         os.remove(path)
     
-

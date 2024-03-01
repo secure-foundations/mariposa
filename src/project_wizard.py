@@ -55,8 +55,8 @@ rule get-proof
 
 def set_up_preprocess(subparsers):
     p = subparsers.add_parser('preprocess', help='preprocess the project')
-    add_input_dir_option(p, allow_undefined=True)
-    add_project_option(p, required=True)
+    add_input_dir_option(p, True)
+    add_new_project_option(p)
     add_clear_option(p)
 
 def set_up_build_core(subparsers):

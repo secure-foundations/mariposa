@@ -96,10 +96,16 @@ class QueryExpResult:
 
         print(tabulate(table, headers="firstrow"))
 
-def get_table_prefix(proj, solver):
-    if proj.part.is_whole():
+def get_table_prefix(proj, solver, part=None):
+    if part is None:
+        part = proj.part
+    if part.is_whole():
         return scrub(f"{proj.full_name}_{str(solver)}")
-    return scrub(f"{proj.full_name}_{str(solver)}_{proj.part}")
+    return scrub(f"{proj.full_name}_{str(solver)}_{part}")
+
+def get_table_names(proj, solver, part=None):
+    prefix = get_table_prefix(proj, solver, part)
+    return f"{prefix}_exp", f"{prefix}_sum"
 
 class ExpTask:
     """represents a single task, 
@@ -108,8 +114,8 @@ class ExpTask:
         self.origin_path = v_path
         self.perturb = perturb
         self.mut_seed = mut_seed
-        self.quake = False
         self.mutant_path = g_path
+        self.quake = False
 
 class Experiment:
     """
@@ -124,10 +130,11 @@ class Experiment:
         self.is_whole = proj.is_whole()
 
         self.table_prefix = get_table_prefix(proj, solver)
-        self.exp_table_name = self.table_prefix + "_exp"
-        self.sum_table_name = self.table_prefix + "_sum"
+        self.exp_table_name, self.sum_table_name = get_table_names(proj, solver)
         self.gen_dir = os.path.join(proj.get_gen_dir(), name)
         self.db_path = os.path.join(proj.get_db_dir(), f"{name}.db")
+        create_dir(self.proj.get_db_dir())
+        reset_dir(self.gen_dir, True)
 
     def __init_config(self, name):
         objs = json.loads(open(EXPER_CONFIG_PATH).read())
@@ -165,7 +172,6 @@ solver: {self.solver}"""
         return exp
 
     def create_db(self, clear):
-        pre_create_file(self.db_path, clear)
         con, cur = get_cursor(self.db_path)
 
         for table_name in [self.exp_table_name, self.sum_table_name]:
@@ -223,7 +229,6 @@ solver: {self.solver}"""
     # should not call this for analysis
     def create_tasks(self, clear):
         self.create_db(clear)
-        reset_dir(self.gen_dir, True)
         return self.__build_tasks()
 
     def insert_exp_row(self, task, mutant_path, rcode, elapsed):
@@ -278,9 +283,10 @@ solver: {self.solver}"""
         log_info("done post processing exp data")
 
     def sum_table_exists(self):
-        print(self.db_path, self.sum_table_name)
+        # print(self.db_path, self.sum_table_name)
         if not os.path.exists(self.db_path):
             return False
+        print(self.db_path)
         con, cur = get_cursor(self.db_path)
         res = table_exists(cur, self.sum_table_name)
         con.close()
@@ -347,21 +353,20 @@ solver: {self.solver}"""
             sys.exit(1)
 
     def import_tables(self, other_db_path, part):
-        assert self.part.is_whole()
+        log_check(self.is_whole, "importing into a partial project does not make sense")
         con, cur = get_cursor(self.db_path)
 
         assert table_exists(cur, self.exp_table_name)
         assert table_exists(cur, self.sum_table_name)
 
         cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-        other_exp_tname = get_table_prefix(self.proj, self.solver, part) + "_exp"
+        other_exp_tname, other_sum_tname = get_table_names(self.proj, self.solver, part)
         cur.execute(f"INSERT INTO {self.exp_table_name} SELECT * FROM OTHER_DB.{other_exp_tname}")
-        other_sum_tname = get_table_prefix(self.proj, self.solver, part) + "_sum"
         cur.execute(f"INSERT INTO {self.sum_table_name} SELECT * FROM OTHER_DB.{other_sum_tname}")
         conclude(con)
 
     def probe_other_db(self, other_db_path):
-        assert self.part.num == 1
+        log_check(self.is_whole, "importing to a partial project does not make sense")
         tables = get_tables(other_db_path)
         exps, sums = set(), set()
 

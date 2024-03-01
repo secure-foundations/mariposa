@@ -13,3 +13,13 @@ SOLVER_CONFIG_PATH = "config/solvers.json"
 ANALYZER_CONFIG_PATH = "config/analyzers.json"
 
 SYNC_ZIP = "sync.zip"
+
+S190X_HOSTS = [
+    "s1901",
+    "s1902",
+    "s1904",
+    "s1905",
+    "s1906",
+    "s1907",
+    "s1908",
+]
