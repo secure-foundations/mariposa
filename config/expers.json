@@ -14,12 +14,11 @@
         "mutations": [
             "shuffle",
             "rename",
-            "reseed",
-            "quake"
+            "reseed"
         ],
-        "keep_mutants": true,
-        "num_mutants": 30,
-        "exp_timeout": 10,
+        "keep_mutants": false,
+        "num_mutants": 10,
+        "exp_timeout": 5,
         "num_procs": 5
     },
     "quake": {

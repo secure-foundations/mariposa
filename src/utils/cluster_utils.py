@@ -19,7 +19,7 @@ def start_server(args):
     s = m.get_server()
     s.serve_forever()
 
-def manager_mode(args, exp):
+def run_manager(args, exp):
     exp.create_db(clear=args.clear)
 
     from multiprocessing.managers import BaseManager

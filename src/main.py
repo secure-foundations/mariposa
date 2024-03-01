@@ -70,7 +70,6 @@ def run_multi(args, exp):
 
 def set_up_manager(subparsers):
     p = subparsers.add_parser('manager', help='sever pool manager mode.')
-    add_project_option(p)
     add_solver_option(p)
     add_experiment_option(p)
     add_clear_option(p)
