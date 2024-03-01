@@ -181,3 +181,5 @@ if __name__ == '__main__':
         run_manager(args)
     elif args.sub_command == "sync":
         handle_sync(args)
+    elif args.sub_command == "worker":
+        run_worker(args)
