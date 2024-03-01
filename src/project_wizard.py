@@ -2,7 +2,7 @@
 
 import argparse
 from base.project import PM, Project
-from base.defs import MARIPOSA, QUERY_WIZARD
+from base.defs import MARIPOSA, QUERY_WIZARD, SYNC_ZIP
 from utils.option_utils import *
 from utils.system_utils import *
 
@@ -55,11 +55,9 @@ rule get-proof
 
 def set_up_preprocess(subparsers):
     p = subparsers.add_parser('preprocess', help='preprocess the project')
-    add_input_dir_option(p)
+    add_input_dir_option(p, allow_undefined=True)
     add_project_option(p, required=True)
     add_clear_option(p)
-
-# def set_up_sync(subparsers):
 
 def set_up_build_core(subparsers):
     p = subparsers.add_parser('build-core', help='create unsat core project form a base project. the output directory is set using the project manager conventions.')
@@ -73,6 +71,48 @@ def set_up_convert_smt_lib(subparsers):
     add_input_dir_option(p)
     add_clear_option(p)
 
+def set_up_sync(subparsers):
+    p = subparsers.add_parser('sync', help='sync a project to another server (only for serenity)')
+    add_input_dir_option(p)
+    add_clear_option(p)
+
+def handle_sync(args):
+    if os.path.exists(SYNC_ZIP):
+        os.remove(SYNC_ZIP)
+
+    in_proj: Project = args.input_proj
+    input_dir = args.input_dir
+    log_check(in_proj.sub_root == input_dir, "invalid input project")
+
+    os.system(f"zip -r {SYNC_ZIP} {input_dir}")
+
+    file_count = len(in_proj.list_queries())
+    cur_host = subprocess_run("hostname")[0]
+
+    lines = []
+
+    for i in {1, 2, 4, 5, 6, 7, 8}:
+        host = f"s190{i}"
+        if host == cur_host:
+            continue
+
+        # very basic check if file count matches
+        remote_count = subprocess_run(f"ssh -t {host} 'ls -l mariposa/{dir} | wc -l'")[0]
+        if "No such file or directory" in remote_count:
+            lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
+        else:
+            if remote_count != file_count and args.clear:
+                subprocess_run(f"ssh -t {host} 'rm -r {input_dir}'")
+            else:
+                exit_with(f"file count mismatch {host}")
+
+    with open("sync.sh", "w") as f:
+        f.write("#!/bin/bash\n")
+        f.write("\n".join(lines))
+        f.close()
+
+    log_info(f"{len(lines)} commands written to sync.sh")
+
 class NinjaPasta:
     def __init__(self, args):
         self.ninja_stuff = []
@@ -85,15 +125,12 @@ class NinjaPasta:
             self.handle_preprocess(args)
             return
 
-        if args.input_dir:
-            self.in_proj = PM.get_project_by_path(args.input_dir)
+        self.in_proj = args.input_proj
 
         if args.sub_command == "build-core":
             self.handle_build_core(args)
         elif args.sub_command == "convert-smtlib":
             self.handle_convert_smt_lib(args)
-        elif args.sub_command == "info-proj":
-            PM.list_projects()
         else:
             parser.print_help()
 
@@ -165,7 +202,14 @@ if __name__ == "__main__":
     set_up_convert_smt_lib(subparsers)
     p = subparsers.add_parser('info-proj', help='list known projects (from the current file system)')
     # set_up_get_proof(subparsers)
+    set_up_sync(subparsers)
 
     args = deep_parse_args(parser)
-    ninja = NinjaPasta(args)
-    ninja.finalize()
+
+    if args.sub_command == "info-proj":
+        PM.list_projects()
+    elif args.sub_command == "sync":
+        sync_project(args.input_dir)
+    else:
+        ninja = NinjaPasta(args)
+        ninja.finalize()

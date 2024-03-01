@@ -11,3 +11,5 @@ QUERY_WIZARD = "src/query_wizard.py"
 EXPER_CONFIG_PATH = "config/expers.json"     
 SOLVER_CONFIG_PATH = "config/solvers.json"
 ANALYZER_CONFIG_PATH = "config/analyzers.json"
+
+SYNC_ZIP = "sync.zip"

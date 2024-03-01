@@ -76,9 +76,9 @@ if __name__ == '__main__':
 
     set_up_single(subparsers)
     set_up_multi(subparsers)
-    # setup_manager(subparsers)
-    # setup_worker(subparsers)
-    # setup_recovery(subparsers)
+    # set_up_manager(subparsers)
+    # set_up_worker(subparsers)
+    # set_up_recovery(subparsers)
 
     args = deep_parse_args(parser)
 
