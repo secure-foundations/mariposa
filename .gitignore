@@ -8,7 +8,6 @@ src/smt2action/target
 /gen
 .ninja*
 __pycache__/
-bin
 lib
 lib64
 share
