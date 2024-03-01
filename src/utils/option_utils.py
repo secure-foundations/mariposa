@@ -58,7 +58,7 @@ def deep_parse_args(parser):
     if hasattr(args, "analyzer"):
         args.analyzer = QueryAnalyzer(args.analyzer)
 
-    if hasattr(args, "input_dir") and not args.allow_undefined:
+    if hasattr(args, "input_dir") and not args.allow_undefined_proj:
         args.input_proj = PM.get_project_by_path(args.input_dir)
 
     return args

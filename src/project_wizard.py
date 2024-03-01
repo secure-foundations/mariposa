@@ -209,7 +209,7 @@ if __name__ == "__main__":
     if args.sub_command == "info-proj":
         PM.list_projects()
     elif args.sub_command == "sync":
-        sync_project(args.input_dir)
+        handle_sync(args)
     else:
         ninja = NinjaPasta(args)
         ninja.finalize()
