@@ -3,7 +3,7 @@ import os, subprocess, time
 
 from base.project import Partition
 from utils.option_utils import deep_parse_args
-from utils.system_utils import log_info, log_warn
+from utils.system_utils import log_check, log_info, log_warn
 
 def get_self_ip():
     import socket
@@ -36,7 +36,7 @@ def run_manager(args):
 
     for i in range(args.total_parts):
         wargs = copy.deepcopy(wargs)
-        wargs.part = Partition(i + 1, args.total_parts)
+        wargs.part = str(Partition(i + 1, args.total_parts))
         job_queue.put(wargs)
 
     # NOTE: we assume number of workers is less than number of partitions
@@ -53,7 +53,7 @@ def run_manager(args):
     st.start()
 
     log_info("starting manager, run the following command on workers:")
-    print(f"python3 scripts/main.py worker --manager-addr {addr} --authkey {args.authkey}")
+    print(f"src/main.py worker --manager-addr {addr} --authkey {args.authkey}")
 
     # exit when expected number of results are collected
     while res_queue.qsize() != args.total_parts:
@@ -100,7 +100,7 @@ def recovery_mode(args, exp):
             os.system(command)
 
         if not os.path.exists(temp_db_path):
-            print(f"[WARN] failed to copy db {remote_db_path}, skipping")
+            log_warn(f"failed to copy db {remote_db_path}, skipping")
         else:
             available_db_paths.append(temp_db_path)
 
@@ -120,9 +120,7 @@ def recovery_mode(args, exp):
         assert part.id not in found_ids
         found_ids.add(part.id)
     
-    if part_nums is None:
-        log_warn("no partitions found, aborting")
-        return
+    log_check(part_nums != None, "no partitions found, aborting")
 
     missing_count = 0
 

@@ -18,7 +18,6 @@ def set_up_single(subparsers):
     add_clear_option(p)
 
     add_analyzer_option(p)
-    add_verbose_option(p)
 
 def run_single(args):
     args = deep_parse_args(args)
@@ -55,7 +54,6 @@ def set_up_multi(subparsers):
     add_clear_option(p)
 
     add_analyzer_option(p)
-    add_verbose_option(p)
 
 def run_multi(args):
     args = deep_parse_args(args)
@@ -79,6 +77,7 @@ def set_up_manager(subparsers):
     add_experiment_option(p)
     add_clear_option(p)
     add_authkey_option(p)
+    add_analyzer_option(p)
     p.add_argument("--total-parts", type=int, required=True, help="number of parts to split the project into")
 
 def set_up_worker(subparsers):

@@ -37,8 +37,6 @@ def add_clear_option(parser):
 
 def add_analyzer_option(parser):
     parser.add_argument("--analyzer", default="default", help="the analyzer name (from config/expers.json) to use")
-
-def add_verbose_option(parser):
     parser.add_argument("--verbose", type=int, default=0, help="level of verbosity for the analysis")
 
 def add_authkey_option(parser):
