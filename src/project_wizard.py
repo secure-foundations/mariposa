@@ -1,8 +1,8 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3
 
 import argparse
 from base.project import PM, Project
-from base.defs import MARIPOSA, QUERY_WIZARD, SYNC_ZIP
+from base.defs import MARIPOSA, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
 
@@ -161,7 +161,8 @@ if __name__ == "__main__":
     p = subparsers.add_parser('info', help='list known projects (from the current file system)')
     # set_up_get_proof(subparsers)
 
-    args = deep_parse_args(parser)
+    args = parser.parse_args()
+    args = deep_parse_args(args)
 
     if args.sub_command == "info":
         PM.list_projects()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3
 
 import argparse
 from utils.cluster_utils import handle_manager, handle_sync, handle_worker

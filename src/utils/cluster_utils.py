@@ -191,14 +191,23 @@ def handle_sync(args):
             continue
 
         # very basic check if file count matches
-        remote_count = subprocess_run(f"ssh -t {host} 'ls -l mariposa/{input_dir} | wc -l'")[0]
+        remote_count = subprocess_run(f"ssh -t {host} 'ls mariposa/{input_dir} | wc -l'")[0]
+
         if "No such file or directory" in remote_count:
             lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
+            continue
+
+        if int(remote_count) == file_count:
+            
+            log_warn(f"file count matches {host}, not syncing")
+            continue
+        print(file_count, remote_count)
+
+        if args.clear:
+            log_warn(f"file count does not match on {host}, removing")
+            subprocess_run(f"ssh -t {host} 'rm -r {input_dir}'")
         else:
-            if remote_count != file_count and args.clear:
-                subprocess_run(f"ssh -t {host} 'rm -r {input_dir}'")
-            else:
-                exit_with(f"file count mismatch {host}")
+            exit_with(f"file count mismatch {host}")
 
     os.system(f"zip -r {SYNC_ZIP} {input_dir}")
 
