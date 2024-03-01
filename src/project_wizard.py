@@ -144,7 +144,7 @@ class NinjaPasta:
             log_info("no targets to build")
             return
 
-        overwrite_dir(self.output_dir, self.clear)
+        reset_dir(self.output_dir, self.clear)
 
         ninja_stuff = [NINJA_BUILD_RULES] + self.ninja_stuff
         with open("build.ninja", "w+") as f:

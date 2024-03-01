@@ -159,10 +159,9 @@ sub_root: {self.proj.sub_root}
 solver: {self.solver}"""
 
     @staticmethod
-    def single_mode_exp(query_path, solver):
+    def single_mode_exp(exp_name, query_path, solver):
         proj = Project.single_mode_project(query_path)
-        exp = Experiment("single", proj, solver)
-        exp.db_path = f"{proj.sub_root}/single.db"
+        exp = Experiment(exp_name, proj, solver)
         return exp
 
     def __create_db(self, clear):
@@ -224,7 +223,7 @@ solver: {self.solver}"""
     # should not call this for analysis
     def create_tasks(self, clear):
         self.__create_db(clear)
-        overwrite_dir(self.gen_dir, True)
+        reset_dir(self.gen_dir, True)
         return self.__build_tasks()
 
     def insert_exp_row(self, task, mutant_path, rcode, elapsed):

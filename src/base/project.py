@@ -1,7 +1,7 @@
 import os, random, enum, re
 from utils.system_utils import *
 from base.solver import SolverType
-from base.defs import DB_ROOT, GEN_ROOT, LOG_ROOT, PROJ_ROOT
+from base.defs import *
 
 class Partition:
     def __init__(self, id, num):
@@ -104,6 +104,7 @@ class Project:
         self.ptype = ptyp
         self.sub_root = os.path.join(PROJ_ROOT, name, str(ptyp))
         self.part = part
+        self.single_mode = False
 
     def __lt__(self, other):
         return self.full_name < other.full_name
@@ -113,16 +114,18 @@ class Project:
             self.part == other.part
 
     def get_db_dir(self):
+        if self.single_mode: return SINGLE_PROJ_ROOT
         log_check(self.sub_root.startswith(PROJ_ROOT), 
                   f"invalid sub_root {self.sub_root}")
         return self.sub_root.replace(PROJ_ROOT, DB_ROOT)
-    
+
     # def get_log_dir(self):
     #     san_check(self.sub_root.startswith(PROJ_ROOT), 
     #         f"invalid sub_root {self.sub_root}")
     #     return self.sub_root.replace(PROJ_ROOT, LOG_ROOT)
 
     def get_gen_dir(self):
+        if self.single_mode: return SINGLE_MUT_ROOT
         log_check(self.sub_root.startswith(PROJ_ROOT), 
                   f"invalid sub_root {self.sub_root}")
         return self.sub_root.replace(PROJ_ROOT, GEN_ROOT)
@@ -145,9 +148,12 @@ class Project:
         log_check(query_path.endswith(".smt2"),
                         'query must end with ".smt2"')
         query_path = query_path.replace(".smt2", "")
-        query_id = scrub(os.path.basename(query_path))
-        p = Project("single_" + query_id)
-        p.sub_root = "gen/" + query_id
+        reset_dir(SINGLE_PROJ_ROOT, True)
+        reset_dir(SINGLE_MUT_ROOT, True)
+
+        p = Project("single")
+        p.single_mode = True
+        p.sub_root = SINGLE_PROJ_ROOT
         return p
 
     def is_whole(self):

@@ -65,7 +65,6 @@ if __name__ == '__main__':
 
     subparsers = parser.add_subparsers(dest='sub_command', help="mode to run mariposa in")
 
-    setup_single(subparsers)
     setup_multi(subparsers)
     setup_manager(subparsers)
     setup_worker(subparsers)

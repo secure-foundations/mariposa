@@ -101,7 +101,7 @@ def read_last_line(filename):
         last = f.readline().decode()
     return last
 
-def overwrite_dir(path, over_write):
+def reset_dir(path, overwrite):
     if not os.path.exists(path):
         # non-existent directory, we can create it
         os.makedirs(path)
@@ -110,10 +110,10 @@ def overwrite_dir(path, over_write):
     log_check(os.path.isdir(path), f"{path} is not a directory!")
 
     if len(os.listdir(path)) == 0:
-        # empty directory, we can safely overwrite
+        # empty directory, we are done
         return
 
-    if not over_write:
+    if not overwrite:
         confirm_input(f"directory {path} already exists, remove it?")
 
     shutil.rmtree(path)

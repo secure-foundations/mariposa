@@ -18,7 +18,7 @@
             "quake"
         ],
         "keep_mutants": true,
-        "num_mutants": 5,
+        "num_mutants": 30,
         "exp_timeout": 10,
         "num_procs": 5
     },
