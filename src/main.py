@@ -5,6 +5,7 @@ from analysis.basic_analyzer import BasicAnalyzer
 from base.exper import Experiment
 from base.runner import Runner
 from base.defs import MARIPOSA
+from utils.cluster_utils import get_self_ip, run_manager
 from utils.option_utils import *
 from utils.system_utils import list_smt2_files
 from project_wizard import *
@@ -54,10 +55,8 @@ def set_up_multi(subparsers):
     add_analyzer_option(p)
     add_verbose_option(p)
 
-def run_multi(args):
-    proj = PM.get_project_by_path(args.input_dir)
-    exp = Experiment(args.experiment, proj, args.solver)
-    
+def run_multi(args, exp):
+
     if exp.sum_table_exists() and args.clear == False:
         log_warn(f"experiment results already exists for {exp.proj.sub_root}")
         BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
@@ -69,6 +68,48 @@ def run_multi(args):
     BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
     return (exp.db_path, args.part)
 
+def set_up_manager(subparsers):
+    p = subparsers.add_parser('manager', help='sever pool manager mode.')
+    add_project_option(p)
+    add_solver_option(p)
+    add_experiment_option(p)
+    add_clear_option(p)
+    add_authkey_option(p)
+    p.add_argument("--total-parts", type=int, required=True, help="number of parts to split the project into")
+
+def set_up_worker(subparsers):
+    p = subparsers.add_parser('worker', help='server pool worker mode.')
+    add_authkey_option(p)
+    p.add_argument("--manager-addr", required=True, help="the address of the manager node")
+
+def run_worker(args):
+    from multiprocessing.managers import BaseManager
+    import os.path
+
+    BaseManager.register('get_job_queue')
+    BaseManager.register('get_res_queue')
+    m = BaseManager(address=(args.manager_addr, 50000), authkey=args.authkey.encode('utf-8'))
+    m.connect()
+
+    queue = m.get_job_queue()
+    res_queue = m.get_res_queue()
+
+    while queue.qsize() > 0:
+        wargs = queue.get()
+        if wargs is None:
+            break
+        (db_path, part) = run_multi(wargs)
+        db_path = f"{get_self_ip()}:{os.path.abspath(db_path)}"
+        res_queue.put((db_path, part))
+        print(f"[INFO] worker {get_self_ip()} completed {part}")
+    print(f"[INFO] worker {get_self_ip()} finished")
+
+def setup_recovery(subparsers):
+    p = subparsers.add_parser('recovery', help='recovery mode. recover an existing experiment by (adding) a single query.')
+    add_project_option(p)
+    add_solver_option(p)
+    add_experiment_option(p)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa is a tool for testing SMT proof stability. this is the main tool that manages the experiment lifecycle.")
 
@@ -76,14 +117,20 @@ if __name__ == '__main__':
 
     set_up_single(subparsers)
     set_up_multi(subparsers)
-    # set_up_manager(subparsers)
-    # set_up_worker(subparsers)
+    set_up_manager(subparsers)
+    set_up_worker(subparsers)
     # set_up_recovery(subparsers)
 
     args = deep_parse_args(parser)
 
     if args.sub_command == "single":
         run_single(args)
-    elif args.sub_command == "multi":
-        run_multi(args)
+        exit(0)
+
+    exp = Experiment(args.experiment, args.input_proj, args.solver)
+
+    if args.sub_command == "multi":
+        run_multi(args, exp)
+    elif args.sub_command == "manager":
+        run_manager(args, exp)
 

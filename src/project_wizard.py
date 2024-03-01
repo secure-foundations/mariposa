@@ -84,8 +84,6 @@ def handle_sync(args):
     input_dir = args.input_dir
     log_check(in_proj.sub_root == input_dir, "invalid input project")
 
-    os.system(f"zip -r {SYNC_ZIP} {input_dir}")
-
     file_count = len(in_proj.list_queries())
     cur_host = subprocess_run("hostname")[0]
 
@@ -97,7 +95,7 @@ def handle_sync(args):
             continue
 
         # very basic check if file count matches
-        remote_count = subprocess_run(f"ssh -t {host} 'ls -l mariposa/{dir} | wc -l'")[0]
+        remote_count = subprocess_run(f"ssh -t {host} 'ls -l mariposa/{input_dir} | wc -l'")[0]
         if "No such file or directory" in remote_count:
             lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
         else:
@@ -105,6 +103,8 @@ def handle_sync(args):
                 subprocess_run(f"ssh -t {host} 'rm -r {input_dir}'")
             else:
                 exit_with(f"file count mismatch {host}")
+
+    os.system(f"zip -r {SYNC_ZIP} {input_dir}")
 
     with open("sync.sh", "w") as f:
         f.write("#!/bin/bash\n")
@@ -130,7 +130,7 @@ class NinjaPasta:
         if args.sub_command == "build-core":
             self.handle_build_core(args)
         elif args.sub_command == "convert-smtlib":
-            self.handle_convert_smt_lib(args)
+            self.handle_convert_smt_lib()
         else:
             parser.print_help()
 
@@ -162,7 +162,7 @@ class NinjaPasta:
             self.ninja_stuff += [f"build {out_path}: build-core {in_path}\n"]
             self.target_count += 1
 
-    def handle_convert_smt_lib(self, args):
+    def handle_convert_smt_lib(self):
         out_proj = PM.get_cvc5_counterpart(self.in_proj, build=True)
 
         log_info(f"converting queries in {self.in_proj.sub_root}")
@@ -200,13 +200,13 @@ if __name__ == "__main__":
     set_up_preprocess(subparsers)
     set_up_build_core(subparsers)
     set_up_convert_smt_lib(subparsers)
-    p = subparsers.add_parser('info-proj', help='list known projects (from the current file system)')
+    p = subparsers.add_parser('info', help='list known projects (from the current file system)')
     # set_up_get_proof(subparsers)
     set_up_sync(subparsers)
 
     args = deep_parse_args(parser)
 
-    if args.sub_command == "info-proj":
+    if args.sub_command == "info":
         PM.list_projects()
     elif args.sub_command == "sync":
         handle_sync(args)

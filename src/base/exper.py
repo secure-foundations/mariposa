@@ -164,7 +164,7 @@ solver: {self.solver}"""
         exp = Experiment(exp_name, proj, solver)
         return exp
 
-    def __create_db(self, clear):
+    def create_db(self, clear):
         pre_create_file(self.db_path, clear)
         con, cur = get_cursor(self.db_path)
 
@@ -222,7 +222,7 @@ solver: {self.solver}"""
     # this is called by the runner
     # should not call this for analysis
     def create_tasks(self, clear):
-        self.__create_db(clear)
+        self.create_db(clear)
         reset_dir(self.gen_dir, True)
         return self.__build_tasks()
 
