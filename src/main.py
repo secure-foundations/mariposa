@@ -21,8 +21,10 @@ def set_up_single(subparsers):
     add_verbose_option(p)
 
 def run_single(args):
+    args = deep_parse_args(args)
+
     in_query = args.input_query_path
-    exp = Experiment.single_mode_exp(args.experiment, in_query, args.solver)
+    exp = args.experiment
     output_dir = exp.proj.sub_root
 
     if exp.sum_table_exists() and args.clear == False:
@@ -55,7 +57,9 @@ def set_up_multi(subparsers):
     add_analyzer_option(p)
     add_verbose_option(p)
 
-def run_multi(args, exp):
+def run_multi(args):
+    args = deep_parse_args(args)
+    exp = args.experiment
 
     if exp.sum_table_exists() and args.clear == False:
         log_warn(f"experiment results already exists for {exp.proj.sub_root}")
@@ -70,6 +74,7 @@ def run_multi(args, exp):
 
 def set_up_manager(subparsers):
     p = subparsers.add_parser('manager', help='sever pool manager mode.')
+    add_input_dir_option(p)
     add_solver_option(p)
     add_experiment_option(p)
     add_clear_option(p)
@@ -82,6 +87,7 @@ def set_up_worker(subparsers):
     p.add_argument("--manager-addr", required=True, help="the address of the manager node")
 
 def run_worker(args):
+    args = deep_parse_args(args)
     from multiprocessing.managers import BaseManager
     import os.path
 
@@ -109,6 +115,50 @@ def setup_recovery(subparsers):
     add_solver_option(p)
     add_experiment_option(p)
 
+def set_up_sync(subparsers):
+    p = subparsers.add_parser('sync', help='sync a project to another server (only for serenity)')
+    add_input_dir_option(p)
+    add_clear_option(p)
+
+def handle_sync(args):
+    args = deep_parse_args(args)
+
+    if os.path.exists(SYNC_ZIP):
+        os.remove(SYNC_ZIP)
+
+    in_proj: Project = args.input_proj
+    input_dir = args.input_dir
+    log_check(in_proj.sub_root == input_dir, "invalid input project")
+
+    file_count = len(in_proj.list_queries())
+    cur_host = subprocess_run("hostname")[0]
+
+    lines = []
+
+    for i in {1, 2, 4, 5, 6, 7, 8}:
+        host = f"s190{i}"
+        if host == cur_host:
+            continue
+
+        # very basic check if file count matches
+        remote_count = subprocess_run(f"ssh -t {host} 'ls -l mariposa/{input_dir} | wc -l'")[0]
+        if "No such file or directory" in remote_count:
+            lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
+        else:
+            if remote_count != file_count and args.clear:
+                subprocess_run(f"ssh -t {host} 'rm -r {input_dir}'")
+            else:
+                exit_with(f"file count mismatch {host}")
+
+    os.system(f"zip -r {SYNC_ZIP} {input_dir}")
+
+    with open("sync.sh", "w") as f:
+        f.write("#!/bin/bash\n")
+        f.write("\n".join(lines))
+        f.close()
+
+    log_info(f"{len(lines)} commands written to sync.sh")
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa is a tool for testing SMT proof stability. this is the main tool that manages the experiment lifecycle.")
 
@@ -118,18 +168,17 @@ if __name__ == '__main__':
     set_up_multi(subparsers)
     set_up_manager(subparsers)
     set_up_worker(subparsers)
+    set_up_sync(subparsers)
     # set_up_recovery(subparsers)
-
-    args = deep_parse_args(parser)
+    args = parser.parse_args()
 
     if args.sub_command == "single":
         run_single(args)
         exit(0)
 
-    exp = Experiment(args.experiment, args.input_proj, args.solver)
-
     if args.sub_command == "multi":
-        run_multi(args, exp)
+        run_multi(args)
     elif args.sub_command == "manager":
-        run_manager(args, exp)
-
+        run_manager(args)
+    elif args.sub_command == "sync":
+        handle_sync(args)

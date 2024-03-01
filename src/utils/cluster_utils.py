@@ -2,6 +2,7 @@ import copy
 import os, subprocess, time
 
 from base.project import Partition
+from utils.option_utils import deep_parse_args
 from utils.system_utils import log_info, log_warn
 
 def get_self_ip():
@@ -19,7 +20,11 @@ def start_server(args):
     s = m.get_server()
     s.serve_forever()
 
-def run_manager(args, exp):
+def run_manager(args):
+    wargs = copy.deepcopy(args)
+    args = deep_parse_args(args)
+    exp = args.experiment
+
     exp.create_db(clear=args.clear)
 
     from multiprocessing.managers import BaseManager
@@ -30,7 +35,7 @@ def run_manager(args, exp):
     res_queue = multiprocessing.Queue()
 
     for i in range(args.total_parts):
-        wargs = copy.deepcopy(args)
+        wargs = copy.deepcopy(wargs)
         wargs.part = Partition(i + 1, args.total_parts)
         job_queue.put(wargs)
 

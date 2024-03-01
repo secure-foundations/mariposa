@@ -148,7 +148,7 @@ class Project:
         log_check(query_path.endswith(".smt2"),
                         'query must end with ".smt2"')
         query_path = query_path.replace(".smt2", "")
-        reset_dir(SINGLE_PROJ_ROOT, True)
+        # reset_dir(SINGLE_PROJ_ROOT, True)
         reset_dir(SINGLE_MUT_ROOT, True)
 
         p = Project("single")

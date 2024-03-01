@@ -278,6 +278,7 @@ solver: {self.solver}"""
         log_info("done post processing exp data")
 
     def sum_table_exists(self):
+        print(self.db_path, self.sum_table_name)
         if not os.path.exists(self.db_path):
             return False
         con, cur = get_cursor(self.db_path)
