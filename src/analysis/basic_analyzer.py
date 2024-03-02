@@ -43,10 +43,14 @@ class BasicAnalyzer:
 
         if verbosity == 0:
             return
-
+        
         for cat, cs in self.__cats.items():
             if verbosity == 1 and cat != Stability.UNSTABLE:
                 continue
+            
+            if verbosity == 2 and cat == Stability.STABLE:
+                continue
+
             if len(cs) == 0:
                 log_info(f"no {cat.value} queries found")
                 continue
@@ -55,7 +59,7 @@ class BasicAnalyzer:
 
             for qs in cs:
                 self[qs].enforce_timeout(self.ana._timeout)
-                self[qs].print_status()
+                self[qs].print_status(verbosity)
 
     # def get_assert_counts(self, update=False):
     #     from tqdm import tqdm

@@ -20,7 +20,7 @@ def handle_single(args):
         return
 
     reset_dir(output_dir, args.clear)
-    command = f"{MARIPOSA} -i {in_query} -o {exp.proj.sub_root}/split.smt2 -a split"
+    command = f"{MARIPOSA} -i {in_query} -o {exp.proj.sub_root}/split.smt2 -a split --convert-comments"
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     log_check(result.returncode == 0, "single mode split failed!")
 

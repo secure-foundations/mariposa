@@ -19,10 +19,13 @@ def add_output_log_option(parser):
 def add_solver_option(parser):
     parser.add_argument("-s", "--solver", default="z3_4_12_2", help="the solver name (from solvers.json) to use")
 
-def add_experiment_options(parser):
+def add_analysis_options(parser):
     parser.add_argument("-e", "--experiment", default="default", help="the experiment configuration name (from exps.json)")
     add_solver_option(parser)
     add_analyzer_options(parser)
+
+def add_experiment_options(parser):
+    add_analysis_options(parser)
     add_clear_option(parser)
 
 def add_new_project_option(parser):

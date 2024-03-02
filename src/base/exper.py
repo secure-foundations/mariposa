@@ -3,6 +3,7 @@ import numpy as np
 
 from typing import Dict
 from enum import Enum
+from utils.query_utils import find_verus_procedure_name
 
 from utils.system_utils import *
 from utils.database_utils import *
@@ -67,15 +68,27 @@ class QueryExpResult:
         self.blob = new_blobs
         self.timeout = timeout
 
-    def print_status(self):
+    def print_status(self, verbosity=1):
         from tabulate import tabulate
-        log_info(f"command to copy query\ncp '{self.query_path}' temp/woot.smt2")
+        log_info(f"command to copy query")
+        print(f"cp '{self.query_path}' temp/woot.smt2")
+
+        v_rcode, v_time = self.get_original_status()
+        proc = find_verus_procedure_name(self.query_path)
+
+        if proc != None:
+            log_info(f"procedure name: {proc}")
+
         if self.timeout != None:
             log_info(f"alternative timeout: {self.timeout/1000}s")
+
+        if verbosity <= 1:
+            return
+
         table = [["mutation"] + [str(rc) for rc in EXPECTED_CODES] 
                  + ["mean", "std"]]
-        v_rcode, v_time = self.get_original_status()
         print(f"plain query {RCode(v_rcode)} in {v_time / 1000}s")
+
         for m in self.mutations:
             trow = [m]
             rcodes, times = self.get_mutation_status(m)

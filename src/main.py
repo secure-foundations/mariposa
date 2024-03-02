@@ -12,7 +12,7 @@ def set_up_single(subparsers):
     add_experiment_options(p)
 
 def set_up_multi(subparsers):
-    p = subparsers.add_parser('multiple', help='multiple query mode. experiment with an existing (preprocessed) project using the specified solver')
+    p = subparsers.add_parser('multiple', help='multiple query (project) mode. experiment with an existing (preprocessed) project using the specified solver')
     add_input_dir_option(p)
     add_experiment_options(p)
 
@@ -61,4 +61,6 @@ if __name__ == '__main__':
     elif args.sub_command == "worker":
         handle_worker(args)
     elif args.sub_command == "sync":
-        handle_sync(args)
+        handle_sync(args.input_dir, args.clear)
+    else:
+        parser.print_help()

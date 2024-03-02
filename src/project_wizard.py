@@ -8,7 +8,7 @@ from utils.system_utils import *
 
 NINJA_BUILD_RULES = f"""
 rule split
-    command = {MARIPOSA} -i $in -o $out -a split
+    command = {MARIPOSA} -i $in -o $out -a split --convert-comments
 
 rule format
     command = {MARIPOSA} -i $in -o $out -a format
@@ -55,7 +55,7 @@ rule get-proof
 
 def set_up_preprocess(subparsers):
     p = subparsers.add_parser('preprocess', help='preprocess the project')
-    add_input_dir_option(p, True)
+    add_input_dir_option(p, False)
     add_new_project_option(p)
     add_clear_option(p)
 
@@ -95,10 +95,10 @@ class NinjaPasta:
     def handle_preprocess(self, args):
         import re
 
-        log_check(re.match("^[a-z0-9_]*$", args.new_group_name),
+        log_check(re.match("^[a-z0-9_]*$", args.new_project_name),
                     "invalid project name in preprocess")
 
-        out_proj = Project(args.new_group_name)
+        out_proj = Project(args.new_project_name)
         self.output_dir = out_proj.sub_root
         log_info(f"output directory is set to {self.output_dir}")
 

@@ -6,7 +6,7 @@ from base.defs import S190X_HOSTS, SYNC_ZIP
 from base.project import Partition
 from utils.local_utils import handle_multiple
 from utils.option_utils import deep_parse_args
-from utils.system_utils import exit_with, get_file_count, is_flat_dir, log_check, log_info, log_warn, subprocess_run
+from utils.system_utils import confirm_input, exit_with, get_file_count, is_flat_dir, log_check, log_info, log_warn, subprocess_run
 
 def get_self_ip():
     import socket
@@ -25,16 +25,22 @@ def start_server(args):
 
 def __spinoff_server(args):
     import threading
-    addr = get_self_ip()
 
     st = threading.Thread(target=start_server, args=[args])
     st.setDaemon(True)
     st.start()
+    
+    addr = get_self_ip()
 
-    log_info("starting manager, run the following command on workers:")
-    print(f"src/main.py worker --manager-addr {addr} --authkey {args.authkey}")
+    log_info("starting manager, run the following command to start workers:")
+    for host in S190X_HOSTS:
+        if host == "s1904":
+            continue
+        remote_cmd = f"""ssh {host} "(cd mariposa; python3 src/main.py worker --manager-addr {addr} --authkey {args.authkey}) &> mariposa.log &" """
+        print(remote_cmd)
 
 def handle_manager(args):
+    # handle_sync(args.input_dir, args.clear)
     wargs = copy.deepcopy(args)
     args = deep_parse_args(args)
     exp = args.experiment
@@ -172,9 +178,8 @@ def handle_recovery(args):
 
     log_info(f"done importing")
 
-def handle_sync(args):
-    args = deep_parse_args(args)
-    input_dir = args.input_dir
+def handle_sync(input_dir, clear):
+    # args = deep_parse_args(args)
     log_check(is_flat_dir(input_dir), 
               f"{input_dir} is not a flat directory")
     file_count = get_file_count(input_dir)
@@ -197,17 +202,17 @@ def handle_sync(args):
             lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
             continue
 
-        if int(remote_count) == file_count:
-            
-            log_warn(f"file count matches {host}, not syncing")
-            continue
-        print(file_count, remote_count)
-
-        if args.clear:
-            log_warn(f"file count does not match on {host}, removing")
-            subprocess_run(f"ssh -t {host} 'rm -r {input_dir}'")
+        if clear:
+            log_warn(f"force syncing on {host}")
+            subprocess_run(f"ssh -t {host} 'rm -r mariposa/{input_dir}'")
+            lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
         else:
-            exit_with(f"file count mismatch {host}")
+            if int(remote_count) != file_count:
+                exit_with(f"file count mismatch {host}")
+
+    if len(lines) == 0:
+        log_info(f"no sync required")
+        return
 
     os.system(f"zip -r {SYNC_ZIP} {input_dir}")
 
@@ -217,3 +222,9 @@ def handle_sync(args):
         f.close()
 
     log_info(f"{len(lines)} commands written to sync.sh")
+    confirm_input("run `cat sync.sh | parallel`?")
+    os.system("cat sync.sh | parallel")
+
+    confirm_input("remove temp files?")
+    os.remove("sync.sh")
+    os.remove(SYNC_ZIP)
