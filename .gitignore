@@ -4,12 +4,10 @@
 /data/cs_komodo/
 /data/cvc5_cdafny/
 /data/s_komodo/
-/target
+src/smt2action/target
 /gen
-ninja
 .ninja*
 __pycache__/
-bin
 lib
 lib64
 share

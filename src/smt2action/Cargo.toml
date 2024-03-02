@@ -1,0 +1,17 @@
+[package]
+name = "mariposa"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+smt2parser = {path="./smt2utils/smt2parser"}
+z3tracer = {path="./smt2utils/z3tracer"}
+rand = "0.8.5"
+rand_chacha = "0.3.1"
+clap = { version = "4.3.19", features = ["derive"] }
+strum = "0.26"
+strum_macros = "0.26"
+log = {version = "0.4.20"}
+
