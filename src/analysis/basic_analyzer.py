@@ -1,5 +1,5 @@
 from typing import Dict
-# from base.project import PM, QueryType as QType
+# from base.project import FACT, QueryType as QType
 from base.exper import Experiment, QueryExpResult
 from query.analyzer import *
 from utils.system_utils import *
@@ -123,7 +123,7 @@ class BasicAnalyzer:
 #             print(f"[ERROR] unknown project type {ptyp}")
 #             assert False
 
-#         proj = PM.load_project(self.group_name, ptyp, enable_dummy=True)
+#         proj = FACT.load_project(self.group_name, ptyp, enable_dummy=True)
 #         exp = ExpPart(exp_name, proj, solver)
 #         exp = ExpAnalyzer(exp, self.ana, enable_dummy=True)
 

@@ -1,4 +1,4 @@
-import os, json, random
+import os, random
 import numpy as np
 
 from typing import Dict
@@ -8,6 +8,7 @@ from utils.query_utils import find_verus_procedure_name
 from utils.system_utils import *
 from utils.database_utils import *
 from base.solver import Solver, RCode, EXPECTED_CODES
+# from base.factory import FACT
 from base.project import Project, Partition
 from base.defs import EXPER_CONFIG_PATH
 
@@ -130,30 +131,8 @@ class ExpTask:
         self.mutant_path = g_path
         self.quake = False
 
-class Experiment:
-    """
-    an experiment is a collection of tasks
-    defined by (a project, a solver, an experiment config)
-    the project.part may not be whole
-    """
-    def __init__(self, name: str, proj: Project, solver: Solver):
-        self.__init_config(name)
-        self.proj: Project = proj
-        self.solver: Solver = solver
-        self.is_whole = proj.is_whole()
-
-        self.table_prefix = get_table_prefix(proj, solver)
-        self.exp_table_name, self.sum_table_name = get_table_names(proj, solver)
-        self.gen_dir = os.path.join(proj.get_gen_dir(), name)
-        self.db_path = os.path.join(proj.get_db_dir(), f"{name}.db")
-        create_dir(self.proj.get_db_dir())
-        reset_dir(self.gen_dir, True)
-
-    def __init_config(self, name):
-        objs = json.loads(open(EXPER_CONFIG_PATH).read())
-        obj = objs["default"]
-        obj.update(objs[name])
-
+class ExpConfig:
+    def __init__(self, name, obj):
         self.exp_name = name
         # what mutations do we use?
         self.enabled_muts = obj["mutations"]
@@ -169,6 +148,40 @@ class Experiment:
 
         # how long do we wait? (seconds)
         self.timeout = obj["exp_timeout"]
+    
+    def as_dict(self):
+        return {"mutations": self.enabled_muts,
+                "num_mutants": self.num_mutant,
+                "num_procs": self.num_procs,
+                "keep_mutants": self.keep_mutants,
+                "exp_timeout": self.timeout}
+
+class Experiment(ExpConfig):
+    """
+    an experiment is a collection of tasks
+    defined by (a project, a solver, an experiment config)
+    the project.part may not be whole
+    """
+    def __init__(self, cfg: ExpConfig, proj: Project, solver: Solver):
+        # this is a bit of a hack
+        super().__init__(cfg.exp_name, cfg.as_dict())
+
+        self.proj: Project = proj
+        self.solver: Solver = solver
+        self.is_whole = proj.is_whole()
+
+        self.table_prefix = get_table_prefix(proj, solver)
+        self.exp_table_name, self.sum_table_name = get_table_names(proj, solver)
+        self.gen_dir = os.path.join(proj.get_gen_dir(), self.exp_name)
+        self.db_path = os.path.join(proj.get_db_dir(), f"{self.exp_name}.db")
+
+        # this won't reset the db
+        create_dir(self.proj.get_db_dir())
+        # this just clears the gen dir
+        reset_dir(self.gen_dir, True)
+
+    def signature(self):
+        return f"{self.proj.full_name}_{self.proj.part}_{self.solver}_{self.exp_name}"
 
     def debug(self):
         return f"""project: {self.proj.full_name}
@@ -177,12 +190,6 @@ experiment: {self.exp_name}
 db_path: {self.db_path}
 sub_root: {self.proj.sub_root}
 solver: {self.solver}"""
-
-    @staticmethod
-    def single_mode_exp(exp_name, query_path, solver):
-        proj = Project.single_mode_project(query_path)
-        exp = Experiment(exp_name, proj, solver)
-        return exp
 
     def create_db(self, clear):
         con, cur = get_cursor(self.db_path)
@@ -274,7 +281,7 @@ solver: {self.solver}"""
                 blob[i][1][j + 1] = row[1]
 
         cur.execute(f"""INSERT INTO {self.sum_table_name}
-        VALUES(?, ?, ?);""", (v_path, "", blob))
+        VALUES(?, ?);""", (v_path, blob))
 
     def populate_sum_table(self):
         con, cur = get_cursor(self.db_path)
@@ -299,7 +306,6 @@ solver: {self.solver}"""
         # print(self.db_path, self.sum_table_name)
         if not os.path.exists(self.db_path):
             return False
-        print(self.db_path)
         con, cur = get_cursor(self.db_path)
         res = table_exists(cur, self.sum_table_name)
         con.close()
@@ -326,20 +332,14 @@ solver: {self.solver}"""
 
         mut_size = self.num_mutant
 
-        special_convert = "opaque" in self.exp_name
-        # print(self.exp_name, special_convert)
-
         for row in rows:
-            blob = np.frombuffer(row[2], dtype=int)
+            blob = np.frombuffer(row[1], dtype=int)
             if blob.shape == (488,):
-                blob = blob.reshape((4, 2, mut_size + 1))
-                blob = blob[:3, :, :]
+                assert False
             else:
                 blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
-            # assert (blob.shape == (3, 2, 61))
+
             path = row[0]
-            if special_convert:
-                path = path.replace(".dfyxxx", ".dfy.").replace(".1.smt2", ".smt2")
             qr = QueryExpResult(path, self.proj.sub_root, self.enabled_muts, blob)
             if qr.mutations == []:
                 qr.mutations = self.enabled_muts
@@ -365,7 +365,7 @@ solver: {self.solver}"""
             print(f"[ERROR] {len(missing)} experiments are missing in {self.sum_table_name}")
             sys.exit(1)
 
-    def import_tables(self, other_db_path, part):
+    def import_partition_tables(self, other_db_path, part):
         log_check(self.is_whole, "importing into a partial project does not make sense")
         con, cur = get_cursor(self.db_path)
 
@@ -393,3 +393,43 @@ solver: {self.solver}"""
                     assert table.endswith("_sum")
                     sums.add(part)
         return exps
+
+    # this is only used for migration
+    def import_tables(self, other_db_path, other_exp, other_sum):
+        con, cur = get_cursor(self.db_path)
+        if table_exists(cur, self.exp_table_name):
+            cur.execute(f"""DROP TABLE {self.exp_table_name}""")
+        if table_exists(cur, self.sum_table_name):
+            cur.execute(f"""DROP TABLE {self.sum_table_name}""")
+
+        create_exp_table(cur, self.exp_table_name)
+        create_sum_table(cur, self.sum_table_name)
+
+        cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
+        cur.execute(f"INSERT INTO {self.exp_table_name} SELECT * FROM OTHER_DB.{other_exp}")
+        # cur.execute(f"INSERT INTO {self.sum_table_name} SELECT * FROM OTHER_DB.{other_sum}")
+        
+        res = cur.execute(f"""SELECT * FROM OTHER_DB.{other_sum}""")
+        rows = res.fetchall()
+        # con.close()
+
+        mut_size = self.num_mutant
+
+        special_convert = "opaque" in self.exp_name
+        # print(self.exp_name, special_convert)
+
+        for row in rows:
+            blob = np.frombuffer(row[2], dtype=int)
+            if blob.shape == (488,):
+                blob = blob.reshape((4, 2, mut_size + 1))
+                blob = blob[:3, :, :]
+            else:
+                blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
+
+            path = row[0]
+            if special_convert:
+                path = path.replace(".dfyxxx", ".dfy.").replace(".1.smt2", ".smt2")
+            cur.execute(f"""INSERT INTO {self.sum_table_name} VALUES(?, ?);""", (path, blob))
+        conclude(con)
+
+        self.load_sum_table()

@@ -89,9 +89,8 @@ def create_exp_table(cur, table_name):
 def create_sum_table(cur, table_name):
     cur.execute(f"""CREATE TABLE {table_name} (
         vanilla_path TEXT,
-        mutations TEXT,
         summaries BLOB,
-        PRIMARY KEY (vanilla_path, mutations))""")
+        PRIMARY KEY (vanilla_path))""")
     log_info(f"created table {table_name}")
 
 def get_vanilla_paths(cur, exp_table_name):

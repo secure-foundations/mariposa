@@ -1,7 +1,7 @@
-import subprocess
-import sys
+import subprocess, sys
 from analysis.basic_analyzer import BasicAnalyzer
 from base.defs import MARIPOSA
+from base.factory import FACT
 from base.runner import Runner
 
 from utils.option_utils import deep_parse_args
@@ -45,3 +45,13 @@ def handle_multiple(args):
     r.run_project(exp, args.clear)
     BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
     return (exp.db_path, args.part)
+
+def handle_info(args):
+    for pg in FACT.get_project_groups():
+        print(f"project group: {pg.group_name}")
+        for proj in pg.get_projects():
+            print(f"\t{proj.ptype}")
+            exps = FACT.get_project_exps(proj)
+            for exp in exps:
+                print(f"\t\t{exp.exp_name} - {exp.solver.name}")
+        print("")

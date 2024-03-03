@@ -87,7 +87,7 @@ def handle_manager(args):
         log_check(os.path.exists(temp_db_path), f"failed to copy db {remote_db_path}!")
         for part in workers[remote_db_path]:
             log_info(f"importing {part} from {remote_db_path}")
-            exp.import_tables(temp_db_path, part)
+            exp.import_partition_tables(temp_db_path, part)
         os.remove(temp_db_path)
     log_info(f"done importing")
 
@@ -174,7 +174,7 @@ def handle_recovery(args):
         log_info(f"importing from {temp_db_path}")
         for part in exp.probe_other_db(temp_db_path):
             log_info(f"importing {part} from {temp_db_path}")
-            exp.import_tables(temp_db_path, part)
+            exp.import_partition_tables(temp_db_path, part)
 
     log_info(f"done importing")
 
@@ -228,3 +228,8 @@ def handle_sync(input_dir, clear):
     confirm_input("remove temp files?")
     os.remove("sync.sh")
     os.remove(SYNC_ZIP)
+
+# def handle_update(args):
+    # log_info("updating mariposa")
+    # os.system("git pull")
+    # os.system("make")

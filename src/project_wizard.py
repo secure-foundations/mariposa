@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from base.project import PM, Project
+from base.project import Project
 from base.defs import MARIPOSA, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
@@ -108,7 +108,7 @@ class NinjaPasta:
             self.target_count += 1
 
     def handle_build_core(self, args):
-        out_proj = PM.get_core_project(self.in_proj, build=True)
+        out_proj = FACT.get_core_project(self.in_proj, build=True)
 
         output_dir = out_proj.sub_root
         self.output_dir = output_dir
@@ -121,7 +121,7 @@ class NinjaPasta:
             self.target_count += 1
 
     def handle_convert_smt_lib(self):
-        out_proj = PM.get_cvc5_counterpart(self.in_proj, build=True)
+        out_proj = FACT.get_cvc5_counterpart(self.in_proj, build=True)
 
         log_info(f"converting queries in {self.in_proj.sub_root}")
 
@@ -158,14 +158,10 @@ if __name__ == "__main__":
     set_up_preprocess(subparsers)
     set_up_build_core(subparsers)
     set_up_convert_smt_lib(subparsers)
-    p = subparsers.add_parser('info', help='list known projects (from the current file system)')
     # set_up_get_proof(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
 
-    if args.sub_command == "info":
-        PM.list_projects()
-    else:
-        ninja = NinjaPasta(args)
-        ninja.finalize()
+    ninja = NinjaPasta(args)
+    ninja.finalize()

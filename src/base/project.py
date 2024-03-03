@@ -143,19 +143,6 @@ class Project:
         partitions = partition(queries, self.part.num)
         return partitions[self.part.id - 1]
 
-    @staticmethod
-    def single_mode_project(query_path):
-        log_check(query_path.endswith(".smt2"),
-                        'query must end with ".smt2"')
-        query_path = query_path.replace(".smt2", "")
-        # reset_dir(SINGLE_PROJ_ROOT, True)
-        reset_dir(SINGLE_MUT_ROOT, True)
-
-        p = Project("single")
-        p.single_mode = True
-        p.sub_root = SINGLE_PROJ_ROOT
-        return p
-
     def is_whole(self):
         return self.part.is_whole()
 
@@ -182,54 +169,10 @@ class ProjectGroup:
 
             sub_proj = Project(self.group_name, sub_proj)
             self.projects[sub_proj.full_name] = sub_proj
-            
+
     def get_project(self, ptyp: ProjectType):
         return self.projects.get(full_proj_name(self.group_name, ptyp))
     
-    def list_projects(self):
-        return list(sorted(self.projects.values()))
-
-class ProjectManager:
-    def __init__(self):
-        self.groups = dict()
-        self.all_projects = dict()
-
-        for groot in os.listdir(PROJ_ROOT):
-            p = ProjectGroup(groot, PROJ_ROOT + groot)
-            self.groups[groot] = p
-
-    def get_project(self, group_name, ptyp: ProjectType, enable_dummy=False):
-        group = self.groups.get(group_name)
-        log_check(group, f"no such project group {group_name}")
-        proj = group.get_project(ptyp)
-        log_check(proj, f"no such sub-project {ptyp} under {group_name}")
-        return proj
-    
-    def get_project_by_path(self, path) -> Project:
-        log_check(path.startswith(PROJ_ROOT), f"invalid path {path}")
-        items = os.path.normpath(path).split(os.sep)[-2:]
-        log_check(len(items) == 2, f"invalid project path {path}")
-        ptype = ProjectType.from_str(items[1])
-        log_check(ptype, f"invalid project type {items[1]}")
-        return self.get_project(items[0], ptype)
-
-    def get_core_project(self, proj: Project, build=False) -> Project:
-        core_ptype = proj.ptype.base_to_core()
-        if not build:
-            return self.get_project(proj.group_name, core_ptype)
-        return Project(proj.group_name, core_ptype)
-
-    def get_cvc5_counterpart(self, proj: Project, build=False) -> Project:
-        cvc5_ptype = proj.ptype.z3_to_cvc5()
-        if not build:
-            return self.get_project(proj.group_name, cvc5_ptype)
-        return Project(proj.group_name, cvc5_ptype)
-
-    def list_projects(self):
-        print("available projects:")
-        for pg in sorted(self.groups.values()):
-            print(f"  {pg.group_name}")
-            for proj in pg.list_projects():
-                print(f"    {proj.ptyp}")
-
-PM = ProjectManager()
+    def get_projects(self):
+        for p in sorted(self.projects.values()):
+            yield p

@@ -1,6 +1,7 @@
 import os
 from base.exper import Experiment
-from base.project import PM, Partition
+from base.factory import FACT
+from base.project import Partition
 from base.solver import Solver
 from query.analyzer import QueryAnalyzer
 
@@ -20,7 +21,7 @@ def add_solver_option(parser):
     parser.add_argument("-s", "--solver", default="z3_4_12_2", help="the solver name (from solvers.json) to use")
 
 def add_analysis_options(parser):
-    parser.add_argument("-e", "--experiment", default="default", help="the experiment configuration name (from exps.json)")
+    parser.add_argument("-e", "--exp-config", default="default", help="the experiment configuration name (from exps.json)")
     add_solver_option(parser)
     add_analyzer_options(parser)
 
@@ -51,7 +52,7 @@ def add_authkey_option(parser):
 
 def deep_parse_args(args):
     if hasattr(args, "solver"):
-        args.solver = Solver.get_runner(args.solver)
+        args.solver = FACT.get_solver_by_name(args.solver)
 
     if hasattr(args, "part"):
         args.part = Partition.from_str(args.part)
@@ -62,17 +63,17 @@ def deep_parse_args(args):
         args.analyzer = QueryAnalyzer(args.analyzer)
 
     if hasattr(args, "input_dir") and args.is_known_project:
-        args.input_proj = PM.get_project_by_path(args.input_dir)
+        args.input_proj = FACT.get_project_by_path(args.input_dir)
         args.input_proj.part = args.part
 
     single = args.sub_command == "single"
 
-    if hasattr(args, "experiment"):
+    if hasattr(args, "exp_config"):
         if single:
-            args.experiment = Experiment.single_mode_exp(
-                args.experiment, args.input_query_path, args.solver)
+            args.experiment = FACT.build_single_mode_exp(
+                args.exp_config, args.input_query_path, args.solver)
         else:
-            args.experiment = Experiment(
-                args.experiment, args.input_proj, args.solver)
+            args.experiment = FACT.build_experiment(
+                args.exp_config, args.input_proj, args.solver)
 
     return args

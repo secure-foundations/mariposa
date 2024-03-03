@@ -2,7 +2,6 @@ import time, os, json
 import subprocess, select
 from enum import Enum
 
-from base.defs import SOLVER_CONFIG_PATH
 from utils.query_utils import QUAKE_MESSAGE
 from utils.system_utils import log_check, log_warn, subprocess_run
 
@@ -44,18 +43,15 @@ class SolverType(Enum):
     CVC5 = "cvc5"
 
 class Solver:
-    def __init__(self, name):
+    # do not create a solver object directly, use the factory method
+    def __init__(self, name, obj):
         self.proc = None
         self.poll_obj = None
-        self.__init_config(name)
-
-    def __init_config(self, name):
-        objs = json.loads(open(SOLVER_CONFIG_PATH).read())
-        obj = objs[name]
         self.name = name
         self.date = obj["date"]
         self.path = obj["path"]
         self.stype = SolverType(self.name.split("_")[0])
+
         assert os.path.exists(self.path)
 
     def __str__(self):
@@ -71,30 +67,12 @@ class Solver:
         tokens = self.name.split("_")
         version = ".".join(tokens[1:])
         return f"{tokens[0].upper()} {version}"
-    
-    @staticmethod
-    def get_runner(name):
-        if name.startswith("z3"):
-            return Z3Solver(name)
-        elif name.startswith("cvc5"):
-            return CVC5Solver(name)
-        else:
-            assert False
 
     def start_process(self, query_path, timeout):
         log_check(timeout < 1000, "timeout should be in seconds")
         log_check(self.stype == SolverType.Z3, "interactive mode only supported for z3 solver")
 
         args = [self.path, query_path]
-        # elif self.type == SolverType.CVC5:
-        #     args = [self.path, 
-        #         "--incremental", 
-        #         "-q",
-        #         "--tlimit-per", 
-        #         str(timeout * 1000),
-        #         query_path]
-        # else:
-        #     assert False
         p = subprocess.Popen(args, stdout=subprocess.PIPE)
 
         poll_obj = select.poll()
@@ -143,8 +121,8 @@ class Solver:
         self.poll_obj = None
 
 class Z3Solver(Solver):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, obj):
+        super().__init__(name, obj)
 
     def run(self, query_path, time_limit, seeds=None):
         command = [self.path, 
@@ -161,8 +139,8 @@ class Z3Solver(Solver):
         return rcode, elapsed
 
 class CVC5Solver(Solver):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, obj):
+        super().__init__(name, obj)
 
     def run(self, query_path, time_limit, seeds=None, more_options=[]):
         assert time_limit < 1000
