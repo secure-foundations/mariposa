@@ -44,7 +44,7 @@ def handle_manager(args):
     wargs = copy.deepcopy(args)
     args = deep_parse_args(args)
     exp = args.experiment
-    exp.create_db(clear=args.clear)
+    exp.create_db(clear=args.clear_existing)
 
     from multiprocessing.managers import BaseManager
     import multiprocessing

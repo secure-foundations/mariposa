@@ -14,12 +14,12 @@ def handle_single(args):
     exp = args.experiment
     output_dir = exp.proj.sub_root
 
-    if exp.sum_table_exists() and args.clear == False:
+    if exp.sum_table_exists() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {output_dir}")
         BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
 
-    reset_dir(output_dir, args.clear)
+    reset_dir(output_dir, args.clear_existing)
     command = f"{MARIPOSA} -i {in_query} -o {exp.proj.sub_root}/split.smt2 -a split --convert-comments"
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     log_check(result.returncode == 0, "single mode split failed!")
@@ -29,20 +29,20 @@ def handle_single(args):
         sys.exit(0)
 
     r = Runner()
-    r.run_project(exp, args.clear)
+    r.run_project(exp, args.clear_existing)
     BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
 
 def handle_multiple(args):
     args = deep_parse_args(args)
     exp = args.experiment
 
-    if exp.sum_table_exists() and args.clear == False:
+    if exp.sum_table_exists() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {exp.proj.sub_root}")
         BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
 
     r = Runner()
-    r.run_project(exp, args.clear)
+    r.run_project(exp, args.clear_existing)
     BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
     return (exp.db_path, args.part)
 

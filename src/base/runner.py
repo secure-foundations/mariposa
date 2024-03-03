@@ -70,9 +70,9 @@ def print_eta(elapsed, cur_size, init_size):
         done_size = init_size - cur_size
         estimated = round(cur_size * (elapsed / done_size), 2)
         estimated = datetime.now() + timedelta(hours=estimated)
-        log_info(f"finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {estimated.strftime('%m-%d %H:%M')}")
+        log_debug(f"finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {estimated.strftime('%m-%d %H:%M')}")
     else:
-        log_info(f"elapsed: {elapsed} hours")
+        log_debug(f"elapsed: {elapsed} hours")
 
 def try_get_size(q):
     try:
@@ -101,7 +101,7 @@ def run_tasks(worker, queue):
         worker.run_task(task)
 
     elapsed = round((time.time() - start_time) / 3600, 2)
-    log_info(f"worker {worker.worker_id} finished in {elapsed} hours")
+    log_debug(f"worker {worker.worker_id} finished in {elapsed} hours")
 
 class Runner:
     def __init__(self):
@@ -128,5 +128,5 @@ class Runner:
         for p in processes:
             p.join()
 
-        log_info("workers finished")
+        log_debug("workers finished")
         self.exp.populate_sum_table()

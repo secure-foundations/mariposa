@@ -1,11 +1,13 @@
 import os, sys, time
 import shutil
 import subprocess
+from base.defs import DEBUG_ENABLE
 
 class BColors:
     INFO = '\033[92m'
     WARNING = '\033[93m'
     ERROR = '\033[91m'
+    DEBUG = '\033[94m'
     ENDC = '\033[0m'
 
 def log_info(msg, end="\n"):
@@ -16,6 +18,10 @@ def log_warn(msg):
 
 def log_error(msg):
     print(f"{BColors.ERROR}[ERROR] {msg} {BColors.ENDC}")
+
+def log_debug(msg, end="\n"):
+    if DEBUG_ENABLE:
+        print(f"{BColors.DEBUG}[DEBUG] {msg} {BColors.ENDC}", end=end)
 
 def exit_with(msg):
     log_error(msg)

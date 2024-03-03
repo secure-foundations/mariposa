@@ -27,10 +27,10 @@ def setup_get_proof(subparsers):
     add_clear_option(p)
 
 def run_build_core(args):
-    BasicCoreBuilder(args.input_query_path, args.solver, args.output_query_path, args.timeout, args.clear).run()
+    BasicCoreBuilder(args.input_query_path, args.solver, args.output_query_path, args.timeout, args.clear_existing).run()
 
 def run_get_proof(args):
-    ProofBuilder(args.input_query_path, args.output_log_path,  args.timeout, args.clear).run()
+    ProofBuilder(args.input_query_path, args.output_log_path,  args.timeout, args.clear_existing).run()
 
 def setup_emit_quake(subparsers):
     p = subparsers.add_parser('emit-quake', help='emit quake file')

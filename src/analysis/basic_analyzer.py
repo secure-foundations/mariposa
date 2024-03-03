@@ -35,9 +35,10 @@ class BasicAnalyzer:
         return self.__cats
 
     def print_status(self, verbosity=0):
-        log_info(f"exp: {self.exp.exp_name}")
-        log_info(f"proj: {self.exp.proj.full_name}")
-        log_info(f"ana: {self.ana.name}")
+        log_info(f"exp config:\t{self.exp.exp_name}")
+        log_info(f"project dir:\t{self.exp.proj.sub_root}")
+        log_info(f"solver path:\t{self.exp.solver.path}")
+        log_info(f"analyzer:\t{self.ana.name}")
 
         self.__cats.print_status(skip_empty=True)
 
@@ -52,7 +53,6 @@ class BasicAnalyzer:
                 continue
 
             if len(cs) == 0:
-                log_info(f"no {cat.value} queries found")
                 continue
 
             log_info(f"listing {cat.value} queries...")

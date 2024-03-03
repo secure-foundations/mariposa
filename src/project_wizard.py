@@ -77,7 +77,7 @@ class NinjaPasta:
         self.target_count = 0
 
         self.output_dir = None
-        self.clear = args.clear
+        self.clear = args.clear_existing
         
         if args.sub_command == "preprocess":
             self.handle_preprocess(args)
@@ -139,7 +139,7 @@ class NinjaPasta:
             log_info("no targets to build")
             return
 
-        reset_dir(self.output_dir, self.clear)
+        reset_dir(self.output_dir, self.clear_existing)
 
         ninja_stuff = [NINJA_BUILD_RULES] + self.ninja_stuff
         with open("build.ninja", "w+") as f:

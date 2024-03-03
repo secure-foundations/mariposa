@@ -41,7 +41,10 @@ def add_output_dir_option(parser):
     parser.add_argument("-o", "--output-dir", required=False, help="the output directory")
 
 def add_clear_option(parser):
-    parser.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment directory and database")
+    parser.add_argument("--clear-existing", default=False, action='store_true', help="clear the existing experiment directory and database")
+
+def add_debug_option(parser):
+    parser.add_argument("--debug", default=False, action='store_true', help="run in debug mode")
 
 def add_analyzer_options(parser):
     parser.add_argument("--analyzer", default="default", help="the analyzer name (from config/expers.json) to use")

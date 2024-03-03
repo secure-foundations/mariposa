@@ -71,14 +71,13 @@ class QueryExpResult:
 
     def print_status(self, verbosity=1):
         from tabulate import tabulate
-        log_info(f"command to copy query")
-        print(f"cp '{self.query_path}' temp/woot.smt2")
+        log_info(f"query path:\t\t{self.query_path}")
 
         v_rcode, v_time = self.get_original_status()
         proc = find_verus_procedure_name(self.query_path)
 
         if proc != None:
-            log_info(f"procedure name: {proc}")
+            log_info(f"procedure name:\t\t{proc}")
 
         if self.timeout != None:
             log_info(f"alternative timeout: {self.timeout/1000}s")
@@ -238,11 +237,11 @@ solver: {self.solver}"""
             tasks.extend(self.__build_query_tasks(origin_path))
 
         if not self.proj.is_whole():
-            log_info(f"running ONLY {self.proj.part} in {self.proj.full_name}")
+            log_debug(f"running ONLY {self.proj.part} in {self.proj.full_name}")
         else:
-            log_info(f"running ALL of {self.proj.full_name}")
+            log_debug(f"running ALL of {self.proj.full_name}")
 
-        log_info(f"adding {len(tasks)} tasks")
+        log_debug(f"adding {len(tasks)} tasks")
         return tasks
 
     # this is called by the runner
@@ -300,7 +299,7 @@ solver: {self.solver}"""
             self.insert_sum_row(cur, v_path, v_rcode, v_time)
         conclude(con)
 
-        log_info("done post processing exp data")
+        log_debug("done post processing exp data")
 
     def sum_table_exists(self):
         # print(self.db_path, self.sum_table_name)

@@ -23,3 +23,5 @@ S190X_HOSTS = [
     "s1907",
     "s1908",
 ]
+
+DEBUG_ENABLE = False
