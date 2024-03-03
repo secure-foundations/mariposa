@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from utils.cluster_utils import handle_manager, handle_sync, handle_worker
+from utils.cluster_utils import handle_manager, handle_sync, handle_update, handle_worker
 from utils.local_utils import handle_single, handle_multiple, handle_info
 from utils.option_utils import *
 from project_wizard import *
@@ -41,6 +41,9 @@ def set_up_sync(subparsers):
 def set_up_info(subparsers):
     p = subparsers.add_parser('info', help='list available projects and experiment results')
 
+def set_up_update(subparsers):
+    p = subparsers.add_parser('update', help='update the cluster')
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa is a tool for testing SMT proof stability. this is the main tool that manages the experiment lifecycle.")
 
@@ -53,6 +56,7 @@ if __name__ == '__main__':
     set_up_sync(subparsers)
     # set_up_recovery(subparsers)
     set_up_info(subparsers)
+    set_up_update(subparsers)
 
     args = parser.parse_args()
 
@@ -68,5 +72,7 @@ if __name__ == '__main__':
         handle_sync(args.input_dir, args.clear)
     elif args.sub_command == "info":
         handle_info(args)
+    elif args.sub_command == "update":
+        handle_update()
     else:
         parser.print_help()

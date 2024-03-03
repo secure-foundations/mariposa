@@ -229,7 +229,10 @@ def handle_sync(input_dir, clear):
     os.remove("sync.sh")
     os.remove(SYNC_ZIP)
 
-# def handle_update(args):
-    # log_info("updating mariposa")
-    # os.system("git pull")
-    # os.system("make")
+def handle_update():
+    print("run the following to update mariposa on all workers")
+    for host in S190X_HOSTS:
+        if host == "s1904":
+            continue
+        remote_cmd = f"""ssh {host} "(cd mariposa; git checkout master; git pull; cd src/smt2action/; cargo build --release) &> /dev/null &" """
+        print(remote_cmd)

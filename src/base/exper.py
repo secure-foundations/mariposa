@@ -407,7 +407,6 @@ solver: {self.solver}"""
 
         cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
         cur.execute(f"INSERT INTO {self.exp_table_name} SELECT * FROM OTHER_DB.{other_exp}")
-        # cur.execute(f"INSERT INTO {self.sum_table_name} SELECT * FROM OTHER_DB.{other_sum}")
         
         res = cur.execute(f"""SELECT * FROM OTHER_DB.{other_sum}""")
         rows = res.fetchall()
