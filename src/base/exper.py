@@ -178,6 +178,8 @@ class Experiment(ExpConfig):
         create_dir(self.proj.get_db_dir())
         # this just clears the gen dir
         reset_dir(self.gen_dir, True)
+        
+        self.retry_count = 0
 
     def signature(self):
         return f"{self.proj.full_name}_{self.proj.part}_{self.solver}_{self.exp_name}"
@@ -251,13 +253,21 @@ solver: {self.solver}"""
         return self.__build_tasks()
 
     def insert_exp_row(self, task, mutant_path, rcode, elapsed):
-        con, cur = get_cursor(self.db_path)
+        try:
+            con, cur = get_cursor(self.db_path)
+            cur.execute(f"""INSERT INTO {self.exp_table_name}
+                (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
+                (mutant_path, task.origin_path, task.perturb, str(task.mut_seed), "", "", rcode, elapsed))
+            conclude(con)
+        except sqlite3.OperationalError:
+            log_error(f"failed to insert {mutant_path} into {self.exp_table_name}, retrying")
+            self.insert_exp_row(task, mutant_path, rcode, elapsed)
+            self.retry_count += 1
 
-        cur.execute(f"""INSERT INTO {self.exp_table_name}
-            (query_path, vanilla_path, perturbation, command, std_out, std_error, result_code, elapsed_milli)
-            VALUES(?, ?, ?, ?, ?, ?, ?, ?);""",
-            (mutant_path, task.origin_path, task.perturb, str(task.mut_seed), "", "", rcode, elapsed))
-        conclude(con)
+        if self.retry_count > 10:
+            log_error(f"failed to insert {mutant_path} into {self.exp_table_name}, giving up")
+            sys.exit(1)
 
     def insert_sum_row(self, cur, v_path, v_rcode, v_time):
         mutations = self.enabled_muts

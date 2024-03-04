@@ -33,7 +33,7 @@ def split_zip_db(db_path):
     # os.system("cd data && cat chunk.tar.gz.* | tar xzvf -")
 
 def get_cursor(db_path):
-    con = sqlite3.connect(db_path)
+    con = sqlite3.connect(db_path, timeout=10)
     cur = con.cursor()
     return con, cur
 
