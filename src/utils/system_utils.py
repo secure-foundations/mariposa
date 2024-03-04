@@ -85,6 +85,9 @@ def flatten_path(base_dir, path):
     return base_dir + rest
 
 def convert_path(src_path, src_dir, dst_dir):
+    if not src_dir.endswith("/"): src_dir += "/"
+    if not dst_dir.endswith("/"): dst_dir += "/"
+    log_check(src_path.startswith(src_dir), f"{src_path} does not start with {src_dir}")
     dst_path = flatten_path(src_dir, src_path)
     dst_path = dst_path.replace(src_dir, dst_dir)
     return dst_path

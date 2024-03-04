@@ -3,7 +3,7 @@
 import argparse
 from analysis.basic_analyzer import BasicAnalyzer
 from utils.option_utils import *
-from project_wizard import *
+from proj_wizard import *
 
 def set_up_basic(subparsers):
     p = subparsers.add_parser('basic', help='analyze the results of an existing experiment')

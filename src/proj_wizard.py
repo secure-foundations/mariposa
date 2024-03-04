@@ -53,8 +53,8 @@ rule get-proof
 # rule check-subset
 #     command = python3 scripts/diff_smt.py subset-check $in $sub && touch $out
 
-def set_up_preprocess(subparsers):
-    p = subparsers.add_parser('preprocess', help='preprocess the project')
+def set_up_create(subparsers):
+    p = subparsers.add_parser('create', help='create a new project')
     add_input_dir_option(p, False)
     add_new_project_option(p)
     add_clear_option(p)
@@ -79,8 +79,8 @@ class NinjaPasta:
         self.output_dir = None
         self.clear = args.clear_existing
         
-        if args.sub_command == "preprocess":
-            self.handle_preprocess(args)
+        if args.sub_command == "create":
+            self.handle_create(args)
             return
 
         self.in_proj = args.input_proj
@@ -92,7 +92,7 @@ class NinjaPasta:
         else:
             parser.print_help()
 
-    def handle_preprocess(self, args):
+    def handle_create(self, args):
         import re
 
         log_check(re.match("^[a-z0-9_]*$", args.new_project_name),
@@ -139,7 +139,7 @@ class NinjaPasta:
             log_info("no targets to build")
             return
 
-        reset_dir(self.output_dir, self.clear_existing)
+        reset_dir(self.output_dir, self.clear)
 
         ninja_stuff = [NINJA_BUILD_RULES] + self.ninja_stuff
         with open("build.ninja", "w+") as f:
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Project Wizard operates on the single-project level. Typically, the input is a project/directory (containing a set of queries), and the output is another project (with a set of queries), or with a set of log files. Project Wizard is a thin wrapper around the Query Wizard and the Rust code base.")
     subparsers = parser.add_subparsers(dest='sub_command', help="the sub-command to run")
 
-    set_up_preprocess(subparsers)
+    set_up_create(subparsers)
     set_up_build_core(subparsers)
     set_up_convert_smt_lib(subparsers)
     # set_up_get_proof(subparsers)

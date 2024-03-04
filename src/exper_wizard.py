@@ -4,7 +4,7 @@ import argparse
 from utils.cluster_utils import handle_manager, handle_sync, handle_update, handle_worker
 from utils.local_utils import handle_single, handle_multiple, handle_info
 from utils.option_utils import *
-from project_wizard import *
+from proj_wizard import *
 
 def set_up_single(subparsers):
     p = subparsers.add_parser('single', help='single query mode. run mariposa on a single query with ".smt2" file extension, which will be split into multiple ".smt2" files based on check-sat(s), the split queries will be stored under the "gen/" directory and tested using the specified solver.')
@@ -45,18 +45,18 @@ def set_up_update(subparsers):
     p = subparsers.add_parser('update', help='update the cluster')
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Mariposa is a tool for testing SMT proof stability. this is the main tool that manages the experiment lifecycle.")
+    parser = argparse.ArgumentParser(description="Mariposa Experiment Wizard is a tool for testing SMT proof stability. this is the main tool to run experiments.")
 
     subparsers = parser.add_subparsers(dest='sub_command', help="mode to run mariposa in")
 
     set_up_single(subparsers)
     set_up_multi(subparsers)
+    set_up_info(subparsers)
     set_up_manager(subparsers)
     set_up_worker(subparsers)
     set_up_sync(subparsers)
-    # set_up_recovery(subparsers)
-    set_up_info(subparsers)
     set_up_update(subparsers)
+    # set_up_recovery(subparsers)
 
     args = parser.parse_args()
 
@@ -64,14 +64,14 @@ if __name__ == '__main__':
         handle_single(args)
     elif args.sub_command == "multiple":
         handle_multiple(args)
+    elif args.sub_command == "info":
+        handle_info(args)
     elif args.sub_command == "manager":
         handle_manager(args)
     elif args.sub_command == "worker":
         handle_worker(args)
     elif args.sub_command == "sync":
         handle_sync(args.input_dir, args.clear)
-    elif args.sub_command == "info":
-        handle_info(args)
     elif args.sub_command == "update":
         handle_update()
     else:

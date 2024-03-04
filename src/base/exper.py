@@ -333,10 +333,7 @@ solver: {self.solver}"""
 
         for row in rows:
             blob = np.frombuffer(row[1], dtype=int)
-            if blob.shape == (488,):
-                assert False
-            else:
-                blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
+            blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
 
             path = row[0]
             qr = QueryExpResult(path, self.proj.sub_root, self.enabled_muts, blob)
