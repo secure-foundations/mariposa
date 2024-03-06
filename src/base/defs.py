@@ -25,3 +25,9 @@ S190X_HOSTS = [
 ]
 
 DEBUG_ENABLE = False
+
+NINJA_BUILD_FILE = "build.ninja"
+
+NINJA_LOG_FILE = ".ninja_log"
+
+NINJA_REPORTS_DIR = LOG_ROOT + "ninja_reports/"

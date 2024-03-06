@@ -20,17 +20,11 @@ def setup_convert_smt_lib(subparsers):
     add_output_query_option(p)
 
 def setup_get_proof(subparsers):
-    p = subparsers.add_parser('get-proof', help='get lfcs proof from a query with cvc5')
+    p = subparsers.add_parser('get-proof', help='get lfsc proof from a query with cvc5')
     add_input_query_option(p)
     add_output_log_option(p)
     add_timeout_option(p)
     add_clear_option(p)
-
-def run_build_core(args):
-    BasicCoreBuilder(args.input_query_path, args.solver, args.output_query_path, args.timeout, args.clear_existing).run()
-
-def run_get_proof(args):
-    ProofBuilder(args.input_query_path, args.output_log_path,  args.timeout, args.clear_existing).run()
 
 def setup_emit_quake(subparsers):
     p = subparsers.add_parser('emit-quake', help='emit quake file')
@@ -48,7 +42,8 @@ if __name__ == "__main__":
     setup_get_proof(subparsers)
     setup_emit_quake(subparsers)
 
-    args = deep_parse_args(parser)
+    args = parser.parse_args()
+    args = deep_parse_args(args)
 
     if hasattr(args, "output_query_path"):
         directory = os.path.dirname(args.output_query_path)
@@ -56,12 +51,19 @@ if __name__ == "__main__":
             os.makedirs(directory)
 
     if args.sub_command == "build-core":
-        run_build_core(args)
+        BasicCoreBuilder(args.input_query_path,
+                         args.solver, 
+                         args.output_query_path, 
+                         args.timeout, 
+                         args.clear_existing).run()
     elif args.sub_command == "convert-smtlib":
         convert_verus_smtlib(args.input_query_path, 
                              args.output_query_path)
     elif args.sub_command == "get-proof":
-        run_get_proof(args)
+        ProofBuilder(args.input_query_path, 
+                     args.output_log_path,
+                     args.timeout, 
+                     args.clear_existing).run()
     elif args.sub_command == "emit-quake":
         emit_quake_query(args.input_query_path, 
                          args.output_query_path, 

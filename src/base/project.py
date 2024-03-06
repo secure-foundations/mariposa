@@ -81,21 +81,20 @@ class ProjectType:
             return ProjectType(_ProjectType(q), SolverType(s))
         except:
             return None
-
-    def base_to_core(self):
-        log_check(self.qtype == _ProjectType.BASE,
-                        "currently only a base project can be converted to core project")
-        log_check(self.stype == SolverType.Z3, 
-                  "currently only z3-sourced project can be converted to core project")
-        return ProjectType(_ProjectType.CORE, self.stype)
-
-    def z3_to_cvc5(self):
-        log_check(self.stype == SolverType.Z3,
-                  "currently only z3-sourced project can be converted to cvc5 project")
-        return ProjectType(self.qtype, SolverType.CVC5)
+        
+    def switch_solver(self, stype: SolverType):
+        return ProjectType(self.qtype, stype)
+    
+    def switch_query(self, qtype: _ProjectType):
+        return ProjectType(qtype, self.stype)
 
 def full_proj_name(name, ptyp):
     return name + "." + str(ptyp)
+
+# class QueryFileMapper:
+#     def __init__(self, base_query_path):
+#         self.group_root = 
+#         self.ext = ext
 
 class Project:
     def __init__(self, name, ptyp: ProjectType=ProjectType.from_str("base.z3"), part=Partition(1, 1)):
@@ -119,16 +118,21 @@ class Project:
                   f"invalid sub_root {self.sub_root}")
         return self.sub_root.replace(PROJ_ROOT, DB_ROOT)
 
-    # def get_log_dir(self):
-    #     san_check(self.sub_root.startswith(PROJ_ROOT), 
-    #         f"invalid sub_root {self.sub_root}")
-    #     return self.sub_root.replace(PROJ_ROOT, LOG_ROOT)
+    def get_log_dir(self):
+        log_check(self.sub_root.startswith(PROJ_ROOT), 
+            f"invalid sub_root {self.sub_root}")
+        return self.sub_root.replace(PROJ_ROOT, LOG_ROOT)
 
     def get_gen_dir(self):
         if self.single_mode: return SINGLE_MUT_ROOT
         log_check(self.sub_root.startswith(PROJ_ROOT), 
                   f"invalid sub_root {self.sub_root}")
         return self.sub_root.replace(PROJ_ROOT, GEN_ROOT)
+
+    def get_alt_dir(self, ptype: ProjectType):
+        log_check(self.sub_root.startswith(PROJ_ROOT), 
+                  f"invalid sub_root {self.sub_root}")
+        return os.path.join(self.sub_root, str(ptype))
 
     def set_partition(self, part):
         self.part = part
@@ -143,8 +147,41 @@ class Project:
         partitions = partition(queries, self.part.num)
         return partitions[self.part.id - 1]
 
+    def __list_query_paths(self):
+        for path in self.list_queries():
+            # log_check(q.endswith(".smt2"), f"invalid query {q}")
+            yield (path, os.path.basename(path))
+
     def is_whole(self):
         return self.part.is_whole()
+
+    def map_to_lfscs(self):
+        mapping = dict()
+        self.log_dir = self.get_log_dir()
+        for (path, name) in self.__list_query_paths():
+            out_name = name.replace(".smt2", ".lfsc")
+            mapping[path] = os.path.join(self.log_dir, "lfsc", out_name)
+        return mapping
+
+    def map_to_cores(self):
+        mapping = dict()
+        alt_dir = self.get_alt_dir(
+            self.ptype.switch_type(_ProjectType.CORE))
+        for (_, q) in self.__list_query_paths():
+            mapping[q] = os.path.join(alt_dir, q)
+        return mapping
+
+    def map_to_cvc5(self):
+        mapping = dict()
+        alt_dir = self.get_alt_dir(
+            self.ptype.switch_solver(SolverType.CVC5))
+        for (_, q) in self.__list_query_paths():
+            mapping[q] = os.path.join(alt_dir, q)
+        return mapping
+
+# class QueryFileMapper:
+#     def __init__(self, query_path):
+#         self.query_map = dict()
 
 class ProjectGroup:
     def __init__(self, name, groot):
@@ -176,3 +213,4 @@ class ProjectGroup:
     def get_projects(self):
         for p in sorted(self.projects.values()):
             yield p
+

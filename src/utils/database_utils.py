@@ -24,7 +24,7 @@ def split_zip_db(db_path):
     os.system(f"cd {DB_ROOT} && tar cvzf - {base_name} | split --bytes=50MB - {base_name}.tar.gz.")
 
     splits = glob.glob(split_pattern)
-    log_check(len(splits) > 0, f"[WARN] {base_name} split failed!")
+    log_check(len(splits) > 0, f"{base_name} split failed!")
 
     log_info(f"{base_name} split into {len(splits)} chunks " + "\t" + " ".join(splits))
 

@@ -22,11 +22,6 @@ class Factory:
 
         self.known_expers = dict()
 
-    def __init_projects(self):
-        for groot in os.listdir(PROJ_ROOT):
-            p = ProjectGroup(groot, PROJ_ROOT + groot)
-            self.groups[groot] = p
-
     def __init_solvers(self):
         objs = json.loads(open(SOLVER_CONFIG_PATH).read())
         for solver_name, solver_obj in objs.items():
@@ -45,6 +40,11 @@ class Factory:
             cur = copy.deepcopy(default)
             cur.update(obj)
             self.all_configs[name] = ExpConfig(name, cur)
+
+    def __init_projects(self):
+        for groot in os.listdir(PROJ_ROOT):
+            p = ProjectGroup(groot, PROJ_ROOT + groot)
+            self.groups[groot] = p
 
     def get_solver_by_name(self, name) -> Solver:
         log_check(name in self.all_solvers, f"no such solver {name}")
@@ -75,17 +75,17 @@ class Factory:
         log_check(ptype, f"invalid project type {items[1]}")
         return self.__get_project(items[0], ptype)
 
-    def get_core_project(self, proj: Project, build=False) -> Project:
-        core_ptype = proj.ptype.base_to_core()
-        if not build:
-            return self.__get_project(proj.group_name, core_ptype)
-        return Project(proj.group_name, core_ptype)
+    # def get_core_project(self, proj: Project, build=False) -> Project:
+    #     core_ptype = proj.ptype.base_to_core()
+    #     if not build:
+    #         return self.__get_project(proj.group_name, core_ptype)
+    #     return Project(proj.group_name, core_ptype)
 
-    def get_cvc5_counterpart(self, proj: Project, build=False) -> Project:
-        cvc5_ptype = proj.ptype.z3_to_cvc5()
-        if not build:
-            return self.__get_project(proj.group_name, cvc5_ptype)
-        return Project(proj.group_name, cvc5_ptype)
+    # def get_cvc5_counterpart(self, proj: Project, build=False) -> Project:
+    #     cvc5_ptype = proj.ptype.z3_to_cvc5()
+    #     if not build:
+    #         return self.__get_project(proj.group_name, cvc5_ptype)
+    #     return Project(proj.group_name, cvc5_ptype)
 
     # def list_projects(self):
     #     print("available projects:")

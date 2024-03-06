@@ -53,6 +53,9 @@ def add_analyzer_options(parser):
 def add_authkey_option(parser):
     parser.add_argument("--authkey", required=True, help="the authkey to use for the server pool")
 
+def add_ninja_log_option(parser):
+    parser.add_argument("--record-build-stats", default=False, action='store_true', help="parse and keep the build stat")
+
 def deep_parse_args(args):
     if hasattr(args, "solver"):
         args.solver = FACT.get_solver_by_name(args.solver)
@@ -78,5 +81,8 @@ def deep_parse_args(args):
         else:
             args.experiment = FACT.build_experiment(
                 args.exp_config, args.input_proj, args.solver)
+
+    if hasattr(args, "timeout"):
+        args.timeout = int(args.timeout)
 
     return args

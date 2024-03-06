@@ -1,10 +1,11 @@
 import os
-from base.solver import CVC5Solver
+from base.factory import FACT
+from base.solver import CVC5Solver, RCode
 from utils.system_utils import *
 
 class ProofBuilder:
     def __init__(self, input_query, output_proof, timeout, clear=False):
-        self.solver: CVC5Solver = CVC5Solver("cvc5_1_1_1")
+        self.solver: CVC5Solver = FACT.get_solver_by_name("cvc5_1_1_1")
 
         if not os.path.exists(input_query):
             log_warn(f"input query {input_query} does not exist")
@@ -21,15 +22,17 @@ class ProofBuilder:
         self.opt_query = f"gen/{name_hash}.opt.smt2"
 
         if clear:
-            self.clear(all=True)
+            self.clear(clear)
 
     def run(self):
         self.__create_option_query()
         self.__run_solver()
         
     def clear(self, all=False):
-        if os.path.exists(self.opt_query):
+        if all and os.path.exists(self.opt_query):
             os.remove(self.opt_query)
+        if os.path.exists(self.output_proof):
+            os.remove(self.output_proof)
 
     def __create_option_query(self):
         if os.path.exists(self.opt_query):
@@ -58,7 +61,10 @@ class ProofBuilder:
 
     def __run_solver(self):
         rcode, elapsed = self.solver.run(self.opt_query, self.timeout)
-        print(rcode, elapsed)
+
+        if rcode != RCode.UNSAT:
+            self.clear(all=True)
+            exit_with(f"failed to get proof for {self.input_query}")
 
         log_check(os.path.exists(self.output_proof), 
                 f"failed to create {self.output_proof}")
