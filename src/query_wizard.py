@@ -48,7 +48,8 @@ if __name__ == "__main__":
     setup_get_proof(subparsers)
     setup_emit_quake(subparsers)
 
-    args = deep_parse_args(parser)
+    args = parser.parse_args()
+    args = deep_parse_args(args)
 
     if hasattr(args, "output_query_path"):
         directory = os.path.dirname(args.output_query_path)

@@ -34,7 +34,7 @@ cd -
 
 4. You will need a working Python 3 installation to run the code that performs the experiments and analysis.  This code was written using Python `3.8.10` (and has not been tested on other versions).  To install the required packages, run
 ```
-pip3 install -r docs/requirements.txt
+pip3 install -r doc/requirements.txt
 ```
 
 4. There are some solver binaries that are configured in `config/solvers.json`.  Note that most of the solvers are for Linux. To install other versions of Z3, you can create a new solver configuration in the the `config/solvers.json` file and point it to the location of the binary. See the [Solvers](#solvers) section for more information on editing `config/solvers.json`.
