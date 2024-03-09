@@ -5,6 +5,9 @@ from utils.system_utils import log_check
 def is_ratio(x):
     return type(x) == float and 0 < x < 1
 
+def is_percentile(x):
+    return 0 <= x <= 100
+
 def percent(a, b):
     return a * 100 / b
 
@@ -20,20 +23,42 @@ def get_sets_diff(a, b):
 def print_sets_diff(a, b, name_a="a", name_b="b"):
     diff0, diff1, _ = get_sets_diff(a, b)
     if len(diff0) != 0:
-        print(f"[INFO] items in {name_a} but not in {name_b}")
+        print(f"items in {name_a} but not in {name_b}")
         for i in diff0:
             print("\t" + i)
-        print(f"[INFO] {len(diff0)} in {name_a} but not in {name_b}")
+        print(f"{len(diff0)} in {name_a} but not in {name_b}")
     if len(diff1) != 0:
-        print(f"[INFO] items in {name_b} but not in {name_a}")
+        print(f"items in {name_b} but not in {name_a}")
         for i in diff1:
             print("\t" + i)
-        print(f"[INFO] {len(diff1)} in {name_b} but not in {name_a}")
+        print(f"{len(diff1)} in {name_b} but not in {name_a}")
 
 def get_cdf_pts(data):
     n = len(data)
-    y = np.arange(n) * 100 / float(n) 
-    return np.sort(data), np.insert(y[1:], n-1, 100)
+    y = np.arange(n) * 100 / float(n-1)
+    return np.vstack((np.sort(data), y))
+
+class PartialCDF:
+    def __init__(self, data):
+        self.cdf = get_cdf_pts(data)
+
+        self.xs = self.cdf[0]
+        self.ys = self.cdf[1]
+
+        self._valid_dps = self.cdf[:,~np.isnan(self.cdf[0])]
+
+        self.valid_max = self._valid_dps[:,-1]
+        self.valid_min = self._valid_dps[:,0]
+        self.valid_median = self.get_percentile(50, True)
+
+    def get_percentile(self, p, valid_only):
+        assert is_percentile(p)
+        if valid_only:
+            index = np.argmax(self._valid_dps[1] >= p)
+            return self._valid_dps[:,index]
+        index = np.argmax(self.cdf[1] >= p)
+        return self.cdf[:,index]
+
 
 def tex_fmt_percent(x, suffix=False):
     assert x >= -100 and x <= 100

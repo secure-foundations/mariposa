@@ -48,7 +48,7 @@ def handle_multiple(args):
 
 def handle_info(args):
     for pg in FACT.get_project_groups():
-        print(f"project group: {pg.group_name}")
+        print(f"project group: {pg.gid}")
         for proj in pg.get_projects():
             print(f"\t{proj.ptype} ({len(proj.list_queries())})")
             exps = FACT.get_project_exps(proj)

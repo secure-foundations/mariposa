@@ -19,7 +19,7 @@ class ProofBuilder:
 
         name_hash = get_name_hash(input_query)
 
-        self.opt_query = f"gen/{name_hash}.opt.smt2"
+        self.opt_query = f"gen/{name_hash}.lfsc.opt.smt2"
 
         if clear:
             self.clear(clear)
@@ -27,7 +27,7 @@ class ProofBuilder:
     def run(self):
         self.__create_option_query()
         self.__run_solver()
-        
+
     def clear(self, all=False):
         if all and os.path.exists(self.opt_query):
             os.remove(self.opt_query)

@@ -1,4 +1,4 @@
-import time, os, json
+import time, os
 import subprocess, select
 from enum import Enum
 
@@ -120,6 +120,10 @@ class Solver:
         self.proc.terminate()
         self.poll_obj = None
 
+    def verify(self, query_path, timeout):
+        rcode, _ = self.run(query_path, timeout)
+        return rcode == RCode.UNSAT
+
 class Z3Solver(Solver):
     def __init__(self, name, obj):
         super().__init__(name, obj)
@@ -142,7 +146,7 @@ class CVC5Solver(Solver):
     def __init__(self, name, obj):
         super().__init__(name, obj)
 
-    def run(self, query_path, time_limit, seeds=None, more_options=[]):
+    def run(self, query_path, time_limit, seeds=None, out_file=None, other_options=[]):
         assert time_limit < 1000
         options = [
             f"'{query_path}'",
@@ -155,10 +159,25 @@ class CVC5Solver(Solver):
                 f"--sat-random-seed={str(seeds)}",
                 f"--seed={str(seeds)}", 
             ]
+        
+        if out_file is not None:
+            if os.path.exists(out_file):
+                os.remove(out_file)
 
-        command = [self.path] + options + more_options
+            options += [
+                f"--regular-output-channel=\"{out_file}\""
+            ]
+
+        command = [self.path] + options + other_options
         command = " ".join(command)
         out, err, elapsed = subprocess_run(command)
+        
+        if out_file is not None:
+            if not os.path.exists(out_file):
+                log_warn(f"output file {out_file} does not exist")
+                rcode = RCode.ERROR
+            else:
+                out = open(out_file).read()
 
         if elapsed >= time_limit * 1000 or "interrupted by SIGTERM" in out:
             rcode = RCode.TIMEOUT
@@ -166,6 +185,6 @@ class CVC5Solver(Solver):
             rcode = output_as_rcode(out)     
 
         if rcode == RCode.ERROR:
-            print("[INFO] solver error: {} {} {}".format(command, out, err))
+            log_warn("solver error: {} {} {}".format(command, out, err))
 
         return rcode, elapsed

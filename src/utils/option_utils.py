@@ -15,7 +15,7 @@ def add_timeout_option(parser):
     parser.add_argument("--timeout", default=60, help="the timeout (seconds) for the solver")
 
 def add_output_log_option(parser):
-    parser.add_argument("--output-log-path", required=True, help="the query path")
+    parser.add_argument("-o", "--output-log-path", required=True, help="the query path")
 
 def add_solver_option(parser):
     parser.add_argument("-s", "--solver", default="z3_4_12_2", help="the solver name (from solvers.json) to use")
@@ -32,10 +32,11 @@ def add_experiment_options(parser):
 def add_new_project_option(parser):
     parser.add_argument("--new-project-name", required=True, help="the project group name to be created under data/projects/ (only for preprocess!)")
 
-def add_input_dir_option(parser, is_known=True):
+def add_input_dir_option(parser, is_known=True, is_group=False):
     parser.add_argument("-i", "--input-dir", required=True, help="the input directory")
     parser.add_argument("--part", default="1/1", help="which part of the project to run mariposa on (probably should not be specified manually)")
     parser.add_argument("--is-known-project", default=is_known, action='store_true', help="allow a directory but not define a project")
+    parser.add_argument("--is-group", default=is_group, action='store_true', help="the input directory is a group")
 
 def add_output_dir_option(parser):
     parser.add_argument("-o", "--output-dir", required=False, help="the output directory")
@@ -69,8 +70,11 @@ def deep_parse_args(args):
         args.analyzer = QueryAnalyzer(args.analyzer)
 
     if hasattr(args, "input_dir") and args.is_known_project:
-        args.input_proj = FACT.get_project_by_path(args.input_dir)
-        args.input_proj.part = args.part
+        if args.is_group:
+            args.input_group = FACT.get_group_by_path(args.input_dir)
+        else:
+            args.input_proj = FACT.get_project_by_path(args.input_dir)
+            args.input_proj.part = args.part
 
     single = args.sub_command == "single"
 

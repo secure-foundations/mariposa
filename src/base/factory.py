@@ -42,9 +42,8 @@ class Factory:
             self.all_configs[name] = ExpConfig(name, cur)
 
     def __init_projects(self):
-        for groot in os.listdir(PROJ_ROOT):
-            p = ProjectGroup(groot, PROJ_ROOT + groot)
-            self.groups[groot] = p
+        for gid in os.listdir(PROJ_ROOT):
+            self.groups[gid] = ProjectGroup(gid, PROJ_ROOT + gid)
 
     def get_solver_by_name(self, name) -> Solver:
         log_check(name in self.all_solvers, f"no such solver {name}")
@@ -60,12 +59,17 @@ class Factory:
         log_check(name in self.all_configs, f"no such configuration {name}")
         return self.all_configs[name]
 
-    def __get_project(self, group_name, ptype: ProjectType) -> Project:
-        group = self.groups.get(group_name)
-        log_check(group, f"no such project group {group_name}")
+    def __get_project(self, gid, ptype: ProjectType) -> Project:
+        group = self.groups.get(gid)
+        log_check(group, f"no such project group {gid}")
         proj = group.get_project(ptype)
-        log_check(proj, f"no such sub-project {ptype} under {group_name}")
+        log_check(proj, f"no such sub-project {ptype} under {gid}")
         return proj
+    
+    def get_group_by_path(self, path) -> ProjectGroup:
+        items = os.path.normpath(path).split(os.sep)[-1:]
+        log_check(len(items) == 1, f"invalid group path {path}")
+        return self.groups.get(items[0])
     
     def get_project_by_path(self, path) -> Project:
         log_check(path.startswith(PROJ_ROOT), f"invalid path {path}")
@@ -75,51 +79,27 @@ class Factory:
         log_check(ptype, f"invalid project type {items[1]}")
         return self.__get_project(items[0], ptype)
 
-    # def get_core_project(self, proj: Project, build=False) -> Project:
-    #     core_ptype = proj.ptype.base_to_core()
-    #     if not build:
-    #         return self.__get_project(proj.group_name, core_ptype)
-    #     return Project(proj.group_name, core_ptype)
-
-    # def get_cvc5_counterpart(self, proj: Project, build=False) -> Project:
-    #     cvc5_ptype = proj.ptype.z3_to_cvc5()
-    #     if not build:
-    #         return self.__get_project(proj.group_name, cvc5_ptype)
-    #     return Project(proj.group_name, cvc5_ptype)
-
-    # def list_projects(self):
-    #     print("available projects:")
-    #     for pg in sorted(self.groups.values()):
-    #         print(f"  {pg.group_name}")
-    #         for proj in pg.get_projects():
-    #             print(f"    {proj.ptype}")
-
     def get_project_groups(self):
         for pg in sorted(self.groups.values()):
             yield pg
 
     @staticmethod
-    def build_single_mode_project(query_path) -> Project:
+    def _build_single_mode_project(query_path) -> Project:
         log_check(query_path.endswith(".smt2"),
                         'query must end with ".smt2"')
         query_path = query_path.replace(".smt2", "")
         reset_dir(SINGLE_MUT_ROOT, True)
-        p = Project("single")
-        p.single_mode = True
-        p.sub_root = SINGLE_PROJ_ROOT
-        return p
+        return Project("single", single_mode=True)
 
     @staticmethod
     def build_single_mode_exp(cfg_name, query_path, solver: Solver) -> Experiment:
         cfg = FACT.get_config_by_name(cfg_name)
-        proj = Factory.build_single_mode_project(query_path)
-        exp = Experiment(cfg, proj, solver)
-        return exp
+        proj = Factory._build_single_mode_project(query_path)
+        return Experiment(cfg, proj, solver)
 
     def build_experiment(self, cfg_name, proj: Project, solver: Solver) -> Experiment:
         cfg = FACT.get_config_by_name(cfg_name)
-        exp = Experiment(cfg, proj, solver)
-        return exp
+        return Experiment(cfg, proj, solver)
 
     def get_project_exps(self, proj: Project) -> List[Experiment]:
         cfgs = self.all_configs.values()

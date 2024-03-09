@@ -29,7 +29,6 @@ def exit_with(msg):
 
 def log_check(cond, msg):
     if not cond:
-        log_error("check failed!")
         exit_with(msg)
 
 def confirm_input(msg):
@@ -95,6 +94,10 @@ def convert_path(src_path, src_dir, dst_dir):
 def scrub(name):
     return ''.join([c if c.isalnum() else "_" for c in name])
 
+def is_simple_id(name):
+    import re
+    return re.match("^[a-z0-9_]*$", name)
+
 def line_count(filename):
     with open(filename) as f:
         for i, _ in enumerate(f):
@@ -139,12 +142,3 @@ def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-def pre_create_file(path, force_clear):
-    dir_path = os.path.dirname(path)
-    create_dir(dir_path)
-
-    if os.path.exists(path):
-        if not force_clear:
-            confirm_input(f"file {path} already exists, remove it?")
-        os.remove(path)
-    

@@ -171,11 +171,11 @@ class Experiment(ExpConfig):
 
         self.table_prefix = get_table_prefix(proj, solver)
         self.exp_table_name, self.sum_table_name = get_table_names(proj, solver)
-        self.gen_dir = os.path.join(proj.get_gen_dir(), self.exp_name)
-        self.db_path = os.path.join(proj.get_db_dir(), f"{self.exp_name}.db")
+        self.gen_dir = proj.get_gen_dir(self.exp_name)
+        self.db_path = proj.get_db_path(self.exp_name)
 
         # this won't reset the db
-        create_dir(self.proj.get_db_dir())
+        create_dir(proj.get_db_path(""))
         # this just clears the gen dir
         reset_dir(self.gen_dir, True)
         

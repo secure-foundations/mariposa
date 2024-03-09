@@ -42,6 +42,15 @@ def partition(a, n):
     k, m = divmod(len(a), n)
     return [a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n)]
 
+class KnownExt(enum.Enum):
+    LFSC = "lfsc"
+    VERI = "veri"
+    SMT2 = "smt2"
+    CVC_INST = "cvc.inst" # cvc instantiations at unsat
+
+    def __str__(self):
+        return self.value
+
 class _ProjectType(enum.Enum):
     BASE = "base" # baseline
     CORE = "core" # unsat core
@@ -49,7 +58,7 @@ class _ProjectType(enum.Enum):
     SHKF = "shkf" # shake full
     SHKO = "shko" # shake oracle
     SHKP = "shkp" # shake partial
-    INST = "inst" # instantiated
+    INTD = "intd" # instantiated
 
     def __str__(self):
         return self.value
@@ -80,8 +89,8 @@ class ProjectType:
             q, s = s.split(".")
             return ProjectType(_ProjectType(q), SolverType(s))
         except:
-            return None
-        
+            return None    
+
     def switch_solver(self, stype: SolverType):
         return ProjectType(self.qtype, stype)
     
@@ -91,19 +100,55 @@ class ProjectType:
 def full_proj_name(name, ptyp):
     return name + "." + str(ptyp)
 
-# class QueryFileMapper:
-#     def __init__(self, base_query_path):
-#         self.group_root = 
-#         self.ext = ext
+# the base name identifies a query within a project (no extension!)
+def get_qid(query_path):
+    base = os.path.basename(query_path)
+    base = base.split(".")
+    log_check(KnownExt(base[-1]), f"invalid query {query_path}")
+    return ".".join(base[:-1])
 
 class Project:
-    def __init__(self, name, ptyp: ProjectType=ProjectType.from_str("base.z3"), part=Partition(1, 1)):
-        self.group_name = name
-        self.full_name = full_proj_name(name, ptyp)
+    DEFAULT_PTYPE = ProjectType(_ProjectType.BASE, SolverType.Z3)
+
+    def __init__(self, gid, 
+                 ptyp: ProjectType=DEFAULT_PTYPE, 
+                 part=Partition(1, 1),
+                 single_mode=False):
+        self.gid = gid
+        self.full_name = full_proj_name(gid, ptyp)
         self.ptype = ptyp
-        self.sub_root = os.path.join(PROJ_ROOT, name, str(ptyp))
         self.part = part
-        self.single_mode = False
+        self.single_mode = single_mode
+
+        self.__init_dirs(gid)
+        self._qids = set()
+
+        for q in self.list_queries():
+            self._qids.add(get_qid(q))
+
+    def __init_dirs(self, gid):
+        if self.single_mode:
+            self._sub_root = SINGLE_PROJ_ROOT
+        else:
+            self._sub_root = os.path.join(PROJ_ROOT, gid, str(self.ptype))
+            log_check(self._sub_root.startswith(PROJ_ROOT),
+                  f"invalid sub_root {self._sub_root}")
+
+        if self.single_mode: 
+            self._db_dir = SINGLE_PROJ_ROOT
+            self._gen_dir = SINGLE_MUT_ROOT
+        else:
+            self._db_dir = self._sub_root.replace(PROJ_ROOT, DB_ROOT)
+            self._gen_dir = self.sub_root.replace(PROJ_ROOT, GEN_ROOT)
+            self._log_dir = self.sub_root.replace(PROJ_ROOT, LOG_ROOT)
+
+    @property
+    def sub_root(self):
+        return self._sub_root
+
+    @property
+    def qids(self):
+        return self._qids
 
     def __lt__(self, other):
         return self.full_name < other.full_name
@@ -112,26 +157,20 @@ class Project:
         return self.full_name == other.full_name and \
             self.part == other.part
 
-    def get_db_dir(self):
-        if self.single_mode: return SINGLE_PROJ_ROOT
-        log_check(self.sub_root.startswith(PROJ_ROOT), 
-                  f"invalid sub_root {self.sub_root}")
-        return self.sub_root.replace(PROJ_ROOT, DB_ROOT)
+    def get_log_dir(self, ltype: KnownExt):
+        return os.path.join(self._log_dir, ltype.value)
 
-    def get_log_dir(self):
-        log_check(self.sub_root.startswith(PROJ_ROOT), 
-            f"invalid sub_root {self.sub_root}")
-        return self.sub_root.replace(PROJ_ROOT, LOG_ROOT)
+    def get_gen_dir(self, eid):
+        log_check(is_simple_id(eid), 
+                  "unexpected characters in the experiment id")
+        return os.path.join(self._gen_dir, eid)
 
-    def get_gen_dir(self):
-        if self.single_mode: return SINGLE_MUT_ROOT
-        log_check(self.sub_root.startswith(PROJ_ROOT), 
-                  f"invalid sub_root {self.sub_root}")
-        return self.sub_root.replace(PROJ_ROOT, GEN_ROOT)
+    def get_db_path(self, eid):
+        log_check(is_simple_id(eid), 
+                  "unexpected characters in the experiment id")
+        return os.path.join(self._db_dir, eid + ".db")
 
     def get_alt_dir(self, ptype: ProjectType):
-        log_check(self.sub_root.startswith(PROJ_ROOT), 
-                  f"invalid sub_root {self.sub_root}")
         return os.path.join(self.sub_root, str(ptype))
 
     def set_partition(self, part):
@@ -139,45 +178,47 @@ class Project:
 
     def list_queries(self):
         queries = list_smt2_files(self.sub_root)
-        # sort then shuffle (original is ordered by the os.walk)
-        queries = sorted(queries)
-        # some fixed random seed will do
+        # sort then shuffle (orquery_pathd will do
         random.seed(984352732132123)
         random.shuffle(queries)
         partitions = partition(queries, self.part.num)
         return partitions[self.part.id - 1]
 
-    def __list_query_paths(self):
-        for path in self.list_queries():
-            # log_check(q.endswith(".smt2"), f"invalid query {q}")
-            yield (path, os.path.basename(path))
+    # def __list_query_paths(self):
+    #     for path in self.list_queries():
+    #         # log_check(q.endswith(".smt2"), f"invalid query {q}")
+    #         yield (path, os.path.basename(path))
 
     def is_whole(self):
         return self.part.is_whole()
 
-    def map_to_lfscs(self):
-        mapping = dict()
-        self.log_dir = self.get_log_dir()
-        for (path, name) in self.__list_query_paths():
-            out_name = name.replace(".smt2", ".lfsc")
-            mapping[path] = os.path.join(self.log_dir, "lfsc", out_name)
-        return mapping
+    def get_ext_path(self, qname, ext: KnownExt = KnownExt.SMT2):
+        log_check(qname in self.qids, f"invalid query {qname}")
+        if ext == KnownExt.SMT2:
+            return os.path.join(self.sub_root, f"{qname}.smt2")
+        return os.path.join(self.get_log_dir(ext), f"{qname}.{ext.value}")
 
-    def map_to_cores(self):
-        mapping = dict()
-        alt_dir = self.get_alt_dir(
-            self.ptype.switch_type(_ProjectType.CORE))
-        for (_, q) in self.__list_query_paths():
-            mapping[q] = os.path.join(alt_dir, q)
-        return mapping
+    # def map_to_cores(self):
+    #     mapping = dict()
+    #     alt_dir = self.get_alt_dir(
+    #         self.ptype.switch_type(_ProjectType.CORE))
+    #     for (_, q) in self.__list_query_paths():
+    #         mapping[q] = os.path.join(alt_dir, q)
+    #     return mapping
 
-    def map_to_cvc5(self):
-        mapping = dict()
-        alt_dir = self.get_alt_dir(
-            self.ptype.switch_solver(SolverType.CVC5))
-        for (_, q) in self.__list_query_paths():
-            mapping[q] = os.path.join(alt_dir, q)
-        return mapping
+    # def map_to_cvc5(self):
+    #     mapping = dict()
+    #     alt_dir = self.get_alt_dir(
+    #         self.ptype.switch_solver(SolverType.CVC5))
+    #     for (_, q) in self.__list_query_paths():
+    #         mapping[q] = os.path.join(alt_dir, q)
+    #     return mapping
+
+    def get_build_meta_path(self, ext: KnownExt):
+        log_check(ext != KnownExt.SMT2, 
+                  ".smt2 file should have no build meta")
+        return os.path.join(NINJA_REPORTS_DIR, 
+                            f"{self.full_name}.{ext}.pkl")
 
 # class QueryFileMapper:
 #     def __init__(self, query_path):
@@ -185,13 +226,14 @@ class Project:
 
 class ProjectGroup:
     def __init__(self, name, groot):
-        self.group_name = name
+        self.gid = name
         self.groot = groot
         self.projects = dict()
         self.__init_sub_projs()
+        # self.qids = set()
 
     def __lt__(self, other):
-        return self.group_name < other.group_name
+        return self.gid < other.gid
 
     def __init_sub_projs(self):
         for proj_dir in os.listdir(self.groot):
@@ -204,11 +246,11 @@ class ProjectGroup:
             if not os.path.isdir(sub_dir):
                 log_error(f"sub project {sub_dir} is not a directory")
 
-            sub_proj = Project(self.group_name, sub_proj)
+            sub_proj = Project(self.gid, sub_proj)
             self.projects[sub_proj.full_name] = sub_proj
 
-    def get_project(self, ptyp: ProjectType):
-        return self.projects.get(full_proj_name(self.group_name, ptyp))
+    def get_project(self, ptype: ProjectType) -> Project:
+        return self.projects.get(full_proj_name(self.gid, ptype))
     
     def get_projects(self):
         for p in sorted(self.projects.values()):

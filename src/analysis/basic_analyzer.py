@@ -44,7 +44,7 @@ class BasicAnalyzer:
 
         if verbosity == 0:
             return
-        
+
         for cat, cs in self.__cats.items():
             if verbosity == 1 and cat != Stability.UNSTABLE:
                 continue
@@ -82,20 +82,20 @@ class BasicAnalyzer:
     #     return np.array(data) / 1000
 
 # class GroupAnalyzer:
-#     def __init__(self, group_name, ana):
+#     def __init__(self, gid, ana):
 #         self.ana = ana
-#         self.group_name = group_name
+#         self.gid = gid
 #         self.orig: ExpAnalyzer = self.load_stability_status(QType.ORIG)
 #         self.group = dict()
-#         self.group_path = f"data/projects/{self.group_name}"
+#         self.group_path = f"data/projects/{self.gid}"
 
 #     def load_stability_status(self, ptyp):
 #         solver = "z3_4_12_2"
-#         if self.group_name == "d_ironsht":
+#         if self.gid == "d_ironsht":
 #             exp_name = "ironsht"        
 #         elif ptyp == QType.ORIG:
 #             exp_name = "baseline"
-#             if self.group_name == "v_uf":
+#             if self.gid == "v_uf":
 #                 exp_name = "synthetic"
 #         elif ptyp == QType.CORE:
 #             exp_name = "unsat_core"
@@ -103,7 +103,7 @@ class BasicAnalyzer:
 #             exp_name = "unsat_core"
 #         elif ptyp == QType.BLOT:
 #             exp_name = "bloat"
-#             if self.group_name == "d_ironsht":
+#             if self.gid == "d_ironsht":
 #                 exp_name = "ironsht"
 #         elif ptyp == QType.BLOT_CVC:
 #             exp_name = "bloat"
@@ -123,7 +123,7 @@ class BasicAnalyzer:
 #             print(f"[ERROR] unknown project type {ptyp}")
 #             assert False
 
-#         proj = FACT.load_project(self.group_name, ptyp, enable_dummy=True)
+#         proj = FACT.load_project(self.gid, ptyp, enable_dummy=True)
 #         exp = ExpPart(exp_name, proj, solver)
 #         exp = ExpAnalyzer(exp, self.ana, enable_dummy=True)
 

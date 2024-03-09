@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import argparse, time, pickle
-from base.project import Project
+import argparse, time, pickle, numpy as np
+from base.project import KnownExt, Project, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
@@ -22,10 +22,14 @@ rule build-core
 rule convert-smtlib
     command = {QUERY_WIZARD} convert-smtlib -i $in -o $out
 
-rule get-proof
-    command = {QUERY_WIZARD} get-proof -i $in --output-log-path $out --timeout 30 $clear
+rule get-lfsc
+    command = {QUERY_WIZARD} get-lfsc -i $in --output-log-path $out --timeout 30 $clear
 
+rule get-inst
+    command = {QUERY_WIZARD} get-inst -i $in --output-log-path $out --timeout 30 
 
+rule verify
+    command = {QUERY_WIZARD} verify -i $in --output-log-path $out -s $solver --timeout 30
 """
 
 # rule instantiate
@@ -75,11 +79,24 @@ def set_up_convert_smt_lib(subparsers):
     add_clear_option(p)
 
 def set_up_get_proof(subparsers):
-    p = subparsers.add_parser('get-proof', help='get lfcs proof from a query with cvc5')
+    p = subparsers.add_parser('get-lfsc', help='get lfcs proof from a query with cvc5')
     add_input_dir_option(p)
     add_clear_option(p)
     add_ninja_log_option(p)
     
+def set_up_get_inst(subparsers):
+    p = subparsers.add_parser('get-inst', help='get instantiations from a query using cvc5')
+    add_input_dir_option(p)
+    add_clear_option(p)
+    add_ninja_log_option(p)
+
+def set_up_verify(subparsers):
+    p = subparsers.add_parser('verify', help='run verification on a query')
+    add_input_dir_option(p)
+    add_solver_option(p)
+    add_clear_option(p)
+    add_ninja_log_option(p)
+
 def set_up_load_stat(subparsers):
     p = subparsers.add_parser('load-stat', help='load build stats from a previous run')
     p.add_argument("-i", "--input-log-file", required=True, help="the input file (.pkl) to load")
@@ -88,18 +105,16 @@ class NinjaPasta:
     def __init__(self, args, cmd):
         self.start_time = int(time.time())
         self.ninja_stuff = []
-        self.target_count = 0
+        self.expect_targets = set()
 
         self.output_dir = None
-        self.clear = args.clear_existing
-        
         self.saved_cmd = cmd
-        
-        self.record = args.record_build_stats
 
         if args.sub_command == "load-stat":
             self.print_build_stats(args.input_log_file)
             return
+
+        ext = None
 
         if args.sub_command == "create":
             self.handle_create(args.new_project_name)
@@ -107,19 +122,30 @@ class NinjaPasta:
             self.handle_build_core(args.input_proj)
         elif args.sub_command == "convert-smtlib":
             self.handle_convert_smt_lib(args.input_proj)
-        elif args.sub_command == "get-proof":
-            self.handle_get_proof()
+        elif args.sub_command == "get-lfsc":
+            # always record build stats for proof generation
+            args.record_build_stats = True
+            ext = self.handle_get_proof(args.input_proj, args.clear_existing)
+        elif args.sub_command == "get-inst":
+             self.handle_get_inst(args.input_proj, args.clear_existing)
+        elif args.sub_command == "verify":
+            # always record build stats for verification
+            args.record_build_stats = True
+            ext = self.handle_verify(args.input_proj, args.solver)
         else:
             parser.print_help()
+            return
 
-        self.finalize()
+        self.finalize(args.clear_existing)
+
+        if args.record_build_stats:
+            log_check(ext != None, "extension not intended for build stats!")
+            build_meta_path = args.input_proj.get_build_meta_path(ext)
+            self.save_build_stats(build_meta_path)
 
     def handle_create(self, new_project_name):
-        import re
-
-        log_check(re.match("^[a-z0-9_]*$", new_project_name),
-                    "invalid project name in preprocess")
-
+        log_check(is_simple_id(new_project_name), 
+                  "invalid project name in preprocess")
         out_proj = Project(new_project_name)
         output_dir = out_proj.sub_root
         log_info(f"output directory is set to {output_dir}")
@@ -127,7 +153,7 @@ class NinjaPasta:
         for in_path in list_smt2_files(args.input_dir):
             out_path = convert_path(in_path, args.input_dir, output_dir)
             self.ninja_stuff += [f"build {out_path}: split {in_path}\n"]
-            self.target_count += 1
+            self.expect_targets.add(out_path)
 
     def handle_build_core(self, args, in_proj):
         out_proj = FACT.get_core_project(in_proj, build=True)
@@ -140,7 +166,7 @@ class NinjaPasta:
             base_name = os.path.basename(in_path)
             out_path = os.path.join(output_dir, base_name)
             self.ninja_stuff += [f"build {out_path}: build-core {in_path}\n"]
-            self.target_count += 1
+            self.expect_targets.add(out_path)
 
     def handle_convert_smt_lib(self, in_proj):
         out_proj = FACT.get_cvc5_counterpart(in_proj, build=True)
@@ -154,23 +180,46 @@ class NinjaPasta:
             base_name = os.path.basename(in_path)
             out_path = os.path.join(self.output_dir, base_name)
             self.ninja_stuff += [f"build {out_path}: convert-smtlib {in_path}\n"]
-            self.target_count += 1
+            self.expect_targets.add(out_path)
 
-    def handle_get_proof(self, in_proj):
-        mapping = in_proj.map_to_lfscs()
-        self.output_dir = in_proj.log_dir
-
-        for (i, o) in mapping.items():
-            self.ninja_stuff += [f"build {o}: get-proof {i}\n"]
-            if self.clear:
+    def handle_get_proof(self, in_proj, clear):
+        ext = KnownExt.LFSC
+        self.output_dir = in_proj.get_log_dir(ext)
+        for qid in in_proj.qids:
+            i = in_proj.get_ext_path(qid)
+            o = in_proj.get_ext_path(qid, ext)
+            self.ninja_stuff += [f"build {o}: get-lfsc {i}\n"]
+            if clear:
                 self.ninja_stuff += [f"    clear=--clear-existing\n\n"]
-            self.target_count += 1
+            self.expect_targets.add(o)
+        return ext
 
-    def finalize(self):
+    def handle_get_inst(self, in_proj, clear):
+        ext = KnownExt.CVC_INST
+        self.output_dir = in_proj.get_log_dir(ext)
+        for qid in in_proj.qids:
+            i = in_proj.get_ext_path(qid)
+            o = in_proj.get_ext_path(qid, ext)
+            self.ninja_stuff += [f"build {o}: get-inst {i}\n\n"]
+            self.expect_targets.add(o)
+        return ext
+
+    def handle_verify(self, in_proj, solver):
+        ext = KnownExt.VERI
+        self.output_dir = in_proj.get_log_dir(ext)
+        for qid in in_proj.qids:
+            i = in_proj.get_ext_path(qid)
+            o = in_proj.get_ext_path(qid, ext)
+            self.ninja_stuff += [f"build {o}: verify {i}\n",
+                                 f"    solver={solver.name}\n\n"]
+            self.expect_targets.add(o)
+        return ext
+
+    def finalize(self, clear):
         if len(self.ninja_stuff) == 0:
             log_info("no targets to build")
             return
-        reset_dir(self.output_dir, self.clear)
+        reset_dir(self.output_dir, clear)
 
         ninja_stuff = [NINJA_BUILD_RULES] + self.ninja_stuff
         self.ninja_stuff = "".join(ninja_stuff) 
@@ -178,7 +227,7 @@ class NinjaPasta:
         with open(NINJA_BUILD_FILE, "w+") as f:
             f.write(self.ninja_stuff)
 
-        log_info(f"generated {self.target_count} targets in {NINJA_BUILD_FILE}")
+        log_info(f"generated {len(self.expect_targets)} targets in {NINJA_BUILD_FILE}")
 
         confirm_input(f"run `ninja -j 6 -k 0` to start building?")
 
@@ -187,39 +236,71 @@ class NinjaPasta:
 
         os.system("ninja -j 6 -k 0")
 
-        if self.record:
-            self.save_build_stats()
-
-    def save_build_stats(self):
+    def save_build_stats(self, meta_path):
         ninja_log = open(NINJA_LOG_FILE).readlines()
-        count = 0
 
-        targets = dict()
+        built_targets = dict()
+
         for line in ninja_log[1:]:
             line = line.strip().split("\t")
+            target = line[3]
             elapse = (int(line[1]) - int(line[0])) / 1000
-            targets = {line[3]: elapse}
-            count += 1
+            if not os.path.exists(target):
+                log_warn(f"target {target} does not exist")
+            else:
+                built_targets[target] = elapse
 
-        metadata = dict()
-        metadata = {"cmd": self.saved_cmd,
-                "ninja_stuff": self.ninja_stuff,
-                "targets": targets}
-        
-        out_path = os.path.join(NINJA_REPORTS_DIR, str(self.start_time), ".pkl")
+        metadata = {
+            "cmd": self.saved_cmd,
+            "ninja_stuff": self.ninja_stuff,
+            "expect_targets": self.expect_targets,
+            "built_targets": built_targets}
 
-        with open(out_path, "wb") as f:
+        if not os.path.exists(NINJA_REPORTS_DIR):
+            os.makedirs(NINJA_REPORTS_DIR)
+
+        with open(meta_path, "wb") as f:
             pickle.dump(metadata, f)
-            
-        self.print_build_stats(out_path)
+            f.close()
+
+        self.print_build_stats(meta_path)
 
     def print_build_stats(self, input_log_file):
         with open(input_log_file, "rb") as f:
             metadata = pickle.load(f)
+
         print(metadata["cmd"])
 
-        for k, v in metadata["targets"].items():
-            print(f"{k}: {v}ms")
+        build_times = []
+        for k, v in metadata["built_targets"].items():
+            build_times.append(v)
+
+        print("proj command:\n\t" + metadata["cmd"])
+        print(f"{len(metadata['built_targets'])}/{len(metadata['expect_targets'])} targets built")
+
+        build_times = np.array(build_times)
+        print("min: %.2fs" % np.min(build_times))
+        print("median: %.2fs" % np.median(build_times))
+        print("max: %.2fs" % np.max(build_times))
+
+class NinjaStats:
+    def __init__(self, input_log_path):
+        with open(input_log_path, "rb") as f:
+            metadata = pickle.load(f)
+
+        self.expected = set()
+        self.built = dict()
+
+        for k in metadata["expect_targets"]:
+            self.expected.add(get_qid(k))
+
+        for k, v in metadata["built_targets"].items():
+            k = get_qid(k)
+            log_check(k in self.expected, "unexpected built targets")
+            self.built[k] = v
+
+        for k in self.expected - set(self.built.keys()):
+            self.built[k] = np.nan
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Project Wizard operates on the single-project level. Typically, the input is a project/directory (containing a set of queries), and the output is another project (with a set of queries), or with a set of log files. Project Wizard is a thin wrapper around the Query Wizard and the Rust code base.")
@@ -229,8 +310,10 @@ if __name__ == "__main__":
     set_up_build_core(subparsers)
     set_up_convert_smt_lib(subparsers)
     set_up_get_proof(subparsers)
+    set_up_get_inst(subparsers)
     set_up_load_stat(subparsers)
-    
+    set_up_verify(subparsers)
+
     cmd = " ".join(sys.argv)
 
     args = parser.parse_args()
