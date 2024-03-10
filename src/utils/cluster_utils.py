@@ -37,7 +37,7 @@ def __spinoff_server(args):
     for host in S190X_HOSTS:
         if host == "s1904":
             continue
-        remote_cmd = f"""ssh {host} "(cd mariposa; python3 src/main.py worker --manager-addr {addr} --authkey {args.authkey}) &> mariposa.log &" """
+        remote_cmd = f"""ssh {host} "(cd mariposa; python3 src/exper_wizard.py worker --manager-addr {addr} --authkey {args.authkey}) &> mariposa.log &" """
         print(remote_cmd)
 
 def handle_manager(args):
