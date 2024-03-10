@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from utils.cluster_utils import handle_manager, handle_sync, handle_update, handle_worker
+from utils.cluster_utils import handle_manager, handle_recovery, handle_sync, handle_update, handle_worker
 from utils.local_utils import handle_single, handle_multiple, handle_info
 from utils.option_utils import *
 from proj_wizard import *
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     set_up_worker(subparsers)
     set_up_sync(subparsers)
     set_up_update(subparsers)
-    # set_up_recovery(subparsers)
+    set_up_recovery(subparsers)
 
     args = parser.parse_args()
 
@@ -74,5 +74,7 @@ if __name__ == '__main__':
         handle_sync(args.input_dir, args.clear)
     elif args.sub_command == "update":
         handle_update()
+    elif args.sub_command == "recovery":
+        handle_recovery(args)
     else:
         parser.print_help()

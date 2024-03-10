@@ -1,7 +1,8 @@
 import copy
 import os, subprocess, time
 from analysis.basic_analyzer import BasicAnalyzer
-from base.defs import S190X_HOSTS, SYNC_ZIP
+from base.defs import CTRL_HOST, S190X_HOSTS, SYNC_ZIP
+from base.exper import Experiment
 
 from base.project import Partition
 from utils.local_utils import handle_multiple
@@ -118,15 +119,18 @@ def handle_worker(args):
 
 def handle_recovery(args):
     args = deep_parse_args(args)
-    exp = args.experiment
+    exp: Experiment = args.experiment
 
     available_db_paths = []
     for host in S190X_HOSTS:
+        if host == CTRL_HOST:
+            continue
         temp_db_path = f"{exp.db_path}.{host}.temp"
         remote_db_path = f"{host}:~/mariposa/{exp.db_path}"
 
         if os.path.exists(temp_db_path):
             available_db_paths.append(temp_db_path)
+            log_info(f"already has local db: {temp_db_path}")
             continue
 
         status = subprocess.call(['ssh', host, "test -f ~/mariposa/'{}'".format(exp.db_path)])
@@ -156,7 +160,7 @@ def handle_recovery(args):
             assert part_nums == part.num
         assert part.id not in found_ids
         found_ids.add(part.id)
-    
+
     log_check(part_nums != None, "no partitions found, aborting")
 
     missing_count = 0

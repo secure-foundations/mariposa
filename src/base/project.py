@@ -178,7 +178,8 @@ class Project:
 
     def list_queries(self):
         queries = list_smt2_files(self.sub_root)
-        # sort then shuffle (orquery_pathd will do
+        # sort then shuffle (original is ordered by the os.walk)
+        queries = sorted(queries)
         random.seed(984352732132123)
         random.shuffle(queries)
         partitions = partition(queries, self.part.num)
