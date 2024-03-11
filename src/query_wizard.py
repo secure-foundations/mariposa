@@ -90,7 +90,6 @@ if __name__ == "__main__":
     elif args.sub_command == "emit-quake":
         emit_quake_query(args.input_query_path, 
                          args.output_query_path, 
-                         args.timeout, 
                          args.quake_count)
     elif args.sub_command == "verify":
         ver = args.solver.verify(args.input_query_path, args.timeout)

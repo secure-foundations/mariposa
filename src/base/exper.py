@@ -71,24 +71,24 @@ class QueryExpResult:
 
     def print_status(self, verbosity=1):
         from tabulate import tabulate
-        log_info(f"query path:\t\t{self.query_path}")
+        print(f"query path:\t\t{self.query_path}")
 
         v_rcode, v_time = self.get_original_status()
         proc = find_verus_procedure_name(self.query_path)
 
         if proc != None:
-            log_info(f"procedure name:\t\t{proc}")
+            print(f"procedure name:\t\t{proc}")
 
         if self.timeout != None:
-            log_info(f"alternative timeout: {self.timeout/1000}s")
+            print(f"alternative timeout: {self.timeout/1000}s")
 
-        if verbosity <= 1:
+        if verbosity <= 2:
             return
+
+        print(f"plain query {RCode(v_rcode)} in {v_time / 1000}s")
 
         table = [["mutation"] + [str(rc) for rc in EXPECTED_CODES] 
                  + ["mean", "std"]]
-        print(f"plain query {RCode(v_rcode)} in {v_time / 1000}s")
-
         for m in self.mutations:
             trow = [m]
             rcodes, times = self.get_mutation_status(m)

@@ -34,6 +34,7 @@ fn should_remove_command(command: &concrete::Command) -> bool {
             keyword: concrete::Keyword(k),
             ..
         } => k != "comment",
+        | concrete::Command::SetLogic { .. } => false,
         _ => {
             panic!("unexpected command: {:?}", command)
         }

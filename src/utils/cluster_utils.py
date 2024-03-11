@@ -182,6 +182,9 @@ def handle_recovery(args):
 
     log_info(f"done importing")
 
+def run_command_over_ssh(host, cmd):
+    return subprocess_run(f"ssh {host} '{cmd}'", shell=True)
+
 def handle_sync(input_dir, clear):
     # args = deep_parse_args(args)
     log_check(is_flat_dir(input_dir), 
@@ -200,7 +203,7 @@ def handle_sync(input_dir, clear):
             continue
 
         # very basic check if file count matches
-        remote_count = subprocess_run(f"ssh -t {host} 'ls mariposa/{input_dir} | wc -l'")[0]
+        remote_count = run_command_over_ssh(host, f"ls mariposa/{input_dir} | wc -l")[0]
 
         if "No such file or directory" in remote_count:
             lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
@@ -208,7 +211,7 @@ def handle_sync(input_dir, clear):
 
         if clear:
             log_warn(f"force syncing on {host}")
-            subprocess_run(f"ssh -t {host} 'rm -r mariposa/{input_dir}'")
+            run_command_over_ssh(host, f"rm -r mariposa/{input_dir}")
             lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
         else:
             if int(remote_count) != file_count:
@@ -238,5 +241,5 @@ def handle_update():
     for host in S190X_HOSTS:
         if host == "s1904":
             continue
-        remote_cmd = f"""ssh {host} "(cd mariposa; git checkout master; git pull; cd src/smt2action/; cargo build --release) &> /dev/null &" """
+        remote_cmd = f"""ssh {host} "(cd mariposa; rm -r data/dbs/ ; rm -r gen/ ; git checkout master; git pull; cd src/smt2action/; cargo build --release) &> /dev/null &" """
         print(remote_cmd)

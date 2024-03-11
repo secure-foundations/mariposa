@@ -91,7 +91,13 @@ class ProjectType:
         except:
             return None    
 
-    def switch_solver(self, stype: SolverType):
+    def switch_solver(self):
+        if self.stype == SolverType.Z3:
+            stype = SolverType.CVC5
+        else:
+            log_check(self.stype == SolverType.CVC5, 
+                      f"unexpected solver type {self.stype}")
+            stype = SolverType.Z3
         return ProjectType(self.qtype, stype)
     
     def switch_query(self, qtype: _ProjectType):
@@ -114,6 +120,7 @@ class Project:
                  ptyp: ProjectType=DEFAULT_PTYPE, 
                  part=Partition(1, 1),
                  single_mode=False):
+
         self.gid = gid
         self.full_name = full_proj_name(gid, ptyp)
         self.ptype = ptyp
@@ -171,7 +178,7 @@ class Project:
         return os.path.join(self._db_dir, eid + ".db")
 
     def get_alt_dir(self, ptype: ProjectType):
-        return os.path.join(self.sub_root, str(ptype))
+        return self.sub_root.replace(str(self.ptype), str(ptype))
 
     def set_partition(self, part):
         self.part = part

@@ -95,11 +95,10 @@ def __split_query_context(query_path):
 
     return main_context, query_context
 
-def emit_quake_query(query_path, output_path, timeout, repeat=4):
+def emit_quake_query(query_path, output_path, repeat=4):
     out_file = open(output_path, "w")
     main_context, query_context = __split_query_context(query_path)
     out_file.writelines(main_context)
-    query_context.insert(1, "(set-option :timeout {})\n".format(timeout * 1000))
 
     for _ in range(repeat):
         out_file.write("".join(query_context))
@@ -110,7 +109,8 @@ def find_verus_procedure_name(file):
     for line in reversed(lines):
         if line.startswith("(set-info :comment \";; Function-Def") \
             or line.startswith("(set-info :comment \";; Function-Decl-Check-Recommends") \
-            or line.startswith("(set-info :comment \";; Function-Termination"):
+            or line.startswith("(set-info :comment \";; Function-Termination") \
+            or line.startswith("(set-info :comment \";; Function-Recommends"):
             return line[23:-3]
     return None
     

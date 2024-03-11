@@ -1,6 +1,5 @@
 import os
 from base.exper import Experiment
-from base.factory import FACT
 from base.project import Partition
 from base.solver import Solver
 from query.analyzer import QueryAnalyzer
@@ -58,6 +57,8 @@ def add_ninja_log_option(parser):
     parser.add_argument("--record-build-stats", default=False, action='store_true', help="parse and keep the build stat")
 
 def deep_parse_args(args):
+    from base.factory import FACT
+
     if hasattr(args, "solver"):
         args.solver = FACT.get_solver_by_name(args.solver)
 

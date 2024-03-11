@@ -16,11 +16,7 @@ class Factory:
         self.all_configs = dict()
         self.__init_configs()
 
-        self.groups = dict()
-        self.all_projects = dict()
-        self.__init_projects()
-
-        self.known_expers = dict()
+        self.groups = None
 
     def __init_solvers(self):
         objs = json.loads(open(SOLVER_CONFIG_PATH).read())
@@ -42,6 +38,7 @@ class Factory:
             self.all_configs[name] = ExpConfig(name, cur)
 
     def __init_projects(self):
+        self.groups = dict()
         for gid in os.listdir(PROJ_ROOT):
             self.groups[gid] = ProjectGroup(gid, PROJ_ROOT + gid)
 
@@ -67,11 +64,15 @@ class Factory:
         return proj
     
     def get_group_by_path(self, path) -> ProjectGroup:
+        if self.groups is None:
+            self.__init_projects()
         items = os.path.normpath(path).split(os.sep)[-1:]
         log_check(len(items) == 1, f"invalid group path {path}")
         return self.groups.get(items[0])
     
     def get_project_by_path(self, path) -> Project:
+        if self.groups is None:
+            self.__init_projects()
         log_check(path.startswith(PROJ_ROOT), f"invalid path {path}")
         items = os.path.normpath(path).split(os.sep)[-2:]
         log_check(len(items) == 2, f"invalid project path {path}")
@@ -80,6 +81,8 @@ class Factory:
         return self.__get_project(items[0], ptype)
 
     def get_project_groups(self):
+        if self.groups is None:
+            self.__init_projects()
         for pg in sorted(self.groups.values()):
             yield pg
 
@@ -111,5 +114,9 @@ class Factory:
                 if exp.sum_table_exists():
                     exps.append(exp)
         return exps
+    
+    # def switch_solver(self, proj: Project) -> Project:
+    #     _ = self.__get_project(proj.gid, proj.ptype)
+    #     return Project(proj.gid, proj.ptype.switch_solver())
 
 FACT = Factory()

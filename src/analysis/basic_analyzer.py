@@ -35,31 +35,40 @@ class BasicAnalyzer:
         return self.__cats
 
     def print_status(self, verbosity=0):
-        log_info(f"exp config:\t{self.exp.exp_name}")
-        log_info(f"project dir:\t{self.exp.proj.sub_root}")
-        log_info(f"solver path:\t{self.exp.solver.path}")
-        log_info(f"analyzer:\t{self.ana.name}")
+        print(f"exp config:\t{self.exp.exp_name}")
+        print(f"project dir:\t{self.exp.proj.sub_root}")
+        print(f"solver path:\t{self.exp.solver.path}")
+        print(f"analyzer:\t{self.ana.name}")
 
+        print("")
+        print_banner("Overall Report")
         self.__cats.print_status(skip_empty=True)
+        print("")
 
         if verbosity == 0:
             return
 
         for cat, cs in self.__cats.items():
-            if verbosity == 1 and cat != Stability.UNSTABLE:
+            if verbosity <= 1 and cat != Stability.UNSTABLE:
                 continue
             
-            if verbosity == 2 and cat == Stability.STABLE:
+            if verbosity <= 2 and cat == Stability.UNSOLVABLE:
                 continue
 
-            if len(cs) == 0:
+            if verbosity <= 3 and cat == Stability.STABLE:
                 continue
 
-            log_info(f"listing {cat.value} queries...")
+            ccount = len(cs)
 
-            for qs in cs:
+            if ccount == 0:
+                continue
+
+            for i, qs in enumerate(cs):
+                print_banner(f"{cat.value} ({i+1}/{ccount})")
                 self[qs].enforce_timeout(self.ana._timeout)
                 self[qs].print_status(verbosity)
+            print("")
+        print_banner("Report End")
 
     # def get_assert_counts(self, update=False):
     #     from tqdm import tqdm

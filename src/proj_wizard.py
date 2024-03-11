@@ -72,11 +72,13 @@ def set_up_build_core(subparsers):
     add_solver_option(p)
     add_timeout_option(p)
     add_clear_option(p)
+    add_ninja_log_option(p)
 
 def set_up_convert_smt_lib(subparsers):
     p = subparsers.add_parser('convert-smtlib', help='convert a verus query to smt-lib standard (cvc5) format, by default, the output directory is set using the project manager conventions')
     add_input_dir_option(p)
     add_clear_option(p)
+    add_ninja_log_option(p)
 
 def set_up_get_proof(subparsers):
     p = subparsers.add_parser('get-lfsc', help='get lfcs proof from a query with cvc5')
@@ -169,14 +171,14 @@ class NinjaPasta:
             self.expect_targets.add(out_path)
 
     def handle_convert_smt_lib(self, in_proj):
-        out_proj = FACT.get_cvc5_counterpart(in_proj, build=True)
+        output_dir = in_proj.get_alt_dir(in_proj.ptype.switch_solver())
 
-        log_info(f"converting queries in {self.in_proj.sub_root}")
+        log_info(f"converting queries in {in_proj.sub_root}")
 
-        self.output_dir = out_proj.sub_root
+        self.output_dir = output_dir
         log_info(f"output directory is set to {self.output_dir}")
 
-        for in_path in list_smt2_files(self.in_proj.sub_root):
+        for in_path in list_smt2_files(in_proj.sub_root):
             base_name = os.path.basename(in_path)
             out_path = os.path.join(self.output_dir, base_name)
             self.ninja_stuff += [f"build {out_path}: convert-smtlib {in_path}\n"]

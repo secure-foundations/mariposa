@@ -19,7 +19,6 @@ class Worker:
         if task.perturb == Mutation.QUAKE:
             emit_quake_query(task.origin_path, 
                 task.mutant_path, 
-                self.timeout, 
                 self.num_mutant)
             return
 

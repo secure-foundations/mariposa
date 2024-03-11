@@ -70,9 +70,7 @@ class Solver:
 
     def start_process(self, query_path, timeout):
         log_check(timeout < 1000, "timeout should be in seconds")
-        log_check(self.stype == SolverType.Z3, "interactive mode only supported for z3 solver")
-
-        args = [self.path, query_path]
+        args = self.get_basic_command(query_path, timeout)
         p = subprocess.Popen(args, stdout=subprocess.PIPE)
 
         poll_obj = select.poll()
@@ -87,6 +85,7 @@ class Solver:
             return RCode.ERROR, 0 
 
         start_time = time.time()
+        # wait 1 second more than the timeout
         poll_result = self.poll_obj.poll((timeout + 1) * 1000)
         elapsed = time.time() - start_time
 
@@ -103,9 +102,8 @@ class Solver:
 
                 if std_out == "":
                     break
-
+            # print(outputs)
             std_out = "".join(outputs)
-            # print(std_out)
             rcode = output_as_rcode(std_out)
         else:
             assert std_out == ""
@@ -128,16 +126,20 @@ class Z3Solver(Solver):
     def __init__(self, name, obj):
         super().__init__(name, obj)
 
-    def run(self, query_path, time_limit, seeds=None):
+    def get_basic_command(self, query_path, time_limit, seeds=None):
         command = [self.path, 
-                   f"'{query_path}'",
-                   f"-T:{time_limit}"]
+                   query_path,
+                   f"-t:{time_limit*1000}"]
         if seeds is not None:
             command += [f"sat.random_seed={seeds}",
                 f"smt.random_seed={seeds}"]
+        return command
 
-        command = " ".join(command)
-        out, err, elapsed = subprocess_run(command)
+    def run(self, query_path, time_limit, seeds=None):
+        log_check(time_limit < 1000, "timeout should be in seconds")
+
+        args = self.get_basic_command(query_path, time_limit, seeds)
+        out, err, elapsed = subprocess_run(args)
         rcode = output_as_rcode(out)
 
         return rcode, elapsed
@@ -146,31 +148,30 @@ class CVC5Solver(Solver):
     def __init__(self, name, obj):
         super().__init__(name, obj)
 
-    def run(self, query_path, time_limit, seeds=None, out_file=None, other_options=[]):
-        assert time_limit < 1000
-        options = [
-            f"'{query_path}'",
+    def get_basic_command(self, query_path, time_limit, seeds=None):
+        command = [
+            self.path,
+            query_path,
             "--quiet",
             f"--tlimit-per={time_limit * 1000}",
         ]
-
         if seeds is not None:
-            options += [
-                f"--sat-random-seed={str(seeds)}",
-                f"--seed={str(seeds)}", 
-            ]
-        
+            command += [f"--sat-random-seed={seeds}",
+                f"--seed={seeds}"]
+        return command
+
+    def run(self, query_path, time_limit, seeds=None, out_file=None, other_options=[]):
+        log_check(time_limit < 1000, "timeout should be in seconds")
+
+        args = self.get_basic_command(query_path, time_limit, seeds)
+
         if out_file is not None:
             if os.path.exists(out_file):
                 os.remove(out_file)
+            args += [f"--regular-output-channel=\"{out_file}\""]
 
-            options += [
-                f"--regular-output-channel=\"{out_file}\""
-            ]
-
-        command = [self.path] + options + other_options
-        command = " ".join(command)
-        out, err, elapsed = subprocess_run(command)
+        args += other_options
+        out, err, elapsed = subprocess_run(args)
         
         if out_file is not None:
             if not os.path.exists(out_file):
@@ -185,6 +186,6 @@ class CVC5Solver(Solver):
             rcode = output_as_rcode(out)     
 
         if rcode == RCode.ERROR:
-            log_warn("solver error: {} {} {}".format(command, out, err))
+            log_warn("solver error: {} {} {}".format(" ".join(args), out, err))
 
         return rcode, elapsed

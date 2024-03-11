@@ -16,6 +16,7 @@ def handle_single(args):
 
     if exp.sum_table_exists() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {output_dir}")
+        log_warn(f"you might want to use --clear-existing to overwrite the results.")
         BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
 

@@ -23,6 +23,9 @@ def log_debug(msg, end="\n"):
     if DEBUG_ENABLE:
         print(f"{BColors.DEBUG}[DEBUG] {msg} {BColors.ENDC}", end=end)
 
+def print_banner(msg):
+    print(f"=== {msg} ===")
+
 def exit_with(msg):
     log_error(msg)
     sys.exit(1)
@@ -32,16 +35,16 @@ def log_check(cond, msg):
         exit_with(msg)
 
 def confirm_input(msg):
-    log_info(f"{msg} [Y]", end=" ")
+    log_info(f"{msg} [Y]", end="")
     log_check(input() == "Y", f"aborting")
 
-def subprocess_run(command, timeout=None, debug=False, cwd=None):
+def subprocess_run(command, timeout=None, debug=False, cwd=None, shell=False):
     if debug:
         print(command)
     start_time = time.time()
     if timeout is not None:
         command = f"timeout {timeout}s {command}"
-    res = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+    res = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell, cwd=cwd)
     # milliseconds
     elapsed = round((time.time() - start_time) * 1000)
     stdout = res.stdout.decode("utf-8").strip()
@@ -49,7 +52,7 @@ def subprocess_run(command, timeout=None, debug=False, cwd=None):
     return stdout, stderr, elapsed
 
 def list_files_ext(sub_root, ext):
-    log_check(os.path.isdir(sub_root), f"[ERROR] {sub_root} is not a directory")
+    log_check(os.path.isdir(sub_root), f"{sub_root} is not a directory")
     file_paths = []
     for root, _, files in os.walk(sub_root):
         for file in files:

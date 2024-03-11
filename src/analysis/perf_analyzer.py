@@ -12,7 +12,7 @@ class PrefAnalyzer:
         gid = group.gid
         z3_pt = Project.DEFAULT_PTYPE
         z3_p = group.get_project(z3_pt)
-        cvc5_p = group.get_project(z3_pt.switch_solver(ST.CVC5))
+        cvc5_p = group.get_project(z3_pt.switch_solver())
 
         pm = NinjaStats(cvc5_p.get_build_meta_path(KE.LFSC))
         vm = NinjaStats(cvc5_p.get_build_meta_path(KE.VERI))
