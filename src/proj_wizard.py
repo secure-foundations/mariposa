@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse, time, pickle, numpy as np
-from base.project import KnownExt, Project, get_qid
+from base.project import KnownExt, Project, full_proj_name, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
@@ -148,11 +148,10 @@ class NinjaPasta:
         count = subprocess_run(f"ls {self.output_dir} | wc -l", shell=True)[0]
         log_info(f"generated {count} files in {self.output_dir}")
 
-    def handle_create(self, new_project_name):
-        log_check(is_simple_id(new_project_name), 
+    def handle_create(self, gid):
+        log_check(is_simple_id(gid), 
                   "invalid project name in preprocess")
-        out_proj = Project(new_project_name)
-        self.output_dir = out_proj.sub_root
+        self.output_dir = full_proj_name(gid, Project.DEFAULT_PTYPE)
         log_info(f"output directory is set to {self.output_dir}")
 
         for in_path in list_smt2_files(args.input_dir):
