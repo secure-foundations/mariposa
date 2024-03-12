@@ -2,7 +2,7 @@
 
 import argparse, time, pickle, numpy as np
 from base.project import KnownExt, Project, full_proj_name, get_qid
-from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, QUERY_WIZARD
+from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
 
@@ -151,7 +151,7 @@ class NinjaPasta:
     def handle_create(self, gid):
         log_check(is_simple_id(gid), 
                   "invalid project name in preprocess")
-        self.output_dir = full_proj_name(gid, Project.DEFAULT_PTYPE)
+        self.output_dir = os.path.join(PROJ_ROOT, gid, str(Project.DEFAULT_PTYPE))
         log_info(f"output directory is set to {self.output_dir}")
 
         for in_path in list_smt2_files(args.input_dir):
