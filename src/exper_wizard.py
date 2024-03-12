@@ -71,7 +71,7 @@ if __name__ == '__main__':
     elif args.sub_command == "worker":
         handle_worker(args)
     elif args.sub_command == "sync":
-        handle_sync(args.input_dir, args.clear)
+        handle_sync(args.input_dir, args.clear_existing)
     elif args.sub_command == "update":
         handle_update()
     elif args.sub_command == "recovery":

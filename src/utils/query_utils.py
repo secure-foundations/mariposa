@@ -1,3 +1,10 @@
+from enum import Enum
+import os
+import subprocess
+
+from base.defs import MARIPOSA
+from utils.system_utils import log_check
+
 def normalize_line(line):
     return line.replace(" ", "").strip()
 
@@ -113,4 +120,25 @@ def find_verus_procedure_name(file):
             or line.startswith("(set-info :comment \";; Function-Recommends"):
             return line[23:-3]
     return None
-    
+
+class Mutation(str, Enum):
+    SHUFFLE = "shuffle"
+    RENAME = "rename"
+    RESEED = "reseed"
+    QUAKE = "quake"
+    COMPOSE = "compose"
+
+    def __str__(self):
+        return self.value
+
+def emit_mutant_query(query_path, output_path, mutation, seed):
+    log_check(query_path != output_path, "query and output should not be the same")
+    log_check(mutation in {Mutation.SHUFFLE, Mutation.RENAME, Mutation.COMPOSE}, 
+              f"{mutation} is not a valid mutation here")
+
+    command = f"{MARIPOSA} -i '{query_path}' -a {mutation} -o '{output_path}' -s {seed}"
+
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+
+    log_check(result.returncode == 0 and os.path.exists(output_path),
+                f"mariposa query mutation failed: {command}")

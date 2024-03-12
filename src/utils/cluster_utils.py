@@ -183,10 +183,10 @@ def handle_recovery(args):
     log_info(f"done importing")
 
 def run_command_over_ssh(host, cmd):
+    print(f"running {cmd} on {host}")
     return subprocess_run(f"ssh {host} '{cmd}'", shell=True)
 
 def handle_sync(input_dir, clear):
-    # args = deep_parse_args(args)
     log_check(is_flat_dir(input_dir), 
               f"{input_dir} is not a flat directory")
     file_count = get_file_count(input_dir)
@@ -195,7 +195,6 @@ def handle_sync(input_dir, clear):
         os.remove(SYNC_ZIP)
 
     cur_host = subprocess_run("hostname")[0]
-
     lines = []
 
     for host in S190X_HOSTS:
@@ -203,9 +202,8 @@ def handle_sync(input_dir, clear):
             continue
 
         # very basic check if file count matches
-        remote_count = run_command_over_ssh(host, f"ls mariposa/{input_dir} | wc -l")[0]
-
-        if "No such file or directory" in remote_count:
+        r_std, r_err, _ = run_command_over_ssh(host, f"ls mariposa/{input_dir} | wc -l")
+        if "No such file or directory" in r_err:
             lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
             continue
 
@@ -214,7 +212,7 @@ def handle_sync(input_dir, clear):
             run_command_over_ssh(host, f"rm -r mariposa/{input_dir}")
             lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
         else:
-            if int(remote_count) != file_count:
+            if int(r_std) != file_count:
                 exit_with(f"file count mismatch {host}")
 
     if len(lines) == 0:

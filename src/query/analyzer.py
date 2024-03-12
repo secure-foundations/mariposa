@@ -5,7 +5,7 @@ from statsmodels.stats.proportion import proportions_ztest
 
 from utils.analysis_utils import *
 from base.solver import RCode
-from base.exper import Mutation, QueryExpResult
+from base.exper import QueryExpResult
 from base.defs import ANALYZER_CONFIG_PATH
 
 class Stability(Enum):
@@ -154,6 +154,6 @@ class QueryAnalyzer:
         cats = Categorizer([c for c in Stability])
         for qs in qss:
             res, _ = self.categorize_query(qs, muts)
-            cats.add_item(res.value, qs.base_name)
+            cats.add_item(res.value, qs.qid)
         cats.finalize()
         return cats

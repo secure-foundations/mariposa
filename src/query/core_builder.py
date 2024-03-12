@@ -1,7 +1,7 @@
 import os
 import subprocess
 from utils.system_utils import *
-from base.runner import MARIPOSA
+from base.defs import MARIPOSA
 
 class BasicCoreBuilder:
     def __init__(self, input_query, solver, output_query, timeout, clear=False):

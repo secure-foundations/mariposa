@@ -2,8 +2,7 @@ import os
 import multiprocessing as mp
 
 from base.exper import *
-from base.defs import MARIPOSA
-from utils.query_utils import emit_quake_query
+from utils.query_utils import Mutation, emit_mutant_query, emit_quake_query
 
 class Worker:
     def __init__(self, exp: Experiment, worker_id):
@@ -14,23 +13,16 @@ class Worker:
         return getattr(self._exp, item)
 
     def __generate_mutant(self, task):
-        mutant_path = task.mutant_path
-
         if task.perturb == Mutation.QUAKE:
             emit_quake_query(task.origin_path, 
                 task.mutant_path, 
                 self.num_mutant)
             return
 
-        if task.perturb is None:
-            return
-
-        command = f"{MARIPOSA} -i '{task.origin_path}' -a {task.perturb} -o '{mutant_path}' -s {task.mut_seed}"            
-
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-
-        log_check(result.returncode == 0 and os.path.exists(mutant_path),
-                  f"mariposa failed: {command}")
+        emit_mutant_query(task.origin_path, 
+            task.mutant_path, 
+            task.perturb, 
+            task.mut_seed)
 
     def run_quake_task(self, task):
         self.solver.start_process(task.mutant_path, self.timeout)
@@ -39,13 +31,14 @@ class Worker:
             rcode, elapsed = self.solver.run_quake_iteration(self.timeout)    
             mutant_path = task.mutant_path + "." + str(i)
             self.insert_exp_row(task, mutant_path, rcode.value, elapsed)
+
         self.solver.end_process()
 
     def run_task(self, task):
         actual_path = task.mutant_path
         is_reseed = task.perturb == Mutation.RESEED
 
-        if is_reseed:
+        if is_reseed or task.perturb is None:
             actual_path = task.origin_path
         else:
             self.__generate_mutant(task)

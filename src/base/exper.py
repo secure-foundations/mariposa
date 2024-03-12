@@ -2,33 +2,21 @@ import os, random
 import numpy as np
 
 from typing import Dict
-from enum import Enum
-from utils.query_utils import find_verus_procedure_name
+from utils.query_utils import Mutation, find_verus_procedure_name
 
 from utils.system_utils import *
 from utils.database_utils import *
 from base.solver import Solver, RCode, EXPECTED_CODES
 # from base.factory import FACT
-from base.project import Project, Partition
-from base.defs import EXPER_CONFIG_PATH
-
-class Mutation(str, Enum):
-    SHUFFLE = "shuffle"
-    RENAME = "rename"
-    RESEED = "reseed"
-    QUAKE = "quake"
-    COMPOSE = "compose"
-
-    def __str__(self):
-        return str.__str__(self)
+from base.project import Project, Partition, get_qid
 
 class QueryExpResult:
-    def __init__(self, query_path, proj_root, mutations=[], blob=None):
-        self.base_name = os.path.basename(query_path)
-        self.query_path = os.path.join(proj_root, self.base_name)
+    def __init__(self, query_path, mutations=[], blob=None):
+        self.qid = get_qid(query_path)
+        self.query_path = query_path
         self.mutations = mutations
 
-        if blob is not None:        
+        if blob is not None:
             assert blob.shape[0] == len(mutations)
             assert blob.shape[1] == 2
 
@@ -208,7 +196,7 @@ solver: {self.solver}"""
         conclude(con)
 
     def __build_query_tasks(self, origin_path):
-        base = os.path.basename(origin_path)
+        base = get_qid(origin_path)
         base.replace(".smt2", "")
 
         task = ExpTask(origin_path, origin_path, None, 0)
@@ -245,6 +233,17 @@ solver: {self.solver}"""
 
         log_debug(f"adding {len(tasks)} tasks")
         return tasks
+
+    @staticmethod
+    def parse_mutant_path(mutant_path):
+        parts = os.path.basename(mutant_path).split(".")
+        if parts[-1] != "smt2":
+            log_check(parts[-3] == "quake", "unexpected mutant path")
+            return Mutation(parts[-3]), int(parts[-1])
+        try:
+            return Mutation(parts[-2]), int(parts[-3])
+        except ValueError:
+            return None, None
 
     # this is called by the runner
     # should not call this for analysis
@@ -329,10 +328,10 @@ solver: {self.solver}"""
             log_check(enable_dummy, f"[ERROR] {sum_name} does not exist in {self.db_path}")
             print(f"[WARN] {sum_name} does not exist, creating dummy data!")
             for path in self.proj.list_queries():
-                qr = QueryExpResult(path, self.proj.sub_root)
+                qr = QueryExpResult(path)
                 if qr.mutations == []:
                     qr.mutations = self.enabled_muts
-                summaries[qr.base_name] = qr
+                summaries[qr.qid] = qr
             return summaries
 
         res = cur.execute(f"""SELECT * FROM {sum_name}""")
@@ -346,30 +345,31 @@ solver: {self.solver}"""
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
 
             path = row[0]
-            qr = QueryExpResult(path, self.proj.sub_root, self.enabled_muts, blob)
+            qr = QueryExpResult(path, self.enabled_muts, blob)
             if qr.mutations == []:
                 qr.mutations = self.enabled_muts
-            summaries[qr.base_name] = qr
+            summaries[qr.qid] = qr
 
         self._sanity_check_summary(set(summaries.keys()))
 
         return summaries
 
     def _sanity_check_summary(self, actual):
-        expected = set([os.path.basename(q) for q in self.proj.list_queries()])
+        expected = set([get_qid(q) for q in self.proj.list_queries()])
         missing = actual - expected
+
         if missing != set():
             log_warn(f"{len(missing)} queries files are missing in {self.sum_table_name}")
-            # for q in missing:
-            #     print(f"[WARN] missing: {q}")
 
         missing = expected - actual
         if missing != set():
-            print(f"[ERROR] experiments are missing in {self.sum_table_name}:")
-            for q in missing:
-                print(f"[ERROR] missing: {q}")
-            print(f"[ERROR] {len(missing)} experiments are missing in {self.sum_table_name}")
-            sys.exit(1)
+            log_error(f"{len(missing)} experiments are missing in {self.sum_table_name}")
+            for i, q in enumerate(missing):
+                if i <= 10:
+                    print(f"missing: {q}.smt2")
+                else:
+                    break
+            exit_with(f"eliding and {len(missing) - 10} more")
 
     def import_partition_tables(self, other_db_path, part):
         log_check(self.is_whole, "importing into a partial project does not make sense")
@@ -400,41 +400,9 @@ solver: {self.solver}"""
                     sums.add(part)
         return exps
 
-    # this is only used for migration
-    def import_tables(self, other_db_path, other_exp, other_sum):
+    def get_all_mutants(self, v_path):
         con, cur = get_cursor(self.db_path)
-        if table_exists(cur, self.exp_table_name):
-            cur.execute(f"""DROP TABLE {self.exp_table_name}""")
-        if table_exists(cur, self.sum_table_name):
-            cur.execute(f"""DROP TABLE {self.sum_table_name}""")
-
-        create_exp_table(cur, self.exp_table_name)
-        create_sum_table(cur, self.sum_table_name)
-
-        cur.execute(f'ATTACH "{other_db_path}" as OTHER_DB;')
-        cur.execute(f"INSERT INTO {self.exp_table_name} SELECT * FROM OTHER_DB.{other_exp}")
-        
-        res = cur.execute(f"""SELECT * FROM OTHER_DB.{other_sum}""")
+        res = cur.execute(f"""SELECT query_path, result_code, elapsed_milli FROM {self.exp_table_name} WHERE vanilla_path = ?""", (v_path,))
         rows = res.fetchall()
-        # con.close()
-
-        mut_size = self.num_mutant
-
-        special_convert = "opaque" in self.exp_name
-        # print(self.exp_name, special_convert)
-
-        for row in rows:
-            blob = np.frombuffer(row[2], dtype=int)
-            if blob.shape == (488,):
-                blob = blob.reshape((4, 2, mut_size + 1))
-                blob = blob[:3, :, :]
-            else:
-                blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
-
-            path = row[0]
-            if special_convert:
-                path = path.replace(".dfyxxx", ".dfy.").replace(".1.smt2", ".smt2")
-            cur.execute(f"""INSERT INTO {self.sum_table_name} VALUES(?, ?);""", (path, blob))
-        conclude(con)
-
-        self.load_sum_table()
+        con.close()
+        return rows

@@ -2,6 +2,7 @@ from typing import Dict
 # from base.project import FACT, QueryType as QType
 from base.exper import Experiment, QueryExpResult
 from query.analyzer import *
+from utils.query_utils import Mutation, emit_mutant_query
 from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *
@@ -14,13 +15,14 @@ class BasicAnalyzer:
         self.__qr_keys = list(sorted(self.__qrs.keys()))
         self.__cats: Categorizer = ana.categorize_queries(self.__qrs.values())
 
-    def __getitem__(self, base_name):
-        return self.__qrs[base_name]
+    def __getitem__(self, qid):
+        return self.__qrs[qid]
 
-    def __contains__(self, base_name):
-        return base_name in self.__qrs
-    
-    def base_names(self):
+    def __contains__(self, qid):
+        return qid in self.__qrs
+
+    @property
+    def qids(self):
         return self.__qr_keys
 
     def print_plain_status(self):
@@ -28,8 +30,8 @@ class BasicAnalyzer:
             qr.print_status()
             print("")
 
-    def get_query_stability(self, base_name):
-        return self.__cats.get_category(base_name)
+    def get_query_stability(self, qid):
+        return self.__cats.get_category(qid)
 
     def get_overall(self):
         return self.__cats
@@ -70,6 +72,27 @@ class BasicAnalyzer:
             print("")
         print_banner("Report End")
 
+    def get_failed_mutants(self, qr):
+        print(f"{qr.qid} is unstable")
+        rows = self.exp.get_all_mutants(qr.query_path)
+
+        for (m_path, rc, et) in rows:
+            mutation, seed = Experiment.parse_mutant_path(m_path)
+            if mutation != Mutation.SHUFFLE:
+                continue
+            emit_mutant_query(qr.query_path, m_path, Mutation.SHUFFLE, seed)
+            print(f"reproduced mutant {m_path} {RCode(rc)}")
+
+    def do_stuff(self):
+        for qid in self.qids:
+            qr = self[qid]
+            if self.get_query_stability(qr.qid) != Stability.UNSTABLE:
+                continue
+            if qid != "betree__LinkedBetreeRefinement_v__impl_%1__split_parent_commutes_with_i":
+                continue
+            print(qid)
+            self.get_failed_mutants(qr)
+
     # def get_assert_counts(self, update=False):
     #     from tqdm import tqdm
     #     cache_path = f"asserts/{self.proj.full_name}"
@@ -89,51 +112,3 @@ class BasicAnalyzer:
     #     for qr in self.__qrs.values():
     #         data.append(qr.get_original_status()[1])
     #     return np.array(data) / 1000
-
-# class GroupAnalyzer:
-#     def __init__(self, gid, ana):
-#         self.ana = ana
-#         self.gid = gid
-#         self.orig: ExpAnalyzer = self.load_stability_status(QType.ORIG)
-#         self.group = dict()
-#         self.group_path = f"data/projects/{self.gid}"
-
-#     def load_stability_status(self, ptyp):
-#         solver = "z3_4_12_2"
-#         if self.gid == "d_ironsht":
-#             exp_name = "ironsht"        
-#         elif ptyp == QType.ORIG:
-#             exp_name = "baseline"
-#             if self.gid == "v_uf":
-#                 exp_name = "synthetic"
-#         elif ptyp == QType.CORE:
-#             exp_name = "unsat_core"
-#         elif ptyp == QType.EXTD:
-#             exp_name = "unsat_core"
-#         elif ptyp == QType.BLOT:
-#             exp_name = "bloat"
-#             if self.gid == "d_ironsht":
-#                 exp_name = "ironsht"
-#         elif ptyp == QType.BLOT_CVC:
-#             exp_name = "bloat"
-#             solver = "cvc5_1_0_7"
-#         elif ptyp == QType.SHKP:
-#             exp_name = "shake"
-#         elif ptyp == QType.SHKO:
-#             exp_name = "oracle"
-#         elif ptyp == QType.REVL:
-#             exp_name = "opaque"
-#         elif ptyp == QType.ORIG_CVC:
-#             exp_name = "baseline_cvc"
-#             solver = "cvc5_1_0_7"
-#         elif ptyp == QType.NLE:
-#             exp_name = "verus_nl"
-#         else:
-#             print(f"[ERROR] unknown project type {ptyp}")
-#             assert False
-
-#         proj = FACT.load_project(self.gid, ptyp, enable_dummy=True)
-#         exp = ExpPart(exp_name, proj, solver)
-#         exp = ExpAnalyzer(exp, self.ana, enable_dummy=True)
-
-#         return exp
