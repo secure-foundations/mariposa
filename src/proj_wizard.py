@@ -144,16 +144,19 @@ class NinjaPasta:
             log_check(ext != None, "extension not intended for build stats!")
             build_meta_path = args.input_proj.get_build_meta_path(ext)
             self.save_build_stats(build_meta_path)
+        
+        count = subprocess_run(f"ls {self.output_dir} | wc -l", shell=True)[0]
+        log_info(f"generated {count} files in {self.output_dir}")
 
     def handle_create(self, new_project_name):
         log_check(is_simple_id(new_project_name), 
                   "invalid project name in preprocess")
         out_proj = Project(new_project_name)
-        output_dir = out_proj.sub_root
-        log_info(f"output directory is set to {output_dir}")
+        self.output_dir = out_proj.sub_root
+        log_info(f"output directory is set to {self.output_dir}")
 
         for in_path in list_smt2_files(args.input_dir):
-            out_path = convert_path(in_path, args.input_dir, output_dir)
+            out_path = convert_path(in_path, args.input_dir, self.output_dir)
             self.ninja_stuff += [f"build {out_path}: split {in_path}\n"]
             self.expect_targets.add(out_path)
 

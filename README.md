@@ -43,13 +43,13 @@ pip3 install -r doc/requirements.txt
 
 To perform a basic sanity check (on Linux):
 ```
-python3 src/main.py single -s z3_4_12_2 -i data/samples/single_check.smt2 --verbose 3 --clear-existing
+python3 src/exper_wizard.py single -s z3_4_12_2 -i data/samples/single_check.smt2 --verbose 3 --clear-existing
 ```
 
 If you are on macOS, you might want to provide a different solver with the `-s` flag:
 
 ```
-python3 src/main.py single -s z3_4_12_2_osx -i data/samples/single_check.smt2 --verbose 3 --clear-existing
+python3 src/exper_wizard.py single -s z3_4_12_2_osx -i data/samples/single_check.smt2 --verbose 3 --clear-existing
 ```
 
 This will test the stability of the query `data/samples/single_check.smt2` on the solver `Z3 4.12.2`, using the default settings for experiments. The result should be something like this:
@@ -126,15 +126,17 @@ The two required arguments for the `single` mode are:
 The results are stored in a temporary database under `gen/`. This mode can handle a query with multiple `(check-sat)` commands. In that case, the input query will be split for each `(check-sat)`. For example: 
 
 ```
-python3 src/main.py single -i data/samples/multiple_checks.smt2 --clear-existing
+python3 src/exper_wizard.py single -i data/samples/multiple_checks.smt2 --clear-existing
 ```
 The query file actually contains three `(check-sat)` commands. The split queries are placed in `gen/single_proj/`.
 ```
 [INFO] running 3 original queries 
-[INFO] exp config:	default 
-[INFO] project dir:	gen/single_proj/ 
-[INFO] solver path:	bin/z3-4.12.2 
-[INFO] analyzer:	default 
+exp config:	default
+project dir:	gen/single_proj/
+solver path:	bin/z3-4.12.2
+analyzer:	default
+
+=== Overall Report ===
 | category   |   count | percentage   |
 |------------|---------|--------------|
 | stable     |       3 | 100.0 %      |
@@ -142,7 +144,7 @@ The query file actually contains three `(check-sat)` commands. The split queries
 ```
 The temporary database is also under `gen/single_proj/`. One can also repeat the analysis without the experiment, without the `--clear-existing` flag.
 ```
-python3 src/main.py single -i data/samples/multiple_checks.smt2 
+python3 src/exper_wizard.py single -i data/samples/multiple_checks.smt2 
 ```
 The above will load the temporary database. Please note the temporary results will be overwritten by any further experiment that specifies `--clear-existing`. 
 
@@ -179,16 +181,19 @@ This means a new project group named `sample` is created, which contains a base 
 Now that we have created a new project, we can run an experiment with that project using `exper_wizard`, by specifying the directory. Please note that any directory that is not created by the `proj_wizard` will likely cause problems. 
 
 ```
-./src/exper_wizard.py multiple -i data/projs/sample/base.z3/
+./src/exper_wizard.py multiple -i data/projs/sample/base.z3/ -e debug
 ```
 
 It might take a few minutes for `exper_wizard` to run. The expected result should look something as the following:
 
 ```
-[INFO] exp config:	default 
-[INFO] project dir:	data/projs/sample/base.z3 
-[INFO] solver path:	bin/z3-4.12.2 
-[INFO] analyzer:	default 
+[INFO] running 11 original queries 
+exp config:	debug
+project dir:	data/projs/sample/base.z3
+solver path:	bin/z3-4.12.2
+analyzer:	default
+
+=== Overall Report ===
 | category   |   count | percentage   |
 |------------|---------|--------------|
 | stable     |       6 | 54.55 %      |
@@ -208,7 +213,7 @@ This should give something like the following, meaning we have a project group c
 ```
 project group: sample
 	base.z3 (11)
-		default - z3_4_12_2
+		debug - z3_4_12_2
 ```
 
 
@@ -217,16 +222,18 @@ project group: sample
 After an experiment is finished, we can run analysis on it. 
 
 ```
-./src/analysis_wizard.py basic -i data/projs/sample/base.z3 --analyzer 2sec
+./src/analysis_wizard.py basic -i data/projs/sample/base.z3 -e debug --analyzer 2sec
 ```
 
 This should print out a similar report as above. However, we note there is one more query that is considered `unstable`, since we are applying a more stringent time limit in our analyzer.
 
 ```
-[INFO] exp config:	default 
-[INFO] project dir:	data/projs/sample/base.z3 
-[INFO] solver path:	bin/z3-4.12.2 
-[INFO] analyzer:	2sec 
+exp config:	debug
+project dir:	data/projs/sample/base.z3
+solver path:	bin/z3-4.12.2
+analyzer:	2sec
+
+=== Overall Report ===
 | category   |   count | percentage   |
 |------------|---------|--------------|
 | stable     |       5 | 45.45 %      |

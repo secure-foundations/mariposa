@@ -4,7 +4,7 @@ from base.defs import *
 from base.exper import ExpConfig, Experiment
 from base.project import Project, ProjectGroup, ProjectType
 from base.solver import CVC5Solver, Solver, Z3Solver
-from utils.system_utils import exit_with, log_check, reset_dir
+from utils.system_utils import create_dir, exit_with, log_check, reset_dir
 
 from base.defs import SOLVER_CONFIG_PATH
 
@@ -92,6 +92,7 @@ class Factory:
                         'query must end with ".smt2"')
         query_path = query_path.replace(".smt2", "")
         reset_dir(SINGLE_MUT_ROOT, True)
+        create_dir(SINGLE_PROJ_ROOT)
         return Project("single", single_mode=True)
 
     @staticmethod
