@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse, time, pickle, numpy as np
-from base.project import KnownExt, Project, full_proj_name, get_qid
+from base.project import KnownExt, Project, ProjectType, full_proj_name, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
@@ -119,7 +119,7 @@ class NinjaPasta:
         ext = None
 
         if args.sub_command == "create":
-            self.handle_create(args.new_project_name)
+            self.handle_create(args.new_project_name, args.input_dir)
         elif args.sub_command == "build-core":
             self.handle_build_core(args.input_proj)
         elif args.sub_command == "convert-smtlib":
@@ -148,25 +148,24 @@ class NinjaPasta:
         count = subprocess_run(f"ls {self.output_dir} | wc -l", shell=True)[0]
         log_info(f"generated {count} files in {self.output_dir}")
 
-    def handle_create(self, gid):
+    def handle_create(self, gid, input_dir):
         log_check(is_simple_id(gid), 
                   "invalid project name in preprocess")
         self.output_dir = os.path.join(PROJ_ROOT, gid, str(Project.DEFAULT_PTYPE))
         log_info(f"output directory is set to {self.output_dir}")
 
-        for in_path in list_smt2_files(args.input_dir):
-            out_path = convert_path(in_path, args.input_dir, self.output_dir)
+        for in_path in list_smt2_files(input_dir):
+            out_path = convert_path(in_path, input_dir, self.output_dir)
             self.ninja_stuff += [f"build {out_path}: split {in_path}\n"]
             self.expect_targets.add(out_path)
 
-    def handle_build_core(self, args, in_proj):
-        out_proj = FACT.get_core_project(in_proj, build=True)
+    def handle_build_core(self, in_proj):
+        output_dir = in_proj.get_alt_dir(ProjectType.from_str("core.z3"))
 
-        output_dir = out_proj.sub_root
         self.output_dir = output_dir
         log_info(f"output directory is set to {self.output_dir}")
 
-        for in_path in list_smt2_files(args.input_dir):
+        for in_path in list_smt2_files(in_proj.sub_root):
             base_name = os.path.basename(in_path)
             out_path = os.path.join(output_dir, base_name)
             self.ninja_stuff += [f"build {out_path}: build-core {in_path}\n"]
@@ -174,9 +173,7 @@ class NinjaPasta:
 
     def handle_convert_smt_lib(self, in_proj):
         output_dir = in_proj.get_alt_dir(in_proj.ptype.switch_solver())
-
         log_info(f"converting queries in {in_proj.sub_root}")
-
         self.output_dir = output_dir
         log_info(f"output directory is set to {self.output_dir}")
 
