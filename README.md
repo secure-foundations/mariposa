@@ -225,7 +225,7 @@ After an experiment is finished, we can run analysis on it.
 ./src/analysis_wizard.py basic -i data/projs/sample/base.z3 -e debug --analyzer 2sec
 ```
 
-This should print out a similar report as above. However, we note there is one more query that is considered `unstable`, since we are applying a more stringent time limit in our analyzer.
+This should print out a similar report as above. However, we note there is one more query that is considered `unstable`, since we are applying a more stringent time limit in our analyzer. The results of course can differ depending on the machine Mariposa is running on.
 
 ```
 exp config:	debug
