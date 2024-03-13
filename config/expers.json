@@ -30,4 +30,14 @@
         "exp_timeout": 5,
         "num_procs": 7
     }
+    ,
+    "proof": {
+        "mutations": [
+            "shuffle",
+            "reseed"
+        ],
+        "num_mutants": 10,
+        "exp_timeout": 60,
+        "num_procs": 5
+    }
 }

@@ -258,7 +258,9 @@ class ProjectGroup:
             self.projects[sub_proj.full_name] = sub_proj
 
     def get_project(self, ptype: ProjectType) -> Project:
-        return self.projects.get(full_proj_name(self.gid, ptype))
+        fn = full_proj_name(self.gid, ptype)
+        log_check(fn in self.projects, f"no such project {fn} under {self.gid}")
+        return self.projects[fn]
     
     def get_projects(self):
         for p in sorted(self.projects.values()):

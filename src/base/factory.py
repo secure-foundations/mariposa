@@ -66,9 +66,12 @@ class Factory:
     def get_group_by_path(self, path) -> ProjectGroup:
         if self.groups is None:
             self.__init_projects()
-        items = os.path.normpath(path).split(os.sep)[-1:]
-        log_check(len(items) == 1, f"invalid group path {path}")
-        return self.groups.get(items[0])
+        items = os.path.normpath(path).split(os.sep)
+        res = self.groups.get(items[-1])
+        if res: return res
+        res = self.groups.get(items[-2])
+        if res: return res
+        exit_with(f"no such project group associated with path {path}")
     
     def get_project_by_path(self, path) -> Project:
         if self.groups is None:

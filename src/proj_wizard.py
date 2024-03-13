@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse, time, pickle, numpy as np
-from base.project import KnownExt, Project, ProjectType, full_proj_name, get_qid
+from base.project import KnownExt, Project, ProjectType as PT, full_proj_name, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
@@ -23,7 +23,7 @@ rule convert-smtlib
     command = {QUERY_WIZARD} convert-smtlib -i $in -o $out
 
 rule get-lfsc
-    command = {QUERY_WIZARD} get-lfsc -i $in --output-log-path $out --timeout 30 $clear
+    command = {QUERY_WIZARD} get-lfsc -i $in --output-log-path $out --timeout 60 $clear
 
 rule get-inst
     command = {QUERY_WIZARD} get-inst -i $in --output-log-path $out --timeout 30 
@@ -86,6 +86,12 @@ def set_up_get_proof(subparsers):
     add_clear_option(p)
     add_ninja_log_option(p)
     
+def set_up_get_core_proof(subparsers):
+    p = subparsers.add_parser('get-core-lfsc', help='get lfcs proof from a core query with cvc5')
+    add_input_dir_option(p, is_group=True)
+    add_clear_option(p)
+    add_ninja_log_option(p)
+
 def set_up_get_inst(subparsers):
     p = subparsers.add_parser('get-inst', help='get instantiations from a query using cvc5')
     add_input_dir_option(p)
@@ -128,6 +134,8 @@ class NinjaPasta:
             # always record build stats for proof generation
             args.record_build_stats = True
             ext = self.handle_get_proof(args.input_proj, args.clear_existing)
+        elif args.sub_command == "get-core-lfsc":
+            ext = self.handle_get_core_proof(args.input_group, args.clear_existing)
         elif args.sub_command == "get-inst":
              self.handle_get_inst(args.input_proj, args.clear_existing)
         elif args.sub_command == "verify":
@@ -160,7 +168,7 @@ class NinjaPasta:
             self.expect_targets.add(out_path)
 
     def handle_build_core(self, in_proj):
-        output_dir = in_proj.get_alt_dir(ProjectType.from_str("core.z3"))
+        output_dir = in_proj.get_alt_dir(PT.from_str("core.z3"))
 
         self.output_dir = output_dir
         log_info(f"output directory is set to {self.output_dir}")
@@ -194,6 +202,35 @@ class NinjaPasta:
                 self.ninja_stuff += [f"    clear=--clear-existing\n\n"]
             self.expect_targets.add(o)
         return ext
+
+    def handle_get_core_proof(self, in_group, clear):
+        ext = KnownExt.LFSC
+        # base_z3 = in_group.get_project(PT.from_str("base.z3"))
+        # core_z3 = in_group.get_project(PT.from_str("core.z3"))
+        base_cvc5 = in_group.get_project(PT.from_str("base.cvc5"))
+        core_cvc5 = in_group.get_project(PT.from_str("core.cvc5"))
+
+        missing = set()
+
+        self.output_dir = core_cvc5.get_log_dir(ext)
+
+        for qid in base_cvc5.qids:
+            o = base_cvc5.get_ext_path(qid, ext)
+            i = core_cvc5.get_ext_path(qid)
+
+            if os.path.exists(o):
+                continue
+
+            missing.add(qid)
+            if os.path.exists(i):
+                o = core_cvc5.get_ext_path(qid, ext)
+                print(i)
+            #     self.ninja_stuff += [f"build {o}: get-lfsc {i}\n"]
+            #     if clear:
+            #         self.ninja_stuff += [f"    clear=--clear-existing\n\n"]
+            #     self.expect_targets.add(o)
+            # else:
+            #     log_warn(f"missing core query {i}, skipping...")
 
     def handle_get_inst(self, in_proj, clear):
         ext = KnownExt.CVC_INST
@@ -311,6 +348,7 @@ if __name__ == "__main__":
     set_up_build_core(subparsers)
     set_up_convert_smt_lib(subparsers)
     set_up_get_proof(subparsers)
+    set_up_get_core_proof(subparsers)
     set_up_get_inst(subparsers)
     set_up_load_stat(subparsers)
     set_up_verify(subparsers)
