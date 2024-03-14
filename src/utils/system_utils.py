@@ -148,3 +148,5 @@ def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+def file_exists(path):
+    return os.path.exists(path) and os.path.isfile(path)

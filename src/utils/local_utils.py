@@ -8,8 +8,6 @@ from utils.option_utils import deep_parse_args
 from utils.system_utils import list_smt2_files, log_check, log_info, log_warn, reset_dir
 
 def handle_single(args):
-    args = deep_parse_args(args)
-
     in_query = args.input_query_path
     exp = args.experiment
     output_dir = exp.proj.sub_root
@@ -34,7 +32,6 @@ def handle_single(args):
     BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
 
 def handle_multiple(args):
-    args = deep_parse_args(args)
     exp = args.experiment
 
     if exp.sum_table_exists() and args.clear_existing == False:

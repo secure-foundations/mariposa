@@ -40,10 +40,12 @@ def __spinoff_server(args):
         remote_cmd = f"""ssh {host} "(cd mariposa; python3 src/exper_wizard.py worker --manager-addr {addr} --authkey {args.authkey}) &> mariposa.log &" """
         print(remote_cmd)
 
-def handle_manager(args):
-    # handle_sync(args.input_dir, args.clear)
-    wargs = copy.deepcopy(args)
-    args = deep_parse_args(args)
+def handle_manager(args, wargs):
+    branch = subprocess_run("git rev-parse --abbrev-ref HEAD")[0]
+
+    if branch != "master":
+        confirm_input(f"manager is not on master branch, continue?")
+
     exp = args.experiment
     exp.create_db(clear=args.clear_existing)
 
@@ -95,7 +97,6 @@ def handle_manager(args):
     BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
 
 def handle_worker(args):
-    args = deep_parse_args(args)
     from multiprocessing.managers import BaseManager
     import os.path
 
@@ -118,7 +119,6 @@ def handle_worker(args):
     log_info(f"worker {get_self_ip()} finished")
 
 def handle_recovery(args):
-    args = deep_parse_args(args)
     exp: Experiment = args.experiment
 
     available_db_paths = []

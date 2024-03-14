@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse, os
+from base.factory import FACT
+from base.solver import Z3Solver
 from query.inst_builder import InstBuilder
 from utils.option_utils import *
 from query.core_builder import BasicCoreBuilder
@@ -42,6 +44,20 @@ def setup_check_lfsc(subparsers):
     add_timeout_option(p)
     add_clear_option(p)
 
+def setup_trace_z3(subparsers):
+    p = subparsers.add_parser('trace-z3', help='get trace from z3')
+    add_input_query_option(p)
+    add_output_log_option(p)
+    add_timeout_option(p)
+    add_clear_option(p)
+
+def handle_trace_z3(input_query, output_proof, timeout, clear):
+    solver: Z3Solver = FACT.get_solver_by_name("z3_4_12_5")
+    if clear and os.path.exists(output_proof):
+        os.remove(output_proof)
+    solver.trace(input_query, timeout, output_proof)
+    log_check(os.path.exists(output_proof), f"failed to create {output_proof}")
+
 def setup_emit_quake(subparsers):
     p = subparsers.add_parser('emit-quake', help='emit quake file')
     add_input_query_option(p)
@@ -67,6 +83,7 @@ if __name__ == "__main__":
     setup_check_lfsc(subparsers)
     setup_emit_quake(subparsers)
     setup_verify(subparsers)
+    setup_trace_z3(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -97,6 +114,11 @@ if __name__ == "__main__":
                      args.clear_existing)
     elif args.sub_command == "get-inst":
         InstBuilder(args.input_query_path, 
+                    args.output_log_path, 
+                    args.timeout, 
+                    args.clear_existing)
+    elif args.sub_command == "trace-z3":
+        handle_trace_z3(args.input_query_path, 
                     args.output_log_path, 
                     args.timeout, 
                     args.clear_existing)

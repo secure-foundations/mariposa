@@ -47,7 +47,8 @@ class KnownExt(enum.Enum):
     LFSC_CHK = "lfsc-chk"
     VERI = "veri"
     SMT2 = "smt2"
-    CVC_INST = "cvc-inst" # cvc instantiations at unsat
+    CVC5_INST = "cvc5-inst" # cvc5 instantiations at unsat
+    Z3_TRACE = "z3-trace"
 
     def __str__(self):
         return self.value

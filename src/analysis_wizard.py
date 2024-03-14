@@ -25,17 +25,6 @@ def set_up_cvc5_perf(subparsers):
 def set_up_cvc5_inst(subparsers):
     p = subparsers.add_parser('inst', help='analyze the instantiation logs from cvc5')
     add_input_dir_option(p)
-    
-def set_up_trace(subparsers):
-    p = subparsers.add_parser('trace', help='analyze the trace')
-    add_input_dir_option(p)
-    add_analysis_options(p)
-
-def handle_trace(args):
-    exp = args.experiment
-    log_check(exp.sum_table_exists(), "experiment results do not exist")
-    ba = BasicAnalyzer(exp, args.analyzer)
-    ba.do_stuff()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")
@@ -44,7 +33,6 @@ if __name__ == '__main__':
     set_up_basic(subparsers)
     set_up_cvc5_perf(subparsers)
     set_up_cvc5_inst(subparsers)
-    set_up_trace(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -55,7 +43,5 @@ if __name__ == '__main__':
         PrefAnalyzer(args.input_group)
     elif args.sub_command == "inst":
         InstAnalyzer(args.input_proj)
-    elif args.sub_command == "trace":
-        handle_trace(args)
     else:
         parser.print_help()

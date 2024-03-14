@@ -29,8 +29,7 @@
         "num_mutants": 10,
         "exp_timeout": 5,
         "num_procs": 7
-    }
-    ,
+    },
     "proof": {
         "mutations": [
             "shuffle",
@@ -38,6 +37,17 @@
         ],
         "num_mutants": 10,
         "exp_timeout": 60,
+        "num_procs": 5
+    },
+    "trace": {
+        "mutations": [
+            "shuffle",
+            "rename",
+            "rename"
+        ],
+        "keep_mutants": true,
+        "num_mutants": 10,
+        "exp_timeout": 10,
         "num_procs": 5
     }
 }

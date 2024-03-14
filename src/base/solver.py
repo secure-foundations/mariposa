@@ -140,9 +140,15 @@ class Z3Solver(Solver):
 
         args = self.get_basic_command(query_path, time_limit, seeds)
         out, err, elapsed = subprocess_run(args)
-        rcode = output_as_rcode(out)
+        return output_as_rcode(out), elapsed
 
-        return rcode, elapsed
+    def trace(self, query_path, time_limit, out_file, seeds=None):
+        log_check(time_limit < 1000, "timeout should be in seconds")
+        args = self.get_basic_command(query_path, time_limit, seeds)
+        args += ["trace=true",
+                 f"trace_file_name={out_file}"]
+        out, err, elapsed = subprocess_run(args)
+        return output_as_rcode(out), elapsed
 
 class CVC5Solver(Solver):
     def __init__(self, name, obj):

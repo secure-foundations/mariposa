@@ -1,5 +1,6 @@
 from base.project import Partition
 from query.analyzer import QueryAnalyzer
+from utils.system_utils import file_exists, log_check
 
 def add_input_query_option(parser):
     parser.add_argument("-i", "--input-query-path", required=True, help="the input query")
@@ -77,6 +78,9 @@ def deep_parse_args(args):
         else:
             args.input_proj = FACT.get_project_by_path(args.input_dir)
             args.input_proj.part = args.part
+
+    if hasattr(args, "input_query_path"):
+        log_check(file_exists(args.input_query_path), "input query does not exist or not a file")
 
     single = args.sub_command == "single"
 

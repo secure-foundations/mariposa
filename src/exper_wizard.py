@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import copy
 from utils.cluster_utils import handle_manager, handle_recovery, handle_sync, handle_update, handle_worker
 from utils.local_utils import handle_single, handle_multiple, handle_info
 from utils.option_utils import *
@@ -59,6 +60,8 @@ if __name__ == '__main__':
     set_up_recovery(subparsers)
 
     args = parser.parse_args()
+    wargs = copy.deepcopy(args)
+    args = deep_parse_args(args)
 
     if args.sub_command == "single":
         handle_single(args)
@@ -67,7 +70,7 @@ if __name__ == '__main__':
     elif args.sub_command == "info":
         handle_info(args)
     elif args.sub_command == "manager":
-        handle_manager(args)
+        handle_manager(args, wargs)
     elif args.sub_command == "worker":
         handle_worker(args)
     elif args.sub_command == "sync":

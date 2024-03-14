@@ -72,16 +72,22 @@ class BasicAnalyzer:
             print("")
         print_banner("Report End")
 
-    def get_failed_mutants(self, qr):
-        print(f"{qr.qid} is unstable")
+    def get_mutants(self, qr):
         rows = self.exp.get_all_mutants(qr.query_path)
+        passed, failed = [], []
 
         for (m_path, rc, et) in rows:
+            rc = RCode(rc)
             mutation, seed = Experiment.parse_mutant_path(m_path)
-            if mutation != Mutation.SHUFFLE:
+            if mutation == Mutation.QUAKE:
+                # TODO: handle quake if needed
                 continue
-            emit_mutant_query(qr.query_path, m_path, Mutation.SHUFFLE, seed)
-            print(f"reproduced mutant {m_path} {RCode(rc)}")
+
+            if rc == RCode.UNSAT:
+                passed += [(mutation, seed)]
+            else:
+                failed += [(mutation, seed)]
+        return passed, failed
 
     def do_stuff(self):
         for qid in self.qids:
@@ -90,8 +96,14 @@ class BasicAnalyzer:
                 continue
             if qid != "betree__LinkedBetreeRefinement_v__impl_%1__split_parent_commutes_with_i":
                 continue
-            print(qid)
-            self.get_failed_mutants(qr)
+            s, f = self.get_mutants(qr)
+
+            for m in s:
+                print(m)
+
+            print("")
+            for m in f:
+                print(m)
 
     # def get_assert_counts(self, update=False):
     #     from tqdm import tqdm
