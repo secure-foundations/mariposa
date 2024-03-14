@@ -25,6 +25,9 @@ rule convert-smtlib
 rule get-lfsc
     command = {QUERY_WIZARD} get-lfsc -i $in --output-log-path $out --timeout 60 $clear
 
+rule check-lfsc
+    command = {QUERY_WIZARD} check-lfsc --input-log-path $in --output-log-path $out --timeout 30
+
 rule get-inst
     command = {QUERY_WIZARD} get-inst -i $in --output-log-path $out --timeout 30 
 
@@ -81,13 +84,20 @@ def set_up_convert_smt_lib(subparsers):
     add_ninja_log_option(p)
 
 def set_up_get_proof(subparsers):
-    p = subparsers.add_parser('get-lfsc', help='get lfcs proof from a query with cvc5')
+    p = subparsers.add_parser('get-lfsc', help='get lfcs proof from queries with cvc5')
     add_input_dir_option(p)
     add_clear_option(p)
     add_ninja_log_option(p)
-    
+
 def set_up_get_core_proof(subparsers):
-    p = subparsers.add_parser('get-core-lfsc', help='get lfcs proof from a core query with cvc5')
+    p = subparsers.add_parser('get-core-lfsc', help='get lfcs proof from core queries with cvc5')
+    # TODO: this might get confusing since we are assuming that the core.cvc5 project will be used
+    add_input_dir_option(p, is_group=True)
+    add_clear_option(p)
+    add_ninja_log_option(p)
+
+def set_up_check_proof(subparsers):
+    p = subparsers.add_parser('check-lfsc', help='check lfcs proofs')
     add_input_dir_option(p, is_group=True)
     add_clear_option(p)
     add_ninja_log_option(p)
@@ -136,6 +146,8 @@ class NinjaPasta:
             ext = self.handle_get_proof(args.input_proj, args.clear_existing)
         elif args.sub_command == "get-core-lfsc":
             ext = self.handle_get_core_proof(args.input_group, args.clear_existing)
+        elif args.sub_command == "check-lfsc":
+            ext = self.handle_check_proof(args.input_group, args.clear_existing)
         elif args.sub_command == "get-inst":
              self.handle_get_inst(args.input_proj, args.clear_existing)
         elif args.sub_command == "verify":
@@ -210,8 +222,6 @@ class NinjaPasta:
         base_cvc5 = in_group.get_project(PT.from_str("base.cvc5"))
         core_cvc5 = in_group.get_project(PT.from_str("core.cvc5"))
 
-        missing = set()
-
         self.output_dir = core_cvc5.get_log_dir(ext)
 
         for qid in base_cvc5.qids:
@@ -221,17 +231,31 @@ class NinjaPasta:
             if os.path.exists(o):
                 continue
 
-            missing.add(qid)
-            if os.path.exists(i):
+            if not os.path.exists(i):
+                log_warn(f"missing core query {i}, skipping...")
                 o = core_cvc5.get_ext_path(qid, ext)
-                print(i)
-            #     self.ninja_stuff += [f"build {o}: get-lfsc {i}\n"]
-            #     if clear:
-            #         self.ninja_stuff += [f"    clear=--clear-existing\n\n"]
-            #     self.expect_targets.add(o)
-            # else:
-            #     log_warn(f"missing core query {i}, skipping...")
+                self.ninja_stuff += [f"build {o}: get-lfsc {i}\n"]
+                if clear:
+                    self.ninja_stuff += [f"    clear=--clear-existing\n\n"]
+                self.expect_targets.add(o)
 
+        log_info(f"output directory is set to {self.output_dir}")
+        log_info("after the build, you may wish to run the following command to move the proof files:")
+        print(f"mv {self.output_dir}/*.lfsc {base_cvc5.get_log_dir(KnownExt.LFSC)}")
+
+    def handle_check_proof(self, in_group, clear):
+        in_ext = KnownExt.LFSC
+        out_ext = KnownExt.LFSC_CHK
+        base_cvc5 = in_group.get_project(PT.from_str("base.cvc5"))
+        self.output_dir = base_cvc5.get_log_dir(out_ext)
+        for qid in base_cvc5.qids:
+            o = base_cvc5.get_ext_path(qid, out_ext)
+            i = base_cvc5.get_ext_path(qid, in_ext)
+            if not os.path.exists(i):
+                log_warn(f"missing input proof {qid}.{in_ext}")
+                continue
+            self.ninja_stuff += [f"build {o}: check-lfsc {i}\n"]
+            
     def handle_get_inst(self, in_proj, clear):
         ext = KnownExt.CVC_INST
         self.output_dir = in_proj.get_log_dir(ext)
@@ -349,6 +373,7 @@ if __name__ == "__main__":
     set_up_convert_smt_lib(subparsers)
     set_up_get_proof(subparsers)
     set_up_get_core_proof(subparsers)
+    set_up_check_proof(subparsers)
     set_up_get_inst(subparsers)
     set_up_load_stat(subparsers)
     set_up_verify(subparsers)

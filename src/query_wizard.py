@@ -4,7 +4,7 @@ import argparse, os
 from query.inst_builder import InstBuilder
 from utils.option_utils import *
 from query.core_builder import BasicCoreBuilder
-from query.proof_builder import ProofBuilder
+from query.proof_builder import ProofBuilder, check_lfsc_proof
 from utils.query_utils import convert_verus_smtlib, emit_quake_query
 from utils.system_utils import log_check
 
@@ -34,6 +34,13 @@ def setup_get_inst(subparsers):
     add_output_log_option(p)
     add_timeout_option(p)
     add_clear_option(p)
+    
+def setup_check_lfsc(subparsers):
+    p = subparsers.add_parser('check-lfsc', help='check lfsc proof')
+    add_input_log_option(p)
+    add_output_log_option(p)
+    add_timeout_option(p)
+    add_clear_option(p)
 
 def setup_emit_quake(subparsers):
     p = subparsers.add_parser('emit-quake', help='emit quake file')
@@ -57,6 +64,7 @@ if __name__ == "__main__":
     setup_convert_smt_lib(subparsers)
     setup_get_lfsc(subparsers)
     setup_get_inst(subparsers)
+    setup_check_lfsc(subparsers)
     setup_emit_quake(subparsers)
     setup_verify(subparsers)
 
@@ -82,6 +90,11 @@ if __name__ == "__main__":
                      args.output_log_path,
                      args.timeout, 
                      args.clear_existing).run()
+    elif args.sub_command == "check-lfsc":
+        check_lfsc_proof(args.input_log_path, 
+                     args.output_log_path,
+                     args.timeout, 
+                     args.clear_existing)
     elif args.sub_command == "get-inst":
         InstBuilder(args.input_query_path, 
                     args.output_log_path, 

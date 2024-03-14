@@ -40,10 +40,13 @@ def confirm_input(msg):
 
 def subprocess_run(command, timeout=None, debug=False, cwd=None, shell=False):
     if debug:
-        print(command)
+        print(" ".join(command))
     start_time = time.time()
     if timeout is not None:
-        command = f"timeout {timeout}s {command}"
+        if shell:
+            command = f"timeout {timeout}s {command}"
+        else:
+            command = ["timeout", f"{timeout}s"] + command
     res = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell, cwd=cwd)
     # milliseconds
     elapsed = round((time.time() - start_time) * 1000)

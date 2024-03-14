@@ -68,3 +68,43 @@ class ProofBuilder:
 
         log_check(os.path.exists(self.output_proof), 
                 f"failed to create {self.output_proof}")
+
+PLF_SIG_FILES = ["/home/yizhou7/cvc5/deps/share/lfsc/signatures/core_defs.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/util_defs.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/theory_def.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/nary_programs.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/boolean_programs.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/boolean_rules.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/cnf_rules.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/equality_rules.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/arith_programs.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/arith_rules.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/strings_programs.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/strings_rules.plf",
+"/home/yizhou7/cvc5/deps/share/lfsc/signatures/quantifiers_rules.plf"]
+
+LFSCC_PATH = "/home/yizhou7/cvc5/deps/bin/lfscc"
+
+def check_lfsc_proof(input_proof, output_log, timeout, clear):
+    if not os.path.exists(input_proof):
+        log_warn(f"input proof {input_proof} does not exist")
+        return
+    
+    if not clear and os.path.exists(output_log):
+        log_info(f"{output_log} already exists")
+        return
+
+    # timeout in seconds
+    assert timeout < 1000
+    args = [LFSCC_PATH, *PLF_SIG_FILES, input_proof]
+    args = " ".join(args)
+    stdout, stderr, _ = subprocess_run(args, timeout=timeout, shell=True)
+
+    if stderr != "":
+        exit_with(f"lfscc error: {stderr}")
+
+    with open(output_log, "w+") as log_file:
+        log_file.write(stdout + "\n")
+
+    if "success" not in stdout:
+        exit_with(f"lfscc error: {stdout}")

@@ -1,11 +1,11 @@
-import os
-from base.exper import Experiment
 from base.project import Partition
-from base.solver import Solver
 from query.analyzer import QueryAnalyzer
 
 def add_input_query_option(parser):
     parser.add_argument("-i", "--input-query-path", required=True, help="the input query")
+
+def add_input_log_option(parser):
+    parser.add_argument("--input-log-path", required=True, help="the input log")
 
 def add_output_query_option(parser):
     parser.add_argument("-o", "--output-query-path", required=True, help="the query path")
@@ -55,6 +55,7 @@ def add_authkey_option(parser):
 
 def add_ninja_log_option(parser):
     parser.add_argument("--record-build-stats", default=False, action='store_true', help="parse and keep the build stat")
+    parser.add_argument("--no-build", default=False, action='store_true', help="stop after creating the ninja")
 
 def deep_parse_args(args):
     from base.factory import FACT

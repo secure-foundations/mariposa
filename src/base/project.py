@@ -44,9 +44,10 @@ def partition(a, n):
 
 class KnownExt(enum.Enum):
     LFSC = "lfsc"
+    LFSC_CHK = "lfsc-chk"
     VERI = "veri"
     SMT2 = "smt2"
-    CVC_INST = "cvc.inst" # cvc instantiations at unsat
+    CVC_INST = "cvc-inst" # cvc instantiations at unsat
 
     def __str__(self):
         return self.value
