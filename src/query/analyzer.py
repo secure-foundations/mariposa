@@ -50,6 +50,9 @@ class QueryAnalyzer:
         elif method == "cutoff":
             self.categorize_group = self._categorize_cutoff
 
+    def is_timeout(self, value):
+        return value >= self._timeout
+
     def _categorize_cutoff(self, group_blob):
         size = len(group_blob[0])
         success = match_rcode(group_blob, RCode.UNSAT, self._timeout)

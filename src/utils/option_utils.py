@@ -1,5 +1,7 @@
+from base.defs import MAGIC_IGNORE_SEED
 from base.project import Partition
 from query.analyzer import QueryAnalyzer
+from utils.query_utils import Mutation
 from utils.system_utils import file_exists, log_check
 
 def add_input_query_option(parser):
@@ -79,8 +81,15 @@ def deep_parse_args(args):
             args.input_proj = FACT.get_project_by_path(args.input_dir)
             args.input_proj.part = args.part
 
+    if hasattr(args, "seed"):
+        if int(args.seed) == MAGIC_IGNORE_SEED:
+            args.seed = None
+
     if hasattr(args, "input_query_path"):
         log_check(file_exists(args.input_query_path), "input query does not exist or not a file")
+
+    if hasattr(args, "mutation"):
+        args.mutation = Mutation(args.mutation)
 
     single = args.sub_command == "single"
 

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 from analysis.basic_analyzer import BasicAnalyzer
+from base.project import KnownExt
 from utils.local_utils import handle_single
 from utils.option_utils import *
-from utils.system_utils import log_check
+from utils.system_utils import log_check, print_banner
 
 def set_up_query(subparsers):
     p = subparsers.add_parser('query', help='query mode, this WILL call the single mode of experiment wizard')
@@ -23,7 +25,25 @@ def handle_diff_project(args):
     exp = args.experiment
     log_check(exp.sum_table_exists(), "experiment results do not exist")
     ba = BasicAnalyzer(exp, args.analyzer)
-    ba.do_stuff()
+    unstables = ba.get_unstable_query_mutants()
+    output_dir = exp.proj.get_log_dir(KnownExt.Z3_TRACE)    
+    # ba.print_status(args.verbose)
+
+    for i, (qr, pms, fms) in enumerate(unstables):
+        # if i != 1:
+        #     continue
+        print_banner("Query:")
+        print(qr.query_path)
+        print_banner("Passed Mutants:")
+        for (m, s, _) in pms:
+            out_path = os.path.join(output_dir, f"{qr.qid}.{m}.{s}.{KnownExt.Z3_TRACE}")
+            print("../axiom-profiler-2/target/release/smt-log-parser " + out_path + " > passed")
+        print_banner("Failed Mutants:")
+        for (m, s, rc) in fms:
+            out_path = os.path.join(output_dir, f"{qr.qid}.{m}.{s}.{KnownExt.Z3_TRACE}")
+            print("../axiom-profiler-2/target/release/smt-log-parser " + out_path + " > failed")
+            print(rc)
+        print("")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Trace Differ is a tool to compare the traces from the successful and failed mutants")

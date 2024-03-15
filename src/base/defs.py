@@ -33,3 +33,5 @@ NINJA_BUILD_FILE = "build.ninja"
 NINJA_LOG_FILE = ".ninja_log"
 
 NINJA_REPORTS_DIR = LOG_ROOT + "ninja_reports/"
+
+MAGIC_IGNORE_SEED = 0xdeadbeef # 3735928559

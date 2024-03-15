@@ -41,7 +41,7 @@ def __spinoff_server(args):
         print(remote_cmd)
 
 def handle_manager(args, wargs):
-    branch = subprocess_run("git rev-parse --abbrev-ref HEAD")[0]
+    branch = subprocess_run("git rev-parse --abbrev-ref HEAD", shell=True)[0]
 
     if branch != "master":
         confirm_input(f"manager is not on master branch, continue?")

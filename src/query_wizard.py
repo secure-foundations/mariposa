@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse, os
+from base.defs import GEN_ROOT
 from base.factory import FACT
 from base.solver import Z3Solver
 from query.inst_builder import InstBuilder
 from utils.option_utils import *
 from query.core_builder import BasicCoreBuilder
 from query.proof_builder import ProofBuilder, check_lfsc_proof
-from utils.query_utils import convert_verus_smtlib, emit_quake_query
-from utils.system_utils import log_check
+from utils.query_utils import convert_verus_smtlib, emit_mutant_query, emit_quake_query
+from utils.system_utils import get_name_hash, log_check, remove_file
 
 def setup_build_core(subparsers):
     p = subparsers.add_parser('build-core', help='create core query form a given query')
@@ -46,17 +47,32 @@ def setup_check_lfsc(subparsers):
 
 def setup_trace_z3(subparsers):
     p = subparsers.add_parser('trace-z3', help='get trace from z3')
+    p.add_argument("--mutation", default=None, help="the mutation to perform before tracing")
+    p.add_argument("--seed", default=MAGIC_IGNORE_SEED, help="the seed to use")
     add_input_query_option(p)
     add_output_log_option(p)
     add_timeout_option(p)
     add_clear_option(p)
 
-def handle_trace_z3(input_query, output_proof, timeout, clear):
+def handle_trace_z3(input_query, output_trace, mutation, seed, timeout):
     solver: Z3Solver = FACT.get_solver_by_name("z3_4_12_5")
-    if clear and os.path.exists(output_proof):
-        os.remove(output_proof)
-    solver.trace(input_query, timeout, output_proof)
-    log_check(os.path.exists(output_proof), f"failed to create {output_proof}")
+    remove_file(output_trace)
+    
+    if mutation not in {Mutation.NONE, Mutation.RESEED}:
+        name_hash = get_name_hash(input_query)
+        actual_query = f"{GEN_ROOT}/{name_hash}.{mutation}.{seed}.smt2"
+        remove_file(actual_query)
+        emit_mutant_query(input_query, actual_query, mutation, seed)
+        seed = None
+    else:
+        actual_query = input_query
+
+    solver.trace(actual_query, timeout, output_trace, seeds=seed)
+
+    if actual_query != input_query:
+        remove_file(actual_query)
+
+    log_check(os.path.exists(output_trace), f"failed to create {output_trace}")
 
 def setup_emit_quake(subparsers):
     p = subparsers.add_parser('emit-quake', help='emit quake file')
@@ -120,8 +136,9 @@ if __name__ == "__main__":
     elif args.sub_command == "trace-z3":
         handle_trace_z3(args.input_query_path, 
                     args.output_log_path, 
-                    args.timeout, 
-                    args.clear_existing)
+                    args.mutation,
+                    args.seed,
+                    args.timeout)
     elif args.sub_command == "emit-quake":
         emit_quake_query(args.input_query_path, 
                          args.output_query_path, 

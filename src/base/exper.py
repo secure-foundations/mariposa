@@ -2,6 +2,7 @@ import os, random
 import numpy as np
 
 from typing import Dict
+from base.defs import MAGIC_IGNORE_SEED
 from utils.query_utils import Mutation, find_verus_procedure_name
 
 from utils.system_utils import *
@@ -243,7 +244,7 @@ solver: {self.solver}"""
         try:
             return Mutation(parts[-2]), int(parts[-3])
         except ValueError:
-            return None, None
+            return Mutation.NONE, MAGIC_IGNORE_SEED
 
     # this is called by the runner
     # should not call this for analysis
@@ -400,7 +401,7 @@ solver: {self.solver}"""
                     sums.add(part)
         return exps
 
-    def get_all_mutants(self, v_path):
+    def get_mutants(self, v_path):
         con, cur = get_cursor(self.db_path)
         res = cur.execute(f"""SELECT query_path, result_code, elapsed_milli FROM {self.exp_table_name} WHERE vanilla_path = ?""", (v_path,))
         rows = res.fetchall()

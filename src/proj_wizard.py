@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse, time, pickle, numpy as np
+from analysis.basic_analyzer import BasicAnalyzer
+from base.exper import Experiment
 from base.project import KnownExt, Project, ProjectType as PT, full_proj_name, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
 from utils.option_utils import *
@@ -33,6 +35,9 @@ rule get-inst
 
 rule verify
     command = {QUERY_WIZARD} verify -i $in --output-log-path $out -s $solver --timeout 30
+
+rule trace-z3
+    command = {QUERY_WIZARD} trace-z3 -i $in --output-log-path $out --timeout $timeout --mutation $mutation --seed $seed
 """
 
 # rule instantiate
@@ -74,6 +79,14 @@ def set_up_build_core(subparsers):
     add_input_dir_option(p)
     add_solver_option(p)
     add_timeout_option(p)
+    add_clear_option(p)
+    add_ninja_log_option(p)
+    
+def set_up_build_z3_trace(subparsers):
+    p = subparsers.add_parser('build-trace', help='build z3 traces out of unstable queries in a project')
+    add_input_dir_option(p)
+    add_timeout_option(p)
+    add_analysis_options(p)
     add_clear_option(p)
     add_ninja_log_option(p)
 
@@ -138,6 +151,8 @@ class NinjaPasta:
             self.handle_create(args.new_project_name, args.input_dir)
         elif args.sub_command == "build-core":
             self.handle_build_core(args.input_proj)
+        elif args.sub_command == "build-trace":
+            self.handle_build_z3_trace(args.experiment)
         elif args.sub_command == "convert-smtlib":
             self.handle_convert_smt_lib(args.input_proj)
         elif args.sub_command == "get-lfsc":
@@ -190,6 +205,23 @@ class NinjaPasta:
             out_path = os.path.join(output_dir, base_name)
             self.ninja_stuff += [f"build {out_path}: build-core {in_path}\n"]
             self.expect_targets.add(out_path)
+
+    def handle_build_z3_trace(self, exp: Experiment):
+        log_check(exp.sum_table_exists(), "experiment results do not exist")
+        ba = BasicAnalyzer(exp, args.analyzer)
+        unstables = ba.get_unstable_query_mutants()
+        self.output_dir = exp.proj.get_log_dir(KnownExt.Z3_TRACE)
+
+        for (qr, pms, fms) in unstables:
+            in_path = qr.query_path
+            for (m, s, _) in pms + fms:
+                out_path = os.path.join(self.output_dir, f"{qr.qid}.{m}.{s}.{KnownExt.Z3_TRACE}")
+                self.ninja_stuff += [
+                    f"build {out_path}: trace-z3 {in_path}\n"
+                    f"    timeout={args.timeout}\n",
+                    f"    mutation={m}\n",
+                    f"    seed={s}\n"]
+                self.expect_targets.add(out_path)
 
     def handle_convert_smt_lib(self, in_proj):
         output_dir = in_proj.get_alt_dir(in_proj.ptype.switch_solver())
@@ -370,6 +402,7 @@ if __name__ == "__main__":
 
     set_up_create(subparsers)
     set_up_build_core(subparsers)
+    set_up_build_z3_trace(subparsers)
     set_up_convert_smt_lib(subparsers)
     set_up_get_proof(subparsers)
     set_up_get_core_proof(subparsers)

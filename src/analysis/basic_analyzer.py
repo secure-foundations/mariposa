@@ -73,37 +73,41 @@ class BasicAnalyzer:
         print_banner("Report End")
 
     def get_mutants(self, qr):
-        rows = self.exp.get_all_mutants(qr.query_path)
+        rows = self.exp.get_mutants(qr.query_path)
         passed, failed = [], []
 
         for (m_path, rc, et) in rows:
             rc = RCode(rc)
+            if self.ana.is_timeout(et):
+                rc = RCode.TIMEOUT
             mutation, seed = Experiment.parse_mutant_path(m_path)
+
             if mutation == Mutation.QUAKE:
                 # TODO: handle quake if needed
                 continue
 
             if rc == RCode.UNSAT:
-                passed += [(mutation, seed)]
+                passed += [(mutation, seed, None)]
             else:
-                failed += [(mutation, seed)]
+                failed += [(mutation, seed, rc)]
         return passed, failed
 
-    def do_stuff(self):
+    def get_unstable_query_mutants(self):
+        res = []
         for qid in self.qids:
             qr = self[qid]
-            if self.get_query_stability(qr.qid) != Stability.UNSTABLE:
+
+            if self.get_query_stability(qid) != Stability.UNSTABLE:
                 continue
-            if qid != "betree__LinkedBetreeRefinement_v__impl_%1__split_parent_commutes_with_i":
-                continue
+
             s, f = self.get_mutants(qr)
 
-            for m in s:
-                print(m)
+            if len(s) == 0 or len(f) == 0:
+                log_warn(f"only quake was effective, skipping {qid}")
+                continue
 
-            print("")
-            for m in f:
-                print(m)
+            res.append((qr, s, f))
+        return res
 
     # def get_assert_counts(self, update=False):
     #     from tqdm import tqdm

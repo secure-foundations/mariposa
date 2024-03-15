@@ -127,6 +127,7 @@ class Mutation(str, Enum):
     RESEED = "reseed"
     QUAKE = "quake"
     COMPOSE = "compose"
+    NONE = "none"
 
     def __str__(self):
         return self.value

@@ -150,3 +150,8 @@ def create_dir(path):
 
 def file_exists(path):
     return os.path.exists(path) and os.path.isfile(path)
+
+def remove_file(path):
+    if file_exists(path):
+        log_check(os.path.isfile(path), f"{path} is a directory, not a file!")
+        os.remove(path)
