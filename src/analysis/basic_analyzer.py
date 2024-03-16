@@ -72,7 +72,7 @@ class BasicAnalyzer:
             print("")
         print_banner("Report End")
 
-    def get_mutants(self, qr):
+    def get_mutant_details(self, qr):
         rows = self.exp.get_mutants(qr.query_path)
         passed, failed = [], []
 
@@ -100,7 +100,7 @@ class BasicAnalyzer:
             if self.get_query_stability(qid) != Stability.UNSTABLE:
                 continue
 
-            s, f = self.get_mutants(qr)
+            s, f = self.get_mutant_details(qr)
 
             if len(s) == 0 or len(f) == 0:
                 log_warn(f"only quake was effective, skipping {qid}")
@@ -108,6 +108,20 @@ class BasicAnalyzer:
 
             res.append((qr, s, f))
         return res
+
+    def do_stuff(self):
+        cats = Categorizer([c for c in UnstableReason])
+        for qid in self.qids:
+            qr = self[qid]
+            if self.get_query_stability(qid) != Stability.UNSTABLE:
+                continue
+            # print(f"{qid} is unstable")
+            qr.enforce_timeout(60 * 1000)
+            cats.add_item(self.ana.sub_categorize_unstable(qr.blob).value, qid)
+            # qr.print_status(verbosity=3)
+            # break
+        cats.finalize()
+        cats.print_status()
 
     # def get_assert_counts(self, update=False):
     #     from tqdm import tqdm

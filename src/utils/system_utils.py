@@ -32,6 +32,7 @@ def exit_with(msg):
 
 def log_check(cond, msg):
     if not cond:
+        assert False
         exit_with(msg)
 
 def confirm_input(msg):

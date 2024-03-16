@@ -112,7 +112,7 @@ def full_proj_name(name, ptyp):
 def get_qid(query_path):
     base = os.path.basename(query_path)
     base = base.split(".")
-    log_check(KnownExt(base[-1]), f"invalid query {query_path}")
+    _ = KnownExt(base[-1])
     return ".".join(base[:-1])
 
 class Project:
@@ -150,6 +150,12 @@ class Project:
             self._db_dir = self._sub_root.replace(PROJ_ROOT, DB_ROOT)
             self._gen_dir = self.sub_root.replace(PROJ_ROOT, GEN_ROOT)
             self._log_dir = self.sub_root.replace(PROJ_ROOT, LOG_ROOT)
+
+    def reload(self):
+        log_check(self.single_mode, "reload is only for single mode")
+        self._qids = set()
+        for q in self.list_queries():
+            self._qids.add(get_qid(q))
 
     @property
     def sub_root(self):
@@ -202,7 +208,8 @@ class Project:
     def is_whole(self):
         return self.part.is_whole()
 
-    def get_ext_path(self, qname, ext: KnownExt = KnownExt.SMT2):
+    def get_ext_path(self, qname, ext=KnownExt.SMT2):
+        # print(qname, ext, self.qids)
         log_check(qname in self.qids, f"invalid query {qname}")
         if ext == KnownExt.SMT2:
             return os.path.join(self.sub_root, f"{qname}.smt2")

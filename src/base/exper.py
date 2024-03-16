@@ -57,12 +57,13 @@ class QueryExpResult:
             new_blob[1][old_blob[1] > timeout] = timeout
         self.blob = new_blobs
         self.timeout = timeout
-
+        
     def print_status(self, verbosity=1):
         from tabulate import tabulate
         print(f"query path:\t\t{self.query_path}")
 
         v_rcode, v_time = self.get_original_status()
+
         proc = find_verus_procedure_name(self.query_path)
 
         if proc != None:
@@ -344,8 +345,9 @@ solver: {self.solver}"""
         for row in rows:
             blob = np.frombuffer(row[1], dtype=int)
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
-
+            print(row[0])
             path = row[0]
+            path = self.proj.get_ext_path(get_qid(path))
             qr = QueryExpResult(path, self.enabled_muts, blob)
             if qr.mutations == []:
                 qr.mutations = self.enabled_muts

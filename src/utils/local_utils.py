@@ -1,6 +1,6 @@
 import subprocess, sys
 from analysis.basic_analyzer import BasicAnalyzer
-from base.defs import MARIPOSA
+from base.defs import MARIPOSA, SINGLE_PROJ_ROOT
 from base.factory import FACT
 from base.runner import Runner
 
@@ -10,22 +10,25 @@ from utils.system_utils import list_smt2_files, log_check, log_info, log_warn, r
 def handle_single(args):
     in_query = args.input_query_path
     exp = args.experiment
-    output_dir = exp.proj.sub_root
 
     if exp.sum_table_exists() and args.clear_existing == False:
-        log_warn(f"experiment results already exists for {output_dir}")
+        log_warn(f"experiment results already exists for {SINGLE_PROJ_ROOT}")
         log_warn(f"you might want to use --clear-existing to overwrite the results.")
         BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
 
-    reset_dir(output_dir, args.clear_existing)
-    command = f"{MARIPOSA} -i {in_query} -o {exp.proj.sub_root}/split.smt2 -a split --convert-comments"
+    reset_dir(SINGLE_PROJ_ROOT, args.clear_existing)
+
+    command = f"{MARIPOSA} -i {in_query} -o {SINGLE_PROJ_ROOT}/split.smt2 -a split --convert-comments"
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     log_check(result.returncode == 0, "single mode split failed!")
 
-    if list_smt2_files(output_dir) == []:
+    if list_smt2_files(SINGLE_PROJ_ROOT) == []:
         log_info(f"no queries were generated from {in_query}")
         sys.exit(0)
+
+    # this is a hack to make sure qids are loaded
+    exp.proj.reload()
 
     r = Runner()
     r.run_project(exp, args.clear_existing)

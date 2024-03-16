@@ -8,6 +8,20 @@ from base.solver import RCode
 from base.exper import QueryExpResult
 from base.defs import ANALYZER_CONFIG_PATH
 
+class UnstableReason(Enum):
+    TIMEOUT = "reason_timeout"
+    UNKNOWN = "reason_unknown"
+    MIXED = "reason_mixed"
+
+    def __str__(self):
+        return self.value
+
+    def __hash__(self):
+        return hash(str(self))
+    
+    def __eq__(self, other):
+        return str(self) == str(other)
+
 class Stability(Enum):
     UNSOLVABLE = "unsolvable"
     UNSTABLE = "unstable"
@@ -25,7 +39,7 @@ class Stability(Enum):
 
 def match_rcode(blob, rcode, timeout=np.inf):
     matches = blob[0] == rcode.value
-    return np.sum(np.logical_and(matches, blob[1] < timeout))
+    return np.sum(np.logical_and(matches, blob[1] <= timeout))
 
 class QueryAnalyzer:
     def __init__(self, name):
@@ -160,3 +174,36 @@ class QueryAnalyzer:
             cats.add_item(res.value, qs.qid)
         cats.finalize()
         return cats
+
+    def sub_categorize_unstable(self, group_blob):
+        size = group_blob.shape[0]
+        tos, uks = 0, 0
+        uk_times = []
+        
+        for i in range(size):
+            _tos = np.sum(group_blob[i][0] == RCode.TIMEOUT.value)
+            _uks = np.sum(group_blob[i][0] == RCode.UNKNOWN.value)
+            uk_times += list(group_blob[i][1][group_blob[i][0] == RCode.UNKNOWN.value])
+            tos += _tos
+            uks += _uks
+
+        if tos > 0 and uks > 0:
+            print("mixed ", end="")
+            # print(round(tos * 100 / (uks), end=" ")
+            # print(round(np.mean(uk_times)/1000,2), 
+                #   round(np.median(uk_times)/1000, 2))            
+            return UnstableReason.MIXED
+        if tos > 0:
+            return UnstableReason.TIMEOUT
+        if uks > 0:
+            print("unknown ", end="")
+            uk_times = np.array(uk_times)
+            print(round(np.mean(uk_times)/1000,2), 
+                  round(np.median(uk_times)/1000, 2))
+            return UnstableReason.UNKNOWN
+
+        assert False
+        # sr = success / size
+        # if sr >= self.r_stable:
+        #     return Stability.STABLE
+        # return Stability.UNSTABLE
