@@ -43,7 +43,7 @@
         "mutations": [
             "shuffle",
             "rename",
-            "rename"
+            "reseed"
         ],
         "keep_mutants": true,
         "num_mutants": 10,

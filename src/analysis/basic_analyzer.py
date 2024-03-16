@@ -37,17 +37,18 @@ class BasicAnalyzer:
         return self.__cats
 
     def print_status(self, verbosity=0):
-        print(f"exp config:\t{self.exp.exp_name}")
-        print(f"project dir:\t{self.exp.proj.sub_root}")
-        print(f"solver path:\t{self.exp.solver.path}")
-        print(f"analyzer:\t{self.ana.name}")
 
-        print("")
         print_banner("Overall Report")
+        print(f"project dir:\t{self.exp.proj.sub_root}")
+        print(f"exp config:\t{self.exp.exp_name}")
+        print(f"solver path:\t{self.exp.solver.path}")
+        print(f"analyzer:\t{self.ana.name}\n")
+        
         self.__cats.print_status(skip_empty=True)
         print("")
 
         if verbosity == 0:
+            print_banner("Report End")
             return
 
         for cat, cs in self.__cats.items():
@@ -73,7 +74,6 @@ class BasicAnalyzer:
         print_banner("Report End")
 
     def get_mutant_details(self, qr):
-        print(qr.query_path)
         rows = self.exp.get_mutants(qr.query_path)
         passed, failed = [], []
 
@@ -91,7 +91,6 @@ class BasicAnalyzer:
                 passed += [(mutation, seed, None)]
             else:
                 failed += [(mutation, seed, rc)]
-        assert False
         return passed, failed
 
     def get_unstable_query_mutants(self):
@@ -111,20 +110,17 @@ class BasicAnalyzer:
             res.append((qr, s, f))
         return res
 
-    def do_stuff(self):
+    def get_unstable_reasons(self):
         cats = Categorizer([c for c in UnstableReason])
         for qid in self.qids:
             qr = self[qid]
             if self.get_query_stability(qid) != Stability.UNSTABLE:
                 continue
-            # print(f"{qid} is unstable")
-            qr.enforce_timeout(60 * 1000)
+            qr.enforce_timeout(self.ana._timeout)
             cats.add_item(
                 self.ana.sub_categorize_unstable(qr.blob).value, qid)
-            # qr.print_status(verbosity=3)
-            # break
         cats.finalize()
-        cats.print_status()
+        return cats
 
     # def get_assert_counts(self, update=False):
     #     from tqdm import tqdm

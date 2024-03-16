@@ -217,7 +217,7 @@ solver: {self.solver}"""
                 mut_path = f"{self.gen_dir}/{base}.{str(s)}.{m}.smt2"
                 task = ExpTask(origin_path, mut_path, m, s)
                 tasks.append(task)
-
+        log_info(f"created {len(tasks)} tasks for {origin_path}")
         return tasks
 
     def __build_tasks(self):
@@ -274,6 +274,7 @@ solver: {self.solver}"""
         mutations = self.enabled_muts
 
         blob = np.zeros((len(mutations), 2, self.num_mutant + 1), dtype=int)
+        print(blob.shape)
 
         blob[:, 0, 0] = v_rcode
         blob[:, 1, 0] = v_time
@@ -285,6 +286,8 @@ solver: {self.solver}"""
                 log_warn(f"{v_path} {m} has {len(rows)} mutants, expected {self.num_mutant}")
                 log_info(f"filling with {self.num_mutant - len(rows)} rcode '{RCode.ERROR}'")
                 blob[i][0] = RCode.ERROR.value
+            else:
+                log_check(len(rows) == self.num_mutant, f"{v_path} {m} has {len(rows)} mutants, expected {self.num_mutant}")
 
             for (j, row) in enumerate(rows):
                 blob[i][0][j + 1] = row[0]
@@ -408,3 +411,4 @@ solver: {self.solver}"""
         rows = res.fetchall()
         con.close()
         return rows
+
