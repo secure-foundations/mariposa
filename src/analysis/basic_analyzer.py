@@ -10,7 +10,7 @@ from utils.cache_utils import *
 class BasicAnalyzer:
     def __init__(self, exp: Experiment, ana, enable_dummy=False):
         self.exp = exp
-        self.ana = ana
+        self.ana: QueryAnalyzer = ana
         self.__qrs: Dict[str, QueryExpResult] = self.exp.load_sum_table(enable_dummy)
         self.__qr_keys = list(sorted(self.__qrs.keys()))
         self.__cats: Categorizer = ana.categorize_queries(self.__qrs.values())
@@ -73,6 +73,7 @@ class BasicAnalyzer:
         print_banner("Report End")
 
     def get_mutant_details(self, qr):
+        print(qr.query_path)
         rows = self.exp.get_mutants(qr.query_path)
         passed, failed = [], []
 
@@ -90,6 +91,7 @@ class BasicAnalyzer:
                 passed += [(mutation, seed, None)]
             else:
                 failed += [(mutation, seed, rc)]
+        assert False
         return passed, failed
 
     def get_unstable_query_mutants(self):
@@ -117,7 +119,8 @@ class BasicAnalyzer:
                 continue
             # print(f"{qid} is unstable")
             qr.enforce_timeout(60 * 1000)
-            cats.add_item(self.ana.sub_categorize_unstable(qr.blob).value, qid)
+            cats.add_item(
+                self.ana.sub_categorize_unstable(qr.blob).value, qid)
             # qr.print_status(verbosity=3)
             # break
         cats.finalize()

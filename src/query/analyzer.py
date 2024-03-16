@@ -188,18 +188,18 @@ class QueryAnalyzer:
             uks += _uks
 
         if tos > 0 and uks > 0:
-            print("mixed ", end="")
-            # print(round(tos * 100 / (uks), end=" ")
+            # print("mixed ", end="")
+            # print(round(tos * 100 / (uks + tos)), end=" ")
             # print(round(np.mean(uk_times)/1000,2), 
-                #   round(np.median(uk_times)/1000, 2))            
+            #       round(np.median(uk_times)/1000, 2))            
             return UnstableReason.MIXED
         if tos > 0:
             return UnstableReason.TIMEOUT
         if uks > 0:
-            print("unknown ", end="")
+            # print("unknown ", end="")
             uk_times = np.array(uk_times)
-            print(round(np.mean(uk_times)/1000,2), 
-                  round(np.median(uk_times)/1000, 2))
+            # print(round(np.mean(uk_times)/1000,2), 
+            #       round(np.median(uk_times)/1000, 2))
             return UnstableReason.UNKNOWN
 
         assert False

@@ -345,7 +345,6 @@ solver: {self.solver}"""
         for row in rows:
             blob = np.frombuffer(row[1], dtype=int)
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
-            print(row[0])
             path = row[0]
             path = self.proj.get_ext_path(get_qid(path))
             qr = QueryExpResult(path, self.enabled_muts, blob)
@@ -405,7 +404,7 @@ solver: {self.solver}"""
 
     def get_mutants(self, v_path):
         con, cur = get_cursor(self.db_path)
-        res = cur.execute(f"""SELECT query_path, result_code, elapsed_milli FROM {self.exp_table_name} WHERE vanilla_path = ?""", (v_path,))
+        res = cur.execute(f"""SELECT query_path, result_code, elapsed_milli FROM {self.exp_table_name} WHERE vanilla_path = ?""", (get_qid(v_path),))
         rows = res.fetchall()
         con.close()
         return rows

@@ -112,6 +112,7 @@ def handle_worker(args):
         wargs = queue.get()
         if wargs is None:
             break
+        wargs = deep_parse_args(wargs)
         (db_path, part) = handle_multiple(wargs)
         db_path = f"{get_self_ip()}:{os.path.abspath(db_path)}"
         res_queue.put((db_path, part))

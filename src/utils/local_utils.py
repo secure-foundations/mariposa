@@ -4,7 +4,6 @@ from base.defs import MARIPOSA, SINGLE_PROJ_ROOT
 from base.factory import FACT
 from base.runner import Runner
 
-from utils.option_utils import deep_parse_args
 from utils.system_utils import list_smt2_files, log_check, log_info, log_warn, reset_dir
 
 def handle_single(args):
