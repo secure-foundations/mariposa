@@ -217,7 +217,7 @@ solver: {self.solver}"""
                 mut_path = f"{self.gen_dir}/{base}.{str(s)}.{m}.smt2"
                 task = ExpTask(origin_path, mut_path, m, s)
                 tasks.append(task)
-        log_info(f"created {len(tasks)} tasks for {origin_path}")
+        # log_info(f"created {len(tasks)} tasks for {origin_path}")
         return tasks
 
     def __build_tasks(self):
@@ -274,7 +274,6 @@ solver: {self.solver}"""
         mutations = self.enabled_muts
 
         blob = np.zeros((len(mutations), 2, self.num_mutant + 1), dtype=int)
-        print(blob.shape)
 
         blob[:, 0, 0] = v_rcode
         blob[:, 1, 0] = v_time

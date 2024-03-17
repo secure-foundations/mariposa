@@ -1,5 +1,5 @@
 import subprocess, sys
-from analysis.basic_analyzer import BasicAnalyzer
+from analysis.expr_analyzer import ExprAnalyzer
 from base.defs import MARIPOSA, SINGLE_PROJ_ROOT
 from base.factory import FACT
 from base.runner import Runner
@@ -13,7 +13,7 @@ def handle_single(args):
     if exp.sum_table_exists() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {SINGLE_PROJ_ROOT}")
         log_warn(f"you might want to use --clear-existing to overwrite the results.")
-        BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
+        ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
 
     reset_dir(SINGLE_PROJ_ROOT, args.clear_existing)
@@ -31,19 +31,19 @@ def handle_single(args):
 
     r = Runner()
     r.run_project(exp, args.clear_existing)
-    BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
+    ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
 
 def handle_multiple(args):
     exp = args.experiment
 
     if exp.sum_table_exists() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {exp.proj.sub_root}")
-        BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
+        ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
 
     r = Runner()
     r.run_project(exp, args.clear_existing)
-    BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
+    ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
     return (exp.db_path, args.part)
 
 def handle_info(args):

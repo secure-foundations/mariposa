@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from analysis.basic_analyzer import BasicAnalyzer
+from analysis.expr_analyzer import ExprAnalyzer
 from analysis.inst_analyzer import InstAnalyzer
 from analysis.perf_analyzer import PrefAnalyzer
 from utils.option_utils import *
@@ -15,7 +15,7 @@ def set_up_basic(subparsers):
 def handle_basic(args):
     exp = args.experiment
     log_check(exp.sum_table_exists(), "experiment results do not exist")
-    ba = BasicAnalyzer(exp, args.analyzer)
+    ba = ExprAnalyzer(exp, args.analyzer)
     ba.print_status(args.verbose)
 
 def set_up_cvc5_perf(subparsers):
@@ -34,7 +34,7 @@ def set_up_stuff(subparsers):
 def handle_stuff(args):
     exp = args.experiment
     log_check(exp.sum_table_exists(), "experiment results do not exist")
-    ba = BasicAnalyzer(exp, args.analyzer)
+    ba = ExprAnalyzer(exp, args.analyzer)
     ba.get_unstable_reasons().print_status()
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *
 
-class BasicAnalyzer:
+class ExprAnalyzer:
     def __init__(self, exp: Experiment, ana, enable_dummy=False):
         self.exp = exp
         self.ana: QueryAnalyzer = ana
@@ -37,8 +37,9 @@ class BasicAnalyzer:
         return self.__cats
 
     def print_status(self, verbosity=0):
-
         print_banner("Overall Report")
+        print("")
+        
         print(f"project dir:\t{self.exp.proj.sub_root}")
         print(f"exp config:\t{self.exp.exp_name}")
         print(f"solver path:\t{self.exp.solver.path}")
@@ -117,8 +118,8 @@ class BasicAnalyzer:
             if self.get_query_stability(qid) != Stability.UNSTABLE:
                 continue
             qr.enforce_timeout(self.ana._timeout)
-            cats.add_item(
-                self.ana.sub_categorize_unstable(qr.blob).value, qid)
+            reason = self.ana.sub_categorize_unstable(qr.blob)
+            cats.add_item(reason, qid)
         cats.finalize()
         return cats
 

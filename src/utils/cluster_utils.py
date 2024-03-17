@@ -1,6 +1,6 @@
 import copy
 import os, subprocess, time
-from analysis.basic_analyzer import BasicAnalyzer
+from analysis.expr_analyzer import ExprAnalyzer
 from base.defs import CTRL_HOST, S190X_HOSTS, SYNC_ZIP
 from base.exper import Experiment
 
@@ -94,7 +94,7 @@ def handle_manager(args, wargs):
         os.remove(temp_db_path)
     log_info(f"done importing")
 
-    BasicAnalyzer(exp, args.analyzer).print_status(args.verbose)
+    ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
 
 def handle_worker(args):
     from multiprocessing.managers import BaseManager

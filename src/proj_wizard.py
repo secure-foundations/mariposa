@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse, time, pickle, numpy as np
-from analysis.basic_analyzer import BasicAnalyzer
+from analysis.expr_analyzer import ExprAnalyzer
 from base.exper import Experiment
 from base.project import KnownExt, Project, ProjectType as PT, full_proj_name, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
@@ -208,7 +208,7 @@ class NinjaPasta:
 
     def handle_build_z3_trace(self, exp: Experiment):
         log_check(exp.sum_table_exists(), "experiment results do not exist")
-        ba = BasicAnalyzer(exp, args.analyzer)
+        ba = ExprAnalyzer(exp, args.analyzer)
         unstables = ba.get_unstable_query_mutants()
         self.output_dir = exp.proj.get_log_dir(KnownExt.Z3_TRACE)
 
