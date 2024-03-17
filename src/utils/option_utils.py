@@ -80,6 +80,8 @@ def deep_parse_args(args):
         else:
             args.input_proj = FACT.get_project_by_path(args.input_dir)
             args.input_proj.part = args.part
+    else:
+        args.is_group = False
 
     if hasattr(args, "seed"):
         if int(args.seed) == MAGIC_IGNORE_SEED:
@@ -93,7 +95,7 @@ def deep_parse_args(args):
 
     single = args.sub_command == "single"
 
-    if hasattr(args, "exp_config"):
+    if hasattr(args, "exp_config") and not args.is_group:
         if single:
             args.experiment = FACT.build_single_mode_exp(
                 args.exp_config, args.input_query_path, args.solver)

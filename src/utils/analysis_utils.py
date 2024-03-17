@@ -98,8 +98,7 @@ class Categorizer:
     def add_item(self, cat, item):
         assert not self.finalized
         if cat not in self._items:
-            log_check(self._allow_unknown, 
-                    f"[ERROR] unknown category {cat}")
+            log_check(self._allow_unknown, f"unknown category {cat}")
             self._items[cat] = set()
         self.tally.add(item)
         self._items[cat].add(item)
@@ -162,7 +161,7 @@ class Categorizer:
         for c, i in self._items.items():
             if skip_empty and i.count == 0:
                 continue
-            table.append([c, i.count, f"{round(i.percent, 2)} %"])
+            table.append([str(c), i.count, f"{round(i.percent, 2)} %"])
         # sort table by percentage
         table = [table[0]] + sorted(table[1:], key=lambda x: x[1], reverse=True)
         table.append(["total", self.total, "100.00 %"])

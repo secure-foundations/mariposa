@@ -108,6 +108,13 @@ class Factory:
         cfg = FACT.get_config_by_name(cfg_name)
         return Experiment(cfg, proj, solver)
 
+    # difference is that this method checks if the experiment results exist
+    def load_experiment(self, cfg_name, proj: Project, solver: Solver) -> Experiment:
+        cfg = FACT.get_config_by_name(cfg_name)
+        exp = Experiment(cfg, proj, solver)
+        log_check(exp.sum_table_exists(), "experiment results do not exist")
+        return exp
+
     def get_project_exps(self, proj: Project) -> List[Experiment]:
         cfgs = self.all_configs.values()
         solvers = self.all_solvers.values()

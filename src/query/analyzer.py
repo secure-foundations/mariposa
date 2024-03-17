@@ -7,6 +7,7 @@ from utils.analysis_utils import *
 from base.solver import RCode
 from base.exper import QueryExpResult
 from base.defs import ANALYZER_CONFIG_PATH
+from utils.query_utils import Mutation
 
 class UnstableReason(Enum):
     TIMEOUT = "mostly_timeout"

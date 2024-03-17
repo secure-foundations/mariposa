@@ -64,10 +64,10 @@ class QueryExpResult:
 
         v_rcode, v_time = self.get_original_status()
 
-        proc = find_verus_procedure_name(self.query_path)
+        # proc = find_verus_procedure_name(self.query_path)
 
-        if proc != None:
-            print(f"procedure name:\t\t{proc}")
+        # if proc != None:
+        #     print(f"procedure name:\t\t{proc}")
 
         if self.timeout != None:
             print(f"alternative timeout: {self.timeout/1000}s")
@@ -87,7 +87,8 @@ class QueryExpResult:
             for rc in rcodes:
                 rc = RCode(rc)
                 if rc not in EXPECTED_CODES:
-                    print(f"[WARN] unexpected rcode '{rc}' in {self.query_path}")
+                    log_warn(f"unexpected rcode '{rc}' in {self.query_path}")
+                    rc = RCode.UNKNOWN
                 rcs[rc] += 1
             for rc in EXPECTED_CODES:
                 trow.append(rcs[rc])

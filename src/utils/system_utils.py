@@ -156,3 +156,8 @@ def remove_file(path):
     if file_exists(path):
         log_check(os.path.isfile(path), f"{path} is a directory, not a file!")
         os.remove(path)
+
+def remove_dir(path):
+    if os.path.exists(path):
+        log_check(os.path.isdir(path), f"{path} is a file, not a directory!")
+        shutil.rmtree(path)

@@ -131,6 +131,10 @@ class Mutation(str, Enum):
 
     def __str__(self):
         return self.value
+    
+    @staticmethod
+    def basic_mutations():
+        return {Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED}
 
 def emit_mutant_query(query_path, output_path, mutation, seed):
     log_check(query_path != output_path, "query and output should not be the same")
@@ -138,6 +142,9 @@ def emit_mutant_query(query_path, output_path, mutation, seed):
               f"{mutation} is not a valid mutation here")
 
     command = f"{MARIPOSA} -i '{query_path}' -a {mutation} -o '{output_path}' -s {seed}"
+    
+    if mutation == Mutation.COMPOSE:
+        command += " --lower-asserts"
 
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
 

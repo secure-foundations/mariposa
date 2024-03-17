@@ -251,7 +251,7 @@ class ProjectGroup:
 
     def __lt__(self, other):
         return self.gid < other.gid
-
+    
     def __init_sub_projs(self):
         for proj_dir in os.listdir(self.groot):
             sub_proj = ProjectType.from_str(proj_dir)

@@ -6,18 +6,17 @@ from base.factory import FACT
 from base.solver import Z3Solver
 from query.inst_builder import InstBuilder
 from utils.option_utils import *
-from query.core_builder import BasicCoreBuilder
+from query.core_builder import MutCoreBuilder
 from query.proof_builder import ProofBuilder, check_lfsc_proof
 from utils.query_utils import convert_verus_smtlib, emit_mutant_query, emit_quake_query
 from utils.system_utils import get_name_hash, log_check, remove_file
 
 def setup_build_core(subparsers):
-    p = subparsers.add_parser('build-core', help='create core query form a given query')
+    p = subparsers.add_parser('build-core', help='create core query form a given query by performing mutations')
     add_input_query_option(p)
     add_output_query_option(p)
     add_solver_option(p)
     add_timeout_option(p)
-    add_clear_option(p)
 
 def setup_convert_smt_lib(subparsers):
     p = subparsers.add_parser('convert-smtlib', help='convert a verus query to smt-lib standard (cvc5) format')
@@ -110,11 +109,10 @@ if __name__ == "__main__":
             os.makedirs(directory)
 
     if args.sub_command == "build-core":
-        BasicCoreBuilder(args.input_query_path,
+        MutCoreBuilder(args.input_query_path,
                          args.solver, 
                          args.output_query_path, 
-                         args.timeout, 
-                         args.clear_existing).run()
+                         args.timeout)
     elif args.sub_command == "convert-smtlib":
         convert_verus_smtlib(args.input_query_path, 
                              args.output_query_path)

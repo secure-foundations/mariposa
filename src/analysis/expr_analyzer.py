@@ -8,7 +8,7 @@ from utils.analysis_utils import *
 from utils.cache_utils import *
 
 class ExprAnalyzer:
-    def __init__(self, exp: Experiment, ana, enable_dummy=False):
+    def __init__(self, exp: Experiment, ana: QueryAnalyzer, enable_dummy=False):
         self.exp = exp
         self.ana: QueryAnalyzer = ana
         self.__qrs: Dict[str, QueryExpResult] = self.exp.load_sum_table(enable_dummy)
@@ -55,11 +55,11 @@ class ExprAnalyzer:
         for cat, cs in self.__cats.items():
             if verbosity <= 1 and cat != Stability.UNSTABLE:
                 continue
-            
-            if verbosity <= 2 and cat == Stability.UNSOLVABLE:
+
+            if verbosity <= 3 and cat == Stability.UNSOLVABLE:
                 continue
 
-            if verbosity <= 3 and cat == Stability.STABLE:
+            if verbosity <= 4 and cat == Stability.STABLE:
                 continue
 
             ccount = len(cs)

@@ -37,6 +37,7 @@ class Worker:
     def run_task(self, task):
         actual_path = task.mutant_path
         is_reseed = task.perturb == Mutation.RESEED
+        is_compose = task.perturb == Mutation.COMPOSE
 
         if is_reseed or task.perturb is None:
             actual_path = task.origin_path
@@ -46,7 +47,7 @@ class Worker:
         if task.quake:
             self.run_quake_task(task)
         else:
-            seeds = task.mut_seed if is_reseed else None
+            seeds = task.mut_seed if is_reseed or is_compose else None
             rcode, elapsed = self.solver.run(actual_path, self.timeout, seeds)
             self.insert_exp_row(task, task.mutant_path, rcode.value, elapsed)
 
