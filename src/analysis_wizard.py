@@ -35,7 +35,7 @@ def handle_stuff(args):
     exp = args.experiment
     log_check(exp.sum_table_exists(), "experiment results do not exist")
     ba = BasicAnalyzer(exp, args.analyzer)
-    ba.do_stuff()
+    ba.get_unstable_reasons().print_status()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")

@@ -164,7 +164,7 @@ class Categorizer:
                 continue
             table.append([c, i.count, f"{round(i.percent, 2)} %"])
         # sort table by percentage
-        table = [table[0]] + sorted(table[1:], key=lambda x: x[2], reverse=True)
+        table = [table[0]] + sorted(table[1:], key=lambda x: x[1], reverse=True)
         table.append(["total", self.total, "100.00 %"])
         print(tabulate(table, headers="firstrow", 
                        tablefmt="github", floatfmt=".2f"))

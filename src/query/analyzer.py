@@ -9,9 +9,9 @@ from base.exper import QueryExpResult
 from base.defs import ANALYZER_CONFIG_PATH
 
 class UnstableReason(Enum):
-    TIMEOUT = "reason_timeout"
-    UNKNOWN = "reason_unknown"
-    MIXED = "reason_mixed"
+    TIMEOUT = "mostly_timeout"
+    UNKNOWN = "mostly_unknown"
+    MIXED = "mixed"
 
     def __str__(self):
         return self.value
@@ -165,9 +165,7 @@ class QueryAnalyzer:
         # ress -= {Stability.UNKNOWN}
         return Stability.UNSTABLE, votes
 
-    def categorize_queries(self, qss, 
-                           muts=None,
-                           ) -> Categorizer:
+    def categorize_queries(self, qss, muts=None) -> Categorizer:
         cats = Categorizer([c for c in Stability])
         for qs in qss:
             res, _ = self.categorize_query(qs, muts)
@@ -179,7 +177,7 @@ class QueryAnalyzer:
         size = group_blob.shape[0]
         tos, uks = 0, 0
         uk_times = []
-        
+
         for i in range(size):
             _tos = np.sum(group_blob[i][0] == RCode.TIMEOUT.value)
             _uks = np.sum(group_blob[i][0] == RCode.UNKNOWN.value)
@@ -187,23 +185,11 @@ class QueryAnalyzer:
             tos += _tos
             uks += _uks
 
-        if tos > 0 and uks > 0:
-            # print("mixed ", end="")
-            # print(round(tos * 100 / (uks + tos)), end=" ")
-            # print(round(np.mean(uk_times)/1000,2), 
-            #       round(np.median(uk_times)/1000, 2))            
-            return UnstableReason.MIXED
-        if tos > 0:
-            return UnstableReason.TIMEOUT
-        if uks > 0:
-            # print("unknown ", end="")
-            uk_times = np.array(uk_times)
-            # print(round(np.mean(uk_times)/1000,2), 
-            #       round(np.median(uk_times)/1000, 2))
-            return UnstableReason.UNKNOWN
+        tor = tos * 100 / (uks + tos)
 
-        assert False
-        # sr = success / size
-        # if sr >= self.r_stable:
-        #     return Stability.STABLE
-        # return Stability.UNSTABLE
+        if tor >= 95:
+            return UnstableReason.TIMEOUT
+        if tor <= 5:
+            # print(round(np.mean(uk_times)/1000, 2))
+            return UnstableReason.UNKNOWN
+        return UnstableReason.MIXED
