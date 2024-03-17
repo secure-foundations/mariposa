@@ -150,3 +150,12 @@ def emit_mutant_query(query_path, output_path, mutation, seed):
 
     log_check(result.returncode == 0 and os.path.exists(output_path),
                 f"mariposa query mutation failed: {command}")
+
+def key_set(m):
+    return set(m.keys())
+
+def is_assertion_subset(query, subset_query):
+    base = key_set(get_asserts(query))
+    subset = key_set(get_asserts(subset_query))
+    log_check(len(subset) != 0, f"subset query has no asserts: {subset_query}")
+    return subset.issubset(base)

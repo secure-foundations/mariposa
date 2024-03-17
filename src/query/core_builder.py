@@ -99,7 +99,7 @@ class MutCoreBuilder:
         log_check(os.path.exists(self.output_query), f"failed to create core query {self.output_query}")
 
         with open(self.output_query, "a") as f:
-            f.write(f'(set-info :comment seed_{seed}\n')
+            f.write(f'(set-info :comment seed_{seed})\n')
 
 # class CoreCompleter:
 #     def __init__(self, input_query, core_query, output_query, timeout, clear=False):

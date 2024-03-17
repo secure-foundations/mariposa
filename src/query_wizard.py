@@ -8,7 +8,7 @@ from query.inst_builder import InstBuilder
 from utils.option_utils import *
 from query.core_builder import MutCoreBuilder
 from query.proof_builder import ProofBuilder, check_lfsc_proof
-from utils.query_utils import convert_verus_smtlib, emit_mutant_query, emit_quake_query
+from utils.query_utils import convert_verus_smtlib, emit_mutant_query, emit_quake_query, is_assertion_subset
 from utils.system_utils import get_name_hash, log_check, remove_file
 
 def setup_build_core(subparsers):
@@ -87,6 +87,11 @@ def setup_verify(subparsers):
     add_solver_option(p)
     add_timeout_option(p)
 
+def setup_check_subset(subparsers):
+    p = subparsers.add_parser('check-subset', help='check if a query is a subset of another')
+    add_input_query_option(p)
+    p.add_argument("--subset-query", required=True, help="the query that is supposed to be a subset")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Query Wizard operates on the single-query level. Typically, the input is a single smt2 query, and the output is a new query and/or a log file. Please note there are operations that in the Rust codebase that are not exposed here. Instead, use the built binary directly.")
     subparsers = parser.add_subparsers(dest='sub_command', help="the sub-command to run")
@@ -99,6 +104,7 @@ if __name__ == "__main__":
     setup_emit_quake(subparsers)
     setup_verify(subparsers)
     setup_trace_z3(subparsers)
+    setup_check_subset(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -145,5 +151,7 @@ if __name__ == "__main__":
         ver = args.solver.verify(args.input_query_path, args.timeout)
         log_check(ver, f"verification failed")
         open(args.output_log_path, "w+").write("verified")
+    elif args.sub_command == "check-subset":
+        log_check(is_assertion_subset(args.input_query_path, args.subset_query), f"{args.subset_query} is not a subset of {args.input_query_path}")
     else:
         parser.print_help()
