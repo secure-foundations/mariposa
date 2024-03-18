@@ -33,7 +33,13 @@ class CoreAnalyzer:
             elif core.get_query_stability(qid) == Stability.UNSOLVABLE:
                 issues.add_item((bs.value, Stability.UNSOLVABLE.value), qid)
         issues.finalize()
+        print("stable -> unsolvable")
+        for i in issues[('stable', "unsolvable")]:
+            print(base[i])
+
+        print("unstable -> missing")
         for i in issues[('unstable', 'missing')]:
             print(base[i])
+
         issues.print_status()
 

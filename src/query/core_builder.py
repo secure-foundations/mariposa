@@ -1,7 +1,4 @@
-import os
-import random
-import subprocess
-from base.exper import ExpConfig
+import os, random, subprocess
 from utils.query_utils import Mutation, emit_mutant_query
 from utils.system_utils import *
 from base.defs import MARIPOSA
@@ -100,19 +97,3 @@ class MutCoreBuilder:
 
         with open(self.output_query, "a") as f:
             f.write(f'(set-info :comment seed_{seed})\n')
-
-# class CoreCompleter:
-#     def __init__(self, input_query, core_query, output_query, timeout, clear=False):
-#         assert timeout < 1000
-
-#         if not os.path.exists(input_query):
-#             log_warn(f"input query {input_query} does not exist")
-#             return
-
-#         self.input_query = input_query
-#         self.core_query = core_query
-#         self.output_query = output_query
-#         self.timeout = timeout
-
-#         if clear:
-#             self.clear(all=True)

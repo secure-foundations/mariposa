@@ -4,6 +4,7 @@ import argparse, os
 from base.defs import GEN_ROOT
 from base.factory import FACT
 from base.solver import Z3Solver
+from query.core_completer import CoreCompleter
 from query.inst_builder import InstBuilder
 from utils.option_utils import *
 from query.core_builder import MutCoreBuilder
@@ -92,6 +93,14 @@ def setup_check_subset(subparsers):
     add_input_query_option(p)
     p.add_argument("--subset-query", required=True, help="the query that is supposed to be a subset")
 
+def setup_complete_core(subparsers):
+    p = subparsers.add_parser('complete-core', help='complete core query')
+    add_input_query_option(p)
+    p.add_argument("--core-query-path", required=True, help="the core query")
+    add_output_query_option(p)
+    add_solver_option(p)
+    add_timeout_option(p)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Query Wizard operates on the single-query level. Typically, the input is a single smt2 query, and the output is a new query and/or a log file. Please note there are operations that in the Rust codebase that are not exposed here. Instead, use the built binary directly.")
     subparsers = parser.add_subparsers(dest='sub_command', help="the sub-command to run")
@@ -105,6 +114,7 @@ if __name__ == "__main__":
     setup_verify(subparsers)
     setup_trace_z3(subparsers)
     setup_check_subset(subparsers)
+    setup_complete_core(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -147,6 +157,12 @@ if __name__ == "__main__":
         emit_quake_query(args.input_query_path, 
                          args.output_query_path, 
                          args.quake_count)
+    elif args.sub_command == "complete-core":
+        CoreCompleter(args.input_query_path, 
+                      args.core_query_path, 
+                      args.solver, 
+                      args.output_query_path, 
+                      args.timeout)
     elif args.sub_command == "verify":
         ver = args.solver.verify(args.input_query_path, args.timeout)
         log_check(ver, f"verification failed")

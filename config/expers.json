@@ -34,8 +34,8 @@
         "mutations": [
             "compose"
         ],
-        "keep_mutants": true,
-        "num_mutants": 10,
+        "keep_mutants": false,
+        "num_mutants": 120,
         "exp_timeout": 60,
         "num_procs": 5
     }

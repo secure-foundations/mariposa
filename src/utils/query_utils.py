@@ -147,9 +147,15 @@ def emit_mutant_query(query_path, output_path, mutation, seed):
         command += " --lower-asserts"
 
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-
     log_check(result.returncode == 0 and os.path.exists(output_path),
                 f"mariposa query mutation failed: {command}")
+
+def format_query(query_path, output_path):
+    log_check(query_path != output_path, "query and output should not be the same")
+    command = f"{MARIPOSA} -i '{query_path}' -a format -o '{output_path}'"
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+    log_check(result.returncode == 0 and os.path.exists(output_path),
+                f"mariposa query format failed: {command}")
 
 def key_set(m):
     return set(m.keys())
@@ -157,5 +163,6 @@ def key_set(m):
 def is_assertion_subset(query, subset_query):
     base = key_set(get_asserts(query))
     subset = key_set(get_asserts(subset_query))
+    print(f"base: {len(base)} subset: {len(subset)}")
     log_check(len(subset) != 0, f"subset query has no asserts: {subset_query}")
     return subset.issubset(base)
