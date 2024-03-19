@@ -28,6 +28,8 @@ class Stability(Enum):
     UNSTABLE = "unstable"
     INCONCLUSIVE = "inconclusive"
     STABLE = "stable"
+    MISSING_E = "no_expr"
+    MISSING_F = "no_file"
 
     def __str__(self):
         return self.value
@@ -146,7 +148,7 @@ class QueryAnalyzer:
 
     def categorize_query(self, qs: QueryExpResult, muts=None):
         if qs.is_dummy():
-            return Stability.INCONCLUSIVE, None
+            return Stability.MISSING_E, None
 
         votes = dict()
 

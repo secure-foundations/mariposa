@@ -115,7 +115,12 @@ class Factory:
         log_check(exp.sum_table_exists(), "experiment results do not exist")
         return exp
 
-    def get_project_exps(self, proj: Project) -> List[Experiment]:
+    def load_any_experiment(self, proj: Project) -> Experiment:
+        exps = self.get_project_experiments(proj)
+        log_check(len(exps) != 0, f"no experiment results found for {proj}")
+        return exps[0]
+
+    def get_project_experiments(self, proj: Project) -> List[Experiment]:
         cfgs = self.all_configs.values()
         solvers = self.all_solvers.values()
         exps = []

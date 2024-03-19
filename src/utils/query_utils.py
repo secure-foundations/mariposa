@@ -3,7 +3,7 @@ import os
 import subprocess
 
 from base.defs import MARIPOSA
-from utils.system_utils import log_check
+from utils.system_utils import log_check, log_warn
 
 def normalize_line(line):
     return line.replace(" ", "").strip()
@@ -25,7 +25,7 @@ def count_asserts(filename):
     output = subprocess.run(cmd,
         shell=True, capture_output=True, text=True).stdout
     if output == "":
-        print(f"[WARN] {filename} has no asserts")
+        log_warn(f"{filename} has no asserts")
         return np.nan
     return int(output)
 

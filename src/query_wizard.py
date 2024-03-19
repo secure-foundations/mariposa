@@ -47,7 +47,7 @@ def setup_check_lfsc(subparsers):
 
 def setup_trace_z3(subparsers):
     p = subparsers.add_parser('trace-z3', help='get trace from z3')
-    p.add_argument("--mutation", default=None, help="the mutation to perform before tracing")
+    p.add_argument("--mutation", default="none", help="the mutation to perform before tracing")
     p.add_argument("--seed", default=MAGIC_IGNORE_SEED, help="the seed to use")
     add_input_query_option(p)
     add_output_log_option(p)

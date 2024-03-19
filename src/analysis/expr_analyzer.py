@@ -13,7 +13,8 @@ class ExprAnalyzer:
         self.ana: QueryAnalyzer = ana
         self.__qrs: Dict[str, QueryExpResult] = self.exp.load_sum_table(enable_dummy)
         self.__qr_keys = list(sorted(self.__qrs.keys()))
-        self.__cats: Categorizer = ana.categorize_queries(self.__qrs.values())
+        self.__cats: Categorizer = ana.categorize_queries(
+            self.__qrs.values())
 
     def __getitem__(self, qid):
         return self.__qrs[qid]
@@ -31,7 +32,10 @@ class ExprAnalyzer:
             print("")
 
     def get_query_stability(self, qid):
-        return self.__cats.get_category(qid)
+        c = self.__cats.get_category(qid)
+        if c is not None:
+            return c
+        return Stability.MISSING_F
 
     def get_overall(self):
         return self.__cats

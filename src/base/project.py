@@ -209,8 +209,7 @@ class Project:
         return self.part.is_whole()
 
     def get_ext_path(self, qname, ext=KnownExt.SMT2):
-        # print(qname, ext, self.qids)
-        log_check(qname in self.qids, f"invalid query {qname}")
+        # log_check(qname in self.qids, f"invalid query {qname}")
         if ext == KnownExt.SMT2:
             return os.path.join(self.sub_root, f"{qname}.smt2")
         return os.path.join(self.get_log_dir(ext), f"{qname}.{ext.value}")
@@ -247,7 +246,8 @@ class ProjectGroup:
         self.groot = groot
         self.projects = dict()
         self.__init_sub_projs()
-        # self.qids = set()
+        self.report_dir = os.path.join(REPORT_ROOT, self.gid)
+        create_dir(self.report_dir)
 
     def __lt__(self, other):
         return self.gid < other.gid
@@ -275,3 +275,18 @@ class ProjectGroup:
         for p in sorted(self.projects.values()):
             yield p
 
+    def save_qids(self, name, qids):
+        path = os.path.join(self.report_dir, name + ".qids")
+        out_file = open(path, "w")
+        for q in qids:
+            out_file.write(f"{q}\n")
+        out_file.close()
+
+    def load_qids(self, name):
+        path = os.path.join(self.report_dir, name + ".qids")
+        in_file = open(path, "r")
+        qids = set()
+        for line in in_file:
+            qids.add(line.strip())
+        in_file.close()
+        return qids

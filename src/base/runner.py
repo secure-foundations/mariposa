@@ -97,16 +97,37 @@ def run_tasks(worker, queue):
     log_debug(f"worker {worker.worker_id} finished in {elapsed} hours")
 
 class Runner:
-    def __init__(self):
+    def __init__(self, epart: Experiment):
         self.task_queue = mp.Queue()
-
-    def run_project(self, epart: Experiment, clear):
         self.exp = epart
-        tasks = epart.create_tasks(clear)
-        random.shuffle(tasks)
 
+    def run_experiment(self, clear):
+        tasks = self.exp.create_tasks(clear)
+        self.__run(tasks)
+        self.exp.populate_sum_table()
+
+    def update_experiment(self, qids):
+        tasks = []
+        for qid in qids:
+            path = self.exp.proj.get_ext_path(qid)
+            # TODO: handle overwrite
+            log_check(self.exp.get_mutants(path) == [], 
+                      f"experiment already exists for {path}")
+            tasks.extend(self.exp.create_query_tasks(path))
+        self.__run(tasks)
+        self.exp.populate_sum_table()
+
+    def fix_missing(self):
+        mqids = self.exp.get_missing_qids()
+        self.update_experiment(mqids)
+
+    def __run(self, tasks):
         for task in tasks:
             self.task_queue.put(task)
+
+        log_info(f"running {len(tasks)} tasks")
+
+        random.shuffle(tasks)
 
         processes = []
 
@@ -121,5 +142,4 @@ class Runner:
         for p in processes:
             p.join()
 
-        log_debug("workers finished")
-        self.exp.populate_sum_table()
+        log_info("workers finished")

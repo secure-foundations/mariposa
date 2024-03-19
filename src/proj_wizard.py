@@ -3,7 +3,7 @@
 import argparse, time, pickle, numpy as np
 from analysis.expr_analyzer import ExprAnalyzer
 from base.exper import Experiment
-from base.project import KnownExt, Project, ProjectType as PT, full_proj_name, get_qid
+from base.project import KnownExt, Project, ProjectGroup, ProjectType as PT, full_proj_name, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
 from utils.option_utils import *
 from utils.system_utils import *
@@ -19,8 +19,11 @@ rule shake
     command = {MARIPOSA} -i $in -o $out -a shake --shake-log-path $log
 
 rule build-core
-    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 150
-    
+    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 150 -s z3_4_12_5
+
+rule complete-core
+    command = {QUERY_WIZARD} complete-core -i $in -o $out --core-query-path $core 
+
 rule convert-smtlib
     command = {QUERY_WIZARD} convert-smtlib -i $in -o $out
 
@@ -38,6 +41,7 @@ rule verify
 
 rule trace-z3
     command = {QUERY_WIZARD} trace-z3 -i $in --output-log-path $out --timeout $timeout --mutation $mutation --seed $seed
+
 """
 
 # rule instantiate
@@ -132,6 +136,16 @@ def set_up_load_stat(subparsers):
     p = subparsers.add_parser('load-stat', help='load build stats from a previous run')
     p.add_argument("-i", "--input-log-file", required=True, help="the input file (.pkl) to load")
 
+def set_up_fix_missing_core(subparsers):
+    p = subparsers.add_parser('fix-missing-core', help='fix missing core queries')
+    add_input_dir_option(p, is_group=True)
+    add_clear_option(p)
+    
+def set_up_fix_incomplete_core(subparsers):
+    p = subparsers.add_parser('fix-incomplete-core', help='fix incomplete core queries')
+    add_input_dir_option(p, is_group=True)
+    add_clear_option(p)
+
 class NinjaPasta:
     def __init__(self, args, cmd):
         self.start_time = int(time.time())
@@ -169,6 +183,10 @@ class NinjaPasta:
             # always record build stats for verification
             args.record_build_stats = True
             ext = self.handle_verify(args.input_proj, args.solver)
+        elif args.sub_command == "fix-missing-core":
+            self.handle_fix_missing_core(args.input_group)
+        elif args.sub_command == "fix-incomplete-core":
+            self.handle_fix_incomplete_core(args.input_group)
         else:
             parser.print_help()
             return
@@ -309,11 +327,38 @@ class NinjaPasta:
             self.expect_targets.add(o)
         return ext
 
+    def handle_fix_missing_core(self, in_group: ProjectGroup):
+        qids = in_group.load_qids("unstable_2_missing_core")
+        base = in_group.get_project(PT.from_str("base.z3"))
+        extd = in_group.get_project(PT.from_str("extd.z3"))
+        self.output_dir = extd.sub_root
+
+        for qid in qids:
+            i = base.get_ext_path(qid)
+            o = extd.get_ext_path(qid)
+            self.ninja_stuff += [f"build {o}: build-core {i}\n\n"]
+            self.expect_targets.add(o)
+            
+    def handle_fix_incomplete_core(self, in_group: ProjectGroup):
+        qids = in_group.load_qids("stable_2_unsolvable_core")
+        base = in_group.get_project(PT.from_str("base.z3"))
+        core = in_group.get_project(PT.from_str("core.z3"))
+        extd = in_group.get_project(PT.from_str("extd.z3"))
+        self.output_dir = extd.sub_root
+
+        for qid in qids:
+            i = base.get_ext_path(qid)
+            c = core.get_ext_path(qid)
+            o = extd.get_ext_path(qid)
+            self.ninja_stuff += [f"build {o}: complete-core {i}\n",
+                                    f"    core={c}\n\n"]
+            self.expect_targets.add(o)
+
     def finalize(self, clear):
         if len(self.ninja_stuff) == 0:
             log_info("no targets to build")
             return
-        reset_dir(self.output_dir, clear)
+        # reset_dir(self.output_dir, clear)
 
         ninja_stuff = [NINJA_BUILD_RULES] + self.ninja_stuff
         self.ninja_stuff = "".join(ninja_stuff) 
@@ -410,6 +455,8 @@ if __name__ == "__main__":
     set_up_get_inst(subparsers)
     set_up_load_stat(subparsers)
     set_up_verify(subparsers)
+    set_up_fix_missing_core(subparsers)
+    set_up_fix_incomplete_core(subparsers)
 
     cmd = " ".join(sys.argv)
 

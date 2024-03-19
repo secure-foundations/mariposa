@@ -2,6 +2,7 @@ import subprocess, sys
 from analysis.expr_analyzer import ExprAnalyzer
 from base.defs import MARIPOSA, SINGLE_PROJ_ROOT
 from base.factory import FACT
+from base.project import get_qid
 from base.runner import Runner
 
 from utils.system_utils import list_smt2_files, log_check, log_info, log_warn, reset_dir
@@ -29,8 +30,8 @@ def handle_single(args):
     # this is a hack to make sure qids are loaded
     exp.proj.reload()
 
-    r = Runner()
-    r.run_project(exp, args.clear_existing)
+    r = Runner(exp)
+    r.run_experiment(args.clear_existing)
     ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
 
 def handle_multiple(args):
@@ -41,8 +42,8 @@ def handle_multiple(args):
         ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
 
-    r = Runner()
-    r.run_project(exp, args.clear_existing)
+    r = Runner(exp)
+    r.run_experiment(args.clear_existing)
     ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
     return (exp.db_path, args.part)
 
@@ -51,7 +52,18 @@ def handle_info(args):
         print(f"project group: {pg.gid}")
         for proj in pg.get_projects():
             print(f"\t{proj.ptype} ({len(proj.list_queries())})")
-            exps = FACT.get_project_exps(proj)
+            exps = FACT.get_project_experiments(proj)
             for exp in exps:
                 print(f"\t\t{exp.exp_name} - {exp.solver.name}")
         print("")
+
+def handle_update(args):
+    exp = args.experiment
+    in_query = args.input_query_path
+    proj = exp.proj
+    qid = get_qid(in_query)
+    log_check(qid in proj.qids, f"query {qid} does not exist in the project")
+
+    r = Runner(exp)
+    r.update_experiment([qid])
+    ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)

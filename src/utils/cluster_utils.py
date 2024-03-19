@@ -187,7 +187,7 @@ def run_command_over_ssh(host, cmd):
     print(f"running {cmd} on {host}")
     return subprocess_run(f"ssh {host} '{cmd}'", shell=True)
 
-def handle_sync(input_dir, clear):
+def handle_data_sync(input_dir, clear):
     log_check(is_flat_dir(input_dir), 
               f"{input_dir} is not a flat directory")
     file_count = get_file_count(input_dir)
@@ -235,7 +235,7 @@ def handle_sync(input_dir, clear):
     os.remove("sync.sh")
     os.remove(SYNC_ZIP)
 
-def handle_update():
+def handle_code_sync():
     print("run the following to update mariposa on all workers")
     for host in S190X_HOSTS:
         if host == "s1904":

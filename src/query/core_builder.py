@@ -42,7 +42,7 @@ class MutCoreBuilder:
                 log_info(f"failed to use mutant seed: {s}")
 
         self.clear_temp_files()
-        exit_with(f"failed to use mutants {self.solver_path} on {input_query}, no core log created")
+        exit_with(f"failed to use mutants {self.solver} on {input_query}, no core log created")
         
     def clear_temp_files(self):
         remove_dir(self.__gen_subdir)

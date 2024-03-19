@@ -28,7 +28,6 @@ def print_banner(msg):
 
 def exit_with(msg):
     log_error(msg)
-    assert False
     sys.exit(1)
 
 def log_check(cond, msg):

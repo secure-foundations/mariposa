@@ -198,7 +198,7 @@ solver: {self.solver}"""
         create_sum_table(cur, self.sum_table_name)
         conclude(con)
 
-    def __build_query_tasks(self, origin_path):
+    def create_query_tasks(self, origin_path):
         base = get_qid(origin_path)
         base.replace(".smt2", "")
 
@@ -221,22 +221,6 @@ solver: {self.solver}"""
         # log_info(f"created {len(tasks)} tasks for {origin_path}")
         return tasks
 
-    def __build_tasks(self):
-        tasks = []
-        origin_paths = self.proj.list_queries()
-        log_info(f"running {len(origin_paths)} original queries")
-
-        for origin_path in origin_paths:
-            tasks.extend(self.__build_query_tasks(origin_path))
-
-        if not self.proj.is_whole():
-            log_debug(f"running ONLY {self.proj.part} in {self.proj.full_name}")
-        else:
-            log_debug(f"running ALL of {self.proj.full_name}")
-
-        log_debug(f"adding {len(tasks)} tasks")
-        return tasks
-
     @staticmethod
     def parse_mutant_path(mutant_path):
         parts = os.path.basename(mutant_path).split(".")
@@ -252,7 +236,20 @@ solver: {self.solver}"""
     # should not call this for analysis
     def create_tasks(self, clear):
         self.create_db(clear)
-        return self.__build_tasks()
+        tasks = []
+        origin_paths = self.proj.list_queries()
+        log_info(f"running {len(origin_paths)} original queries")
+
+        for origin_path in origin_paths:
+            tasks.extend(self.create_query_tasks(origin_path))
+
+        if not self.proj.is_whole():
+            log_debug(f"running ONLY {self.proj.part} in {self.proj.full_name}")
+        else:
+            log_debug(f"running ALL of {self.proj.full_name}")
+
+        log_debug(f"adding {len(tasks)} tasks")
+        return tasks
 
     def insert_exp_row(self, task, mutant_path, rcode, elapsed):
         try:
@@ -297,6 +294,7 @@ solver: {self.solver}"""
         VALUES(?, ?);""", (v_path, blob))
 
     def populate_sum_table(self):
+        from tqdm import tqdm
         con, cur = get_cursor(self.db_path)
 
         vanilla_rows = get_vanilla_paths(cur, self.exp_table_name)
@@ -306,13 +304,12 @@ solver: {self.solver}"""
 
         processed = set()
 
-        for (v_path, v_rcode, v_time) in vanilla_rows:
+        for (v_path, v_rcode, v_time) in tqdm(vanilla_rows):
             if v_path in processed:
                 continue
             processed.add(v_path)
             self.insert_sum_row(cur, v_path, v_rcode, v_time)
         conclude(con)
-
         log_debug("done post processing exp data")
 
     def sum_table_exists(self):
@@ -323,6 +320,13 @@ solver: {self.solver}"""
         res = table_exists(cur, self.sum_table_name)
         con.close()
         return res
+    
+    def check_sum_table_exists(self):
+        log_check(os.path.exists(self.db_path), f"path {self.db_path} does not exist")
+        con, cur = get_cursor(self.db_path)
+        res = table_exists(cur, self.sum_table_name)
+        con.close()
+        log_check(res, f"{self.sum_table_name} does not exist in {self.db_path}")
 
     def load_sum_table(self, enable_dummy=False) -> Dict[str, QueryExpResult]:
         con, cur = get_cursor(self.db_path)
@@ -330,8 +334,8 @@ solver: {self.solver}"""
         summaries = dict()
 
         if not table_exists(cur, sum_name):
-            log_check(enable_dummy, f"[ERROR] {sum_name} does not exist in {self.db_path}")
-            print(f"[WARN] {sum_name} does not exist, creating dummy data!")
+            log_check(enable_dummy, f"{sum_name} does not exist in {self.db_path}")
+            log_warn(f"{sum_name} does not exist, creating dummy data!")
             for path in self.proj.list_queries():
                 qr = QueryExpResult(path)
                 if qr.mutations == []:
@@ -359,6 +363,16 @@ solver: {self.solver}"""
 
         return summaries
 
+    def get_missing_qids(self):
+        expected = set([get_qid(q) for q in self.proj.list_queries()])
+        con, cur = get_cursor(self.db_path)
+        res = cur.execute(f"""SELECT vanilla_path FROM {self.sum_table_name}""")
+        rows = res.fetchall()
+        con.close()
+        existing = set([get_qid(r[0]) for r in rows])
+        missing = existing - expected
+        return missing
+
     def _sanity_check_summary(self, actual):
         expected = set([get_qid(q) for q in self.proj.list_queries()])
         missing = actual - expected
@@ -374,7 +388,9 @@ solver: {self.solver}"""
                     print(f"missing: {q}.smt2")
                 else:
                     break
-            exit_with(f"eliding and {len(missing) - 10} more")
+            if len(missing) > 10:
+                exit_with(f"eliding {len(missing) - 10} more")
+            sys.exit(1)
 
     def import_partition_tables(self, other_db_path, part):
         log_check(self.is_whole, "importing into a partial project does not make sense")
