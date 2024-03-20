@@ -370,7 +370,8 @@ solver: {self.solver}"""
         rows = res.fetchall()
         con.close()
         existing = set([get_qid(r[0]) for r in rows])
-        missing = existing - expected
+        missing = expected - existing
+        log_info(f"missing {len(missing)} experiments in {self.sum_table_name}")
         return missing
 
     def _sanity_check_summary(self, actual):

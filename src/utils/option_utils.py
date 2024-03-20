@@ -20,7 +20,7 @@ def add_output_log_option(parser):
     parser.add_argument("-o", "--output-log-path", required=True, help="the query path")
 
 def add_solver_option(parser):
-    parser.add_argument("-s", "--solver", default="z3_4_12_2", help="the solver name (from solvers.json) to use")
+    parser.add_argument("-s", "--solver", default="z3_4_12_5", help="the solver name (from solvers.json) to use")
 
 def add_analysis_options(parser):
     parser.add_argument("-e", "--exp-config", default="default", help="the experiment configuration name (from exps.json)")

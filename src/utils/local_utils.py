@@ -36,6 +36,11 @@ def handle_single(args):
 
 def handle_multiple(args):
     exp = args.experiment
+    
+    if args.fix_missing:
+        r = Runner(exp)
+        r.fix_missing()
+        return
 
     if exp.sum_table_exists() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {exp.proj.sub_root}")

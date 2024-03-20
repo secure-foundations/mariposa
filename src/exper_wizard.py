@@ -16,6 +16,7 @@ def set_up_multi(subparsers):
     p = subparsers.add_parser('multiple', help='multiple query (project) mode. experiment with an existing (preprocessed) project using the specified solver')
     add_input_dir_option(p)
     add_experiment_options(p)
+    p.add_argument("--fix-missing", default=False, action="store_true", help="the input query")
 
 def set_up_update(subparsers):
     p = subparsers.add_parser('update', help='add a new query to existing experiment OR re-run the experiment on the specified query and update the existing database.')

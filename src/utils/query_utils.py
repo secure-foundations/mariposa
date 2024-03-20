@@ -25,7 +25,7 @@ def count_asserts(filename):
     output = subprocess.run(cmd,
         shell=True, capture_output=True, text=True).stdout
     if output == "":
-        log_warn(f"{filename} has no asserts")
+        # log_warn(f"{filename} has no asserts")
         return np.nan
     return int(output)
 

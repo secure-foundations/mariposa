@@ -157,12 +157,13 @@ class Categorizer:
     def print_status(self, skip_empty=False):
         from tabulate import tabulate
         assert self.finalized
+        print("")
         table = [["category", "count", "percentage"]]
         for c, i in self._items.items():
             if skip_empty and i.count == 0:
                 continue
             table.append([str(c), i.count, f"{round(i.percent, 2)} %"])
-        # sort table by percentage
+        # sort table by count
         table = [table[0]] + sorted(table[1:], key=lambda x: x[1], reverse=True)
         table.append(["total", self.total, "100.00 %"])
         print(tabulate(table, headers="firstrow", 

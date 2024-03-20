@@ -168,7 +168,7 @@ class QueryAnalyzer:
         # ress -= {Stability.UNKNOWN}
         return Stability.UNSTABLE, votes
 
-    def categorize_queries(self, qss, muts=None) -> Categorizer:
+    def categorize_queries(self, qss, muts=Mutation.basic_mutations()) -> Categorizer:
         cats = Categorizer([c for c in Stability])
         for qs in qss:
             res, _ = self.categorize_query(qs, muts)
