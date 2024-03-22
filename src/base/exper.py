@@ -97,8 +97,15 @@ class QueryExpResult:
             trow.append(round(np.mean(times), 2))
             trow.append(round(np.std(times), 2))
             table.append(trow)
-
         print(tabulate(table, headers="firstrow"))
+
+    def get_fast_pass(self):
+        if self.blob is None:
+            return False
+        rc, et = self.get_original_status()
+        if et < 1000 and rc == RCode.UNSAT.value:
+            return True
+        return False
 
 def get_table_prefix(proj, solver, part=None):
     if part is None:

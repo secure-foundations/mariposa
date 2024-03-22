@@ -22,6 +22,7 @@ class InstBuilder:
 
         rcode, elapsed = self.solver.run(input_query, self.timeout, 
                 out_file=output_proof, other_options=opts)
+        # print(rcode, elapsed)
 
         if rcode != RCode.UNSAT:
             if os.path.exists(self.output_proof):

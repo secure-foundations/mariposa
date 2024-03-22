@@ -174,7 +174,7 @@ class CVC5Solver(Solver):
         if out_file is not None:
             if os.path.exists(out_file):
                 os.remove(out_file)
-            args += [f"--regular-output-channel=\"{out_file}\""]
+            args += [f"--regular-output-channel={out_file}"]
 
         args += other_options
         out, err, elapsed = subprocess_run(args)

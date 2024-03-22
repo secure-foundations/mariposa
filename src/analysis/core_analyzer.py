@@ -72,19 +72,19 @@ class CoreAnalyzer:
             cqs = CoreQueryStatus(qid, bs, bp, cs, cp, es, ep)
             self.qids[qid] = cqs
 
-        self.__init_issue_status()
-        self.issues.print_status()
-        self.suggest_issue_fixes()
+        # self.__init_issue_status()
+        # self.issues.print_status()
+        # self.suggest_issue_fixes()
+        # self.get_trace_candidate()
 
-        # base_adj, core_adj = self.get_adjusted_status()
-        # base_adj.print_status()
-        # core_adj.print_status()
+        base_adj, core_adj = self.get_adjusted_status()
+        base_adj.print_status()
+        core_adj.print_status()
 
-        # m = base_adj.get_migration_status(core_adj)
-
-        # for k, v in m.items():
-        #     print(k)
-        #     v.print_status()
+        m = base_adj.get_migration_status(core_adj)
+        for k, v in m.items():
+            print(k)
+            v.print_status()
 
         # print(NINJA_BUILD_RULES)
         # for qid, cq in self.qids.items():
@@ -134,7 +134,7 @@ class CoreAnalyzer:
             ec = count_asserts(e)
             bc = count_asserts(b)
 
-            if ec / bc > 0.05:
+            if ec / bc > 0.1:
                 print(bc, cc, ec)
                 print("./src/query_wizard.py complete-core", "-i", e, "--core-query-path", c, "-o", e)
 
@@ -169,3 +169,12 @@ class CoreAnalyzer:
         core_adj.finalize()
         return base_adj, core_adj
 
+    def get_trace_candidate(self):
+        core_ok = 0
+        for qid in self.qids:
+
+            if qid in self.core and self.core[qid].get_fast_pass():
+                core_ok += 1
+            if qid in self.extd and self.extd[qid].get_fast_pass():
+                core_ok += 1
+        print(core_ok, len(self.qids))
