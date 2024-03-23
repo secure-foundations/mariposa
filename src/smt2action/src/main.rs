@@ -21,6 +21,7 @@ mod term_match;
 
 mod tree_shake;
 mod tree_shake_idf;
+mod term_inst_cvc5;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -80,11 +81,11 @@ enum Action {
     )]
     Shake,
 
-    // #[strum(
-    //     serialize = "convert",
-    //     message = "convert the query file from z3 to cvc5 compatible format"
-    // )]
-    // Convert,
+    #[strum(
+        serialize = "inst-cvc5",
+        message = "read the CVC5 instantiation log and add to the query"
+    )]
+    InstCVC5,
 
     #[strum(serialize = "help", message = "get help on the allowed actions")]
     Help,
@@ -103,6 +104,10 @@ struct Args {
     /// input query path
     #[arg(short, long)]
     in_query_path: String,
+
+    /// input query path
+    #[arg(long)]
+    cvc5_inst_log_path: Option<String>,
 
     /// output query path
     #[arg(short, long)]
@@ -268,6 +273,15 @@ fn main() {
                 args.shake_debug,
             );
         }
+        Action::InstCVC5 => {
+            if args.cvc5_inst_log_path.is_none() {
+                println!("error: inst-cvc5 requires a CVC5 instantiation log file");
+                exit(1);
+            }
+            let inst_file_path = args.cvc5_inst_log_path.unwrap();
+            term_inst_cvc5::inst_cvc5(&mut commands, &inst_file_path);
+            return;
+        }
         _ => {
             panic!("unimplemented action: {}", action);
         }
@@ -275,11 +289,6 @@ fn main() {
 
     printer.dump_commands(&commands);
 
-    // } else if args.action == "reseed" {
-    //     let smt_seed = manager.seed as u32;
-    //     let sat_seed = (manager.seed >> 32) as u32;
-    //     manager.dump(&format!("(set-option :smt.random_seed {smt_seed})\n"));
-    //     manager.dump(&format!("(set-option :sat.random_seed {sat_seed})\n"));
     // } else if args.action == "remove-trigger" {
     //     // manager.remove_patterns(&mut commands);
     //     remove_patterns(&mut commands, manager.seed, pattern_threshold);

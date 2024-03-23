@@ -1,0 +1,21 @@
+char = @{ ASCII_ALPHANUMERIC | "!" | "." | "_" | "/" | "%" | "?" | ">" | "<"  | "$" | "&" | "@"}
+
+ident = @{ 
+    !("let" | "instantiations")
+    ~char+
+}
+
+WHITESPACE = _{ " " }
+
+bind = {"(" ~ ident ~ term  ~ ")"  }
+binds = {"(" ~(bind)+ ~ ")"}
+let_term = {"let" ~ binds ~ term}
+term = {  let_term | "("~ (term)+ ~ ")" | ident}
+inst = { "(" ~ term ~ ")" ~ NEWLINE}
+quant = { "(instantiations" ~ ident ~ NEWLINE ~ (inst)* ~ ")" ~ NEWLINE?}
+
+file = {
+    SOI ~
+    (quant)* ~
+    EOI
+}
