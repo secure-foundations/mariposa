@@ -2,6 +2,8 @@ use smt2parser::{concrete, renaming, CommandStream};
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::{collections::HashSet, fs::File};
 
+const QID_PREFIX: &str = "mariposa_qid_";
+
 fn should_remove_command(command: &concrete::Command) -> bool {
     match command {
         concrete::Command::Assert { .. }
@@ -34,7 +36,7 @@ fn should_remove_command(command: &concrete::Command) -> bool {
             keyword: concrete::Keyword(k),
             ..
         } => k != "comment",
-        | concrete::Command::SetLogic { .. } => false,
+        concrete::Command::SetLogic { .. } => false,
         _ => {
             panic!("unexpected command: {:?}", command)
         }
@@ -320,4 +322,83 @@ pub fn split_commands(
     }
     assert!(splits == included_checks);
     (included_checks, skipped_checks)
+}
+
+fn add_missing_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable: bool) {
+    match cur_term {
+        concrete::Term::Application {
+            qual_identifier: _,
+            arguments,
+        } => {
+            for argument in arguments.iter_mut() {
+                add_missing_qids_rec(argument, count, false)
+            }
+        }
+        concrete::Term::Let { var_bindings, term } => {
+            for var_binding in var_bindings.iter_mut() {
+                add_missing_qids_rec(&mut var_binding.1, count, false)
+            }
+            add_missing_qids_rec(&mut *term, count, false)
+        }
+        concrete::Term::Forall { vars: _, term } => {
+            // TODO: maybe refactor 
+            if !matches!(&**term, concrete::Term::Attributes { .. }) {
+                // this is for the case where the quantified term has no attributes
+                let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String("".to_string())));
+                std::mem::swap(term, &mut temp);
+                **term = concrete::Term::Attributes {
+                    term: temp,
+                    attributes: vec![],
+                };
+            }
+            add_missing_qids_rec(&mut *term, count, true)
+        },
+        concrete::Term::Exists { vars: _, term } => {
+            if !matches!(&**term, concrete::Term::Attributes { .. }) {
+                // this is for the case where the quantified term has no attributes
+                let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String("".to_string())));
+                std::mem::swap(term, &mut temp);
+                **term = concrete::Term::Attributes {
+                    term: temp,
+                    attributes: vec![],
+                };
+            }
+            add_missing_qids_rec(&mut *term, count, true)
+        },
+        concrete::Term::Match { term, cases: _ } => add_missing_qids_rec(&mut *term, count, false),
+        concrete::Term::Attributes { term, attributes } => {
+            add_missing_qids_rec(term, count, false);
+            let mut enable = enable;
+            attributes.iter().for_each(|f| {
+                let concrete::Keyword(k) = &f.0;
+                if k == "qid" {
+                    enable = false;
+                }
+            });
+            if enable {
+                attributes.push((
+                    concrete::Keyword("qid".to_owned()),
+                    concrete::AttributeValue::Symbol(concrete::Symbol(format!(
+                        "{}{}",
+                        QID_PREFIX, count
+                    ))),
+                ));
+                *count += 1;
+            }
+        }
+        concrete::Term::Constant(_) => (),
+        concrete::Term::QualIdentifier(_) => (),
+    }
+}
+
+pub fn add_missing_qids(commands: &mut Vec<concrete::Command>) {
+    let mut qid = 0;
+    for command in commands.iter_mut() {
+        match command {
+            concrete::Command::Assert { term } => {
+                add_missing_qids_rec(term, &mut qid, false);
+            }
+            _ => {}
+        }
+    }
 }

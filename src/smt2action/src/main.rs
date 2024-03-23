@@ -87,6 +87,12 @@ enum Action {
     )]
     InstCVC5,
 
+    #[strum(
+        serialize = "add-qid",
+        message = "add qids to quantifiers in the query (if not present)"
+    )]
+    AddQid,
+
     #[strum(serialize = "help", message = "get help on the allowed actions")]
     Help,
 }
@@ -281,6 +287,9 @@ fn main() {
             let inst_file_path = args.cvc5_inst_log_path.unwrap();
             term_inst_cvc5::inst_cvc5(&mut commands, &inst_file_path);
             return;
+        }
+        Action::AddQid => {
+                query_io::add_missing_qids(&mut commands);
         }
         _ => {
             panic!("unimplemented action: {}", action);

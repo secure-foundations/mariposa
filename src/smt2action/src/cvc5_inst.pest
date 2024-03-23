@@ -1,7 +1,8 @@
-char = @{ ASCII_ALPHANUMERIC | "!" | "." | "_" | "/" | "%" | "?" | ">" | "<"  | "$" | "&" | "@"}
+char = @{ ASCII_ALPHANUMERIC 
+    | "!" | "." | "_" | "/" | "%" | "?" | ">" | "<"  | "$" | "&" | "@" | "="}
 
 ident = @{ 
-    !("let" | "instantiations")
+    !("let" | "instantiations" | "skolem" | "forall")
     ~char+
 }
 
@@ -11,11 +12,16 @@ bind = {"(" ~ ident ~ term  ~ ")"  }
 binds = {"(" ~(bind)+ ~ ")"}
 let_term = {"let" ~ binds ~ term}
 term = {  let_term | "("~ (term)+ ~ ")" | ident}
-inst = { "(" ~ term ~ ")" ~ NEWLINE}
-quant = { "(instantiations" ~ ident ~ NEWLINE ~ (inst)* ~ ")" ~ NEWLINE?}
+
+skolem = { "(skolem" ~ ident ~ NEWLINE ~ "("~ (ident) ~ ")" ~ NEWLINE ~ ")" ~ NEWLINE?}
+
+forall = {"(forall" ~ binds ~ term ~ ")"}
+anon_quant = { "(instantiations" ~ forall ~ NEWLINE ~ (term ~ NEWLINE)+ ~ ")" ~ NEWLINE?}
+
+quant = { "(instantiations" ~ ident ~ NEWLINE ~ (term ~ NEWLINE)+ ~ ")" ~ NEWLINE?}
 
 file = {
-    SOI ~
-    (quant)* ~
+    SOI ~ "unsat" ~ NEWLINE ~
+    (quant | skolem |anon_quant)* ~
     EOI
 }

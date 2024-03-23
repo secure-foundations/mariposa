@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use smt2parser::{concrete, visitors};
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::vec;
@@ -11,7 +11,10 @@ fn load_core_symbols(file_path: &String) -> HashSet<String> {
     // read lines from file
     let file = File::open(file_path).unwrap();
     let reader = BufReader::new(file);
-    let lines = reader.lines().map(|x| x.unwrap()).collect::<vec::Vec<String>>();
+    let lines = reader
+        .lines()
+        .map(|x| x.unwrap())
+        .collect::<vec::Vec<String>>();
     // get the last line of the file
     if &lines[0] != "unsat" {
         return HashSet::new();
@@ -25,7 +28,7 @@ fn load_core_symbols(file_path: &String) -> HashSet<String> {
 }
 
 fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> bool {
-    let concrete::Command::Assert { term } = command else { 
+    let concrete::Command::Assert { term } = command else {
         return true;
     };
 
@@ -48,7 +51,9 @@ fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> b
 }
 
 fn remove_label(command: &mut concrete::Command) {
-    let concrete::Command::Assert { term } = command else { return; };
+    let concrete::Command::Assert { term } = command else {
+        return;
+    };
     let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
     let mut flag = false;
 
@@ -76,20 +81,31 @@ fn remove_label(command: &mut concrete::Command) {
 }
 
 fn label_assert(command: &mut concrete::Command, ct: usize) {
-    let concrete::Command::Assert { term } = command else { return; };
+    let concrete::Command::Assert { term } = command else {
+        return;
+    };
+
+    let named = concrete::Keyword("named".to_owned());
+    let new_name = CORE_DUMP_PREFIX.to_owned() + &ct.to_string();
+    let new_name = visitors::AttributeValue::Symbol(concrete::Symbol(new_name));
+
     // does assert have attributes?
     if let concrete::Term::Attributes {
         term: _,
-        attributes: _,
+        attributes,
     } = term
     {
-        // if name already exists, don't mess with it
+        for (key, _) in attributes.iter() {
+            if key == &named {
+                // if name already exists, don't mess with it
+                return;
+            }
+        }
+        // otherwise, add the new name
+        attributes.push((named, new_name));
     } else {
-        let new_name = CORE_DUMP_PREFIX.to_owned() + &ct.to_string();
-        let attributes = vec![(
-            concrete::Keyword("named".to_owned()),
-            visitors::AttributeValue::Symbol(concrete::Symbol(new_name)),
-        )];
+        // if no attributes, create a new one
+        let attributes = vec![(named, new_name)];
         let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
         std::mem::swap(term, &mut temp);
         *term = concrete::Term::Attributes {
@@ -145,15 +161,15 @@ pub fn label_asserts(commands: &mut Vec<concrete::Command>) {
     commands.insert(i, concrete::Command::GetUnsatCore);
 }
 
-pub fn reduce_asserts(commands: &mut Vec<concrete::Command>, core_file_path: &String) -> bool
-{
+pub fn reduce_asserts(commands: &mut Vec<concrete::Command>, core_file_path: &String) -> bool {
     let core = load_core_symbols(core_file_path);
 
     if core.len() == 0 {
         return false;
     }
 
-    let temp = commands.drain(..)
+    let temp = commands
+        .drain(..)
         .into_iter()
         .filter(|x| should_keep_command(x, &core))
         .collect::<Vec<concrete::Command>>();
@@ -173,5 +189,4 @@ pub fn reduce_asserts(commands: &mut Vec<concrete::Command>, core_file_path: &St
     // cleans names that were put in by mariposa
     commands.iter_mut().for_each(|x| remove_label(x));
     true
-    
 }
