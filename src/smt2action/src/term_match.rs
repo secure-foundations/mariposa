@@ -69,6 +69,12 @@ pub fn match_simple_qual_identifier_term(term: &Term) -> Option<&Symbol> {
     return None;
 }
 
+pub fn make_simple_qual_identifier_term(symbol: Symbol) -> concrete::Term {
+    return Term::QualIdentifier(QualIdentifier::Simple {
+        identifier: concrete::Identifier::Simple { symbol },
+    });
+}
+
 // pub fn get_binary_app_term(term: &concrete::Term, fun_symbol: &Symbol) -> Option<(Term, Term)> {
 //     if let Term::Application {
 //         qual_identifier,

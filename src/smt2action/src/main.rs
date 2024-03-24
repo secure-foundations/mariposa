@@ -21,6 +21,7 @@ mod term_match;
 
 mod tree_shake;
 mod tree_shake_idf;
+mod term_substitute;
 mod term_inst_cvc5;
 
 const DEFAULT_SEED: u64 = 1234567890;

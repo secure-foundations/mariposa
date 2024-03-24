@@ -1,3 +1,4 @@
+use smt2parser::concrete::Command;
 use smt2parser::{concrete, renaming, CommandStream};
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::{collections::HashSet, fs::File};
@@ -341,10 +342,12 @@ fn add_missing_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable
             add_missing_qids_rec(&mut *term, count, false)
         }
         concrete::Term::Forall { vars: _, term } => {
-            // TODO: maybe refactor 
+            // TODO: maybe refactor
             if !matches!(&**term, concrete::Term::Attributes { .. }) {
                 // this is for the case where the quantified term has no attributes
-                let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String("".to_string())));
+                let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String(
+                    "".to_string(),
+                )));
                 std::mem::swap(term, &mut temp);
                 **term = concrete::Term::Attributes {
                     term: temp,
@@ -352,11 +355,13 @@ fn add_missing_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable
                 };
             }
             add_missing_qids_rec(&mut *term, count, true)
-        },
+        }
         concrete::Term::Exists { vars: _, term } => {
             if !matches!(&**term, concrete::Term::Attributes { .. }) {
                 // this is for the case where the quantified term has no attributes
-                let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String("".to_string())));
+                let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String(
+                    "".to_string(),
+                )));
                 std::mem::swap(term, &mut temp);
                 **term = concrete::Term::Attributes {
                     term: temp,
@@ -364,17 +369,15 @@ fn add_missing_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable
                 };
             }
             add_missing_qids_rec(&mut *term, count, true)
-        },
-        concrete::Term::Match { term, cases: _ } => add_missing_qids_rec(&mut *term, count, false),
+        }
         concrete::Term::Attributes { term, attributes } => {
             add_missing_qids_rec(term, count, false);
-            let mut enable = enable;
-            attributes.iter().for_each(|f| {
-                let concrete::Keyword(k) = &f.0;
-                if k == "qid" {
-                    enable = false;
-                }
+            // remove existing qid
+            attributes.retain(|(k, _)| {
+                let concrete::Keyword(k) = k;
+                k != "qid"
             });
+
             if enable {
                 attributes.push((
                     concrete::Keyword("qid".to_owned()),
@@ -388,6 +391,9 @@ fn add_missing_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable
         }
         concrete::Term::Constant(_) => (),
         concrete::Term::QualIdentifier(_) => (),
+        concrete::Term::Match { term, cases: _ } => {
+            panic!("unsupported term: {:?}", term)
+        }
     }
 }
 
