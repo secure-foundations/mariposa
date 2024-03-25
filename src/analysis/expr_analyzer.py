@@ -121,11 +121,15 @@ class ExprAnalyzer:
             qr = self[qid]
             if self.get_query_stability(qid) != Stability.UNSTABLE:
                 continue
-            qr.enforce_timeout(self.ana._timeout)
             reason = self.ana.sub_categorize_unstable(qr.blob)
             cats.add_item(reason, qid)
         cats.finalize()
         return cats
+
+    def get_unstable_reason(self, qid):
+        if self.get_query_stability(qid) == Stability.UNSTABLE:
+            return self.ana.sub_categorize_unstable(self[qid].blob)
+        return None
 
     # def get_assert_counts(self, update=False):
     #     from tqdm import tqdm

@@ -5,7 +5,16 @@
     "r_solvable": 0.05,
     "r_stable": 0.95,
     "discount": 0.8,
+    "mutations": [],
     "method": "cutoff"
+  },
+  "60nq": {
+    "timeout": 60,
+    "mutations": [
+      "shuffle",
+      "rename",
+      "reseed"
+    ]
   },
   "60sec": {
     "timeout": 60
