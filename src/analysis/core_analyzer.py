@@ -2,7 +2,7 @@ from ast import Dict
 from base.factory import FACT
 from base.project import KnownExt, ProjectGroup, ProjectType as PT
 from proj_wizard import NINJA_BUILD_RULES
-from query.analyzer import QueryAnalyzer, Stability as STB
+from query.analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
 from analysis.expr_analyzer import ExprAnalyzer
 from utils.analysis_utils import *
 from utils.query_utils import count_asserts
@@ -10,14 +10,14 @@ from utils.system_utils import print_banner
 
 class CoreQueryStatus:
     def __init__(self, qid: str, 
-                 base: STB, base_path,
-                 core: STB, core_path,
-                 extd: STB, extd_path):
+                 base: STB, base_path, br: UR,
+                 core: STB, core_path, cr: UR,
+                 extd: STB, extd_path, er: UR):
         self.qid = qid
 
-        self.base, self.base_path = base, base_path
-        self.core, self.core_path = core, core_path
-        self.extd, self.extd_path = extd, extd_path
+        self.base, self.br, self.base_path = base, br, base_path
+        self.core, self.cr, self.core_path = core, cr, core_path
+        self.extd, self.er, self.extd_path = extd, er, extd_path
         
         self.__init_patched_status()
 
@@ -32,15 +32,18 @@ class CoreQueryStatus:
         if self.core in {STB.STABLE, STB.UNSTABLE}:
             self.patch = self.core
             self.patch_path = self.core_path
+            self.patch_reason = self.cr
             return
 
         if self.extd in {STB.STABLE, STB.UNSTABLE}:
             self.patch = self.extd
             self.patch_path = self.extd_path
+            self.patch_reason = self.er
             return
     
         self.patch = self.base
         self.patch_path = self.base_path
+        self.patch_reason = self.br
 
 class CoreAnalyzer:
     def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
@@ -65,11 +68,17 @@ class CoreAnalyzer:
         for qid in self.base.qids:
             bs = self.base.get_query_stability(qid)
             bp = self.base.exp.proj.get_ext_path(qid)
+            bur = self.base.get_unstable_reason(qid)
+
             cs = self.core.get_query_stability(qid)
             cp = self.core.exp.proj.get_ext_path(qid)
+            cur = self.core.get_unstable_reason(qid)
+
             es = self.extd.get_query_stability(qid)
             ep = self.extd.exp.proj.get_ext_path(qid)
-            cqs = CoreQueryStatus(qid, bs, bp, cs, cp, es, ep)
+            eur = self.extd.get_unstable_reason(qid)
+
+            cqs = CoreQueryStatus(qid, bs, bp, bur, cs, cp, cur, es, ep, eur)
             self.qids[qid] = cqs
 
         # self.__init_issue_status()
@@ -77,14 +86,64 @@ class CoreAnalyzer:
         # self.suggest_issue_fixes()
         # self.get_trace_candidate()
 
-        base_adj, core_adj = self.get_adjusted_status()
-        base_adj.print_status()
-        core_adj.print_status()
+        b, c = self.adjust_status()
 
-        m = base_adj.get_migration_status(core_adj)
-        for k, v in m.items():
-            print(k)
-            v.print_status()
+        
+        print_banner("Report " + group.gid)
+        print("")
+
+        b.print_status(title="base")
+        c.print_status(title="core")
+
+        print("")
+        print_banner("Instability Mitigated")
+    
+        mitigated = {"tally": [0, 0]}
+
+        for qid in b[STB.UNSTABLE]:
+            cqs = self.qids[qid]
+            if cqs.br not in mitigated:
+                mitigated[cqs.br] = [0, 0]
+            if cqs.patch == STB.STABLE:
+                mitigated[cqs.br][0] += 1
+                mitigated["tally"][0] += 1
+            mitigated[cqs.br][1] += 1
+            mitigated["tally"][1] += 1
+        
+        for k in ["tally"] + list(UR):
+            if k not in mitigated:
+                continue
+            print(f"{k}: {mitigated[k][0]}/{mitigated[k][1]} ({mitigated[k][0]*100/mitigated[k][1]:.2f}%)")
+
+        print("")
+        print_banner("Stability Preserved")
+        pres, total = 0, 0
+        
+        for qid in b[STB.STABLE]:
+            if qid in c[STB.STABLE]:
+                pres += 1
+            total += 1
+        print(f"preserved: {pres}/{total} ({pres*100/total:.2f}%)")
+
+        print("")
+        print_banner("Instability Introduced")
+
+        intro = Categorizer()
+
+        for qid in c[STB.UNSTABLE]:
+            cqs = self.qids[qid]
+            if cqs.base != STB.STABLE:
+                continue
+            intro.add_item(cqs.patch_reason, qid)
+        intro.finalize()
+        intro.print_status()
+
+        print_banner("Report End")
+
+        # m = base_adj.get_migration_status(core_adj)
+        # for k, v in m.items():
+        #     print("original", k)
+        #     v.print_status()
 
         # print(NINJA_BUILD_RULES)
         # for qid, cq in self.qids.items():
@@ -155,7 +214,7 @@ class CoreAnalyzer:
                 incomplete.extend(qids)
         return incomplete
 
-    def get_adjusted_status(self):
+    def adjust_status(self):
         base_adj = Categorizer()
         core_adj = Categorizer()
 

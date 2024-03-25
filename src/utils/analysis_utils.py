@@ -154,10 +154,11 @@ class Categorizer:
         new_cats.finalize()
         return new_cats
 
-    def print_status(self, skip_empty=False):
+    def print_status(self, skip_empty=False, title=""):
         from tabulate import tabulate
         assert self.finalized
-        print("")
+        if title != "": print(title)
+
         table = [["category", "count", "percentage"]]
         for c, i in self._items.items():
             if skip_empty and i.count == 0:

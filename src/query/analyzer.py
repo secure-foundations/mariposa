@@ -171,6 +171,7 @@ class QueryAnalyzer:
     def categorize_queries(self, qss, muts=Mutation.basic_mutations()) -> Categorizer:
         cats = Categorizer([c for c in Stability])
         for qs in qss:
+            qs.enforce_timeout(self._timeout)
             res, _ = self.categorize_query(qs, muts)
             cats.add_item(res.value, qs.qid)
         cats.finalize()
