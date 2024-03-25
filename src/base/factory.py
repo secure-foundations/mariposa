@@ -73,6 +73,11 @@ class Factory:
         if res: return res
         exit_with(f"no such project group associated with path {path}")
     
+    def get_group(self, gid) -> ProjectGroup:
+        if self.groups is None:
+            self.__init_projects()
+        return self.groups[gid]
+
     def get_project_by_path(self, path) -> Project:
         if self.groups is None:
             self.__init_projects()

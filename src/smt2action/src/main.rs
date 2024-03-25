@@ -4,7 +4,7 @@ use strum_macros::{Display, EnumIter, EnumMessage, EnumString};
 
 use clap::Parser;
 // use pattern_removal::remove_patterns;
-use smt2parser::{concrete, renaming, visitors, CommandStream};
+use smt2parser::concrete;
 
 // use std::collections::{BTreeMap, HashSet};
 // use std::vec;
@@ -19,10 +19,10 @@ mod query_io;
 mod query_mutate;
 mod term_match;
 
+mod term_inst_cvc5;
+mod term_substitute;
 mod tree_shake;
 mod tree_shake_idf;
-mod term_substitute;
-mod term_inst_cvc5;
 
 const DEFAULT_SEED: u64 = 1234567890;
 
@@ -271,7 +271,7 @@ fn main() {
         Action::Shake => {
             assert!(args.shake_init_strategy < 2);
             assert!(args.shake_max_symbol_frequency <= 100);
-            commands = tree_shake::tree_shake(
+            tree_shake::tree_shake(
                 commands,
                 args.shake_max_depth,
                 args.shake_max_symbol_frequency,
@@ -279,6 +279,7 @@ fn main() {
                 args.shake_log_path,
                 args.shake_debug,
             );
+            return;
         }
         Action::InstCVC5 => {
             if args.cvc5_inst_log_path.is_none() {
@@ -290,7 +291,7 @@ fn main() {
             return;
         }
         Action::AddQid => {
-                query_io::add_missing_qids(&mut commands);
+            query_io::add_missing_qids(&mut commands);
         }
         _ => {
             panic!("unimplemented action: {}", action);

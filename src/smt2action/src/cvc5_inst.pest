@@ -1,24 +1,33 @@
 char = @{ ASCII_ALPHANUMERIC 
     | "!" | "." | "_" | "/" | "%" | "?" | ">" | "<"  | "$" | "&" | "@" | "="}
 
-ident = @{ 
-    !("let" | "instantiations" | "skolem" | "forall")
+atom = @{ 
+    !("instantiations" | "skolem" | "forall")
     ~char+
 }
 
 WHITESPACE = _{ " " }
 
-bind = {"(" ~ ident ~ term  ~ ")"  }
-binds = {"(" ~(bind)+ ~ ")"}
-let_term = {"let" ~ binds ~ term}
-term = {  let_term | "("~ (term)+ ~ ")" | ident}
+list = {"(" ~ (term)+ ~ ")"}
+term = {list | atom}
 
-skolem = { "(skolem" ~ ident ~ NEWLINE ~ "("~ (ident) ~ ")" ~ NEWLINE ~ ")" ~ NEWLINE?}
+skolem = { 
+    "(skolem" ~ atom ~ NEWLINE 
+    ~ "("~ (atom) ~ ")" ~ NEWLINE
+    ~ ")" ~ NEWLINE
+}
 
-forall = {"(forall" ~ binds ~ term ~ ")"}
-anon_quant = { "(instantiations" ~ forall ~ NEWLINE ~ (term ~ NEWLINE)+ ~ ")" ~ NEWLINE?}
+anon_quant = { 
+    "(instantiations" ~ "(forall" ~ list ~ term ~ ")" ~ NEWLINE 
+    ~ (term ~ NEWLINE)+ 
+    ~ ")" ~ NEWLINE
+}
 
-quant = { "(instantiations" ~ ident ~ NEWLINE ~ (term ~ NEWLINE)+ ~ ")" ~ NEWLINE?}
+quant = {
+    "(instantiations" ~ atom ~ NEWLINE 
+    ~ (term ~ NEWLINE)+ 
+    ~ ")" ~ NEWLINE
+}
 
 file = {
     SOI ~ "unsat" ~ NEWLINE ~

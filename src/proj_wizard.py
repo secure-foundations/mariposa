@@ -3,8 +3,10 @@
 import argparse, time, pickle, numpy as np
 from analysis.expr_analyzer import ExprAnalyzer
 from base.exper import Experiment
+from base.factory import FACT
 from base.project import KnownExt, Project, ProjectGroup, ProjectType as PT, full_proj_name, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
+from query.analyzer import Stability
 from utils.option_utils import *
 from utils.system_utils import *
 
@@ -20,6 +22,9 @@ rule shake
 
 rule build-core
     command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 150 -s z3_4_12_5
+
+rule add-labels
+    command = {MARIPOSA} -i $in -o $out -a label-core
 
 rule complete-core
     command = {QUERY_WIZARD} complete-core -i $in -o $out --core-query-path $core 
@@ -146,6 +151,9 @@ def set_up_fix_incomplete_core(subparsers):
     add_input_dir_option(p, is_group=True)
     add_clear_option(p)
 
+def set_up_create_benchmark(subparsers):
+    subparsers.add_parser('create-benchmark', help='create a benchmark project (do not use this unless you know what you are doing)')
+
 class NinjaPasta:
     def __init__(self, args, cmd):
         self.start_time = int(time.time())
@@ -187,6 +195,8 @@ class NinjaPasta:
             self.handle_fix_missing_core(args.input_group)
         elif args.sub_command == "fix-incomplete-core":
             self.handle_fix_incomplete_core(args.input_group)
+        elif args.sub_command == "create-benchmark":
+            self.handle_create_benchmark()
         else:
             parser.print_help()
             return
@@ -354,6 +364,24 @@ class NinjaPasta:
                                     f"    core={c}\n\n"]
             self.expect_targets.add(o)
 
+    def handle_create_benchmark(self):
+        self.output_dir = os.path.join(PROJ_ROOT, "bench/unstable/")
+        log_info(f"output directory is set to {self.output_dir}")
+        # solver = FACT.get_solver_by_name("z3_4_12_5")
+        ana = QueryAnalyzer("60nq")
+        for gid in ["d_fvbkv", "d_lvbkv", "d_komodo", "fs_vwasm", "fs_dice"]:
+            group = FACT.get_group(gid)
+            proj = group.get_project(PT.from_str("base.z3"))
+            exp = FACT.load_any_experiment(proj)
+            exp = ExprAnalyzer(exp, ana)
+
+            for qid in exp.get_overall()[Stability.UNSTABLE]:
+                print(qid)
+                break
+            break
+        
+        sys.exit(1)
+
     def finalize(self, clear):
         if len(self.ninja_stuff) == 0:
             log_info("no targets to build")
@@ -457,6 +485,7 @@ if __name__ == "__main__":
     set_up_verify(subparsers)
     set_up_fix_missing_core(subparsers)
     set_up_fix_incomplete_core(subparsers)
+    set_up_create_benchmark(subparsers)
 
     cmd = " ".join(sys.argv)
 

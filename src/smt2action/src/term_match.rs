@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use smt2parser::concrete;
 use smt2parser::concrete::{QualIdentifier, Symbol, Term};
 
+#[allow(dead_code)]
 pub fn make_true_term() -> concrete::Term {
     return Term::QualIdentifier(QualIdentifier::Simple {
         identifier: concrete::Identifier::Simple {
@@ -11,6 +12,7 @@ pub fn make_true_term() -> concrete::Term {
     });
 }
 
+#[allow(dead_code)]
 pub fn make_false_term() -> concrete::Term {
     return Term::QualIdentifier(QualIdentifier::Simple {
         identifier: concrete::Identifier::Simple {
@@ -19,6 +21,7 @@ pub fn make_false_term() -> concrete::Term {
     });
 }
 
+#[allow(dead_code)]
 pub fn make_bool_term(b: bool) -> concrete::Term {
     if b {
         return make_true_term();
@@ -27,6 +30,7 @@ pub fn make_bool_term(b: bool) -> concrete::Term {
     }
 }
 
+#[allow(dead_code)]
 pub fn make_not_term(term: concrete::Term) -> concrete::Term {
     return Term::Application {
         qual_identifier: QualIdentifier::Simple {
@@ -38,6 +42,7 @@ pub fn make_not_term(term: concrete::Term) -> concrete::Term {
     };
 }
 
+#[allow(dead_code)]
 pub fn match_bool_term(term: &concrete::Term) -> Option<bool> {
     if let Term::QualIdentifier(QualIdentifier::Simple { identifier }) = term {
         if let concrete::Identifier::Simple { symbol } = identifier {
@@ -52,6 +57,7 @@ pub fn match_bool_term(term: &concrete::Term) -> Option<bool> {
 }
 
 #[inline]
+#[allow(dead_code)]
 pub fn match_simple_qual_identifier(identifier: &concrete::QualIdentifier) -> Option<&Symbol> {
     if let QualIdentifier::Simple { identifier } = identifier {
         if let concrete::Identifier::Simple { symbol } = identifier {
@@ -62,6 +68,7 @@ pub fn match_simple_qual_identifier(identifier: &concrete::QualIdentifier) -> Op
 }
 
 #[inline]
+#[allow(dead_code)]
 pub fn match_simple_qual_identifier_term(term: &Term) -> Option<&Symbol> {
     if let Term::QualIdentifier(qual_identifier) = term {
         return match_simple_qual_identifier(qual_identifier);
@@ -69,6 +76,7 @@ pub fn match_simple_qual_identifier_term(term: &Term) -> Option<&Symbol> {
     return None;
 }
 
+#[allow(dead_code)]
 pub fn make_simple_qual_identifier_term(symbol: Symbol) -> concrete::Term {
     return Term::QualIdentifier(QualIdentifier::Simple {
         identifier: concrete::Identifier::Simple { symbol },
@@ -93,6 +101,7 @@ pub fn make_simple_qual_identifier_term(symbol: Symbol) -> concrete::Term {
 //     return None;
 // }
 
+#[allow(dead_code)]
 pub fn match_simple_app_term(term: &mut concrete::Term) -> Option<(&Symbol, &mut Vec<concrete::Term>)> {
     if let Term::Application {
         qual_identifier,

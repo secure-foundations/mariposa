@@ -1,4 +1,4 @@
-use std::collections::{HashMap};
+use std::collections::HashMap;
 
 use smt2parser::concrete;
 use smt2parser::concrete::{Symbol, Term};
@@ -10,6 +10,7 @@ pub struct Substituter {
     local_symbols: SymbolSet,
 }
 
+#[allow(dead_code)]
 impl Substituter {
     pub fn new(mapping: HashMap<Symbol, Term>) -> Self {
         Substituter {
@@ -86,5 +87,4 @@ impl Substituter {
             },
         }
     }
-
 }

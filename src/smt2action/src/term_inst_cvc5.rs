@@ -1,18 +1,13 @@
 use core::panic;
+use if_chain::if_chain;
 use pest::{iterators::Pair, Parser};
 use pest_derive::Parser;
-use std::{
-    collections::{BTreeMap, HashMap, HashSet},
-    fs,
-    hash::Hash,
-};
+use std::{collections::BTreeMap, fs};
 
 use smt2parser::{
-    concrete::{self, Command, Symbol, Term},
+    concrete::{self, Symbol, Term},
     visitors::AttributeValue,
 };
-
-use crate::{term_match::make_simple_qual_identifier_term, term_substitute::Substituter};
 
 #[derive(Parser)]
 #[grammar = "cvc5_inst.pest"]
@@ -20,26 +15,21 @@ pub struct CVC5InstParser;
 
 #[derive(Debug)]
 enum InstSExpr {
-    Ident(String),
-    Let(Vec<(String, InstSExpr)>, Box<InstSExpr>),
+    Atom(String),
     List(Vec<InstSExpr>),
 }
 
 impl std::fmt::Display for InstSExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            InstSExpr::Ident(s) => write!(f, "{}", s),
-            InstSExpr::Let(bindings, term) => {
-                write!(f, "(let (")?;
-                for (var, inst) in bindings {
-                    write!(f, "({} {})", var, inst)?;
-                }
-                write!(f, ") {})", term)
-            }
-            InstSExpr::List(insts) => {
+            InstSExpr::Atom(s) => write!(f, "{}", s),
+            InstSExpr::List(l) => {
                 write!(f, "(")?;
-                for inst in insts {
-                    write!(f, "{} ", inst)?;
+                for (i, e) in l.iter().enumerate() {
+                    write!(f, "{}", e)?;
+                    if i != l.len() - 1 {
+                        write!(f, " ")?;
+                    }
                 }
                 write!(f, ")")
             }
@@ -47,81 +37,16 @@ impl std::fmt::Display for InstSExpr {
     }
 }
 
-fn parse_bind(pair: Pair<Rule>) -> Vec<(String, InstSExpr)> {
-    match pair.as_rule() {
-        Rule::bind => {
-            let mut inner_rules = pair.into_inner();
-            vec![(
-                inner_rules.next().unwrap().as_str().to_string(),
-                parse_term(inner_rules.next().unwrap()),
-            )]
-        }
-        Rule::binds => pair
-            .into_inner()
-            .map(|bind| parse_bind(bind))
-            .flatten()
-            .collect(),
-        _ => {
-            println!("{}", pair.as_str().to_string());
-            panic!("unexpected rule: {:?}", pair.as_rule())
-        }
-    }
-}
-
 fn parse_term(pair: Pair<Rule>) -> InstSExpr {
     match pair.as_rule() {
-        // Rule::inst => {
-        //     let term = pair.into_inner().next().unwrap();
-        //     parse_term(term)
-        // }
-        Rule::ident => {
-            let term = pair.as_str().to_string();
-            InstSExpr::Ident(term)
-        }
-        Rule::term => {
+        Rule::atom => InstSExpr::Atom(pair.as_str().to_string()),
+        Rule::term => parse_term(pair.into_inner().next().unwrap()),
+        Rule::list => {
             let inner_rules = pair.into_inner();
-            let insts = inner_rules.map(|inst| parse_term(inst)).collect();
-            InstSExpr::List(insts)
-        }
-        Rule::let_term => {
-            let mut inner_rules = pair.into_inner();
-            InstSExpr::Let(
-                parse_bind(inner_rules.next().unwrap()),
-                Box::new(parse_term(inner_rules.next().unwrap())),
-            )
+            InstSExpr::List(inner_rules.map(|inst| parse_term(inst)).collect())
         }
         _ => {
             println!("{}", pair.as_str().to_string());
-            panic!("unexpected rule: {:?}", pair.as_rule())
-        }
-    }
-}
-
-fn parse_quant(pair: Pair<Rule>) -> (String, Vec<InstSExpr>) {
-    match pair.as_rule() {
-        Rule::quant => {
-            let mut inner_rules = pair.into_inner();
-            (
-                inner_rules.next().unwrap().as_str().to_string(),
-                inner_rules.map(|inst| parse_term(inst)).collect(),
-            )
-        }
-        _ => {
-            panic!("unexpected rule: {:?}", pair.as_rule())
-        }
-    }
-}
-
-fn parse_skolem(pair: Pair<Rule>) -> (String, String) {
-    match pair.as_rule() {
-        Rule::skolem => {
-            let mut inner_rules = pair.into_inner();
-            (
-                inner_rules.next().unwrap().as_str().to_string(),
-                inner_rules.next().unwrap().as_str().to_string(),
-            )
-        }
-        _ => {
             panic!("unexpected rule: {:?}", pair.as_rule())
         }
     }
@@ -137,12 +62,22 @@ struct Record {
 }
 
 impl Record {
-    fn new() -> Record {
-        Record {
+    fn new(inst_file_path: &String) -> Record {
+        let unparsed_file = fs::read_to_string(inst_file_path).expect("cannot read file");
+
+        let mut record = Record {
             skolem_vars: BTreeMap::new(),
             quant_insts: BTreeMap::new(),
             anon_quant_insts: Vec::new(),
-        }
+        };
+
+        CVC5InstParser::parse(Rule::file, &unparsed_file)
+            .expect("unsuccessful parse")
+            .next()
+            .unwrap()
+            .into_inner()
+            .for_each(|pair| record.parse_entry(pair));
+        record
     }
 
     fn insert_qi(&mut self, qid: String, insts: Vec<InstSExpr>) {
@@ -156,38 +91,28 @@ impl Record {
     fn insert_skolem(&mut self, skolem: String, qid: String) {
         self.skolem_vars.insert(skolem, qid);
     }
-}
 
-fn parse_log(inst_file_path: &String) -> Record {
-    let unparsed_file = fs::read_to_string(inst_file_path).expect("cannot read file");
-
-    let res = CVC5InstParser::parse(Rule::file, &unparsed_file)
-        .expect("unsuccessful parse")
-        .next()
-        .unwrap();
-
-    if res.as_rule() != Rule::file {
-        panic!("unexpected rule: {:?}", res.as_rule());
+    fn parse_entry(&mut self, pair: Pair<Rule>) {
+        match pair.as_rule() {
+            Rule::quant => {
+                let mut inner_rules = pair.into_inner();
+                let qid = inner_rules.next().unwrap().as_str().to_string();
+                let insts = inner_rules.map(|inst| parse_term(inst)).collect();
+                self.insert_qi(qid, insts);
+            }
+            Rule::anon_quant => {}
+            Rule::skolem => {
+                let mut inner_rules = pair.into_inner();
+                let skolem = inner_rules.next().unwrap().as_str().to_string();
+                let qid = inner_rules.next().unwrap().as_str().to_string();
+                self.insert_skolem(skolem, qid);
+            }
+            Rule::EOI => {}
+            _ => {
+                println!("unexpected rule: {:?}", pair.as_rule());
+            }
+        }
     }
-
-    let mut record = Record::new();
-
-    res.into_inner().for_each(|pair| match pair.as_rule() {
-        Rule::quant => {
-            let (qid, insts) = parse_quant(pair);
-            record.insert_qi(qid, insts);
-        }
-        Rule::skolem => {
-            let (qid, skolem) = parse_skolem(pair);
-            record.insert_skolem(skolem, qid);
-        }
-        Rule::anon_quant => {}
-        Rule::EOI => {}
-        _ => {
-            println!("unexpected rule: {:?}", pair.as_rule());
-        }
-    });
-    record
 }
 
 fn collect_quantifiers_rec(
@@ -260,65 +185,6 @@ fn collect_quantifiers_rec(
     }
 }
 
-// fn substitute(term: concrete::Term, vars: BTreeMap<Symbol, concrete::Term>)
-// {
-//     match term {
-//         concrete::Term::Constant(_) => {}
-//         concrete::Term::QualIdentifier(_) => {}
-//         concrete::Term::Application { function, arguments } => {
-//             let new_args = arguments.iter().map(|arg| substitute(arg.clone(), vars.clone())).collect();
-//             concrete::Term::Application {
-//                 function: function.clone(),
-//                 arguments: new_args,
-//             }
-//         }
-//         concrete::Term::Forall { vars, term } => {
-//             let new_vars = vars.iter().map(|var| {
-//                 let new_term = substitute(term.clone(), vars.clone());
-//                 concrete::Term::Forall {
-//                     vars: vars.clone(),
-//                     term: new_term,
-//                 }
-//             }).collect();
-//             concrete::Term::Forall {
-//                 vars: vars.clone(),
-//                 term: term.clone(),
-//             }
-//         }
-//         concrete::Term::Exists { vars, term } => {
-//             let new_vars = vars.iter().map(|var| {
-//                 let new_term = substitute(term.clone(), vars.clone());
-//                 concrete::Term::Exists {
-//                     vars: vars.clone(),
-//                     term: new_term,
-//                 }
-//             }).collect();
-//             concrete::Term::Exists {
-//                 vars: vars.clone(),
-//                 term: term.clone(),
-//             }
-//         }
-//         concrete::Term::Let { var_bindings, term } => {
-//             let new_bindings = var_bindings.iter().map(|(var, term)| {
-//                 let new_term = substitute(term.clone(), vars.clone());
-//                 (var.clone(), new_term)
-//             }).collect();
-//             let new_term = substitute(term.clone(), vars.clone());
-//             concrete::Term::Let {
-//                 var_bindings: new_bindings,
-//                 term: new_term,
-//             }
-//         }
-//         concrete::Term::Match { term, cases } => {
-//             panic!("NYI");
-//         }
-//         concrete::Term::Attributes { term, attributes } => {
-//             let new_term = substitute(term.clone(), vars.clone());
-//         }
-//         panic!("NYI");
-//     }
-// }
-
 // pub fn get_datatypes(command: &concrete::Command) {
 //     match command {
 //         Command::DeclareDatatypes { datatypes } => {
@@ -338,12 +204,26 @@ fn collect_quantifiers_rec(
 //     }
 // }
 
-pub fn inst_cvc5(commands: &mut Vec<concrete::Command>, inst_file_path: &String) {
-    let record = parse_log(inst_file_path);
+fn create_instance(term: &Term, args: &InstSExpr) {
+    if_chain! {
+        if let concrete::Term::Forall { vars, term } = term;
+        if let concrete::Term::Attributes { term, .. } = &**term;
+        if let InstSExpr::List(args) = args;
+        if vars.len() == args.len();
+        then {
+            println!("{}", term);
+        } else {
+            panic!("NYI");
+        }
+    }
+}
 
+pub fn inst_cvc5(commands: &mut Vec<concrete::Command>, inst_file_path: &String) {
+    let record = Record::new(inst_file_path);
     // commands.iter().for_each(|command| get_datatypes(command));
 
     let mut quantifiers = BTreeMap::new();
+
     for command in commands.iter() {
         match command {
             concrete::Command::Assert { term } => {
@@ -360,21 +240,15 @@ pub fn inst_cvc5(commands: &mut Vec<concrete::Command>, inst_file_path: &String)
     // let mut missed_qids = HashMap::new();
     // let mut inst_var_id = 0;
 
-    // for qid in record.quant_insts.keys() {
-    //     let qid = Symbol(qid.clone());
-    //     let qt = quantifiers.get(&qid);
-
-    //     if qt.is_none() {
-    //         println!("qid not found in the query: {}", qid);
-    //         continue;
-    //     }
-
-    //     let (quantifier, depth) = qt.unwrap();
-
-    //     if *depth != 0 {
-    //         continue;
-    //     }
-
+    for qid in record.quant_insts.keys() {
+        let qexp = &quantifiers[&Symbol(qid.clone())];
+        println!("qid: {}", qid);
+        println!("qexp: {}", &qexp.0);
+        for inst in record.quant_insts.get(qid).unwrap() {
+            // println!("\t{}", inst);
+            create_instance(&qexp.0, &inst);
+        }
+    }
     //     if let concrete::Term::Forall { vars, term } = quantifier {
     //         for inst in record.quant_insts.get(qid.0.as_str()).unwrap() {
     //             if let InstSExpr::List(args) = inst {

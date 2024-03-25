@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use crate::query_io;
 use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
-use crate::tree_shake_idf::{get_command_symbol_def, get_commands_symbol_def, get_commands_symbol_def_alt, AltSymbolSet};
+use crate::tree_shake_idf::{get_commands_symbol_def_alt, AltSymbolSet};
 
 struct PatternState {
     local_symbols: SymbolSet,
@@ -404,14 +404,10 @@ pub fn tree_shake(
     debug: bool,
 ) -> Vec<concrete::Command> {
     query_io::truncate_commands(&mut commands);
-    let (ref_trivial, ref_defined) = get_commands_symbol_def_alt(&commands, shake_max_symbol_frequency);
+    let (ref_trivial, ref_defined) =
+        get_commands_symbol_def_alt(&commands, shake_max_symbol_frequency);
     let ref_trivial = Arc::new(ref_trivial);
     let defs = Arc::new(ref_defined);
-
-    // let defs = Arc::new(get_commands_symbol_def(
-    //     &commands,
-    //     alt_defs.defined,
-    // ));
 
     let goal_command = commands.pop().unwrap();
 
@@ -440,7 +436,6 @@ pub fn tree_shake(
         .collect();
 
     let mut poss = HashSet::new();
-    // let mut pposs = HashSet::new();
     poss.insert(0);
 
     let mut iteration = 1;

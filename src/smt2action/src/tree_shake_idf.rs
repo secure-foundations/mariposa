@@ -150,29 +150,29 @@ pub fn get_commands_symbol_def_alt(
         .partition(|(_, count)| count * 100 / use_cmd_count <= max_symbol_frequency);
 
     let mut under: SymbolSet = under.into_iter().map(|(symbol, _)| symbol).collect();
-    let mut over: SymbolSet = over.into_iter().map(|(symbol, _)| symbol).collect();
+    let over: SymbolSet = over.into_iter().map(|(symbol, _)| symbol).collect();
     under.extend(over.clone());
     (over, under)
 }
 
-pub fn get_commands_symbol_def(
-    commands: &Vec<concrete::Command>,
-    max_symbol_frequency: usize,
-) -> SymbolSet {
-    assert!(max_symbol_frequency <= 100);
+// pub fn get_commands_symbol_def(
+//     commands: &Vec<concrete::Command>,
+//     max_symbol_frequency: usize,
+// ) -> SymbolSet {
+//     assert!(max_symbol_frequency <= 100);
 
-    if max_symbol_frequency == 100 {
-        return get_commands_symbol_def_plain(commands);
-    }
+//     if max_symbol_frequency == 100 {
+//         return get_commands_symbol_def_plain(commands);
+//     }
 
-    let (cmd_freq, use_cmd_count) = count_commands_symbol_frequency(commands, false);
+//     let (cmd_freq, use_cmd_count) = count_commands_symbol_frequency(commands, false);
 
-    cmd_freq
-        .into_iter()
-        .filter(|(_, count)| count * 100 / use_cmd_count <= max_symbol_frequency)
-        .map(|(symbol, _)| symbol)
-        .collect()
-}
+//     cmd_freq
+//         .into_iter()
+//         .filter(|(_, count)| count * 100 / use_cmd_count <= max_symbol_frequency)
+//         .map(|(symbol, _)| symbol)
+//         .collect()
+// }
 
 struct CommandUseCounter {
     defined_symbols: Arc<SymbolSet>,
