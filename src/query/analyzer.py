@@ -57,7 +57,13 @@ class QueryAnalyzer:
         self.r_solvable = float(obj["r_solvable"])
         self.r_stable = float(obj["r_stable"])
         self.discount = float(obj["discount"])
-        
+
+        muts = obj["mutations"]
+        if muts == []:
+            self.muts = None
+        else:
+            self.muts = [Mutation(m) for m in muts]
+
         method = obj["method"]
 
         if method == "strict":
@@ -146,14 +152,16 @@ class QueryAnalyzer:
             return Stability.STABLE
         return Stability.INCONCLUSIVE
 
-    def categorize_query(self, qs: QueryExpResult, muts=None):
+    def categorize_query(self, qs: QueryExpResult):
         if qs.is_dummy():
             return Stability.MISSING_E, None
 
         votes = dict()
 
-        if muts is None:
+        if self.muts is None:
             muts = qs.mutations
+        else:
+            muts = self.muts
 
         for m in muts:
             mblob = qs.get_mutation_status(m)
@@ -168,11 +176,11 @@ class QueryAnalyzer:
         # ress -= {Stability.UNKNOWN}
         return Stability.UNSTABLE, votes
 
-    def categorize_queries(self, qss, muts=Mutation.basic_mutations()) -> Categorizer:
+    def categorize_queries(self, qss) -> Categorizer:
         cats = Categorizer([c for c in Stability])
         for qs in qss:
             qs.enforce_timeout(self._timeout)
-            res, _ = self.categorize_query(qs, muts)
+            res, _ = self.categorize_query(qs)
             cats.add_item(res.value, qs.qid)
         cats.finalize()
         return cats
