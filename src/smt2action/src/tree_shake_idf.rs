@@ -16,7 +16,7 @@ pub fn get_command_symbol_def(command: &concrete::Command) -> SymbolSet {
         }
         Command::DeclareDatatypes { datatypes } => {
             datatypes.iter().for_each(|x| {
-                symbols.insert(x.0.clone());
+                // symbols.insert(x.0.clone());
                 assert_eq!(x.2.parameters.len(), 0);
                 x.2.constructors.iter().for_each(|y| {
                     symbols.insert(y.symbol.clone());

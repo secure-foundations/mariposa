@@ -89,10 +89,10 @@ enum Action {
     InstCVC5,
 
     #[strum(
-        serialize = "add-qid",
-        message = "add qids to quantifiers in the query (if not present)"
+        serialize = "add-ids",
+        message = "add qids (to quantifiers) and cids (to assertions) to the query"
     )]
-    AddQid,
+    AddIds,
 
     #[strum(serialize = "help", message = "get help on the allowed actions")]
     Help,
@@ -142,6 +142,9 @@ struct Args {
     /// (z3) unsat core log path (not a query!)
     #[arg(long)]
     core_log_path: Option<String>,
+
+    #[arg(long, default_value_t = false)]
+    ids_available: bool,
 
     /// the threshold (percentage of) patterns to be removed
     #[arg(long, default_value_t = 100.0)]
@@ -252,7 +255,7 @@ fn main() {
             query_mutate::rename_symbols(&mut commands, args.seed);
         }
         Action::LabelCore => {
-            core_export::label_asserts(&mut commands);
+            core_export::label_asserts(&mut commands, args.ids_available);
         }
         Action::ReduceCore => {
             if args.core_log_path.is_none() {
@@ -290,8 +293,9 @@ fn main() {
             term_inst_cvc5::inst_cvc5(&mut commands, &inst_file_path);
             return;
         }
-        Action::AddQid => {
-            query_io::add_missing_qids(&mut commands);
+        Action::AddIds => {
+            query_io::add_cids(&mut commands);
+            query_io::add_qids(&mut commands);
         }
         _ => {
             panic!("unimplemented action: {}", action);

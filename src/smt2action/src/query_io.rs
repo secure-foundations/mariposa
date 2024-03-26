@@ -1,9 +1,9 @@
-use smt2parser::concrete::Command;
 use smt2parser::{concrete, renaming, CommandStream};
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::{collections::HashSet, fs::File};
 
 const QID_PREFIX: &str = "mariposa_qid_";
+const CID_PREFIX: &str = "mariposa_cid_";
 
 fn should_remove_command(command: &concrete::Command) -> bool {
     match command {
@@ -325,21 +325,21 @@ pub fn split_commands(
     (included_checks, skipped_checks)
 }
 
-fn add_missing_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable: bool) {
+fn add_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable: bool) {
     match cur_term {
         concrete::Term::Application {
             qual_identifier: _,
             arguments,
         } => {
             for argument in arguments.iter_mut() {
-                add_missing_qids_rec(argument, count, false)
+                add_qids_rec(argument, count, false)
             }
         }
         concrete::Term::Let { var_bindings, term } => {
             for var_binding in var_bindings.iter_mut() {
-                add_missing_qids_rec(&mut var_binding.1, count, false)
+                add_qids_rec(&mut var_binding.1, count, false)
             }
-            add_missing_qids_rec(&mut *term, count, false)
+            add_qids_rec(&mut *term, count, false)
         }
         concrete::Term::Forall { vars: _, term } => {
             // TODO: maybe refactor
@@ -354,7 +354,7 @@ fn add_missing_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable
                     attributes: vec![],
                 };
             }
-            add_missing_qids_rec(&mut *term, count, true)
+            add_qids_rec(&mut *term, count, true)
         }
         concrete::Term::Exists { vars: _, term } => {
             if !matches!(&**term, concrete::Term::Attributes { .. }) {
@@ -368,10 +368,10 @@ fn add_missing_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable
                     attributes: vec![],
                 };
             }
-            add_missing_qids_rec(&mut *term, count, true)
+            add_qids_rec(&mut *term, count, true)
         }
         concrete::Term::Attributes { term, attributes } => {
-            add_missing_qids_rec(term, count, false);
+            add_qids_rec(term, count, false);
             // remove existing qid
             attributes.retain(|(k, _)| {
                 let concrete::Keyword(k) = k;
@@ -397,14 +397,88 @@ fn add_missing_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable
     }
 }
 
-pub fn add_missing_qids(commands: &mut Vec<concrete::Command>) {
+pub fn add_qids(commands: &mut Vec<concrete::Command>) {
     let mut qid = 0;
     for command in commands.iter_mut() {
         match command {
             concrete::Command::Assert { term } => {
-                add_missing_qids_rec(term, &mut qid, false);
+                add_qids_rec(term, &mut qid, false);
             }
             _ => {}
         }
+    }
+}
+
+pub fn add_cids(command: &mut Vec<concrete::Command>) {
+    fn add_cid(command: &mut concrete::Command, ct: usize) {
+        let concrete::Command::Assert { term } = command else {
+            return;
+        };
+
+        let named = concrete::Keyword("named".to_owned());
+        let cid =
+            concrete::AttributeValue::Symbol(concrete::Symbol(format!("{}{}", CID_PREFIX, ct)));
+
+        // does assert have attributes?
+        if let concrete::Term::Attributes {
+            term: _,
+            attributes,
+        } = term
+        {
+            // remove existing cid
+            attributes.retain(|(k, v)| {
+                let concrete::Keyword(k) = k;
+                // should not apply this to a query where we already introduced cid!
+                assert!(k != "named" || !v.to_string().starts_with(CID_PREFIX));
+                k != "named"
+            });
+            // otherwise, add the new name
+            attributes.push((named, cid));
+        } else {
+            // if no attributes, create a new one
+            let attributes = vec![(named, cid)];
+            let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
+            std::mem::swap(term, &mut temp);
+            *term = concrete::Term::Attributes {
+                term: Box::new(temp),
+                attributes,
+            };
+        }
+    }
+
+    command
+        .iter_mut()
+        .enumerate()
+        .for_each(|(i, x)| add_cid(x, i));
+}
+
+#[allow(dead_code)]
+fn remove_cid(command: &mut concrete::Command) {
+    let concrete::Command::Assert { term } = command else {
+        return;
+    };
+    let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
+    let mut flag = false;
+
+    if let concrete::Term::Attributes {
+        term: new_term,
+        attributes,
+    } = term
+    {
+        for (key, value) in attributes {
+            if key == &concrete::Keyword("named".to_owned()) {
+                if let concrete::AttributeValue::Symbol(concrete::Symbol(name)) = value {
+                    // check if name starts with "unsat-cores-dump-name-"
+                    if name.starts_with(CID_PREFIX) {
+                        // yuck but doesn't seem to affect performance significantly
+                        temp = *new_term.clone();
+                        flag = true;
+                    }
+                }
+            }
+        }
+    }
+    if flag {
+        *command = concrete::Command::Assert { term: temp };
     }
 }

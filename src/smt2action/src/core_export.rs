@@ -4,7 +4,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::vec;
 
-const CORE_DUMP_PREFIX: &str = "mariposa-core-id-";
+use crate::query_io;
+
 const PRODUCE_CORE_OPTION: &str = "produce-unsat-cores";
 
 fn load_core_symbols(file_path: &String) -> HashSet<String> {
@@ -50,72 +51,7 @@ fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> b
     false
 }
 
-fn remove_label(command: &mut concrete::Command) {
-    let concrete::Command::Assert { term } = command else {
-        return;
-    };
-    let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
-    let mut flag = false;
-
-    if let concrete::Term::Attributes {
-        term: new_term,
-        attributes,
-    } = term
-    {
-        for (key, value) in attributes {
-            if key == &concrete::Keyword("named".to_owned()) {
-                if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
-                    // check if name starts with "unsat-cores-dump-name-"
-                    if name.starts_with(CORE_DUMP_PREFIX) {
-                        // yuck but doesn't seem to affect performance significantly
-                        temp = *new_term.clone();
-                        flag = true;
-                    }
-                }
-            }
-        }
-    }
-    if flag {
-        *command = concrete::Command::Assert { term: temp };
-    }
-}
-
-fn label_assert(command: &mut concrete::Command, ct: usize) {
-    let concrete::Command::Assert { term } = command else {
-        return;
-    };
-
-    let named = concrete::Keyword("named".to_owned());
-    let new_name = CORE_DUMP_PREFIX.to_owned() + &ct.to_string();
-    let new_name = visitors::AttributeValue::Symbol(concrete::Symbol(new_name));
-
-    // does assert have attributes?
-    if let concrete::Term::Attributes {
-        term: _,
-        attributes,
-    } = term
-    {
-        for (key, _) in attributes.iter() {
-            if key == &named {
-                // if name already exists, don't mess with it
-                return;
-            }
-        }
-        // otherwise, add the new name
-        attributes.push((named, new_name));
-    } else {
-        // if no attributes, create a new one
-        let attributes = vec![(named, new_name)];
-        let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
-        std::mem::swap(term, &mut temp);
-        *term = concrete::Term::Attributes {
-            term: Box::new(temp),
-            attributes,
-        };
-    }
-}
-
-pub fn label_asserts(commands: &mut Vec<concrete::Command>) {
+pub fn label_asserts(commands: &mut Vec<concrete::Command>, ids_available: bool) {
     let produce = concrete::Command::SetOption {
         keyword: concrete::Keyword(PRODUCE_CORE_OPTION.to_owned()),
         value: visitors::AttributeValue::Symbol(concrete::Symbol("true".to_owned())),
@@ -123,10 +59,9 @@ pub fn label_asserts(commands: &mut Vec<concrete::Command>) {
 
     commands.insert(0, produce);
 
-    commands
-        .iter_mut()
-        .enumerate()
-        .for_each(|(i, x)| label_assert(x, i));
+    if !ids_available {
+        query_io::add_cids(commands);
+    }
 
     // if (set-option :produce-unsat-cores false) is present, remove it
     let mut i = 0;
@@ -185,8 +120,5 @@ pub fn reduce_asserts(commands: &mut Vec<concrete::Command>, core_file_path: &St
             commands.remove(0);
         }
     }
-
-    // cleans names that were put in by mariposa
-    commands.iter_mut().for_each(|x| remove_label(x));
     true
 }

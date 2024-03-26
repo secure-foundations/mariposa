@@ -85,7 +85,6 @@ pub fn shuffle_commands(commands: &mut Vec<concrete::Command>, seed: u64, lower:
     }
 
     intervals.into_iter().for_each(|(start, end)| {
-        println!("Shuffling interval: {}-{}", start, end);
         (&mut (*commands)[start..end]).shuffle(&mut rng);
     });}
 

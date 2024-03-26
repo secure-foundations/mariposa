@@ -4,7 +4,7 @@ from utils.system_utils import *
 from base.defs import MARIPOSA
 
 class MutCoreBuilder:
-    def __init__(self, input_query, solver, output_query, timeout):
+    def __init__(self, input_query, solver, output_query, timeout, ids_available):
         log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
         self.solver = solver
 
@@ -17,6 +17,7 @@ class MutCoreBuilder:
         self.core_log = f"gen/{name_hash}/z3-core.log"
         self.timeout = timeout
         self.output_query = output_query
+        self.ids_available = ids_available
 
         self.__create_label_query()
 
@@ -53,12 +54,17 @@ class MutCoreBuilder:
             log_info(f"{self.lbl_query} already exists")
             return
 
-        subprocess.run([
+        args = [
             MARIPOSA,
             "-i", self.input_query,
-            "-o", self.lbl_query, 
+            "-o", self.lbl_query,
             "--action=label-core",
-        ])
+        ]
+
+        if self.ids_available:
+            args.append("--ids-available")
+
+        subprocess.run(args)
 
         # we do not expect labeling to fail
         if not os.path.exists(self.lbl_query):

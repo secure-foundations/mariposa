@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import random
 import argparse, time, pickle, numpy as np
 from analysis.expr_analyzer import ExprAnalyzer
 from base.exper import Experiment
@@ -21,10 +22,10 @@ rule shake
     command = {MARIPOSA} -i $in -o $out -a shake --shake-log-path $log
 
 rule build-core
-    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 150 -s z3_4_12_5
+    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 120 -s z3_4_12_5 --ids-available
 
-rule add-labels
-    command = {MARIPOSA} -i $in -o $out -a label-core
+rule add-ids
+    command = {MARIPOSA} -i $in -o $out -a add-ids
 
 rule complete-core
     command = {QUERY_WIZARD} complete-core -i $in -o $out --core-query-path $core 
@@ -152,7 +153,8 @@ def set_up_fix_incomplete_core(subparsers):
     add_clear_option(p)
 
 def set_up_create_benchmark(subparsers):
-    subparsers.add_parser('create-benchmark', help='create a benchmark project (do not use this unless you know what you are doing)')
+    p = subparsers.add_parser('create-benchmark', help='create a benchmark project (do not use this unless you know what you are doing)')
+    add_clear_option(p)
 
 class NinjaPasta:
     def __init__(self, args, cmd):
@@ -231,6 +233,8 @@ class NinjaPasta:
         for in_path in list_smt2_files(in_proj.sub_root):
             base_name = os.path.basename(in_path)
             out_path = os.path.join(output_dir, base_name)
+            if os.path.exists(out_path):
+                continue
             self.ninja_stuff += [f"build {out_path}: build-core {in_path}\n"]
             self.expect_targets.add(out_path)
 
@@ -365,9 +369,8 @@ class NinjaPasta:
             self.expect_targets.add(o)
 
     def handle_create_benchmark(self):
-        self.output_dir = os.path.join(PROJ_ROOT, "bench/unstable/")
+        self.output_dir = "data/projs/bench_unstable/base.z3"
         log_info(f"output directory is set to {self.output_dir}")
-        # solver = FACT.get_solver_by_name("z3_4_12_5")
         ana = QueryAnalyzer("60nq")
         for gid in ["d_fvbkv", "d_lvbkv", "d_komodo", "fs_vwasm", "fs_dice"]:
             group = FACT.get_group(gid)
@@ -376,12 +379,13 @@ class NinjaPasta:
             exp = ExprAnalyzer(exp, ana)
 
             for qid in exp.get_overall()[Stability.UNSTABLE]:
-                print(qid)
-                break
-            break
-        
-        sys.exit(1)
-
+                i = proj.get_ext_path(qid)
+                o = os.path.join(self.output_dir, f"{gid}--{qid}.smt2")
+                if not os.path.exists(o):
+                    log_warn(f"skipping query {i}")
+                    continue
+                self.ninja_stuff += [f"build {o}: add-ids {i}\n"]
+        random.shuffle(self.ninja_stuff)
     def finalize(self, clear):
         if len(self.ninja_stuff) == 0:
             log_info("no targets to build")

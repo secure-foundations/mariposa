@@ -1,5 +1,4 @@
 use core::panic;
-use if_chain::if_chain;
 use pest::{iterators::Pair, Parser};
 use pest_derive::Parser;
 use std::{collections::BTreeMap, fs};
@@ -205,16 +204,19 @@ fn collect_quantifiers_rec(
 // }
 
 fn create_instance(term: &Term, args: &InstSExpr) {
-    if_chain! {
-        if let concrete::Term::Forall { vars, term } = term;
-        if let concrete::Term::Attributes { term, .. } = &**term;
-        if let InstSExpr::List(args) = args;
-        if vars.len() == args.len();
-        then {
-            println!("{}", term);
-        } else {
-            panic!("NYI");
-        }
+    let concrete::Term::Forall { vars, term } = term else {
+        return;
+    };
+    let concrete::Term::Attributes { term, .. } = &**term else {
+        return;
+    };
+    let InstSExpr::List(args) = args else {
+        return;
+    };
+    if vars.len() == args.len() {
+        println!("{}", term);
+    } else {
+        panic!("NYI");
     }
 }
 
