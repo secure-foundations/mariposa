@@ -330,6 +330,7 @@ pub fn count_commands_symbol_frequency(
     return (cmd_freq, use_cmd_count);
 }
 
+#[allow(dead_code)]
 pub fn print_commands_symbol_frequency(commands: &Vec<Command>, include_patterns: bool) {
     let (cmd_freq, use_cmd_count) = count_commands_symbol_frequency(commands, include_patterns);
 

@@ -57,7 +57,7 @@ struct Record {
     // qid to quantified instances
     quant_insts: BTreeMap<String, Vec<InstSExpr>>,
     // anonymous quantified instances
-    anon_quant_insts: Vec<(InstSExpr, Vec<InstSExpr>)>,
+    // anon_quant_insts: Vec<(InstSExpr, Vec<InstSExpr>)>,
 }
 
 impl Record {
@@ -67,7 +67,7 @@ impl Record {
         let mut record = Record {
             skolem_vars: BTreeMap::new(),
             quant_insts: BTreeMap::new(),
-            anon_quant_insts: Vec::new(),
+            // anon_quant_insts: Vec::new(),
         };
 
         CVC5InstParser::parse(Rule::file, &unparsed_file)

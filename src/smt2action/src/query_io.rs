@@ -112,10 +112,10 @@ where
         .collect()
 }
 
-struct ParseResult {
-    commands: Vec<concrete::Command>,
-    plain_total: usize,
-}
+// struct ParseResult {
+//     commands: Vec<concrete::Command>,
+//     plain_total: usize,
+// }
 
 pub fn parse_commands_from_file(
     file_path: &String,
@@ -179,7 +179,7 @@ pub struct QueryPrinter {
     writer: BufWriter<Box<dyn std::io::Write>>,
     out_file_path: Option<String>,
     dirty: bool,
-    pretty: bool,
+    _pretty: bool,
 }
 
 impl QueryPrinter {
@@ -198,14 +198,14 @@ impl QueryPrinter {
             writer,
             out_file_path,
             dirty: false,
-            pretty: false,
+            _pretty: false,
         }
     }
 
-    fn write(&mut self, s: &String) {
-        self.dirty = true;
-        write!(self.writer, "{}", s).unwrap();
-    }
+    // fn write(&mut self, s: &String) {
+    //     self.dirty = true;
+    //     write!(self.writer, "{}", s).unwrap();
+    // }
 
     pub fn dump_commands(&mut self, commands: &Vec<concrete::Command>) {
         self.dirty = true;
