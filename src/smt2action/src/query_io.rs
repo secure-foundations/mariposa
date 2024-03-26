@@ -1,4 +1,5 @@
 use smt2parser::{concrete, renaming, CommandStream};
+use std::collections::HashMap;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::{collections::HashSet, fs::File};
 
@@ -468,7 +469,6 @@ fn remove_cid(command: &mut concrete::Command) {
         for (key, value) in attributes {
             if key == &concrete::Keyword("named".to_owned()) {
                 if let concrete::AttributeValue::Symbol(concrete::Symbol(name)) = value {
-                    // check if name starts with "unsat-cores-dump-name-"
                     if name.starts_with(CID_PREFIX) {
                         // yuck but doesn't seem to affect performance significantly
                         temp = *new_term.clone();
@@ -482,3 +482,42 @@ fn remove_cid(command: &mut concrete::Command) {
         *command = concrete::Command::Assert { term: temp };
     }
 }
+
+pub struct AssertInfo {
+    cid: String,
+    qids: HashSet<String>,
+    term: concrete::Term,
+}
+
+fn load_mariposa_qids(command: &concrete::Command) {
+    
+}
+
+fn load_mariposa_ids(command: &concrete::Command) {
+    let concrete::Command::Assert { term } = command else {
+        return;
+    };
+    let concrete::Term::Attributes { term, attributes } = term else {
+        panic!("expecting attributes");
+    };
+    let mut cid = None;
+    attributes.iter().for_each(|(key, value)| {
+        if key != &concrete::Keyword("named".to_owned()) {
+            return;
+        }
+        let concrete::AttributeValue::Symbol(concrete::Symbol(name)) = value else {
+            return;
+        };
+        if name.starts_with(CID_PREFIX) {
+            cid = Some(name);
+        }
+    });
+    let Some(cid) = cid else {
+        panic!("expecting cid");
+    };
+
+}
+
+// pub fn load_mariposa_ids(commands: Vec<concrete::Command>) {
+
+// }

@@ -89,6 +89,12 @@ enum Action {
     InstCVC5,
 
     #[strum(
+        serialize = "inst-z3",
+        message = "read the Z3 instantiation log and add to the query"
+    )]
+    InstZ3,
+
+    #[strum(
         serialize = "add-ids",
         message = "add qids (to quantifiers) and cids (to assertions) to the query"
     )]
@@ -251,8 +257,8 @@ fn main() {
             query_mutate::rename_symbols(&mut commands, args.seed);
         }
         Action::Compose => {
-            query_mutate::shuffle_commands(&mut commands, args.seed, args.lower_asserts);
             query_mutate::rename_symbols(&mut commands, args.seed);
+            query_mutate::shuffle_commands(&mut commands, args.seed, args.lower_asserts);
         }
         Action::LabelCore => {
             core_export::label_asserts(&mut commands, args.ids_available);
@@ -292,6 +298,10 @@ fn main() {
             let inst_file_path = args.cvc5_inst_log_path.unwrap();
             term_inst_cvc5::inst_cvc5(&mut commands, &inst_file_path);
             return;
+        }
+        Action::InstZ3 => {
+            println!("error: inst-z3 not implemented yet");
+            exit(1);
         }
         Action::AddIds => {
             query_io::add_cids(&mut commands);

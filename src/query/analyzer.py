@@ -155,6 +155,7 @@ class QueryAnalyzer:
     def categorize_query(self, qs: QueryExpResult):
         if qs.is_dummy():
             return Stability.MISSING_E, None
+        qs.enforce_timeout(self._timeout)
 
         votes = dict()
 
@@ -179,7 +180,6 @@ class QueryAnalyzer:
     def categorize_queries(self, qss) -> Categorizer:
         cats = Categorizer([c for c in Stability])
         for qs in qss:
-            qs.enforce_timeout(self._timeout)
             res, _ = self.categorize_query(qs)
             cats.add_item(res.value, qs.qid)
         cats.finalize()

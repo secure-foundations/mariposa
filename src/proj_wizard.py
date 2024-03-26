@@ -48,6 +48,9 @@ rule verify
 rule trace-z3
     command = {QUERY_WIZARD} trace-z3 -i $in --output-log-path $out --timeout $timeout --mutation $mutation --seed $seed
 
+rule check-subset
+    command = {QUERY_WIZARD} subset-check $in $sub && touch $out
+
 """
 
 # rule instantiate
@@ -74,8 +77,7 @@ rule trace-z3
 # rule iterate-reduce-query
 #     command = python3 scripts/unsat_core_search.py reduce $in $in > $out
 
-# rule check-subset
-#     command = python3 scripts/diff_smt.py subset-check $in $sub && touch $out
+
 
 def set_up_create(subparsers):
     p = subparsers.add_parser('create', help='create a new project')
@@ -386,6 +388,7 @@ class NinjaPasta:
                     continue
                 self.ninja_stuff += [f"build {o}: add-ids {i}\n"]
         random.shuffle(self.ninja_stuff)
+
     def finalize(self, clear):
         if len(self.ninja_stuff) == 0:
             log_info("no targets to build")

@@ -95,7 +95,7 @@ def create_sum_table(cur, table_name):
 
 def get_vanilla_paths(cur, exp_table_name):
     res = cur.execute(f"""
-        SELECT query_path, result_code, elapsed_milli
+        SELECT vanilla_path, result_code, elapsed_milli
         FROM {exp_table_name}
         WHERE perturbation IS NULL""")
     vanilla_rows = res.fetchall()

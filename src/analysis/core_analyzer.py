@@ -1,11 +1,12 @@
 from ast import Dict
+import os
 from base.factory import FACT
 from base.project import KnownExt, ProjectGroup, ProjectType as PT
 from proj_wizard import NINJA_BUILD_RULES
 from query.analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
 from analysis.expr_analyzer import ExprAnalyzer
 from utils.analysis_utils import *
-from utils.query_utils import count_asserts
+from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner
 
 class CoreQueryStatus:
@@ -44,6 +45,12 @@ class CoreQueryStatus:
         self.patch = self.base
         self.patch_path = self.base_path
         self.patch_reason = self.br
+        
+    def sanity_check(self):
+        if os.path.exists(self.core_path):
+            log_check(is_assertion_subset(self.base_path, self.core_path), f"{self.core_path} is not a subset!")
+        if os.path.exists(self.extd_path):
+            log_check(is_assertion_subset(self.base_path, self.extd_path), f"{self.extd_path} is not a subset!")
 
 class CoreAnalyzer:
     def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
@@ -52,6 +59,7 @@ class CoreAnalyzer:
         base = group.get_project(PT.from_str("base.z3"))
         core = group.get_project(PT.from_str("core.z3"))
         extd = group.get_project(PT.from_str("extd.z3"))
+        self.group = group
 
         base = FACT.load_any_experiment(base)
         log_check(base.solver == solver, "base project is not using z3_4_12_5")
@@ -79,17 +87,18 @@ class CoreAnalyzer:
             eur = self.extd.get_unstable_reason(qid)
 
             cqs = CoreQueryStatus(qid, bs, bp, bur, cs, cp, cur, es, ep, eur)
+            # cqs.sanity_check()
             self.qids[qid] = cqs
 
         # self.__init_issue_status()
         # self.issues.print_status()
         # self.suggest_issue_fixes()
         # self.get_trace_candidate()
+        self.print_status()
 
+    def print_status(self):
         b, c = self.adjust_status()
-
-        
-        print_banner("Report " + group.gid)
+        print_banner("Report " + self.group.gid)
         print("")
 
         b.print_status(title="base")
@@ -123,8 +132,10 @@ class CoreAnalyzer:
             if qid in c[STB.STABLE]:
                 pres += 1
             total += 1
-        print(f"preserved: {pres}/{total} ({pres*100/total:.2f}%)")
-
+        if total > 0:
+            print(f"preserved: {pres}/{total} ({pres*100/total:.2f}%)")
+        else:
+            print("no stable queries")
         print("")
         print_banner("Instability Introduced")
 
@@ -196,6 +207,8 @@ class CoreAnalyzer:
             if ec / bc > 0.1:
                 print(bc, cc, ec)
                 print("./src/query_wizard.py complete-core", "-i", e, "--core-query-path", c, "-o", e)
+
+        print("")
 
     def get_no_file_core_qids(self):
         no_file = []
