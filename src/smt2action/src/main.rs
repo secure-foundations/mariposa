@@ -300,6 +300,7 @@ fn main() {
             return;
         }
         Action::InstZ3 => {
+            query_io::load_mariposa_ids(&commands);
             println!("error: inst-z3 not implemented yet");
             exit(1);
         }

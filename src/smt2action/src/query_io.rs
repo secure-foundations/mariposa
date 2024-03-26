@@ -1,5 +1,6 @@
 use smt2parser::{concrete, renaming, CommandStream};
 use std::collections::HashMap;
+use std::fmt;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::{collections::HashSet, fs::File};
 
@@ -485,22 +486,79 @@ fn remove_cid(command: &mut concrete::Command) {
 
 pub struct AssertInfo {
     cid: String,
-    qids: HashSet<String>,
+    /// qid to depth
+    qids: HashMap<String, usize>,
     term: concrete::Term,
 }
 
-fn load_mariposa_qids(command: &concrete::Command) {
-    
+impl fmt::Display for AssertInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "cid: {}\n", self.cid)?;
+        for (qid, depth) in self.qids.iter() {
+            write!(f, "qid: {} depth: {}\n", qid, depth)?;
+        }
+        write!(f, "term: {}", self.term)
+    }
 }
 
-fn load_mariposa_ids(command: &concrete::Command) {
+impl AssertInfo {
+    fn load_qids(&mut self, cur_term: &concrete::Term, depth: &mut usize) {
+        match cur_term {
+            concrete::Term::Application {
+                qual_identifier: _,
+                arguments,
+            } => {
+                for argument in arguments.iter() {
+                    self.load_qids(argument, depth)
+                }
+            }
+            concrete::Term::Let { var_bindings, term } => {
+                for var_binding in var_bindings.iter() {
+                    self.load_qids(&var_binding.1, depth)
+                }
+                self.load_qids(&term, depth)
+            }
+            concrete::Term::Forall { vars: _, term } => self.load_qids(&*term, depth),
+            concrete::Term::Exists { vars: _, term } => self.load_qids(&*term, depth),
+            concrete::Term::Attributes { term, attributes } => {
+                let mut qid = None;
+                for (key, value) in attributes {
+                    if key != &concrete::Keyword("qid".to_owned()) {
+                        continue;
+                    }
+                    let concrete::AttributeValue::Symbol(name) = value else {
+                        panic!("expecting symbol in qid");
+                    };
+                    if !name.to_string().starts_with(QID_PREFIX) {
+                        panic!("unexpected qid: {}", name);
+                    }
+                    qid = Some(name.to_string());
+                }
+                if let Some(qid) = qid {
+                    self.qids.insert(qid, *depth);
+                    *depth += 1;
+                }
+                self.load_qids(term, depth);
+            }
+            concrete::Term::Constant(_) => (),
+            concrete::Term::QualIdentifier(_) => (),
+            concrete::Term::Match { .. } => {
+                panic!("unsupported term: {:?}", cur_term)
+            }
+        }
+    }
+}
+
+fn load_ids(command: &concrete::Command) -> Option<AssertInfo> {
     let concrete::Command::Assert { term } = command else {
-        return;
+        return None;
     };
     let concrete::Term::Attributes { term, attributes } = term else {
         panic!("expecting attributes");
     };
+
     let mut cid = None;
+
     attributes.iter().for_each(|(key, value)| {
         if key != &concrete::Keyword("named".to_owned()) {
             return;
@@ -512,12 +570,20 @@ fn load_mariposa_ids(command: &concrete::Command) {
             cid = Some(name);
         }
     });
+
     let Some(cid) = cid else {
         panic!("expecting cid");
     };
-
+    let mut info = AssertInfo {
+        cid: cid.to_string(),
+        qids: HashMap::new(),
+        term: *term.clone(),
+    };
+    info.load_qids(&term, &mut 0);
+    Some(info)
 }
 
-// pub fn load_mariposa_ids(commands: Vec<concrete::Command>) {
-
-// }
+pub fn load_mariposa_ids(commands: &Vec<concrete::Command>) {
+    let info: Vec<AssertInfo> = commands.iter().filter_map(|x| load_ids(x)).collect();
+    info.iter().for_each(|x| println!("{}", x));
+}
