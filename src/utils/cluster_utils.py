@@ -58,6 +58,7 @@ def handle_manager(args, wargs):
     for i in range(args.total_parts):
         wargs = copy.deepcopy(wargs)
         wargs.part = str(Partition(i + 1, args.total_parts))
+        wargs.fix_missing = False
         job_queue.put(wargs)
 
     # NOTE: we assume number of workers is less than number of partitions
