@@ -26,7 +26,7 @@ S190X_HOSTS = [
 
 CTRL_HOST = "s1904"
 
-DEBUG_ENABLE = False
+DEBUG_ENABLE = True
 
 NINJA_BUILD_FILE = "build.ninja"
 

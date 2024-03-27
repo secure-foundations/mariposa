@@ -408,7 +408,8 @@ pub fn tree_shake(
         get_commands_symbol_def_alt(&commands, shake_max_symbol_frequency);
     let ref_trivial = Arc::new(ref_trivial);
     let defs = Arc::new(ref_defined);
-
+    let cmds_info = query_io::load_mariposa_ids(&commands);
+    let goal_index = commands.len() - 1;
     let goal_command = commands.pop().unwrap();
 
     let live = if shake_init_strategy == 0 {
@@ -491,9 +492,20 @@ pub fn tree_shake(
         std::fs::create_dir_all(prefix).unwrap();
         let mut log_file = std::fs::File::create(shake_log_path).unwrap();
         for (pos, stamp) in stamps.iter() {
-            writeln!(log_file, "{}|||{}", stamp, &commands[*pos]).unwrap();
+            if !cmds_info.contains_key(pos) {
+                if let Command::Assert { .. } = &commands[*pos] {
+                    panic!("{} not found", pos);
+                }
+            } else {
+                writeln!(log_file, "{}:{}", stamp, cmds_info[pos].cid).unwrap();
+            }
         }
-        writeln!(log_file, "0|||{}", &goal_command).unwrap();
+        for pos in cmds_info.keys() {
+            if !stamps.contains_key(pos) {
+                writeln!(log_file, "{}:{}", usize::MAX, cmds_info[pos].cid).unwrap();
+            }
+        }
+        writeln!(log_file, "0:{}", cmds_info[&goal_index].cid).unwrap();
     }
 
     if debug {

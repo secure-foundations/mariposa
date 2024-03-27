@@ -5,6 +5,7 @@ from analysis.core_analyzer import CoreAnalyzer
 from analysis.expr_analyzer import ExprAnalyzer
 from analysis.inst_analyzer import InstAnalyzer
 from analysis.perf_analyzer import PrefAnalyzer
+from analysis.shake_analyzer import ShakeAnalyzer
 from utils.option_utils import *
 from proj_wizard import *
 
@@ -50,6 +51,15 @@ def handle_core(args):
     # ba = ExprAnalyzer(exp, args.analyzer)
     # ba.get_unstable_reasons().print_status()
 
+def set_up_shake(subparsers):
+    p = subparsers.add_parser('shake', help='analyze shake')
+    add_input_dir_option(p, is_group=True)
+    add_analysis_options(p)
+
+def handle_shake(args):
+    group = args.input_group
+    shake = ShakeAnalyzer(group, args.analyzer)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")
     subparsers = parser.add_subparsers(dest='sub_command', help="mode to run analysis in")
@@ -59,6 +69,7 @@ if __name__ == '__main__':
     set_up_cvc5_inst(subparsers)
     set_up_unstable(subparsers)
     set_up_core(subparsers)
+    set_up_shake(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -73,5 +84,7 @@ if __name__ == '__main__':
         handle_unstable(args)
     elif args.sub_command == "core":
         handle_core(args)
+    elif args.sub_command == "shake":
+        handle_shake(args)
     else:
         parser.print_help()

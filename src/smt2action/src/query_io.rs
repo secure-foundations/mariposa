@@ -273,7 +273,15 @@ fn remove_debug_commands(commands: &mut Vec<concrete::Command>) -> (usize, usize
     }
 
     assert!(!check_sat_depth_zero || max_depth == 0);
-    assert!(max_depth <= 1);
+
+    // FIXME: F* queries will have deeply nested push/pop
+    // disable this check for now
+    // assert!(max_depth <= 1);
+    // alternatively, we can skip the remove_debug 
+
+    // we left the pushed scopes un-matched in the output
+    // that is we have no pops at the end
+    // which is fine for our purposes
 
     let mut index = 0;
     commands.retain(|_| {
@@ -485,10 +493,10 @@ fn remove_cid(command: &mut concrete::Command) {
 }
 
 pub struct AssertInfo {
-    cid: String,
+    pub cid: String,
     /// qid to depth
-    qids: HashMap<String, usize>,
-    term: concrete::Term,
+    pub qids: HashMap<String, usize>,
+    pub term: concrete::Term,
 }
 
 impl fmt::Display for AssertInfo {
@@ -583,7 +591,12 @@ fn load_ids(command: &concrete::Command) -> Option<AssertInfo> {
     Some(info)
 }
 
-pub fn load_mariposa_ids(commands: &Vec<concrete::Command>) {
-    let info: Vec<AssertInfo> = commands.iter().filter_map(|x| load_ids(x)).collect();
-    info.iter().for_each(|x| println!("{}", x));
+pub fn load_mariposa_ids(commands: &Vec<concrete::Command>) -> HashMap<usize, AssertInfo> {
+    commands
+        .iter()
+        .enumerate()
+        .map(|(i, x)| (i, load_ids(x)))
+        .filter(|(_, x)| x.is_some())
+        .map(|(i, x)| (i, x.unwrap()))
+        .collect()
 }

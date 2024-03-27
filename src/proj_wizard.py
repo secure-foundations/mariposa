@@ -22,7 +22,7 @@ rule shake
     command = {MARIPOSA} -i $in -o $out -a shake --shake-log-path $log
 
 rule build-core
-    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 120 -s z3_4_12_5 --ids-available
+    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 10 -s z3_4_12_5 --ids-available
 
 rule add-ids
     command = {MARIPOSA} -i $in -o $out -a add-ids
@@ -51,6 +51,8 @@ rule trace-z3
 rule check-subset
     command = {QUERY_WIZARD} subset-check $in $sub && touch $out
 
+rule shake-log
+    command = {MARIPOSA} -i $in -a shake --shake-log-path $out
 """
 
 # rule instantiate
@@ -68,16 +70,11 @@ rule check-subset
 # rule strip
 #     command = ./target/release/mariposa -i $in -o $out -m remove-unused
 
-# rule complete-mini-query
-#     command = python3 scripts/unsat_core_search.py complete $in $hint $out > $out.log
-
 # rule reduce-query
 #     command = python3 scripts/unsat_core_search.py reduce $in $out > $out.log
 
 # rule iterate-reduce-query
 #     command = python3 scripts/unsat_core_search.py reduce $in $in > $out
-
-
 
 def set_up_create(subparsers):
     p = subparsers.add_parser('create', help='create a new project')
@@ -158,6 +155,12 @@ def set_up_create_benchmark(subparsers):
     p = subparsers.add_parser('create-benchmark', help='create a benchmark project (do not use this unless you know what you are doing)')
     add_clear_option(p)
 
+def set_up_log_shake(subparsers):
+    p = subparsers.add_parser('log-shake', help='create shake logs for a project')
+    add_input_dir_option(p)
+    add_clear_option(p)
+    add_ninja_log_option(p)
+
 class NinjaPasta:
     def __init__(self, args, cmd):
         self.start_time = int(time.time())
@@ -172,6 +175,8 @@ class NinjaPasta:
             return
 
         ext = None
+
+        args.record_build_stats = False
 
         if args.sub_command == "create":
             self.handle_create(args.new_project_name, args.input_dir)
@@ -201,6 +206,8 @@ class NinjaPasta:
             self.handle_fix_incomplete_core(args.input_group)
         elif args.sub_command == "create-benchmark":
             self.handle_create_benchmark()
+        elif args.sub_command == "log-shake":
+            self.handle_create_shake_log(args.input_proj)
         else:
             parser.print_help()
             return
@@ -388,6 +395,14 @@ class NinjaPasta:
                     continue
                 self.ninja_stuff += [f"build {o}: add-ids {i}\n"]
         random.shuffle(self.ninja_stuff)
+        
+    def handle_create_shake_log(self, in_proj):
+        self.output_dir = in_proj.get_log_dir(KnownExt.SHK_LOG)
+        for qid in in_proj.qids:
+            i = in_proj.get_ext_path(qid)
+            o = in_proj.get_ext_path(qid, KnownExt.SHK_LOG)
+            self.ninja_stuff += [f"build {o}: shake-log {i}\n"]
+            self.expect_targets.add(o)
 
     def finalize(self, clear):
         if len(self.ninja_stuff) == 0:
@@ -493,6 +508,7 @@ if __name__ == "__main__":
     set_up_fix_missing_core(subparsers)
     set_up_fix_incomplete_core(subparsers)
     set_up_create_benchmark(subparsers)
+    set_up_log_shake(subparsers)
 
     cmd = " ".join(sys.argv)
 

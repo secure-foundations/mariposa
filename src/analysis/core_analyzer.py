@@ -46,6 +46,9 @@ class CoreQueryStatus:
         self.patch_path = self.base_path
         self.patch_reason = self.br
         
+    def core_is_enabled(self):
+        return self.patch_path != self.base_path
+
     def sanity_check(self):
         if os.path.exists(self.core_path):
             log_check(is_assertion_subset(self.base_path, self.core_path), f"{self.core_path} is not a subset!")
@@ -56,16 +59,16 @@ class CoreAnalyzer:
     def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
         solver = FACT.get_solver_by_name("z3_4_12_5")
 
-        base = group.get_project(PT.from_str("base.z3"))
-        core = group.get_project(PT.from_str("core.z3"))
-        extd = group.get_project(PT.from_str("extd.z3"))
+        self.p_base = group.get_project(PT.from_str("base.z3"))
+        self.p_core = group.get_project(PT.from_str("core.z3"))
+        self.p_extd = group.get_project(PT.from_str("extd.z3"))
         self.group = group
 
-        base = FACT.load_any_experiment(base)
+        base = FACT.load_any_experiment(self.p_base)
         log_check(base.solver == solver, "base project is not using z3_4_12_5")
-        core = FACT.load_any_experiment(core)
+        core = FACT.load_any_experiment(self.p_core)
         log_check(core.solver == solver, "core project is not using z3_4_12_5")
-        extd = FACT.build_experiment("default", extd, solver)
+        extd = FACT.build_experiment("default", self.p_extd, solver)
 
         self.base = ExprAnalyzer(base, ana)
         self.core = ExprAnalyzer(core, ana)
@@ -90,16 +93,19 @@ class CoreAnalyzer:
             # cqs.sanity_check()
             self.qids[qid] = cqs
 
-        # self.__init_issue_status()
-        # self.issues.print_status()
-        # self.suggest_issue_fixes()
+        # self.adjust_status()
+        self.__init_issue_status()
+        self.issues.print_status()
+        self.suggest_issue_fixes()
         # self.get_trace_candidate()
-        self.print_status()
+        # self.print_status()
 
     def print_status(self):
-        b, c = self.adjust_status()
         print_banner("Report " + self.group.gid)
         print("")
+
+        b = self.base_adj
+        c = self.core_adj
 
         b.print_status(title="base")
         c.print_status(title="core")
@@ -239,7 +245,9 @@ class CoreAnalyzer:
 
         base_adj.finalize()
         core_adj.finalize()
-        return base_adj, core_adj
+
+        self.base_adj = base_adj
+        self.core_adj = core_adj
 
     def get_trace_candidate(self):
         core_ok = 0

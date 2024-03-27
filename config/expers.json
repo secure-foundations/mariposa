@@ -18,6 +18,9 @@
             "quake"
         ]
     },
+    "verify": {
+        "num_mutants": 0
+    },
     "debug": {
         "mutations": [
             "shuffle",

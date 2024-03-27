@@ -49,6 +49,7 @@ class KnownExt(enum.Enum):
     SMT2 = "smt2"
     CVC5_INST = "cvc5-inst" # cvc5 instantiations at unsat
     Z3_TRACE = "z3-trace"
+    SHK_LOG = "shk-log"
 
     def __str__(self):
         return self.value

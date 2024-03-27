@@ -86,7 +86,7 @@ def run_tasks(worker, queue):
             break
 
         elapsed = time.time() - start_time
-        if elapsed - prev_time > 60:
+        if elapsed - prev_time > 120:
             prev_time = elapsed
             qsize = try_get_size(queue)
             print_eta(elapsed, qsize, init_size)
@@ -122,12 +122,12 @@ class Runner:
         self.update_experiment(mqids)
 
     def __run(self, tasks):
+        random.shuffle(tasks)
+
         for task in tasks:
             self.task_queue.put(task)
 
         log_info(f"running {len(tasks)} tasks")
-
-        random.shuffle(tasks)
 
         processes = []
 
