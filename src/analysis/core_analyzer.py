@@ -93,10 +93,10 @@ class CoreAnalyzer:
             # cqs.sanity_check()
             self.qids[qid] = cqs
 
-        # self.adjust_status()
-        self.__init_issue_status()
-        self.issues.print_status()
-        self.suggest_issue_fixes()
+        self.adjust_status()
+        # self.__init_issue_status()
+        # self.issues.print_status()
+        # self.suggest_issue_fixes()
         # self.get_trace_candidate()
         # self.print_status()
 

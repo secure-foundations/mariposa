@@ -211,7 +211,7 @@ def handle_data_sync(input_dir, clear):
 
         if clear:
             log_warn(f"force syncing on {host}")
-            run_command_over_ssh(host, f"rm -r mariposa/{input_dir}")
+            run_command_over_ssh(host, f"rm -r ~/mariposa/{input_dir}")
             lines.append(f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'")
         else:
             if int(r_std) != file_count:
@@ -242,4 +242,16 @@ def handle_code_sync():
         if host == "s1904":
             continue
         remote_cmd = f"""ssh {host} "(cd mariposa; rm -r data/dbs/ ; rm -r gen/ ; git checkout master; git pull; cd src/smt2action/; cargo build --release) &> /dev/null &" """
-        print(remote_cmd)
+        log_info("running " + remote_cmd)
+        os.system(remote_cmd)
+
+def handle_stop():
+    print("run the following to stop all workers")
+    cmd = "ps -aux | grep 'python3 src/exper_wizard.py' | awk  {'print $2'} | xargs kill -9"
+
+    for host in S190X_HOSTS:
+        if host == "s1904":
+            continue
+        remote_cmd = f"""ssh {host} "{cmd}" """
+        log_info("running " + remote_cmd)
+        os.system(remote_cmd)

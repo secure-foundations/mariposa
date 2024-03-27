@@ -267,9 +267,12 @@ class ProjectGroup:
             sub_proj = Project(self.gid, sub_proj)
             self.projects[sub_proj.full_name] = sub_proj
 
-    def get_project(self, ptype: ProjectType) -> Project:
+    def get_project(self, ptype: ProjectType, build=False) -> Project:
         fn = full_proj_name(self.gid, ptype)
-        log_check(fn in self.projects, f"no such project {fn} under {self.gid}")
+        if not build:
+            log_check(fn in self.projects, f"no such project {fn} under {self.gid}")
+        else:
+            self.projects[fn] = Project(self.gid, ptype)
         return self.projects[fn]
     
     def get_projects(self):

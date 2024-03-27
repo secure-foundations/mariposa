@@ -52,6 +52,9 @@ def set_up_info(subparsers):
 def set_up_code_sync(subparsers):
     p = subparsers.add_parser('code-sync', help='update the cluster')
 
+def set_up_stop_all(subparsers):
+    p = subparsers.add_parser('stop-all', help='stop all workers and manager on the cluster')
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Experiment Wizard is a tool for testing SMT proof stability. this is the main tool to run experiments.")
 
@@ -66,6 +69,7 @@ if __name__ == '__main__':
     set_up_code_sync(subparsers)
     set_up_recovery(subparsers)
     set_up_update(subparsers)
+    set_up_stop_all(subparsers)
 
     args = parser.parse_args()
     wargs = copy.deepcopy(args)
@@ -89,5 +93,7 @@ if __name__ == '__main__':
         handle_code_sync()
     elif args.sub_command == "recovery":
         handle_recovery(args)
+    elif args.sub_command == "stop-all":
+        handle_stop()
     else:
         parser.print_help()

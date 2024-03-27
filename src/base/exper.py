@@ -318,7 +318,7 @@ solver: {self.solver}"""
             self.insert_sum_row(cur, v_path, v_rcode, v_time)
         conclude(con)
 
-        log_info("done post processing exp data")
+        log_info("\ndone post processing exp data")
 
     def sum_table_exists(self):
         # print(self.db_path, self.sum_table_name)
