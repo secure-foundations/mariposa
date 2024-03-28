@@ -160,6 +160,7 @@ class CVC5Solver(Solver):
             query_path,
             "--quiet",
             f"--tlimit-per={time_limit * 1000}",
+            "--enum-inst",
         ]
         if seeds is not None:
             command += [f"--sat-random-seed={seeds}",

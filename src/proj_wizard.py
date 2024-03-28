@@ -218,7 +218,7 @@ class NinjaPasta:
             log_check(ext != None, "extension not intended for build stats!")
             build_meta_path = args.input_proj.get_build_meta_path(ext)
             self.save_build_stats(build_meta_path)
-        
+
         count = subprocess_run(f"ls {self.output_dir} | wc -l", shell=True)[0]
         log_info(f"generated {count} files in {self.output_dir}")
 
