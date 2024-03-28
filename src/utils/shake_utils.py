@@ -60,11 +60,6 @@ def debug_shake(input_query_path, core_query_path, input_log_path):
     
     print("")
 
-    missing = set()
-    for cid in core_cids:
-        if np.isnan(scores[cid]):
-            missing.add(cid)
-
     base_levels = dict()
     for cid, score in scores.items():
         if score not in base_levels:
@@ -79,12 +74,18 @@ def debug_shake(input_query_path, core_query_path, input_log_path):
             core_levels[score] = 0
         core_levels[score] += 1
 
+    missing = 0
     for level in sorted(base_levels):
-        print(f"layer {level}:\t{base_levels[level]}\t{core_levels.get(level, 0)}")
+        core_count = core_levels.get(level, 0)
+        if np.isnan(level):
+            missing = core_count
+        print(f"layer {level}:\t{base_levels[level]}\t{core_count}")
+    
+    if missing == 0:
+        return
 
-    print("missing core: ", len(missing))
-    for cid in missing:
-        print(f"{cid}: {base_cids[cid]}")
+    print("missing core: ", missing)
 
-    # for threshold in range(max_base_score):
-        # print(f"{cid}: {base_cids[cid]}")
+    for cid in core_cids:
+        if np.isnan(scores[cid]):
+            print(f"{cid}: {base_cids[cid]}")

@@ -34,18 +34,13 @@ class ShakeAnalyzer(CoreAnalyzer):
         shake = FACT.load_any_experiment(self.p_shake)
         self.shake = ExprAnalyzer(shake, ana)
 
-        # in_complete = 0
-        ratios = []
-        diff = 0
 
+    def check_shake_perf(self):
         for qid, qcs in self.qids.items():
             shake_log = self.p_base.get_ext_path(qid, KnownExt.SHK_LOG)
             # rc, tt = self.shake[qid].get_original_status()
             # shake_path = self.p_shake.get_ext_path(qid)
 
-            # if tt > 60000:
-            #     print("timeout")
-            #     os.system(f"rm {shake_path}")
             print("base:", qcs.base)
             print("patch:", qcs.patch)
 

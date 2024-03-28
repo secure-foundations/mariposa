@@ -1,0 +1,10 @@
+{
+    "file": "logs/heaps-simpler3.log",
+    "reuses": false,
+    "verbose": false,
+    "save_all_data": true,
+    "sort_by": "cost",
+    "number_inst": 250,
+    "timeout": 0,
+    "line_limit": 0
+}

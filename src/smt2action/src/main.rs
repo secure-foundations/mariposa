@@ -6,6 +6,8 @@ use clap::Parser;
 // use pattern_removal::remove_patterns;
 use smt2parser::concrete;
 
+use crate::term_inst_z3::handle_z3_trace;
+
 // use std::collections::{BTreeMap, HashSet};
 // use std::vec;
 // mod pretty_print;
@@ -20,6 +22,7 @@ mod query_mutate;
 mod term_match;
 
 mod term_inst_cvc5;
+mod term_inst_z3;
 mod term_substitute;
 mod tree_shake;
 mod tree_shake_idf;
@@ -118,9 +121,13 @@ struct Args {
     #[arg(short, long)]
     in_query_path: String,
 
-    /// input query path
+    /// input CVC5 instantiation log path
     #[arg(long)]
     cvc5_inst_log_path: Option<String>,
+
+    /// input Z3 trace log path
+    #[arg(long)]
+    z3_trace_log_path: Option<String>,
 
     /// output query path
     #[arg(short, long)]
@@ -292,7 +299,7 @@ fn main() {
         }
         Action::InstCVC5 => {
             if args.cvc5_inst_log_path.is_none() {
-                println!("error: inst-cvc5 requires a CVC5 instantiation log file");
+                println!("[ERROR] inst-cvc5 requires a CVC5 instantiation log file");
                 exit(1);
             }
             let inst_file_path = args.cvc5_inst_log_path.unwrap();
@@ -300,7 +307,15 @@ fn main() {
             return;
         }
         Action::InstZ3 => {
-            query_io::load_mariposa_ids(&commands);
+            let path = std::path::Path::new(args.z3_trace_log_path.as_ref().unwrap());
+
+            if !path.is_file() {
+                println!("[ERROR] inst-z3 requires a Z3 trace log file");
+                exit(1);
+            }
+
+            handle_z3_trace(path, &commands);
+
             println!("error: inst-z3 not implemented yet");
             exit(1);
         }
