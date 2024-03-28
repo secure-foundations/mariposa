@@ -565,6 +565,17 @@ fn load_ids(command: &concrete::Command) -> Option<AssertInfo> {
         panic!("expecting attributes");
     };
 
+    let cid = get_attr_cid(attributes);
+    let mut info = AssertInfo {
+        cid: cid.to_string(),
+        qids: HashMap::new(),
+        term: *term.clone(),
+    };
+    info.load_qids(&term, &mut 0);
+    Some(info)
+}
+
+pub fn get_attr_cid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String {
     let mut cid = None;
 
     attributes.iter().for_each(|(key, value)| {
@@ -582,14 +593,30 @@ fn load_ids(command: &concrete::Command) -> Option<AssertInfo> {
     let Some(cid) = cid else {
         panic!("expecting cid");
     };
-    let mut info = AssertInfo {
-        cid: cid.to_string(),
-        qids: HashMap::new(),
-        term: *term.clone(),
-    };
-    info.load_qids(&term, &mut 0);
-    Some(info)
+    cid
 }
+
+pub fn get_attr_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String {
+    let mut qid = None;
+
+    attributes.iter().for_each(|(key, value)| {
+        if key != &concrete::Keyword("qid".to_owned()) {
+            return;
+        }
+        let concrete::AttributeValue::Symbol(concrete::Symbol(name)) = value else {
+            return;
+        };
+        if name.starts_with(QID_PREFIX) {
+            qid = Some(name);
+        }
+    });
+
+    let Some(qid) = qid else {
+        panic!("expecting qid");
+    };
+    qid
+}
+
 
 pub fn load_mariposa_ids(commands: &Vec<concrete::Command>) -> HashMap<usize, AssertInfo> {
     commands

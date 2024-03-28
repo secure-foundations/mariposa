@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt, hash::Hash, sync::Arc};
+use std::{collections::{HashMap, HashSet}, fmt, hash::Hash, sync::Arc};
 
 use crate::{items::*, parsers::z3::z3parser::Z3Parser};
 
@@ -79,7 +79,7 @@ pub struct DisplayCtxt<'a> {
     pub use_mathematical_symbols: bool,
     pub s_expr_mode: bool,
 
-    pub symbols: Option<HashSet<String>>,
+    pub symbols: Option<HashMap<String, String>>,
 }
 
 mod private {
@@ -328,10 +328,15 @@ impl ProofOrApp {
             name = "ite";
         }
         if data.children().is_empty() {
-            if !ctxt.symbols.as_ref().map_or(false, |symbols| symbols.contains(name)) {
-                // println!("\n\tUnknown symbol: {}", name);
-            }
-            write!(f, "{name}")?;
+            let new_name = if ctxt.symbols.as_ref().map_or(false, |symbols| symbols.contains_key(name)) {
+                ctxt.symbols.as_ref().unwrap().get(name).unwrap()
+            } else {
+                name
+            }; 
+            // if !ctxt.symbols.as_ref().map_or(false, |symbols| symbols.contains_key(name)) {
+            //     // println!("\n\tUnknown symbol: {}", name);
+            // }
+            write!(f, "{new_name}")?;
             return Ok(());
         }
         write!(f, "(")?;

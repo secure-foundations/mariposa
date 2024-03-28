@@ -313,11 +313,7 @@ fn main() {
                 println!("[ERROR] inst-z3 requires a Z3 trace log file");
                 exit(1);
             }
-
-            handle_z3_trace(path, &commands);
-
-            println!("error: inst-z3 not implemented yet");
-            exit(1);
+            handle_z3_trace(path, &mut commands);
         }
         Action::AddIds => {
             query_io::add_cids(&mut commands);
