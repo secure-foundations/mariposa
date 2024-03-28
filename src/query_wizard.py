@@ -10,6 +10,7 @@ from utils.option_utils import *
 from query.core_builder import MutCoreBuilder
 from query.proof_builder import ProofBuilder, check_lfsc_proof
 from utils.query_utils import convert_verus_smtlib, emit_mutant_query, emit_quake_query, is_assertion_subset
+from utils.shake_utils import create_shake_query_from_log, debug_shake
 from utils.system_utils import get_name_hash, log_check, log_info, remove_file
 
 def setup_build_core(subparsers):
@@ -103,6 +104,19 @@ def setup_complete_core(subparsers):
     add_solver_option(p)
     add_timeout_option(p)
 
+def setup_debug_shake(subparsers):
+    p = subparsers.add_parser('debug-shake', help='debug shake')
+    add_input_query_option(p)
+    add_input_log_option(p)
+    p.add_argument("--core-query-path", required=True, help="the core query")
+
+def setup_create_shake(subparsers):
+    p = subparsers.add_parser('create-shake', help='create shake query')
+    add_input_query_option(p)
+    add_input_log_option(p)
+    add_output_query_option(p)
+    p.add_argument("--max-score", required=True, help="the maximum score")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Query Wizard operates on the single-query level. Typically, the input is a single smt2 query, and the output is a new query and/or a log file. Please note there are operations that in the Rust codebase that are not exposed here. Instead, use the built binary directly.")
     subparsers = parser.add_subparsers(dest='sub_command', help="the sub-command to run")
@@ -117,6 +131,8 @@ if __name__ == "__main__":
     setup_trace_z3(subparsers)
     setup_check_subset(subparsers)
     setup_complete_core(subparsers)
+    setup_debug_shake(subparsers)
+    setup_create_shake(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -172,5 +188,12 @@ if __name__ == "__main__":
         open(args.output_log_path, "w+").write("verified")
     elif args.sub_command == "check-subset":
         log_check(is_assertion_subset(args.input_query_path, args.subset_query), f"{args.subset_query} is not a subset of {args.input_query_path}")
+    elif args.sub_command == "debug-shake":
+        debug_shake(args.input_query_path, args.core_query_path, args.input_log_path)
+    elif args.sub_command == "create-shake":
+        create_shake_query_from_log(args.input_query_path, 
+                                    args.input_log_path, 
+                                    int(args.max_score),
+                                    args.output_query_path)
     else:
         parser.print_help()

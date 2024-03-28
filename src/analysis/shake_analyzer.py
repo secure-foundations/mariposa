@@ -11,6 +11,8 @@ from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner
 from utils.shake_utils  import *
 import numpy as np
+from tqdm import tqdm
+import filecmp
 
 def check_incomplete(oracle_path, depths):
     print(oracle_path)
@@ -20,39 +22,63 @@ def check_incomplete(oracle_path, depths):
         m = re.search(CID_PATTERN, line)
         assert m
         cid = str(m.group(1))
-        if depths[cid] == -1:
+        if np.isnan(depths[cid]):
             print(line, end="")
     print("..")
     
-
 class ShakeAnalyzer(CoreAnalyzer):
     def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
         super().__init__(group, ana)
-        self.shake_p = group.get_project(PT.from_str("shko.z3"), build=True)
+        self.p_shake = group.get_project(PT.from_str("shko.z3"), build=True)
+
+        shake = FACT.load_any_experiment(self.p_shake)
+        self.shake = ExprAnalyzer(shake, ana)
+
         # in_complete = 0
-        cats = Categorizer()
         ratios = []
+        diff = 0
 
         for qid, qcs in self.qids.items():
-            shake_log = self.p_base.get_ext_path(
-                qid, KnownExt.SHK_LOG)
+            shake_log = self.p_base.get_ext_path(qid, KnownExt.SHK_LOG)
+            # rc, tt = self.shake[qid].get_original_status()
+            # shake_path = self.p_shake.get_ext_path(qid)
+
+            # if tt > 60000:
+            #     print("timeout")
+            #     os.system(f"rm {shake_path}")
+            print("base:", qcs.base)
+            print("patch:", qcs.patch)
+
+            if qid not in self.shake:
+                print("shko: TOS!!")
+            else:
+                print("shko:", self.shake.get_query_stability(qid))
+                self.shake[qid].print_status(5)
+
+            print("./src/query_wizard.py debug-shake", "-i %s --core-query-path %s --input-log-path %s" % (qcs.base_path, qcs.patch_path, shake_log))
+
+            print("")
+
+    def create_shake_queries(self):
+        cats = Categorizer()
+
+        for qid, qcs in self.qids.items():
+            shake_log = self.p_base.get_ext_path(qid, KnownExt.SHK_LOG)
+            shake_path = self.p_shake.get_ext_path(qid)
+
             scores = parse_shake_log(shake_log)
-            out_path = self.shake_p.get_ext_path(qid)
+
+            max_base_score = max(scores.values())
+            oracle = max(int(max_base_score / 3.1), 1)
 
             if qcs.core_is_enabled():
                 core_cids = load_query_cids(qcs.patch_path)
-                core_scores = [scores[cid] for cid in core_cids]
-
-                if min(core_scores) == -1:
+                core_scores = [scores[cid] for cid in core_cids.keys()]
+                if np.nan in core_scores:
                     cats.add_item("shake incomplete", qid)
-                    # check_incomplete(qcs.patch_path, depths)
-                else:
-                    # ratios += [max(scores.values())/max(core_scores)]
-                    cats.add_item("core enabled", qid)
-                create_shake_query(qcs.base_path, out_path, scores, max(core_scores))
-            else:
-                create_shake_query(qcs.base_path, out_path, scores, int(max(scores.values()) / 3.1))
-        # ratios = np.array(ratios)
-        # print(np.mean(ratios))
+                oracle = max(core_scores)
+            print(oracle)
+            create_shake_query(qcs.base_path, shake_path, scores, oracle)
+
         cats.finalize()
         cats.print_status()

@@ -237,18 +237,14 @@ class Project:
         return os.path.join(NINJA_REPORTS_DIR, 
                             f"{self.full_name}.{ext}.pkl")
 
-# class QueryFileMapper:
-#     def __init__(self, query_path):
-#         self.query_map = dict()
-
 class ProjectGroup:
     def __init__(self, name, groot):
         self.gid = name
         self.groot = groot
         self.projects = dict()
         self.__init_sub_projs()
-        self.report_dir = os.path.join(REPORT_ROOT, self.gid)
-        create_dir(self.report_dir)
+        # self.report_dir = os.path.join(REPORT_ROOT, self.gid)
+        # create_dir(self.report_dir)
 
     def __lt__(self, other):
         return self.gid < other.gid

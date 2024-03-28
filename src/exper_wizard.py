@@ -2,7 +2,7 @@
 
 import argparse
 import copy
-from utils.cluster_utils import handle_code_sync, handle_data_sync, handle_manager, handle_recovery, handle_code_sync, handle_worker
+from utils.cluster_utils import handle_code_sync, handle_data_sync, handle_manager, handle_recovery, handle_code_sync, handle_stop, handle_worker
 from utils.local_utils import handle_single, handle_multiple, handle_info, handle_update
 from utils.option_utils import *
 from proj_wizard import *
