@@ -1,4 +1,9 @@
-use std::{collections::{HashMap, HashSet}, fmt, hash::Hash, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt,
+    hash::Hash,
+    sync::Arc,
+};
 
 use crate::{items::*, parsers::z3::z3parser::Z3Parser};
 
@@ -131,11 +136,7 @@ mod private {
             self.bind_power = old;
             result
         }
-        pub(super) fn with_term<T>(
-            &mut self,
-            term: TermIdx,
-            f: impl FnOnce(&mut Self) -> T,
-        ) -> T {
+        pub(super) fn with_term<T>(&mut self, term: TermIdx, f: impl FnOnce(&mut Self) -> T) -> T {
             let term = std::mem::replace(&mut self.term, term);
             let result = f(self);
             self.term = term;
@@ -262,11 +263,13 @@ impl<'a: 'b, 'b> DisplayWithCtxt<DisplayCtxt<'b>, DisplayData<'b>> for &'a Term 
                     None => write!(f, "[synthetic]")?,
                     Some(id) => {
                         let namespace = &ctxt.parser.strings[id.namespace];
-                        let id = id.id.map(|id| (u32::from(id) - 1).to_string()).unwrap_or_default();
+                        let id = id
+                            .id
+                            .map(|id| (u32::from(id) - 1).to_string())
+                            .unwrap_or_default();
                         write!(f, "[{namespace}#{id}]")?
                     }
                 }
-
             }
             if let Some(meaning) = ctxt.parser.meaning(data.term) {
                 write!(f, "{}", meaning.with_data(ctxt, data))?;
@@ -301,8 +304,15 @@ impl<'a, 'b> DisplayWithCtxt<DisplayCtxt<'b>, DisplayData<'b>> for &'a TermKind 
     }
 }
 
-fn display_child<'a, 'b, 'c, 'd>(f: &mut fmt::Formatter<'_>, child: TermIdx, ctxt: &'a DisplayCtxt<'b>, data: &'c mut DisplayData<'b>) -> fmt::Result {
-    data.with_term(child, |data| write!(f, "{}", ctxt.parser[child].with_data(ctxt, data)))
+fn display_child<'a, 'b, 'c, 'd>(
+    f: &mut fmt::Formatter<'_>,
+    child: TermIdx,
+    ctxt: &'a DisplayCtxt<'b>,
+    data: &'c mut DisplayData<'b>,
+) -> fmt::Result {
+    data.with_term(child, |data| {
+        write!(f, "{}", ctxt.parser[child].with_data(ctxt, data))
+    })
 }
 
 enum ProofOrAppKind<'a> {
@@ -314,10 +324,8 @@ enum ProofOrAppKind<'a> {
     Proof(&'a str),
 }
 
-
-
 impl ProofOrApp {
-    fn fmt_s_expr<'a,'b>(
+    fn fmt_s_expr<'a, 'b>(
         self,
         f: &mut fmt::Formatter<'_>,
         ctxt: &DisplayCtxt<'b>,
@@ -327,20 +335,31 @@ impl ProofOrApp {
         if name == "if" {
             name = "ite";
         }
+
+        let new_name = if ctxt.symbols.as_ref().is_none()
+            || name == "ite"
+            || name == "+"
+            || name == "*"
+            || name == "not"
+            || name == "or"
+            || name == "true"
+            || name == "false"
+        {
+            name
+        } else {
+            let res = ctxt.symbols.as_ref().unwrap().get(name);
+            if res.is_none() {
+                return fmt::Result::Err(fmt::Error);
+            }
+            res.unwrap()
+        };
+
         if data.children().is_empty() {
-            let new_name = if ctxt.symbols.as_ref().map_or(false, |symbols| symbols.contains_key(name)) {
-                ctxt.symbols.as_ref().unwrap().get(name).unwrap()
-            } else {
-                name
-            }; 
-            // if !ctxt.symbols.as_ref().map_or(false, |symbols| symbols.contains_key(name)) {
-            //     // println!("\n\tUnknown symbol: {}", name);
-            // }
-            write!(f, "{new_name}")?;
+            write!(f, "{}", new_name)?;
             return Ok(());
         }
-        write!(f, "(")?;
-        write!(f, "{name}")?;
+
+        write!(f, "({}", new_name)?;
         for (idx, child) in data.children().iter().enumerate() {
             write!(f, " ")?;
             display_child(f, *child, ctxt, data)?;
@@ -387,7 +406,6 @@ impl<'a, 'b> DisplayWithCtxt<DisplayCtxt<'b>, DisplayData<'b>> for &'a ProofOrAp
                 let child = data.children()[0];
                 write!(f, "{op}")?;
                 display_child(f, child, ctxt, data)
-                
             }),
             Inline(op) => data.with_bind_power(INFIX_BIND, |data, bind_power| {
                 let need_brackets = bind_power >= INFIX_BIND;

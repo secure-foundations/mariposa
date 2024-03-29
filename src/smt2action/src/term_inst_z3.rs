@@ -1,11 +1,6 @@
 use core::panic;
 use pest::{iterators::Pair, Parser};
 use pest_derive::Parser;
-use std::{
-    collections::{BTreeMap, HashMap, HashSet},
-    fs, path,
-};
-
 use smt2parser::{
     concrete::{self, Command, Keyword, Sort, Symbol, Term},
     visitors::AttributeValue,
@@ -15,8 +10,13 @@ use smt_log_parser::{
     items::{MatchKind, QuantKind, Quantifier, TermIdx},
     LogParser, Z3Parser,
 };
+use std::fmt::Write;
+use std::{
+    collections::{HashMap, HashSet},
+    path,
+};
 
-use crate::query_io::{self, get_attr_cid, get_attr_qid};
+use crate::query_io::{self, get_attr_qid};
 
 fn get_symbols(commands: &Vec<concrete::Command>) -> HashMap<String, String> {
     let mut symbols = HashSet::new();
@@ -62,32 +62,40 @@ fn get_symbols(commands: &Vec<concrete::Command>) -> HashMap<String, String> {
             } else {
                 (x.clone(), x)
             }
-        }).collect()
+        })
+        .collect()
 }
 
 struct Inserter {
     simple_function_ids: HashSet<String>,
+    total_qi_count: usize,
+    skipped_qi_count: usize,
+    failed_qi_count: usize,
 }
 
 impl Inserter {
     fn new() -> Self {
         Inserter {
             simple_function_ids: HashSet::new(),
+            total_qi_count: 0,
+            skipped_qi_count: 0,
+            failed_qi_count: 0,
         }
     }
 
-    fn introduce_simple_forall(&mut self, command: &concrete::Command) -> Option<concrete::Command> {
+    fn introduce_simple_forall(
+        &mut self,
+        command: &concrete::Command,
+    ) -> Option<concrete::Command> {
         let concrete::Command::Assert { term } = command else {
             return None;
         };
-        let concrete::Term::Attributes { term, attributes } = term else {
+        let concrete::Term::Attributes { term, attributes: _ } = term else {
             panic!("Expected Attributes");
         };
-
         let concrete::Term::Forall { vars, term } = &**term else {
             return None;
         };
-
         let concrete::Term::Attributes { term, attributes } = &**term else {
             panic!("Expected Attributes");
         };
@@ -153,26 +161,37 @@ pub fn handle_z3_trace(path: &path::Path, commands: &mut Vec<concrete::Command>)
                 } = parser.quantifiers[*quant]
                 {
                     let name = &parser.strings[name_id];
-                    println!("{}", name);
 
                     if inserter.simple_function_ids.contains(name) {
-                        println!("(assert (|fun_{}| ", name);
-                        for bound_term in bound_terms {
-                            print!("\t{}\n", TermIdx(bound_term.0).with(&ctxt));
+                        let mut ok = true;
+                        let mut instance = "".to_string();
+                        for bound_term in bound_terms.iter().rev() {
+                            let res = write!(instance, "\t{}\n", TermIdx(bound_term.0).with(&ctxt));
+                            if res.is_err() {
+                                ok = false;
+                                break;
+                            }
                         }
-                        println!("))");
-                        continue;
+                        if ok {
+                            let instance = format!("(assert (|fun_{}| {}))", name, instance);
+                            commands.push(Command::MariposaArbitrary(instance));
+                        } else {
+                            inserter.failed_qi_count += 1;
+                        }
+                    } else {
+                        inserter.skipped_qi_count += 1;
                     }
-                    // println!();
-                    // if !qid_to_usage_count.contains_key(name) {
-                    //     qid_to_usage_count.insert(name, 0);
-                    // }
-                    // qid_to_usage_count.insert(name, qid_to_usage_count[name] + 1);
+                    inserter.total_qi_count += 1;
                 }
             }
             _ => {}
         }
     }
+
+    // println!(
+    //     "Total QI count: {}, Skipped QI count: {}, Failed QI count: {}",
+    //     inserter.total_qi_count, inserter.skipped_qi_count, inserter.failed_qi_count
+    // );
 
     commands.push(Command::CheckSat);
 }

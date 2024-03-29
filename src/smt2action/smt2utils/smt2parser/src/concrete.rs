@@ -198,6 +198,7 @@ pub enum Command<
         keyword: Keyword,
         value: AttributeValue<Constant, Symbol, SExpr, Term>,
     },
+    MariposaArbitrary(String)
 }
 
 /// An implementation of [`Smt2Visitor`] that returns concrete syntax values.
@@ -1048,6 +1049,9 @@ impl Command {
                 )?;
                 visitor.visit_set_option(k, v)
             }
+            MariposaArbitrary(_) => {
+                panic!("MariposaArbitrary command is not supported by the syntax builder")
+            }
         }
     }
 }
@@ -1386,6 +1390,7 @@ where
             SetInfo { keyword, value } => write!(f, "(set-info {} {})", keyword, value),
             SetLogic { symbol } => write!(f, "(set-logic {})", symbol),
             SetOption { keyword, value } => write!(f, "(set-option {} {})", keyword, value),
+            MariposaArbitrary(s) => write!(f, "{}", s),
         }
     }
 }
