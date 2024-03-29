@@ -25,15 +25,18 @@ def check_incomplete(oracle_path, depths):
         if np.isnan(depths[cid]):
             print(line, end="")
     print("..")
-    
+
+def valid_max(scores):
+    return max([s for s in scores if not np.isnan(s)])
+
 class ShakeAnalyzer(CoreAnalyzer):
     def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
         super().__init__(group, ana)
         self.p_shake = group.get_project(PT.from_str("shko.z3"), build=True)
 
-        shake = FACT.load_any_experiment(self.p_shake)
-        self.shake = ExprAnalyzer(shake, ana)
-
+        # shake = FACT.load_any_experiment(self.p_shake)
+        # self.shake = ExprAnalyzer(shake, ana)
+        self.create_shake_queries()
 
     def check_shake_perf(self):
         for qid, qcs in self.qids.items():
@@ -63,16 +66,16 @@ class ShakeAnalyzer(CoreAnalyzer):
 
             scores = parse_shake_log(shake_log)
 
-            max_base_score = max(scores.values())
-            oracle = max(int(max_base_score / 3.1), 1)
-
+            max_base_score = valid_max(scores.values())
+            oracle = valid_max([int(max_base_score / 3.1), 1])
             if qcs.core_is_enabled():
                 core_cids = load_query_cids(qcs.patch_path)
                 core_scores = [scores[cid] for cid in core_cids.keys()]
                 if np.nan in core_scores:
-                    cats.add_item("shake incomplete", qid)
-                oracle = max(core_scores)
-            print(oracle)
+                    cats.add_item("shake (maybe) incomplete", qid)
+                oracle = valid_max(core_scores)
+            else:
+                cats.add_item("no core", qid)
             create_shake_query(qcs.base_path, shake_path, scores, oracle)
 
         cats.finalize()
