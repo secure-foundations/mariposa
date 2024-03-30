@@ -3,10 +3,11 @@ use smt2parser::concrete;
 // use std::collections::{HashMap, HashSet};
 
 use crate::pretty_print::print_prop_skeleton;
-use crate::term_match::{make_not_term, match_simple_app_term};
+use crate::term_match::{make_not_term, match_simple_app_term, SymbolSet};
 use crate::term_rewrite_flat::flatten_assert;
 use crate::term_rewrite_label::remove_label_rec;
 use crate::term_rewrite_prop::term_rewrite_prop;
+use crate::tree_shake_idf;
 
 // fn replace_symbol_rec(term: Term, old: &Symbol, new: &Term, count: &mut usize) -> Term {
 //     match term {
@@ -462,23 +463,4 @@ pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> 
     return commands;
 }
 
-pub fn remove_unused_symbols(mut commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
-    // println!("computing def symbols: ");
-    let defs = Arc::new(get_commands_symbol_def(&commands, 100));
 
-    // println!("computing use symbols: ");
-    let uses: SymbolSet = commands
-        .iter()
-        .map(|c| UseTracker::new(defs.clone(), &c, true).live_symbols)
-        .flatten()
-        .collect();
-
-    // remove all commands that define a symbol that is not used
-
-    commands = commands
-        .into_iter()
-        .filter(|c| uses.is_disjoint(&get_command_symbol_def(c)))
-        .collect();
-
-    commands
-}

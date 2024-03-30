@@ -49,10 +49,7 @@ class MutCoreBuilder:
         remove_dir(self.__gen_subdir)
 
     def __create_label_query(self):
-        if os.path.exists(self.lbl_query):
-            # we do not expect labelled query to change ...
-            log_info(f"{self.lbl_query} already exists")
-            return
+        remove_file(self.lbl_query)
 
         args = [
             MARIPOSA,

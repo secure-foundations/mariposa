@@ -6,7 +6,10 @@ use std::sync::Arc;
 
 use crate::query_io;
 use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
-use crate::tree_shake_idf::{get_commands_symbol_def_alt, AltSymbolSet};
+use crate::tree_shake_idf::{
+    get_command_symbol_def, get_commands_symbol_def_alt, get_commands_symbol_def_plain,
+    AltSymbolSet,
+};
 
 struct PatternState {
     local_symbols: SymbolSet,
@@ -308,13 +311,14 @@ impl UseTracker {
                     matchable_patterns: vec![self.get_symbol_uses(term)],
                 };
                 self.pattern_states.push(pattern_state);
-                // let uses = self.get_symbol_uses(term);
+                if self.exhaustive {
+                    let uses = self.get_symbol_uses(term);
+                    self.live_symbols = uses;
+                }
                 // do not remove local bindings
                 // for p in &sig.parameters {
                 //     self.remove_local_binding(&p.0);
                 // }
-                // self.live_symbols = uses;
-                // self.live_symbols.insert(sig.name.clone());
             }
             _ => {}
         }
@@ -537,4 +541,34 @@ pub fn tree_shake(
 
     commands.push(Command::CheckSat);
     commands
+}
+
+pub fn remove_unused_symbols(commands: &mut Vec<concrete::Command>) {
+    // println!("computing def symbols: ");
+    let defs = Arc::new(get_commands_symbol_def_plain(&commands));
+
+    let uses: SymbolSet = commands
+        .iter()
+        .map(|c| 
+            {
+                let ut = UseTracker::new(defs.clone(), &c, true);
+                // println!("{}", c);
+                // for u in &ut.live_symbols {
+                //     println!("{}", u);
+                // }
+                // println!();
+                ut.live_symbols
+            })
+        .flatten()
+        .collect();
+
+    // remove all commands that define a symbol that is not used
+    commands.retain(|c| {
+        let defs = get_command_symbol_def(c);
+        if let Some(defs) = defs {
+            !defs.is_disjoint(&uses)
+        } else {
+            true
+        }
+    })
 }

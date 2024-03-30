@@ -438,8 +438,8 @@ pub fn add_cids(command: &mut Vec<concrete::Command>) {
             // remove existing cid
             attributes.retain(|(k, v)| {
                 let concrete::Keyword(k) = k;
-                // should not apply this to a query where we already introduced cid!
-                assert!(k != "named" || !v.to_string().starts_with(CID_PREFIX));
+                // should not apply this to a query where we already introduced cid?
+                // assert!(k != "named" || !v.to_string().starts_with(CID_PREFIX));
                 k != "named"
             });
             // otherwise, add the new name

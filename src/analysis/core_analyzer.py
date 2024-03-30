@@ -99,6 +99,12 @@ class CoreAnalyzer:
         # self.suggest_issue_fixes()
         # self.get_trace_candidate()
         # self.print_status()
+        for qid in self.core_adj[STB.UNSTABLE]:
+            cqs = self.qids[qid]
+            if cqs.core_is_enabled():
+                print(f"{cqs.patch_path}")
+                print(f"{cqs.patch_reason}")
+                print("")
 
     def print_status(self):
         print_banner("Report " + self.group.gid)

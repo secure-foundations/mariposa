@@ -8,7 +8,7 @@ use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
 type SymbolCount = HashMap<Symbol, usize>;
 
 // get the symbols defined in a command
-pub fn get_command_symbol_def(command: &concrete::Command) -> SymbolSet {
+pub fn get_command_symbol_def(command: &concrete::Command) -> Option<SymbolSet> {
     let mut symbols = HashSet::new();
     match command {
         Command::DeclareConst { symbol, sort: _ } => {
@@ -39,19 +39,17 @@ pub fn get_command_symbol_def(command: &concrete::Command) -> SymbolSet {
         _ => (),
     }
 
-    // if DEBUG_DEFS && symbols.len() > 0 {
-    //     println!("{}", command);
-    //     for s in &symbols {
-    //         println!("\t{}", s);
-    //     }
-    // }
-    symbols
+    if symbols.len() == 0 {
+        None
+    } else {
+        Some(symbols)
+    }
 }
 
-fn get_commands_symbol_def_plain(commands: &Vec<concrete::Command>) -> SymbolSet {
+pub fn get_commands_symbol_def_plain(commands: &Vec<concrete::Command>) -> SymbolSet {
     let defs: SymbolSet = commands
         .iter()
-        .map(|x| get_command_symbol_def(x))
+        .filter_map(|x| get_command_symbol_def(x))
         .flatten()
         .collect();
     return defs;
@@ -342,3 +340,4 @@ pub fn print_commands_symbol_frequency(commands: &Vec<Command>, include_patterns
         println!("{} {} {}", symbol, count, count * 100 / use_cmd_count);
     }
 }
+

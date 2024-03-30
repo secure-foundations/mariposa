@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse, os
+import random
 from base.defs import GEN_ROOT
 from base.factory import FACT
-from base.solver import Z3Solver
+from base.solver import RCode, Z3Solver
 from query.core_completer import CoreCompleter
 from query.inst_builder import InstBuilder
 from utils.option_utils import *
@@ -49,31 +50,35 @@ def setup_check_lfsc(subparsers):
 
 def setup_trace_z3(subparsers):
     p = subparsers.add_parser('trace-z3', help='get trace from z3')
-    p.add_argument("--mutation", default="none", help="the mutation to perform before tracing")
-    p.add_argument("--seed", default=MAGIC_IGNORE_SEED, help="the seed to use")
     add_input_query_option(p)
+    p.add_argument("--search", default=False, action="store_true", help="search for a (shuffled) mutant that would produce unsat, output the trace of the mutant")
     add_output_log_option(p)
     add_timeout_option(p)
     add_clear_option(p)
 
-def handle_trace_z3(input_query, output_trace, mutation, seed, timeout):
+def handle_trace_z3(input_query, output_trace, search, timeout):
     solver: Z3Solver = FACT.get_solver_by_name("z3_4_12_5")
+
+    name_hash = get_name_hash(input_query)
+    mutant_query = f"{GEN_ROOT}/{name_hash}.smt2"
     remove_file(output_trace)
-    
-    if mutation not in {Mutation.NONE, Mutation.RESEED}:
-        name_hash = get_name_hash(input_query)
-        actual_query = f"{GEN_ROOT}/{name_hash}.{mutation}.{seed}.smt2"
-        remove_file(actual_query)
-        emit_mutant_query(input_query, actual_query, mutation, seed)
-        seed = None
+
+    if not search:
+        rc, _ = solver.trace(input_query, timeout, output_trace)
+        log_info(f"trace result {rc}")
     else:
-        actual_query = input_query
+        for _ in range(60):
+            remove_file(mutant_query)
+            s = random.randint(0, 0xffffffffffffffff)
 
-    rc, _ = solver.trace(actual_query, timeout, output_trace, seeds=seed)
-    log_info(f"trace result {rc}")
+            emit_mutant_query(input_query, mutant_query, Mutation.SHUFFLE, s)
+            rc, _ = solver.trace(mutant_query, timeout, output_trace, seeds=s)
+            log_info(f"trace result {rc}")
 
-    if actual_query != input_query:
-        remove_file(actual_query)
+            if rc == RCode.UNSAT:
+                break
+            else:
+                remove_file(output_trace)
 
     log_check(os.path.exists(output_trace), f"failed to create {output_trace}")
 
@@ -127,7 +132,7 @@ if __name__ == "__main__":
     setup_get_inst(subparsers)
     setup_check_lfsc(subparsers)
     setup_emit_quake(subparsers)
-    setup_verify(subparsers)
+    # setup_verify(subparsers)
     setup_trace_z3(subparsers)
     setup_check_subset(subparsers)
     setup_complete_core(subparsers)
@@ -169,8 +174,7 @@ if __name__ == "__main__":
     elif args.sub_command == "trace-z3":
         handle_trace_z3(args.input_query_path, 
                     args.output_log_path, 
-                    args.mutation,
-                    args.seed,
+                    args.search,
                     args.timeout)
     elif args.sub_command == "emit-quake":
         emit_quake_query(args.input_query_path, 
@@ -182,10 +186,10 @@ if __name__ == "__main__":
                       args.solver, 
                       args.output_query_path, 
                       args.timeout)
-    elif args.sub_command == "verify":
-        ver = args.solver.verify(args.input_query_path, args.timeout)
-        log_check(ver, f"verification failed")
-        open(args.output_log_path, "w+").write("verified")
+    # elif args.sub_command == "verify":
+    #     ver = args.solver.verify(args.input_query_path, args.timeout)
+    #     log_check(ver, f"verification failed")
+    #     open(args.output_log_path, "w+").write("verified")
     elif args.sub_command == "check-subset":
         log_check(is_assertion_subset(args.input_query_path, args.subset_query), f"{args.subset_query} is not a subset of {args.input_query_path}")
     elif args.sub_command == "debug-shake":

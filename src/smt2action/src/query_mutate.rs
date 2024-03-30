@@ -4,6 +4,8 @@ use rand::{seq::SliceRandom, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use smt2parser::{concrete, renaming, visitors};
 
+use crate::query_io::find_goal_command_index;
+
 // fn get_assert_intervals(commands: &Vec<concrete::Command>) -> Vec<usize> {
 //     let mut indices = Vec::new();
 //     for (pos, command) in commands.iter().enumerate() {
@@ -39,8 +41,10 @@ use smt2parser::{concrete, renaming, visitors};
 
 /// Lower the asserts to the end of the commands (before the check-sat command)
 fn lower_asserts(commands: &mut Vec<concrete::Command>, rng: &mut ChaCha8Rng) {
-    let check = commands.pop().unwrap();
-    assert!(check == concrete::Command::CheckSat);
+    // let check = commands.pop().unwrap();
+    // assert!(check == concrete::Command::CheckSat);
+    let goal_index = find_goal_command_index(commands);
+    let rest = commands.split_off(goal_index);
 
     let mut temp = Vec::new();
     std::mem::swap(commands, &mut temp);
@@ -55,7 +59,7 @@ fn lower_asserts(commands: &mut Vec<concrete::Command>, rng: &mut ChaCha8Rng) {
 
     commands.extend(non_asserts);
     commands.extend(asserts);
-    commands.push(check);
+    commands.extend(rest);
 }
 
 pub fn shuffle_commands(commands: &mut Vec<concrete::Command>, seed: u64, lower: bool) {

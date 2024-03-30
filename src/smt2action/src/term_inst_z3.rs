@@ -16,7 +16,7 @@ use std::{
     path,
 };
 
-use crate::query_io::{self, get_attr_qid};
+use crate::query_io::{self, find_goal_command_index, get_attr_qid};
 
 fn get_symbols(commands: &Vec<concrete::Command>) -> HashMap<String, String> {
     let mut symbols = HashSet::new();
@@ -125,11 +125,8 @@ pub fn handle_z3_trace(path: &path::Path, commands: &mut Vec<concrete::Command>)
     let parser = parser.process_all().unwrap();
     let symbols = get_symbols(commands);
 
-    let last = commands.pop().unwrap();
-
-    let Command::CheckSat = last else {
-        panic!("Expected CheckSat");
-    };
+    let goal_index = find_goal_command_index(commands);
+    let rest = commands.split_off(goal_index);
 
     let mut inserter = Inserter::new();
 
@@ -147,7 +144,8 @@ pub fn handle_z3_trace(path: &path::Path, commands: &mut Vec<concrete::Command>)
         display_quantifier_name: false,
         use_mathematical_symbols: false,
         s_expr_mode: true,
-        symbols: Some(symbols),
+        symbols: symbols,
+        missing_symbols: HashSet::new(),
     };
 
     for inst in &parser.insts.matches {
@@ -188,10 +186,10 @@ pub fn handle_z3_trace(path: &path::Path, commands: &mut Vec<concrete::Command>)
         }
     }
 
-    // println!(
-    //     "Total QI count: {}, Skipped QI count: {}, Failed QI count: {}",
-    //     inserter.total_qi_count, inserter.skipped_qi_count, inserter.failed_qi_count
-    // );
+    println!(
+        "Total QI count: {}, Skipped QI count: {}, Failed QI count: {}",
+        inserter.total_qi_count, inserter.skipped_qi_count, inserter.failed_qi_count
+    );
 
-    commands.push(Command::CheckSat);
+    commands.extend(rest);
 }

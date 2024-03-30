@@ -84,7 +84,9 @@ pub struct DisplayCtxt<'a> {
     pub use_mathematical_symbols: bool,
     pub s_expr_mode: bool,
 
-    pub symbols: Option<HashMap<String, String>>,
+    pub symbols: HashMap<String, String>,
+
+    pub missing_symbols: HashSet<String>,
 }
 
 mod private {
@@ -336,19 +338,23 @@ impl ProofOrApp {
             name = "ite";
         }
 
-        let new_name = if ctxt.symbols.as_ref().is_none()
-            || name == "ite"
+        let new_name = if name == "ite"
             || name == "+"
             || name == "*"
             || name == "not"
             || name == "or"
             || name == "true"
             || name == "false"
+            || name == "="
+            || name == "<="
+            || name == ">="
         {
             name
         } else {
-            let res = ctxt.symbols.as_ref().unwrap().get(name);
+            let res = ctxt.symbols.get(name);
             if res.is_none() {
+                println!("Undefined symbol: {}", name);
+                // ctxt.missing_symbols.
                 return fmt::Result::Err(fmt::Error);
             }
             res.unwrap()

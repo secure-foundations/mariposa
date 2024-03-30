@@ -19,6 +19,7 @@ use crate::term_inst_z3::handle_z3_trace;
 mod core_export;
 mod query_io;
 mod query_mutate;
+// mod tree_rewrite;
 mod term_match;
 
 mod term_inst_cvc5;
@@ -103,8 +104,14 @@ enum Action {
     )]
     AddIds,
 
+    #[strum(
+        serialize = "clean",
+        message = "remove unused definitions from the query"
+    )]
+    Clean,
+
     #[strum(serialize = "help", message = "get help on the allowed actions")]
-    Help,
+    Help,    
 }
 
 fn print_actions_help() {
@@ -319,6 +326,9 @@ fn main() {
             query_io::add_cids(&mut commands);
             query_io::add_qids(&mut commands);
         }
+        Action::Clean => {
+            tree_shake::remove_unused_symbols(&mut commands);
+        }
         _ => {
             panic!("unimplemented action: {}", action);
         }
@@ -346,9 +356,5 @@ fn main() {
     //     return;
     // } else if args.action == "tree-rewrite" {
     //     commands = tree_rewrite::tree_rewrite(commands);
-    // } else if args.action == "remove-unused" {
-    //     commands = tree_shake::remove_unused_symbols(commands);
-    // } else {
-    //     panic!("[ERROR] unknown action {}", args.action);
     // }
 }
