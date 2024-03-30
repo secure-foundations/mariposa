@@ -34,7 +34,7 @@ def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
 
     log_check(os.path.exists(output_trace), f"failed to create {output_trace}")
 
-def handle_wombo_combo_z3(input_query, output_trace, timeout, restarts):
+def handle_wombo_combo_z3(input_query, output_query_path, timeout, restarts):
     count = count_lines(input_query)
     log_info(f"original query has {count} commands")
 
@@ -61,7 +61,7 @@ def handle_wombo_combo_z3(input_query, output_trace, timeout, restarts):
 
     count = count_lines(iter_query)
     log_info(f"instantiated query has {count} commands")
-    
+
     solver = FACT.get_solver_by_name("z3_4_12_5")
 
     MutCoreBuilder(iter_query, solver, iter_query, timeout, False, restarts)
@@ -76,3 +76,4 @@ def handle_wombo_combo_z3(input_query, output_trace, timeout, restarts):
 
     count = count_lines(iter_query)
     log_info(f"cleaned query has {count} commands")
+    os.rename(iter_query, output_query_path)

@@ -42,9 +42,6 @@ rule check-lfsc
 rule get-inst
     command = {QUERY_WIZARD} get-inst -i $in --output-log-path $out --timeout 30 
 
-rule verify
-    command = {QUERY_WIZARD} verify -i $in --output-log-path $out -s $solver --timeout 30
-
 rule trace-z3
     command = {QUERY_WIZARD} trace-z3 -i $in --output-log-path $out --timeout $timeout --mutation $mutation --seed $seed
 
@@ -53,6 +50,10 @@ rule check-subset
 
 rule shake-log
     command = {MARIPOSA} -i $in -a shake --shake-log-path $out
+
+rule wombo-combo
+    command = {QUERY_WIZARD} wombo-combo -i $in -o $out --timeout 10 --restarts 10
+
 """
 
 # rule instantiate
@@ -160,6 +161,10 @@ def set_up_log_shake(subparsers):
     add_input_dir_option(p)
     add_clear_option(p)
     add_ninja_log_option(p)
+
+# def set_up_wombo_combo(subparsers):
+#     p = subparsers.add_parser('wombo-combo', help='use trace and core to build a reduced query')
+#     add_input_dir_option(p, is_group=True)
 
 class NinjaPasta:
     def __init__(self, args, cmd):
@@ -339,16 +344,8 @@ class NinjaPasta:
             self.expect_targets.add(o)
         return ext
 
-    def handle_verify(self, in_proj, solver):
-        ext = KnownExt.VERI
-        self.output_dir = in_proj.get_log_dir(ext)
-        for qid in in_proj.qids:
-            i = in_proj.get_ext_path(qid)
-            o = in_proj.get_ext_path(qid, ext)
-            self.ninja_stuff += [f"build {o}: verify {i}\n",
-                                 f"    solver={solver.name}\n\n"]
-            self.expect_targets.add(o)
-        return ext
+    def handle_wombo_combo(self, in_group):
+        pass
 
     def handle_fix_missing_core(self, in_group: ProjectGroup):
         qids = in_group.load_qids("unstable_2_missing_core")
@@ -509,6 +506,7 @@ if __name__ == "__main__":
     set_up_fix_incomplete_core(subparsers)
     set_up_create_benchmark(subparsers)
     set_up_log_shake(subparsers)
+    # set_up_wombo_combo(subparsers)
 
     cmd = " ".join(sys.argv)
 

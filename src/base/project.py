@@ -62,6 +62,7 @@ class _ProjectType(enum.Enum):
     SHKO = "shko" # shake oracle
     SHKP = "shkp" # shake partial
     INTD = "intd" # instantiated
+    WOCO = "woco" # wombo combo
 
     def __str__(self):
         return self.value
@@ -122,7 +123,7 @@ class Project:
     def __init__(self, gid, 
                  ptyp: ProjectType=DEFAULT_PTYPE, 
                  part=Partition(1, 1),
-                 single_mode=False):
+                 single_mode=False, build=False):
 
         self.gid = gid
         self.full_name = full_proj_name(gid, ptyp)
@@ -133,8 +134,9 @@ class Project:
         self.__init_dirs(gid)
         self._qids = set()
 
-        for q in self.list_queries():
-            self._qids.add(get_qid(q))
+        if not build:
+            for q in self.list_queries():
+                self._qids.add(get_qid(q))
 
     def __init_dirs(self, gid):
         if self.single_mode:
@@ -268,7 +270,7 @@ class ProjectGroup:
         if not build:
             log_check(fn in self.projects, f"no such project {fn} under {self.gid}")
         else:
-            self.projects[fn] = Project(self.gid, ptype)
+            self.projects[fn] = Project(self.gid, ptype, build=True)
         return self.projects[fn]
     
     def get_projects(self):
