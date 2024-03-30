@@ -118,10 +118,6 @@ class Solver:
         self.proc.terminate()
         self.poll_obj = None
 
-    def verify(self, query_path, timeout):
-        rcode, _ = self.run(query_path, timeout)
-        return rcode == RCode.UNSAT
-
 class Z3Solver(Solver):
     def __init__(self, name, obj):
         super().__init__(name, obj)
@@ -160,7 +156,7 @@ class CVC5Solver(Solver):
             query_path,
             "--quiet",
             f"--tlimit-per={time_limit * 1000}",
-            "--enum-inst",
+            # "--enum-inst",
         ]
         if seeds is not None:
             command += [f"--sat-random-seed={seeds}",

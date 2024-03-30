@@ -20,13 +20,19 @@ def get_asserts(filename):
     return cmds
 
 def count_asserts(filename):
-    import subprocess, numpy as np
-    cmd = r'rg -e "\(assert" -c' + f" '{filename}'"
-    output = subprocess.run(cmd,
+    import numpy as np
+    output = subprocess.run(
+        r'rg -e "\(assert" -c' + f" '{filename}'",
         shell=True, capture_output=True, text=True).stdout
     if output == "":
         # log_warn(f"{filename} has no asserts")
         return np.nan
+    return int(output)
+
+def count_lines(filename):
+    print(f"counting lines in {filename}")
+    output = subprocess.run(f"wc -l {filename} | cut -d' ' -f1",
+                            capture_output=True, shell=True, text=True).stdout
     return int(output)
 
 _PARTIAL_ORDER_ALT = [
