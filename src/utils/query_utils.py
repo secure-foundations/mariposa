@@ -45,13 +45,14 @@ _PARTIAL_ORDER_ALT = [
 
 QUAKE_MESSAGE = "[INFO] mariposa-quake"
 
-def convert_verus_smtlib(in_file, out_file, incremental):
-    print("convert_verus_smtlib called with incremental: {}".format(incremental))
+def convert_smtlib(in_file, out_file, incremental):
+    print("called convert_smtlib with incremental: {}".format(incremental))
     lines = open(in_file, 'r').readlines()
     lines = [line.strip() for line in lines]
     new_lines = []
     new_lines.append("(set-logic ALL)")
-    new_lines.append("(set-option :incremental true)")
+    if incremental:
+        new_lines.append("(set-option :incremental true)")
 
     for line in lines:
         # Remove unsupported set-option commands
@@ -63,10 +64,15 @@ def convert_verus_smtlib(in_file, out_file, incremental):
             continue
         if "(declare-datatypes () ())" in line:
             continue
+        # Replace bv2int with bv2nat
+        line = line.strip().replace("bv2int", "bv2nat")
         new_lines.append(line)
+    
+    # Remove duplicate lines
+    unique_lines = list(dict.fromkeys(new_lines))
 
     with open(out_file, 'w') as f:
-        for line in new_lines:
+        for line in unique_lines:
             f.write(line + '\n')
     print("[INFO] converted file: {}".format(out_file))
 
