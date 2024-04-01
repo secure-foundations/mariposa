@@ -64,7 +64,7 @@ def handle_wombo_combo_z3(input_query, output_query_path, timeout, restarts):
 
     solver = FACT.get_solver_by_name("z3_4_12_5")
 
-    MutCoreBuilder(iter_query, solver, iter_query, timeout, False, restarts)
+    MutCoreBuilder(iter_query, solver, iter_query, timeout, False, restarts, False) # ToDo: incremental=False or True?
 
     count = count_lines(iter_query)
     log_info(f"cored query has {count} commands")

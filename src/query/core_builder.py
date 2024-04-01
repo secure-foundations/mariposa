@@ -4,7 +4,7 @@ from utils.system_utils import *
 from base.defs import MARIPOSA
 
 class MutCoreBuilder:
-    def __init__(self, input_query, solver, output_query, timeout, ids_available, restarts):
+    def __init__(self, input_query, solver, output_query, timeout, ids_available, restarts, incremental):
         log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
         self.solver = solver
 
@@ -18,6 +18,7 @@ class MutCoreBuilder:
         self.timeout = timeout
         self.output_query = output_query
         self.ids_available = ids_available
+        self.incremental = incremental
 
         self.__create_label_query()
 

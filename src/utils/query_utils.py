@@ -45,7 +45,8 @@ _PARTIAL_ORDER_ALT = [
 
 QUAKE_MESSAGE = "[INFO] mariposa-quake"
 
-def convert_verus_smtlib(in_file, out_file):
+def convert_verus_smtlib(in_file, out_file, incremental):
+    print("convert_verus_smtlib called with incremental: {}".format(incremental))
     lines = open(in_file, 'r').readlines()
     lines = [line.strip() for line in lines]
     new_lines = []

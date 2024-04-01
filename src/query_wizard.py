@@ -25,6 +25,7 @@ def setup_convert_smt_lib(subparsers):
     p = subparsers.add_parser('convert-smtlib', help='convert a verus query to smt-lib standard (cvc5) format')
     add_input_query_option(p)
     add_output_query_option(p)
+    add_incremental_option(p)
 
 def setup_get_lfsc(subparsers):
     p = subparsers.add_parser('get-lfsc', help='get lfsc proof from a query with cvc5')
@@ -127,10 +128,12 @@ if __name__ == "__main__":
                          args.output_query_path, 
                          args.timeout,
                          args.ids_available,
-                         args.restarts)
+                         args.restarts,
+                         args.incremental)
     elif args.sub_command == "convert-smtlib":
         convert_verus_smtlib(args.input_query_path, 
-                             args.output_query_path)
+                             args.output_query_path,
+                             args.incremental)
     elif args.sub_command == "get-lfsc":
         ProofBuilder(args.input_query_path, 
                      args.output_log_path,
