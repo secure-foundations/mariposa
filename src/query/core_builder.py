@@ -4,20 +4,19 @@ from utils.system_utils import *
 from base.defs import MARIPOSA
 
 class MutCoreBuilder:
-    def __init__(self, input_query, solver, output_query, timeout, ids_available, restarts):
+    def __init__(self, input_query, solver, output_query, timeout, ids, restarts):
         log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
         self.solver = solver
 
         name_hash = get_name_hash(input_query)
-
         self.input_query = input_query
-        self.__gen_subdir = f"gen/{name_hash}/"
         self.lbl_query = f"gen/{name_hash}/lbl.smt2"
         self.lbl_mut_query = f"gen/{name_hash}/lbl.mut.smt2"
         self.core_log = f"gen/{name_hash}/z3-core.log"
         self.timeout = timeout
         self.output_query = output_query
-        self.ids_available = ids_available
+        self.clear_temp_files()
+        self.ids_available = ids
 
         self.__create_label_query()
 
@@ -37,7 +36,7 @@ class MutCoreBuilder:
             if success:
                 log_info(f"iteration {i}, successfully used mutant seed: {s}")
                 self.__create_core_query(seed=s)
-                self.clear_temp_files()
+                # self.clear_temp_files()
                 return
             else:
                 log_info(f"iteration {i}, failed to use mutant seed: {s}")
@@ -63,7 +62,7 @@ class MutCoreBuilder:
         if self.ids_available:
             args.append("--ids-available")
 
-        subprocess.run(args)
+        subprocess_run(args, check=True)
 
         # we do not expect labeling to fail
         if not os.path.exists(self.lbl_query):
@@ -88,8 +87,6 @@ class MutCoreBuilder:
         return True
 
     def __create_core_query(self, seed):
-        remove_file(self.output_query)
-
         subprocess.run([
             MARIPOSA,
             "-i", self.lbl_query,

@@ -1,8 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
     fmt,
-    hash::Hash,
-    sync::Arc,
 };
 
 use crate::{items::*, parsers::z3::z3parser::Z3Parser};
@@ -366,7 +364,7 @@ impl ProofOrApp {
         }
 
         write!(f, "({}", new_name)?;
-        for (idx, child) in data.children().iter().enumerate() {
+        for child in data.children().iter() {
             write!(f, " ")?;
             display_child(f, *child, ctxt, data)?;
         }

@@ -3,27 +3,22 @@ use strum::{EnumMessage, IntoEnumIterator};
 use strum_macros::{Display, EnumIter, EnumMessage, EnumString};
 
 use clap::Parser;
-// use pattern_removal::remove_patterns;
 use smt2parser::concrete;
 
-use crate::term_inst_z3::handle_z3_trace;
-
-// use std::collections::{BTreeMap, HashSet};
-// use std::vec;
 // mod pretty_print;
-// mod term_rewrite_flat;
+mod term_rewrite_flat;
 // mod term_rewrite_label;
 // mod term_rewrite_let;
-// mod term_rewrite_prop;
+mod term_rewrite_prop;
 // mod pattern_removal;
 mod core_export;
 mod query_io;
 mod query_mutate;
-// mod tree_rewrite;
 mod term_match;
+mod tree_rewrite;
 
 mod term_inst_cvc5;
-mod term_inst_z3;
+mod inst_z3;
 mod term_substitute;
 mod tree_shake;
 mod tree_shake_idf;
@@ -93,6 +88,12 @@ enum Action {
     InstCVC5,
 
     #[strum(
+        serialize = "pre-inst-z3",
+        message = "prepare for Z3 instantiation"
+    )]
+    PreInstZ3,
+
+    #[strum(
         serialize = "inst-z3",
         message = "read the Z3 instantiation log and add to the query"
     )]
@@ -110,8 +111,17 @@ enum Action {
     )]
     Clean,
 
+    #[strum(serialize = "simp", message = "simplify assertions in the query")]
+    Simp,
+
+    #[strum(
+        serialize = "replace-quant",
+        message = "replace quantified bodies with (fresh) functions"
+    )]
+    ReplaceQuant,
+
     #[strum(serialize = "help", message = "get help on the allowed actions")]
-    Help,    
+    Help,
 }
 
 fn print_actions_help() {
@@ -135,6 +145,9 @@ struct Args {
     /// input Z3 trace log path
     #[arg(long)]
     z3_trace_log_path: Option<String>,
+
+    #[arg(long, default_value_t = 0)]
+    max_trace_insts: usize,
 
     /// output query path
     #[arg(short, long)]
@@ -164,7 +177,7 @@ struct Args {
     core_log_path: Option<String>,
 
     #[arg(long, default_value_t = false)]
-    ids_available: bool,
+    reassign_ids: bool,
 
     /// the threshold (percentage of) patterns to be removed
     #[arg(long, default_value_t = 100.0)]
@@ -256,7 +269,9 @@ fn main() {
         return;
     }
 
-    let mut printer = query_io::QueryPrinter::new(args.out_query_path.clone());
+    let iterating = query_io::is_iterating_io(&args.in_query_path, &args.out_query_path);
+
+    let mut printer = query_io::QueryPrinter::new(args.out_query_path.clone(), !iterating);
 
     if action == Action::Format {
         printer.dump_commands(&commands);
@@ -275,7 +290,7 @@ fn main() {
             query_mutate::shuffle_commands(&mut commands, args.seed, args.lower_asserts);
         }
         Action::LabelCore => {
-            core_export::label_asserts(&mut commands, args.ids_available);
+            core_export::label_asserts(&mut commands, args.reassign_ids);
         }
         Action::ReduceCore => {
             if args.core_log_path.is_none() {
@@ -313,20 +328,40 @@ fn main() {
             term_inst_cvc5::inst_cvc5(&mut commands, &inst_file_path);
             return;
         }
+        Action::PreInstZ3 => {
+            commands = tree_rewrite::tree_rewrite(commands);
+            tree_shake::remove_unused_symbols(&mut commands);
+            query_io::add_cids(&mut commands, true);
+            query_io::add_qids(&mut commands);
+            inst_z3::preprocess_for_instantiation(&mut commands);
+        }
         Action::InstZ3 => {
+            if args.z3_trace_log_path.is_none() {
+                println!("[ERROR] inst-z3 requires a Z3 trace log file");
+                exit(1);
+            }
+
             let path = std::path::Path::new(args.z3_trace_log_path.as_ref().unwrap());
 
             if !path.is_file() {
                 println!("[ERROR] inst-z3 requires a Z3 trace log file");
                 exit(1);
             }
-            handle_z3_trace(path, &mut commands);
+            inst_z3::handle_z3_trace(path, &mut commands, args.max_trace_insts);
+            panic!();
         }
         Action::AddIds => {
-            query_io::add_cids(&mut commands);
+            query_io::add_cids(&mut commands, args.reassign_ids);
             query_io::add_qids(&mut commands);
         }
+        // Action::ReplaceQuant => {
+        //     inst_z3::replace_quant(&mut commands);
+        // }
         Action::Clean => {
+            tree_shake::remove_unused_symbols(&mut commands);
+        }
+        Action::Simp => {
+            commands = tree_rewrite::tree_rewrite(commands);
             tree_shake::remove_unused_symbols(&mut commands);
         }
         _ => {
@@ -335,26 +370,4 @@ fn main() {
     }
 
     printer.dump_commands(&commands);
-
-    // } else if args.action == "remove-trigger" {
-    //     // manager.remove_patterns(&mut commands);
-    //     remove_patterns(&mut commands, manager.seed, pattern_threshold);
-    // } else if args.action == "tree-shake-idf" {
-    //     let (cmd_freq, use_cmd_count) =
-    //         tree_shake_idf::count_commands_symbol_frequency(&commands, false);
-    //     let mut symbols: Vec<_> = cmd_freq.iter().collect();
-    //     symbols.sort_by(|a, b| b.1.cmp(a.1));
-    //     manager.dump(&format!("MARIPOSA_USE_CMD_COUNT {}\n", use_cmd_count));
-    //     for (symbol, count) in symbols {
-    //         manager.dump(&format!(
-    //             "{} {} {}\n",
-    //             symbol,
-    //             count,
-    //             count * 100 / use_cmd_count
-    //         ));
-    //     }
-    //     return;
-    // } else if args.action == "tree-rewrite" {
-    //     commands = tree_rewrite::tree_rewrite(commands);
-    // }
 }

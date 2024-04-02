@@ -38,9 +38,15 @@ def confirm_input(msg):
     log_info(f"{msg} [Y]", end="")
     log_check(input() == "Y", f"aborting")
 
-def subprocess_run(command, timeout=None, debug=False, cwd=None, shell=False):
+def subprocess_run(command, timeout=None, debug=False, cwd=None, shell=False, check=False):
+    if shell:
+        debug_cmd = command
+    else:
+        debug_cmd = " ".join(command)
+
     if debug:
-        print(" ".join(command))
+        print(debug_cmd)
+
     start_time = time.time()
     if timeout is not None:
         if shell:
@@ -52,6 +58,8 @@ def subprocess_run(command, timeout=None, debug=False, cwd=None, shell=False):
     elapsed = round((time.time() - start_time) * 1000)
     stdout = res.stdout.decode("utf-8").strip()
     stderr = res.stderr.decode("utf-8").strip()
+    if check:
+        log_check(res.returncode == 0, f"failed to run {debug_cmd}")
     return stdout, stderr, elapsed
 
 def list_files_ext(sub_root, ext):

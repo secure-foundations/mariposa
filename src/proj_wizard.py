@@ -52,7 +52,7 @@ rule shake-log
     command = {MARIPOSA} -i $in -a shake --shake-log-path $out
 
 rule wombo-combo
-    command = {QUERY_WIZARD} wombo-combo -i $in -o $out --timeout 10 --restarts 10
+    command = {QUERY_WIZARD} wombo-combo -i $in -o $out --timeout 10 --restarts 5
 
 """
 

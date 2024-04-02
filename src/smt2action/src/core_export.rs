@@ -51,7 +51,7 @@ fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> b
     false
 }
 
-pub fn label_asserts(commands: &mut Vec<concrete::Command>, ids_available: bool) {
+pub fn label_asserts(commands: &mut Vec<concrete::Command>, reassign: bool) {
     let produce = concrete::Command::SetOption {
         keyword: concrete::Keyword(PRODUCE_CORE_OPTION.to_owned()),
         value: visitors::AttributeValue::Symbol(concrete::Symbol("true".to_owned())),
@@ -59,8 +59,10 @@ pub fn label_asserts(commands: &mut Vec<concrete::Command>, ids_available: bool)
 
     commands.insert(0, produce);
 
-    if !ids_available {
-        query_io::add_cids(commands);
+    if !reassign {
+        let _ = query_io::load_mariposa_ids(&commands);
+    } else {
+        query_io::add_cids(commands, true);
     }
 
     // if (set-option :produce-unsat-cores false) is present, remove it

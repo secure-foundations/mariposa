@@ -94,20 +94,20 @@ class CoreAnalyzer:
             self.qids[qid] = cqs
 
         self.adjust_status()
-        # self.__init_issue_status()
-        # self.issues.print_status()
+        self.__init_issue_status()
+        self.issues.print_status()
         # self.suggest_issue_fixes()
         # self.get_trace_candidate()
         # self.print_status()
 
-        out_p = group.get_project(PT.from_str("woco.z3"), build=True)
-        print(NINJA_BUILD_RULES)
+        # out_p = group.get_project(PT.from_str("woco.z3"), build=True)
+        # print(NINJA_BUILD_RULES)
 
-        for qid in self.core_adj[STB.UNSTABLE]:
-            cqs = self.qids[qid]
-            out_path = out_p.get_ext_path(qid)
-            if cqs.core_is_enabled():
-                print(f"build {out_path}: wombo-combo {cqs.patch_path}\n")
+        # for qid in self.core_adj[STB.UNSTABLE]:
+        #     cqs = self.qids[qid]
+        #     out_path = out_p.get_ext_path(qid)
+        #     if cqs.core_is_enabled():
+        #         print(f"build {out_path}: wombo-combo {cqs.patch_path}\n")
 
     def print_status(self):
         print_banner("Report " + self.group.gid)

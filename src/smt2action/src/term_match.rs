@@ -76,11 +76,16 @@ pub fn match_simple_qual_identifier_term(term: &Term) -> Option<&Symbol> {
     return None;
 }
 
-#[allow(dead_code)]
-pub fn make_simple_qual_identifier_term(symbol: Symbol) -> concrete::Term {
-    return Term::QualIdentifier(QualIdentifier::Simple {
+#[inline]
+pub fn mk_simple_qual_id_term(symbol: Symbol) -> concrete::Term {
+    return Term::QualIdentifier(mk_simple_qual_id(symbol));
+}
+
+#[inline]
+pub fn mk_simple_qual_id(symbol: Symbol) -> concrete::QualIdentifier {
+    return QualIdentifier::Simple {
         identifier: concrete::Identifier::Simple { symbol },
-    });
+    };
 }
 
 // pub fn get_binary_app_term(term: &concrete::Term, fun_symbol: &Symbol) -> Option<(Term, Term)> {
@@ -101,8 +106,9 @@ pub fn make_simple_qual_identifier_term(symbol: Symbol) -> concrete::Term {
 //     return None;
 // }
 
-#[allow(dead_code)]
-pub fn match_simple_app_term(term: &mut concrete::Term) -> Option<(&Symbol, &mut Vec<concrete::Term>)> {
+pub fn match_simple_app_term(
+    term: &mut concrete::Term,
+) -> Option<(&Symbol, &mut Vec<concrete::Term>)> {
     if let Term::Application {
         qual_identifier,
         arguments,
