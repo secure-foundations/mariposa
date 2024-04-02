@@ -446,9 +446,7 @@ fn add_cid(command: &mut concrete::Command, ct: usize, reassign: bool) {
         // remove existing :named attribute
         attributes.retain(|(k, v)| {
             let concrete::Keyword(k) = k;
-            if !reassign {
-                assert!(k != "named" || !v.to_string().starts_with(CID_PREFIX));
-            }
+            assert!(k != "named" || !v.to_string().starts_with(CID_PREFIX));
             k != "named"
         });
         // otherwise, add the new name
@@ -604,6 +602,11 @@ pub fn get_attr_cid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValu
         panic!("expecting cid");
     };
     cid
+}
+
+pub fn get_attr_cid_usize(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> usize {
+    let cid = get_attr_cid(attributes);
+    cid[CID_PREFIX.len()..].to_string().parse().unwrap()
 }
 
 pub fn get_attr_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String {

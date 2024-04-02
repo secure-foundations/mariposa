@@ -4,7 +4,7 @@ from utils.system_utils import *
 from base.defs import MARIPOSA
 
 class MutCoreBuilder:
-    def __init__(self, input_query, solver, output_query, timeout, ids, restarts):
+    def __init__(self, input_query, solver, output_query, timeout, ids_available, restarts):
         log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
         self.solver = solver
 
@@ -16,7 +16,7 @@ class MutCoreBuilder:
         self.timeout = timeout
         self.output_query = output_query
         self.clear_temp_files()
-        self.ids_available = ids
+        self.ids_available = ids_available
 
         self.__create_label_query()
 
@@ -34,12 +34,12 @@ class MutCoreBuilder:
             success = self.__run_solver(seed=s)
 
             if success:
-                log_info(f"iteration {i}, successfully used mutant seed: {s}")
+                log_info(f"core iteration {i}, successfully used mutant seed: {s}")
                 self.__create_core_query(seed=s)
                 # self.clear_temp_files()
                 return
             else:
-                log_info(f"iteration {i}, failed to use mutant seed: {s}")
+                log_info(f"core iteration {i}, failed to use mutant seed: {s}")
 
         self.clear_temp_files()
         exit_with(f"failed to use mutants {self.solver} on {input_query}, no core log created")
@@ -51,7 +51,7 @@ class MutCoreBuilder:
 
     def __create_label_query(self):
         remove_file(self.lbl_query)
-
+        
         args = [
             MARIPOSA,
             "-i", self.input_query,
@@ -59,14 +59,14 @@ class MutCoreBuilder:
             "--action=label-core",
         ]
 
-        if self.ids_available:
-            args.append("--ids-available")
+        if not self.ids_available:
+            args.append("--reassign-ids")
 
         subprocess_run(args, check=True)
 
         # we do not expect labeling to fail
-        if not os.path.exists(self.lbl_query):
-            exit_with(f"failed to create {self.lbl_query}")
+        log_check(os.path.exists(self.lbl_query), 
+                  f"failed to create {self.lbl_query}")
 
     def __run_solver(self, seed):
         cf = open(self.core_log, "w+")
@@ -87,13 +87,13 @@ class MutCoreBuilder:
         return True
 
     def __create_core_query(self, seed):
-        subprocess.run([
+        subprocess_run([
             MARIPOSA,
             "-i", self.lbl_query,
             "--action=reduce-core",
             f"--core-log-path={self.core_log}",
             f"-o", self.output_query,
-        ])
+        ], check=True, debug=True)
 
         log_check(os.path.exists(self.output_query), f"failed to create core query {self.output_query}")
 

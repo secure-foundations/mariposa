@@ -9,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 
 use crate::{
-    query_io::{find_goal_command_index, get_attr_qid},
+    query_io::{find_goal_command_index, get_attr_qid, get_attr_cid_usize},
     term_match::{mk_simple_qual_id, mk_simple_qual_id_term},
 };
 
@@ -117,6 +117,7 @@ struct Inserter {
     total_qi_count: usize,
     skipped_qi_count: usize,
     failed_qi_count: usize,
+    max_cid: usize,
 
     defined_symbols: HashMap<String, String>,
     forall_fun_symbols: HashSet<String>,
@@ -128,10 +129,13 @@ impl Inserter {
             total_qi_count: 0,
             skipped_qi_count: 0,
             failed_qi_count: 0,
+            max_cid: 0,
             defined_symbols: HashMap::new(),
             forall_fun_symbols: HashSet::new(),
         };
         ins.init_symbols(commands);
+        // since max is present, add 1
+        ins.max_cid += 1;
         ins
     }
 
@@ -139,6 +143,17 @@ impl Inserter {
         let mut symbols = HashSet::new();
         commands.iter().for_each(|x| {
             match x {
+                concrete::Command::Assert { term } => {
+                    let concrete::Term::Attributes {
+                        term: _,
+                        attributes,
+                    } = term
+                    else {
+                        panic!("Expected Attributes");
+                    };
+                    let cid = get_attr_cid_usize(attributes);
+                    self.max_cid = self.max_cid.max(cid);
+                }
                 concrete::Command::DeclareConst { symbol, sort: _ } => {
                     symbols.insert(symbol.clone());
                 }
@@ -159,12 +174,14 @@ impl Inserter {
                 }
                 concrete::Command::DeclareFun { symbol, .. } => {
                     symbols.insert(symbol.clone());
-                    if symbol.0.starts_with("fun_forall_") {
-                        self.forall_fun_symbols.insert(symbol.0.clone());
-                    }
                 }
                 concrete::Command::DefineFun { sig, .. } => {
-                    symbols.insert(sig.name.clone());
+                    let symbol = sig.name.clone();
+                    symbols.insert(symbol.clone());
+                    if symbol.0.starts_with("fun_forall_") {
+                        println!("Found forall symbol: {}", symbol.0);
+                        self.forall_fun_symbols.insert(symbol.0);
+                    }
                 }
                 concrete::Command::DeclareSort { .. } => {
                     // println!("Sort symbol not considered");
@@ -187,7 +204,11 @@ impl Inserter {
     }
 }
 
-pub fn handle_z3_trace(path: &std::path::Path, commands: &mut Vec<concrete::Command>, max_inst: usize) {
+pub fn handle_z3_trace(
+    path: &std::path::Path,
+    commands: &mut Vec<concrete::Command>,
+    max_inst: usize,
+) {
     let (_metadata, parser) = Z3Parser::from_file(path).unwrap();
     let parser = parser.process_all().unwrap();
     let mut inserter = Inserter::new(commands);
@@ -218,8 +239,9 @@ pub fn handle_z3_trace(path: &std::path::Path, commands: &mut Vec<concrete::Comm
                 } = parser.quantifiers[*quant]
                 {
                     let name = &parser.strings[name_id];
+                    let name = mk_fun_forall(&name.to_string());
 
-                    if inserter.forall_fun_symbols.contains(name) {
+                    if inserter.forall_fun_symbols.contains(&name) {
                         let mut ok = true;
                         let mut instance = "\n".to_string();
                         for bound_term in bound_terms.iter().rev() {
@@ -231,13 +253,13 @@ pub fn handle_z3_trace(path: &std::path::Path, commands: &mut Vec<concrete::Comm
                         }
 
                         if ok {
-                            // println!("name: {}", name);
-                            // println!("Instance: {}", instance);
                             let instance = format!(
-                                "(assert (|{}| {}))",
-                                mk_fun_forall(&name.to_string()),
-                                instance
+                                "(assert (!(|{}| {}) :named mariposa_cid_{}))",
+                                &name.to_string(),
+                                instance,
+                                inserter.max_cid,
                             );
+                            inserter.max_cid += 1;
                             inst_cmds.push(Command::MariposaArbitrary(instance));
                         } else {
                             inserter.failed_qi_count += 1;
@@ -252,7 +274,14 @@ pub fn handle_z3_trace(path: &std::path::Path, commands: &mut Vec<concrete::Comm
         }
     }
 
-    let sample: Vec<_> = inst_cmds.into_iter()
+    let max_inst = if max_inst == 0 {
+        inst_cmds.len()
+    } else {
+        max_inst
+    };
+
+    let sample: Vec<_> = inst_cmds
+        .into_iter()
         .choose_multiple(&mut rand::thread_rng(), max_inst);
 
     println!(

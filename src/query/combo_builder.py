@@ -24,7 +24,7 @@ def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
 
             emit_mutant_query(input_query, mutant_query, Mutation.SHUFFLE, s)
             rc, _ = solver.trace(mutant_query, timeout, output_trace, seeds=s)
-            log_info(f"iteration {i}, trace result {rc}")
+            log_info(f"trace iteration {i}, {rc}")
 
             if rc == RCode.UNSAT:
                 break
@@ -47,36 +47,37 @@ def handle_wombo_combo_z3(input_query, output_query_path, timeout, restarts):
     remove_file(cur_query)
 
     subprocess_run([MARIPOSA, 
-            "-a", "simp", 
+            "-a", "pre-inst-z3", 
             "-i", input_query, 
             "-o", cur_query], check=True, debug=True)
+
     prev_count = count_lines(cur_query)
     log_info(f"combo iteration 0, {prev_count} commands after simplification")
 
-    for i in range(1, 10):
+    for i in range(1, 2):
         MutCoreBuilder(cur_query, solver, cur_query, 10, True, restarts)
         count = count_lines(cur_query)
         log_info(f"combo iteration {i}, {count} commands after core")
+        break
+        # remove_file(trace_path)
+        # handle_trace_z3(cur_query, trace_path, True, 10, restarts)
 
-        remove_file(trace_path)
-        handle_trace_z3(cur_query, trace_path, True, 10, restarts)
+        # subprocess_run([MARIPOSA, 
+        #     "-a", "inst-z3", 
+        #     "-i", cur_query, 
+        #     "--z3-trace-log-path", trace_path, 
+        #     "-o", cur_query], check=True, debug=True)
 
-        subprocess_run([MARIPOSA, 
-            "-a", "inst-z3", 
-            "-i", cur_query, 
-            "--z3-trace-log-path", trace_path, 
-            "-o", cur_query], check=True, debug=True)
+        # count = count_lines(cur_query)
+        # log_info(f"combo iteration {i}, {count} commands after instantiation")
 
-        count = count_lines(cur_query)
-        log_info(f"combo iteration {i}, {count} commands after instantiation")
+        # subprocess_run([MARIPOSA, 
+        #     "-a", "simp", 
+        #     "-i", cur_query, 
+        #     "-o", cur_query], check=True, debug=True)
 
-        subprocess_run([MARIPOSA, 
-            "-a", "simp", 
-            "-i", cur_query, 
-            "-o", cur_query], check=True, debug=True)
-
-        log_info(f"combo iteration {i}, {count} commands after simplification")
-        print(prev_count, count)        
-        prev_count = count
+        # log_info(f"combo iteration {i}, {count} commands after simplification")
+        # print(prev_count, count)        
+        # prev_count = count
 
     # os.system(f"mv {cur_query} {output_query_path}")

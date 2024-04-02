@@ -348,7 +348,6 @@ fn main() {
                 exit(1);
             }
             inst_z3::handle_z3_trace(path, &mut commands, args.max_trace_insts);
-            panic!();
         }
         Action::AddIds => {
             query_io::add_cids(&mut commands, args.reassign_ids);
