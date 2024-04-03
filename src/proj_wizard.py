@@ -54,6 +54,9 @@ rule shake-log
 rule wombo-combo
     command = {QUERY_WIZARD} wombo-combo -i $in -o $out --timeout 10 --restarts 5
 
+rule pre-inst-z3
+    command = {MARIPOSA} -i $in -o $out -a pre-inst-z3
+
 """
 
 # rule instantiate

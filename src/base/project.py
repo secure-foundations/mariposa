@@ -62,6 +62,7 @@ class _ProjectType(enum.Enum):
     SHKO = "shko" # shake oracle
     SHKP = "shkp" # shake partial
     INTD = "intd" # instantiated
+    PINS = "pins" # pre-inst
     WOCO = "woco" # wombo combo
 
     def __str__(self):
