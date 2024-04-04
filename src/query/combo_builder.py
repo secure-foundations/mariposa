@@ -34,42 +34,18 @@ def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
 
     log_check(os.path.exists(output_trace), f"failed to create {output_trace}")
 
-def handle_wombo_combo_z3(input_query, output_query_path, timeout, restarts):
+def handle_pre_inst_z3(input_query, output_query_path):
     count = count_lines(input_query)
     log_info(f"original query has {count} commands")
-    solver = FACT.get_solver_by_name("z3_4_12_5")
-
     name_hash = get_name_hash(input_query)
-    cur_query = f"{GEN_ROOT}{name_hash}.woco.smt2"
-    trace_path = f"{GEN_ROOT}/{name_hash}.z3-trace"
+    cur_query = f"{GEN_ROOT}{name_hash}.pins.smt2"
+
     shutil.copy(input_query, cur_query)
 
-    # subprocess_run([MARIPOSA, 
-    #         "-a", "pre-inst-z3", 
-    #         "-i", input_query, 
-    #         "-o", cur_query], check=True, debug=True)
-
-    prev_count = count_lines(cur_query)
-    log_info(f"combo iteration 0, {prev_count} commands after simplification")
-
-    for i in range(1, 10):
-        remove_file(trace_path)
-        handle_trace_z3(cur_query, trace_path, True, 10, restarts)
-
-        subprocess_run([MARIPOSA, 
-            "-a", "inst-z3", 
-            "-i", cur_query, 
-            "--z3-trace-log-path", trace_path, 
-            "--max-trace-insts=1000", 
+    subprocess_run([MARIPOSA, 
+            "-a", "pre-inst-z3", 
+            "-i", input_query, 
             "-o", cur_query], check=True, debug=True)
-
-        count = count_lines(cur_query)
-        log_info(f"combo iteration {i}, {count} commands after inst")
-
-        MutCoreBuilder(cur_query, solver, cur_query, 10, True, restarts)
-        count = count_lines(cur_query)
-        log_info(f"combo iteration {i}, {count} commands after core")
-        prev_count = count
 
     subprocess_run([MARIPOSA, 
         "-a", "clean", 
@@ -78,4 +54,40 @@ def handle_wombo_combo_z3(input_query, output_query_path, timeout, restarts):
 
     count = count_lines(cur_query)
     log_info(f"combo end, {count} commands")
+    os.system(f"mv {cur_query} {output_query_path}")
+
+def handle_wombo_combo_z3(input_query, output_query_path, timeout, restarts):
+    solver = FACT.get_solver_by_name("z3_4_12_5")
+    name_hash = get_name_hash(input_query)
+    cur_query = f"{GEN_ROOT}{name_hash}.woco.smt2"
+    trace_path = f"{GEN_ROOT}/{name_hash}.z3-trace"
+    
+    shutil.copy(input_query, cur_query)
+    prev_count = count_asserts(cur_query)
+    log_info(f"{prev_count} asserts")
+
+    remove_file(trace_path)
+    handle_trace_z3(cur_query, trace_path, True, 5, restarts)
+
+    subprocess_run([MARIPOSA, 
+        "-a", "inst-z3", 
+        "-i", cur_query, 
+        "--z3-trace-log-path", trace_path, 
+        "-o", cur_query], check=True, debug=True)
+
+    count = count_asserts(cur_query)
+    log_info(f"{count} asserts after inst")
+
+    MutCoreBuilder(cur_query, solver, cur_query, 10, True, restarts)
+    count = count_asserts(cur_query)
+    log_info(f"{count} asserts after core")
+    prev_count = count
+
+    subprocess_run([MARIPOSA, 
+        "-a", "clean", 
+        "-i", cur_query, 
+        "-o", cur_query], check=True, debug=True)
+
+    count = count_asserts(cur_query)
+    log_info(f"combo end {count} asserts")
     os.system(f"mv {cur_query} {output_query_path}")

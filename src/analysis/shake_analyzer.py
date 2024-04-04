@@ -5,7 +5,7 @@ from base.factory import FACT
 from base.project import KnownExt, ProjectGroup, ProjectType as PT
 from proj_wizard import NINJA_BUILD_RULES
 from query.analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
-from analysis.expr_analyzer import ExprAnalyzer
+from analysis.expr_analyzer import ExperAnalyzer
 from utils.analysis_utils import *
 from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner
@@ -35,7 +35,7 @@ class ShakeAnalyzer(CoreAnalyzer):
         self.p_shake = group.get_project(PT.from_str("shko.z3"), build=True)
 
         # shake = FACT.load_any_experiment(self.p_shake)
-        # self.shake = ExprAnalyzer(shake, ana)
+        # self.shake = ExperAnalyzer(shake, ana)
         self.create_shake_queries()
 
     def check_shake_perf(self):

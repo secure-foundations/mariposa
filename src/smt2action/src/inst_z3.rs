@@ -227,7 +227,7 @@ pub fn handle_z3_trace(
     };
 
     let mut inst_cmds: Vec<concrete::Command> = Vec::new();
-
+    let mut count = 0;
     for inst in &parser.insts.matches {
         match &inst.kind {
             MatchKind::Quantifier {
@@ -242,6 +242,7 @@ pub fn handle_z3_trace(
                     let name = mk_fun_forall(&name.to_string());
 
                     if inserter.forall_fun_symbols.contains(&name) {
+                        count += 1;
                         let mut ok = true;
                         let mut instance = "\n".to_string();
                         for bound_term in bound_terms.iter().rev() {
@@ -252,7 +253,7 @@ pub fn handle_z3_trace(
                             }
                         }
 
-                        if ok {
+                        if ok && instance.len() < 4096 {
                             let instance = format!(
                                 "(assert (!(|{}| {}) :named mariposa_cid_{}))",
                                 &name.to_string(),
@@ -280,14 +281,15 @@ pub fn handle_z3_trace(
         max_inst
     };
 
-    let sample: Vec<_> = inst_cmds
-        .into_iter()
-        .choose_multiple(&mut rand::thread_rng(), max_inst);
-
     println!(
         "Total QI count: {}, Skipped QI count: {}, Failed QI count: {}",
         inserter.total_qi_count, inserter.skipped_qi_count, inserter.failed_qi_count
     );
+
+    let sample: Vec<_> = inst_cmds
+        .into_iter()
+        .choose_multiple(&mut rand::thread_rng(), max_inst);
+
     commands.extend(sample);
     commands.extend(rest);
 }

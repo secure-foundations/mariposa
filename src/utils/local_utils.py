@@ -1,5 +1,5 @@
 import subprocess, sys
-from analysis.expr_analyzer import ExprAnalyzer
+from analysis.expr_analyzer import ExperAnalyzer
 from base.defs import MARIPOSA, SINGLE_PROJ_ROOT
 from base.factory import FACT
 from base.project import get_qid
@@ -14,7 +14,7 @@ def handle_single(args):
     if exp.sum_table_exists() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {SINGLE_PROJ_ROOT}")
         log_warn(f"you might want to use --clear-existing to overwrite the results.")
-        ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
+        ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
 
     reset_dir(SINGLE_PROJ_ROOT, args.clear_existing)
@@ -32,7 +32,7 @@ def handle_single(args):
 
     r = Runner(exp)
     r.run_experiment(args.clear_existing)
-    ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
+    ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
 
 def handle_multiple(args):
     exp = args.experiment
@@ -44,12 +44,12 @@ def handle_multiple(args):
 
     if exp.sum_table_exists() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {exp.proj.sub_root}")
-        ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
+        ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
 
     r = Runner(exp)
     r.run_experiment(args.clear_existing)
-    ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
+    ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
     return (exp.db_path, args.part)
 
 def handle_info(args):
@@ -71,4 +71,4 @@ def handle_update(args):
 
     r = Runner(exp)
     r.update_experiment([qid])
-    ExprAnalyzer(exp, args.analyzer).print_status(args.verbose)
+    ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)

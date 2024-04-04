@@ -4,7 +4,7 @@ from base.factory import FACT
 from base.project import ProjectGroup, ProjectType as PT
 from proj_wizard import NINJA_BUILD_RULES
 from query.analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
-from analysis.expr_analyzer import ExprAnalyzer
+from analysis.expr_analyzer import ExperAnalyzer
 from utils.analysis_utils import *
 from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner
@@ -70,9 +70,9 @@ class CoreAnalyzer:
         log_check(core.solver == solver, "core project is not using z3_4_12_5")
         extd = FACT.build_experiment("default", self.p_extd, solver)
 
-        self.base = ExprAnalyzer(base, ana)
-        self.core = ExprAnalyzer(core, ana)
-        self.extd = ExprAnalyzer(extd, ana, enable_dummy=True)
+        self.base = ExperAnalyzer(base, ana)
+        self.core = ExperAnalyzer(core, ana)
+        self.extd = ExperAnalyzer(extd, ana, enable_dummy=True)
 
         self.qids: Dict[str, CoreQueryStatus] = dict()
 
@@ -100,18 +100,6 @@ class CoreAnalyzer:
         # self.suggest_issue_fixes()
         # self.get_trace_candidate()
         # self.print_status()
-
-        pins_p = group.get_project(PT.from_str("pins.z3"), build=True)
-        woco_p = group.get_project(PT.from_str("woco.z3"), build=True)
-        print(NINJA_BUILD_RULES)
-
-        for qid in self.core_adj[STB.UNSTABLE]:
-            cqs = self.qids[qid]
-            pins_path = pins_p.get_ext_path(qid)
-            woco_path = woco_p.get_ext_path(qid)
-            if cqs.core_is_enabled():
-                print(f"build {pins_path}: pre-inst-z3 {cqs.patch_path}\n")
-                # print(f"build {woco_path}: wombo-combo {cqs.patch_path}\n")
 
     def print_status(self):
         print_banner("Report " + self.group.gid)

@@ -64,6 +64,7 @@ class _ProjectType(enum.Enum):
     INTD = "intd" # instantiated
     PINS = "pins" # pre-inst
     WOCO = "woco" # wombo combo
+    TEMP = "temp" # temp
 
     def __str__(self):
         return self.value

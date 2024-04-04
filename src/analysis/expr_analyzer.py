@@ -7,7 +7,7 @@ from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *
 
-class ExprAnalyzer:
+class ExperAnalyzer:
     def __init__(self, exp: Experiment, ana: QueryAnalyzer, enable_dummy=False):
         self.exp = exp
         self.ana: QueryAnalyzer = ana
@@ -16,7 +16,7 @@ class ExprAnalyzer:
         self.__cats: Categorizer = ana.categorize_queries(
             self.__qrs.values())
 
-    def __getitem__(self, qid):
+    def __getitem__(self, qid) -> QueryExpResult:
         return self.__qrs[qid]
 
     def __contains__(self, qid):

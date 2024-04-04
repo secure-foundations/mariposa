@@ -91,6 +91,7 @@ class CoreCompleter:
 
     def try_complete_core(self, output_path):
         cur_diff = self.diff_asserts
+        print(f"initial diff len: {len(cur_diff)}")
 
         while 1:
             next_diff = self.binary_search(cur_diff)
