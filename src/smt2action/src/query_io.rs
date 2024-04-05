@@ -230,7 +230,7 @@ pub fn is_iterating_io(in_query_path: &String, out_query_path: &Option<String>) 
         return false;
     }
     // TODO: more robust comparison if needed
-    return in_query_path == out_query_path.as_ref().unwrap();
+    return *in_query_path == *out_query_path.as_ref().unwrap();
 }
 
 fn remove_debug_commands(commands: &mut Vec<concrete::Command>) -> (usize, usize) {

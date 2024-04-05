@@ -69,25 +69,25 @@ def handle_wombo_combo_z3(input_query, output_query_path, timeout, restarts):
     remove_file(trace_path)
     handle_trace_z3(cur_query, trace_path, True, 5, restarts)
 
-    subprocess_run([MARIPOSA, 
-        "-a", "inst-z3", 
-        "-i", cur_query, 
-        "--z3-trace-log-path", trace_path, 
-        "-o", cur_query], check=True, debug=True)
+    # subprocess_run([MARIPOSA, 
+    #     "-a", "inst-z3", 
+    #     "-i", cur_query, 
+    #     "--z3-trace-log-path", trace_path, 
+    #     "-o", cur_query], check=True, debug=True)
 
-    count = count_asserts(cur_query)
-    log_info(f"{count} asserts after inst")
+    # count = count_asserts(cur_query)
+    # log_info(f"{count} asserts after inst")
 
-    MutCoreBuilder(cur_query, solver, cur_query, 10, True, restarts)
-    count = count_asserts(cur_query)
-    log_info(f"{count} asserts after core")
-    prev_count = count
+    # MutCoreBuilder(cur_query, solver, cur_query, 10, True, restarts)
+    # count = count_asserts(cur_query)
+    # log_info(f"{count} asserts after core")
+    # prev_count = count
 
-    subprocess_run([MARIPOSA, 
-        "-a", "clean", 
-        "-i", cur_query, 
-        "-o", cur_query], check=True, debug=True)
+    # subprocess_run([MARIPOSA, 
+    #     "-a", "clean", 
+    #     "-i", cur_query, 
+    #     "-o", cur_query], check=True, debug=True)
 
-    count = count_asserts(cur_query)
-    log_info(f"combo end {count} asserts")
-    os.system(f"mv {cur_query} {output_query_path}")
+    # count = count_asserts(cur_query)
+    # log_info(f"combo end {count} asserts")
+    # os.system(f"mv {cur_query} {output_query_path}")

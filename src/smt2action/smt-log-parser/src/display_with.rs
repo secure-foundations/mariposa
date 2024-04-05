@@ -351,8 +351,8 @@ impl ProofOrApp {
         } else {
             let res = ctxt.symbols.get(name);
             if res.is_none() {
-                println!("Undefined symbol: {}", name);
-                // ctxt.missing_symbols.
+                // println!("Undefined symbol: {}", name);
+                // ctxt.missing_symbols.insert(name.to_string());
                 return fmt::Result::Err(fmt::Error);
             }
             res.unwrap()

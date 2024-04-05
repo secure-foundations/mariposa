@@ -82,8 +82,8 @@ class PrefAnalyzer:
         plt.title(f"{PROJECT_LABELS[gid]} cvc5 vs. Z3 Verification Time")
 
         # sp.set_aspect('equal', adjustable='box')
-        sp.set_xlim(0)
-        sp.set_ylim(0, 65)
+        sp.set_xlim(0, 1)
+        sp.set_ylim(0, 10)
         sp.legend()
 
         plt.grid()

@@ -347,7 +347,7 @@ fn main() {
                 println!("[ERROR] inst-z3 requires a Z3 trace log file");
                 exit(1);
             }
-            inst_z3::handle_z3_trace(path, &mut commands, args.max_trace_insts);
+            inst_z3::handle_z3_trace_v2(path, &mut commands, args.max_trace_insts);
         }
         Action::AddIds => {
             query_io::add_cids(&mut commands, args.reassign_ids);
