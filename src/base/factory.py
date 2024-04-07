@@ -122,7 +122,7 @@ class Factory:
 
     def load_any_experiment(self, proj: Project) -> Experiment:
         exps = self.get_project_experiments(proj)
-        log_check(len(exps) != 0, f"no experiment results found for {proj}")
+        log_check(len(exps) != 0, f"no experiment results found for {proj.full_name}")
         return exps[0]
 
     def get_project_experiments(self, proj: Project) -> List[Experiment]:

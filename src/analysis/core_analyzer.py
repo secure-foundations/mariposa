@@ -59,43 +59,43 @@ class CoreAnalyzer:
     def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
         solver = FACT.get_solver_by_name("z3_4_12_5")
 
-        self.p_base = group.get_project(PT.from_str("base.z3"))
-        self.p_core = group.get_project(PT.from_str("core.z3"))
-        self.p_extd = group.get_project(PT.from_str("extd.z3"))
-        self.group = group
+        # self.p_base = group.get_project(PT.from_str("base.z3"))
+        # self.p_core = group.get_project(PT.from_str("core.z3"))
+        # self.p_extd = group.get_project(PT.from_str("extd.z3"), build=True)
+        # self.group = group
 
-        base = FACT.build_experiment("default", self.p_base, solver)
-        log_check(base.solver == solver, "base project is not using z3_4_12_5")
-        core = FACT.load_any_experiment(self.p_core)
-        log_check(core.solver == solver, "core project is not using z3_4_12_5")
-        extd = FACT.build_experiment("default", self.p_extd, solver)
-        self.base = ExperAnalyzer(base, ana)
-        self.core = ExperAnalyzer(core, ana)
-        self.extd = ExperAnalyzer(extd, ana, enable_dummy=True)
+        # base = FACT.build_experiment("default", self.p_base, solver)
+        # log_check(base.solver == solver, "base project is not using z3_4_12_5")
+        # core = FACT.load_any_experiment(self.p_core)
+        # log_check(core.solver == solver, "core project is not using z3_4_12_5")
+        # extd = FACT.build_experiment("default", self.p_extd, solver)
+        # self.base = ExperAnalyzer(base, ana)
+        # self.core = ExperAnalyzer(core, ana)
+        # self.extd = ExperAnalyzer(extd, ana, enable_dummy=True)
 
-        self.qids: Dict[str, CoreQueryStatus] = dict()
+        # self.qids: Dict[str, CoreQueryStatus] = dict()
 
-        for qid in self.base.qids:
-            bs = self.base.get_query_stability(qid)
-            bp = self.base.exp.proj.get_ext_path(qid)
-            bur = self.base.get_unstable_reason(qid)
+        # for qid in self.base.qids:
+        #     bs = self.base.get_query_stability(qid)
+        #     bp = self.base.exp.proj.get_ext_path(qid)
+        #     bur = self.base.get_unstable_reason(qid)
 
-            cs = self.core.get_query_stability(qid)
-            cp = self.core.exp.proj.get_ext_path(qid)
-            cur = self.core.get_unstable_reason(qid)
+        #     cs = self.core.get_query_stability(qid)
+        #     cp = self.core.exp.proj.get_ext_path(qid)
+        #     cur = self.core.get_unstable_reason(qid)
 
-            es = self.extd.get_query_stability(qid)
-            ep = self.extd.exp.proj.get_ext_path(qid)
-            eur = self.extd.get_unstable_reason(qid)
+        #     es = self.extd.get_query_stability(qid)
+        #     ep = self.extd.exp.proj.get_ext_path(qid)
+        #     eur = self.extd.get_unstable_reason(qid)
 
-            cqs = CoreQueryStatus(qid, bs, bp, bur, cs, cp, cur, es, ep, eur)
-            # cqs.sanity_check()
-            self.qids[qid] = cqs
+        #     cqs = CoreQueryStatus(qid, bs, bp, bur, cs, cp, cur, es, ep, eur)
+        #     # cqs.sanity_check()
+        #     self.qids[qid] = cqs
 
-        self.adjust_status()
-        self.__init_issue_status()
-        self.issues.print_status()
-        self.suggest_issue_fixes()
+        # self.adjust_status()
+        # self.__init_issue_status()
+        # self.issues.print_status()
+        # self.suggest_issue_fixes()
 
         # self.get_trace_candidate()
         # self.print_status()

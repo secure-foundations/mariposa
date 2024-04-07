@@ -2,7 +2,7 @@ from typing import Dict
 # from base.project import FACT, QueryType as QType
 from base.exper import Experiment, QueryExpResult
 from query.analyzer import *
-from utils.query_utils import Mutation, emit_mutant_query
+from utils.query_utils import Mutation
 from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *

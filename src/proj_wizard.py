@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 
-import random
 import argparse, time, pickle, numpy as np
 from analysis.expr_analyzer import ExperAnalyzer
 from base.exper import Experiment
-from base.factory import FACT
-from base.project import KnownExt, Project, ProjectGroup, ProjectType as PT, get_qid
+from base.project import KnownExt, Project, ProjectType as PT, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
-from query.analyzer import Stability
 from utils.option_utils import *
 from utils.system_utils import *
 
@@ -31,7 +28,7 @@ rule complete-core
     command = {QUERY_WIZARD} complete-core -i $in -o $out --core-query-path $core 
 
 rule convert-smtlib
-    command = {QUERY_WIZARD} convert-smtlib -i $in -o $out
+    command = {QUERY_WIZARD} convert-smtlib -i $in -o $out $inc
 
 rule get-lfsc
     command = {QUERY_WIZARD} get-lfsc -i $in --output-log-path $out --timeout 60 $clear
@@ -233,6 +230,10 @@ class NinjaPasta:
             base_name = os.path.basename(in_path)
             out_path = os.path.join(self.output_dir, base_name)
             self.ninja_stuff += [f"build {out_path}: convert-smtlib {in_path}\n"]
+            if args.incremental:
+                self.ninja_stuff += f"    inc=--incremental\n"
+            else:
+                self.ninja_stuff += f"    inc=\n"
             self.expect_targets.add(out_path)
 
     def handle_get_proof(self, in_proj, clear):
