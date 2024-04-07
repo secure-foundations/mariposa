@@ -63,6 +63,9 @@ def add_ninja_log_option(parser):
     parser.add_argument("--record-build-stats", default=False, action='store_true', help="parse and keep the build stat")
     parser.add_argument("--no-build", default=False, action='store_true', help="stop after creating the ninja")
 
+def add_incremental_option(parser):
+    parser.add_argument("--incremental", default=False, action='store_true', help="run the solver in incremental mode")
+
 def deep_parse_args(args):
     from base.factory import FACT
 
@@ -111,5 +114,8 @@ def deep_parse_args(args):
         
     if hasattr(args, "restarts"):
         args.restarts = int(args.restarts)
+
+    if hasattr(args, "incremental"):
+        args.incremental = bool(args.incremental)
 
     return args

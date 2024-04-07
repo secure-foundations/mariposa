@@ -8,7 +8,7 @@ from query.inst_builder import InstBuilder
 from utils.option_utils import *
 from query.core_builder import MutCoreBuilder
 from query.proof_builder import ProofBuilder, check_lfsc_proof
-from utils.query_utils import convert_verus_smtlib, emit_quake_query, is_assertion_subset
+from utils.query_utils import convert_smtlib, emit_quake_query, is_assertion_subset
 from utils.shake_utils import create_shake_query_from_log, debug_shake
 from utils.system_utils import log_check
 
@@ -25,6 +25,7 @@ def setup_convert_smt_lib(subparsers):
     p = subparsers.add_parser('convert-smtlib', help='convert a verus query to smt-lib standard (cvc5) format')
     add_input_query_option(p)
     add_output_query_option(p)
+    add_incremental_option(p)
 
 def setup_get_lfsc(subparsers):
     p = subparsers.add_parser('get-lfsc', help='get lfsc proof from a query with cvc5')
@@ -127,10 +128,12 @@ if __name__ == "__main__":
                          args.output_query_path, 
                          args.timeout,
                          args.ids_available,
-                         args.restarts)
+                         args.restarts,
+                         args.incremental)
     elif args.sub_command == "convert-smtlib":
-        convert_verus_smtlib(args.input_query_path, 
-                             args.output_query_path)
+        convert_smtlib(args.input_query_path, 
+                             args.output_query_path,
+                             args.incremental)
     elif args.sub_command == "get-lfsc":
         ProofBuilder(args.input_query_path, 
                      args.output_log_path,

@@ -55,10 +55,10 @@ def handle_pre_inst_z3(input_query, output_query_path):
     log_info(f"combo end, {count} commands")
     os.system(f"mv {cur_query} {output_query_path}")
 
+
 def handle_inst_z3(input_query, output_query, timeout, restarts):
     name_hash = get_name_hash(input_query)
     trace_path = f"{GEN_ROOT}/{name_hash}.z3-trace"
-
     handle_trace_z3(input_query, trace_path, True, timeout, restarts)
 
     subprocess_run([MARIPOSA, 
