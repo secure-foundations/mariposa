@@ -4,11 +4,9 @@ import shutil
 from base.defs import QUERY_WIZARD
 from base.factory import FACT
 from base.project import ProjectGroup, ProjectType as PT
-from proj_wizard import NINJA_BUILD_RULES
 from query.analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
 from analysis.expr_analyzer import ExperAnalyzer
 from utils.analysis_utils import *
-from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner, subprocess_run
 
 def get_quantifier_count(path):

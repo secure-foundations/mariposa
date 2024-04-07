@@ -124,16 +124,15 @@ if __name__ == "__main__":
 
     if args.sub_command == "build-core":
         MutCoreBuilder(args.input_query_path,
-                         args.solver, 
-                         args.output_query_path, 
-                         args.timeout,
-                         args.ids_available,
-                         args.restarts,
-                         args.incremental)
+                        args.solver, 
+                        args.output_query_path, 
+                        args.timeout,
+                        args.ids_available,
+                        args.restarts)
     elif args.sub_command == "convert-smtlib":
         convert_smtlib(args.input_query_path, 
-                             args.output_query_path,
-                             args.incremental)
+                        args.output_query_path,
+                        args.incremental)
     elif args.sub_command == "get-lfsc":
         ProofBuilder(args.input_query_path, 
                      args.output_log_path,
@@ -162,13 +161,17 @@ if __name__ == "__main__":
     elif args.sub_command == "complete-core":
         CoreCompleter(args.input_query_path, 
                       args.core_query_path, 
-                      args.solver, 
+                      args.solver,
                       args.output_query_path, 
                       args.timeout)
     elif args.sub_command == "check-subset":
-        log_check(is_assertion_subset(args.input_query_path, args.subset_query), f"{args.subset_query} is not a subset of {args.input_query_path}")
+        ok = is_assertion_subset(args.input_query_path, 
+                                 args.subset_query)
+        log_check(ok, f"{args.subset_query} is not a subset of {args.input_query_path}")
     elif args.sub_command == "debug-shake":
-        debug_shake(args.input_query_path, args.core_query_path, args.input_log_path)
+        debug_shake(args.input_query_path, 
+                    args.core_query_path, 
+                    args.input_log_path)
     elif args.sub_command == "create-shake":
         create_shake_query_from_log(args.input_query_path, 
                                     args.input_log_path, 

@@ -1,6 +1,5 @@
 
-from query.core_builder import MutCoreBuilder
-from utils.query_utils import Mutation, count_asserts, count_lines, emit_mutant_query
+from utils.query_utils import Mutation, count_lines, emit_mutant_query
 from utils.system_utils import *
 import random
 from base.defs import GEN_ROOT, MARIPOSA
@@ -54,7 +53,6 @@ def handle_pre_inst_z3(input_query, output_query_path):
     count = count_lines(cur_query)
     log_info(f"combo end, {count} commands")
     os.system(f"mv {cur_query} {output_query_path}")
-
 
 def handle_inst_z3(input_query, output_query, timeout, restarts):
     name_hash = get_name_hash(input_query)

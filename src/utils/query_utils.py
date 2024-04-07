@@ -3,7 +3,7 @@ import os
 import subprocess
 
 from base.defs import MARIPOSA
-from utils.system_utils import log_check, log_warn
+from utils.system_utils import log_check, log_info, log_warn
 
 def normalize_line(line):
     return line.replace(" ", "").strip()
@@ -45,11 +45,11 @@ _PARTIAL_ORDER_ALT = [
 QUAKE_MESSAGE = "[INFO] mariposa-quake"
 
 def convert_smtlib(in_file, out_file, incremental):
-    print("called convert_smtlib with incremental: {}".format(incremental))
     lines = open(in_file, 'r').readlines()
     lines = [line.strip() for line in lines]
     new_lines = []
     new_lines.append("(set-logic ALL)")
+
     if incremental:
         new_lines.append("(set-option :incremental true)")
 
@@ -73,7 +73,8 @@ def convert_smtlib(in_file, out_file, incremental):
     with open(out_file, 'w') as f:
         for line in unique_lines:
             f.write(line + '\n')
-    print("[INFO] converted file: {}".format(out_file))
+
+    log_info("converted file: {}".format(out_file))
 
 def __split_query_context(query_path):
     lines = open(query_path, "r").readlines()

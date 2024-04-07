@@ -131,22 +131,3 @@ class ExperAnalyzer:
             return self.ana.sub_categorize_unstable(self[qid].blob)
         return None
 
-    # def get_assert_counts(self, update=False):
-    #     from tqdm import tqdm
-    #     cache_path = f"asserts/{self.proj.full_name}"
-    #     if has_cache(cache_path) and not update:
-    #         counts = load_cache(cache_path)
-    #     else:
-    #         log_info(f"assert counts for {self.proj.full_name}")
-    #         counts = dict()
-    #         for query_path in tqdm(self.proj.list_queries()):
-    #             base_name = os.path.basename(query_path)
-    #             counts[base_name] = count_asserts(query_path)
-    #         save_cache(cache_path, counts)
-    #     return counts
-
-    # def get_veri_times(self):
-    #     data = []
-    #     for qr in self.__qrs.values():
-    #         data.append(qr.get_original_status()[1])
-    #     return np.array(data) / 1000

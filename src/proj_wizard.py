@@ -5,7 +5,7 @@ import argparse, time, pickle, numpy as np
 from analysis.expr_analyzer import ExperAnalyzer
 from base.exper import Experiment
 from base.factory import FACT
-from base.project import KnownExt, Project, ProjectGroup, ProjectType as PT, full_proj_name, get_qid
+from base.project import KnownExt, Project, ProjectGroup, ProjectType as PT, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
 from query.analyzer import Stability
 from utils.option_utils import *
@@ -59,27 +59,6 @@ rule inst-z3
 
 """
 
-# rule instantiate
-#     command = ./target/release/mariposa -i $in --trace-log $log -o $out
-
-# rule z3-trace
-#     command = ./solvers/z3-4.12.2 $in -T:150 trace=true trace_file_name=$out
-
-# rule shake-special
-#     command = {MARIPOSA} -i $in -o $out -m tree-shake --shake-log-path $log --shake-max-symbol-frequency 25
-
-# rule shake-partial
-#     command = python3 scripts/run_shake.py partial $out $in $full $log
-
-# rule strip
-#     command = ./target/release/mariposa -i $in -o $out -m remove-unused
-
-# rule reduce-query
-#     command = python3 scripts/unsat_core_search.py reduce $in $out > $out.log
-
-# rule iterate-reduce-query
-#     command = python3 scripts/unsat_core_search.py reduce $in $in > $out
-
 def set_up_create(subparsers):
     p = subparsers.add_parser('create', help='create a new project')
     add_input_dir_option(p, False)
@@ -94,7 +73,7 @@ def set_up_build_core(subparsers):
     add_timeout_option(p)
     add_clear_option(p)
     add_ninja_log_option(p)
-    
+
 def set_up_build_z3_trace(subparsers):
     p = subparsers.add_parser('build-trace', help='build z3 traces out of unstable queries in a project')
     add_input_dir_option(p)
@@ -107,6 +86,7 @@ def set_up_convert_smt_lib(subparsers):
     p = subparsers.add_parser('convert-smtlib', help='convert a verus query to smt-lib standard (cvc5) format, by default, the output directory is set using the project manager conventions')
     add_input_dir_option(p)
     add_clear_option(p)
+    add_incremental_option(p)
     add_ninja_log_option(p)
 
 def set_up_get_proof(subparsers):
@@ -134,26 +114,9 @@ def set_up_get_inst(subparsers):
     add_clear_option(p)
     add_ninja_log_option(p)
 
-def set_up_verify(subparsers):
-    p = subparsers.add_parser('verify', help='run verification on a query')
-    add_input_dir_option(p)
-    add_solver_option(p)
-    add_clear_option(p)
-    add_ninja_log_option(p)
-
 def set_up_load_stat(subparsers):
     p = subparsers.add_parser('load-stat', help='load build stats from a previous run')
     p.add_argument("-i", "--input-log-file", required=True, help="the input file (.pkl) to load")
-
-def set_up_fix_missing_core(subparsers):
-    p = subparsers.add_parser('fix-missing-core', help='fix missing core queries')
-    add_input_dir_option(p, is_group=True)
-    add_clear_option(p)
-    
-def set_up_fix_incomplete_core(subparsers):
-    p = subparsers.add_parser('fix-incomplete-core', help='fix incomplete core queries')
-    add_input_dir_option(p, is_group=True)
-    add_clear_option(p)
 
 def set_up_create_benchmark(subparsers):
     p = subparsers.add_parser('create-benchmark', help='create a benchmark project (do not use this unless you know what you are doing)')
@@ -164,10 +127,6 @@ def set_up_log_shake(subparsers):
     add_input_dir_option(p)
     add_clear_option(p)
     add_ninja_log_option(p)
-
-# def set_up_wombo_combo(subparsers):
-#     p = subparsers.add_parser('wombo-combo', help='use trace and core to build a reduced query')
-#     add_input_dir_option(p, is_group=True)
 
 class NinjaPasta:
     def __init__(self, args, cmd):
@@ -204,14 +163,6 @@ class NinjaPasta:
             ext = self.handle_check_proof(args.input_group, args.clear_existing)
         elif args.sub_command == "get-inst":
              self.handle_get_inst(args.input_proj, args.clear_existing)
-        elif args.sub_command == "verify":
-            # always record build stats for verification
-            args.record_build_stats = True
-            ext = self.handle_verify(args.input_proj, args.solver)
-        elif args.sub_command == "fix-missing-core":
-            self.handle_fix_missing_core(args.input_group)
-        elif args.sub_command == "fix-incomplete-core":
-            self.handle_fix_incomplete_core(args.input_group)
         elif args.sub_command == "create-benchmark":
             self.handle_create_benchmark()
         elif args.sub_command == "log-shake":
@@ -347,54 +298,24 @@ class NinjaPasta:
             self.expect_targets.add(o)
         return ext
 
-    def handle_wombo_combo(self, in_group):
-        pass
+    # def handle_create_benchmark(self):
+    #     self.output_dir = "data/projs/bench_unstable/base.z3"
+    #     log_info(f"output directory is set to {self.output_dir}")
+    #     ana = QueryAnalyzer("60nq")
+    #     for gid in ["d_fvbkv", "d_lvbkv", "d_komodo", "fs_vwasm", "fs_dice"]:
+    #         group = FACT.get_group(gid)
+    #         proj = group.get_project(PT.from_str("base.z3"))
+    #         exp = FACT.load_any_experiment(proj)
+    #         exp = ExperAnalyzer(exp, ana)
 
-    def handle_fix_missing_core(self, in_group: ProjectGroup):
-        qids = in_group.load_qids("unstable_2_missing_core")
-        base = in_group.get_project(PT.from_str("base.z3"))
-        extd = in_group.get_project(PT.from_str("extd.z3"))
-        self.output_dir = extd.sub_root
-
-        for qid in qids:
-            i = base.get_ext_path(qid)
-            o = extd.get_ext_path(qid)
-            self.ninja_stuff += [f"build {o}: build-core {i}\n\n"]
-            self.expect_targets.add(o)
-            
-    def handle_fix_incomplete_core(self, in_group: ProjectGroup):
-        qids = in_group.load_qids("stable_2_unsolvable_core")
-        base = in_group.get_project(PT.from_str("base.z3"))
-        core = in_group.get_project(PT.from_str("core.z3"))
-        extd = in_group.get_project(PT.from_str("extd.z3"))
-        self.output_dir = extd.sub_root
-
-        for qid in qids:
-            i = base.get_ext_path(qid)
-            c = core.get_ext_path(qid)
-            o = extd.get_ext_path(qid)
-            self.ninja_stuff += [f"build {o}: complete-core {i}\n",
-                                    f"    core={c}\n\n"]
-            self.expect_targets.add(o)
-
-    def handle_create_benchmark(self):
-        self.output_dir = "data/projs/bench_unstable/base.z3"
-        log_info(f"output directory is set to {self.output_dir}")
-        ana = QueryAnalyzer("60nq")
-        for gid in ["d_fvbkv", "d_lvbkv", "d_komodo", "fs_vwasm", "fs_dice"]:
-            group = FACT.get_group(gid)
-            proj = group.get_project(PT.from_str("base.z3"))
-            exp = FACT.load_any_experiment(proj)
-            exp = ExperAnalyzer(exp, ana)
-
-            for qid in exp.get_overall()[Stability.UNSTABLE]:
-                i = proj.get_ext_path(qid)
-                o = os.path.join(self.output_dir, f"{gid}--{qid}.smt2")
-                if not os.path.exists(o):
-                    log_warn(f"skipping query {i}")
-                    continue
-                self.ninja_stuff += [f"build {o}: add-ids {i}\n"]
-        random.shuffle(self.ninja_stuff)
+    #         for qid in exp.get_overall()[Stability.UNSTABLE]:
+    #             i = proj.get_ext_path(qid)
+    #             o = os.path.join(self.output_dir, f"{gid}--{qid}.smt2")
+    #             if not os.path.exists(o):
+    #                 log_warn(f"skipping query {i}")
+    #                 continue
+    #             self.ninja_stuff += [f"build {o}: add-ids {i}\n"]
+    #     random.shuffle(self.ninja_stuff)
         
     def handle_create_shake_log(self, in_proj):
         self.output_dir = in_proj.get_log_dir(KnownExt.SHK_LOG)
@@ -504,12 +425,8 @@ if __name__ == "__main__":
     set_up_check_proof(subparsers)
     set_up_get_inst(subparsers)
     set_up_load_stat(subparsers)
-    set_up_verify(subparsers)
-    set_up_fix_missing_core(subparsers)
-    set_up_fix_incomplete_core(subparsers)
     set_up_create_benchmark(subparsers)
     set_up_log_shake(subparsers)
-    # set_up_wombo_combo(subparsers)
 
     cmd = " ".join(sys.argv)
 

@@ -1,11 +1,13 @@
 import os, random, subprocess
+from base.solver import SolverType
 from utils.query_utils import Mutation, emit_mutant_query
 from utils.system_utils import *
 from base.defs import MARIPOSA
 
 class MutCoreBuilder:
-    def __init__(self, input_query, solver, output_query, timeout, ids_available, restarts, incremental):
+    def __init__(self, input_query, solver, output_query, timeout, ids_available, restarts):
         log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
+        log_check(solver.stype == SolverType.Z3, f"only z3 solver is supported, got {self.solver}")
         self.solver = solver
 
         name_hash = get_name_hash(input_query)
@@ -17,7 +19,6 @@ class MutCoreBuilder:
         self.output_query = output_query
         self.clear_temp_files()
         self.ids_available = ids_available
-        self.incremental = incremental
 
         self.__create_label_query()
 

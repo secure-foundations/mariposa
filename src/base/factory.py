@@ -135,9 +135,5 @@ class Factory:
                 if exp.sum_table_exists():
                     exps.append(exp)
         return exps
-    
-    # def switch_solver(self, proj: Project) -> Project:
-    #     _ = self.__get_project(proj.gid, proj.ptype)
-    #     return Project(proj.gid, proj.ptype.switch_solver())
 
 FACT = Factory()
