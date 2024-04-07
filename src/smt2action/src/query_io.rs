@@ -178,12 +178,13 @@ pub fn truncate_commands(commands: &mut Vec<concrete::Command>) {
 pub struct QueryPrinter {
     writer: BufWriter<Box<dyn std::io::Write>>,
     out_file_path: Option<String>,
-    dirty: bool,
+    committed: bool,
+    rm_on_failure: bool,
     _pretty: bool,
 }
 
 impl QueryPrinter {
-    pub fn new(out_file_path: Option<String>) -> QueryPrinter {
+    pub fn new(out_file_path: Option<String>, rm_on_failure: bool) -> QueryPrinter {
         let writer: BufWriter<Box<dyn std::io::Write>> = match &out_file_path {
             Some(path) => {
                 let path = std::path::Path::new(&path);
@@ -197,32 +198,39 @@ impl QueryPrinter {
         QueryPrinter {
             writer,
             out_file_path,
-            dirty: false,
+            committed: false,
+            rm_on_failure,
             _pretty: false,
         }
     }
 
-    // fn write(&mut self, s: &String) {
-    //     self.dirty = true;
-    //     write!(self.writer, "{}", s).unwrap();
-    // }
-
     pub fn dump_commands(&mut self, commands: &Vec<concrete::Command>) {
-        self.dirty = true;
         for command in commands {
             writeln!(self.writer, "{}", command).unwrap();
         }
+        self.writer.flush().unwrap();
+        // mark as committed, drop will not remove the file
+        self.committed = true;
     }
 }
 
 impl Drop for QueryPrinter {
     fn drop(&mut self) {
-        self.writer.flush().unwrap();
-
-        if !self.dirty && self.out_file_path.is_some() {
+        // usually drop should be called when we are done writing (committed)
+        // otherwise, something went wrong
+        // remove the file if there is one created
+        if !self.committed && self.out_file_path.is_some() && self.rm_on_failure {
             std::fs::remove_file(self.out_file_path.as_ref().unwrap()).unwrap();
         }
     }
+}
+
+pub fn is_iterating_io(in_query_path: &String, out_query_path: &Option<String>) -> bool {
+    if out_query_path.is_none() {
+        return false;
+    }
+    // TODO: more robust comparison if needed
+    return *in_query_path == *out_query_path.as_ref().unwrap();
 }
 
 fn remove_debug_commands(commands: &mut Vec<concrete::Command>) -> (usize, usize) {
@@ -277,7 +285,7 @@ fn remove_debug_commands(commands: &mut Vec<concrete::Command>) -> (usize, usize
     // FIXME: F* queries will have deeply nested push/pop
     // disable this check for now
     // assert!(max_depth <= 1);
-    // alternatively, we can skip the remove_debug 
+    // alternatively, we can skip the remove_debug
 
     // we left the pushed scopes un-matched in the output
     // that is we have no pops at the end
@@ -324,7 +332,7 @@ pub fn split_commands(
             };
 
             // write out to file
-            let mut printer = QueryPrinter::new(Some(out_file_name));
+            let mut printer = QueryPrinter::new(Some(out_file_name), false);
             printer.dump_commands(&stack.concat());
             printer.dump_commands(&vec![concrete::Command::CheckSat]);
         } else {
@@ -414,52 +422,52 @@ pub fn add_qids(commands: &mut Vec<concrete::Command>) {
             concrete::Command::Assert { term } => {
                 add_qids_rec(term, &mut qid, false);
             }
+            concrete::Command::MariposaArbitrary(_) => panic!("unexpected mariposa-arbitrary"),
             _ => {}
         }
     }
 }
 
-pub fn add_cids(command: &mut Vec<concrete::Command>) {
-    fn add_cid(command: &mut concrete::Command, ct: usize) {
-        let concrete::Command::Assert { term } = command else {
-            return;
-        };
+fn add_cid(command: &mut concrete::Command, ct: usize, reassign: bool) {
+    let concrete::Command::Assert { term } = command else {
+        return;
+    };
 
-        let named = concrete::Keyword("named".to_owned());
-        let cid =
-            concrete::AttributeValue::Symbol(concrete::Symbol(format!("{}{}", CID_PREFIX, ct)));
+    let named = concrete::Keyword("named".to_owned());
+    let cid =
+        concrete::AttributeValue::Symbol(concrete::Symbol(format!("{}{}", CID_PREFIX, ct)));
 
-        // does assert have attributes?
-        if let concrete::Term::Attributes {
-            term: _,
+    // does assert have attributes?
+    if let concrete::Term::Attributes {
+        term: _,
+        attributes,
+    } = term
+    {
+        // remove existing :named attribute
+        attributes.retain(|(k, v)| {
+            let concrete::Keyword(k) = k;
+            assert!(k != "named" || !v.to_string().starts_with(CID_PREFIX));
+            k != "named"
+        });
+        // otherwise, add the new name
+        attributes.push((named, cid));
+    } else {
+        // if no attributes, create a new one
+        let attributes = vec![(named, cid)];
+        let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
+        std::mem::swap(term, &mut temp);
+        *term = concrete::Term::Attributes {
+            term: Box::new(temp),
             attributes,
-        } = term
-        {
-            // remove existing cid
-            attributes.retain(|(k, v)| {
-                let concrete::Keyword(k) = k;
-                // should not apply this to a query where we already introduced cid?
-                // assert!(k != "named" || !v.to_string().starts_with(CID_PREFIX));
-                k != "named"
-            });
-            // otherwise, add the new name
-            attributes.push((named, cid));
-        } else {
-            // if no attributes, create a new one
-            let attributes = vec![(named, cid)];
-            let mut temp = concrete::Term::Constant(concrete::Constant::String("".to_string()));
-            std::mem::swap(term, &mut temp);
-            *term = concrete::Term::Attributes {
-                term: Box::new(temp),
-                attributes,
-            };
-        }
+        };
     }
+}
 
+pub fn add_cids(command: &mut Vec<concrete::Command>, reassign: bool) {
     command
         .iter_mut()
         .enumerate()
-        .for_each(|(i, x)| add_cid(x, i));
+        .for_each(|(i, x)| add_cid(x, i, reassign));
 }
 
 #[allow(dead_code)]
@@ -596,9 +604,13 @@ pub fn get_attr_cid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValu
     cid
 }
 
+pub fn get_attr_cid_usize(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> usize {
+    let cid = get_attr_cid(attributes);
+    cid[CID_PREFIX.len()..].to_string().parse().unwrap()
+}
+
 pub fn get_attr_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String {
     let mut qid = None;
-
     attributes.iter().for_each(|(key, value)| {
         if key != &concrete::Keyword("qid".to_owned()) {
             return;
@@ -616,7 +628,6 @@ pub fn get_attr_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValu
     };
     qid
 }
-
 
 pub fn load_mariposa_ids(commands: &Vec<concrete::Command>) -> HashMap<usize, AssertInfo> {
     commands

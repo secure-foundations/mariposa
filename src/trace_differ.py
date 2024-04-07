@@ -2,7 +2,7 @@
 
 import argparse
 import os
-from analysis.expr_analyzer import ExprAnalyzer
+from analysis.expr_analyzer import ExperAnalyzer
 from base.project import KnownExt
 from query.analyzer import UnstableReason
 from utils.local_utils import handle_single
@@ -26,7 +26,7 @@ def set_up_project(subparsers):
 def handle_diff_project(args):
     exp = args.experiment
     log_check(exp.sum_table_exists(), "experiment results do not exist")
-    ba = ExprAnalyzer(exp, args.analyzer)
+    ba = ExperAnalyzer(exp, args.analyzer)
     reasons = ba.get_unstable_reasons()
     reasons.print_status()
     for qid in reasons[UnstableReason.TIMEOUT]:

@@ -2,7 +2,7 @@
 
 import random
 import argparse, time, pickle, numpy as np
-from analysis.expr_analyzer import ExprAnalyzer
+from analysis.expr_analyzer import ExperAnalyzer
 from base.exper import Experiment
 from base.factory import FACT
 from base.project import KnownExt, Project, ProjectGroup, ProjectType as PT, full_proj_name, get_qid
@@ -51,8 +51,11 @@ rule check-subset
 rule shake-log
     command = {MARIPOSA} -i $in -a shake --shake-log-path $out
 
-rule wombo-combo
-    command = {QUERY_WIZARD} wombo-combo -i $in -o $out --timeout 10 --restarts 10
+rule pre-inst-z3
+    command = {MARIPOSA} -i $in -o $out -a pre-inst-z3
+
+rule inst-z3
+    command = {QUERY_WIZARD} inst-z3 -i $in -o $out --timeout 5 --restarts 30
 
 """
 
@@ -254,7 +257,7 @@ class NinjaPasta:
 
     def handle_build_z3_trace(self, exp: Experiment):
         log_check(exp.sum_table_exists(), "experiment results do not exist")
-        ba = ExprAnalyzer(exp, args.analyzer)
+        ba = ExperAnalyzer(exp, args.analyzer)
         unstables = ba.get_unstable_query_mutants()
         self.output_dir = exp.proj.get_log_dir(KnownExt.Z3_TRACE)
 
@@ -382,7 +385,7 @@ class NinjaPasta:
             group = FACT.get_group(gid)
             proj = group.get_project(PT.from_str("base.z3"))
             exp = FACT.load_any_experiment(proj)
-            exp = ExprAnalyzer(exp, ana)
+            exp = ExperAnalyzer(exp, ana)
 
             for qid in exp.get_overall()[Stability.UNSTABLE]:
                 i = proj.get_ext_path(qid)

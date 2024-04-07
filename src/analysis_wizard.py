@@ -2,10 +2,11 @@
 
 import argparse
 from analysis.core_analyzer import CoreAnalyzer
-from analysis.expr_analyzer import ExprAnalyzer
+from analysis.expr_analyzer import ExperAnalyzer
 from analysis.inst_analyzer import InstAnalyzer
 from analysis.perf_analyzer import PrefAnalyzer
 from analysis.shake_analyzer import ShakeAnalyzer
+from analysis.wombo_analyzer import WomboAnalyzer
 from utils.option_utils import *
 from proj_wizard import *
 
@@ -17,12 +18,13 @@ def set_up_basic(subparsers):
 def handle_basic(args):
     exp = args.experiment
     log_check(exp.sum_table_exists(), "experiment results do not exist")
-    ba = ExprAnalyzer(exp, args.analyzer)
+    ba = ExperAnalyzer(exp, args.analyzer)
     ba.print_status(args.verbose)
 
 def set_up_cvc5_perf(subparsers):
     p = subparsers.add_parser('perf', help='analyze the raw performance of cvc5/z3 on a project group')
     add_input_dir_option(p, is_group=True)
+    add_analysis_options(p)
 
 def set_up_cvc5_inst(subparsers):
     p = subparsers.add_parser('inst', help='analyze the instantiation logs from cvc5')
@@ -36,7 +38,7 @@ def set_up_unstable(subparsers):
 def handle_unstable(args):
     exp = args.experiment
     log_check(exp.sum_table_exists(), "experiment results do not exist")
-    ba = ExprAnalyzer(exp, args.analyzer)
+    ba = ExperAnalyzer(exp, args.analyzer)
     ba.get_unstable_reasons().print_status()
 
 def set_up_core(subparsers):
@@ -48,7 +50,7 @@ def handle_core(args):
     group = args.input_group
     CoreAnalyzer(group, args.analyzer)
     # log_check(exp.sum_table_exists(), "experiment results do not exist")
-    # ba = ExprAnalyzer(exp, args.analyzer)
+    # ba = ExperAnalyzer(exp, args.analyzer)
     # ba.get_unstable_reasons().print_status()
 
 def set_up_shake(subparsers):
@@ -60,6 +62,10 @@ def handle_shake(args):
     group = args.input_group
     shake = ShakeAnalyzer(group, args.analyzer)
 
+def set_up_wombo(subparsers):
+    p = subparsers.add_parser('wombo', help='no help')
+    add_input_dir_option(p, is_group=True)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")
     subparsers = parser.add_subparsers(dest='sub_command', help="mode to run analysis in")
@@ -70,6 +76,7 @@ if __name__ == '__main__':
     set_up_unstable(subparsers)
     set_up_core(subparsers)
     set_up_shake(subparsers)
+    set_up_wombo(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -77,7 +84,7 @@ if __name__ == '__main__':
     if args.sub_command == "basic":
         handle_basic(args)
     elif args.sub_command == "perf":
-        PrefAnalyzer(args.input_group)
+        PrefAnalyzer(args.input_group, args.analyzer)
     elif args.sub_command == "inst":
         InstAnalyzer(args.input_proj)
     elif args.sub_command == "unstable":
@@ -86,5 +93,7 @@ if __name__ == '__main__':
         handle_core(args)
     elif args.sub_command == "shake":
         handle_shake(args)
+    elif args.sub_command == "wombo":
+        WomboAnalyzer(args.input_group)
     else:
         parser.print_help()

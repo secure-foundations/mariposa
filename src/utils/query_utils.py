@@ -30,7 +30,6 @@ def count_asserts(filename):
     return int(output)
 
 def count_lines(filename):
-    print(f"counting lines in {filename}")
     output = subprocess.run(f"wc -l {filename} | cut -d' ' -f1",
                             capture_output=True, shell=True, text=True).stdout
     return int(output)

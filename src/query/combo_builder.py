@@ -21,10 +21,9 @@ def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
         for i in range(restarts):
             remove_file(mutant_query)
             s = random.randint(0, 0xffffffffffffffff)
-
             emit_mutant_query(input_query, mutant_query, Mutation.SHUFFLE, s)
-            rc, _ = solver.trace(mutant_query, timeout, output_trace, seeds=s)
-            log_info(f"iteration {i}, trace result {rc}")
+            rc, et = solver.trace(mutant_query, timeout, output_trace, seeds=s)
+            log_info(f"trace iteration {i}, {rc}, {round(et/1000, 2)}s")
 
             if rc == RCode.UNSAT:
                 break
@@ -34,46 +33,40 @@ def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
 
     log_check(os.path.exists(output_trace), f"failed to create {output_trace}")
 
-def handle_wombo_combo_z3(input_query, output_query_path, timeout, restarts):
+def handle_pre_inst_z3(input_query, output_query_path):
     count = count_lines(input_query)
     log_info(f"original query has {count} commands")
-
     name_hash = get_name_hash(input_query)
-    iter_query = f"{GEN_ROOT}/{name_hash}.smt2"
-    remove_file(iter_query)
+    cur_query = f"{GEN_ROOT}{name_hash}.pins.smt2"
+
+    shutil.copy(input_query, cur_query)
 
     subprocess_run([MARIPOSA, 
-            "-a", "clean", 
+            "-a", "pre-inst-z3", 
             "-i", input_query, 
-            "-o", iter_query])
-    
-    count = count_lines(iter_query)
-    log_info(f"cleaned query has {count} commands")
+            "-o", cur_query], check=True, debug=True)
 
+    subprocess_run([MARIPOSA, 
+        "-a", "clean", 
+        "-i", cur_query, 
+        "-o", cur_query], check=True, debug=True)
+
+    count = count_lines(cur_query)
+    log_info(f"combo end, {count} commands")
+    os.system(f"mv {cur_query} {output_query_path}")
+
+
+def handle_inst_z3(input_query, output_query, timeout, restarts):
+    name_hash = get_name_hash(input_query)
     trace_path = f"{GEN_ROOT}/{name_hash}.z3-trace"
     handle_trace_z3(input_query, trace_path, True, timeout, restarts)
 
     subprocess_run([MARIPOSA, 
-         "-a", "inst-z3", 
-         "-i", iter_query, 
-         "--z3-trace-log-path", trace_path, 
-         "-o", iter_query])
+        "-a", "inst-z3", 
+        "-i", input_query, 
+        "--z3-trace-log-path", trace_path, 
+        "--max-trace-insts=1000",
+        "-o", output_query], check=True, debug=True)
 
-    count = count_lines(iter_query)
-    log_info(f"instantiated query has {count} commands")
-
-    solver = FACT.get_solver_by_name("z3_4_12_5")
-
-    MutCoreBuilder(iter_query, solver, iter_query, timeout, False, restarts, False) # ToDo: incremental=False or True?
-
-    count = count_lines(iter_query)
-    log_info(f"cored query has {count} commands")
-
-    subprocess_run([MARIPOSA, 
-            "-a", "clean", 
-            "-i", input_query, 
-            "-o", iter_query])
-
-    count = count_lines(iter_query)
-    log_info(f"cleaned query has {count} commands")
-    os.rename(iter_query, output_query_path)
+    # remove the trace file if nothing went wrong?
+    # remove_file(trace_path)

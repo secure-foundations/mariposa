@@ -1,13 +1,13 @@
-use smt2parser::concrete::{Command, Term};
+use smt2parser::concrete::Command;
 use smt2parser::concrete;
 // use std::collections::{HashMap, HashSet};
 
-use crate::pretty_print::print_prop_skeleton;
-use crate::term_match::{make_not_term, match_simple_app_term, SymbolSet};
+// use crate::pretty_print::print_prop_skeleton;
+// use crate::term_match::{make_not_term, match_simple_app_term, SymbolSet};
 use crate::term_rewrite_flat::flatten_assert;
-use crate::term_rewrite_label::remove_label_rec;
-use crate::term_rewrite_prop::term_rewrite_prop;
-use crate::tree_shake_idf;
+// use crate::term_rewrite_label::remove_label_rec;
+use crate::term_rewrite_prop;
+use crate::query_io;
 
 // fn replace_symbol_rec(term: Term, old: &Symbol, new: &Term, count: &mut usize) -> Term {
 //     match term {
@@ -367,91 +367,89 @@ use crate::tree_shake_idf;
 //     });
 // }
 
-fn peel_goal_term_rec(term: &mut concrete::Term, results: &mut Vec<Command>) {
-    // let cpy = term.clone();
-    if let Some((f, arguments)) = match_simple_app_term(term) {
-        if f.0 == "=>" {
-            assert!(arguments.len() == 2);
-            results.push(Command::Assert {
-                term: arguments[0].clone(),
-            });
-            let mut rhs = arguments.pop().unwrap();
-            peel_goal_term_rec(&mut rhs, results);
-            return;
-        }
-    }
+// fn peel_goal_term_rec(term: &mut concrete::Term, results: &mut Vec<Command>) {
+//     // let cpy = term.clone();
+//     if let Some((f, arguments)) = match_simple_app_term(term) {
+//         if f.0 == "=>" {
+//             assert!(arguments.len() == 2);
+//             results.push(Command::Assert {
+//                 term: arguments[0].clone(),
+//             });
+//             let mut rhs = arguments.pop().unwrap();
+//             peel_goal_term_rec(&mut rhs, results);
+//             return;
+//         }
+//     }
 
-    if let Term::Forall {
-        vars,
-        term: sub_term,
-    } = term
-    {
-        vars.iter().for_each(|v| {
-            results.push(Command::DeclareConst {
-                symbol: v.0.clone(),
-                sort: v.1.clone(),
-            });
-        });
-        peel_goal_term_rec(sub_term, results);
-        return;
-    }
+//     if let Term::Forall {
+//         vars,
+//         term: sub_term,
+//     } = term
+//     {
+//         vars.iter().for_each(|v| {
+//             results.push(Command::DeclareConst {
+//                 symbol: v.0.clone(),
+//                 sort: v.1.clone(),
+//             });
+//         });
+//         peel_goal_term_rec(sub_term, results);
+//         return;
+//     }
 
-    if let Term::Attributes { term: sub_term, .. } = term {
-        // TODO: maintain attributes if there is no change
-        peel_goal_term_rec(sub_term, results);
-        return;
-    }
+//     if let Term::Attributes { term: sub_term, .. } = term {
+//         // TODO: maintain attributes if there is no change
+//         peel_goal_term_rec(sub_term, results);
+//         return;
+//     }
 
-    println!("(assert (not");
-    print_prop_skeleton(&term, 1);
-    println!("))");
+//     println!("(assert (not");
+//     print_prop_skeleton(&term, 1);
+//     println!("))");
 
-    results.push(Command::Assert {
-        term: make_not_term(term.clone()),
-    });
-}
+//     results.push(Command::Assert {
+//         term: make_not_term(term.clone()),
+//     });
+// }
 
-fn peel_goal_term(term: &mut concrete::Term) -> Vec<Command> {
-    let mut results = vec![];
-    if let Term::Attributes { term: sub_term, .. } = term {
-        if let Some((f, arguments)) = match_simple_app_term(sub_term) {
-            assert!(f.0 == "not");
-            assert!(arguments.len() == 1);
-            let mut arg = arguments.pop().unwrap();
-            peel_goal_term_rec(&mut arg, &mut results);
-        }
-    }
-    return results;
-}
+// fn peel_goal_term(term: &mut concrete::Term) -> Vec<Command> {
+//     let mut results = vec![];
+//     if let Term::Attributes { term: sub_term, .. } = term {
+//         if let Some((f, arguments)) = match_simple_app_term(sub_term) {
+//             assert!(f.0 == "not");
+//             assert!(arguments.len() == 1);
+//             let mut arg = arguments.pop().unwrap();
+//             peel_goal_term_rec(&mut arg, &mut results);
+//         }
+//     }
+//     return results;
+// }
 
-fn decompose_goal(goal_command: concrete::Command) -> Vec<concrete::Command> {
-    let mut commands = vec![];
-    if let Command::Assert { mut term } = goal_command {
-        remove_label_rec(&mut term);
-        term_rewrite_prop(&mut term);
-        commands.extend(peel_goal_term(&mut term));
-        // let mut rw = LetBindingReWriter::new();
-        // commands.extend(rw.rewrite_let_bindings(term));
-    }
-    return commands;
-}
+// fn decompose_goal(goal_command: concrete::Command) -> Vec<concrete::Command> {
+//     let mut commands = vec![];
+//     if let Command::Assert { mut term } = goal_command {
+//         remove_label_rec(&mut term);
+//         term_rewrite_prop(&mut term);
+//         commands.extend(peel_goal_term(&mut term));
+//         // let mut rw = LetBindingReWriter::new();
+//         // commands.extend(rw.rewrite_let_bindings(term));
+//     }
+//     return commands;
+// }
 
 fn command_rewrite_prop(command: &mut concrete::Command) {
     if let Command::Assert { term } = command {
-        term_rewrite_prop(term);
+        term_rewrite_prop::term_rewrite_prop(term);
     }
 }
 
 pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> {
     let mut commands = commands;
-    truncate_commands(&mut commands);
+    query_io::truncate_commands(&mut commands);
     let goal_command = commands.pop().unwrap();
 
     commands
         .iter_mut()
         .for_each(|mut c| command_rewrite_prop(&mut c));
-
-    commands.extend(decompose_goal(goal_command));
 
     commands = commands
         .into_iter()
@@ -459,6 +457,7 @@ pub fn tree_rewrite(commands: Vec<concrete::Command>) -> Vec<concrete::Command> 
         .flatten()
         .collect();
 
+    commands.push(goal_command);
     commands.push(Command::CheckSat);
     return commands;
 }

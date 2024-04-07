@@ -2,7 +2,7 @@
 
 import argparse, os
 
-from query.combo_builder import handle_trace_z3, handle_wombo_combo_z3
+from query.combo_builder import handle_inst_z3, handle_trace_z3
 from query.core_completer import CoreCompleter
 from query.inst_builder import InstBuilder
 from utils.option_utils import *
@@ -90,8 +90,8 @@ def setup_create_shake(subparsers):
     add_output_query_option(p)
     p.add_argument("--max-score", required=True, help="the maximum score")
 
-def setup_wombo_combo(subparsers):
-    p = subparsers.add_parser('wombo-combo', help='use trace and core to build a reduced query')
+def setup_inst_z3(subparsers):
+    p = subparsers.add_parser('inst-z3', help='use trace and core to build a reduced query')
     add_input_query_option(p)
     add_output_query_option(p)
     add_restart_option(p)
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     setup_complete_core(subparsers)
     setup_debug_shake(subparsers)
     setup_create_shake(subparsers)
-    setup_wombo_combo(subparsers)
+    setup_inst_z3(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -174,8 +174,8 @@ if __name__ == "__main__":
                                     args.input_log_path, 
                                     int(args.max_score),
                                     args.output_query_path)
-    elif args.sub_command == "wombo-combo":
-        handle_wombo_combo_z3(args.input_query_path, 
+    elif args.sub_command == "inst-z3":
+        handle_inst_z3(args.input_query_path, 
                               args.output_query_path, 
                               args.timeout, 
                               args.restarts)

@@ -1,8 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
     fmt,
-    hash::Hash,
-    sync::Arc,
 };
 
 use crate::{items::*, parsers::z3::z3parser::Z3Parser};
@@ -334,6 +332,7 @@ impl ProofOrApp {
         data: &mut DisplayData<'b>,
     ) -> fmt::Result {
         let mut name = &ctxt.parser.strings[self.name];
+
         if name == "if" {
             name = "ite";
         }
@@ -354,7 +353,7 @@ impl ProofOrApp {
             let res = ctxt.symbols.get(name);
             if res.is_none() {
                 println!("Undefined symbol: {}", name);
-                // ctxt.missing_symbols.
+                // ctxt.missing_symbols.insert(name.to_string());
                 return fmt::Result::Err(fmt::Error);
             }
             res.unwrap()
@@ -366,7 +365,7 @@ impl ProofOrApp {
         }
 
         write!(f, "({}", new_name)?;
-        for (idx, child) in data.children().iter().enumerate() {
+        for child in data.children().iter() {
             write!(f, " ")?;
             display_child(f, *child, ctxt, data)?;
         }
