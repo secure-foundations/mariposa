@@ -192,7 +192,7 @@ impl Inserter {
             let mut instance = "\n".to_string();
             for bound_term in bound_terms.iter().rev() {
                 let res = write!(instance, "\t{}\n", TermIdx(bound_term.0).with(&ctxt));
-                if res.is_err() {
+                if res.is_err() || instance.len() > 2048 {
                     ok = false;
                     break;
                 }
@@ -225,39 +225,49 @@ impl Inserter {
             .map(|x| x.len())
             .sum::<usize>();
 
-        println!("Unhandled Insts:\t{}", unhandled);
+        println!("Unhandled Insts ({}):", unhandled);
         let mut qids: Vec<_> = self.unhandled_qids.iter().collect();
         qids.sort_by(|a, b| b.1.cmp(a.1));
         for (qid, count) in qids {
             println!("\t{}: {}", qid, count);
         }
-        println!("Malformed Insts:\t{}", malformed);
+        println!("\nMalformed Insts ({}):", malformed);
         let mut qids: Vec<_> = self.malformed_qids.iter().collect();
         qids.sort_by(|a, b| b.1.cmp(a.1));
         for (qid, count) in qids {
             println!("\t{}: {}", qid, count);
         }
-        println!("Wellformed Insts:\t{}", wellformed);
+        println!("\nWellformed Insts ({})", wellformed);
     }
 
     fn insts_error_free(mut self, commands: &mut Vec<concrete::Command>, max_inst: usize) {
         let max_inst = if max_inst == 0 { usize::MAX } else { max_inst };
         let mut selected_qids: HashSet<String> = HashSet::new();
-        let mut selected_insts = Vec::new();
+        let mut selected_insts: Vec<concrete::Command> = Vec::new();
 
         let temp = std::mem::replace(&mut self.wellformed_qids, HashMap::new());
-        let mut temp = temp.into_iter().collect::<Vec<_>>();
+        let mut temp: Vec<(String, Vec<Command>)> = temp.into_iter().collect::<Vec<_>>();
         temp.sort_by(|a, b| a.1.len().cmp(&b.1.len()));
 
-        for (qid, insts) in temp {
+        for (qid, insts) in temp.iter_mut() {
             if self.malformed_qids.contains_key(&qid.to_string()) {
                 continue;
             }
             if selected_insts.len() >= max_inst {
                 break;
             }
-            selected_insts.extend(insts);
+            selected_insts.extend(insts.drain(..));
             selected_qids.insert(qid.clone());
+        }
+
+        // if we still need more instances
+        if selected_insts.len() < max_inst {
+            for (_, insts) in temp.iter_mut() {
+                if selected_insts.len() >= max_inst {
+                    break;
+                }
+                selected_insts.extend(insts.drain(..));
+            }
         }
 
         commands.retain(|x| match x {
@@ -278,6 +288,8 @@ impl Inserter {
             _ => true,
         });
 
+        self.debug();
+        println!("Selected Insts ({})", selected_insts.len());
         commands.extend(selected_insts);
     }
 }

@@ -64,12 +64,11 @@ class CoreAnalyzer:
         self.p_extd = group.get_project(PT.from_str("extd.z3"))
         self.group = group
 
-        base = FACT.load_any_experiment(self.p_base)
+        base = FACT.build_experiment("default", self.p_base, solver)
         log_check(base.solver == solver, "base project is not using z3_4_12_5")
         core = FACT.load_any_experiment(self.p_core)
         log_check(core.solver == solver, "core project is not using z3_4_12_5")
         extd = FACT.build_experiment("default", self.p_extd, solver)
-
         self.base = ExperAnalyzer(base, ana)
         self.core = ExperAnalyzer(core, ana)
         self.extd = ExperAnalyzer(extd, ana, enable_dummy=True)
@@ -94,10 +93,10 @@ class CoreAnalyzer:
             self.qids[qid] = cqs
 
         self.adjust_status()
-        # self.__init_issue_status()
-        # self.issues.print_status()
+        self.__init_issue_status()
+        self.issues.print_status()
+        self.suggest_issue_fixes()
 
-        # self.suggest_issue_fixes()
         # self.get_trace_candidate()
         # self.print_status()
 

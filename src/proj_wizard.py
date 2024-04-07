@@ -51,11 +51,11 @@ rule check-subset
 rule shake-log
     command = {MARIPOSA} -i $in -a shake --shake-log-path $out
 
-rule wombo-combo
-    command = {QUERY_WIZARD} wombo-combo -i $in -o $out --timeout 10 --restarts 5
-
 rule pre-inst-z3
     command = {MARIPOSA} -i $in -o $out -a pre-inst-z3
+
+rule inst-z3
+    command = {QUERY_WIZARD} inst-z3 -i $in -o $out --timeout 5 --restarts 30
 
 """
 

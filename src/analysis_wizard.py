@@ -63,9 +63,8 @@ def handle_shake(args):
     shake = ShakeAnalyzer(group, args.analyzer)
 
 def set_up_wombo(subparsers):
-    p = subparsers.add_parser('wombo', help='analyze the results of an existing experiment')
+    p = subparsers.add_parser('wombo', help='no help')
     add_input_dir_option(p, is_group=True)
-    add_analysis_options(p)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")
@@ -95,6 +94,6 @@ if __name__ == '__main__':
     elif args.sub_command == "shake":
         handle_shake(args)
     elif args.sub_command == "wombo":
-        WomboAnalyzer(args.input_group, args.analyzer)
+        WomboAnalyzer(args.input_group)
     else:
         parser.print_help()
