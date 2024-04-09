@@ -63,7 +63,7 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
         "-a", "inst-z3", 
         "-i", input_query, 
         "--z3-trace-log-path", trace_path, 
-        "--max-trace-insts=1000",
+        "--max-trace-insts=3000",
         "-o", output_query], check=True, debug=True)
 
     # remove the trace file if nothing went wrong?

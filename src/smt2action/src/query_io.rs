@@ -446,7 +446,9 @@ fn add_cid(command: &mut concrete::Command, ct: usize, reassign: bool) {
         // remove existing :named attribute
         attributes.retain(|(k, v)| {
             let concrete::Keyword(k) = k;
-            assert!(k != "named" || !v.to_string().starts_with(CID_PREFIX));
+            if !reassign {
+                assert!(k != "named" || !v.to_string().starts_with(CID_PREFIX));
+            }
             k != "named"
         });
         // otherwise, add the new name

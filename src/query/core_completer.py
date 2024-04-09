@@ -71,11 +71,11 @@ class CoreCompleter:
 
         logn = int(math.log(len(cur_diff), 2))
         max_trials = logn * 16
-        trails = 0
+        trials = 0
 
-        while trails < max_trials:
+        while trials < max_trials:
             next_diff = random.sample(cur_diff, k=len(cur_diff) // 2)
-            log_info(f"trying diff len: {len(next_diff)}, trails: {trails+1}/{max_trials}")
+            log_info(f"trying diff len: {len(next_diff)}, trials: {trials+1}/{max_trials}")
             self._write_exp(next_diff)
             rc, et = self.solver.run(self.exp_path, self.time_limit)
 
@@ -86,7 +86,7 @@ class CoreCompleter:
                 # just in case something weird happens
                 self.working_diff = deepcopy(next_diff)
                 return next_diff
-            trails += 1
+            trials += 1
         return cur_diff
 
     def try_complete_core(self, output_path):

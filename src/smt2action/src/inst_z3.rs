@@ -9,7 +9,10 @@ use std::fmt::Write;
 
 use crate::{
     query_io::{find_goal_command_index, get_attr_cid_usize, get_attr_qid},
-    term_match::{mk_simple_qual_id, mk_simple_qual_id_term},
+    term_match::{
+        is_qf_term, match_simple_app_term, match_simple_qual_identifier, mk_simple_qual_id,
+        mk_simple_qual_id_term,
+    },
 };
 
 fn mk_fun_forall(qid: &String) -> String {
@@ -29,24 +32,23 @@ fn introduce_simple_forall(command: &mut concrete::Command) -> Option<concrete::
     let concrete::Command::Assert { term } = command else {
         return None;
     };
-    let concrete::Term::Attributes {
-        term,
-        attributes: _,
-    } = term
-    else {
+    let concrete::Term::Attributes { term, .. } = term else {
         panic!("Expected Attributes");
     };
+    replace_forall_body(term)
+}
+
+fn replace_forall_body(term: &mut Term) -> Option<Command> {
     let concrete::Term::Forall {
         ref vars,
         ref mut term,
-    } = **term
+    } = term
     else {
         return None;
     };
-    Some(replace_forall_body(term, vars))
-}
 
-fn replace_forall_body(term: &mut Term, vars: &Vec<(Symbol, Sort)>) -> Command {
+    let term: &mut concrete::Term = &mut **term;
+
     let concrete::Term::Attributes {
         term: body,
         attributes,
@@ -68,7 +70,7 @@ fn replace_forall_body(term: &mut Term, vars: &Vec<(Symbol, Sort)>) -> Command {
 
     std::mem::swap(body, &mut call);
 
-    concrete::Command::DefineFun {
+    Some(concrete::Command::DefineFun {
         sig: concrete::FunctionDec {
             name: Symbol(fid.clone()),
             parameters: vars.clone(),
@@ -79,7 +81,70 @@ fn replace_forall_body(term: &mut Term, vars: &Vec<(Symbol, Sort)>) -> Command {
             },
         },
         term: *call,
+    })
+}
+
+// fn is_prop_term(term: &concrete::Term) -> bool {
+//     match term {
+//         concrete::Term::Attributes {
+//             term,
+//             attributes: _,
+//         } => is_prop_term(term),
+//         concrete::Term::Forall { .. } => true,
+//         concrete::Term::Exists { .. } => true,
+//         concrete::Term::Let { term, .. } => is_prop_term(term),
+//         concrete::Term::Match { .. } => false,
+//         concrete::Term::Constant(_) => false,
+//         concrete::Term::QualIdentifier(_) => false,
+//         concrete::Term::Application {
+//             qual_identifier, ..
+//         } => {
+//             if let Some(fname) = match_simple_qual_identifier(qual_identifier) {
+//                 let fname = &fname.0;
+//                 fname == "=" || fname == "not" || fname == "and" || fname == "or" || fname == "=>"
+//             } else {
+//                 false
+//             }
+//         }
+//     }
+// }
+
+fn introduce_special_forall(command: &mut concrete::Command) -> Option<concrete::Command> {
+    let concrete::Command::Assert { term } = command else {
+        return None;
+    };
+    let concrete::Term::Attributes { term: imp_term, .. } = term else {
+        panic!("Expected Attributes");
+    };
+    let Some((fname, args)) = match_simple_app_term(imp_term) else {
+        return None;
+    };
+    if fname.0 != "=>" {
+        return None;
     }
+    if !is_qf_term(&args[0]) {
+        return None;
+    }
+    let concrete::Term::Forall { .. } = args[1] else {
+        return None;
+    };
+
+    // p => q, where q is forall
+    let mut q = args.pop().unwrap();
+    let p = args.pop().unwrap();
+
+    let mut fun_dec = replace_forall_body(&mut q).unwrap();
+    let new_term: Term = q.clone();
+    std::mem::swap(imp_term, &mut Box::new(new_term));
+
+    let concrete::Command::DefineFun { term, .. } = &mut fun_dec else {
+        panic!("Expected DefineFun");
+    };
+    *term = Term::Application {
+        qual_identifier: mk_simple_qual_id(Symbol("=>".to_string())),
+        arguments: vec![p, term.clone()],
+    };
+    Some(fun_dec)
 }
 
 pub fn preprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
@@ -92,6 +157,8 @@ pub fn preprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
         .map(|mut x| {
             if let Some(d) = introduce_simple_forall(&mut x) {
                 vec![d, x]
+            // } else if let Some(d) = introduce_special_forall(&mut x) {
+            //     vec![d, x]
             } else {
                 vec![x]
             }
@@ -253,6 +320,7 @@ impl Inserter {
             if self.malformed_qids.contains_key(&qid.to_string()) {
                 continue;
             }
+            println!("QID: {}, Insts: {}", qid, insts.len());
             if selected_insts.len() >= max_inst {
                 break;
             }
@@ -260,15 +328,19 @@ impl Inserter {
             selected_qids.insert(qid.clone());
         }
 
-        // if we still need more instances
-        if selected_insts.len() < max_inst {
-            for (_, insts) in temp.iter_mut() {
-                if selected_insts.len() >= max_inst {
-                    break;
-                }
-                selected_insts.extend(insts.drain(..));
-            }
+        if selected_insts.len() == 0 {
+            self.debug();
+            panic!("No instances selected");
         }
+        // if we still need more instances
+        // if selected_insts.len() < max_inst {
+        //     for (_, insts) in temp.iter_mut() {
+        //         if selected_insts.len() >= max_inst {
+        //             break;
+        //         }
+        //         selected_insts.extend(insts.drain(..));
+        //     }
+        // }
 
         commands.retain(|x| match x {
             concrete::Command::Assert { term } => {

@@ -7,7 +7,7 @@ from base.defs import MARIPOSA
 class MutCoreBuilder:
     def __init__(self, input_query, solver, output_query, timeout, ids_available, restarts):
         log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
-        log_check(solver.stype == SolverType.Z3, f"only z3 solver is supported, got {self.solver}")
+        log_check(solver.stype == SolverType.Z3, f"only z3 solver is supported, got {solver}")
         self.solver = solver
 
         name_hash = get_name_hash(input_query)

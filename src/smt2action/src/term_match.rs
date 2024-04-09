@@ -57,7 +57,6 @@ pub fn match_bool_term(term: &concrete::Term) -> Option<bool> {
 }
 
 #[inline]
-#[allow(dead_code)]
 pub fn match_simple_qual_identifier(identifier: &concrete::QualIdentifier) -> Option<&Symbol> {
     if let QualIdentifier::Simple { identifier } = identifier {
         if let concrete::Identifier::Simple { symbol } = identifier {
@@ -68,7 +67,6 @@ pub fn match_simple_qual_identifier(identifier: &concrete::QualIdentifier) -> Op
 }
 
 #[inline]
-#[allow(dead_code)]
 pub fn match_simple_qual_identifier_term(term: &Term) -> Option<&Symbol> {
     if let Term::QualIdentifier(qual_identifier) = term {
         return match_simple_qual_identifier(qual_identifier);
@@ -114,10 +112,8 @@ pub fn match_simple_app_term(
         arguments,
     } = term
     {
-        if let QualIdentifier::Simple { identifier } = qual_identifier {
-            if let concrete::Identifier::Simple { symbol } = identifier {
-                return Some((symbol, arguments));
-            }
+        if let Some(symbol) = match_simple_qual_identifier(qual_identifier) {
+            return Some((symbol, arguments));
         }
     }
     return None;
@@ -146,4 +142,19 @@ pub fn get_sexpr_symbols(e: &concrete::SExpr) -> SymbolSet {
         _ => panic!("TODO SExpr {:?}", e),
     }
     symbols
+}
+
+pub fn is_qf_term(term: &Term) -> bool {
+    match term {
+        Term::Constant(_) => true,
+        Term::QualIdentifier(_) => true,
+        Term::Application { arguments, .. } => arguments.iter().all(|arg| is_qf_term(arg)),
+        Term::Let { var_bindings, term } => {
+            var_bindings.iter().all(|(_, binding)| is_qf_term(binding)) && is_qf_term(term)
+        }
+        Term::Forall { .. } => false,
+        Term::Exists { .. } => false,
+        Term::Attributes { term, .. } => is_qf_term(term),
+        Term::Match { .. } => panic!("TODO Match {:?}", term),
+    }
 }

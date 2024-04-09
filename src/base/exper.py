@@ -268,6 +268,7 @@ solver: {self.solver}"""
             conclude(con)
         except sqlite3.OperationalError:
             log_error(f"failed to insert {mutant_path} into {self.exp_table_name}, retrying")
+            time.sleep(1)
             self.insert_exp_row(task, mutant_path, rcode, elapsed)
             self.retry_count += 1
 
