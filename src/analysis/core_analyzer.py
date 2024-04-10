@@ -1,11 +1,13 @@
 from ast import Dict
 import os
+
+from tabulate import tabulate
 from base.defs import MARIPOSA, QUERY_WIZARD
+from base.exper_analyzer import ExperAnalyzer
 from base.factory import FACT
 from base.project import ProjectGroup, ProjectType as PT
 from proj_wizard import NINJA_BUILD_RULES
-from query.analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
-from analysis.expr_analyzer import ExperAnalyzer
+from base.query_analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
 from utils.analysis_utils import *
 from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner
@@ -58,35 +60,30 @@ class CoreQueryStatus:
 
 class CoreAnalyzer:
     def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
-        solver = FACT.get_solver_by_name("z3_4_12_5")
-
-        self.p_base = group.get_project(PT.from_str("base.z3"))
-        self.p_core = group.get_project(PT.from_str("core.z3"))
-        self.p_extd = group.get_project(PT.from_str("extd.z3"), build=True)
         self.group = group
 
-        base = FACT.build_experiment("default", self.p_base, solver)
-        log_check(base.solver == solver, "base project is not using z3_4_12_5")
-        core = FACT.load_any_experiment(self.p_core)
-        log_check(core.solver == solver, "core project is not using z3_4_12_5")
-        extd = FACT.build_experiment("default", self.p_extd, solver)
-        self.base = ExperAnalyzer(base, ana)
-        self.core = ExperAnalyzer(core, ana)
-        self.extd = ExperAnalyzer(extd, ana, enable_dummy=True)
+        base = group.get_project(PT.from_str("base.z3"))
+        self.base: ExperAnalyzer = FACT.load_default_analysis(base)
+
+        core = group.get_project(PT.from_str("core.z3"), build=True)
+        self.core: ExperAnalyzer = FACT.load_default_analysis(core)
+
+        extd = group.get_project(PT.from_str("extd.z3"), build=True)
+        self.extd: ExperAnalyzer = FACT.load_default_analysis(extd)
 
         self.qids: Dict[str, CoreQueryStatus] = dict()
 
         for qid in self.base.qids:
             bs = self.base.get_query_stability(qid)
-            bp = self.base.exp.proj.get_ext_path(qid)
+            bp = self.base.get_path(qid)
             bur = self.base.get_unstable_reason(qid)
 
             cs = self.core.get_query_stability(qid)
-            cp = self.core.exp.proj.get_ext_path(qid)
+            cp = self.core.get_path(qid)
             cur = self.core.get_unstable_reason(qid)
 
             es = self.extd.get_query_stability(qid)
-            ep = self.extd.exp.proj.get_ext_path(qid)
+            ep = self.extd.get_path(qid)
             eur = self.extd.get_unstable_reason(qid)
 
             cqs = CoreQueryStatus(qid, bs, bp, bur, cs, cp, cur, es, ep, eur)
@@ -94,22 +91,23 @@ class CoreAnalyzer:
             self.qids[qid] = cqs
 
         self.adjust_status()
-        self.build_pre_inst()
+        # self.build_pre_inst()
+
         # self.__init_issue_status()
         # self.issues.print_status()
         # self.suggest_issue_fixes()
 
         # self.get_trace_candidate()
-        # self.print_status()
+        self.print_status()
 
     def build_pre_inst(self):
         pins = self.group.get_project(PT.from_str("pins.z3"), build=True)
         for qid in self.core_adj[STB.UNSTABLE]:
             qr = self.qids[qid]
             if qr.core_is_enabled():
-                print(MARIPOSA, "-a", "pre-inst-z3", "-i" , qr.patch_path, "-o", pins.get_ext_path(qid))
+                print(MARIPOSA, "-a", "pre-inst-z3", "-i" , qr.patch_path, "-o", pins.get_path(qid))
             # else:
-                # if os.path.exists(pins.get_ext_path(f"temp_proj/{qid}.smt2")):
+                # if os.path.exists(pins.get_path(f"temp_proj/{qid}.smt2")):
                 #     continue
                 # print(QUERY_WIZARD, "build-core", 
                 #   "-i", qr.patch_path, 
@@ -143,11 +141,14 @@ class CoreAnalyzer:
                 mitigated["tally"][0] += 1
             mitigated[cqs.br][1] += 1
             mitigated["tally"][1] += 1
-        
-        for k in ["tally"] + list(UR):
+
+        table = [["reason", "count", "mitigated", "percentage"]]
+        for k in list(UR) + ["tally"]:
             if k not in mitigated:
                 continue
-            print(f"{k}: {mitigated[k][0]}/{mitigated[k][1]} ({mitigated[k][0]*100/mitigated[k][1]:.2f}%)")
+            table += [[k, mitigated[k][1], mitigated[k][0], f"{mitigated[k][0]*100/mitigated[k][1]:.2f}%"]]
+
+        print(tabulate(table, headers="firstrow", tablefmt="github"))
 
         print("")
         print_banner("Stability Preserved")
@@ -176,18 +177,6 @@ class CoreAnalyzer:
 
         print_banner("Report End")
 
-        # m = base_adj.get_migration_status(core_adj)
-        # for k, v in m.items():
-        #     print("original", k)
-        #     v.print_status()
-
-        # print(NINJA_BUILD_RULES)
-        # for qid, cq in self.qids.items():
-        #     if cq.core == STB.STABLE:
-        #         out_path = self.base.exp.proj.get_ext_path(qid, KnownExt.Z3_TRACE)
-        #         # print(f"build {out_path}: trace-z3", cq.patch_path)
-        #         print(f"~/axiom-profiler-2/target/release/smt-log-parser {out_path}")
-
     def __init_issue_status(self):
         issues = Categorizer()
         for qid, cq in self.qids.items():
@@ -203,8 +192,8 @@ class CoreAnalyzer:
         no_file = self.get_no_file_core_qids()
 
         for q in no_file:
-            i = self.base.exp.proj.get_ext_path(q)
-            o = self.extd.exp.proj.get_ext_path(q)
+            i = self.base.exp.proj.get_path(q)
+            o = self.extd.exp.proj.get_path(q)
             print("./src/query_wizard.py build-core", "-i", i, "-o", o)
 
         incomplete = self.get_incomplete_core_qids()
@@ -213,18 +202,18 @@ class CoreAnalyzer:
         print_banner("Incomplete Core Queries")
 
         for q in incomplete:
-            i = self.base.exp.proj.get_ext_path(q)
-            c = self.core.exp.proj.get_ext_path(q)
-            o = self.extd.exp.proj.get_ext_path(q)
+            i = self.base.exp.proj.get_path(q)
+            c = self.core.exp.proj.get_path(q)
+            o = self.extd.exp.proj.get_path(q)
             print("./src/query_wizard.py complete-core", "-i", i, "--core-query-path", c, "-o", o)
 
         print("")
         print_banner("Patched Core Queries")
 
         for qid in self.extd.qids:
-            c = self.core.exp.proj.get_ext_path(qid)
-            e = self.extd.exp.proj.get_ext_path(qid)
-            b = self.base.exp.proj.get_ext_path(qid)
+            c = self.core.exp.proj.get_path(qid)
+            e = self.extd.exp.proj.get_path(qid)
+            b = self.base.exp.proj.get_path(qid)
             cc = count_asserts(c)
             ec = count_asserts(e)
             bc = count_asserts(b)

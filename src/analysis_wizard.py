@@ -2,7 +2,7 @@
 
 import argparse
 from analysis.core_analyzer import CoreAnalyzer
-from analysis.expr_analyzer import ExperAnalyzer
+from base.exper_analyzer import ExperAnalyzer
 from analysis.inst_analyzer import InstAnalyzer
 from analysis.perf_analyzer import PrefAnalyzer
 from analysis.shake_analyzer import ShakeAnalyzer
@@ -46,13 +46,6 @@ def set_up_core(subparsers):
     add_input_dir_option(p, is_group=True)
     add_analysis_options(p)
 
-def handle_core(args):
-    group = args.input_group
-    CoreAnalyzer(group, args.analyzer)
-    # log_check(exp.sum_table_exists(), "experiment results do not exist")
-    # ba = ExperAnalyzer(exp, args.analyzer)
-    # ba.get_unstable_reasons().print_status()
-
 def set_up_shake(subparsers):
     p = subparsers.add_parser('shake', help='analyze shake')
     add_input_dir_option(p, is_group=True)
@@ -90,7 +83,7 @@ if __name__ == '__main__':
     elif args.sub_command == "unstable":
         handle_unstable(args)
     elif args.sub_command == "core":
-        handle_core(args)
+        CoreAnalyzer(args.input_group, args.analyzer)
     elif args.sub_command == "shake":
         handle_shake(args)
     elif args.sub_command == "wombo":

@@ -205,3 +205,4 @@ class QueryAnalyzer:
             # print(round(np.mean(uk_times)/1000, 2))
             return UnstableReason.UNKNOWN
         return UnstableReason.MIXED
+

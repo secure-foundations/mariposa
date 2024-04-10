@@ -4,8 +4,8 @@ from analysis.core_analyzer import CoreAnalyzer
 from base.factory import FACT
 from base.project import KnownExt, ProjectGroup, ProjectType as PT
 from proj_wizard import NINJA_BUILD_RULES
-from query.analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
-from analysis.expr_analyzer import ExperAnalyzer
+from base.query_analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
+from base.exper_analyzer import ExperAnalyzer
 from utils.analysis_utils import *
 from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner
@@ -40,9 +40,9 @@ class ShakeAnalyzer(CoreAnalyzer):
 
     def check_shake_perf(self):
         for qid, qcs in self.qids.items():
-            shake_log = self.p_base.get_ext_path(qid, KnownExt.SHK_LOG)
+            shake_log = self.p_base.get_path(qid, KnownExt.SHK_LOG)
             # rc, tt = self.shake[qid].get_original_status()
-            # shake_path = self.p_shake.get_ext_path(qid)
+            # shake_path = self.p_shake.get_path(qid)
 
             print("base:", qcs.base)
             print("patch:", qcs.patch)
@@ -61,8 +61,8 @@ class ShakeAnalyzer(CoreAnalyzer):
         cats = Categorizer()
 
         for qid, qcs in self.qids.items():
-            shake_log = self.p_base.get_ext_path(qid, KnownExt.SHK_LOG)
-            shake_path = self.p_shake.get_ext_path(qid)
+            shake_log = self.p_base.get_path(qid, KnownExt.SHK_LOG)
+            shake_path = self.p_shake.get_path(qid)
 
             scores = parse_shake_log(shake_log)
 

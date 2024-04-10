@@ -205,15 +205,10 @@ class Project:
         partitions = partition(queries, self.part.num)
         return partitions[self.part.id - 1]
 
-    # def __list_query_paths(self):
-    #     for path in self.list_queries():
-    #         # log_check(q.endswith(".smt2"), f"invalid query {q}")
-    #         yield (path, os.path.basename(path))
-
     def is_whole(self):
         return self.part.is_whole()
 
-    def get_ext_path(self, qname, ext=KnownExt.SMT2):
+    def get_path(self, qname, ext=KnownExt.SMT2):
         # log_check(qname in self.qids, f"invalid query {qname}")
         if ext == KnownExt.SMT2:
             return os.path.join(self.sub_root, f"{qname}.smt2")

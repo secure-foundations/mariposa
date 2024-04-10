@@ -2,9 +2,9 @@
 
 import argparse
 import os
-from analysis.expr_analyzer import ExperAnalyzer
+from base.exper_analyzer import ExperAnalyzer
 from base.project import KnownExt
-from query.analyzer import UnstableReason
+from base.query_analyzer import UnstableReason
 from utils.local_utils import handle_single
 from utils.option_utils import *
 from utils.system_utils import log_check, print_banner

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse, time, pickle, numpy as np
-from analysis.expr_analyzer import ExperAnalyzer
 from base.exper import Experiment
 from base.project import KnownExt, Project, ProjectType as PT, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
@@ -240,8 +239,8 @@ class NinjaPasta:
         ext = KnownExt.LFSC
         self.output_dir = in_proj.get_log_dir(ext)
         for qid in in_proj.qids:
-            i = in_proj.get_ext_path(qid)
-            o = in_proj.get_ext_path(qid, ext)
+            i = in_proj.get_path(qid)
+            o = in_proj.get_path(qid, ext)
             self.ninja_stuff += [f"build {o}: get-lfsc {i}\n"]
             if clear:
                 self.ninja_stuff += [f"    clear=--clear-existing\n\n"]
@@ -258,15 +257,15 @@ class NinjaPasta:
         self.output_dir = core_cvc5.get_log_dir(ext)
 
         for qid in base_cvc5.qids:
-            o = base_cvc5.get_ext_path(qid, ext)
-            i = core_cvc5.get_ext_path(qid)
+            o = base_cvc5.get_path(qid, ext)
+            i = core_cvc5.get_path(qid)
 
             if os.path.exists(o):
                 continue
 
             if not os.path.exists(i):
                 log_warn(f"missing core query {i}, skipping...")
-                o = core_cvc5.get_ext_path(qid, ext)
+                o = core_cvc5.get_path(qid, ext)
                 self.ninja_stuff += [f"build {o}: get-lfsc {i}\n"]
                 if clear:
                     self.ninja_stuff += [f"    clear=--clear-existing\n\n"]
@@ -282,8 +281,8 @@ class NinjaPasta:
         base_cvc5 = in_group.get_project(PT.from_str("base.cvc5"))
         self.output_dir = base_cvc5.get_log_dir(out_ext)
         for qid in base_cvc5.qids:
-            o = base_cvc5.get_ext_path(qid, out_ext)
-            i = base_cvc5.get_ext_path(qid, in_ext)
+            o = base_cvc5.get_path(qid, out_ext)
+            i = base_cvc5.get_path(qid, in_ext)
             if not os.path.exists(i):
                 log_warn(f"missing input proof {qid}.{in_ext}")
                 continue
@@ -293,8 +292,8 @@ class NinjaPasta:
         ext = KnownExt.CVC_INST
         self.output_dir = in_proj.get_log_dir(ext)
         for qid in in_proj.qids:
-            i = in_proj.get_ext_path(qid)
-            o = in_proj.get_ext_path(qid, ext)
+            i = in_proj.get_path(qid)
+            o = in_proj.get_path(qid, ext)
             self.ninja_stuff += [f"build {o}: get-inst {i}\n\n"]
             self.expect_targets.add(o)
         return ext
@@ -310,7 +309,7 @@ class NinjaPasta:
     #         exp = ExperAnalyzer(exp, ana)
 
     #         for qid in exp.get_overall()[Stability.UNSTABLE]:
-    #             i = proj.get_ext_path(qid)
+    #             i = proj.get_path(qid)
     #             o = os.path.join(self.output_dir, f"{gid}--{qid}.smt2")
     #             if not os.path.exists(o):
     #                 log_warn(f"skipping query {i}")
@@ -321,8 +320,8 @@ class NinjaPasta:
     def handle_create_shake_log(self, in_proj):
         self.output_dir = in_proj.get_log_dir(KnownExt.SHK_LOG)
         for qid in in_proj.qids:
-            i = in_proj.get_ext_path(qid)
-            o = in_proj.get_ext_path(qid, KnownExt.SHK_LOG)
+            i = in_proj.get_path(qid)
+            o = in_proj.get_path(qid, KnownExt.SHK_LOG)
             self.ninja_stuff += [f"build {o}: shake-log {i}\n"]
             self.expect_targets.add(o)
 

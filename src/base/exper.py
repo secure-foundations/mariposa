@@ -10,6 +10,7 @@ from utils.database_utils import *
 from base.solver import Solver, RCode, EXPECTED_CODES
 # from base.factory import FACT
 from base.project import Project, Partition, get_qid
+from base.defs import delegate
 
 class QueryExpResult:
     def __init__(self, query_path, mutations=[], blob=None):
@@ -24,6 +25,9 @@ class QueryExpResult:
         self.timeout = None
         self.blob = blob
 
+    def is_dummy(self):
+        return self.blob is None
+
     def __str__(self):
         return f"query: {self.query_path}"
     
@@ -33,9 +37,6 @@ class QueryExpResult:
     def get_mutation_blob(self, mutation):
         index = self.mutations.index(mutation)
         return self.blob[index]
-
-    def is_dummy(self):
-        return self.blob is None
     
     def get_mutation_status(self, mutation):
         # print(self.mutations)
@@ -153,19 +154,19 @@ class ExpConfig:
                 "keep_mutants": self.keep_mutants,
                 "exp_timeout": self.timeout}
 
+@delegate('proj', 'get_path', 'list_queries')
 class Experiment(ExpConfig):
     """
     an experiment is a collection of tasks
     defined by (a project, a solver, an experiment config)
     the project.part may not be whole
     """
-    def __init__(self, cfg: ExpConfig, proj: Project, solver: Solver):
+    def __init__(self, proj: Project, cfg: ExpConfig, solver: Solver):
         # this is a bit of a hack
         super().__init__(cfg.exp_name, cfg.as_dict())
 
         self.proj: Project = proj
         self.solver: Solver = solver
-        self.is_whole = proj.is_whole()
 
         self.table_prefix = get_table_prefix(proj, solver)
         self.exp_table_name, self.sum_table_name = get_table_names(proj, solver)
@@ -182,13 +183,10 @@ class Experiment(ExpConfig):
     def signature(self):
         return f"{self.proj.full_name}_{self.proj.part}_{self.solver}_{self.exp_name}"
 
-    def debug(self):
-        return f"""project: {self.proj.full_name}
-part: {self.part}
-experiment: {self.exp_name}
-db_path: {self.db_path}
-sub_root: {self.proj.sub_root}
-solver: {self.solver}"""
+    def print_info(self):
+        print(f"project dir:\t{self.proj.sub_root}")
+        print(f"exper config:\t{self.exp_name}")
+        print(f"solver path:\t{self.solver.path}")
 
     def create_db(self, clear):
         con, cur = get_cursor(self.db_path)
@@ -244,7 +242,7 @@ solver: {self.solver}"""
     def create_tasks(self, clear):
         self.create_db(clear)
         tasks = []
-        origin_paths = self.proj.list_queries()
+        origin_paths = self.list_queries()
         log_info(f"running {len(origin_paths)} original queries")
 
         for origin_path in origin_paths:
@@ -319,7 +317,7 @@ solver: {self.solver}"""
             self.insert_sum_row(cur, v_path, v_rcode, v_time)
         conclude(con)
 
-        log_info("\ndone post processing exp data")
+        log_info("done post processing exp data")
 
     def sum_table_exists(self):
         # print(self.db_path, self.sum_table_name)
@@ -331,24 +329,23 @@ solver: {self.solver}"""
         return res
     
     def check_sum_table_exists(self):
-        log_check(os.path.exists(self.db_path), f"path {self.db_path} does not exist")
+        log_check(os.path.exists(self.db_path), 
+                  f"path {self.db_path} does not exist")
         con, cur = get_cursor(self.db_path)
         res = table_exists(cur, self.sum_table_name)
         con.close()
         log_check(res, f"{self.sum_table_name} does not exist in {self.db_path}")
 
-    def load_sum_table(self, enable_dummy=False) -> Dict[str, QueryExpResult]:
+    def load_sum_table(self, flexible=False) -> Dict[str, QueryExpResult]:
         con, cur = get_cursor(self.db_path)
         sum_name = self.sum_table_name
         summaries = dict()
 
         if not table_exists(cur, sum_name):
-            log_check(enable_dummy, f"{sum_name} does not exist in {self.db_path}")
-            log_warn(f"{sum_name} does not exist, creating dummy data!")
-            for path in self.proj.list_queries():
-                qr = QueryExpResult(path)
-                if qr.mutations == []:
-                    qr.mutations = self.enabled_muts
+            log_check(flexible, f"{sum_name} does not exist in {self.db_path}")
+            log_warn(f"{sum_name} does not exist, filling with dummy data!")
+            for path in self.list_queries():
+                qr = QueryExpResult(path, self.enabled_muts)
                 summaries[qr.qid] = qr
             return summaries
 
@@ -361,11 +358,8 @@ solver: {self.solver}"""
         for row in rows:
             blob = np.frombuffer(row[1], dtype=int)
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
-            path = row[0]
-            path = self.proj.get_ext_path(get_qid(path))
+            path = self.get_path(get_qid(row[0]))
             qr = QueryExpResult(path, self.enabled_muts, blob)
-            if qr.mutations == []:
-                qr.mutations = self.enabled_muts
             summaries[qr.qid] = qr
 
         self._sanity_check_summary(set(summaries.keys()))
@@ -373,7 +367,7 @@ solver: {self.solver}"""
         return summaries
 
     def get_missing_qids(self):
-        expected = set([get_qid(q) for q in self.proj.list_queries()])
+        expected = set([get_qid(q) for q in self.list_queries()])
         con, cur = get_cursor(self.db_path)
         res = cur.execute(f"""SELECT vanilla_path FROM {self.sum_table_name}""")
         rows = res.fetchall()
@@ -384,7 +378,7 @@ solver: {self.solver}"""
         return missing
 
     def _sanity_check_summary(self, actual):
-        expected = set([get_qid(q) for q in self.proj.list_queries()])
+        expected = set([get_qid(q) for q in self.list_queries()])
         missing = actual - expected
 
         if missing != set():

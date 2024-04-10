@@ -109,7 +109,7 @@ class Runner:
     def update_experiment(self, qids):
         tasks = []
         for qid in qids:
-            path = self.exp.proj.get_ext_path(qid)
+            path = self.exp.proj.get_path(qid)
             # TODO: handle overwrite
             log_check(self.exp.get_mutants(path) == [], 
                       f"experiment already exists for {path}")

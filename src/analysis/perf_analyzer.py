@@ -1,11 +1,11 @@
 import os, numpy as np
-from analysis.expr_analyzer import ExperAnalyzer
+from base.exper_analyzer import ExperAnalyzer
 from base.defs import NINJA_REPORTS_DIR
 from base.factory import FACT
 from base.project import Project, ProjectGroup, KnownExt as KE
 from base.solver import RCode, SolverType as ST
 from proj_wizard import NinjaStats
-from query.analyzer import QueryAnalyzer
+from base.query_analyzer import QueryAnalyzer
 from utils.analysis_utils import PartialCDF, print_sets_diff
 from utils.system_utils import log_check
 from utils.plot_utils import *

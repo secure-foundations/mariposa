@@ -1,6 +1,6 @@
 from base.defs import MAGIC_IGNORE_SEED
 from base.project import Partition
-from query.analyzer import QueryAnalyzer
+from base.query_analyzer import QueryAnalyzer
 from utils.query_utils import Mutation
 from utils.system_utils import file_exists, log_check
 
@@ -94,7 +94,8 @@ def deep_parse_args(args):
             args.seed = None
 
     if hasattr(args, "input_query_path"):
-        log_check(file_exists(args.input_query_path), "input query does not exist or not a file")
+        log_check(file_exists(args.input_query_path), 
+                  "input query does not exist or not a file")
 
     if hasattr(args, "mutation"):
         args.mutation = Mutation(args.mutation)
@@ -102,16 +103,18 @@ def deep_parse_args(args):
     single = args.sub_command == "single"
 
     if hasattr(args, "exp_config") and not args.is_group:
+        args.exp_config = FACT.get_config(args.exp_config)
+
         if single:
             args.experiment = FACT.build_single_mode_exp(
-                args.exp_config, args.input_query_path, args.solver)
+                args.input_query_path, args.exp_config, args.solver)
         else:
-            args.experiment = FACT.build_experiment(
-                args.exp_config, args.input_proj, args.solver)
+            args.experiment = FACT.get_exper(
+                args.input_proj, args.exp_config, args.solver, build=True)
 
     if hasattr(args, "timeout"):
         args.timeout = int(args.timeout)
-        
+
     if hasattr(args, "restarts"):
         args.restarts = int(args.restarts)
 

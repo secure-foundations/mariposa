@@ -1,10 +1,10 @@
 import copy
 import os, subprocess, time
-from analysis.expr_analyzer import ExperAnalyzer
 from base.defs import CTRL_HOST, S190X_HOSTS, SYNC_ZIP
 from base.exper import Experiment
 
 from base.project import Partition
+from base.exper_analyzer import ExperAnalyzer
 from utils.local_utils import handle_multiple
 from utils.option_utils import deep_parse_args
 from utils.system_utils import confirm_input, exit_with, get_file_count, is_flat_dir, log_check, log_info, log_warn, subprocess_run

@@ -39,3 +39,16 @@ MAGIC_IGNORE_SEED = 0xdeadbeef # 3735928559
 CACHE_ROOT = "cache/"
 
 REPORT_ROOT = "doc/reports/"
+
+def delegate(to, *methods):
+    def dec(klass):
+        def create_delegator(method):
+            def delegator(self, *args, **kwargs):
+                obj = getattr(self, to)
+                m = getattr(obj, method)
+                return m(*args, **kwargs)
+            return delegator
+        for m in methods:
+            setattr(klass, m, create_delegator(m))
+        return klass
+    return dec

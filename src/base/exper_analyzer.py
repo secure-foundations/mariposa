@@ -1,12 +1,14 @@
 from typing import Dict
 # from base.project import FACT, QueryType as QType
 from base.exper import Experiment, QueryExpResult
-from query.analyzer import *
+from base.query_analyzer import *
+from base.defs import delegate
 from utils.query_utils import Mutation
 from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *
 
+@delegate('exp', 'get_path', 'list_queries')
 class ExperAnalyzer:
     def __init__(self, exp: Experiment, ana: QueryAnalyzer, enable_dummy=False):
         self.exp = exp
@@ -43,10 +45,8 @@ class ExperAnalyzer:
     def print_status(self, verbosity=0):
         print_banner("Overall Report")
         print("")
-        
-        print(f"project dir:\t{self.exp.proj.sub_root}")
-        print(f"exp config:\t{self.exp.exp_name}")
-        print(f"solver path:\t{self.exp.solver.path}")
+
+        self.exp.print_info()
         print(f"analyzer:\t{self.ana.name}\n")
         
         self.__cats.print_status(skip_empty=True)

@@ -2,8 +2,10 @@ import json, os, copy
 from typing import List 
 from base.defs import *
 from base.exper import ExpConfig, Experiment
+from base.exper_analyzer import ExperAnalyzer
 from base.project import Project, ProjectGroup, ProjectType
 from base.solver import CVC5Solver, Solver, Z3Solver
+from base.query_analyzer import QueryAnalyzer
 from utils.system_utils import create_dir, exit_with, log_check, reset_dir
 
 from base.defs import SOLVER_CONFIG_PATH
@@ -52,7 +54,7 @@ class Factory:
                 return s
         exit_with(f"no such solver with path {path} configured in {SOLVER_CONFIG_PATH}!")
 
-    def get_config_by_name(self, name) -> ExpConfig:
+    def get_config(self, name) -> ExpConfig:
         log_check(name in self.all_configs, f"no such configuration {name}")
         return self.all_configs[name]
 
@@ -95,45 +97,50 @@ class Factory:
             yield pg
 
     @staticmethod
-    def _build_single_mode_project(query_path) -> Project:
+    def build_single_mode_exp(query_path, cfg, solver: Solver) -> Experiment:
         log_check(query_path.endswith(".smt2"),
                         'query must end with ".smt2"')
         query_path = query_path.replace(".smt2", "")
         reset_dir(SINGLE_MUT_ROOT, True)
         create_dir(SINGLE_PROJ_ROOT)
-        return Project("single", single_mode=True)
+        proj = Project("single", single_mode=True)
+        return Experiment(proj, cfg, solver)
 
-    @staticmethod
-    def build_single_mode_exp(cfg_name, query_path, solver: Solver) -> Experiment:
-        cfg = FACT.get_config_by_name(cfg_name)
-        proj = Factory._build_single_mode_project(query_path)
-        return Experiment(cfg, proj, solver)
-
-    def build_experiment(self, cfg_name, proj: Project, solver: Solver) -> Experiment:
-        cfg = FACT.get_config_by_name(cfg_name)
-        return Experiment(cfg, proj, solver)
-
-    # difference is that this method checks if the experiment results exist
-    def load_experiment(self, cfg_name, proj: Project, solver: Solver) -> Experiment:
-        cfg = FACT.get_config_by_name(cfg_name)
-        exp = Experiment(cfg, proj, solver)
-        log_check(exp.sum_table_exists(), "experiment results do not exist")
+    def get_exper(self, proj: Project, cfg: ExpConfig, solver: Solver, build=False) -> Experiment:
+        exp = Experiment(proj, cfg, solver)
+        if not build:
+            log_check(exp.sum_table_exists(), 
+                      "experiment results do not exist")
         return exp
 
-    def load_any_experiment(self, proj: Project) -> Experiment:
-        exps = self.get_project_experiments(proj)
-        log_check(len(exps) != 0, f"no experiment results found for {proj.full_name}")
-        return exps[0]
-
-    def get_project_experiments(self, proj: Project) -> List[Experiment]:
+    def get_available_expers(self, proj: Project) -> List[Experiment]:
         cfgs = self.all_configs.values()
         solvers = self.all_solvers.values()
         exps = []
         for cfg in cfgs:
             for solver in solvers:
-                exp = Experiment(cfg, proj, solver)
+                exp = Experiment(proj, cfg, solver)
                 if exp.sum_table_exists():
                     exps.append(exp)
         return exps
+
+    def load_analysis(self, proj: Project, 
+                      cfg: ExpConfig, 
+                      solver: Solver, 
+                      ana: QueryAnalyzer, 
+                      flexible=False) -> ExperAnalyzer:
+        exp = self.get_exper(proj, cfg, solver, flexible)
+        return ExperAnalyzer(exp, ana)
+
+    def load_any_analysis(self, proj: Project, 
+                      ana: QueryAnalyzer) -> ExperAnalyzer:
+        exp = self.get_available_expers(proj)[0]
+        return ExperAnalyzer(exp, ana)
+    
+    def load_default_analysis(self, proj: Project) -> ExperAnalyzer:
+        solver = FACT.get_solver_by_name("z3_4_12_5")
+        cfg = FACT.get_config("default")
+        ana = QueryAnalyzer("60nq")
+        return self.load_analysis(proj, cfg, solver, ana, flexible=True)
 
 FACT = Factory()
