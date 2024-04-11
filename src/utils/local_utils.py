@@ -1,36 +1,19 @@
-import subprocess, sys
-from base.defs import MARIPOSA
 from base.factory import FACT
 from base.project import get_qid
 from base.exper_runner import Runner
 
 from base.exper_analyzer import ExperAnalyzer
-from base.query_analyzer import QueryAnalyzer
-from utils.system_utils import list_smt2_files, log_check, log_info, log_warn, reset_dir
+from utils.system_utils import log_check, log_warn
 
 def handle_single(args):
     in_query = args.input_query_path
     exp = args.experiment
-    sub_root = exp.proj.sub_root
 
     if exp.is_done() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {in_query}")
         log_warn(f"you might want to use --clear-existing to overwrite the results.")
         ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
-
-    reset_dir(sub_root, args.clear_existing)
-
-    command = f"{MARIPOSA} -i {in_query} -o {sub_root}/split.smt2 -a split --convert-comments"
-    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-    log_check(result.returncode == 0, "single mode split failed!")
-
-    if list_smt2_files(sub_root) == []:
-        log_info(f"no queries were generated from {in_query}")
-        sys.exit(0)
-
-    # this is a hack to make sure qids are loaded
-    exp.proj.reload()
 
     Runner(exp).run_experiment(args.clear_existing)
     ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
@@ -71,10 +54,16 @@ def handle_update(args):
     Runner(exp).update_experiment([qid])
     ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
 
-def get_query_stability(input_query, exp_config):
+def test_stability(input_query, exp_config):
     cfg = FACT.get_config(exp_config)
-    solver = FACT.get_solver("z3_4_12_5")
     ana = FACT.get_analyzer("60nq")
-    exp = FACT.get_single_exper(input_query, cfg, solver)
+    sol = FACT.get_solver("z3_4_12_5")
+    exp = FACT.get_single_exper(input_query, cfg, sol)
     Runner(exp).run_experiment(True)
     exp = ExperAnalyzer(exp, ana)
+    assert len(exp.qids) == 1
+    qid = exp.qids[0]
+    ss = exp.get_stability(qid)
+    ft = exp.get_failure_type(qid)
+    # print(f"stability: {ss}, failure type: {ft}")
+    return ss, ft

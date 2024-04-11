@@ -6,7 +6,7 @@ from query.combo_builder import handle_inst_z3, handle_trace_z3
 from query.core_completer import CoreCompleter
 from query.inst_builder import InstBuilder
 from utils.option_utils import *
-from query.core_builder import MutCoreBuilder
+from query.core_builder import CompleteCoreBuilder, MutCoreBuilder
 from query.proof_builder import ProofBuilder, check_lfsc_proof
 from utils.query_utils import convert_smtlib, emit_quake_query, is_assertion_subset
 from utils.shake_utils import create_shake_query_from_log, debug_shake
@@ -19,6 +19,7 @@ def setup_build_core(subparsers):
     add_restart_option(p)
     add_solver_option(p)
     add_timeout_option(p)
+    p.add_argument("--complete", default=False, action="store_true", help="try to complete the core query after building it")
     p.add_argument("--ids-available", default=False, action="store_true", help="whether ids are available in the query")
 
 def setup_convert_smt_lib(subparsers):
@@ -123,12 +124,21 @@ if __name__ == "__main__":
             os.makedirs(directory)
 
     if args.sub_command == "build-core":
-        MutCoreBuilder(args.input_query_path,
-                        args.solver, 
+        if args.complete:
+            CompleteCoreBuilder(args.input_query_path,
                         args.output_query_path, 
+                        args.solver, 
                         args.timeout,
                         args.ids_available,
                         args.restarts)
+        else:
+            m = MutCoreBuilder(args.input_query_path,
+                        args.output_query_path, 
+                        args.solver, 
+                        args.timeout,
+                        args.ids_available,
+                        args.restarts)
+            m.run()
     elif args.sub_command == "convert-smtlib":
         convert_smtlib(args.input_query_path, 
                         args.output_query_path,
@@ -165,9 +175,8 @@ if __name__ == "__main__":
                       args.output_query_path, 
                       args.timeout)
     elif args.sub_command == "check-subset":
-        ok = is_assertion_subset(args.input_query_path, 
-                                 args.subset_query)
-        log_check(ok, f"{args.subset_query} is not a subset of {args.input_query_path}")
+        log_check(is_assertion_subset(args.input_query_path, args.subset_query), 
+                  f"{args.subset_query} is not a subset of {args.input_query_path}")
     elif args.sub_command == "debug-shake":
         debug_shake(args.input_query_path, 
                     args.core_query_path, 

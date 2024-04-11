@@ -67,15 +67,15 @@ class WomboAnalyzer:
 
     #     cats = Categorizer()
     #     for qid in p0.qids:
-    #         ss = e2.get_query_stability(qid)
+    #         ss = e2.get_stability(qid)
     #         if ss != STB.MISSING_F:
     #             cats.add_item(ss, qid)
     #             continue
-    #         ss = e1.get_query_stability(qid)
+    #         ss = e1.get_stability(qid)
     #         if ss != STB.MISSING_F:
     #             cats.add_item(ss, qid)
     #             continue
-    #         ss = e0.get_query_stability(qid)
+    #         ss = e0.get_stability(qid)
     #         cats.add_item(ss, qid)
 
     #     cats.finalize()
@@ -114,7 +114,7 @@ class WomboAnalyzer:
         ana = QueryAnalyzer("60nq")
         core = ExperAnalyzer(FACT.load_any_experiment(core_p), ana)
         for qid in core.qids:
-            s = core.get_query_stability(qid)
+            s = core.get_stability(qid)
             if s != STB.UNSOLVABLE:
                 continue
             i_path = base_p.get_path(qid)
@@ -159,7 +159,7 @@ class WomboAnalyzer:
     #     o_p = o_group.get_project(PT.from_str("base.z3"), build=True)
 
     #     for qid in core.qids:
-    #         s = core.get_query_stability(qid)
+    #         s = core.get_stability(qid)
     #         if s != STB.UNSTABLE:
     #             continue
     #         i_path = core_p.get_path(qid)

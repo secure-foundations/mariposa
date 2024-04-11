@@ -203,7 +203,7 @@ class NinjaPasta:
             self.expect_targets.add(out_path)
 
     def handle_build_z3_trace(self, exp: Experiment):
-        log_check(exp.finished(), "experiment results do not exist")
+        log_check(exp.sum_table_exists(), "experiment results do not exist")
         ba = ExperAnalyzer(exp, args.analyzer)
         unstables = ba.get_unstable_query_mutants()
         self.output_dir = exp.proj.get_log_dir(KnownExt.Z3_TRACE)

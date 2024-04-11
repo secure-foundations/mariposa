@@ -33,7 +33,7 @@ class ExperAnalyzer:
             qr.print_status()
             print("")
 
-    def get_query_stability(self, qid):
+    def get_stability(self, qid):
         c = self.__cats.get_category(qid)
         if c is not None:
             return c
@@ -103,7 +103,7 @@ class ExperAnalyzer:
         for qid in self.qids:
             qr = self[qid]
 
-            if self.get_query_stability(qid) != Stability.UNSTABLE:
+            if self.get_stability(qid) != Stability.UNSTABLE:
                 continue
 
             s, f = self.get_mutant_details(qr)
@@ -116,18 +116,16 @@ class ExperAnalyzer:
         return res
 
     def get_unstable_reasons(self):
-        cats = Categorizer([c for c in UnstableReason])
+        cats = Categorizer([c for c in FailureType])
         for qid in self.qids:
             qr = self[qid]
-            if self.get_query_stability(qid) != Stability.UNSTABLE:
+            if self.get_stability(qid) != Stability.UNSTABLE:
                 continue
-            reason = self.ana.sub_categorize_unstable(qr.blob)
+            reason = self.ana.get_failure_type(qr.blob)
             cats.add_item(reason, qid)
         cats.finalize()
         return cats
 
-    def get_unstable_reason(self, qid):
-        if self.get_query_stability(qid) == Stability.UNSTABLE:
-            return self.ana.sub_categorize_unstable(self[qid].blob)
-        return None
+    def get_failure_type(self, qid):
+        return self.ana.get_failure_type(self[qid].blob)
 

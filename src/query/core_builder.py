@@ -1,11 +1,12 @@
 import os, random, subprocess
 from base.solver import SolverType
+from utils.local_utils import get_query_stability
 from utils.query_utils import Mutation, emit_mutant_query
 from utils.system_utils import *
 from base.defs import MARIPOSA
 
 class MutCoreBuilder:
-    def __init__(self, input_query, solver, output_query, timeout, ids_available, restarts):
+    def __init__(self, input_query, output_query, solver, timeout, ids_available, restarts):
         log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
         log_check(solver.stype == SolverType.Z3, f"only z3 solver is supported, got {solver}")
         self.solver = solver
@@ -19,15 +20,18 @@ class MutCoreBuilder:
         self.output_query = output_query
         self.clear_temp_files()
         self.ids_available = ids_available
+        self.restarts = restarts
 
         self.__create_label_query()
 
-        for i in range(restarts):
+    def run(self):
+        for i in range(self.restarts):
             remove_file(self.lbl_mut_query)
             remove_file(self.core_log)
 
             s = random.randint(0, 0xffffffffffffffff)
-            emit_mutant_query(self.lbl_query, self.lbl_mut_query, 
+            emit_mutant_query(self.lbl_query, 
+                              self.lbl_mut_query, 
                               Mutation.COMPOSE, s)
 
             with open(self.lbl_mut_query, "a") as f:
@@ -39,12 +43,13 @@ class MutCoreBuilder:
                 log_info(f"core iteration {i}, successfully used mutant seed: {s}")
                 self.__create_core_query(seed=s)
                 # self.clear_temp_files()
-                return
+                return True
             else:
                 log_info(f"core iteration {i}, failed to use mutant seed: {s}")
 
         self.clear_temp_files()
-        exit_with(f"failed to use mutants {self.solver} on {input_query}, no core log created")
+        exit_with(f"failed to use mutants {self.solver} on {self.input_query}, no core log created")
+        return False
 
     def clear_temp_files(self):
         remove_file(self.lbl_query)
@@ -101,3 +106,9 @@ class MutCoreBuilder:
 
         with open(self.output_query, "a") as f:
             f.write(f'(set-info :comment seed_{seed})\n')
+
+class CompleteCoreBuilder:
+    def __init__(self, input_query, output_query, solver, timeout, ids_available, restarts):
+        b = MutCoreBuilder(input_query, output_query, solver,  timeout, ids_available, restarts)
+        out = b.run()
+        get_query_stability(output_query, "debug")

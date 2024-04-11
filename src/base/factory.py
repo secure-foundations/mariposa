@@ -1,4 +1,5 @@
 import json, os, copy
+import sys
 from typing import List 
 from base.defs import *
 from base.exper import ExpConfig, Experiment
@@ -6,7 +7,7 @@ from base.exper_analyzer import ExperAnalyzer
 from base.project import Project, ProjectGroup, ProjectType
 from base.solver import CVC5Solver, Solver, Z3Solver
 from base.query_analyzer import QueryAnalyzer
-from utils.system_utils import exit_with, get_name_hash, log_check
+from utils.system_utils import exit_with, get_name_hash, list_smt2_files, log_check, log_info, reset_dir, subprocess_run
 
 class Factory:
     def __init__(self):
@@ -110,11 +111,38 @@ class Factory:
         return self.analyzers[name]
 
     @staticmethod
-    def get_single_exper(query_path, cfg: ExpConfig, solver: Solver) -> Experiment:
-        log_check(query_path.endswith(".smt2"),
-                        'query must end with ".smt2"')
+    def get_single_project(query_path, skip_split=False, clear=False) -> Project:
+        log_check(query_path.endswith(".smt2"), 
+                  'query must end with ".smt2"')
         name_hash = get_name_hash(query_path)
         proj = Project("single_" + name_hash, single_mode=True)
+
+        if len(proj.qids) != 0 and not clear:
+            return proj
+
+        sub_root = proj.sub_root
+
+        reset_dir(sub_root, True)
+
+        if skip_split:
+            subprocess_run(f"cp {query_path} {sub_root}/", shell=True, check=True)
+        else:                 
+            command = f"{MARIPOSA} -i {query_path} -o {sub_root}/split.smt2 -a split --convert-comments"
+            subprocess_run(command, shell=True, check=True)
+
+        proj.reload()
+
+        if len(proj.qids) == 0:
+            log_info(f"no queries were generated from {query_path}")
+            sys.exit(0)
+
+        return proj
+
+    @staticmethod
+    def get_single_exper(query_path, cfg: ExpConfig, solver: Solver, skip_split=False, clear=False) -> Experiment:
+        log_check(query_path.endswith(".smt2"),
+                        'query must end with ".smt2"')
+        proj = Factory.get_single_project(query_path, skip_split, clear)
         return Experiment(proj, cfg, solver)
 
     def get_exper(self, proj: Project, cfg: ExpConfig, solver: Solver, build=False) -> Experiment:

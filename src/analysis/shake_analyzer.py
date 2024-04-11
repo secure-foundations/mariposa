@@ -4,7 +4,7 @@ from analysis.core_analyzer import CoreAnalyzer
 from base.factory import FACT
 from base.project import KnownExt, ProjectGroup, ProjectType as PT
 from proj_wizard import NINJA_BUILD_RULES
-from base.query_analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
+from base.query_analyzer import QueryAnalyzer, Stability as STB, FailureType as UR
 from base.exper_analyzer import ExperAnalyzer
 from utils.analysis_utils import *
 from utils.query_utils import count_asserts, is_assertion_subset
@@ -50,7 +50,7 @@ class ShakeAnalyzer(CoreAnalyzer):
             if qid not in self.shake:
                 print("shko: TOS!!")
             else:
-                print("shko:", self.shake.get_query_stability(qid))
+                print("shko:", self.shake.get_stability(qid))
                 self.shake[qid].print_status(5)
 
             print("./src/query_wizard.py debug-shake", "-i %s --core-query-path %s --input-log-path %s" % (qcs.base_path, qcs.patch_path, shake_log))

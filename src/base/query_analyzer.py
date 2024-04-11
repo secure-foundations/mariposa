@@ -8,10 +8,11 @@ from base.solver import RCode
 from base.exper import QueryExpResult
 from utils.query_utils import Mutation
 
-class UnstableReason(Enum):
+class FailureType(Enum):
     TIMEOUT = "mostly_timeout"
     UNKNOWN = "mostly_unknown"
     MIXED = "mixed"
+    NONE = "none"
 
     def __str__(self):
         return self.value
@@ -181,7 +182,7 @@ class QueryAnalyzer:
         cats.finalize()
         return cats
 
-    def sub_categorize_unstable(self, group_blob):
+    def get_failure_type(self, group_blob) -> FailureType:
         size = group_blob.shape[0]
         tos, uks = 0, 0
         uk_times = []
@@ -193,12 +194,15 @@ class QueryAnalyzer:
             tos += _tos
             uks += _uks
 
+        if tos == 0 and uks == 0:
+            return FailureType.NONE
+
         tor = tos * 100 / (uks + tos)
 
         if tor >= 95:
-            return UnstableReason.TIMEOUT
+            return FailureType.TIMEOUT
         if tor <= 5:
             # print(round(np.mean(uk_times)/1000, 2))
-            return UnstableReason.UNKNOWN
-        return UnstableReason.MIXED
+            return FailureType.UNKNOWN
 
+        return FailureType.MIXED

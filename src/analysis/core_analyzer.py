@@ -7,7 +7,7 @@ from base.exper_analyzer import ExperAnalyzer
 from base.factory import FACT
 from base.project import ProjectGroup, ProjectType as PT
 from proj_wizard import NINJA_BUILD_RULES
-from base.query_analyzer import QueryAnalyzer, Stability as STB, UnstableReason as UR
+from base.query_analyzer import QueryAnalyzer, Stability as STB, FailureType as UR
 from utils.analysis_utils import *
 from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner
@@ -74,15 +74,15 @@ class CoreAnalyzer:
         self.qids: Dict[str, CoreQueryStatus] = dict()
 
         for qid in self.base.qids:
-            bs = self.base.get_query_stability(qid)
+            bs = self.base.get_stability(qid)
             bp = self.base.get_path(qid)
             bur = self.base.get_unstable_reason(qid)
 
-            cs = self.core.get_query_stability(qid)
+            cs = self.core.get_stability(qid)
             cp = self.core.get_path(qid)
             cur = self.core.get_unstable_reason(qid)
 
-            es = self.extd.get_query_stability(qid)
+            es = self.extd.get_stability(qid)
             ep = self.extd.get_path(qid)
             eur = self.extd.get_unstable_reason(qid)
 

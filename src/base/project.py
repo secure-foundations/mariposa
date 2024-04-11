@@ -125,7 +125,7 @@ class Project:
     def __init__(self, 
                  gid, ptype=DEFAULT_PTYPE, 
                  part=Partition(1, 1),
-                 single_mode=False, build=False):
+                 single_mode=False):
 
         self.gid = gid
         self.full_name = full_proj_name(gid, ptype)
@@ -136,9 +136,8 @@ class Project:
         self.__init_dirs(gid)
         self._qids = set()
 
-        if not build:
-            for q in self.list_queries():
-                self._qids.add(get_qid(q))
+        for q in self.list_queries():
+            self._qids.add(get_qid(q))
 
     def __init_dirs(self, gid):
         if self.single_mode:
@@ -150,7 +149,6 @@ class Project:
 
         if self.single_mode: 
             create_dir(self._sub_root)
-
             self._db_dir = self._sub_root
             self._gen_dir = os.path.join(SINGLE_MUT_ROOT_PREFIX, gid)
         else:
@@ -269,7 +267,7 @@ class ProjectGroup:
         if not build:
             log_check(fn in self.projects, f"no such project {fn} under {self.gid}")
         else:
-            self.projects[fn] = Project(self.gid, ptype, build=True)
+            self.projects[fn] = Project(self.gid, ptype)
         return self.projects[fn]
     
     def get_projects(self):

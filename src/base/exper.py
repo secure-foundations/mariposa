@@ -298,7 +298,6 @@ class Experiment(ExpConfig):
         VALUES(?, ?);""", (v_path, blob))
 
     def populate_sum_table(self):
-        from tqdm import tqdm
         con, cur = get_cursor(self.db_path)
 
         vanilla_rows = get_vanilla_paths(cur, self.exp_table_name)
@@ -308,7 +307,7 @@ class Experiment(ExpConfig):
 
         processed = set()
 
-        for (v_path, v_rcode, v_time) in tqdm(vanilla_rows):
+        for (v_path, v_rcode, v_time) in vanilla_rows:
             if v_path in processed:
                 continue
             processed.add(v_path)

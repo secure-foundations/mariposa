@@ -4,7 +4,7 @@ import argparse
 import os
 from base.exper_analyzer import ExperAnalyzer
 from base.project import KnownExt
-from base.query_analyzer import UnstableReason
+from base.query_analyzer import FailureType
 from utils.local_utils import handle_single
 from utils.option_utils import *
 from utils.system_utils import log_check, print_banner
@@ -29,7 +29,7 @@ def handle_diff_project(args):
     ba = ExperAnalyzer(exp, args.analyzer)
     reasons = ba.get_unstable_reasons()
     reasons.print_status()
-    for qid in reasons[UnstableReason.TIMEOUT]:
+    for qid in reasons[FailureType.TIMEOUT]:
         print(ba[qid].query_path)
 
     # output_dir = exp.proj.get_log_dir(KnownExt.Z3_TRACE)
