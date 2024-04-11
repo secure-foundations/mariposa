@@ -1,7 +1,6 @@
 import os
 from base.defs import MAGIC_IGNORE_SEED
 from base.project import Partition
-from base.query_analyzer import QueryAnalyzer
 from utils.query_utils import Mutation
 from utils.system_utils import file_exists, log_check
 
@@ -71,7 +70,7 @@ def deep_parse_args(args):
     from base.factory import FACT
 
     if hasattr(args, "solver"):
-        args.solver = FACT.get_solver_by_name(args.solver)
+        args.solver = FACT.get_solver(args.solver)
 
     if hasattr(args, "part"):
         args.part = Partition.from_str(args.part)
@@ -79,7 +78,7 @@ def deep_parse_args(args):
         args.part = Partition(1, 1)
 
     if hasattr(args, "analyzer"):
-        args.analyzer = QueryAnalyzer(args.analyzer)
+        args.analyzer = FACT.get_analyzer(args.analyzer)
 
     if hasattr(args, "input_dir") and args.is_known_project:
         if args.is_group:

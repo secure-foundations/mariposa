@@ -317,7 +317,7 @@ class Experiment(ExpConfig):
 
         log_info("done post processing exp data")
 
-    def sum_table_exists(self):
+    def is_done(self):
         # print(self.db_path, self.sum_table_name)
         if not os.path.exists(self.db_path):
             return False
@@ -325,14 +325,6 @@ class Experiment(ExpConfig):
         res = table_exists(cur, self.sum_table_name)
         con.close()
         return res
-    
-    def check_sum_table_exists(self):
-        log_check(os.path.exists(self.db_path), 
-                  f"path {self.db_path} does not exist")
-        con, cur = get_cursor(self.db_path)
-        res = table_exists(cur, self.sum_table_name)
-        con.close()
-        log_check(res, f"{self.sum_table_name} does not exist in {self.db_path}")
 
     def load_sum_table(self, flexible=False) -> Dict[str, QueryExpResult]:
         con, cur = get_cursor(self.db_path)

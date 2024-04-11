@@ -5,7 +5,7 @@ from utils.system_utils import *
 
 class InstBuilder:
     def __init__(self, input_query, output_proof, timeout, clear=False):
-        self.solver: CVC5Solver = FACT.get_solver_by_name("cvc5_1_1_1")
+        self.solver: CVC5Solver = FACT.get_solver("cvc5_1_1_1")
 
         if not os.path.exists(input_query):
             log_warn(f"input query {input_query} does not exist")

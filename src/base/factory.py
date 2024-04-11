@@ -6,9 +6,7 @@ from base.exper_analyzer import ExperAnalyzer
 from base.project import Project, ProjectGroup, ProjectType
 from base.solver import CVC5Solver, Solver, Z3Solver
 from base.query_analyzer import QueryAnalyzer
-from utils.system_utils import create_dir, exit_with, get_name_hash, log_check, reset_dir
-
-from base.defs import SOLVER_CONFIG_PATH
+from utils.system_utils import exit_with, get_name_hash, log_check
 
 class Factory:
     def __init__(self):
@@ -17,6 +15,9 @@ class Factory:
 
         self.all_configs = dict()
         self.__init_configs()
+        
+        self.analyzers = dict()
+        self.__init_analyzer()
 
         self.groups = None
 
@@ -44,7 +45,15 @@ class Factory:
         for gid in os.listdir(PROJ_ROOT):
             self.groups[gid] = ProjectGroup(gid, PROJ_ROOT + gid)
 
-    def get_solver_by_name(self, name) -> Solver:
+    def __init_analyzer(self):
+        objs = json.loads(open(ANALYZER_CONFIG_PATH).read())
+        default = objs["default"]
+        for name, obj in objs.items():
+            cur = copy.deepcopy(default)
+            cur.update(obj)
+            self.analyzers[name] = QueryAnalyzer(name, cur)
+
+    def get_solver(self, name) -> Solver:
         log_check(name in self.all_solvers, f"no such solver {name}")
         return self.all_solvers[name]
     
@@ -65,6 +74,11 @@ class Factory:
         log_check(proj, f"no such sub-project {ptype} under {gid}")
         return proj
     
+    def get_group(self, gid) -> ProjectGroup:
+        if self.groups is None:
+            self.__init_projects()
+        return self.groups[gid]
+    
     def get_group_by_path(self, path) -> ProjectGroup:
         if self.groups is None:
             self.__init_projects()
@@ -74,11 +88,6 @@ class Factory:
         res = self.groups.get(items[-2])
         if res: return res
         exit_with(f"no such project group associated with path {path}")
-    
-    def get_group(self, gid) -> ProjectGroup:
-        if self.groups is None:
-            self.__init_projects()
-        return self.groups[gid]
 
     def get_project_by_path(self, path) -> Project:
         if self.groups is None:
@@ -96,18 +105,22 @@ class Factory:
         for pg in sorted(self.groups.values()):
             yield pg
 
+    def get_analyzer(self, name) -> QueryAnalyzer:
+        log_check(name in self.analyzers, f"no such analyzer {name}")
+        return self.analyzers[name]
+
     @staticmethod
     def get_single_exper(query_path, cfg: ExpConfig, solver: Solver) -> Experiment:
         log_check(query_path.endswith(".smt2"),
                         'query must end with ".smt2"')
         name_hash = get_name_hash(query_path)
-        proj = Project(name_hash, single_mode=True)
+        proj = Project("single_" + name_hash, single_mode=True)
         return Experiment(proj, cfg, solver)
 
     def get_exper(self, proj: Project, cfg: ExpConfig, solver: Solver, build=False) -> Experiment:
         exp = Experiment(proj, cfg, solver)
         if not build:
-            log_check(exp.sum_table_exists(), 
+            log_check(exp.is_done(), 
                       "experiment results do not exist")
         return exp
 
@@ -118,7 +131,7 @@ class Factory:
         for cfg in cfgs:
             for solver in solvers:
                 exp = Experiment(proj, cfg, solver)
-                if exp.sum_table_exists():
+                if exp.is_done():
                     exps.append(exp)
         return exps
 
@@ -136,9 +149,9 @@ class Factory:
         return ExperAnalyzer(exp, ana)
     
     def load_default_analysis(self, proj: Project) -> ExperAnalyzer:
-        solver = FACT.get_solver_by_name("z3_4_12_5")
-        cfg = FACT.get_config("default")
-        ana = QueryAnalyzer("60nq")
+        solver = self.get_solver("z3_4_12_5")
+        cfg = self.get_config("default")
+        ana = self.get_analyzer("60nq")
         return self.load_analysis(proj, cfg, solver, ana, flexible=True)
 
 FACT = Factory()

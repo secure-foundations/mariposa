@@ -17,7 +17,7 @@ def set_up_basic(subparsers):
 
 def handle_basic(args):
     exp = args.experiment
-    log_check(exp.sum_table_exists(), "experiment results do not exist")
+    log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
     ba.print_status(args.verbose)
 
@@ -37,7 +37,7 @@ def set_up_unstable(subparsers):
 
 def handle_unstable(args):
     exp = args.experiment
-    log_check(exp.sum_table_exists(), "experiment results do not exist")
+    log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
     ba.get_unstable_reasons().print_status()
 

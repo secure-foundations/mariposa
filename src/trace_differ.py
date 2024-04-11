@@ -25,7 +25,7 @@ def set_up_project(subparsers):
 
 def handle_diff_project(args):
     exp = args.experiment
-    log_check(exp.sum_table_exists(), "experiment results do not exist")
+    log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
     reasons = ba.get_unstable_reasons()
     reasons.print_status()

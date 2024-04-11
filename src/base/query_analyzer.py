@@ -6,7 +6,6 @@ from statsmodels.stats.proportion import proportions_ztest
 from utils.analysis_utils import *
 from base.solver import RCode
 from base.exper import QueryExpResult
-from base.defs import ANALYZER_CONFIG_PATH
 from utils.query_utils import Mutation
 
 class UnstableReason(Enum):
@@ -45,12 +44,8 @@ def match_rcode(blob, rcode, timeout=np.inf):
     return np.sum(np.logical_and(matches, blob[1] <= timeout))
 
 class QueryAnalyzer:
-    def __init__(self, name):
-        objs = json.loads(open(ANALYZER_CONFIG_PATH).read())
-        obj = objs["default"]
-        obj.update(objs[name])
+    def __init__(self, name, obj):
         self.name = name
-
         self.confidence = float(obj["confidence"])
         timeout = int(obj["timeout"])
         self._timeout = timeout * 1000 if timeout != -1 else np.inf
@@ -59,6 +54,7 @@ class QueryAnalyzer:
         self.discount = float(obj["discount"])
 
         muts = obj["mutations"]
+
         if muts == []:
             self.muts = None
         else:

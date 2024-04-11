@@ -5,6 +5,7 @@ from base.project import get_qid
 from base.exper_runner import Runner
 
 from base.exper_analyzer import ExperAnalyzer
+from base.query_analyzer import QueryAnalyzer
 from utils.system_utils import list_smt2_files, log_check, log_info, log_warn, reset_dir
 
 def handle_single(args):
@@ -12,7 +13,7 @@ def handle_single(args):
     exp = args.experiment
     sub_root = exp.proj.sub_root
 
-    if exp.sum_table_exists() and args.clear_existing == False:
+    if exp.is_done() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {in_query}")
         log_warn(f"you might want to use --clear-existing to overwrite the results.")
         ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
@@ -41,7 +42,7 @@ def handle_multiple(args):
         Runner(exp).fix_missing()
         return
 
-    if exp.sum_table_exists() and args.clear_existing == False:
+    if exp.is_done() and args.clear_existing == False:
         log_warn(f"experiment results already exists for {exp.proj.sub_root}")
         ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
         return
@@ -69,3 +70,11 @@ def handle_update(args):
 
     Runner(exp).update_experiment([qid])
     ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
+
+def get_query_stability(input_query, exp_config):
+    cfg = FACT.get_config(exp_config)
+    solver = FACT.get_solver("z3_4_12_5")
+    ana = FACT.get_analyzer("60nq")
+    exp = FACT.get_single_exper(input_query, cfg, solver)
+    Runner(exp).run_experiment(True)
+    exp = ExperAnalyzer(exp, ana)

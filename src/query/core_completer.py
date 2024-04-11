@@ -1,22 +1,28 @@
 from copy import deepcopy
 import math
-import os, random, subprocess
+import os, random
 from base.solver import RCode, Solver
 from utils.query_utils import format_query, get_asserts, key_set
 from utils.system_utils import *
 
 class CoreCompleter:
-    def __init__(self, input_query, core_query, solver, output_query, timeout):
+    def __init__(self, 
+                 input_query, core_query, solver, output_query, timeout, stop_diff=4):
         log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
 
         self.solver: Solver = solver
         self.time_limit = timeout
+        self.stop_diff = stop_diff
 
         name_hash = get_name_hash(input_query)
         self.name_hash = name_hash
         self.exp_path = f"gen/{name_hash}.core.comp.smt2"
 
         self._setup_diff(input_query, core_query)
+
+        log_check(len(self.diff_asserts) > self.stop_diff,
+                  f"diff is too small: {len(self.diff_asserts)}")
+
         self._setup_hint(core_query)
         self.try_complete_core(output_query)
 
@@ -66,7 +72,7 @@ class CoreCompleter:
         remove_file(self.fmt_path)
 
     def binary_search(self, cur_diff):
-        if len(cur_diff) <= 4:
+        if len(cur_diff) <= self.stop_diff:
             return cur_diff
 
         logn = int(math.log(len(cur_diff), 2))

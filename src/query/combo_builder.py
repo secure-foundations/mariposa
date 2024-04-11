@@ -5,9 +5,10 @@ import random
 from base.defs import GEN_ROOT, MARIPOSA
 from base.factory import FACT
 from base.solver import RCode, Z3Solver
+from base.exper_runner import Runner
 
 def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
-    solver: Z3Solver = FACT.get_solver_by_name("z3_4_12_5")
+    solver: Z3Solver = FACT.get_solver("z3_4_12_5")
 
     remove_file(output_trace)
 
@@ -68,3 +69,16 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
 
     # remove the trace file if nothing went wrong?
     # remove_file(trace_path)
+
+# class ComboBuilder:
+#     def __init__(self, input_query, timeout, restarts):
+#         self.input_query = input_query
+#         self.timeout = timeout
+#         self.restarts = restarts
+        # cfg = FACT.get_config("debug")
+        # solver = FACT.get_solver("z3_4_12_5")
+        # FACT.get_single_exper(input_query, cfg, solver)
+
+    # def build(self):
+    #     handle_inst_z3(self.output_query, self.output_query, self.timeout, self.restarts)
+    #     return self.output_query
