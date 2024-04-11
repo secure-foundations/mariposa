@@ -21,15 +21,32 @@ class WomboAnalyzer:
         # self.step_1_1(in_group)
         # self.step_2_1(in_group)
         # self.report()
-        base_p = in_group.get_project(PT.from_str("woco.z3"))
-        e0 = FACT.load_any_experiment(base_p)
-        e0 = ExperAnalyzer(e0, self.ana)
 
-        # for qid in base.qids:
-            
+        base_p = in_group.get_project(PT.from_str("woco.z3"))
+        base = FACT.load_default_analysis(base_p)
+        # base.print_status()
+        cb = base.get_overall()
+
+        p0 = FACT.get_group("bench_unstable_0")
+        a0 = FACT.load_default_analysis(p0.get_project(PT.from_str("core.z3")))
+        c0 = a0.get_overall()
+        for qid in c0[STB.UNSOLVABLE].items:
+            # print(qid)
+            if qid in base:
+                # base[qid].print_status(3)
+                print("cp {} {}".format(base.get_path(qid), a0.get_path(qid)))
+            else:
+                print("no base")
+            # a0[qid].print_status(3)
+            # print("")
+
+        # for qid in cb[STB.STABLE].items & c0[STB.UNSTABLE].items:
+        #     # base[qid].print_status(3)
+        #     # print(get_quantifier_count(base.get_path(qid)))
+        #     # print(get_quantifier_count(a0.get_path(qid)))
+        #     print("cp {} {}".format(base.get_path(qid), a0.get_path(qid)))
 
     # def report(self):
-        
     #     p0 = FACT.get_group("bench_unstable").get_project(PT.from_str("pins.z3"))
     #     p1 = FACT.get_group("bench_unstable").get_project(PT.from_str("woco.z3"))
 

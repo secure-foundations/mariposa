@@ -6,7 +6,7 @@ from base.exper_analyzer import ExperAnalyzer
 from base.project import Project, ProjectGroup, ProjectType
 from base.solver import CVC5Solver, Solver, Z3Solver
 from base.query_analyzer import QueryAnalyzer
-from utils.system_utils import create_dir, exit_with, log_check, reset_dir
+from utils.system_utils import create_dir, exit_with, get_name_hash, log_check, reset_dir
 
 from base.defs import SOLVER_CONFIG_PATH
 
@@ -97,13 +97,11 @@ class Factory:
             yield pg
 
     @staticmethod
-    def build_single_mode_exp(query_path, cfg, solver: Solver) -> Experiment:
+    def get_single_exper(query_path, cfg: ExpConfig, solver: Solver) -> Experiment:
         log_check(query_path.endswith(".smt2"),
                         'query must end with ".smt2"')
-        query_path = query_path.replace(".smt2", "")
-        reset_dir(SINGLE_MUT_ROOT, True)
-        create_dir(SINGLE_PROJ_ROOT)
-        proj = Project("single", single_mode=True)
+        name_hash = get_name_hash(query_path)
+        proj = Project(name_hash, single_mode=True)
         return Experiment(proj, cfg, solver)
 
     def get_exper(self, proj: Project, cfg: ExpConfig, solver: Solver, build=False) -> Experiment:
@@ -130,7 +128,7 @@ class Factory:
                       ana: QueryAnalyzer, 
                       flexible=False) -> ExperAnalyzer:
         exp = self.get_exper(proj, cfg, solver, flexible)
-        return ExperAnalyzer(exp, ana)
+        return ExperAnalyzer(exp, ana, flexible)
 
     def load_any_analysis(self, proj: Project, 
                       ana: QueryAnalyzer) -> ExperAnalyzer:

@@ -1,3 +1,4 @@
+import os
 from base.defs import MAGIC_IGNORE_SEED
 from base.project import Partition
 from base.query_analyzer import QueryAnalyzer
@@ -106,7 +107,7 @@ def deep_parse_args(args):
         args.exp_config = FACT.get_config(args.exp_config)
 
         if single:
-            args.experiment = FACT.build_single_mode_exp(
+            args.experiment = FACT.get_single_exper(
                 args.input_query_path, args.exp_config, args.solver)
         else:
             args.experiment = FACT.get_exper(

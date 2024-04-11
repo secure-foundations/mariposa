@@ -122,14 +122,14 @@ def get_qid(query_path):
 class Project:
     DEFAULT_PTYPE = ProjectType(_ProjectType.BASE, SolverType.Z3)
 
-    def __init__(self, gid, 
-                 ptyp: ProjectType=DEFAULT_PTYPE, 
+    def __init__(self, 
+                 gid, ptype=DEFAULT_PTYPE, 
                  part=Partition(1, 1),
                  single_mode=False, build=False):
 
         self.gid = gid
-        self.full_name = full_proj_name(gid, ptyp)
-        self.ptype = ptyp
+        self.full_name = full_proj_name(gid, ptype)
+        self.ptype = ptype
         self.part = part
         self.single_mode = single_mode
 
@@ -142,15 +142,17 @@ class Project:
 
     def __init_dirs(self, gid):
         if self.single_mode:
-            self._sub_root = SINGLE_PROJ_ROOT
+            self._sub_root =  SINGLE_PROJ_ROOT_PREFIX + gid
         else:
             self._sub_root = os.path.join(PROJ_ROOT, gid, str(self.ptype))
             log_check(self._sub_root.startswith(PROJ_ROOT),
                   f"invalid sub_root {self._sub_root}")
 
         if self.single_mode: 
-            self._db_dir = SINGLE_PROJ_ROOT
-            self._gen_dir = SINGLE_MUT_ROOT
+            create_dir(self._sub_root)
+
+            self._db_dir = self._sub_root
+            self._gen_dir = os.path.join(SINGLE_MUT_ROOT_PREFIX, gid)
         else:
             self._db_dir = self._sub_root.replace(PROJ_ROOT, DB_ROOT)
             self._gen_dir = self.sub_root.replace(PROJ_ROOT, GEN_ROOT)

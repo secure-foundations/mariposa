@@ -10,10 +10,10 @@ from utils.cache_utils import *
 
 @delegate('exp', 'get_path', 'list_queries')
 class ExperAnalyzer:
-    def __init__(self, exp: Experiment, ana: QueryAnalyzer, enable_dummy=False):
+    def __init__(self, exp: Experiment, ana: QueryAnalyzer, flexible=False):
         self.exp = exp
         self.ana: QueryAnalyzer = ana
-        self.__qrs: Dict[str, QueryExpResult] = self.exp.load_sum_table(enable_dummy)
+        self.__qrs: Dict[str, QueryExpResult] = self.exp.load_sum_table(flexible)
         self.__qr_keys = list(sorted(self.__qrs.keys()))
         self.__cats: Categorizer = ana.categorize_queries(
             self.__qrs.values())

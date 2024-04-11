@@ -146,7 +146,13 @@ class CoreAnalyzer:
         for k in list(UR) + ["tally"]:
             if k not in mitigated:
                 continue
-            table += [[k, mitigated[k][1], mitigated[k][0], f"{mitigated[k][0]*100/mitigated[k][1]:.2f}%"]]
+            unstable = mitigated[k][1]
+            row = [k, unstable, mitigated[k][0]]
+            if unstable == 0:
+                row += ["-"]
+            else:
+                row += [f"{mitigated[k][0]*100/unstable:.2f}%"]
+            table += [row]
 
         print(tabulate(table, headers="firstrow", tablefmt="github"))
 
@@ -158,10 +164,10 @@ class CoreAnalyzer:
             if qid in c[STB.STABLE]:
                 pres += 1
             total += 1
-        if total > 0:
+        if total != 0:
             print(f"preserved: {pres}/{total} ({pres*100/total:.2f}%)")
         else:
-            print("no stable queries")
+            print("no stable queries in the base set")
         print("")
         print_banner("Instability Introduced")
 

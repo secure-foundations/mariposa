@@ -173,8 +173,6 @@ class Experiment(ExpConfig):
         self.gen_dir = proj.get_gen_dir(self.exp_name)
         self.db_path = proj.get_db_path(self.exp_name)
 
-        # this won't reset the db
-        create_dir(proj.get_db_path(""))
         # this just clears the gen dir
         reset_dir(self.gen_dir, True)
         
@@ -343,17 +341,16 @@ class Experiment(ExpConfig):
 
         if not table_exists(cur, sum_name):
             log_check(flexible, f"{sum_name} does not exist in {self.db_path}")
+            con.close()
             log_warn(f"{sum_name} does not exist, filling with dummy data!")
-            for path in self.list_queries():
-                qr = QueryExpResult(path, self.enabled_muts)
-                summaries[qr.qid] = qr
-            return summaries
-
-        res = cur.execute(f"""SELECT * FROM {sum_name}""")
-        rows = res.fetchall()
-        con.close()
+            rows = []
+        else:
+            res = cur.execute(f"""SELECT * FROM {sum_name}""")
+            rows = res.fetchall()
+            con.close()
 
         mut_size = self.num_mutant
+        expected = set([get_qid(q) for q in self.list_queries()])
 
         for row in rows:
             blob = np.frombuffer(row[1], dtype=int)
@@ -362,7 +359,13 @@ class Experiment(ExpConfig):
             qr = QueryExpResult(path, self.enabled_muts, blob)
             summaries[qr.qid] = qr
 
-        self._sanity_check_summary(set(summaries.keys()))
+        self._sanity_check_summary(expected, set(summaries.keys()), flexible)
+        
+        if flexible:
+            for qid in expected:
+                if qid in summaries:
+                    continue
+                summaries[qid] = QueryExpResult(self.get_path(qid))
 
         return summaries
 
@@ -377,15 +380,18 @@ class Experiment(ExpConfig):
         log_info(f"missing {len(missing)} experiments in {self.sum_table_name}")
         return missing
 
-    def _sanity_check_summary(self, actual):
-        expected = set([get_qid(q) for q in self.list_queries()])
+    def _sanity_check_summary(self, expected, actual, flexible):
         missing = actual - expected
 
         if missing != set():
             log_warn(f"{len(missing)} queries files are missing in {self.sum_table_name}")
 
         missing = expected - actual
+
         if missing != set():
+            if flexible:
+                log_warn(f"{len(missing)} queries files are missing in {self.sum_table_name}")
+                return
             log_error(f"{len(missing)} experiments are missing in {self.sum_table_name}")
             for i, q in enumerate(missing):
                 if i <= 10:

@@ -145,11 +145,13 @@ def reset_dir(path, overwrite):
         # empty directory, we are done
         return
 
+    print(path)
+    print(os.listdir(path))
+
     if not overwrite:
         confirm_input(f"directory {path} already exists, remove it?")
 
     shutil.rmtree(path)
-
     os.makedirs(path)
 
 def create_dir(path):
