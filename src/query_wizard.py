@@ -138,7 +138,7 @@ if __name__ == "__main__":
                         args.timeout,
                         args.ids_available,
                         args.restarts)
-            m.run()
+            log_check(m.run(), f"failed to use mutants {args.solver} on {args.input_query_path}, no core log created")
     elif args.sub_command == "convert-smtlib":
         convert_smtlib(args.input_query_path, 
                         args.output_query_path,
@@ -169,11 +169,12 @@ if __name__ == "__main__":
                          args.output_query_path, 
                          args.quake_count)
     elif args.sub_command == "complete-core":
-        CoreCompleter(args.input_query_path, 
+        cc = CoreCompleter(args.input_query_path, 
                       args.core_query_path, 
-                      args.solver,
                       args.output_query_path, 
+                      args.solver,
                       args.timeout)
+        log_check(cc.run(), "failed to complete core")
     elif args.sub_command == "check-subset":
         log_check(is_assertion_subset(args.input_query_path, args.subset_query), 
                   f"{args.subset_query} is not a subset of {args.input_query_path}")

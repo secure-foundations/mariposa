@@ -6,8 +6,7 @@ from utils.query_utils import format_query, get_asserts, key_set
 from utils.system_utils import *
 
 class CoreCompleter:
-    def __init__(self, 
-                 input_query, core_query, solver, output_query, timeout, stop_diff=4):
+    def __init__(self, input_query, core_query, output_query, solver, timeout, stop_diff=4):
         log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
 
         self.solver: Solver = solver
@@ -24,7 +23,7 @@ class CoreCompleter:
                   f"diff is too small: {len(self.diff_asserts)}")
 
         self._setup_hint(core_query)
-        self.try_complete_core(output_query)
+        self.output_query = output_query
 
     def _setup_hint(self, hint_path):
         hint_commands = open(hint_path).readlines()
@@ -95,7 +94,7 @@ class CoreCompleter:
             trials += 1
         return cur_diff
 
-    def try_complete_core(self, output_path):
+    def run(self):
         cur_diff = self.diff_asserts
         print(f"initial diff len: {len(cur_diff)}")
 
@@ -107,7 +106,10 @@ class CoreCompleter:
             cur_diff = next_diff
 
         self.clear_temp_files()
-        log_check(len(cur_diff) < len(self.diff_asserts),
-                  "fail to complete the core")
+
+        if len(cur_diff) >= len(self.diff_asserts):
+            return False
+
         self._write_exp(self.working_diff)
-        os.system(f"mv {self.exp_path} {output_path}")
+        os.system(f"mv {self.exp_path} {self.output_path}")
+        return True

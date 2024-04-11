@@ -1,6 +1,8 @@
 import os, random, subprocess
+from base.query_analyzer import Stability as STB, FailureType as FT
 from base.solver import SolverType
-from utils.local_utils import get_query_stability
+from query.core_completer import CoreCompleter
+from utils.local_utils import test_stability
 from utils.query_utils import Mutation, emit_mutant_query
 from utils.system_utils import *
 from base.defs import MARIPOSA
@@ -48,7 +50,6 @@ class MutCoreBuilder:
                 log_info(f"core iteration {i}, failed to use mutant seed: {s}")
 
         self.clear_temp_files()
-        exit_with(f"failed to use mutants {self.solver} on {self.input_query}, no core log created")
         return False
 
     def clear_temp_files(self):
@@ -107,8 +108,20 @@ class MutCoreBuilder:
         with open(self.output_query, "a") as f:
             f.write(f'(set-info :comment seed_{seed})\n')
 
-class CompleteCoreBuilder:
+class CompleteCoreBuilder(MutCoreBuilder):
     def __init__(self, input_query, output_query, solver, timeout, ids_available, restarts):
-        b = MutCoreBuilder(input_query, output_query, solver,  timeout, ids_available, restarts)
-        out = b.run()
-        get_query_stability(output_query, "debug")
+        super().__init__(input_query, output_query, solver, timeout, ids_available, restarts)
+        log_check(self.run(), "failed to create core query")
+        ss, ft = test_stability(output_query, "debug")
+        shutil.move(output_query, self.lbl_query)
+        log_info("core query is {}, with failure type: {}".format(ss, ft))
+
+        if ss == STB.UNSOLVABLE:
+            cc = CoreCompleter(input_query, self.lbl_query, output_query, solver, timeout)
+            if not cc.run():
+                cc.clear_temp_files()
+                # keep the core query in case we need to debug?
+                exit_with("failed to complete core")
+            os.remove(self.lbl_query)
+        else:
+            shutil.move(self.lbl_query, output_query)

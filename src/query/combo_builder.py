@@ -71,7 +71,13 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
     # remove_file(trace_path)
 
 # class ComboBuilder:
-#     def __init__(self, input_query, timeout, restarts):
+#     def __init__(self, 
+#                  input_query, 
+#                  trace_timeout, 
+#                  trace_restarts
+#                  core_timeout,
+#                  core_restarts
+#                  ):
 #         self.input_query = input_query
 #         self.timeout = timeout
 #         self.restarts = restarts
