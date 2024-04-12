@@ -1,11 +1,18 @@
 
+from query.core_builder import CompleteCoreBuilder
 from utils.query_utils import Mutation, count_lines, emit_mutant_query
 from utils.system_utils import *
 import random
 from base.defs import GEN_ROOT, MARIPOSA
 from base.factory import FACT
 from base.solver import RCode, Z3Solver
-from base.exper_runner import Runner
+import re
+
+def get_quantifier_count(path):
+    if os.path.exists(path):
+        o = subprocess_run(["rg", "-e" , ":qid ", "-c", path], check=True)[0]
+        return int(o)
+    return "-"
 
 def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
     solver: Z3Solver = FACT.get_solver("z3_4_12_5")
@@ -70,21 +77,53 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
     # remove the trace file if nothing went wrong?
     # remove_file(trace_path)
 
-# class ComboBuilder:
-#     def __init__(self, 
-#                  input_query, 
-#                  trace_timeout, 
-#                  trace_restarts
-#                  core_timeout,
-#                  core_restarts
-#                  ):
-#         self.input_query = input_query
-#         self.timeout = timeout
-#         self.restarts = restarts
-        # cfg = FACT.get_config("debug")
-        # solver = FACT.get_solver("z3_4_12_5")
-        # FACT.get_single_exper(input_query, cfg, solver)
+query_pattern = re.compile("^([0-9]+)\.smt2")
 
-    # def build(self):
-    #     handle_inst_z3(self.output_query, self.output_query, self.timeout, self.restarts)
-    #     return self.output_query
+class ComboBuilder:
+    def __init__(self, 
+                 input_query, 
+                 output_dir, 
+                 trace_timeout=5, 
+                 trace_restarts=30,
+                 core_timeout=65,
+                 core_restarts=5):
+        self.input_query = input_query
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            shutil.copy(input_query, f"{output_dir}/0.smt2")
+
+        counts = dict()
+
+        for c in list_smt2_files(output_dir):
+            base = os.path.basename(c)
+            m = re.match(query_pattern, base)
+            if m is not None:
+                qc = get_quantifier_count(c)
+                counts[int(m.group(1))] = qc
+
+        counts = sorted(counts.items(), key=lambda x: x[0])
+        curr, c_qc = counts[-1]
+
+        if len(counts) >= 2:
+            prev, p_qc = counts[-2]
+            log_info(f"previous {prev} {p_qc} -> current {curr} {c_qc}")
+
+            if c_qc == p_qc:
+                log_info("no change in quantifiers")
+                return
+
+        cur_file = f"{output_dir}/{curr}.smt2"
+        log_info(f"processing {cur_file}, quantifiers: {c_qc}")
+
+        temp_file = f"{output_dir}/{curr}.temp.smt2"
+        next_iter = curr + 1
+        next_file = f"{output_dir}/{next_iter}.smt2"
+
+        handle_inst_z3(cur_file, temp_file, trace_timeout, trace_restarts)
+
+        solver = FACT.get_solver("z3_4_12_5")
+
+        CompleteCoreBuilder(temp_file, next_file, solver, core_timeout, True, core_restarts)
+        next_qc = get_quantifier_count(next_file)
+        log_info(f"completed {next_file}, quantifiers: {next_qc}")

@@ -13,6 +13,7 @@ class FailureType(Enum):
     UNKNOWN = "mostly_unknown"
     MIXED = "mixed"
     NONE = "none"
+    MISSING = "missing"
 
     def __str__(self):
         return self.value

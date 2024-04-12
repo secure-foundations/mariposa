@@ -328,19 +328,21 @@ impl Inserter {
             selected_qids.insert(qid.clone());
         }
 
-        if selected_insts.len() == 0 {
-            self.debug();
-            panic!("No instances selected");
-        }
-        // if we still need more instances
-        // if selected_insts.len() < max_inst {
-        //     for (_, insts) in temp.iter_mut() {
-        //         if selected_insts.len() >= max_inst {
-        //             break;
-        //         }
-        //         selected_insts.extend(insts.drain(..));
-        //     }
+        // if selected_insts.len() == 0 {
+        //     self.debug();
+        //     panic!("No instances selected");
         // }
+
+        // if we still need more instances
+        if selected_insts.len() < max_inst {
+            for (_, insts) in temp.iter_mut() {
+                if selected_insts.len() >= max_inst {
+                    break;
+                }
+                let limit = usize::min(max_inst - selected_insts.len(), insts.len());
+                selected_insts.extend(insts.drain(..limit));
+            }
+        }
 
         commands.retain(|x| match x {
             concrete::Command::Assert { term } => {

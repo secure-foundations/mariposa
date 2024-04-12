@@ -115,7 +115,7 @@ class ExperAnalyzer:
             res.append((qr, s, f))
         return res
 
-    def get_unstable_reasons(self):
+    def get_failure_types(self):
         cats = Categorizer([c for c in FailureType])
         for qid in self.qids:
             qr = self[qid]
@@ -127,5 +127,7 @@ class ExperAnalyzer:
         return cats
 
     def get_failure_type(self, qid):
+        if qid not in self:
+            return FailureType.MISSING
         return self.ana.get_failure_type(self[qid].blob)
 

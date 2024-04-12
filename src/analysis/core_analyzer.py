@@ -76,22 +76,23 @@ class CoreAnalyzer:
         for qid in self.base.qids:
             bs = self.base.get_stability(qid)
             bp = self.base.get_path(qid)
-            bur = self.base.get_unstable_reason(qid)
+            bur = self.base.get_failure_type(qid)
 
             cs = self.core.get_stability(qid)
             cp = self.core.get_path(qid)
-            cur = self.core.get_unstable_reason(qid)
+            cur = self.core.get_failure_type(qid)
 
             es = self.extd.get_stability(qid)
             ep = self.extd.get_path(qid)
-            eur = self.extd.get_unstable_reason(qid)
+            eur = self.extd.get_failure_type(qid)
 
             cqs = CoreQueryStatus(qid, bs, bp, bur, cs, cp, cur, es, ep, eur)
             # cqs.sanity_check()
             self.qids[qid] = cqs
 
         self.adjust_status()
-        # self.build_pre_inst()
+        
+        self.build_pre_inst()
 
         # self.__init_issue_status()
         # self.issues.print_status()
@@ -102,9 +103,12 @@ class CoreAnalyzer:
 
     def build_pre_inst(self):
         pins = self.group.get_project(PT.from_str("pins.z3"), build=True)
+        woco = self.group.get_project(PT.from_str("woco.z3"), build=True)
         for qid in self.core_adj[STB.UNSTABLE]:
             qr = self.qids[qid]
+            out_path = woco.get_path(qid)
             if qr.core_is_enabled():
+                # print("cp", qr.core_path, out_path)
                 print(MARIPOSA, "-a", "pre-inst-z3", "-i" , qr.patch_path, "-o", pins.get_path(qid))
             # else:
                 # if os.path.exists(pins.get_path(f"temp_proj/{qid}.smt2")):

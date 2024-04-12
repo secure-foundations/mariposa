@@ -7,6 +7,7 @@ from query.core_completer import CoreCompleter
 from query.inst_builder import InstBuilder
 from utils.option_utils import *
 from query.core_builder import CompleteCoreBuilder, MutCoreBuilder
+from query.combo_builder import ComboBuilder
 from query.proof_builder import ProofBuilder, check_lfsc_proof
 from utils.query_utils import convert_smtlib, emit_quake_query, is_assertion_subset
 from utils.shake_utils import create_shake_query_from_log, debug_shake
@@ -97,6 +98,12 @@ def setup_inst_z3(subparsers):
     add_output_query_option(p)
     add_restart_option(p)
     add_timeout_option(p)
+    
+def setup_wombo_combo(subparsers):
+    p = subparsers.add_parser('wombo-combo', help='combo')
+    add_input_query_option(p)
+    add_output_query_option(p)
+    add_timeout_option(p)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Query Wizard operates on the single-query level. Typically, the input is a single smt2 query, and the output is a new query and/or a log file. Please note there are operations that in the Rust codebase that are not exposed here. Instead, use the built binary directly.")
@@ -114,6 +121,7 @@ if __name__ == "__main__":
     setup_debug_shake(subparsers)
     setup_create_shake(subparsers)
     setup_inst_z3(subparsers)
+    setup_wombo_combo(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -192,5 +200,7 @@ if __name__ == "__main__":
                               args.output_query_path, 
                               args.timeout, 
                               args.restarts)
+    elif args.sub_command == "wombo-combo":
+        ComboBuilder(args.input_query_path, args.output_query_path)
     else:
         parser.print_help()

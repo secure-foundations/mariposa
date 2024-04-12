@@ -112,6 +112,7 @@ class CompleteCoreBuilder(MutCoreBuilder):
     def __init__(self, input_query, output_query, solver, timeout, ids_available, restarts):
         super().__init__(input_query, output_query, solver, timeout, ids_available, restarts)
         log_check(self.run(), "failed to create core query")
+        log_info("testing stability...")
         ss, ft = test_stability(output_query, "debug")
         shutil.move(output_query, self.lbl_query)
         log_info("core query is {}, with failure type: {}".format(ss, ft))

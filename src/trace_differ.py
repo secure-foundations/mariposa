@@ -27,7 +27,7 @@ def handle_diff_project(args):
     exp = args.experiment
     log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
-    reasons = ba.get_unstable_reasons()
+    reasons = ba.get_failure_types()
     reasons.print_status()
     for qid in reasons[FailureType.TIMEOUT]:
         print(ba[qid].query_path)

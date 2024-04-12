@@ -1,44 +1,44 @@
 import os
 from base.defs import QUERY_WIZARD
 from base.factory import FACT
-from base.project import ProjectGroup, ProjectType as PT, get_qid
+from base.project import KnownExt, ProjectGroup, ProjectType as PT, get_qid
 from base.query_analyzer import QueryAnalyzer, Stability as STB
 from base.exper_analyzer import ExperAnalyzer
 from utils.analysis_utils import *
 from utils.system_utils import subprocess_run
 
-def get_quantifier_count(path):
-    if os.path.exists(path):
-        o = subprocess_run(["rg", "-e" , ":qid ", "-c", path], check=True)[0]
-        return int(o)
-    return "-"
-
 class WomboAnalyzer:
     def __init__(self, in_group: ProjectGroup):
-        self.ana = QueryAnalyzer("60nq")
+        self.ana = FACT.get_analyzer("60nq")
         # self.step_0(in_group)
         # self.step_1_0(in_group)
         # self.step_1_1(in_group)
         # self.step_2_1(in_group)
         # self.report()
 
-        base_p = in_group.get_project(PT.from_str("woco.z3"))
-        base = FACT.load_default_analysis(base_p)
-        # base.print_status()
-        cb = base.get_overall()
+        # base_p = in_group.get_project(PT.from_str("woco.z3"))
+        # for qid in base_p.qids:
+        #     log_dir = os.path.join(base_p.get_log_dir(KnownExt.WOCO), qid)
+        #     print("src/query_wizard.py wombo-combo -i", base_p.get_path(qid), "-o", log_dir)
 
-        p0 = FACT.get_group("bench_unstable_0")
-        a0 = FACT.load_default_analysis(p0.get_project(PT.from_str("core.z3")))
-        c0 = a0.get_overall()
-        for qid in c0[STB.UNSOLVABLE].items:
-            # print(qid)
-            if qid in base:
-                # base[qid].print_status(3)
-                print("cp {} {}".format(base.get_path(qid), a0.get_path(qid)))
-            else:
-                print("no base")
-            # a0[qid].print_status(3)
-            # print("")
+        # base_p.get_path(qid)
+
+        # base = FACT.load_default_analysis(base_p)
+        # # base.print_status()
+        # cb = base.get_overall()
+
+        # p0 = FACT.get_group("bench_unstable_0")
+        # a0 = FACT.load_default_analysis(p0.get_project(PT.from_str("core.z3")))
+        # c0 = a0.get_overall()
+        # for qid in c0[STB.UNSOLVABLE].items:
+        #     # print(qid)
+        #     if qid in base:
+        #         # base[qid].print_status(3)
+        #         print("cp {} {}".format(base.get_path(qid), a0.get_path(qid)))
+        #     else:
+        #         print("no base")
+        #     # a0[qid].print_status(3)
+        #     # print("")
 
         # for qid in cb[STB.STABLE].items & c0[STB.UNSTABLE].items:
         #     # base[qid].print_status(3)

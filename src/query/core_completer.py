@@ -12,6 +12,7 @@ class CoreCompleter:
         self.solver: Solver = solver
         self.time_limit = timeout
         self.stop_diff = stop_diff
+        self.output_path = output_query
 
         name_hash = get_name_hash(input_query)
         self.name_hash = name_hash

@@ -39,7 +39,7 @@ def handle_unstable(args):
     exp = args.experiment
     log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
-    ba.get_unstable_reasons().print_status()
+    ba.get_failure_types().print_status()
 
 def set_up_core(subparsers):
     p = subparsers.add_parser('core', help='analyze the core')
