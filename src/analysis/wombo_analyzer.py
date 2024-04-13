@@ -4,6 +4,7 @@ from base.factory import FACT
 from base.project import KnownExt, ProjectGroup, ProjectType as PT, get_qid
 from base.query_analyzer import QueryAnalyzer, Stability as STB
 from base.exper_analyzer import ExperAnalyzer
+from query.combo_builder import ComboBuilder
 from utils.analysis_utils import *
 from utils.system_utils import subprocess_run
 
@@ -16,9 +17,20 @@ class WomboAnalyzer:
         # self.step_2_1(in_group)
         # self.report()
 
-        # base_p = in_group.get_project(PT.from_str("woco.z3"))
-        # for qid in base_p.qids:
-        #     log_dir = os.path.join(base_p.get_log_dir(KnownExt.WOCO), qid)
+        base_p = in_group.get_project(PT.from_str("woco.z3"))
+        temp_p = in_group.get_project(PT.from_str("temp.z3"))
+        ncc = 0
+        for qid in base_p.qids:
+            log_dir = os.path.join(base_p.get_log_dir(KnownExt.WOCO), qid)
+            in_path = base_p.get_path(qid)
+            cb = ComboBuilder(in_path, log_dir)
+            ot_path = temp_p.get_path(qid)
+            print("cp {} {}".format(cb.cur_file, ot_path))
+            # if cb.p_qc != cb.c_qc:
+            #     print()
+            #     print(cb.p_qc, cb.c_qc)
+            #     ncc += 1
+        # print(ncc)
         #     print("src/query_wizard.py wombo-combo -i", base_p.get_path(qid), "-o", log_dir)
 
         # base_p.get_path(qid)

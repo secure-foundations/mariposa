@@ -173,6 +173,9 @@ class Experiment(ExpConfig):
         self.gen_dir = proj.get_gen_dir(self.exp_name)
         self.db_path = proj.get_db_path(self.exp_name)
 
+        if not os.path.exists(self.db_path):
+            os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+
         # this just clears the gen dir
         reset_dir(self.gen_dir, True)
         
@@ -187,6 +190,7 @@ class Experiment(ExpConfig):
         print(f"solver path:\t{self.solver.path}")
 
     def create_db(self, clear):
+
         con, cur = get_cursor(self.db_path)
 
         for table_name in [self.exp_table_name, self.sum_table_name]:

@@ -201,6 +201,7 @@ if __name__ == "__main__":
                               args.timeout, 
                               args.restarts)
     elif args.sub_command == "wombo-combo":
-        ComboBuilder(args.input_query_path, args.output_query_path)
+        cb = ComboBuilder(args.input_query_path, args.output_query_path)
+        cb.run()
     else:
         parser.print_help()
