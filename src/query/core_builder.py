@@ -111,6 +111,7 @@ class MutCoreBuilder:
 class CompleteCoreBuilder(MutCoreBuilder):
     def __init__(self, input_query, output_query, solver, timeout, ids_available, restarts):
         super().__init__(input_query, output_query, solver, timeout, ids_available, restarts)
+        log_info("building core...")
         log_check(self.run(), "failed to create core query")
         log_info("testing stability...")
         ss, ft = test_stability(output_query, "debug")
@@ -126,3 +127,23 @@ class CompleteCoreBuilder(MutCoreBuilder):
             os.remove(self.lbl_query)
         else:
             shutil.move(self.lbl_query, output_query)
+
+# class SafeCoreBuilder(MutCoreBuilder):
+#     def __init__(self, input_query, output_query, solver, timeout, ids_available, restarts):
+#         super().__init__(input_query, output_query, solver, timeout, ids_available, restarts)
+#         log_info("building core...")
+#         log_check(self.run(), "failed to create core query")
+#         log_info("testing stability...")
+#         ss, ft = test_stability(output_query, "debug")
+#         shutil.move(output_query, self.lbl_query)
+#         log_info("core query is {}, with failure type: {}".format(ss, ft))
+
+#         if ss == STB.UNSOLVABLE:
+#             cc = CoreCompleter(input_query, self.lbl_query, output_query, solver, timeout)
+#             if not cc.run():
+#                 cc.clear_temp_files()
+#                 # keep the core query in case we need to debug?
+#                 exit_with("failed to complete core")
+#             os.remove(self.lbl_query)
+#         else:
+#             shutil.move(self.lbl_query, output_query)

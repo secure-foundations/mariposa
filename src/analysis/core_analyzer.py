@@ -89,17 +89,18 @@ class CoreAnalyzer:
             cqs = CoreQueryStatus(qid, bs, bp, bur, cs, cp, cur, es, ep, eur)
             # cqs.sanity_check()
             self.qids[qid] = cqs
+            if not cqs.core_is_enabled():
+                print(cqs.qid, bs, bur, cs, cur)
 
-        self.adjust_status()
-        
-        self.build_pre_inst()
+        # self.adjust_status()
+        # self.build_pre_inst()
 
         # self.__init_issue_status()
         # self.issues.print_status()
         # self.suggest_issue_fixes()
 
         # self.get_trace_candidate()
-        self.print_status()
+        # self.print_status()
 
     def build_pre_inst(self):
         pins = self.group.get_project(PT.from_str("pins.z3"), build=True)

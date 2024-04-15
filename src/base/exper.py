@@ -398,7 +398,7 @@ class Experiment(ExpConfig):
             sys.exit(1)
 
     def import_partition_tables(self, other_db_path, part):
-        log_check(self.is_whole, "importing into a partial project does not make sense")
+        log_check(self.proj.is_whole(), "importing into a partial project does not make sense")
         con, cur = get_cursor(self.db_path)
 
         assert table_exists(cur, self.exp_table_name)
@@ -411,7 +411,7 @@ class Experiment(ExpConfig):
         conclude(con)
 
     def probe_other_db(self, other_db_path):
-        log_check(self.is_whole, "importing to a partial project does not make sense")
+        log_check(self.proj.is_whole(), "importing to a partial project does not make sense")
         tables = get_tables(other_db_path)
         exps, sums = set(), set()
 

@@ -5,7 +5,7 @@ use std::io::Write;
 use std::sync::Arc;
 
 use crate::query_io;
-use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
+use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, mk_simple_qual_id_term, SymbolSet};
 use crate::tree_shake_idf::{
     get_command_symbol_def, get_commands_symbol_def_alt, get_commands_symbol_def_plain,
     AltSymbolSet,
@@ -305,12 +305,20 @@ impl UseTracker {
                     self.add_local_binding(&p.0);
                 }
                 let local = self.local_symbols.clone();
-                let pattern_state = PatternState {
+                let name = sig.name.clone();
+                let matchable_patterns = vec![HashSet::from_iter(vec![name.clone()])];
+                let lr_ps = PatternState {
                     local_symbols: local,
                     hidden_term: term.clone().into(),
-                    matchable_patterns: vec![self.get_symbol_uses(term)],
+                    matchable_patterns,
                 };
-                self.pattern_states.push(pattern_state);
+                // let rl_ps = PatternState {
+                //     local_symbols: HashSet::new(),
+                //     hidden_term: Arc::new(mk_simple_qual_id_term(name)),
+                //     matchable_patterns: vec![self.get_symbol_uses(term)],
+                // };
+                self.pattern_states.push(lr_ps);
+                // self.pattern_states.push(rl_ps);
                 if self.exhaustive {
                     let uses = self.get_symbol_uses(term);
                     self.live_symbols = uses;
@@ -455,12 +463,13 @@ pub fn tree_shake(
 
         for (pos, tracker) in trackers.iter_mut().enumerate() {
             let should_include = tracker.delayed_aggregate(&snowball);
-            // if commands[pos].to_string().contains("binder_x_39cef6c8a4c32c00bec831967af0f4b9_3") {
+            // if commands[pos].to_string().contains("Tm_refine_414d0a9f578ab0048252f8c8f552b99f") {
             //     println!("debugging");
-            //     let contains = snowball.contains(&concrete::Symbol("HasType".to_string()));
-            //     println!("{}", contains);
+            //     // let contains = snowball.contains(&concrete::Symbol("HasType".to_string()));
+            //     snowball.debug();
+            //     // println!("{}", contains);
             //     tracker.debug();
-            //     println!("should add?? {}", should_add);
+            //     println!("should add?? {} {}", should_include, pos);
             // }
             if should_include {
                 delayed.extend(tracker.live_symbols.iter().cloned());
