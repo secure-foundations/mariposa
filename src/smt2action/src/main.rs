@@ -363,11 +363,10 @@ fn main() {
         }
         Action::PostInstZ3 => {
             inst_z3::postprocess_for_instantiation(&mut commands);
-            // commands = tree_rewrite::tree_rewrite(commands);
-            // tree_shake::remove_unused_symbols(&mut commands);
-            // query_io::add_cids(&mut commands, true);
-            // query_io::add_qids(&mut commands);
-            // inst_z3::preprocess_for_instantiation(&mut commands);
+            commands = tree_rewrite::tree_rewrite(commands);
+            query_io::add_cids(&mut commands, true);
+            query_io::add_qids(&mut commands);
+            inst_z3::preprocess_for_instantiation(&mut commands);
         }
         Action::PrintFuns => {
             inst_z3::print_mariposa_funs(&commands);

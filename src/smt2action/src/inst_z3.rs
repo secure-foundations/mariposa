@@ -56,6 +56,14 @@ fn replace_forall_body(term: &mut Term) -> Option<Command> {
     else {
         panic!("Expected Attributes");
     };
+
+    // Ignore ones that have been replaced
+    if let concrete::Term::Application { qual_identifier, .. } = body.as_ref() {
+        if qual_identifier.to_string().starts_with("fun_forall_mariposa_qid_") {
+            return None
+        }
+    }
+
     let qid = get_attr_qid(attributes);
     let fid = mk_fun_forall(qid);
 

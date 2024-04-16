@@ -83,8 +83,76 @@ impl Substituter {
                 let id = (*id.unwrap()).clone();
                 if self.mapping.contains_key(&id) && !self.local_symbols.contains(&id) {
                     *term = self.mapping[&id].clone();
+
+                    let mut bound_vars = SymbolSet::new();
+                    if !get_free_variables(&term, &mut bound_vars).is_disjoint(&self.local_symbols) {
+                        panic!("bound variable substitution not supported");
+                    }
                 }
             },
         }
+    }
+}
+
+fn get_free_variables(term: &Term, bound_vars: &mut SymbolSet) -> SymbolSet {
+    match term {
+        concrete::Term::Application {
+            qual_identifier: _,
+            arguments,
+        } => {
+            let mut free_vars = SymbolSet::new();
+
+            for argument in arguments {
+                free_vars.extend(get_free_variables(argument, bound_vars));
+            }
+
+            free_vars
+        }
+        concrete::Term::Let {
+            var_bindings,
+            term: sub_term,
+        } => {
+            let mut free_vars = SymbolSet::new();
+
+            var_bindings.into_iter().for_each(|x| {
+                bound_vars.insert(x.0.clone());
+                free_vars.extend(get_free_variables(&x.1, bound_vars));
+            });
+            free_vars.extend(get_free_variables(sub_term, bound_vars));
+            var_bindings.into_iter().for_each(|x| {
+                bound_vars.remove(&x.0);
+            });
+
+            free_vars
+        }
+        concrete::Term::Exists { vars, term: sub_term } |
+        concrete::Term::Forall { vars, term: sub_term } => {
+            let mut free_vars = SymbolSet::new();
+
+            vars.into_iter().for_each(|x| {
+                bound_vars.insert(x.0.clone());
+            });
+            free_vars.extend(get_free_variables(sub_term, bound_vars));
+            vars.into_iter().for_each(|x| {
+                bound_vars.remove(&x.0);
+            });
+
+            free_vars
+        }
+        concrete::Term::Attributes { term: sub_term, attributes: _ } => get_free_variables(sub_term, bound_vars),
+        concrete::Term::Match { .. } => panic!("TODO match cases"),
+        concrete::Term::Constant(_) => SymbolSet::new(),
+        concrete::Term::QualIdentifier(..) => {
+            let id = match_simple_qual_identifier_term(term);
+            if id.is_none() {
+                return SymbolSet::new();
+            }
+            let id = (*id.unwrap()).clone();
+            if !bound_vars.contains(&id) {
+                return SymbolSet::from([id]);
+            }
+
+            SymbolSet::new()
+        },
     }
 }
