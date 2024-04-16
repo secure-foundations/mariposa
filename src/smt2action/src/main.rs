@@ -100,6 +100,12 @@ enum Action {
     InstZ3,
 
     #[strum(
+        serialize = "post-inst-z3",
+        message = "transform the Z3 query to extract more nested quantifiers"
+    )]
+    PostInstZ3,
+
+    #[strum(
         serialize = "add-ids",
         message = "add qids (to quantifiers) and cids (to assertions) to the query"
     )]
@@ -348,6 +354,14 @@ fn main() {
                 exit(1);
             }
             inst_z3::handle_z3_trace_v2(path, &mut commands, args.max_trace_insts);
+        }
+        Action::PostInstZ3 => {
+            inst_z3::postprocess_for_instantiation(&mut commands);
+            // commands = tree_rewrite::tree_rewrite(commands);
+            // tree_shake::remove_unused_symbols(&mut commands);
+            // query_io::add_cids(&mut commands, true);
+            // query_io::add_qids(&mut commands);
+            // inst_z3::preprocess_for_instantiation(&mut commands);
         }
         Action::AddIds => {
             query_io::add_cids(&mut commands, args.reassign_ids);

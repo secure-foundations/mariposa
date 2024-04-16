@@ -1,10 +1,10 @@
-use smt2parser::concrete::{self, Command, Sort, Symbol, Term};
+use smt2parser::{concrete::{self, Command, Sort, Symbol, Term, QualIdentifier, Identifier}, visitors::FunctionDec};
 use smt_log_parser::{
     display_with::{DisplayCtxt, DisplayWithCtxt},
     items::{MatchKind, QuantKind, Quantifier, TermIdx},
     LogParser, Z3Parser,
 };
-use std::collections::{HashMap, HashSet};
+use std::{borrow::Borrow, collections::{HashMap, HashSet}, hash::Hash};
 use std::fmt::Write;
 
 use crate::{
@@ -12,7 +12,7 @@ use crate::{
     term_match::{
         is_qf_term, match_simple_app_term, match_simple_qual_identifier, mk_simple_qual_id,
         mk_simple_qual_id_term,
-    },
+    }, term_substitute::Substituter,
 };
 
 fn mk_fun_forall(qid: &String) -> String {
@@ -145,6 +145,86 @@ fn introduce_special_forall(command: &mut concrete::Command) -> Option<concrete:
         arguments: vec![p, term.clone()],
     };
     Some(fun_dec)
+}
+
+// Check if the term has a forall not under an exist
+pub fn find_forall(term: &Term) -> bool {
+    match term {
+        concrete::Term::Application {
+            arguments,
+            ..
+        } => {
+            for argument in arguments {
+                if find_forall(argument) {
+                    return true;
+                }
+            }
+            false
+        },
+        concrete::Term::Let { term, .. } => find_forall(term.as_ref()),
+        concrete::Term::Forall { .. } => true,
+        concrete::Term::Exists { .. } => false,
+        concrete::Term::Attributes { term, .. } => find_forall(term.as_ref()),
+        concrete::Term::Match { .. } => panic!("unsupported"),
+        concrete::Term::Constant(..) => false,
+        concrete::Term::QualIdentifier(..) => false,
+    }
+}
+
+pub fn postprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
+    // Look for explicit instances of the form
+    // assert (! (fun_forall_mariposa_qid_xxx ...) :cid ...)
+    // If in the definition of fun_forall_mariposa_qid_xxx, there is a nested quantifier,
+    // we expand the definition and apply pre-inst-z3 again.
+
+    // Find all define-fun fun_forall_mariposa_qid_xxx first
+    let qid_body_with_forall_map: HashMap<usize, (Vec<Symbol>, Term)> = commands
+        .iter()
+        .filter_map(|x| {
+            if let Command::DefineFun { sig: FunctionDec { name, parameters, ..}, term } = x {
+                if find_forall(&term) {
+                    let params = parameters.into_iter().map(|p| p.0.clone()).collect();
+                    return Some((name.to_string().strip_prefix("fun_forall_mariposa_qid_")?.parse().ok()?, (params, term.clone())))
+                }
+            }
+            None
+        })
+        .collect();
+
+    let goal_index = find_goal_command_index(commands);
+    let rest = commands.split_off(goal_index);
+
+    let temp = commands
+        .drain(..)
+        .into_iter()
+        .map(|x| {
+            match &x {
+                Command::Assert { term: Term::Attributes { term, attributes } } => {
+                    if let Term::Application {
+                        qual_identifier,
+                        arguments,
+                    } = term.as_ref() {
+                        if let Some(qid) = qual_identifier.to_string().strip_prefix("fun_forall_mariposa_qid_") {
+                            if let Ok(qid) = qid.parse::<usize>() {
+                                // TODO: substitution
+                                if let Some((params, body)) = qid_body_with_forall_map.get(&qid) {
+                                    let mut subst = Substituter::new(params.iter().cloned().zip(arguments.iter().cloned()).collect());
+                                    let mut cloned_body = body.clone();
+                                    subst.substitute(&mut cloned_body);
+                                    return Command::Assert { term: Term::Attributes { term: Box::new(cloned_body), attributes: attributes.clone() } };
+                                }
+                            }
+                        }
+                    }
+                    x
+                }
+                _ => x,
+            }
+        })
+        .collect::<Vec<_>>();
+
+    commands.extend(temp);
+    commands.extend(rest);
 }
 
 pub fn preprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
