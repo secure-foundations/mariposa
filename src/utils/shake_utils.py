@@ -75,7 +75,9 @@ def debug_shake(input_query_path, core_query_path, input_log_path):
         core_levels[score] += 1
 
     missing = 0
-    for level in sorted(base_levels):
+    ls = sorted(set(base_levels.keys()) - {np.nan})
+
+    for level in ls + [np.nan]:
         core_count = core_levels.get(level, 0)
         if np.isnan(level):
             missing = core_count
@@ -88,4 +90,4 @@ def debug_shake(input_query_path, core_query_path, input_log_path):
 
     for cid in core_cids:
         if np.isnan(scores[cid]):
-            print(f"{cid}: {base_cids[cid]}")
+            print(f"{cid} : {base_cids[cid]}")

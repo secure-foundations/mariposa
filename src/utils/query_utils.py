@@ -1,9 +1,10 @@
 from enum import Enum
 import os
+import re
 import subprocess
 
 from base.defs import MARIPOSA
-from utils.system_utils import log_check, log_info, log_warn
+from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 
 def normalize_line(line):
     return line.replace(" ", "").strip()
@@ -179,3 +180,51 @@ def is_assertion_subset(query, subset_query):
     print(f"base: {len(base)} subset: {len(subset)}")
     log_check(len(subset) != 0, f"subset query has no asserts: {subset_query}")
     return subset.issubset(base)
+
+def get_mariposa_funs(query_path):
+    lines = subprocess_run(
+        [
+            MARIPOSA,
+            "-a",
+            "print-funs",
+            "-i",
+            query_path,
+        ],
+        check=True,
+        debug=True,
+    )[0]
+    funs = dict()
+    for line in lines.split("\n"):
+        line = line.split(":")
+        funs[line[0]] = line[1]
+    return funs
+
+def restore_assertions(query_path, keep_path):
+    funs = get_mariposa_funs(keep_path)
+    keep_cids = set(funs.values()) - {"none"}
+    keep = dict()
+    for line in open(keep_path).readlines():
+        for cid in keep_cids:
+            if cid + ")" in line:
+                keep[cid] = line
+    new_lines = []
+    CID_PATTERN = re.compile(":named (mariposa_cid_(\d+))\)")
+
+    present = set()
+    insert_index = None
+    for i, line in enumerate(open(query_path).readlines()):
+        m = re.search(CID_PATTERN, line)
+        if m is not None:
+            cid = m.group(1)
+            present.add(cid)
+        if line == "(check-sat)\n":
+            insert_index = i - 1
+        new_lines.append(line)
+
+    for cid in keep_cids - present:
+        print(f"missing {cid}")
+        print(keep[cid])
+        new_lines.insert(insert_index, keep[cid])
+    
+    with open(query_path, "w") as f:
+        f.writelines(new_lines)

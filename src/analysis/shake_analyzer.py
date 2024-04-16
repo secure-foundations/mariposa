@@ -34,13 +34,13 @@ class ShakeAnalyzer(CoreAnalyzer):
         super().__init__(group, ana)
         self.p_shake = group.get_project(PT.from_str("shko.z3"), build=True)
 
-        # shake = FACT.load_any_experiment(self.p_shake)
-        # self.shake = ExperAnalyzer(shake, ana)
-        self.create_shake_queries()
+        self.shake = FACT.load_any_analysis(self.p_shake, ana)
+        # self.create_shake_queries()
+        self.check_shake_perf()
 
     def check_shake_perf(self):
         for qid, qcs in self.qids.items():
-            shake_log = self.p_base.get_path(qid, KnownExt.SHK_LOG)
+            shake_log = self.base.get_path(qid, KnownExt.SHK_LOG)
             # rc, tt = self.shake[qid].get_original_status()
             # shake_path = self.p_shake.get_path(qid)
 
@@ -61,7 +61,7 @@ class ShakeAnalyzer(CoreAnalyzer):
         cats = Categorizer()
 
         for qid, qcs in self.qids.items():
-            shake_log = self.p_base.get_path(qid, KnownExt.SHK_LOG)
+            shake_log = self.base.get_path(qid, KnownExt.SHK_LOG)
             shake_path = self.p_shake.get_path(qid)
 
             scores = parse_shake_log(shake_log)
@@ -72,6 +72,7 @@ class ShakeAnalyzer(CoreAnalyzer):
                 core_cids = load_query_cids(qcs.patch_path)
                 core_scores = [scores[cid] for cid in core_cids.keys()]
                 if np.nan in core_scores:
+                    # print("./src/query_wizard.py debug-shake", "-i %s --core-query-path %s --input-log-path %s" % (qcs.base_path, qcs.patch_path, shake_log))
                     cats.add_item("shake (maybe) incomplete", qid)
                 oracle = valid_max(core_scores)
             else:

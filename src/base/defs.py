@@ -40,6 +40,8 @@ CACHE_ROOT = "cache/"
 
 REPORT_ROOT = "doc/reports/"
 
+MARIPOSA_GROUPS = ["d_fvbkv", "d_lvbkv", "d_komodo", "fs_vwasm", "fs_dice"]
+
 def delegate(to, *methods):
     def dec(klass):
         def create_delegator(method):

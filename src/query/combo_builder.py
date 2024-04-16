@@ -1,12 +1,12 @@
 from query.core_builder import CompleteCoreBuilder
-from utils.query_utils import Mutation, count_lines, emit_mutant_query
+from utils.query_utils import Mutation, count_lines, emit_mutant_query, get_mariposa_funs, restore_assertions
 from utils.system_utils import *
 import random
 from base.defs import GEN_ROOT, MARIPOSA
 from base.factory import FACT
 from base.solver import RCode, Z3Solver
 import re
-
+import filecmp
 
 def get_quantifier_count(path):
     if os.path.exists(path):
@@ -85,13 +85,13 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
             "-o",
             output_query,
         ],
+        timeout=30,
         check=True,
         debug=True,
     )
 
     # remove the trace file if nothing went wrong?
     # remove_file(trace_path)
-
 
 query_pattern = re.compile("^([0-9]+)\.smt2")
 
@@ -125,8 +125,13 @@ class ComboBuilder:
         if len(self.counts) >= 2:
             self.prev, self.p_qc = self.counts[-2]
 
-    def run(self, trace_timeout=5, trace_restarts=10, core_timeout=65, core_restarts=5):
-        if self.c_qc >= self.p_qc:
+    def has_converged(self):
+        diff = abs(self.c_qc - self.p_qc)
+        diff = diff / self.p_qc
+        return self.p_qc != -1 and diff == 0
+
+    def run(self, trace_timeout=10, trace_restarts=10, core_timeout=65, core_restarts=5):
+        if self.has_converged():
             log_info("no change in quantifiers")
             return
         log_info(f"wombo start: previous {self.prev} {self.p_qc} -> current {self.curr} {self.c_qc}")
@@ -134,10 +139,17 @@ class ComboBuilder:
 
         handle_inst_z3(self.cur_file, self.temp_file, trace_timeout, trace_restarts)
 
-        solver = FACT.get_solver("z3_4_12_5")
+        if filecmp.cmp(self.cur_file, self.temp_file, shallow=False):
+            shutil.copy(self.cur_file, self.next_file)
+            log_info("no change in insts")
+            return
+
+        solver = FACT.get_solver("z3_4_8_5")
 
         CompleteCoreBuilder(
             self.temp_file, self.next_file, solver, core_timeout, True, core_restarts
         )
+
+        restore_assertions(self.next_file, self.temp_file)
         next_qc = get_quantifier_count(self.next_file)
         log_info(f"wombo end: previous {self.curr} {self.c_qc} -> current {self.curr+1} {next_qc}")

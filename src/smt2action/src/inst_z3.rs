@@ -253,7 +253,7 @@ pub fn preprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
 struct Inserter {
     max_cid: usize,
     defined_symbols: HashMap<String, String>,
-    forall_fun_symbols: HashSet<String>,
+    forall_fun_symbols: HashMap<String, Option<usize>>,
 
     unhandled_qids: HashMap<String, usize>,
     malformed_qids: HashMap<String, usize>,
@@ -265,7 +265,7 @@ impl Inserter {
         let mut ins = Inserter {
             max_cid: 0,
             defined_symbols: HashMap::new(),
-            forall_fun_symbols: HashSet::new(),
+            forall_fun_symbols: HashMap::new(),
 
             unhandled_qids: HashMap::new(),
             malformed_qids: HashMap::new(),
@@ -282,11 +282,22 @@ impl Inserter {
         commands.iter().for_each(|x| {
             match x {
                 concrete::Command::Assert { term } => {
-                    let concrete::Term::Attributes { attributes, .. } = term else {
+                    let concrete::Term::Attributes { attributes, term } = term else {
                         panic!("Expected Attributes");
                     };
                     let cid = get_attr_cid_usize(attributes);
                     self.max_cid = self.max_cid.max(cid);
+
+                    if let Term::Forall { term, .. } = &**term {
+                        let Term::Attributes { attributes, .. } = &**term else {
+                            panic!("Expected Attributes");
+                        };
+                        let qid = get_attr_qid(attributes);
+                        let fun_name = mk_fun_forall(&qid);
+                        self.forall_fun_symbols.get_mut(&fun_name).map(|x| {
+                            *x = Some(cid.clone());
+                        });
+                    }
                 }
                 concrete::Command::DeclareConst { symbol, sort: _ } => {
                     symbols.insert(symbol.clone());
@@ -310,7 +321,7 @@ impl Inserter {
                     let symbol = sig.name.clone();
                     symbols.insert(symbol.clone());
                     if symbol.0.starts_with("fun_forall_") {
-                        self.forall_fun_symbols.insert(symbol.0);
+                        self.forall_fun_symbols.insert(symbol.0, None);
                     }
                 }
                 concrete::Command::DeclareDatatype { .. } => {
@@ -334,7 +345,7 @@ impl Inserter {
         bound_terms: &Vec<smt_log_parser::items::ENodeIdx>,
     ) {
         let fname = mk_fun_forall(qid);
-        if self.forall_fun_symbols.contains(&fname) {
+        if self.forall_fun_symbols.contains_key(&fname) {
             let mut ok = true;
             let mut instance = "\n".to_string();
             for bound_term in bound_terms.iter().rev() {
@@ -372,7 +383,12 @@ impl Inserter {
             .map(|x| x.len())
             .sum::<usize>();
 
-        println!("Unhandled Insts ({}):", unhandled);
+        println!("Fun Symbols:");
+        self.forall_fun_symbols.iter().for_each(|(x, y)| {
+            println!("{}: {:?}", x, y);
+        });
+
+        println!("\nUnhandled Insts ({}):", unhandled);
         let mut qids: Vec<_> = self.unhandled_qids.iter().collect();
         qids.sort_by(|a, b| b.1.cmp(a.1));
         for (qid, count) in qids {
@@ -408,36 +424,44 @@ impl Inserter {
             selected_qids.insert(qid.clone());
         }
 
+        let selected_func_cids = selected_qids
+            .iter()
+            .filter_map(|x| {
+                let func = mk_fun_forall(x);
+                if let Some(cid) = self.forall_fun_symbols.get(&func) {
+                    cid.clone()
+                } else {
+                    None
+                }
+            })
+            .collect::<HashSet<_>>();
+
+        // let no_inst_qids = self.forall_fun_symbols
+        // for qid in self.forall_fun_symbols
+
         // if selected_insts.len() == 0 {
         //     self.debug();
         //     panic!("No instances selected");
         // }
 
-        // if we still need more instances
-        if selected_insts.len() < max_inst {
-            for (_, insts) in temp.iter_mut() {
-                if selected_insts.len() >= max_inst {
-                    break;
-                }
-                let limit = usize::min(max_inst - selected_insts.len(), insts.len());
-                selected_insts.extend(insts.drain(..limit));
-            }
-        }
+        // // if we still need more instances
+        // if selected_insts.len() < max_inst {
+        //     for (_, insts) in temp.iter_mut() {
+        //         if selected_insts.len() >= max_inst {
+        //             break;
+        //         }
+        //         let limit = usize::min(max_inst - selected_insts.len(), insts.len());
+        //         selected_insts.extend(insts.drain(..limit));
+        //     }
+        // }
 
         commands.retain(|x| match x {
             concrete::Command::Assert { term } => {
-                let concrete::Term::Attributes { term, .. } = term else {
+                let concrete::Term::Attributes { attributes, .. } = term else {
                     panic!("Expected Attributes");
                 };
-                if let Term::Forall { term, .. } = &**term {
-                    let Term::Attributes { attributes, .. } = &**term else {
-                        panic!("Expected Attributes");
-                    };
-                    let qid = get_attr_qid(attributes);
-                    !selected_qids.contains(qid)
-                } else {
-                    true
-                }
+                let cid = get_attr_cid_usize(attributes);
+                !selected_func_cids.contains(&cid)
             }
             _ => true,
         });
@@ -490,6 +514,18 @@ pub fn handle_z3_trace_v2(
 
     inserter.insts_error_free(commands, max_inst);
     commands.extend(rest);
+}
+
+pub fn print_mariposa_funs(commands: &Vec<concrete::Command>)
+{
+    let inserter = Inserter::new(commands);
+    for (name, cid) in inserter.forall_fun_symbols.iter() {
+        if let Some(cid) = cid {
+            println!("{}:mariposa_cid_{}", name, cid);
+        } else {
+            println!("{}:none", name);
+        }
+    }
 }
 
 // pub fn handle_z3_trace(

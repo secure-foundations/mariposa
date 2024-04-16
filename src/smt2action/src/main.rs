@@ -126,6 +126,12 @@ enum Action {
     )]
     ReplaceQuant,
 
+    #[strum(
+        serialize = "print-funs",
+        message = "print the mariposa introduced functions in the query"
+    )]
+    PrintFuns,
+
     #[strum(serialize = "help", message = "get help on the allowed actions")]
     Help,
 }
@@ -362,6 +368,10 @@ fn main() {
             // query_io::add_cids(&mut commands, true);
             // query_io::add_qids(&mut commands);
             // inst_z3::preprocess_for_instantiation(&mut commands);
+        }
+        Action::PrintFuns => {
+            inst_z3::print_mariposa_funs(&commands);
+            return;
         }
         Action::AddIds => {
             query_io::add_cids(&mut commands, args.reassign_ids);
