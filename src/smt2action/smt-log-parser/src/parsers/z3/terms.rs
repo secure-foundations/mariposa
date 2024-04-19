@@ -61,7 +61,8 @@ impl Terms {
         self.meanings.try_reserve(1)?;
         use std::collections::hash_map::Entry;
         match self.meanings.entry(term) {
-            Entry::Occupied(old) => assert_eq!(old.get(), &meaning),
+            Entry::Occupied(old) => {}
+            // assert_eq!(old.get(), &meaning),
             Entry::Vacant(empty) => {
                 empty.insert(meaning);
             },

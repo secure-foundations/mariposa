@@ -17,8 +17,8 @@ mod query_mutate;
 mod term_match;
 mod tree_rewrite;
 
-mod term_inst_cvc5;
 mod inst_z3;
+mod term_inst_cvc5;
 mod term_substitute;
 mod tree_shake;
 mod tree_shake_idf;
@@ -87,10 +87,7 @@ enum Action {
     )]
     InstCVC5,
 
-    #[strum(
-        serialize = "pre-inst-z3",
-        message = "prepare for Z3 instantiation"
-    )]
+    #[strum(serialize = "pre-inst-z3", message = "prepare for Z3 instantiation")]
     PreInstZ3,
 
     #[strum(
@@ -125,12 +122,6 @@ enum Action {
         message = "replace quantified bodies with (fresh) functions"
     )]
     ReplaceQuant,
-
-    #[strum(
-        serialize = "print-funs",
-        message = "print the mariposa introduced functions in the query"
-    )]
-    PrintFuns,
 
     #[strum(serialize = "help", message = "get help on the allowed actions")]
     Help,
@@ -187,6 +178,10 @@ struct Args {
     /// (z3) unsat core log path (not a query!)
     #[arg(long)]
     core_log_path: Option<String>,
+
+    /// keep all quantified asserts in the core query
+    #[arg(long, default_value_t = false)]
+    core_keep_quantified: bool,
 
     #[arg(long, default_value_t = false)]
     reassign_ids: bool,
@@ -310,7 +305,7 @@ fn main() {
                 exit(1);
             }
             let core_file_path = args.core_log_path.unwrap();
-            if !core_export::reduce_asserts(&mut commands, &core_file_path) {
+            if !core_export::reduce_asserts(&mut commands, &core_file_path, args.core_keep_quantified) {
                 println!(
                     "error: nonexistent or empty (z3) core log file {}",
                     core_file_path
@@ -362,15 +357,12 @@ fn main() {
             inst_z3::handle_z3_trace_v2(path, &mut commands, args.max_trace_insts);
         }
         Action::PostInstZ3 => {
-            inst_z3::postprocess_for_instantiation(&mut commands);
-            commands = tree_rewrite::tree_rewrite(commands);
-            query_io::add_cids(&mut commands, true);
-            query_io::add_qids(&mut commands);
-            inst_z3::preprocess_for_instantiation(&mut commands);
-        }
-        Action::PrintFuns => {
-            inst_z3::print_mariposa_funs(&commands);
-            return;
+            panic!("unimplemented action: {}", action);
+            // inst_z3::postprocess_for_instantiation(&mut commands);
+            // // commands = tree_rewrite::tree_rewrite(commands);
+            // query_io::add_cids(&mut commands, true);
+            // query_io::add_qids(&mut commands);
+            // inst_z3::preprocess_for_instantiation(&mut commands);
         }
         Action::AddIds => {
             query_io::add_cids(&mut commands, args.reassign_ids);

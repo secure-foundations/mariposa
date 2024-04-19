@@ -154,7 +154,7 @@ class ExpConfig:
                 "keep_mutants": self.keep_mutants,
                 "exp_timeout": self.timeout}
 
-@delegate('proj', 'get_path', 'list_queries')
+@delegate('proj', 'get_path', 'list_queries', 'get_log_dir')
 class Experiment(ExpConfig):
     """
     an experiment is a collection of tasks

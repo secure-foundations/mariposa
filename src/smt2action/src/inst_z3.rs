@@ -1,18 +1,29 @@
-use smt2parser::{concrete::{self, Command, Sort, Symbol, Term, QualIdentifier, Identifier}, visitors::FunctionDec};
+use smt2parser::{
+    concrete::{self, Command, Identifier, QualIdentifier, Sort, Symbol, Term},
+    visitors::FunctionDec,
+};
 use smt_log_parser::{
     display_with::{DisplayCtxt, DisplayWithCtxt},
     items::{MatchKind, QuantKind, Quantifier, TermIdx},
+    parsers::z3::inst,
     LogParser, Z3Parser,
 };
-use std::{borrow::Borrow, collections::{HashMap, HashSet}, hash::Hash};
 use std::fmt::Write;
+use std::{
+    borrow::Borrow,
+    collections::{HashMap, HashSet},
+    hash::Hash,
+};
 
 use crate::{
-    query_io::{find_goal_command_index, get_attr_cid_usize, get_attr_qid},
+    query_io::{
+        find_goal_command_index, get_actual_asserted_term, get_attr_cid_usize, get_attr_qid,
+    },
     term_match::{
         is_qf_term, match_simple_app_term, match_simple_qual_identifier, mk_simple_qual_id,
         mk_simple_qual_id_term,
-    }, term_substitute::Substituter,
+    },
+    term_substitute::Substituter,
 };
 
 fn mk_fun_forall(qid: &String) -> String {
@@ -28,14 +39,22 @@ fn unquote_symbol(s: &Symbol) -> String {
     }
 }
 
-fn introduce_simple_forall(command: &mut concrete::Command) -> Option<concrete::Command> {
-    let concrete::Command::Assert { term } = command else {
-        return None;
-    };
-    let concrete::Term::Attributes { term, .. } = term else {
-        panic!("Expected Attributes");
-    };
-    replace_forall_body(term)
+const MARIPOSA_FORALL_FUN_PREFIX: &str = "fun_forall_mariposa_qid_";
+
+fn get_diverted_fname(term: &Term) -> Option<String> {
+    match term {
+        concrete::Term::Application {
+            qual_identifier, ..
+        } => {
+            let fname = qual_identifier.to_string();
+            if fname.starts_with(MARIPOSA_FORALL_FUN_PREFIX) {
+                Some(fname)
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
 }
 
 fn replace_forall_body(term: &mut Term) -> Option<Command> {
@@ -58,10 +77,8 @@ fn replace_forall_body(term: &mut Term) -> Option<Command> {
     };
 
     // Ignore ones that have been replaced
-    if let concrete::Term::Application { qual_identifier, .. } = body.as_ref() {
-        if qual_identifier.to_string().starts_with("fun_forall_mariposa_qid_") {
-            return None
-        }
+    if get_diverted_fname(body.as_ref()).is_some() {
+        return None;
     }
 
     let qid = get_attr_qid(attributes);
@@ -92,30 +109,15 @@ fn replace_forall_body(term: &mut Term) -> Option<Command> {
     })
 }
 
-// fn is_prop_term(term: &concrete::Term) -> bool {
-//     match term {
-//         concrete::Term::Attributes {
-//             term,
-//             attributes: _,
-//         } => is_prop_term(term),
-//         concrete::Term::Forall { .. } => true,
-//         concrete::Term::Exists { .. } => true,
-//         concrete::Term::Let { term, .. } => is_prop_term(term),
-//         concrete::Term::Match { .. } => false,
-//         concrete::Term::Constant(_) => false,
-//         concrete::Term::QualIdentifier(_) => false,
-//         concrete::Term::Application {
-//             qual_identifier, ..
-//         } => {
-//             if let Some(fname) = match_simple_qual_identifier(qual_identifier) {
-//                 let fname = &fname.0;
-//                 fname == "=" || fname == "not" || fname == "and" || fname == "or" || fname == "=>"
-//             } else {
-//                 false
-//             }
-//         }
-//     }
-// }
+fn introduce_simple_forall(command: &mut concrete::Command) -> Option<concrete::Command> {
+    let concrete::Command::Assert { term } = command else {
+        return None;
+    };
+    let concrete::Term::Attributes { term, .. } = term else {
+        panic!("Expected Attributes");
+    };
+    replace_forall_body(term)
+}
 
 fn introduce_special_forall(command: &mut concrete::Command) -> Option<concrete::Command> {
     let concrete::Command::Assert { term } = command else {
@@ -139,101 +141,134 @@ fn introduce_special_forall(command: &mut concrete::Command) -> Option<concrete:
 
     // p => q, where q is forall
     let mut q = args.pop().unwrap();
-    let p = args.pop().unwrap();
+    // let p = args.pop().unwrap();
 
-    let mut fun_dec = replace_forall_body(&mut q).unwrap();
-    let new_term: Term = q.clone();
-    std::mem::swap(imp_term, &mut Box::new(new_term));
+    let fun_dec = replace_forall_body(&mut q).unwrap();
+    args.push(q);
 
-    let concrete::Command::DefineFun { term, .. } = &mut fun_dec else {
-        panic!("Expected DefineFun");
-    };
-    *term = Term::Application {
-        qual_identifier: mk_simple_qual_id(Symbol("=>".to_string())),
-        arguments: vec![p, term.clone()],
-    };
     Some(fun_dec)
 }
 
-// Check if the term has a forall not under an exist
-pub fn find_forall(term: &Term) -> bool {
+// fn check_forall(command: &concrete::Command) {
+//     let concrete::Command::Assert { term } = command else {
+//         return;
+//     };
+
+//     if find_forall(term) {
+//         println!("Found Forall");
+//         println!("{}", term);
+//     }
+// }
+
+// // Check if the term has a forall not under an exist
+// pub fn find_forall(term: &Term) -> bool {
+//     match term {
+//         concrete::Term::Application { arguments, .. } => {
+//             for argument in arguments {
+//                 if find_forall(argument) {
+//                     return true;
+//                 }
+//             }
+//             false
+//         }
+//         concrete::Term::Let { term, .. } => find_forall(term.as_ref()),
+//         concrete::Term::Forall { .. } => true,
+//         concrete::Term::Exists { .. } => false,
+//         concrete::Term::Attributes { term, .. } => find_forall(term.as_ref()),
+//         concrete::Term::Match { .. } => panic!("unsupported"),
+//         concrete::Term::Constant(..) => false,
+//         concrete::Term::QualIdentifier(..) => false,
+//     }
+// }
+
+fn match_diverted_forall(term: &Term) -> Option<String> {
+    let concrete::Term::Forall { term, .. } = term else {
+        return None;
+    };
+
+    let concrete::Term::Attributes { term: body, .. } = term.as_ref() else {
+        panic!("Expected Attributes");
+    };
+
+    return get_diverted_fname(body.as_ref());
+}
+
+fn find_diverted_forall(term: &Term) -> Option<(String, String)> {
+    if match_diverted_forall(term).is_some() {
+        let res = match_diverted_forall(term)?;
+        return Some((res, term.to_string()));
+    }
+
     match term {
-        concrete::Term::Application {
-            arguments,
-            ..
-        } => {
-            for argument in arguments {
-                if find_forall(argument) {
-                    return true;
-                }
-            }
-            false
-        },
-        concrete::Term::Let { term, .. } => find_forall(term.as_ref()),
-        concrete::Term::Forall { .. } => true,
-        concrete::Term::Exists { .. } => false,
-        concrete::Term::Attributes { term, .. } => find_forall(term.as_ref()),
+        concrete::Term::Application { arguments, .. } => arguments
+            .iter()
+            .filter_map(|x| find_diverted_forall(x))
+            .next(),
+        concrete::Term::Let { term, .. } => find_diverted_forall(term.as_ref()),
+        concrete::Term::Forall { term, .. } => find_diverted_forall(term.as_ref()),
+        concrete::Term::Exists { .. } => None,
+        concrete::Term::Attributes { term, .. } => find_diverted_forall(term.as_ref()),
         concrete::Term::Match { .. } => panic!("unsupported"),
-        concrete::Term::Constant(..) => false,
-        concrete::Term::QualIdentifier(..) => false,
+        concrete::Term::Constant(..) => None,
+        concrete::Term::QualIdentifier(..) => None,
     }
 }
 
-pub fn postprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
-    // Look for explicit instances of the form
-    // assert (! (fun_forall_mariposa_qid_xxx ...) :cid ...)
-    // If in the definition of fun_forall_mariposa_qid_xxx, there is a nested quantifier,
-    // we expand the definition and apply pre-inst-z3 again.
+// pub fn postprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
+//     // Look for explicit instances of the form
+//     // assert (! (fun_forall_mariposa_qid_xxx ...) :cid ...)
+//     // If in the definition of fun_forall_mariposa_qid_xxx, there is a nested quantifier,
+//     // we expand the definition and apply pre-inst-z3 again.
 
-    // Find all define-fun fun_forall_mariposa_qid_xxx first
-    let qid_body_with_forall_map: HashMap<usize, (Vec<Symbol>, Term)> = commands
-        .iter()
-        .filter_map(|x| {
-            if let Command::DefineFun { sig: FunctionDec { name, parameters, ..}, term } = x {
-                if find_forall(&term) {
-                    let params = parameters.into_iter().map(|p| p.0.clone()).collect();
-                    return Some((name.to_string().strip_prefix("fun_forall_mariposa_qid_")?.parse().ok()?, (params, term.clone())))
-                }
-            }
-            None
-        })
-        .collect();
+//     // Find all define-fun fun_forall_mariposa_qid_xxx first
+//     let qid_body_with_forall_map: HashMap<usize, (Vec<Symbol>, Term)> = commands
+//         .iter()
+//         .filter_map(|x| {
+//             if let Command::DefineFun { sig: FunctionDec { name, parameters, ..}, term } = x {
+//                 if find_forall(&term) {
+//                     let params = parameters.into_iter().map(|p| p.0.clone()).collect();
+//                     return Some((name.to_string().strip_prefix("fun_forall_mariposa_qid_")?.parse().ok()?, (params, term.clone())))
+//                 }
+//             }
+//             None
+//         })
+//         .collect();
 
-    let goal_index = find_goal_command_index(commands);
-    let rest = commands.split_off(goal_index);
+//     let goal_index = find_goal_command_index(commands);
+//     let rest = commands.split_off(goal_index);
 
-    let temp = commands
-        .drain(..)
-        .into_iter()
-        .map(|x| {
-            match &x {
-                Command::Assert { term: Term::Attributes { term, attributes } } => {
-                    if let Term::Application {
-                        qual_identifier,
-                        arguments,
-                    } = term.as_ref() {
-                        if let Some(qid) = qual_identifier.to_string().strip_prefix("fun_forall_mariposa_qid_") {
-                            if let Ok(qid) = qid.parse::<usize>() {
-                                // TODO: substitution
-                                if let Some((params, body)) = qid_body_with_forall_map.get(&qid) {
-                                    let mut subst = Substituter::new(params.iter().cloned().zip(arguments.iter().cloned()).collect());
-                                    let mut cloned_body = body.clone();
-                                    subst.substitute(&mut cloned_body);
-                                    return Command::Assert { term: Term::Attributes { term: Box::new(cloned_body), attributes: attributes.clone() } };
-                                }
-                            }
-                        }
-                    }
-                    x
-                }
-                _ => x,
-            }
-        })
-        .collect::<Vec<_>>();
+//     let temp = commands
+//         .drain(..)
+//         .into_iter()
+//         .map(|x| {
+//             match &x {
+//                 Command::Assert { term: Term::Attributes { term, attributes } } => {
+//                     if let Term::Application {
+//                         qual_identifier,
+//                         arguments,
+//                     } = term.as_ref() {
+//                         if let Some(qid) = qual_identifier.to_string().strip_prefix("fun_forall_mariposa_qid_") {
+//                             if let Ok(qid) = qid.parse::<usize>() {
+//                                 // TODO: substitution
+//                                 if let Some((params, body)) = qid_body_with_forall_map.get(&qid) {
+//                                     let mut subst = Substituter::new(params.iter().cloned().zip(arguments.iter().cloned()).collect());
+//                                     let mut cloned_body = body.clone();
+//                                     subst.substitute(&mut cloned_body);
+//                                     return Command::Assert { term: Term::Attributes { term: Box::new(cloned_body), attributes: attributes.clone() } };
+//                                 }
+//                             }
+//                         }
+//                     }
+//                     x
+//                 }
+//                 _ => x,
+//             }
+//         })
+//         .collect::<Vec<_>>();
 
-    commands.extend(temp);
-    commands.extend(rest);
-}
+//     commands.extend(temp);
+//     commands.extend(rest);
+// }
 
 pub fn preprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
     let goal_index = find_goal_command_index(commands);
@@ -245,9 +280,10 @@ pub fn preprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
         .map(|mut x| {
             if let Some(d) = introduce_simple_forall(&mut x) {
                 vec![d, x]
-            // } else if let Some(d) = introduce_special_forall(&mut x) {
-            //     vec![d, x]
+            } else if let Some(d) = introduce_special_forall(&mut x) {
+                vec![d, x]
             } else {
+                // check_forall(&x);
                 vec![x]
             }
         })
@@ -258,14 +294,29 @@ pub fn preprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
     commands.extend(rest);
 }
 
+struct FunState {
+    place_holder_body: String,
+    wellformed: Vec<String>,
+    malformed_count: usize,
+    original_cid: usize,
+}
+
+impl FunState {
+    fn new(body: String, cid: usize) -> Self {
+        FunState {
+            place_holder_body: body,
+            wellformed: Vec::new(),
+            malformed_count: 0,
+            original_cid: cid,
+        }
+    }
+}
+
 struct Inserter {
     max_cid: usize,
     defined_symbols: HashMap<String, String>,
-    forall_fun_symbols: HashMap<String, Option<usize>>,
-
+    forall_funs: HashMap<String, FunState>,
     unhandled_qids: HashMap<String, usize>,
-    malformed_qids: HashMap<String, usize>,
-    wellformed_qids: HashMap<String, Vec<Command>>,
 }
 
 impl Inserter {
@@ -273,11 +324,8 @@ impl Inserter {
         let mut ins = Inserter {
             max_cid: 0,
             defined_symbols: HashMap::new(),
-            forall_fun_symbols: HashMap::new(),
-
+            forall_funs: HashMap::new(),
             unhandled_qids: HashMap::new(),
-            malformed_qids: HashMap::new(),
-            wellformed_qids: HashMap::new(),
         };
         ins.init_symbols(commands);
         // since max is present, add 1
@@ -288,25 +336,15 @@ impl Inserter {
     fn init_symbols(&mut self, commands: &Vec<concrete::Command>) {
         let mut symbols = HashSet::new();
         commands.iter().for_each(|x| {
-            match x {
-                concrete::Command::Assert { term } => {
-                    let concrete::Term::Attributes { attributes, term } = term else {
-                        panic!("Expected Attributes");
-                    };
-                    let cid = get_attr_cid_usize(attributes);
-                    self.max_cid = self.max_cid.max(cid);
-
-                    if let Term::Forall { term, .. } = &**term {
-                        let Term::Attributes { attributes, .. } = &**term else {
-                            panic!("Expected Attributes");
-                        };
-                        let qid = get_attr_qid(attributes);
-                        let fun_name = mk_fun_forall(&qid);
-                        self.forall_fun_symbols.get_mut(&fun_name).map(|x| {
-                            *x = Some(cid.clone());
-                        });
-                    }
+            if let Some((term, cid)) = get_actual_asserted_term(x) {
+                if let Some((fun_name, sub_term)) = find_diverted_forall(term) {
+                    let place_holder = term.to_string().replace(&sub_term, "MARIPOSA_PLACEHOLDER");
+                    let fs = FunState::new(place_holder, cid);
+                    self.forall_funs.insert(fun_name, fs);
                 }
+                self.max_cid = usize::max(self.max_cid, cid);
+            }
+            match x {
                 concrete::Command::DeclareConst { symbol, sort: _ } => {
                     symbols.insert(symbol.clone());
                 }
@@ -328,9 +366,6 @@ impl Inserter {
                 concrete::Command::DefineFun { sig, .. } => {
                     let symbol = sig.name.clone();
                     symbols.insert(symbol.clone());
-                    if symbol.0.starts_with("fun_forall_") {
-                        self.forall_fun_symbols.insert(symbol.0, None);
-                    }
                 }
                 concrete::Command::DeclareDatatype { .. } => {
                     panic!("Datatype not considered");
@@ -353,47 +388,40 @@ impl Inserter {
         bound_terms: &Vec<smt_log_parser::items::ENodeIdx>,
     ) {
         let fname = mk_fun_forall(qid);
-        if self.forall_fun_symbols.contains_key(&fname) {
-            let mut ok = true;
+        if self.forall_funs.contains_key(&fname) {
+            let mut well_formed = true;
             let mut instance = "\n".to_string();
             for bound_term in bound_terms.iter().rev() {
                 let res = write!(instance, "\t{}\n", TermIdx(bound_term.0).with(&ctxt));
                 if res.is_err() || instance.len() > 2048 {
-                    ok = false;
+                    well_formed = false;
                     break;
                 }
             }
 
-            if ok {
-                let instance = format!(
-                    "(assert (!(|{}| {}) :named mariposa_cid_{}))",
-                    fname, instance, self.max_cid,
-                );
-                self.max_cid += 1;
-                self.wellformed_qids
-                    .entry(qid.to_string())
-                    .or_insert(Vec::new())
-                    .push(Command::MariposaArbitrary(instance));
+            if well_formed {
+                self.forall_funs
+                    .get_mut(&fname)
+                    .unwrap()
+                    .wellformed
+                    .push(instance);
             } else {
-                *self.malformed_qids.entry(qid.to_string()).or_insert(0) += 1;
+                self.forall_funs.get_mut(&fname).unwrap().malformed_count += 1;
             }
         } else {
             *self.unhandled_qids.entry(qid.to_string()).or_insert(0) += 1;
         }
     }
 
+    #[allow(dead_code)]
     fn debug(&self) {
         let unhandled = self.unhandled_qids.values().sum::<usize>();
-        let malformed = self.malformed_qids.values().sum::<usize>();
-        let wellformed = self
-            .wellformed_qids
-            .values()
-            .map(|x| x.len())
-            .sum::<usize>();
 
-        println!("Fun Symbols:");
-        self.forall_fun_symbols.iter().for_each(|(x, y)| {
-            println!("{}: {:?}", x, y);
+        println!("Func Symbols:");
+        self.forall_funs.iter().for_each(|(x, y)| {
+            println!("Func: {}", x);
+            println!("\twellformed {}", y.wellformed.len());
+            println!("\tmalformed {}", y.malformed_count);
         });
 
         println!("\nUnhandled Insts ({}):", unhandled);
@@ -402,55 +430,43 @@ impl Inserter {
         for (qid, count) in qids {
             println!("\t{}: {}", qid, count);
         }
-        println!("\nMalformed Insts ({}):", malformed);
-        let mut qids: Vec<_> = self.malformed_qids.iter().collect();
-        qids.sort_by(|a, b| b.1.cmp(a.1));
-        for (qid, count) in qids {
-            println!("\t{}: {}", qid, count);
-        }
-        println!("\nWellformed Insts ({})", wellformed);
     }
 
     fn insts_error_free(mut self, commands: &mut Vec<concrete::Command>, max_inst: usize) {
         let max_inst = if max_inst == 0 { usize::MAX } else { max_inst };
-        let mut selected_qids: HashSet<String> = HashSet::new();
+        let mut remove_cids: HashSet<usize> = HashSet::new();
         let mut selected_insts: Vec<concrete::Command> = Vec::new();
 
-        let temp = std::mem::replace(&mut self.wellformed_qids, HashMap::new());
-        let mut temp: Vec<(String, Vec<Command>)> = temp.into_iter().collect::<Vec<_>>();
-        temp.sort_by(|a, b| a.1.len().cmp(&b.1.len()));
+        let mut temp = std::mem::replace(&mut self.forall_funs, HashMap::new());
+        temp = temp
+            .into_iter()
+            .filter(|(_, v)| v.malformed_count == 0)
+            .collect();
+        let mut temp: Vec<(String, FunState)> = temp.into_iter().collect::<Vec<_>>();
+        temp.sort_by(|a, b| a.1.wellformed.len().cmp(&b.1.wellformed.len()));
 
-        for (qid, insts) in temp.iter_mut() {
-            if self.malformed_qids.contains_key(&qid.to_string()) {
-                continue;
-            }
-            println!("QID: {}, Insts: {}", qid, insts.len());
+        for (fname, fstate) in temp.iter_mut() {
             if selected_insts.len() >= max_inst {
                 break;
             }
-            selected_insts.extend(insts.drain(..));
-            selected_qids.insert(qid.clone());
+
+            let insts = fstate.wellformed.drain(..);
+            insts.into_iter().for_each(|ins| {
+                let assert_term = fstate
+                    .place_holder_body
+                    .clone()
+                    .replace("MARIPOSA_PLACEHOLDER", &format!("(|{}| {})", fname, ins,));
+
+                let instance = format!(
+                    "(assert (! {} :named mariposa_cid_{}))",
+                    assert_term, self.max_cid,
+                );
+                self.max_cid += 1;
+                // println!("{}", instance);
+                selected_insts.push(Command::MariposaArbitrary(instance));
+            });
+            remove_cids.insert(fstate.original_cid);
         }
-
-        let selected_func_cids = selected_qids
-            .iter()
-            .filter_map(|x| {
-                let func = mk_fun_forall(x);
-                if let Some(cid) = self.forall_fun_symbols.get(&func) {
-                    cid.clone()
-                } else {
-                    None
-                }
-            })
-            .collect::<HashSet<_>>();
-
-        // let no_inst_qids = self.forall_fun_symbols
-        // for qid in self.forall_fun_symbols
-
-        // if selected_insts.len() == 0 {
-        //     self.debug();
-        //     panic!("No instances selected");
-        // }
 
         // // if we still need more instances
         // if selected_insts.len() < max_inst {
@@ -463,19 +479,17 @@ impl Inserter {
         //     }
         // }
 
-        commands.retain(|x| match x {
-            concrete::Command::Assert { term } => {
-                let concrete::Term::Attributes { attributes, .. } = term else {
-                    panic!("Expected Attributes");
-                };
-                let cid = get_attr_cid_usize(attributes);
-                !selected_func_cids.contains(&cid)
+        commands.retain(|x| {
+            if let Some((_, cid)) = get_actual_asserted_term(x) {
+                !remove_cids.contains(&cid)
+            } else {
+                true
             }
-            _ => true,
         });
 
-        self.debug();
-        println!("Selected Insts ({})", selected_insts.len());
+        println!("Selected Insts: {}", selected_insts.len());
+        println!("Removed Quantifiers: {}", remove_cids.len());
+
         commands.extend(selected_insts);
     }
 }
@@ -524,17 +538,16 @@ pub fn handle_z3_trace_v2(
     commands.extend(rest);
 }
 
-pub fn print_mariposa_funs(commands: &Vec<concrete::Command>)
-{
-    let inserter = Inserter::new(commands);
-    for (name, cid) in inserter.forall_fun_symbols.iter() {
-        if let Some(cid) = cid {
-            println!("{}:mariposa_cid_{}", name, cid);
-        } else {
-            println!("{}:none", name);
-        }
-    }
-}
+// pub fn print_mariposa_funs(commands: &Vec<concrete::Command>) {
+//     let inserter = Inserter::new(commands);
+//     for (name, cid) in inserter.forall_funs.iter() {
+//         if let Some(cid) = cid {
+//             println!("{}:mariposa_cid_{}", name, cid);
+//         } else {
+//             println!("{}:none", name);
+//         }
+//     }
+// }
 
 // pub fn handle_z3_trace(
 //     path: &std::path::Path,
@@ -573,7 +586,7 @@ pub fn print_mariposa_funs(commands: &Vec<concrete::Command>)
 //                     let name = &parser.strings[name_id];
 //                     let name = mk_fun_forall(&name.to_string());
 
-//                     if inserter.forall_fun_symbols.contains(&name) {
+//                     if inserter.forall_funs.contains(&name) {
 //                         let mut ok = true;
 //                         let mut instance = "\n".to_string();
 //                         for bound_term in bound_terms.iter().rev() {

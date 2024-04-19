@@ -7,10 +7,24 @@ from utils.query_utils import Mutation, emit_mutant_query
 from utils.system_utils import *
 from base.defs import MARIPOSA
 
+
 class MutCoreBuilder:
-    def __init__(self, input_query, output_query, solver, timeout, ids_available, restarts):
-        log_check(os.path.exists(input_query), f"input query {input_query} does not exist")
-        log_check(solver.stype == SolverType.Z3, f"only z3 solver is supported, got {solver}")
+    def __init__(
+        self,
+        input_query,
+        output_query,
+        solver,
+        timeout,
+        ids_available,
+        restarts,
+        keep_quantified=False,
+    ):
+        log_check(
+            os.path.exists(input_query), f"input query {input_query} does not exist"
+        )
+        log_check(
+            solver.stype == SolverType.Z3, f"only z3 solver is supported, got {solver}"
+        )
         self.solver = solver
 
         name_hash = get_name_hash(input_query)
@@ -23,6 +37,7 @@ class MutCoreBuilder:
         self.clear_temp_files()
         self.ids_available = ids_available
         self.restarts = restarts
+        self.keep_quantified = keep_quantified
 
         self.__create_label_query()
 
@@ -31,10 +46,8 @@ class MutCoreBuilder:
             remove_file(self.lbl_mut_query)
             remove_file(self.core_log)
 
-            s = random.randint(0, 0xffffffffffffffff)
-            emit_mutant_query(self.lbl_query, 
-                              self.lbl_mut_query, 
-                              Mutation.COMPOSE, s)
+            s = random.randint(0, 0xFFFFFFFFFFFFFFFF)
+            emit_mutant_query(self.lbl_query, self.lbl_mut_query, Mutation.COMPOSE, s)
 
             with open(self.lbl_mut_query, "a") as f:
                 f.write("(get-unsat-core)\n")
@@ -59,11 +72,13 @@ class MutCoreBuilder:
 
     def __create_label_query(self):
         remove_file(self.lbl_query)
-        
+
         args = [
             MARIPOSA,
-            "-i", self.input_query,
-            "-o", self.lbl_query,
+            "-i",
+            self.input_query,
+            "-o",
+            self.lbl_query,
             "--action=label-core",
         ]
 
@@ -73,14 +88,12 @@ class MutCoreBuilder:
         subprocess_run(args, check=True)
 
         # we do not expect labeling to fail
-        log_check(os.path.exists(self.lbl_query), 
-                  f"failed to create {self.lbl_query}")
+        log_check(os.path.exists(self.lbl_query), f"failed to create {self.lbl_query}")
 
     def __run_solver(self, seed):
         cf = open(self.core_log, "w+")
         start = time.time()
-        args = self.solver.get_basic_command(
-            self.lbl_mut_query, self.timeout, seed)
+        args = self.solver.get_basic_command(self.lbl_mut_query, self.timeout, seed)
         subprocess.run(args, stdout=cf)
         cf.close()
         elapsed = time.time() - start
@@ -95,22 +108,50 @@ class MutCoreBuilder:
         return True
 
     def __create_core_query(self, seed):
-        subprocess_run([
+        args = [
             MARIPOSA,
-            "-i", self.lbl_query,
+            "-i",
+            self.lbl_query,
             "--action=reduce-core",
             f"--core-log-path={self.core_log}",
-            f"-o", self.output_query,
-        ], check=True, debug=True)
+            f"-o",
+            self.output_query,
+        ]
 
-        log_check(os.path.exists(self.output_query), f"failed to create core query {self.output_query}")
+        if self.keep_quantified:
+            args.append("--core-keep-quantified")
+
+        subprocess_run(args, check=True, debug=True)
+
+        log_check(
+            os.path.exists(self.output_query),
+            f"failed to create core query {self.output_query}",
+        )
 
         with open(self.output_query, "a") as f:
-            f.write(f'(set-info :comment seed_{seed})\n')
+            f.write(f"(set-info :comment seed_{seed})\n")
+
 
 class CompleteCoreBuilder(MutCoreBuilder):
-    def __init__(self, input_query, output_query, solver, timeout, ids_available, restarts):
-        super().__init__(input_query, output_query, solver, timeout, ids_available, restarts)
+    def __init__(
+        self,
+        input_query,
+        output_query,
+        solver,
+        timeout,
+        ids_available,
+        restarts,
+        keep_quantified,
+    ):
+        super().__init__(
+            input_query,
+            output_query,
+            solver,
+            timeout,
+            ids_available,
+            restarts,
+            keep_quantified,
+        )
         log_info("building core...")
         log_check(self.run(), "failed to create core query")
         log_info("testing stability...")
@@ -119,7 +160,9 @@ class CompleteCoreBuilder(MutCoreBuilder):
         log_info("core query is {}, with failure type: {}".format(ss, ft))
 
         if ss == STB.UNSOLVABLE:
-            cc = CoreCompleter(input_query, self.lbl_query, output_query, solver, timeout)
+            cc = CoreCompleter(
+                input_query, self.lbl_query, output_query, solver, timeout
+            )
             if not cc.run():
                 cc.clear_temp_files()
                 # keep the core query in case we need to debug?
@@ -127,23 +170,3 @@ class CompleteCoreBuilder(MutCoreBuilder):
             os.remove(self.lbl_query)
         else:
             shutil.move(self.lbl_query, output_query)
-
-# class SafeCoreBuilder(MutCoreBuilder):
-#     def __init__(self, input_query, output_query, solver, timeout, ids_available, restarts):
-#         super().__init__(input_query, output_query, solver, timeout, ids_available, restarts)
-#         log_info("building core...")
-#         log_check(self.run(), "failed to create core query")
-#         log_info("testing stability...")
-#         ss, ft = test_stability(output_query, "debug")
-#         shutil.move(output_query, self.lbl_query)
-#         log_info("core query is {}, with failure type: {}".format(ss, ft))
-
-#         if ss == STB.UNSOLVABLE:
-#             cc = CoreCompleter(input_query, self.lbl_query, output_query, solver, timeout)
-#             if not cc.run():
-#                 cc.clear_temp_files()
-#                 # keep the core query in case we need to debug?
-#                 exit_with("failed to complete core")
-#             os.remove(self.lbl_query)
-#         else:
-#             shutil.move(self.lbl_query, output_query)

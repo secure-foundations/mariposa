@@ -8,7 +8,7 @@ from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *
 
-@delegate('exp', 'get_path', 'list_queries')
+@delegate('exp', 'get_path', 'list_queries', 'get_log_dir')
 class ExperAnalyzer:
     def __init__(self, exp: Experiment, ana: QueryAnalyzer, flexible=False):
         self.exp = exp

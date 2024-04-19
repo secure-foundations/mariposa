@@ -83,7 +83,8 @@ if __name__ == '__main__':
     elif args.sub_command == "unstable":
         handle_unstable(args)
     elif args.sub_command == "core":
-        CoreAnalyzer(args.input_group, args.analyzer)
+        ca = CoreAnalyzer(args.input_group)
+        ca.print_status()
     elif args.sub_command == "shake":
         handle_shake(args)
     elif args.sub_command == "wombo":

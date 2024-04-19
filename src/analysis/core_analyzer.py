@@ -59,7 +59,7 @@ class CoreQueryStatus:
             log_check(is_assertion_subset(self.base_path, self.extd_path), f"{self.extd_path} is not a subset!")
 
 class CoreAnalyzer:
-    def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
+    def __init__(self, group: ProjectGroup):
         self.group = group
 
         base = group.get_project(PT.from_str("base.z3"))
@@ -89,18 +89,16 @@ class CoreAnalyzer:
             cqs = CoreQueryStatus(qid, bs, bp, bur, cs, cp, cur, es, ep, eur)
             # cqs.sanity_check()
             self.qids[qid] = cqs
-            if not cqs.core_is_enabled():
-                print(cqs.qid, bs, bur, cs, cur)
 
-        # self.adjust_status()
+            # if not cqs.core_is_enabled():
+            #     print(cqs.qid, bs, bur, cs, cur)
+
+        self.adjust_status()
         # self.build_pre_inst()
 
         # self.__init_issue_status()
         # self.issues.print_status()
         # self.suggest_issue_fixes()
-
-        # self.get_trace_candidate()
-        # self.print_status()
 
     def build_pre_inst(self):
         pins = self.group.get_project(PT.from_str("pins.z3"), build=True)
@@ -267,13 +265,3 @@ class CoreAnalyzer:
 
         self.base_adj = base_adj
         self.core_adj = core_adj
-
-    def get_trace_candidate(self):
-        core_ok = 0
-        for qid in self.qids:
-
-            if qid in self.core and self.core[qid].get_fast_pass():
-                core_ok += 1
-            if qid in self.extd and self.extd[qid].get_fast_pass():
-                core_ok += 1
-        print(core_ok, len(self.qids))

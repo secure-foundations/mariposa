@@ -1,5 +1,9 @@
 from query.core_builder import CompleteCoreBuilder
-from utils.query_utils import Mutation, count_lines, emit_mutant_query, get_mariposa_funs, restore_assertions
+from utils.query_utils import (
+    Mutation,
+    count_lines,
+    emit_mutant_query,
+)
 from utils.system_utils import *
 import random
 from base.defs import GEN_ROOT, MARIPOSA
@@ -8,11 +12,16 @@ from base.solver import RCode, Z3Solver
 import re
 import filecmp
 
-def get_quantifier_count(path):
-    if os.path.exists(path):
-        o = subprocess_run(["rg", "-e", ":qid ", "-c", path], check=True)[0]
-        return int(o)
-    return "-"
+
+def count_insts(query_path):
+    inst_count = 0
+    quanti_count = 0
+    for line in open(query_path):
+        if ":qid mariposa_qid" in line:
+            quanti_count += 1
+        if line.startswith("(assert (! (fun_forall_mariposa_qid"):
+            inst_count += 1
+    return quanti_count, inst_count
 
 
 def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
@@ -38,7 +47,6 @@ def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
             else:
                 remove_file(output_trace)
         remove_file(mutant_query)
-
     log_check(os.path.exists(output_trace), f"failed to create {output_trace}")
 
 
@@ -93,6 +101,7 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
     # remove the trace file if nothing went wrong?
     # remove_file(trace_path)
 
+
 query_pattern = re.compile("^([0-9]+)\.smt2")
 
 
@@ -111,11 +120,11 @@ class ComboBuilder:
             base = os.path.basename(c)
             m = re.match(query_pattern, base)
             if m is not None:
-                qc = get_quantifier_count(c)
-                counts[int(m.group(1))] = qc
+                qc, ic = count_insts(c)
+                counts[int(m.group(1))] = (qc, ic)
 
         self.counts = sorted(counts.items(), key=lambda x: x[0])
-        self.curr, self.c_qc = self.counts[-1]
+        self.curr, self.c_qc = self.counts[-1][0], self.counts[-1][1][0]
 
         self.cur_file = f"{output_dir}/{self.curr}.smt2"
         self.temp_file = f"{self.output_dir}/{self.curr}.temp.smt2"
@@ -123,18 +132,24 @@ class ComboBuilder:
         self.prev, self.p_qc = -1, -1
 
         if len(self.counts) >= 2:
-            self.prev, self.p_qc = self.counts[-2]
+            self.prev, self.p_qc = self.counts[-2][0], self.counts[-2][1][0]
 
     def has_converged(self):
         diff = abs(self.c_qc - self.p_qc)
+        if self.c_qc == 0:
+            return True
         diff = diff / self.p_qc
         return self.p_qc != -1 and diff == 0
 
-    def run(self, trace_timeout=10, trace_restarts=10, core_timeout=65, core_restarts=5):
+    def run(
+        self, trace_timeout=10, trace_restarts=10, core_timeout=65, core_restarts=5
+    ):
         if self.has_converged():
             log_info("no change in quantifiers")
             return
-        log_info(f"wombo start: previous {self.prev} {self.p_qc} -> current {self.curr} {self.c_qc}")
+        log_info(
+            f"wombo start: previous {self.prev} {self.p_qc} -> current {self.curr} {self.c_qc}"
+        )
         log_info(f"processing {self.cur_file}\t{self.c_qc}")
 
         handle_inst_z3(self.cur_file, self.temp_file, trace_timeout, trace_restarts)
@@ -144,12 +159,14 @@ class ComboBuilder:
             log_info("no change in insts")
             return
 
-        solver = FACT.get_solver("z3_4_8_5")
+        solver = FACT.get_solver("z3_4_12_5")
 
         CompleteCoreBuilder(
-            self.temp_file, self.next_file, solver, core_timeout, True, core_restarts
+            self.temp_file, self.next_file, solver, core_timeout, True, core_restarts, True
         )
 
-        restore_assertions(self.next_file, self.temp_file)
-        next_qc = get_quantifier_count(self.next_file)
-        log_info(f"wombo end: previous {self.curr} {self.c_qc} -> current {self.curr+1} {next_qc}")
+        assert os.path.exists(self.next_file)
+        next_qc, next_ic = count_insts(self.next_file)
+        log_info(
+            f"wombo end: previous {self.curr} {self.c_qc} -> current {self.curr+1} {next_qc} {next_ic}"
+        )

@@ -606,6 +606,17 @@ pub fn get_attr_cid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValu
     cid
 }
 
+pub fn get_actual_asserted_term(command: &concrete::Command) -> Option<(&concrete::Term, usize)> {
+    let concrete::Command::Assert { term } = command else {
+        return None;
+    };
+    let concrete::Term::Attributes { term, attributes } = term else {
+        panic!("expecting attributes");
+    };
+    let cid = get_attr_cid_usize(attributes);
+    Some((term, cid))
+}
+
 pub fn get_attr_cid_usize(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> usize {
     let cid = get_attr_cid(attributes);
     cid[CID_PREFIX.len()..].to_string().parse().unwrap()

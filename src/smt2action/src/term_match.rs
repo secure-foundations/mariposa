@@ -158,3 +158,28 @@ pub fn is_qf_term(term: &Term) -> bool {
         Term::Match { .. } => panic!("TODO Match {:?}", term),
     }
 }
+
+pub fn is_prop_term(term: &concrete::Term) -> bool {
+    match term {
+        concrete::Term::Attributes {
+            term,
+            attributes: _,
+        } => is_prop_term(term),
+        concrete::Term::Forall { .. } => true,
+        concrete::Term::Exists { .. } => true,
+        concrete::Term::Let { term, .. } => is_prop_term(term),
+        concrete::Term::Match { .. } => false,
+        concrete::Term::Constant(_) => false,
+        concrete::Term::QualIdentifier(_) => false,
+        concrete::Term::Application {
+            qual_identifier, ..
+        } => {
+            if let Some(fname) = match_simple_qual_identifier(qual_identifier) {
+                let fname = &fname.0;
+                fname == "=" || fname == "not" || fname == "and" || fname == "or" || fname == "=>"
+            } else {
+                false
+            }
+        }
+    }
+}

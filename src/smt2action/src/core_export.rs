@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::vec;
 
-use crate::query_io;
+use crate::{query_io, term_match};
 
 const PRODUCE_CORE_OPTION: &str = "produce-unsat-cores";
 
@@ -26,29 +26,6 @@ fn load_core_symbols(file_path: &String) -> HashSet<String> {
     // split on spaces
     let core: HashSet<String> = last_line.split(" ").map(|x| x.to_owned()).collect();
     core
-}
-
-fn should_keep_command(command: &concrete::Command, core: &HashSet<String>) -> bool {
-    let concrete::Command::Assert { term } = command else {
-        return true;
-    };
-
-    if let concrete::Term::Attributes {
-        term: _,
-        attributes,
-    } = term
-    {
-        for (key, value) in attributes {
-            if key == &concrete::Keyword("named".to_owned()) {
-                if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
-                    if core.contains(name) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    false
 }
 
 pub fn label_asserts(commands: &mut Vec<concrete::Command>, reassign: bool) {
@@ -98,7 +75,33 @@ pub fn label_asserts(commands: &mut Vec<concrete::Command>, reassign: bool) {
     commands.insert(i, concrete::Command::GetUnsatCore);
 }
 
-pub fn reduce_asserts(commands: &mut Vec<concrete::Command>, core_file_path: &String) -> bool {
+fn should_keep_command(command: &concrete::Command, core: &HashSet<String>, keep_quantified: bool) -> bool {
+    let concrete::Command::Assert { term } = command else {
+        return true;
+    };
+
+    if keep_quantified && !term_match::is_qf_term(term) {
+        // keep quantified asserts
+        return true;
+    }
+
+    if let concrete::Term::Attributes {
+        term: _,
+        attributes,
+    } = term
+    {
+        for (key, value) in attributes {
+            if key == &concrete::Keyword("named".to_owned()) {
+                if let visitors::AttributeValue::Symbol(concrete::Symbol(name)) = value {
+                    return core.contains(name);
+                }
+            }
+        }
+    }
+    false
+}
+
+pub fn reduce_asserts(commands: &mut Vec<concrete::Command>, core_file_path: &String, keep_quantified: bool) -> bool {
     let core = load_core_symbols(core_file_path);
 
     if core.len() == 0 {
@@ -108,7 +111,7 @@ pub fn reduce_asserts(commands: &mut Vec<concrete::Command>, core_file_path: &St
     let temp = commands
         .drain(..)
         .into_iter()
-        .filter(|x| should_keep_command(x, &core))
+        .filter(|x| should_keep_command(x, &core, keep_quantified))
         .collect::<Vec<concrete::Command>>();
 
     commands.extend(temp);

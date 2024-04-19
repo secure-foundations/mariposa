@@ -2,7 +2,7 @@ from copy import deepcopy
 import math
 import os, random
 from base.solver import RCode, Solver
-from utils.query_utils import format_query, get_asserts, key_set
+from utils.query_utils import Mutation, emit_mutant_query, format_query, get_asserts, key_set
 from utils.system_utils import *
 
 class CoreCompleter:
@@ -19,12 +19,12 @@ class CoreCompleter:
         self.exp_path = f"gen/{name_hash}.core.comp.smt2"
 
         self._setup_diff(input_query, core_query)
-
-        log_check(len(self.diff_asserts) > self.stop_diff,
-                  f"diff is too small: {len(self.diff_asserts)}")
+        self.output_query = output_query
+        self.input_query = input_query
 
         self._setup_hint(core_query)
-        self.output_query = output_query
+        
+
 
     def _setup_hint(self, hint_path):
         hint_commands = open(hint_path).readlines()
@@ -97,6 +97,12 @@ class CoreCompleter:
 
     def run(self):
         cur_diff = self.diff_asserts
+
+        if len(self.diff_asserts) <= self.stop_diff:
+            log_warn(f"diff is too small: {len(self.diff_asserts)}")
+            return self.__handle_small_diff()
+            
+
         print(f"initial diff len: {len(cur_diff)}")
 
         while 1:
@@ -114,3 +120,21 @@ class CoreCompleter:
         self._write_exp(self.working_diff)
         os.system(f"mv {self.exp_path} {self.output_path}")
         return True
+
+    def __handle_small_diff(self):
+        for _ in range(10):
+            remove_file(self.exp_path)
+
+            s = random.randint(0, 0xffffffffffffffff)
+            emit_mutant_query(self.input_query,
+                              self.exp_path, 
+                              Mutation.COMPOSE, s)
+            rc, et = self.solver.run(self.exp_path, self.time_limit)
+
+            if rc == RCode.UNSAT:
+                os.system(f"cp {self.input_query} {self.output_query}")
+                remove_file(self.exp_path)
+                return True
+
+        # exit_with("the original query is unsolvable with a small diff")
+        return False
