@@ -43,7 +43,7 @@ def set_up_recovery(subparsers):
 
 def set_up_data_sync(subparsers):
     p = subparsers.add_parser('data-sync', help='sync a project to another server (only for serenity)')
-    add_input_dir_option(p)
+    add_input_dir_option(p, is_known=False, is_group=False)
     add_clear_option(p)
 
 def set_up_info(subparsers):

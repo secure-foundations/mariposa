@@ -296,7 +296,7 @@ pub fn preprocess_for_instantiation(commands: &mut Vec<concrete::Command>) {
 
 struct FunState {
     place_holder_body: String,
-    wellformed: Vec<String>,
+    wellformed: HashSet<String>,
     malformed_count: usize,
     original_cid: usize,
 }
@@ -305,7 +305,7 @@ impl FunState {
     fn new(body: String, cid: usize) -> Self {
         FunState {
             place_holder_body: body,
-            wellformed: Vec::new(),
+            wellformed: HashSet::new(),
             malformed_count: 0,
             original_cid: cid,
         }
@@ -404,7 +404,7 @@ impl Inserter {
                     .get_mut(&fname)
                     .unwrap()
                     .wellformed
-                    .push(instance);
+                    .insert(instance);
             } else {
                 self.forall_funs.get_mut(&fname).unwrap().malformed_count += 1;
             }
@@ -450,7 +450,7 @@ impl Inserter {
                 break;
             }
 
-            let insts = fstate.wellformed.drain(..);
+            let insts = fstate.wellformed.iter().collect::<Vec<_>>();
             insts.into_iter().for_each(|ins| {
                 let assert_term = fstate
                     .place_holder_body

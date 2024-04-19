@@ -1,4 +1,5 @@
 import os
+import random
 from analysis.core_analyzer import CoreAnalyzer
 from base.defs import MARIPOSA, QUERY_WIZARD
 from base.factory import FACT
@@ -18,16 +19,25 @@ class WomboAnalyzer(CoreAnalyzer):
         self.pins = group.get_project(PT.from_str("pins.z3"), build=True)
         self.temp = group.get_project(PT.from_str("temp.z3"), build=True)
 
+        self.cmds = []
+        ncc = 0
         for qid in self.qids:
             # self.build_pin(qid)
-            # cb = self.get_cb(qid)
-            log_dir = os.path.join(self.base.get_log_dir(KnownExt.WOCO), qid)
-            pins_path = self.pins.get_path(qid)
-            print("src/query_wizard.py wombo-combo -i", pins_path, "-o", log_dir)
-
+            cb = self.get_cb(qid)
+            if cb.no_progress():
+                continue
+            if not cb.has_converged():
+                # print(cb.output_dir)
+                self.cmds.append(f"{QUERY_WIZARD} wombo-combo -i {cb.input_query} -o {cb.output_dir}")
+                # ncc +=1
+        # print(ncc, len(self.qids))
         # print("src/query_wizard.py build-core -i", pins_path, "-o", log_dir + "/0.smt2", "--complete", "--restarts", "5", "--ids-available")
-        #     if not cb.has_converged():
-        #         ncc += 1
+        self.print_cmds()
+
+    def print_cmds(self):
+        random.shuffle(self.cmds)
+        for cmd in self.cmds:
+            print(cmd)
 
     def get_cb(self, qid):
         log_dir = os.path.join(self.base.get_log_dir(KnownExt.WOCO), qid)
@@ -41,4 +51,4 @@ class WomboAnalyzer(CoreAnalyzer):
         ot_path = self.pins.get_path(qid)
         if os.path.exists(ot_path):
             return
-        print(f"{MARIPOSA} -a pre-inst-z3 -i {in_path} -o {ot_path}")
+        self.cmds.append(f"{MARIPOSA} -a pre-inst-z3 -i {in_path} -o {ot_path}")

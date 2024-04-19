@@ -134,6 +134,9 @@ class ComboBuilder:
         if len(self.counts) >= 2:
             self.prev, self.p_qc = self.counts[-2][0], self.counts[-2][1][0]
 
+    def no_progress(self):
+        return self.prev == -1
+
     def has_converged(self):
         diff = abs(self.c_qc - self.p_qc)
         if self.c_qc == 0:

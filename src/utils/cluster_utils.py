@@ -189,8 +189,8 @@ def run_command_over_ssh(host, cmd):
     return subprocess_run(f"ssh {host} '{cmd}'", shell=True)
 
 def handle_data_sync(input_dir, clear):
-    log_check(is_flat_dir(input_dir), 
-              f"{input_dir} is not a flat directory")
+    # log_check(is_flat_dir(input_dir), 
+    #           f"{input_dir} is not a flat directory")
     file_count = get_file_count(input_dir)
 
     if os.path.exists(SYNC_ZIP):

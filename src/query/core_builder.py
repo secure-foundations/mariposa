@@ -160,6 +160,11 @@ class CompleteCoreBuilder(MutCoreBuilder):
         log_info("core query is {}, with failure type: {}".format(ss, ft))
 
         if ss == STB.UNSOLVABLE:
+            if ft != FT.UNKNOWN:
+                os.remove(self.lbl_query)
+                exit_with("core does not seem unsolvable due to incompleteness")
+
+            log_info("try completing core...")
             cc = CoreCompleter(
                 input_query, self.lbl_query, output_query, solver, timeout
             )
@@ -167,6 +172,7 @@ class CompleteCoreBuilder(MutCoreBuilder):
                 cc.clear_temp_files()
                 # keep the core query in case we need to debug?
                 exit_with("failed to complete core")
+
             os.remove(self.lbl_query)
         else:
             shutil.move(self.lbl_query, output_query)
