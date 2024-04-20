@@ -436,6 +436,7 @@ impl Inserter {
         let max_inst = if max_inst == 0 { usize::MAX } else { max_inst };
         let mut remove_cids: HashSet<usize> = HashSet::new();
         let mut selected_insts: Vec<concrete::Command> = Vec::new();
+        self.debug();
 
         let mut temp = std::mem::replace(&mut self.forall_funs, HashMap::new());
         temp = temp
@@ -446,6 +447,7 @@ impl Inserter {
         temp.sort_by(|a, b| a.1.wellformed.len().cmp(&b.1.wellformed.len()));
 
         for (fname, fstate) in temp.iter_mut() {
+            // this will implicitly remove quantifiers that have no instances
             if selected_insts.len() >= max_inst {
                 break;
             }

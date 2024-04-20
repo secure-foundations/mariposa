@@ -23,15 +23,19 @@ class WomboAnalyzer(CoreAnalyzer):
         ncc = 0
         for qid in self.qids:
             # self.build_pin(qid)
+            # self.build_temp(qid)
             cb = self.get_cb(qid)
-            if cb.no_progress():
-                continue
+            # if cb.no_progress():
+            #     continue
             if not cb.has_converged():
-                # print(cb.counts)
+                print(cb.counts)
                 cmd = f"{QUERY_WIZARD} wombo-combo -i {cb.input_query} -o {cb.output_dir}"
-                # print(cmd)
-                # cmd = "src/query_wizard.py build-core -i " + cb.output_dir + "/0.smt2" + " -o " + cb.output_dir + "/1.smt2" + " --complete" + " --restarts 5" + " --ids-available" + " --solver z3_4_8_5" + " --timeout 120"
-                self.cmds.append(cmd)
+            #     # self.cmds.append(cmd)
+                print(cmd)
+                cmd = "src/query_wizard.py build-core -i " + cb.output_dir + "/0.smt2" + " -o " + cb.output_dir + "/1.smt2" + " --complete" + " --restarts 5" + " --ids-available" + " --solver z3_4_8_5" + " --timeout 120"
+                print(cmd)
+                print("")
+                # self.cmds.append(cmd)
         self.print_cmds()
 
     def print_cmds(self):
@@ -52,3 +56,10 @@ class WomboAnalyzer(CoreAnalyzer):
         if os.path.exists(ot_path):
             return
         self.cmds.append(f"{MARIPOSA} -a pre-inst-z3 -i {in_path} -o {ot_path}")
+
+    def build_temp(self, qid):
+        cb = self.get_cb(qid)
+        ot_path = self.temp.get_path(qid)
+        if os.path.exists(ot_path):
+            return
+        self.cmds.append(f"cp {cb.cur_file} {ot_path}")

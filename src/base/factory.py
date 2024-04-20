@@ -117,7 +117,7 @@ class Factory:
         name_hash = get_name_hash(query_path)
         proj = Project("single_" + name_hash, single_mode=True)
 
-        if len(proj.qids) != 0 and not clear:
+        if not clear:
             return proj
 
         sub_root = proj.sub_root

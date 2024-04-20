@@ -100,9 +100,7 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
     # remove the trace file if nothing went wrong?
     # remove_file(trace_path)
 
-
 query_pattern = re.compile("^([0-9]+)\.smt2")
-
 
 class ComboBuilder:
     def __init__(self, input_query, output_dir):
@@ -144,7 +142,7 @@ class ComboBuilder:
         return self.p_qc != -1 and diff == 0
 
     def run(
-        self, trace_timeout=20, trace_restarts=10, core_timeout=65, core_restarts=5
+        self, trace_timeout=30, trace_restarts=10, core_timeout=65, core_restarts=5
     ):
         if self.has_converged():
             log_info("no change in quantifiers")

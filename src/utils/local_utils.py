@@ -58,7 +58,7 @@ def test_stability(input_query, exp_config):
     cfg = FACT.get_config(exp_config)
     ana = FACT.get_analyzer("60nq")
     sol = FACT.get_solver("z3_4_12_5")
-    exp = FACT.get_single_exper(input_query, cfg, sol)
+    exp = FACT.get_single_exper(input_query, cfg, sol, skip_split=True, clear=True)
     Runner(exp).run_experiment(True)
     exp = ExperAnalyzer(exp, ana)
     assert len(exp.qids) == 1

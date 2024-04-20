@@ -107,7 +107,7 @@ def deep_parse_args(args):
 
         if single:
             args.experiment = FACT.get_single_exper(
-                args.input_query_path, args.exp_config, args.solver)
+                args.input_query_path, args.exp_config, args.solver, clear=args.clear_existing)
         else:
             args.experiment = FACT.get_exper(
                 args.input_proj, args.exp_config, args.solver, build=True)
