@@ -93,7 +93,6 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
             "-o",
             output_query,
         ],
-        timeout=300,
         check=True,
         debug=True,
     )
