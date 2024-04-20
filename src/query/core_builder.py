@@ -141,7 +141,7 @@ class CompleteCoreBuilder(MutCoreBuilder):
         timeout,
         ids_available,
         restarts,
-        keep_quantified,
+        keep_quantified=False,
     ):
         super().__init__(
             input_query,
