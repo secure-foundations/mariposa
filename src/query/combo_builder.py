@@ -93,7 +93,7 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
             "-o",
             output_query,
         ],
-        timeout=30,
+        timeout=300,
         check=True,
         debug=True,
     )
@@ -145,7 +145,7 @@ class ComboBuilder:
         return self.p_qc != -1 and diff == 0
 
     def run(
-        self, trace_timeout=10, trace_restarts=10, core_timeout=65, core_restarts=5
+        self, trace_timeout=20, trace_restarts=10, core_timeout=65, core_restarts=5
     ):
         if self.has_converged():
             log_info("no change in quantifiers")

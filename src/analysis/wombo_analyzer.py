@@ -25,15 +25,13 @@ class WomboAnalyzer(CoreAnalyzer):
             # self.build_pin(qid)
             cb = self.get_cb(qid)
             if cb.no_progress():
-                # continue
-            # if not cb.has_converged():
+                continue
+            if not cb.has_converged():
                 # print(cb.counts)
-                # cmd = f"{QUERY_WIZARD} wombo-combo -i {cb.input_query} -o {cb.output_dir}"
+                cmd = f"{QUERY_WIZARD} wombo-combo -i {cb.input_query} -o {cb.output_dir}"
                 # print(cmd)
-                # ncc +=1
-        # print(ncc, len(self.qids))
-                core_cmd = "src/query_wizard.py build-core -i " + cb.output_dir + "/0.smt2" + " -o " + cb.output_dir + "/1.smt2" + " --complete" + " --restarts 5" + " --ids-available"
-                self.cmds.append(core_cmd)
+                # cmd = "src/query_wizard.py build-core -i " + cb.output_dir + "/0.smt2" + " -o " + cb.output_dir + "/1.smt2" + " --complete" + " --restarts 5" + " --ids-available" + " --solver z3_4_8_5" + " --timeout 120"
+                self.cmds.append(cmd)
         self.print_cmds()
 
     def print_cmds(self):
