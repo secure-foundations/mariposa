@@ -58,25 +58,19 @@ class QueryExpResult:
             new_blob[1][old_blob[1] > timeout] = timeout
         self.blob = new_blobs
         self.timeout = timeout
-        
-    def print_status(self, verbosity=1):
+
+    def print_status(self, verbosity=2):
         from tabulate import tabulate
-        print(f"query path:\t\t{self.query_path}")
-
-        v_rcode, v_time = self.get_original_status()
-
-        # proc = find_verus_procedure_name(self.query_path)
-
-        # if proc != None:
-        #     print(f"procedure name:\t\t{proc}")
-
-        if self.timeout != None:
-            print(f"alternative timeout: {self.timeout/1000}s")
 
         if verbosity <= 2:
             return
 
-        print(f"plain query {RCode(v_rcode)} in {v_time / 1000}s")
+        # v_rcode, v_time = self.get_original_status()
+        # print(f"plain result: {RCode(v_rcode)} {v_time / 1000}s")
+
+        if self.timeout != None:
+            print(f"alternative timeout: {self.timeout/1000}s")
+
 
         table = [["mutation"] + [str(rc) for rc in EXPECTED_CODES] 
                  + ["mean", "std"]]
@@ -99,6 +93,7 @@ class QueryExpResult:
             trow.append(round(np.std(times), 2))
             table.append(trow)
         print(tabulate(table, headers="firstrow"))
+        print("")
 
     def get_fast_pass(self):
         if self.blob is None:
@@ -329,23 +324,20 @@ class Experiment(ExpConfig):
         con.close()
         return res
 
-    def load_sum_table(self, flexible=False) -> Dict[str, QueryExpResult]:
+    def load_sum_table(self) -> Dict[str, QueryExpResult]:
         con, cur = get_cursor(self.db_path)
         sum_name = self.sum_table_name
         summaries = dict()
 
         if not table_exists(cur, sum_name):
-            log_check(flexible, f"{sum_name} does not exist in {self.db_path}")
             con.close()
-            log_warn(f"{sum_name} does not exist, filling with dummy data!")
-            rows = []
-        else:
-            res = cur.execute(f"""SELECT * FROM {sum_name}""")
-            rows = res.fetchall()
-            con.close()
+            return summaries
+
+        res = cur.execute(f"""SELECT * FROM {sum_name}""")
+        rows = res.fetchall()
+        con.close()
 
         mut_size = self.num_mutant
-        expected = set([get_qid(q) for q in self.list_queries()])
 
         for row in rows:
             blob = np.frombuffer(row[1], dtype=int)
@@ -353,14 +345,6 @@ class Experiment(ExpConfig):
             path = self.get_path(get_qid(row[0]))
             qr = QueryExpResult(path, self.enabled_muts, blob)
             summaries[qr.qid] = qr
-
-        self._sanity_check_summary(expected, set(summaries.keys()), flexible)
-        
-        if flexible:
-            for qid in expected:
-                if qid in summaries:
-                    continue
-                summaries[qid] = QueryExpResult(self.get_path(qid))
 
         return summaries
 
@@ -375,27 +359,24 @@ class Experiment(ExpConfig):
         log_info(f"missing {len(missing)} experiments in {self.sum_table_name}")
         return missing
 
-    def _sanity_check_summary(self, expected, actual, flexible):
-        missing = actual - expected
+    # def _sanity_check_summary(self, expected, actual):
+    #     missing = actual - expected
 
-        if missing != set():
-            log_warn(f"{len(missing)} queries files are missing in {self.sum_table_name}")
+    #     if missing != set():
+    #         log_warn(f"{len(missing)} queries files are missing in {self.sum_table_name}")
 
-        missing = expected - actual
+    #     missing = expected - actual
 
-        if missing != set():
-            if flexible:
-                log_warn(f"{len(missing)} queries files are missing in {self.sum_table_name}")
-                return
-            log_error(f"{len(missing)} experiments are missing in {self.sum_table_name}")
-            for i, q in enumerate(missing):
-                if i <= 10:
-                    print(f"missing: {q}.smt2")
-                else:
-                    break
-            if len(missing) > 10:
-                exit_with(f"eliding {len(missing) - 10} more")
-            sys.exit(1)
+    #     if missing != set():
+    #         log_error(f"{len(missing)} experiments are missing in {self.sum_table_name}")
+    #         for i, q in enumerate(missing):
+    #             if i <= 10:
+    #                 print(f"missing: {q}.smt2")
+    #             else:
+    #                 break
+    #         if len(missing) > 10:
+    #             exit_with(f"eliding {len(missing) - 10} more")
+    #         sys.exit(1)
 
     def import_partition_tables(self, other_db_path, part):
         log_check(self.proj.is_whole(), "importing into a partial project does not make sense")

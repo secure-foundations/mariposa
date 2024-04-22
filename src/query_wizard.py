@@ -9,7 +9,7 @@ from utils.option_utils import *
 from query.core_builder import CompleteCoreBuilder, MutCoreBuilder
 from query.combo_builder import ComboBuilder
 from query.proof_builder import ProofBuilder, check_lfsc_proof
-from utils.query_utils import convert_smtlib, emit_quake_query, is_assertion_subset
+from utils.query_utils import convert_smtlib, diff_queries, emit_quake_query, is_assertion_subset
 from utils.shake_utils import create_shake_query_from_log, debug_shake
 from utils.system_utils import log_check
 
@@ -22,6 +22,7 @@ def setup_build_core(subparsers):
     add_timeout_option(p)
     p.add_argument("--complete", default=False, action="store_true", help="try to complete the core query after building it")
     p.add_argument("--ids-available", default=False, action="store_true", help="whether ids are available in the query")
+    p.add_argument("--keep-quantified", default=False, action="store_true", help="keep quantified variables in the core query")
 
 def setup_convert_smt_lib(subparsers):
     p = subparsers.add_parser('convert-smtlib', help='convert a verus query to smt-lib standard (cvc5) format')
@@ -71,6 +72,11 @@ def setup_check_subset(subparsers):
     add_input_query_option(p)
     p.add_argument("--subset-query", required=True, help="the query that is supposed to be a subset")
 
+def setup_diff(subparsers):
+    p = subparsers.add_parser('diff', help='diff two queries')
+    add_input_query_option(p)
+    p.add_argument("--other-query", required=True, help="the other query")
+
 def setup_complete_core(subparsers):
     p = subparsers.add_parser('complete-core', help='complete core query')
     add_input_query_option(p)
@@ -117,6 +123,7 @@ if __name__ == "__main__":
     setup_emit_quake(subparsers)
     setup_trace_z3(subparsers)
     setup_check_subset(subparsers)
+    setup_diff(subparsers)
     setup_complete_core(subparsers)
     setup_debug_shake(subparsers)
     setup_create_shake(subparsers)
@@ -138,7 +145,8 @@ if __name__ == "__main__":
                         args.solver, 
                         args.timeout,
                         args.ids_available,
-                        args.restarts)
+                        args.restarts,
+                        args.keep_quantified)
         else:
             m = MutCoreBuilder(args.input_query_path,
                         args.output_query_path, 
@@ -186,6 +194,8 @@ if __name__ == "__main__":
     elif args.sub_command == "check-subset":
         log_check(is_assertion_subset(args.input_query_path, args.subset_query), 
                   f"{args.subset_query} is not a subset of {args.input_query_path}")
+    elif args.sub_command == "diff":
+        diff_queries(args.input_query_path, args.other_query)
     elif args.sub_command == "debug-shake":
         debug_shake(args.input_query_path, 
                     args.core_query_path, 

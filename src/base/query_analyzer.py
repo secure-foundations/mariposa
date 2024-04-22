@@ -175,15 +175,18 @@ class QueryAnalyzer:
         # ress -= {Stability.UNKNOWN}
         return Stability.UNSTABLE, votes
 
-    def categorize_queries(self, qss) -> Categorizer:
-        cats = Categorizer([c for c in Stability])
-        for qs in qss:
-            res, _ = self.categorize_query(qs)
-            cats.add_item(res.value, qs.qid)
-        cats.finalize()
-        return cats
+    # def categorize_queries(self, qss) -> Categorizer:
+    #     cats = Categorizer([c for c in Stability])
+    #     for qs in qss:
+    #         res, _ = self.categorize_query(qs)
+    #         cats.add_item(res.value, qs.qid)
+    #     cats.finalize()
+    #     return cats
 
     def get_failure_type(self, group_blob) -> FailureType:
+        if group_blob is None:
+            return FailureType.MISSING
+
         size = group_blob.shape[0]
         tos, uks = 0, 0
         uk_times = []

@@ -4,7 +4,7 @@ import re
 import subprocess
 
 from base.defs import MARIPOSA
-from utils.system_utils import log_check, log_info, log_warn, subprocess_run
+from utils.system_utils import log_check, log_info, log_warn, print_banner, subprocess_run
 
 def normalize_line(line):
     return line.replace(" ", "").strip()
@@ -180,3 +180,26 @@ def is_assertion_subset(query, subset_query):
     print(f"base: {len(base)} subset: {len(subset)}")
     log_check(len(subset) != 0, f"subset query has no asserts: {subset_query}")
     return subset.issubset(base)
+
+def diff_queries(this, that):
+    this = get_asserts(this)
+    this_keys = key_set(this)
+    that = get_asserts(that)
+    that_keys = key_set(that)
+
+    print(f"this: {len(this)} that: {len(that)} common: {len(this_keys.intersection(that_keys))}")
+
+    diff = this_keys - that_keys
+    
+    if len(diff) != 0:
+        print_banner("in this, not in that")
+
+        for key in diff:
+            print(this[key])
+
+    diff = that_keys - this_keys
+
+    if len(diff) != 0:
+        print_banner("in that, not in this")
+        for key in diff:
+            print(that[key])

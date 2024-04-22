@@ -433,7 +433,6 @@ impl Inserter {
     }
 
     fn insts_error_free(mut self, commands: &mut Vec<concrete::Command>, max_inst: usize) {
-        let max_inst = if max_inst == 0 { usize::MAX } else { max_inst };
         let mut remove_cids: HashSet<usize> = HashSet::new();
         let mut selected_insts: Vec<concrete::Command> = Vec::new();
         self.debug();

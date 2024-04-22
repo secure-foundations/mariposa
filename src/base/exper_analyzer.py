@@ -1,6 +1,7 @@
 from typing import Dict
 # from base.project import FACT, QueryType as QType
 from base.exper import Experiment, QueryExpResult
+from base.project import get_qid
 from base.query_analyzer import *
 from base.defs import delegate
 from utils.query_utils import Mutation
@@ -8,17 +9,76 @@ from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *
 
+class QueryAnaResult:
+    def __init__(self, qer: QueryExpResult, ss: Stability, ft: FailureType):
+        self.qid = qer.qid
+        self.query_path = qer.query_path
+        self.__qer: QueryExpResult = qer
+        self.stability: Stability = ss
+        self.failure_type: FailureType = ft
+
+    def print_status(self, verbosity=0):
+        print(f"qid:\t{self.qid}")
+        print(f"query path:\t{self.query_path}")
+        print(f"failure type:\t{self.failure_type}")
+        print("")
+        # proc = find_verus_procedure_name(self.query_path)
+        # if proc != None:
+        #     print(f"procedure name:\t\t{proc}")
+        self.__qer.print_status(verbosity)
+
 @delegate('exp', 'get_path', 'list_queries', 'get_log_dir')
 class ExperAnalyzer:
-    def __init__(self, exp: Experiment, ana: QueryAnalyzer, flexible=False):
+    def __init__(self, exp: Experiment, ana: QueryAnalyzer, allow_missing_exper=False, group_qids=None):
         self.exp = exp
         self.ana: QueryAnalyzer = ana
-        self.__qrs: Dict[str, QueryExpResult] = self.exp.load_sum_table(flexible)
-        self.__qr_keys = list(sorted(self.__qrs.keys()))
-        self.__cats: Categorizer = ana.categorize_queries(
-            self.__qrs.values())
+        qers = self.exp.load_sum_table()
+        
+        path_exists_qids = set([get_qid(p) for p in self.list_queries()])
 
-    def __getitem__(self, qid) -> QueryExpResult:
+        log_check(path_exists_qids.issuperset(set(qers.keys())), 
+                    "there are queries experimented, but no files exist for them")
+
+        if not allow_missing_exper:
+            log_check(path_exists_qids == set(qers.keys()), 
+                        "there are queries with files, but no experiments done")
+
+        if group_qids is None:
+            group_qids = path_exists_qids
+        else:
+            group_qids = set(group_qids)
+
+        log_check(group_qids.issuperset(path_exists_qids), 
+                    "group qids should be a superset of analyzed queries")
+
+        self.stability_categories: Categorizer = Categorizer()
+        self.failure_types: Categorizer = Categorizer([c for c in FailureType])
+        self.__qrs: Dict[str, QueryAnaResult] = dict()
+
+        for qid in group_qids:
+            if qid in qers:
+                qer = qers[qid]
+                ss = ana.categorize_query(qer)[0]
+                ft = ana.get_failure_type(qer.blob)
+            else:
+                if qid in path_exists_qids:
+                    ss = Stability.MISSING_E
+                    ft = FailureType.MISSING
+                else:
+                    ss = Stability.MISSING_F
+                    ft = FailureType.MISSING
+                # make a dummy query result
+                qer = QueryExpResult(self.get_path(qid))
+            self.__qrs[qid] = QueryAnaResult(qer, ss, ft)
+            self.stability_categories.add_item(ss, qid)
+            self.failure_types.add_item(ft, qid)
+
+        self.stability_categories.finalize()
+        self.failure_types.finalize()
+
+        self.__qr_keys = list(sorted(self.__qrs.keys()))
+
+    def __getitem__(self, qid) -> QueryAnaResult:
         return self.__qrs[qid]
 
     def __contains__(self, qid):
@@ -28,20 +88,6 @@ class ExperAnalyzer:
     def qids(self):
         return self.__qr_keys
 
-    def print_plain_status(self):
-        for qr in self.__qrs.values():
-            qr.print_status()
-            print("")
-
-    def get_stability(self, qid):
-        c = self.__cats.get_category(qid)
-        if c is not None:
-            return c
-        return Stability.MISSING_F
-
-    def get_overall(self):
-        return self.__cats
-
     def print_status(self, verbosity=0):
         print_banner("Overall Report")
         print("")
@@ -49,14 +95,16 @@ class ExperAnalyzer:
         self.exp.print_info()
         print(f"analyzer:\t{self.ana.name}\n")
         
-        self.__cats.print_status(skip_empty=True)
+        self.stability_categories.print_status(skip_empty=True)
+        # self.failure_types.print_status(skip_empty=True)
+
         print("")
 
         if verbosity == 0:
             print_banner("Report End")
             return
 
-        for cat, cs in self.__cats.items():
+        for cat, cs in self.stability_categories.items():
             if verbosity <= 1 and cat != Stability.UNSTABLE:
                 continue
 
@@ -73,7 +121,6 @@ class ExperAnalyzer:
 
             for i, qs in enumerate(cs):
                 print_banner(f"{cat.value} ({i+1}/{ccount})")
-                self[qs].enforce_timeout(self.ana._timeout)
                 self[qs].print_status(verbosity)
             print("")
         print_banner("Report End")
@@ -114,20 +161,3 @@ class ExperAnalyzer:
 
             res.append((qr, s, f))
         return res
-
-    def get_failure_types(self):
-        cats = Categorizer([c for c in FailureType])
-        for qid in self.qids:
-            qr = self[qid]
-            if self.get_stability(qid) != Stability.UNSTABLE:
-                continue
-            reason = self.ana.get_failure_type(qr.blob)
-            cats.add_item(reason, qid)
-        cats.finalize()
-        return cats
-
-    def get_failure_type(self, qid):
-        if qid not in self:
-            return FailureType.MISSING
-        return self.ana.get_failure_type(self[qid].blob)
-

@@ -63,7 +63,8 @@ def test_stability(input_query, exp_config):
     exp = ExperAnalyzer(exp, ana)
     assert len(exp.qids) == 1
     qid = exp.qids[0]
-    ss = exp.get_stability(qid)
-    ft = exp.get_failure_type(qid)
+    qer = exp[qid]
+    ss = qer.stability
+    ft = qer.failure_type
     # print(f"stability: {ss}, failure type: {ft}")
     return ss, ft

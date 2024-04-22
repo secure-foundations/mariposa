@@ -19,7 +19,6 @@
         ]
     },
     "verify": {
-        "num_mutants": 0,
         "num_procs": 6
     },
     "debug": {

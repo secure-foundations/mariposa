@@ -19,6 +19,13 @@ def load_cache(name):
     with open(path, 'rb') as f:
         return pickle.load(f)
 
+def load_cache_or(name, func):
+    obj = load_cache(name)
+    if obj is None:
+        obj = func()
+        save_cache(name, obj)
+    return obj
+
 def has_cache(name):
     path = get_cache_path(name)
     return os.path.exists(path)

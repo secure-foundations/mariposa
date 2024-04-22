@@ -19,10 +19,11 @@ def count_insts(query_path):
     for line in open(query_path):
         if ":qid mariposa_qid" in line:
             quanti_count += 1
-        if line.startswith("(assert (! (fun_forall_mariposa_qid"):
+        elif "define-fun" in line:
+            continue
+        elif "(fun_forall_mariposa_qid" in line:
             inst_count += 1
     return quanti_count, inst_count
-
 
 def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
     solver: Z3Solver = FACT.get_solver("z3_4_12_5")
@@ -89,7 +90,7 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
             input_query,
             "--z3-trace-log-path",
             trace_path,
-            "--max-trace-insts=3000",
+            "--max-trace-insts=300",
             "-o",
             output_query,
         ],
@@ -133,6 +134,9 @@ class ComboBuilder:
 
     def no_progress(self):
         return self.prev == -1
+
+    def get_current_count(self):
+        return self.counts[-1][1]
 
     def has_converged(self):
         diff = abs(self.c_qc - self.p_qc)

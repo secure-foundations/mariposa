@@ -49,16 +49,23 @@ class PartialCDF:
 
         self.valid_max = self._valid_dps[:,-1]
         self.valid_min = self._valid_dps[:,0]
-        self.valid_median = self.get_percentile(50, True)
+        self.valid_median = self.get_point_by_percent(50, True)
 
-    def get_percentile(self, p, valid_only):
+    def get_point_by_percent(self, p, valid_only):
         assert is_percentile(p)
         if valid_only:
             index = np.argmax(self._valid_dps[1] >= p)
             return self._valid_dps[:,index]
         index = np.argmax(self.cdf[1] >= p)
-        return self.cdf[:,index]
+        return self.cdf[:index]
 
+    def get_point_by_value(self, v, valid_only):
+        if valid_only:
+            # print(np.argmax(self._valid_dps[0] > v))
+            index = np.argmax(self._valid_dps[0] > v)
+            return self._valid_dps[:,index]
+        index = np.argmax(self.cdf[0] > v)
+        return self.cdf[:,index]
 
 def tex_fmt_percent(x, suffix=False):
     assert x >= -100 and x <= 100
@@ -200,7 +207,9 @@ class Categorizer:
             for item in common:
                 mc0.add_item("missing", item)
             mc0.finalize()
-            migrations[c0] = mc0
+
+            if mc0.total != 0:
+                migrations[c0] = mc0
 
         return migrations
 

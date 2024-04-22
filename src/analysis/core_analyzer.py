@@ -3,32 +3,43 @@ import os
 
 from tabulate import tabulate
 from base.defs import MARIPOSA, QUERY_WIZARD
-from base.exper_analyzer import ExperAnalyzer
+from base.exper_analyzer import ExperAnalyzer, QueryAnaResult
 from base.factory import FACT
 from base.project import ProjectGroup, ProjectType as PT
-from proj_wizard import NINJA_BUILD_RULES
 from base.query_analyzer import QueryAnalyzer, Stability as STB, FailureType as UR
 from utils.analysis_utils import *
 from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner
 
+
 class CoreQueryStatus:
-    def __init__(self, qid: str, 
-                 base: STB, base_path, br: UR,
-                 core: STB, core_path, cr: UR,
-                 extd: STB, extd_path, er: UR):
+    def __init__(
+        self, qid: str, base: QueryAnaResult, core: QueryAnaResult, extd: QueryAnaResult
+    ):
         self.qid = qid
 
-        self.base, self.br, self.base_path = base, br, base_path
-        self.core, self.cr, self.core_path = core, cr, core_path
-        self.extd, self.er, self.extd_path = extd, er, extd_path
-        
+        self.base, self.br, self.base_path = (
+            base.stability,
+            base.failure_type,
+            base.query_path,
+        )
+        self.core, self.cr, self.core_path = (
+            core.stability,
+            core.failure_type,
+            core.query_path,
+        )
+        self.extd, self.er, self.extd_path = (
+            extd.stability,
+            extd.failure_type,
+            extd.query_path,
+        )
+
         self.__init_patched_status()
 
     def get_issue(self):
         if self.base == STB.UNSOLVABLE:
             return None
-        if self.core in { STB.UNSTABLE, STB.STABLE}:
+        if self.core in {STB.UNSTABLE, STB.STABLE}:
             return None
         return self.base.value, self.core.value, self.extd.value
 
@@ -44,19 +55,20 @@ class CoreQueryStatus:
             self.patch_path = self.extd_path
             self.patch_reason = self.er
             return
-    
+
         self.patch = self.base
         self.patch_path = self.base_path
         self.patch_reason = self.br
-        
+
     def core_is_enabled(self):
         return self.patch_path != self.base_path
 
-    def sanity_check(self):
-        if os.path.exists(self.core_path):
-            log_check(is_assertion_subset(self.base_path, self.core_path), f"{self.core_path} is not a subset!")
-        if os.path.exists(self.extd_path):
-            log_check(is_assertion_subset(self.base_path, self.extd_path), f"{self.extd_path} is not a subset!")
+    # def sanity_check(self):
+    #     if os.path.exists(self.core_path):
+    #         log_check(is_assertion_subset(self.base_path, self.core_path), f"{self.core_path} is not a subset!")
+    #     if os.path.exists(self.extd_path):
+    #         log_check(is_assertion_subset(self.base_path, self.extd_path), f"{self.extd_path} is not a subset!")
+
 
 class CoreAnalyzer:
     def __init__(self, group: ProjectGroup):
@@ -66,27 +78,25 @@ class CoreAnalyzer:
         self.base: ExperAnalyzer = FACT.load_default_analysis(base)
 
         core = group.get_project(PT.from_str("core.z3"), build=True)
-        self.core: ExperAnalyzer = FACT.load_default_analysis(core)
+        self.core: ExperAnalyzer = FACT.load_default_analysis(
+            core, group_qids=self.base.qids
+        )
 
         extd = group.get_project(PT.from_str("extd.z3"), build=True)
-        self.extd: ExperAnalyzer = FACT.load_default_analysis(extd)
+        self.extd: ExperAnalyzer = FACT.load_default_analysis(
+            extd, group_qids=self.base.qids
+        )
 
         self.qids: Dict[str, CoreQueryStatus] = dict()
+        # self.base.print_status()
+        # self.core.print_status()
+        # self.extd.print_status()
 
         for qid in self.base.qids:
-            bs = self.base.get_stability(qid)
-            bp = self.base.get_path(qid)
-            bur = self.base.get_failure_type(qid)
-
-            cs = self.core.get_stability(qid)
-            cp = self.core.get_path(qid)
-            cur = self.core.get_failure_type(qid)
-
-            es = self.extd.get_stability(qid)
-            ep = self.extd.get_path(qid)
-            eur = self.extd.get_failure_type(qid)
-
-            cqs = CoreQueryStatus(qid, bs, bp, bur, cs, cp, cur, es, ep, eur)
+            bs = self.base[qid]
+            cs = self.core[qid]
+            es = self.extd[qid]
+            cqs = CoreQueryStatus(qid, bs, cs, es)
             # cqs.sanity_check()
             self.qids[qid] = cqs
 
@@ -100,6 +110,8 @@ class CoreAnalyzer:
         # self.issues.print_status()
         # self.suggest_issue_fixes()
 
+    # def unify_core(self):
+
     def build_pre_inst(self):
         pins = self.group.get_project(PT.from_str("pins.z3"), build=True)
         woco = self.group.get_project(PT.from_str("woco.z3"), build=True)
@@ -107,18 +119,25 @@ class CoreAnalyzer:
             qr = self.qids[qid]
             out_path = woco.get_path(qid)
             if qr.core_is_enabled():
-                # print("cp", qr.core_path, out_path)
-                print(MARIPOSA, "-a", "pre-inst-z3", "-i" , qr.patch_path, "-o", pins.get_path(qid))
+                print(
+                    MARIPOSA,
+                    "-a",
+                    "pre-inst-z3",
+                    "-i",
+                    qr.patch_path,
+                    "-o",
+                    pins.get_path(qid),
+                )
             # else:
-                # if os.path.exists(pins.get_path(f"temp_proj/{qid}.smt2")):
-                #     continue
-                # print(QUERY_WIZARD, "build-core", 
-                #   "-i", qr.patch_path, 
-                #   "-o", f"temp_proj/{qid}.smt2", 
-                #   "-s", "z3_4_12_5",
-                #   "--timeout", "70",
-                #   "--ids-available", 
-                #   "--restarts", "4")
+            # if os.path.exists(pins.get_path(f"temp_proj/{qid}.smt2")):
+            #     continue
+            # print(QUERY_WIZARD, "build-core",
+            #   "-i", qr.patch_path,
+            #   "-o", f"temp_proj/{qid}.smt2",
+            #   "-s", "z3_4_12_5",
+            #   "--timeout", "70",
+            #   "--ids-available",
+            #   "--restarts", "4")
 
     def print_status(self):
         print_banner("Report " + self.group.gid)
@@ -132,7 +151,7 @@ class CoreAnalyzer:
 
         print("")
         print_banner("Instability Mitigated")
-    
+
         mitigated = {"tally": [0, 0]}
 
         for qid in b[STB.UNSTABLE]:
@@ -162,7 +181,7 @@ class CoreAnalyzer:
         print("")
         print_banner("Stability Preserved")
         pres, total = 0, 0
-        
+
         for qid in b[STB.STABLE]:
             if qid in c[STB.STABLE]:
                 pres += 1
@@ -182,7 +201,12 @@ class CoreAnalyzer:
                 continue
             intro.add_item(cqs.patch_reason, qid)
         intro.finalize()
-        intro.print_status()
+
+        if intro.total == 0:
+            print("no unstable queries introduced")
+        else:
+            intro.print_status()
+        print("")
 
         print_banner("Report End")
 
@@ -214,7 +238,15 @@ class CoreAnalyzer:
             i = self.base.exp.proj.get_path(q)
             c = self.core.exp.proj.get_path(q)
             o = self.extd.exp.proj.get_path(q)
-            print("./src/query_wizard.py complete-core", "-i", i, "--core-query-path", c, "-o", o)
+            print(
+                "./src/query_wizard.py complete-core",
+                "-i",
+                i,
+                "--core-query-path",
+                c,
+                "-o",
+                o,
+            )
 
         print("")
         print_banner("Patched Core Queries")
@@ -229,15 +261,22 @@ class CoreAnalyzer:
 
             if ec / bc > 0.1:
                 print(bc, cc, ec)
-                print("./src/query_wizard.py complete-core", "-i", e, "--core-query-path", c, "-o", e)
+                print(
+                    "./src/query_wizard.py complete-core",
+                    "-i",
+                    e,
+                    "--core-query-path",
+                    c,
+                    "-o",
+                    e,
+                )
 
         print("")
 
     def get_no_file_core_qids(self):
         no_file = []
         for (_, cs, es), qids in self.issues.items():
-            if cs == STB.MISSING_F and \
-                es == STB.MISSING_F:
+            if cs == STB.MISSING_F and es == STB.MISSING_F:
                 no_file.extend(qids)
         return no_file
 
