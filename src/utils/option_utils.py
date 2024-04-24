@@ -20,7 +20,7 @@ def add_output_log_option(parser):
     parser.add_argument("-o", "--output-log-path", required=True, help="the output log path")
 
 def add_restart_option(parser):
-    parser.add_argument("--restarts", default=60, required=True, help="the number of restarts")
+    parser.add_argument("--restarts", default=60, required=False, help="the number of restarts")
 
 def add_solver_option(parser):
     parser.add_argument("-s", "--solver", default="z3_4_12_5", help="the solver name (from solvers.json) to use")

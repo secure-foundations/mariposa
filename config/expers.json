@@ -27,7 +27,7 @@
             "rename",
             "reseed"
         ],
-        "keep_mutants": false,
+        "keep_mutants": true,
         "num_mutants": 5,
         "exp_timeout": 60,
         "num_procs": 5

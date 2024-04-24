@@ -35,7 +35,6 @@ def handle_create_benchmark():
 BU_GID = "bench_unstable"
 BS_GID = "bench_stable"
 
-
 def handle_core_analysis():
     buc = CoreAnalyzer(FACT.get_group(BU_GID))
     buc.print_status()
@@ -43,10 +42,13 @@ def handle_core_analysis():
     bsc = CoreAnalyzer(FACT.get_group(BS_GID))
     bsc.print_status()
 
-
 def handle_shake_analysis():
-    pass
+    ana = FACT.get_analyzer("60nq")
+    exp = FACT.load_any_analysis(FACT.get_group(BU_GID).get_project("shko.z3"), ana)
+    exp.print_status()
 
+    exp = FACT.load_any_analysis(FACT.get_group(BS_GID).get_project("shko.z3"), ana)
+    exp.print_status()
 
 def handle_wombo_analysis():
     wuc = WomboAnalyzer(FACT.get_group(BU_GID))
@@ -91,7 +93,6 @@ def handle_wombo_analysis():
     plt.grid()
     plt.savefig("fig/wombo_combo.pdf")
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Mariposa Meta Wizard operates on multiple projects."
@@ -103,6 +104,7 @@ if __name__ == "__main__":
     subparsers.add_parser("bench", help="create benchmark projects")
     subparsers.add_parser("core", help="analyze core")
     subparsers.add_parser("wombo", help="analyze wombo")
+    subparsers.add_parser("shake", help="analyze shake")
 
     args = parser.parse_args()
     args = deep_parse_args(args)

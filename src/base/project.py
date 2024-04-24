@@ -151,7 +151,7 @@ class Project:
         if self.single_mode: 
             create_dir(self._sub_root)
             self._db_dir = self._sub_root
-            self._gen_dir = os.path.join(SINGLE_MUT_ROOT_PREFIX, gid)
+            self._gen_dir = SINGLE_MUT_ROOT_PREFIX + gid
         else:
             self._db_dir = self._sub_root.replace(PROJ_ROOT, DB_ROOT)
             self._gen_dir = self.sub_root.replace(PROJ_ROOT, GEN_ROOT)
