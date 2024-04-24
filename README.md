@@ -43,13 +43,13 @@ pip3 install -r doc/requirements.txt
 
 To perform a basic sanity check (on Linux):
 ```
-python3 src/exper_wizard.py single -s z3_4_12_2 -i data/samples/single_check.smt2 --verbose 3 --clear-existing
+python3 src/exper_wizard.py single -s z3_4_12_2 -i data/samples/single_check.smt2 --category-verbosity 3 --clear-existing
 ```
 
 If you are on macOS, you might want to provide a different solver with the `-s` flag:
 
 ```
-python3 src/exper_wizard.py single -s z3_4_12_2_osx -i data/samples/single_check.smt2 --verbose 3 --clear-existing
+python3 src/exper_wizard.py single -s z3_4_12_2_osx -i data/samples/single_check.smt2 --category-verbosity 3 --clear-existing
 ```
 
 This will test the stability of the query `data/samples/single_check.smt2` on the solver `Z3 4.12.2`, using the default settings for experiments. The result should be something like this:

@@ -18,9 +18,9 @@ class QueryAnaResult:
         self.failure_type: FailureType = ft
 
     def print_status(self, verbosity=0):
-        print(f"qid:\t{self.qid}")
-        print(f"query path:\t{self.query_path}")
-        print(f"failure type:\t{self.failure_type}")
+        print(f"\n{self.query_path}")
+        if self.failure_type != FailureType.NONE:
+            print(f"main failure type:\t{self.failure_type}")
         print("")
         # proc = find_verus_procedure_name(self.query_path)
         # if proc != None:
@@ -33,7 +33,7 @@ class ExperAnalyzer:
         self.exp = exp
         self.ana: QueryAnalyzer = ana
         qers = self.exp.load_sum_table()
-        
+
         path_exists_qids = set([get_qid(p) for p in self.list_queries()])
 
         log_check(path_exists_qids.issuperset(set(qers.keys())), 
@@ -88,7 +88,7 @@ class ExperAnalyzer:
     def qids(self):
         return self.__qr_keys
 
-    def print_status(self, verbosity=0):
+    def print_status(self, category_verbosity=0, query_verbosity=0):
         print_banner("Overall Report")
         print("")
 
@@ -97,21 +97,20 @@ class ExperAnalyzer:
         
         self.stability_categories.print_status(skip_empty=True)
         # self.failure_types.print_status(skip_empty=True)
-
         print("")
 
-        if verbosity == 0:
+        if category_verbosity == 0:
             print_banner("Report End")
             return
 
         for cat, cs in self.stability_categories.items():
-            if verbosity <= 1 and cat != Stability.UNSTABLE:
+            if category_verbosity <= 1 and cat != Stability.UNSTABLE:
                 continue
 
-            if verbosity <= 3 and cat == Stability.UNSOLVABLE:
+            if category_verbosity <= 2 and cat == Stability.UNSOLVABLE:
                 continue
 
-            if verbosity <= 4 and cat == Stability.STABLE:
+            if category_verbosity <= 3 and cat == Stability.STABLE:
                 continue
 
             ccount = len(cs)
@@ -119,20 +118,24 @@ class ExperAnalyzer:
             if ccount == 0:
                 continue
 
-            for i, qs in enumerate(cs):
+            for i, qid in enumerate(cs):
                 print_banner(f"{cat.value} ({i+1}/{ccount})")
-                self[qs].print_status(verbosity)
+                self[qid].print_status(query_verbosity)
+
+                if query_verbosity >= 2:
+                    self.print_mutant_details(self[qid])
             print("")
         print_banner("Report End")
 
     def get_mutant_details(self, qr):
         rows = self.exp.get_mutants(qr.query_path)
-        passed, failed = [], []
-
+        passed, failed = dict(), dict()
         for (m_path, rc, et) in rows:
             rc = RCode(rc)
-            if self.ana.is_timeout(et):
+            if et >= self.exp.timeout * 1000:
                 rc = RCode.TIMEOUT
+            et = round(et/1000, 2)
+
             mutation, seed = Experiment.parse_mutant_path(m_path)
 
             if mutation == Mutation.QUAKE:
@@ -140,24 +143,34 @@ class ExperAnalyzer:
                 continue
 
             if rc == RCode.UNSAT:
-                passed += [(mutation, seed, None)]
+                passed[m_path] = (mutation, seed, rc, et)
             else:
-                failed += [(mutation, seed, rc)]
+                failed[m_path] = (mutation, seed, rc, et)
         return passed, failed
 
-    def get_unstable_query_mutants(self):
-        res = []
-        for qid in self.qids:
-            qr = self[qid]
+    def print_mutant_details(self, qr):
+        passed, failed = self.get_mutant_details(qr)
+        print(f"Passed Mutants ({len(passed)}):")
+        for m_path, (mutation, seed, rc, et) in passed.items():
+            print(f"{m_path} - {rc} - {et}")
+        print("")
+        print(f"Failed Mutants ({len(failed)}):")
+        for m_path, (mutation, seed, rc, et) in failed.items():
+            print(f"{m_path} - {rc} - {et}")
 
-            if self.get_stability(qid) != Stability.UNSTABLE:
-                continue
+    # def get_unstable_query_mutants(self):
+    #     res = []
+    #     for qid in self.qids:
+    #         qr = self[qid]
 
-            s, f = self.get_mutant_details(qr)
+    #         if self.get_stability(qid) != Stability.UNSTABLE:
+    #             continue
 
-            if len(s) == 0 or len(f) == 0:
-                log_warn(f"only quake was effective, skipping {qid}")
-                continue
+    #         s, f = self.get_mutant_details(qr)
 
-            res.append((qr, s, f))
-        return res
+    #         if len(s) == 0 or len(f) == 0:
+    #             log_warn(f"only quake was effective, skipping {qid}")
+    #             continue
+
+    #         res.append((qr, s, f))
+    #     return res

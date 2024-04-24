@@ -59,10 +59,10 @@ class QueryExpResult:
         self.blob = new_blobs
         self.timeout = timeout
 
-    def print_status(self, verbosity=2):
+    def print_status(self, verbosity=0):
         from tabulate import tabulate
 
-        if verbosity <= 2:
+        if verbosity == 0:
             return
 
         # v_rcode, v_time = self.get_original_status()
@@ -95,13 +95,13 @@ class QueryExpResult:
         print(tabulate(table, headers="firstrow"))
         print("")
 
-    def get_fast_pass(self):
-        if self.blob is None:
-            return False
-        rc, et = self.get_original_status()
-        if et < 1000 and rc == RCode.UNSAT.value:
-            return True
-        return False
+    # def get_fast_pass(self):
+    #     if self.blob is None:
+    #         return False
+    #     rc, et = self.get_original_status()
+    #     if et < 1000 and rc == RCode.UNSAT.value:
+    #         return True
+    #     return False
 
 def get_table_prefix(proj, solver, part=None):
     if part is None:
@@ -344,6 +344,7 @@ class Experiment(ExpConfig):
             blob = blob.reshape((len(self.enabled_muts), 2, mut_size + 1))
             path = self.get_path(get_qid(row[0]))
             qr = QueryExpResult(path, self.enabled_muts, blob)
+            qr.enforce_timeout(self.timeout * 1000)
             summaries[qr.qid] = qr
 
         return summaries
@@ -409,7 +410,7 @@ class Experiment(ExpConfig):
 
     def get_mutants(self, v_path):
         con, cur = get_cursor(self.db_path)
-        res = cur.execute(f"""SELECT query_path, result_code, elapsed_milli FROM {self.exp_table_name} WHERE vanilla_path = ?""", (get_qid(v_path),))
+        res = cur.execute(f"""SELECT query_path, result_code, elapsed_milli FROM {self.exp_table_name} WHERE vanilla_path = ?""", (v_path,))
         rows = res.fetchall()
         con.close()
         return rows

@@ -19,7 +19,7 @@ def handle_basic(args):
     exp = args.experiment
     log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
-    ba.print_status(args.verbose)
+    ba.print_status(args.category_verbosity, args.query_verbosity)
 
 def set_up_cvc5_perf(subparsers):
     p = subparsers.add_parser('perf', help='analyze the raw performance of cvc5/z3 on a project group')

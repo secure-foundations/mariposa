@@ -54,7 +54,8 @@ def add_debug_option(parser):
 
 def add_analyzer_options(parser):
     parser.add_argument("--analyzer", default="default", help="the analyzer name (from config/expers.json) to use")
-    parser.add_argument("--verbose", type=int, default=0, help="level of verbosity for the analysis")
+    parser.add_argument("-cv", "--category-verbosity", type=int, default=0, help="level of verbosity for categories in the analysis")
+    parser.add_argument("-qv", "--query-verbosity", type=int, default=0, help="level of verbosity for each query in the analysis")
 
 def add_authkey_option(parser):
     parser.add_argument("--authkey", required=True, help="the authkey to use for the server pool")
