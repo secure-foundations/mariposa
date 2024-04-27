@@ -2,34 +2,40 @@ import matplotlib.pyplot as plt
 
 plt.rcParams['text.usetex'] = True
 plt.rcParams["font.family"] = "serif"
-plt.rcParams["font.size"] = 14
 
-PROJECT_LABELS = {
-    "d_komodo": r"Komodo$_{D}$",
-    "s_komodo": r"Komodo$_S$",
-    "d_fvbkv": r"VeriBetrKV$_{D}$",
-    "d_lvbkv": r"VeriBetrKV$_{L}$",
-    "fs_dice": r"DICE$^\star_F$",
-    "fs_vwasm": r"vWasm$_F$",
-    "d_ironsht": r"IronKV$_D$",
-    "v_ironkv": r"IronKV$_V$",
-    "v_mimalloc": r"Mimalloc$_V$",
-    "v_noderep": r"NodeRep$_V$",
-    "v_pagetable": r"PageTable$_V$",
-    "v_pmemlog": r"PMemLog$_V$",
-    "total": "Total",
-} 
+FSIZE = 20
+FNAME ='Raleway'
 
-PROJECT_COLORS = {
-    "d_komodo": "#FFAA33",
-    "d_fvbkv": "#800080",
-    "d_lvbkv": "#808000",
-    "d_ironsht": "#FF0000",
-    "fs_vwasm": "#708090",
-    "fs_dice":  "#FF4500",
-    "v_ironfleet": "#4682B4",
-    "v_mimalloc": "#800000",
-    "v_noderep": "#DAA520",
-    "v_pagetable": "#191970",
-    "v_pmemlog": "#008B8B",
+COLORS = [
+    "#803E75", # Strong Purple
+    "#FF6800", # Vivid Orange
+    "#A6BDD7", # Very Light Blue
+    "#C10020", # Vivid Red
+    "#FFB300", # Vivid Yellow
+    "#817066", # Medium Gray
+    "#F6768E", # Strong Purplish Pink
+]
+
+class GrourpPlotMeta:
+    def __init__(self, gid, tex_name, color):
+        self.name = gid
+        self.tex_name = tex_name
+        self.color = color
+
+# PROJECT_ = {
+#     "d_komodo": r"Komodo$_{D}$",
+#     "s_komodo": r"Komodo$_S$",
+#     "d_fvbkv": r"VeriBetrKV$_{D}$",
+#     "d_lvbkv": r"VeriBetrKV$_{L}$",
+#     "fs_dice": r"DICE$^\star_F$",
+#     "fs_vwasm": r"vWasm$_F$",
+# } 
+
+GROUP_PLOT_META = {
+"d_komodo": GrourpPlotMeta("d_komodo", r"Komodo$_{D}$", COLORS[0]),
+"s_komodo": GrourpPlotMeta("s_komodo", r"Komodo$_S$", COLORS[1]),
+"d_fvbkv": GrourpPlotMeta("d_fvbkv", r"VeriBetrKV$_{D}$", COLORS[2]),
+"d_lvbkv": GrourpPlotMeta("d_lvbkv", r"VeriBetrKV$_{L}$", COLORS[3]),
+"fs_dice": GrourpPlotMeta("fs_dice", r"DICE$^\star_F$", COLORS[4]),
+"fs_vwasm": GrourpPlotMeta("fs_vwasm", r"vWasm$_F$", COLORS[5]),
 }

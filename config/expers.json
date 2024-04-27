@@ -24,6 +24,17 @@
     "debug": {
         "mutations": [
             "shuffle",
+            "rename",
+            "reseed"
+        ],
+        "keep_mutants": false,
+        "num_mutants": 5,
+        "exp_timeout": 60,
+        "num_procs": 5
+    },
+    "trace": {
+        "mutations": [
+            "shuffle",
             "reseed"
         ],
         "keep_mutants": true,

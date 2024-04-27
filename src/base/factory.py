@@ -189,9 +189,9 @@ class Factory:
         exp = self.get_exper(proj, cfg, solver, allow_missing_exper)
         return ExperAnalyzer(exp, ana, allow_missing_exper, group_qids)
 
-    def load_any_analysis(self, proj: Project, ana: QueryAnalyzer) -> ExperAnalyzer:
+    def load_any_analysis(self, proj: Project, ana: QueryAnalyzer, group_qids=None) -> ExperAnalyzer:
         exp = self.get_available_expers(proj)[0]
-        return ExperAnalyzer(exp, ana)
+        return ExperAnalyzer(exp, ana, group_qids=group_qids)
 
     def load_default_analysis(self, proj: Project, group_qids=None) -> ExperAnalyzer:
         solver = self.get_solver("z3_4_12_5")

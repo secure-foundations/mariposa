@@ -11,6 +11,7 @@ from utils.analysis_utils import PartialCDF
 from utils.cache_utils import load_cache, load_cache_or, save_cache
 from utils.option_utils import deep_parse_args
 from utils.system_utils import log_info, log_warn
+from utils.plot_utils import *
 import random
 from matplotlib import pyplot as plt
 import numpy as np
@@ -36,11 +37,38 @@ BU_GID = "bench_unstable"
 BS_GID = "bench_stable"
 
 def handle_core_analysis():
-    buc = CoreAnalyzer(FACT.get_group(BU_GID))
-    buc.print_status()
+    # buc = CoreAnalyzer(FACT.get_group(BU_GID))
+    # buc.print_status()
+    # bsc = CoreAnalyzer(FACT.get_group(BS_GID))
+    # bsc.print_status()
 
-    bsc = CoreAnalyzer(FACT.get_group(BS_GID))
-    bsc.print_status()
+    for gid in MARIPOSA_GROUPS:
+        ca = CoreAnalyzer(FACT.get_group(gid))
+        counts = load_cache_or(f"{gid}_asserts", ca.get_assert_counts)
+        ratios = counts[:,1] * 100 / counts[:,0]
+        ratios = PartialCDF(ratios)
+        # print(gid)
+        # print(counts)
+        pm = GROUP_PLOT_META[gid]
+        plt.plot(ratios.xs, ratios.ys, label=pm.tex_name, color=pm.color)
+        p50 = ratios.valid_median
+        plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
+        if gid != "d_lvbkv" and gid != "d_fvbkv":
+            plt.text(p50[0] * 1.15, p50[1], f"{round(p50[0], 2)}\%", fontsize=8, va="bottom")
+        else:
+            plt.text(p50[0] * 0.55, p50[1], f"{round(p50[0], 2)}\%", fontsize=8, va="bottom")
+    
+    plt.legend()
+    plt.xlabel("Query Relevance Ratio (\%)")
+    plt.ylabel("CDF (\%)")
+    plt.yticks(np.arange(0, 101, 10))
+    # plt.xlim(0, 100)
+    plt.ylim(0, 100)
+    plt.xscale("log")
+    plt.grid()
+    plt.savefig(f"fig/overall_RR.pdf")
+    
+    # bsc.print_status()
 
 def handle_shake_analysis():
     ana = FACT.get_analyzer("60nq")
@@ -84,7 +112,7 @@ def handle_wombo_analysis():
     plt.plot(no_ic[0], no_ic[1], "black", marker="*")
 
     plt.xlabel("Instance Count at Convergence")
-    plt.ylabel("CDF (%)")
+    plt.ylabel("CDF (\%)")
 
     plt.yticks(np.arange(0, 101, 10))
     plt.xlim(0, 800)

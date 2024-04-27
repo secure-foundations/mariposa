@@ -78,10 +78,9 @@ class CoreAnalyzer:
         self.base: ExperAnalyzer = FACT.load_default_analysis(base)
 
         core = group.get_project(PT.from_str("core.z3"), build=True)
-        self.core: ExperAnalyzer = FACT.load_default_analysis(
-            core, group_qids=self.base.qids
+        self.core: ExperAnalyzer = FACT.load_any_analysis(
+            core, FACT.get_analyzer("60nq"), group_qids=self.base.qids
         )
-
         extd = group.get_project(PT.from_str("extd.z3"), build=True)
         self.extd: ExperAnalyzer = FACT.load_default_analysis(
             extd, group_qids=self.base.qids
@@ -97,11 +96,7 @@ class CoreAnalyzer:
             cs = self.core[qid]
             es = self.extd[qid]
             cqs = CoreQueryStatus(qid, bs, cs, es)
-            # cqs.sanity_check()
             self.qids[qid] = cqs
-
-            # if not cqs.core_is_enabled():
-            #     print(cqs.qid, bs, bur, cs, cur)
 
         self.adjust_status()
         # self.build_pre_inst()
@@ -161,6 +156,7 @@ class CoreAnalyzer:
             if cqs.patch == STB.STABLE:
                 mitigated[cqs.br][0] += 1
                 mitigated["tally"][0] += 1
+                # print(qid)
             mitigated[cqs.br][1] += 1
             mitigated["tally"][1] += 1
 
@@ -209,6 +205,20 @@ class CoreAnalyzer:
         print("")
 
         print_banner("Report End")
+
+    def get_assert_counts(self):
+        from tqdm import tqdm
+
+        assert_counts = []
+        for qid in tqdm(self.qids):
+            cqr = self.qids[qid]
+            bc = count_asserts(cqr.base_path)
+            if cqr.core_is_enabled():
+                cc = count_asserts(cqr.core_path)
+            else:
+                cc = np.nan
+            assert_counts += [[bc, cc]]
+        return np.array(assert_counts)
 
     def __init_issue_status(self):
         issues = Categorizer()
