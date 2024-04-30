@@ -53,6 +53,9 @@ rule pre-inst-z3
 rule inst-z3
     command = {QUERY_WIZARD} inst-z3 -i $in -o $out --timeout 5 --restarts 30
 
+rule query-stat
+    command = {MARIPOSA} -a stat -i $in --stat-log-path $out
+
 """
 
 def set_up_create(subparsers):
@@ -124,6 +127,12 @@ def set_up_log_shake(subparsers):
     add_clear_option(p)
     add_ninja_log_option(p)
 
+def set_up_query_stat(subparsers):
+    p = subparsers.add_parser('query-stat', help='query stats')
+    add_input_dir_option(p)
+    add_clear_option(p)
+    add_ninja_log_option(p)
+
 class NinjaPasta:
     def __init__(self, args, cmd):
         self.start_time = int(time.time())
@@ -163,6 +172,8 @@ class NinjaPasta:
             self.handle_create_benchmark()
         elif args.sub_command == "log-shake":
             self.handle_create_shake_log(args.input_proj)
+        elif args.sub_command == "query-stat":
+            self.handle_create_stat_log(args.input_proj)
         else:
             parser.print_help()
             return
@@ -324,6 +335,14 @@ class NinjaPasta:
             o = in_proj.get_path(qid, KnownExt.SHK_LOG)
             self.ninja_stuff += [f"build {o}: shake-log {i}\n"]
             self.expect_targets.add(o)
+            
+    def handle_create_stat_log(self, in_proj):
+        self.output_dir = in_proj.get_log_dir(KnownExt.Q_LOG)
+        for qid in in_proj.qids:
+            i = in_proj.get_path(qid)
+            o = in_proj.get_path(qid, KnownExt.Q_LOG)
+            self.ninja_stuff += [f"build {o}: query-stat {i}\n"]
+            self.expect_targets.add(o)
 
     def finalize(self, clear):
         if len(self.ninja_stuff) == 0:
@@ -427,6 +446,7 @@ if __name__ == "__main__":
     set_up_load_stat(subparsers)
     set_up_create_benchmark(subparsers)
     set_up_log_shake(subparsers)
+    set_up_query_stat(subparsers)
 
     cmd = " ".join(sys.argv)
 

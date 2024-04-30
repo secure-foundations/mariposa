@@ -117,6 +117,9 @@ enum Action {
     #[strum(serialize = "simp", message = "simplify assertions in the query")]
     Simp,
 
+    #[strum(serialize = "stat", message = "print statistics of the query")]
+    Stat,
+
     #[strum(
         serialize = "replace-quant",
         message = "replace quantified bodies with (fresh) functions"
@@ -209,6 +212,10 @@ struct Args {
     // /// file to log the symbol score
     // #[arg(long)]
     // symbol_score_path: Option<String>,
+
+    /// file to log query stats
+    #[arg(long)]
+    stat_log_path: Option<String>,
 }
 
 fn parse_action(args: &Args) -> Action {
@@ -377,6 +384,10 @@ fn main() {
         Action::Simp => {
             commands = tree_rewrite::tree_rewrite(commands);
             tree_shake::remove_unused_symbols(&mut commands);
+        }
+        Action::Stat => {
+            query_io::print_stats(&commands, &args.stat_log_path.unwrap());
+            return;
         }
         _ => {
             panic!("unimplemented action: {}", action);

@@ -17,7 +17,7 @@ use std::{
 
 use crate::{
     query_io::{
-        find_goal_command_index, get_actual_asserted_term, get_attr_cid_usize, get_attr_qid,
+        find_goal_command_index, get_actual_asserted_term, get_mariposa_cid_usize, get_mariposa_qid,
     },
     term_match::{
         is_qf_term, match_simple_app_term, match_simple_qual_identifier, mk_simple_qual_id,
@@ -81,7 +81,7 @@ fn replace_forall_body(term: &mut Term) -> Option<Command> {
         return None;
     }
 
-    let qid = get_attr_qid(attributes);
+    let qid = get_mariposa_qid(attributes);
     let fid = mk_fun_forall(qid);
 
     let arguments = vars

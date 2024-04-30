@@ -4,6 +4,8 @@ use std::fmt;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::{collections::HashSet, fs::File};
 
+use crate::term_match::{self, get_attr_cid, get_attr_qid};
+
 const QID_PREFIX: &str = "mariposa_qid_";
 const CID_PREFIX: &str = "mariposa_cid_";
 
@@ -511,16 +513,20 @@ pub struct AssertInfo {
 
 impl fmt::Display for AssertInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "cid: {}\n", self.cid)?;
-        for (qid, depth) in self.qids.iter() {
-            write!(f, "qid: {} depth: {}\n", qid, depth)?;
+        // write!(f, "cid: {}\n", self.cid)?;
+        if self.qids.is_empty() {
+            return write!(f, "{}|{}|{}\n", self.cid, "NO_QID", 0);
         }
-        write!(f, "term: {}", self.term)
+        for (qid, depth) in self.qids.iter() {
+            write!(f, "{}|{}|{}\n", self.cid, qid, depth)?;
+        }
+        Ok(())
+        // write!(f, "term: {}", self.term)
     }
 }
 
 impl AssertInfo {
-    fn load_qids(&mut self, cur_term: &concrete::Term, depth: &mut usize) {
+    fn load_qids(&mut self, cur_term: &concrete::Term, depth: usize) {
         match cur_term {
             concrete::Term::Application {
                 qual_identifier: _,
@@ -536,25 +542,11 @@ impl AssertInfo {
                 }
                 self.load_qids(&term, depth)
             }
-            concrete::Term::Forall { vars: _, term } => self.load_qids(&*term, depth),
-            concrete::Term::Exists { vars: _, term } => self.load_qids(&*term, depth),
+            concrete::Term::Forall { vars: _, term } => self.load_qids(&*term, depth+1),
+            concrete::Term::Exists { vars: _, term } => self.load_qids(&*term, depth+1),
             concrete::Term::Attributes { term, attributes } => {
-                let mut qid = None;
-                for (key, value) in attributes {
-                    if key != &concrete::Keyword("qid".to_owned()) {
-                        continue;
-                    }
-                    let concrete::AttributeValue::Symbol(name) = value else {
-                        panic!("expecting symbol in qid");
-                    };
-                    if !name.to_string().starts_with(QID_PREFIX) {
-                        panic!("unexpected qid: {}", name);
-                    }
-                    qid = Some(name.to_string());
-                }
-                if let Some(qid) = qid {
-                    self.qids.insert(qid, *depth);
-                    *depth += 1;
+                if let Some(qid) = get_attr_qid(attributes) {
+                    self.qids.insert(qid.clone(), depth);
                 }
                 self.load_qids(term, depth);
             }
@@ -575,35 +567,14 @@ fn load_ids(command: &concrete::Command) -> Option<AssertInfo> {
         panic!("expecting attributes");
     };
 
-    let cid = get_attr_cid(attributes);
+    let cid = get_mariposa_cid(attributes);
     let mut info = AssertInfo {
         cid: cid.to_string(),
         qids: HashMap::new(),
         term: *term.clone(),
     };
-    info.load_qids(&term, &mut 0);
+    info.load_qids(&term, 0);
     Some(info)
-}
-
-pub fn get_attr_cid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String {
-    let mut cid = None;
-
-    attributes.iter().for_each(|(key, value)| {
-        if key != &concrete::Keyword("named".to_owned()) {
-            return;
-        }
-        let concrete::AttributeValue::Symbol(concrete::Symbol(name)) = value else {
-            return;
-        };
-        if name.starts_with(CID_PREFIX) {
-            cid = Some(name);
-        }
-    });
-
-    let Some(cid) = cid else {
-        panic!("expecting cid");
-    };
-    cid
 }
 
 pub fn get_actual_asserted_term(command: &concrete::Command) -> Option<(&concrete::Term, usize)> {
@@ -613,32 +584,31 @@ pub fn get_actual_asserted_term(command: &concrete::Command) -> Option<(&concret
     let concrete::Term::Attributes { term, attributes } = term else {
         panic!("expecting attributes");
     };
-    let cid = get_attr_cid_usize(attributes);
+    let cid = get_mariposa_cid_usize(attributes);
     Some((term, cid))
 }
 
-pub fn get_attr_cid_usize(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> usize {
+pub fn get_mariposa_cid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String {
     let cid = get_attr_cid(attributes);
+    let Some(cid) = cid else {
+        panic!("expecting cid");
+    };
+    assert!(cid.starts_with(CID_PREFIX));
+    cid
+}
+
+pub fn get_mariposa_cid_usize(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> usize {
+    let cid = get_mariposa_cid(attributes);
     cid[CID_PREFIX.len()..].to_string().parse().unwrap()
 }
 
-pub fn get_attr_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String {
-    let mut qid = None;
-    attributes.iter().for_each(|(key, value)| {
-        if key != &concrete::Keyword("qid".to_owned()) {
-            return;
-        }
-        let concrete::AttributeValue::Symbol(concrete::Symbol(name)) = value else {
-            return;
-        };
-        if name.starts_with(QID_PREFIX) {
-            qid = Some(name);
-        }
-    });
-
+pub fn get_mariposa_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String 
+{
+    let qid = term_match::get_attr_qid(attributes);
     let Some(qid) = qid else {
         panic!("expecting qid");
     };
+    assert!(qid.starts_with(QID_PREFIX));
     qid
 }
 
@@ -651,3 +621,35 @@ pub fn load_mariposa_ids(commands: &Vec<concrete::Command>) -> HashMap<usize, As
         .map(|(i, x)| (i, x.unwrap()))
         .collect()
 }
+
+pub fn print_stats(commands: &Vec<concrete::Command>, stat_log_path: &String) {
+    let path = std::path::Path::new(&stat_log_path);
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).unwrap();
+    let mut file = File::create(path).unwrap();
+
+    for (i, command) in commands.iter().enumerate() {
+        match command {
+            concrete::Command::Assert { term } => {
+                let mut info = AssertInfo {
+                    cid: format!("{}", i),
+                    qids: HashMap::new(),
+                    term: term.clone(),
+                };
+                info.load_qids(&term, 0);
+                write!(file, "{}", info).unwrap();
+            }
+            // concrete::Command::DefineFun { sig:_, term } => {
+            //     let mut info = AssertInfo {
+            //         cid: format!("{}", i),
+            //         qids: HashMap::new(),
+            //         term: term.clone(),
+            //     };
+            //     info.load_qids(&term, 0);
+            //     write!(file, "{}", info).unwrap();
+            // }
+            _ => {}
+        }
+    }
+}
+

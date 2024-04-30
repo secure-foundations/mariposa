@@ -5,7 +5,7 @@ from analysis.core_analyzer import CoreAnalyzer
 from analysis.wombo_analyzer import WomboAnalyzer
 from base.defs import MARIPOSA, MARIPOSA_GROUPS
 from base.factory import FACT
-from base.project import ProjectType as PT
+from base.project import KnownExt, Project, ProjectType as PT
 from base.query_analyzer import Stability as STB
 from utils.analysis_utils import PartialCDF
 from utils.cache_utils import load_cache, load_cache_or, save_cache
@@ -15,7 +15,7 @@ from utils.plot_utils import *
 import random
 from matplotlib import pyplot as plt
 import numpy as np
-
+from tqdm import tqdm
 
 def handle_create_benchmark():
     ana = FACT.get_analyzer("60nq")
@@ -67,8 +67,38 @@ def handle_core_analysis():
     plt.xscale("log")
     plt.grid()
     plt.savefig(f"fig/overall_RR.pdf")
-    
-    # bsc.print_status()
+
+# def handle_quantifier_count():
+#     for gid in MARIPOSA_GROUPS:
+#         p = FACT.get_group(gid).get_project("base.z3")
+#         counts = load_cache_or(f"{gid}_assert_count", lambda: p.get_assert_stats())
+#         counts = np.array(counts)
+#         ratios = 100 - counts[:,0] * 100 / counts[:,1]
+#         data = PartialCDF(ratios)
+#         plt.plot(data.xs, data.ys, label=GROUP_PLOT_META[gid].tex_name, color=GROUP_PLOT_META[gid].color)
+#         p50 = data.valid_median
+#         plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
+#         if gid == "d_fvbkv":
+#             plt.text(p50[0]+1, p50[1]+1, f"{round(p50[0], 2)}\%", fontsize=8, va="bottom")
+#         if gid == "fs_vwasm" or gid == "fs_dice":
+#             plt.text(p50[0]-5, p50[1]+1, f"{round(p50[0], 2)}\%", fontsize=8, va="bottom")
+#         # if gid == "d_komodo":
+#         #     plt.text(p50[0]-5, p50[1]-2, f"{round(p50[0], 2)}\%", fontsize=8, va="top")
+
+#     plt.grid()
+#     plt.yticks(np.arange(0, 101, 10))
+#     plt.ylim(0, 100)
+#     # plt.xscale("log")
+#     plt.legend()
+#     plt.xlabel("Quantified Assertion Ratio (\%)")
+#     plt.ylabel("CDF (\%)")
+#     plt.savefig("fig/qf_assert_ratio.pdf")
+
+def handle_quantifier_count():
+    for gid in MARIPOSA_GROUPS:
+        p = FACT.get_group(gid).get_project("base.z3")
+        p.get_quantifier_stats()
+        break
 
 def handle_shake_analysis():
     ana = FACT.get_analyzer("60nq")
@@ -133,6 +163,7 @@ if __name__ == "__main__":
     subparsers.add_parser("core", help="analyze core")
     subparsers.add_parser("wombo", help="analyze wombo")
     subparsers.add_parser("shake", help="analyze shake")
+    subparsers.add_parser("stat", help="analyze quantifier count")
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -145,3 +176,5 @@ if __name__ == "__main__":
         handle_shake_analysis()
     elif args.sub_command == "wombo":
         handle_wombo_analysis()
+    elif args.sub_command == "stat":
+        handle_quantifier_count()

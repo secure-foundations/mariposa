@@ -183,3 +183,31 @@ pub fn is_prop_term(term: &concrete::Term) -> bool {
         }
     }
 }
+
+pub fn get_attr_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> Option<&String> {
+    let mut qid = None;
+    attributes.iter().for_each(|(key, value)| {
+        if key != &concrete::Keyword("qid".to_owned()) {
+            return;
+        }
+        let concrete::AttributeValue::Symbol(concrete::Symbol(name)) = value else {
+            return;
+        };
+        qid = Some(name);
+    });
+    qid
+}
+
+pub fn get_attr_cid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> Option<&String> {
+    let mut cid = None;
+    attributes.iter().for_each(|(key, value)| {
+        if key != &concrete::Keyword("named".to_owned()) {
+            return;
+        }
+        let concrete::AttributeValue::Symbol(concrete::Symbol(name)) = value else {
+            return;
+        };
+        cid = Some(name);
+    });
+    cid
+}
