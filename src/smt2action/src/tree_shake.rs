@@ -3,12 +3,12 @@ use smt2parser::concrete::{AttributeValue, Command, Term};
 use std::collections::{HashMap, HashSet};
 use std::io::Write;
 use std::sync::Arc;
+use std::time::Instant;
 
 use crate::query_io;
-use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, mk_simple_qual_id_term, SymbolSet};
+use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
 use crate::tree_shake_idf::{
-    get_command_symbol_def, get_commands_symbol_def_alt, get_commands_symbol_def_plain,
-    AltSymbolSet,
+    get_command_symbol_def, get_all_symbol_defs, get_commands_symbol_def_alt, AltSymbolSet
 };
 
 struct PatternState {
@@ -415,9 +415,11 @@ pub fn tree_shake(
     shake_log_path: Option<String>,
     debug: bool,
 ) -> Vec<concrete::Command> {
+    let now = Instant::now();
     query_io::truncate_commands(&mut commands);
     let (ref_trivial, ref_defined) =
         get_commands_symbol_def_alt(&commands, shake_max_symbol_frequency);
+    println!("trivial {:?}", ref_trivial);
     let ref_trivial = Arc::new(ref_trivial);
     let defs = Arc::new(ref_defined);
     let cmds_info = query_io::load_mariposa_ids(&commands);
@@ -547,14 +549,14 @@ pub fn tree_shake(
         // reintroduce the goal
         commands.push(goal_command.clone());
     }
-
     commands.push(Command::CheckSat);
+    println!("shake time: {}", now.elapsed().as_millis());
     commands
 }
 
 pub fn remove_unused_symbols(commands: &mut Vec<concrete::Command>) {
     // println!("computing def symbols: ");
-    let defs = Arc::new(get_commands_symbol_def_plain(&commands));
+    let defs = Arc::new(get_all_symbol_defs(&commands));
 
     let uses: SymbolSet = commands
         .iter()
@@ -574,10 +576,6 @@ pub fn remove_unused_symbols(commands: &mut Vec<concrete::Command>) {
     // remove all commands that define a symbol that is not used
     commands.retain(|c| {
         let defs = get_command_symbol_def(c);
-        if let Some(defs) = defs {
-            !defs.is_disjoint(&uses)
-        } else {
-            true
-        }
+        (defs.is_empty() || !defs.is_disjoint(&uses)) && c.to_string() != "(assert true)"
     })
 }

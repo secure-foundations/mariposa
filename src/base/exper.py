@@ -71,7 +71,6 @@ class QueryExpResult:
         if self.timeout != None:
             print(f"alternative timeout: {self.timeout/1000}s")
 
-
         table = [["mutation"] + [str(rc) for rc in EXPECTED_CODES] 
                  + ["mean", "std"]]
         for m in self.mutations:
@@ -94,6 +93,18 @@ class QueryExpResult:
             table.append(trow)
         print(tabulate(table, headers="firstrow"))
         print("")
+
+    def get_mean_time(self):
+        pass_times = []
+        all_times = []
+        for m in self.mutations:
+            rcodes, times = self.get_mutation_status(m)
+            for rc, et in zip(rcodes, times):
+                if rc == RCode.UNSAT.value:
+                    pass_times.append(et)
+                all_times.append(et)
+        # print(np.mean(all_times), np.mean(pass_times))
+        return np.mean(pass_times)
 
     # def get_fast_pass(self):
     #     if self.blob is None:

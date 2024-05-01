@@ -10,7 +10,7 @@ from base.query_analyzer import Stability as STB
 from utils.analysis_utils import PartialCDF
 from utils.cache_utils import load_cache, load_cache_or, save_cache
 from utils.option_utils import deep_parse_args
-from utils.system_utils import log_info, log_warn
+from utils.system_utils import log_info, log_warn, subprocess_run
 from utils.plot_utils import *
 import random
 from matplotlib import pyplot as plt
@@ -108,6 +108,51 @@ def handle_shake_analysis():
     exp = FACT.load_any_analysis(FACT.get_group(BS_GID).get_project("shko.z3"), ana)
     exp.print_status()
 
+def handle_shake_time_analysis():
+    ana = FACT.get_analyzer("60nq")
+    base = FACT.load_any_analysis(FACT.get_group(BS_GID).get_project("base.z3"), ana)
+
+    # for qid in base.qids:
+    #     path = base.get_path(qid)
+    #     o = subprocess_run(f"{MARIPOSA} -a shake -i {path}", shell=True)[0]
+    #     o = o.split("\n")
+    #     assert len(o) == 2
+    #     parse_time = int(o[0].split(": ")[-1])
+    #     shake_time = int(o[1].split(": ")[-1])
+    #     print(f"{qid},{parse_time},{shake_time}")
+
+    dps = []
+    for line in open("doc/stable_shake_time"):
+        line = line.strip().split(",")
+        qid = line[0]
+        m = base[qid].get_mean_time()
+        dps.append((int(line[1]), int(line[2]), m))
+
+    dps = np.array(dps)
+    dps = np.sort(dps, axis=0)
+    
+    for i in range(0, len(dps)):
+        if i != 0:
+            plt.bar(i, dps[i,1], color="blue", alpha=0.5)
+            plt.bar(i, dps[i,0], bottom=dps[i,1], color="red", alpha=0.5)
+            plt.bar(i, dps[i,2], color="green", alpha=0.5)
+        else:
+            plt.bar(i, dps[i,1], color="blue", alpha=0.5, label="shake")
+            plt.bar(i, dps[i,0], bottom=dps[i,1], color="red", alpha=0.5, label="parse")
+            plt.bar(i, dps[i,2], color="green", alpha=0.5, label="solve (success mean)")
+
+    print(np.median(dps[i,0]/dps[i,2]))
+    # # plt.yticks(np.arange(0, 101, 10))
+    plt.xlim(0)
+    # plt.xticks([])
+    # plt.ylim(0, 1000)
+    # # plt.xlabel("Ratio")
+    plt.ylabel("time (ms)")
+    plt.xlabel("queries (sorted by solve time)")
+    plt.legend()
+    # # plt.grid()
+    plt.savefig("fig/shake_stable_time.pdf")
+
 def handle_wombo_analysis():
     wuc = WomboAnalyzer(FACT.get_group(BU_GID))
     wuc.temp.print_status()
@@ -164,6 +209,7 @@ if __name__ == "__main__":
     subparsers.add_parser("wombo", help="analyze wombo")
     subparsers.add_parser("shake", help="analyze shake")
     subparsers.add_parser("stat", help="analyze quantifier count")
+    subparsers.add_parser("shake-time", help="analyze shake time")
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -174,6 +220,8 @@ if __name__ == "__main__":
         handle_core_analysis()
     elif args.sub_command == "shake":
         handle_shake_analysis()
+    elif args.sub_command == "shake-time":
+        handle_shake_time_analysis()
     elif args.sub_command == "wombo":
         handle_wombo_analysis()
     elif args.sub_command == "stat":

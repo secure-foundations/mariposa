@@ -9,11 +9,12 @@ from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *
 
+@delegate('qer', 'get_mean_time')
 class QueryAnaResult:
     def __init__(self, qer: QueryExpResult, ss: Stability, ft: FailureType):
         self.qid = qer.qid
         self.query_path = qer.query_path
-        self.__qer: QueryExpResult = qer
+        self.qer: QueryExpResult = qer
         self.stability: Stability = ss
         self.failure_type: FailureType = ft
 
@@ -25,7 +26,7 @@ class QueryAnaResult:
         # proc = find_verus_procedure_name(self.query_path)
         # if proc != None:
         #     print(f"procedure name:\t\t{proc}")
-        self.__qer.print_status(verbosity)
+        self.qer.print_status(verbosity)
 
 @delegate('exp', 'get_path', 'list_queries', 'get_log_dir')
 class ExperAnalyzer:

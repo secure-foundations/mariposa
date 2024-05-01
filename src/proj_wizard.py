@@ -18,7 +18,7 @@ rule shake
     command = {MARIPOSA} -i $in -o $out -a shake --shake-log-path $log
 
 rule build-core
-    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 10 -s z3_4_12_5 --ids-available --restarts 5
+    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 120 -s z3_4_8_5 --ids-available --restarts 10
 
 rule add-ids
     command = {MARIPOSA} -i $in -o $out -a add-ids

@@ -8,7 +8,7 @@ use crate::term_match::{get_identifier_symbols, get_sexpr_symbols, SymbolSet};
 type SymbolCount = HashMap<Symbol, usize>;
 
 // get the symbols defined in a command
-pub fn get_command_symbol_def(command: &concrete::Command) -> Option<SymbolSet> {
+pub fn get_command_symbol_def(command: &concrete::Command) -> SymbolSet {
     let mut symbols = HashSet::new();
     match command {
         Command::DeclareConst { symbol, sort: _ } => {
@@ -38,139 +38,17 @@ pub fn get_command_symbol_def(command: &concrete::Command) -> Option<SymbolSet> 
         }
         _ => (),
     }
-
-    if symbols.len() == 0 {
-        None
-    } else {
-        Some(symbols)
-    }
+    symbols
 }
 
-pub fn get_commands_symbol_def_plain(commands: &Vec<concrete::Command>) -> SymbolSet {
+pub fn get_all_symbol_defs(commands: &Vec<concrete::Command>) -> SymbolSet {
     let defs: SymbolSet = commands
         .iter()
-        .filter_map(|x| get_command_symbol_def(x))
+        .map(|x| get_command_symbol_def(x))
         .flatten()
         .collect();
     return defs;
 }
-
-pub struct AltSymbolSet {
-    trivial: SymbolSet,
-    pub defined: SymbolSet,
-
-    ref_trivial: Arc<SymbolSet>,
-    ref_defined: Arc<SymbolSet>,
-}
-
-impl AltSymbolSet {
-    pub fn new(
-        init: SymbolSet,
-        ref_trivial: Arc<SymbolSet>,
-        ref_defined: Arc<SymbolSet>,
-    ) -> Self {
-        let trivial = SymbolSet::new();
-        let defined = SymbolSet::new();
-
-        let mut result = Self {
-            trivial,
-            defined,
-            ref_trivial,
-            ref_defined,
-        };
-
-        result.extend(init);
-        return result;
-    }
-
-    pub fn extend(&mut self, other: SymbolSet) {
-        assert!(self.defined.is_superset(&self.trivial));
-        for symbol in other.into_iter() {
-            if self.ref_defined.contains(&symbol) {
-                self.defined.insert(symbol.clone());
-                if self.ref_trivial.contains(&symbol) {
-                    self.trivial.insert(symbol);
-                }
-            }
-        }
-    }
-
-    pub fn is_superset(&self, other: &SymbolSet) -> bool {
-        if other.is_subset(&self.trivial) {
-            return false;
-        }
-
-        return other.is_subset(&self.defined);
-    }
-
-    // pub fn is_disjoint(&self, other: &SymbolSet) -> bool {
-    //     return other.is_disjoint(&self.defined);
-    // }
-
-    pub fn has_overlap(&self, other: &SymbolSet) -> bool {
-        // TODO: optimize
-        let overlap: SymbolSet = self
-            .defined
-            .intersection(other)
-            .map(|x| x.clone())
-            .collect();
-
-        if overlap.is_subset(&self.trivial) {
-            return false;
-        }
-
-        return overlap.len() > 0;
-    }
-
-    pub fn debug(&self) {
-        println!("[sb] trivial:");
-        for s in &self.trivial {
-            println!("[sb] {}", s);
-        }
-        println!("[sb] defined:");
-        for s in &self.defined {
-            println!("[sb] {}", s);
-        }
-    }
-
-}
-
-pub fn get_commands_symbol_def_alt(
-    commands: &Vec<concrete::Command>,
-    max_symbol_frequency: usize,
-) -> (SymbolSet, SymbolSet) {
-    assert!(max_symbol_frequency <= 100);
-
-    let (cmd_freq, use_cmd_count) = count_commands_symbol_frequency(commands, false);
-
-    let (under, over): (_, Vec<_>) = cmd_freq
-        .into_iter()
-        .partition(|(_, count)| count * 100 / use_cmd_count <= max_symbol_frequency);
-
-    let mut under: SymbolSet = under.into_iter().map(|(symbol, _)| symbol).collect();
-    let over: SymbolSet = over.into_iter().map(|(symbol, _)| symbol).collect();
-    under.extend(over.clone());
-    (over, under)
-}
-
-// pub fn get_commands_symbol_def(
-//     commands: &Vec<concrete::Command>,
-//     max_symbol_frequency: usize,
-// ) -> SymbolSet {
-//     assert!(max_symbol_frequency <= 100);
-
-//     if max_symbol_frequency == 100 {
-//         return get_commands_symbol_def_plain(commands);
-//     }
-
-//     let (cmd_freq, use_cmd_count) = count_commands_symbol_frequency(commands, false);
-
-//     cmd_freq
-//         .into_iter()
-//         .filter(|(_, count)| count * 100 / use_cmd_count <= max_symbol_frequency)
-//         .map(|(symbol, _)| symbol)
-//         .collect()
-// }
 
 struct CommandUseCounter {
     defined_symbols: Arc<SymbolSet>,
@@ -310,7 +188,7 @@ pub fn count_commands_symbol_frequency(
     commands: &Vec<Command>,
     include_patterns: bool,
 ) -> (SymbolCount, usize) {
-    let defined_symbols = Arc::new(get_commands_symbol_def_plain(commands));
+    let defined_symbols = Arc::new(get_all_symbol_defs(commands));
     let mut use_cmd_count = 0;
 
     // this will only count each symbol at most once per command
@@ -326,6 +204,108 @@ pub fn count_commands_symbol_frequency(
         });
     });
     return (cmd_freq, use_cmd_count);
+}
+
+pub struct AltSymbolSet {
+    trivial: SymbolSet,
+    pub defined: SymbolSet,
+
+    ref_trivial: Arc<SymbolSet>,
+    ref_defined: Arc<SymbolSet>,
+}
+
+impl AltSymbolSet {
+    pub fn new(
+        init: SymbolSet,
+        ref_trivial: Arc<SymbolSet>,
+        ref_defined: Arc<SymbolSet>,
+    ) -> Self {
+        let trivial = SymbolSet::new();
+        let defined = SymbolSet::new();
+
+        let mut result = Self {
+            trivial,
+            defined,
+            ref_trivial,
+            ref_defined,
+        };
+
+        result.extend(init);
+        return result;
+    }
+
+    pub fn extend(&mut self, other: SymbolSet) {
+        assert!(self.defined.is_superset(&self.trivial));
+        for symbol in other.into_iter() {
+            if self.ref_defined.contains(&symbol) {
+                self.defined.insert(symbol.clone());
+                if self.ref_trivial.contains(&symbol) {
+                    self.trivial.insert(symbol);
+                }
+            }
+        }
+    }
+
+    pub fn is_superset(&self, other: &SymbolSet) -> bool {
+        if other.is_subset(&self.trivial) {
+            return false;
+        }
+
+        return other.is_subset(&self.defined);
+    }
+
+    // pub fn is_disjoint(&self, other: &SymbolSet) -> bool {
+    //     return other.is_disjoint(&self.defined);
+    // }
+
+    pub fn has_overlap(&self, other: &SymbolSet) -> bool {
+        // TODO: optimize
+        let overlap: SymbolSet = self
+            .defined
+            .intersection(other)
+            .map(|x| x.clone())
+            .collect();
+
+        if overlap.is_subset(&self.trivial) {
+            return false;
+        }
+
+        return overlap.len() > 0;
+    }
+
+    pub fn debug(&self) {
+        println!("[sb] trivial:");
+        for s in &self.trivial {
+            println!("[sb] {}", s);
+        }
+        println!("[sb] defined:");
+        for s in &self.defined {
+            println!("[sb] {}", s);
+        }
+    }
+
+}
+
+pub fn get_commands_symbol_def_alt(
+    commands: &Vec<concrete::Command>,
+    max_symbol_frequency: usize,
+) -> (SymbolSet, SymbolSet) {
+    assert!(max_symbol_frequency <= 100);
+
+    if max_symbol_frequency == 100 {
+        return (SymbolSet::new(), get_all_symbol_defs(commands));
+    }
+
+    let (cmd_freq, use_cmd_count) = count_commands_symbol_frequency(commands, false);
+
+    let (under, over): (_, Vec<_>) = cmd_freq
+        .into_iter()
+        .partition(|(_, count)| count * 100 / use_cmd_count <= max_symbol_frequency);
+
+    let mut under: SymbolSet = under.into_iter().map(|(symbol, _)| symbol).collect();
+    let over: SymbolSet = over.into_iter().map(|(symbol, _)| symbol).collect();
+    under.extend(over.clone());
+    (over, under)
 }
 
 #[allow(dead_code)]

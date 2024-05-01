@@ -1,4 +1,4 @@
-use std::{process::exit, str::FromStr};
+use std::{process::exit, str::FromStr, time::Instant};
 use strum::{EnumMessage, IntoEnumIterator};
 use strum_macros::{Display, EnumIter, EnumMessage, EnumString};
 
@@ -256,7 +256,9 @@ fn main() {
         return;
     }
 
+    let now = Instant::now();
     let (mut commands, plain_total) = parse_query(&args);
+    println!("parse time: {}", now.elapsed().as_millis());
 
     if action == Action::Check {
         println!(
@@ -323,7 +325,7 @@ fn main() {
         Action::Shake => {
             assert!(args.shake_init_strategy < 2);
             assert!(args.shake_max_symbol_frequency <= 100);
-            tree_shake::tree_shake(
+            commands = tree_shake::tree_shake(
                 commands,
                 args.shake_max_depth,
                 args.shake_max_symbol_frequency,
@@ -331,7 +333,9 @@ fn main() {
                 args.shake_log_path,
                 args.shake_debug,
             );
-            return;
+            if args.out_query_path.is_none() {
+                return;
+            }
         }
         Action::InstCVC5 => {
             if args.cvc5_inst_log_path.is_none() {

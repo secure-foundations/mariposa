@@ -7,6 +7,7 @@ from analysis.inst_analyzer import InstAnalyzer
 from analysis.perf_analyzer import PrefAnalyzer
 from analysis.shake_analyzer import ShakeAnalyzer
 from analysis.wombo_analyzer import WomboAnalyzer
+from base.factory import FACT
 from utils.option_utils import *
 from proj_wizard import *
 
@@ -56,8 +57,16 @@ def handle_shake(args):
     shake = ShakeAnalyzer(group, args.analyzer)
 
 def set_up_wombo(subparsers):
-    p = subparsers.add_parser('wombo', help='no help')
+    p = subparsers.add_parser('wombo', help='no help is coming')
     add_input_dir_option(p, is_group=True)
+
+def handle_special():
+    in_proj = FACT.get_project_by_path("data/projs/bench_unstable/base.z3")
+    ot_proj = FACT.get_project_by_path("data/projs/data/projs/bench_unstable_simp/base.z3")
+    for qid in in_proj.qids:
+        in_path = in_proj.get_path(qid)
+        ot_path = ot_proj.get_path(qid)
+        print(f"{MARIPOSA} -a add-ids -i {ot_path} -o {ot_path} --reassign-ids")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")
@@ -70,6 +79,7 @@ if __name__ == '__main__':
     set_up_core(subparsers)
     set_up_shake(subparsers)
     set_up_wombo(subparsers)
+    p = subparsers.add_parser('special', help='placeholder for special analysis')
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -89,5 +99,7 @@ if __name__ == '__main__':
         handle_shake(args)
     elif args.sub_command == "wombo":
         WomboAnalyzer(args.input_group)
+    elif args.sub_command == "special":
+        handle_special()
     else:
         parser.print_help()

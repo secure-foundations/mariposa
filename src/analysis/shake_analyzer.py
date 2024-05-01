@@ -9,10 +9,11 @@ from base.exper_analyzer import ExperAnalyzer
 from utils.analysis_utils import *
 from utils.query_utils import count_asserts, is_assertion_subset
 from utils.system_utils import print_banner
-from utils.shake_utils  import *
+from utils.shake_utils import *
 import numpy as np
 from tqdm import tqdm
 import filecmp
+
 
 def check_incomplete(oracle_path, depths):
     print(oracle_path)
@@ -26,15 +27,17 @@ def check_incomplete(oracle_path, depths):
             print(line, end="")
     print("..")
 
+
 def valid_max(scores):
     return max([s for s in scores if not np.isnan(s)])
 
+
 class ShakeAnalyzer(CoreAnalyzer):
     def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
-        super().__init__(group, ana)
+        super().__init__(group)
         self.p_shake = group.get_project(PT.from_str("shko.z3"), build=True)
 
-        self.shake = FACT.load_any_analysis(self.p_shake, ana)
+        self.shake = FACT.load_default_analysis(self.p_shake)
         # self.create_shake_queries()
         self.check_shake_perf()
 
@@ -50,10 +53,15 @@ class ShakeAnalyzer(CoreAnalyzer):
             if qid not in self.shake:
                 print("shko: TOS!!")
             else:
-                print("shko:", self.shake.get_stability(qid))
+                print("shko:", self.shake[qid].stability)
                 self.shake[qid].print_status(5)
+                self.core[qid].print_status(5)
 
-            print("./src/query_wizard.py debug-shake", "-i %s --core-query-path %s --input-log-path %s" % (qcs.base_path, qcs.patch_path, shake_log))
+            print(
+                "./src/query_wizard.py debug-shake",
+                "-i %s --core-query-path %s --input-log-path %s"
+                % (qcs.base_path, qcs.patch_path, shake_log),
+            )
 
             print("")
 
