@@ -104,7 +104,9 @@ class QueryExpResult:
                     pass_times.append(et)
                 all_times.append(et)
         # print(np.mean(all_times), np.mean(pass_times))
-        return np.mean(pass_times)
+        # if len(pass_times) == 0:
+        #     return np.nan
+        return np.mean(all_times)
 
     # def get_fast_pass(self):
     #     if self.blob is None:

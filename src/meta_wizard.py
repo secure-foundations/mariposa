@@ -7,7 +7,8 @@ from base.defs import MARIPOSA, MARIPOSA_GROUPS
 from base.factory import FACT
 from base.project import KnownExt, Project, ProjectType as PT
 from base.query_analyzer import Stability as STB
-from utils.analysis_utils import PartialCDF
+from base.solver import RCode
+from utils.analysis_utils import Categorizer, PartialCDF
 from utils.cache_utils import load_cache, load_cache_or, save_cache
 from utils.option_utils import deep_parse_args
 from utils.system_utils import log_info, log_warn, subprocess_run
@@ -100,13 +101,107 @@ def handle_quantifier_count():
         p.get_quantifier_stats()
         break
 
+def handle_shake_analysis2():
+    from scipy.stats import gaussian_kde
+
+    ana = FACT.get_analyzer("60nq")
+    shko = FACT.load_any_analysis(FACT.get_group(BU_GID).get_project("shko.z3"), ana)
+    # exp.print_status()
+    base = FACT.load_any_analysis(FACT.get_group(BU_GID).get_project("base.z3"), ana)
+
+    bcats = Categorizer()
+    scats = Categorizer()
+    ratios = []
+    for qid in base.qids:
+        # bs, bm = base[qid].get_original_status()
+        # bcats.add_item(RCode(bs), qid)
+        # ss, sm = shko[qid].get_original_status()
+        # ratios += [[sm, bm]]
+        # scats.add_item(RCode(ss), qid)
+        bm = base[qid].get_mean_time()
+        sm = shko[qid].get_mean_time()
+        ratios += [[sm, bm]]
+        
+
+    ratios = np.array(ratios)
+    # plt.scatter(ratios[:,0], ratios[:,1], alpha=0.5)
+    x = ratios[:,0]
+    y = ratios[:,1]
+
+    xy = np.vstack([x,y])
+    z = gaussian_kde(xy)(xy)
+    plt.scatter(ratios[:,0], ratios[:,1], c=z, s=10)
+
+    # plt.xlabel("Shake Status")
+    # plt.ylabel("Base Status")
+    # plt.hist(ratios[:,1] / ratios[:,0], bins=100)
+    # cdf = PartialCDF(ratios[:,0] / ratios[:,1])
+    
+    # plt.plot(cdf.xs, cdf.ys)
+    # p50 = cdf.valid_median
+    # plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
+    # plt.text(p50[0], p50[1], f"{round(p50[0], 2)}", fontsize=8, va="bottom")
+    # p90 = cdf.get_point_by_percent(90, True)
+    # plt.plot(p90[0], p90[1], c="black", marker="o", markersize=3)
+    # plt.text(p90[0], p90[1], f"{round(p90[0], 2)}", fontsize=8, va="bottom")
+    # p10 = cdf.get_point_by_percent(10, True)
+    # plt.plot(p10[0], p10[1], c="black", marker="o", markersize=3)
+    # plt.text(p10[0], p10[1], f"{round(p10[0], 2)}", fontsize=8, va="bottom")
+    
+    # plt.xscale("log")
+    # plt.ylim(0, 100)
+    # plt.yticks(np.arange(0, 101, 10))
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.plot([10, 6e4], [10, 6e4], color="black", linestyle="--")
+    plt.gca().set_aspect('equal')
+
+    plt.grid()
+    plt.savefig("fig/shake_ratio.pdf")
+
+    bcats.finalize()
+    scats.finalize()
+
+    bcats.print_status()
+    scats.print_status()
+        # print(f"{bm},{bs},{sm},{ss}")
+
+    # simp = FACT.load_any_analysis(FACT.get_group("bench_unstable_simp").get_project("shko.z3"), ana)
+    # # simp.print_status()
+    
+    # cc = exp.stability_categories
+    # sc = simp.stability_categories
+
+    # mc = sc.get_migration_status(cc)
+    # for k, v in mc.items():
+    #     print(f"{k}")
+    #     v.print_status()
+
+    # exp = FACT.load_any_analysis(FACT.get_group(BS_GID).get_project("shko.z3"), ana)
+    # exp.print_status()
+
 def handle_shake_analysis():
     ana = FACT.get_analyzer("60nq")
-    exp = FACT.load_any_analysis(FACT.get_group(BU_GID).get_project("shko.z3"), ana)
-    exp.print_status()
+    group = FACT.get_group("d_komodo")
+    base = FACT.load_any_analysis(group.get_project("base.z3"), ana)
+    base.print_plain_status()    
+    # shko = group.get_project("shko.z3")
 
-    exp = FACT.load_any_analysis(FACT.get_group(BS_GID).get_project("shko.z3"), ana)
-    exp.print_status()
+    # for qid in base.stability_categories[STB.UNSOLVABLE].items:
+    #     print(shko.get_path(qid))
+    #     # print(qid)
+    #     base_path = base.get_path(qid)
+    #     shake_log = base.get_path(qid, KnownExt.SHK_LOG)
+
+    #     # print(
+    #     #     "./src/query_wizard.py debug-shake",
+    #     #     "-i %s --core-query-path %s --input-log-path %s"
+    #     #     % (base_path, base_path, shake_log),
+    #     # )
+    #     print(
+    #         "cp %s tmp/woot.smt2"
+    #         (base_path),
+    #     )
 
 def handle_shake_time_analysis():
     ana = FACT.get_analyzer("60nq")

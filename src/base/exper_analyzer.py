@@ -9,7 +9,7 @@ from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *
 
-@delegate('qer', 'get_mean_time')
+@delegate('qer', 'get_mean_time', 'get_original_status')
 class QueryAnaResult:
     def __init__(self, qer: QueryExpResult, ss: Stability, ft: FailureType):
         self.qid = qer.qid
@@ -88,6 +88,15 @@ class ExperAnalyzer:
     @property
     def qids(self):
         return self.__qr_keys
+
+    def print_plain_status(self):
+        cats = Categorizer()
+        for qid in self.qids:
+            qr = self[qid]
+            rc, et = qr.get_original_status()
+            cats.add_item(RCode(rc), qid)
+        cats.finalize()
+        cats.print_status()
 
     def print_status(self, category_verbosity=0, query_verbosity=0):
         print_banner("Overall Report")
