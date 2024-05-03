@@ -182,9 +182,32 @@ def handle_shake_analysis2():
 
 def handle_shake_analysis():
     ana = FACT.get_analyzer("60nq")
-    group = FACT.get_group("d_komodo")
+    group = FACT.get_group("d_fvbkv")
     base = FACT.load_any_analysis(group.get_project("base.z3"), ana)
-    base.print_plain_status()    
+    # base.print_plain_status()
+    shkf = FACT.load_any_analysis(group.get_project("shkf.z3"), ana)
+    # shkp.print_plain_status()
+
+    times = []    
+    for qid in base.qids:
+        bs, bm = base[qid].get_original_status()
+        if qid not in shkf.qids:
+            sm = bm
+        else:
+            ss, sm = shkf[qid].get_original_status()
+        times += [[bm, sm]]
+    
+    times = np.array(times)
+    plt.scatter(times[:,1], times[:,0], alpha=0.5)
+    
+    plt.plot([10, 6e4], [10, 6e4], color="black", linestyle="--")
+    plt.gca().set_aspect('equal')
+    plt.xscale("log")
+    plt.yscale("log")
+
+    plt.grid()
+    plt.savefig("fig/shake_ratio.pdf")
+
     # shko = group.get_project("shko.z3")
 
     # for qid in base.stability_categories[STB.UNSOLVABLE].items:

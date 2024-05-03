@@ -636,7 +636,7 @@ pub fn print_stats(commands: &Vec<concrete::Command>, stat_log_path: &String) {
                     qids: HashMap::new(),
                     term: term.clone(),
                 };
-                info.load_qids(&term, 0);
+                // info.load_qids(&term, 0);
                 write!(file, "{}", info).unwrap();
             }
             // concrete::Command::DefineFun { sig:_, term } => {

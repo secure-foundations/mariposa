@@ -20,7 +20,7 @@
     },
     "verify": {
         "num_mutants": 0,
-        "num_procs": 6
+        "num_procs": 8
     },
     "debug": {
         "mutations": [
