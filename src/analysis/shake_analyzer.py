@@ -34,12 +34,12 @@ def valid_max(scores):
 
 class ShakeAnalyzer(CoreAnalyzer):
     def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
-        super().__init__(group)
+        # super().__init__(group)
         self.p_shake = group.get_project(PT.from_str("shko.z3"), build=True)
 
-        self.shake = FACT.load_default_analysis(self.p_shake)
+        # self.shake = FACT.load_default_analysis(self.p_shake)
         # self.create_shake_queries()
-        self.check_shake_perf()
+        # self.check_shake_perf()
 
     def check_shake_perf(self):
         for qid, qcs in self.qids.items():

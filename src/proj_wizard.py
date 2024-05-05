@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from os import path
 import argparse, time, pickle, numpy as np
 from base.exper import Experiment
 from base.project import KnownExt, Project, ProjectType as PT, get_qid
@@ -172,13 +173,15 @@ class NinjaPasta:
             self.handle_create_benchmark()
         elif args.sub_command == "log-shake":
             self.handle_create_shake_log(args.input_proj)
+        elif args.sub_command == "time-shake":
+            self.handle_time_shake(args.input_proj)
         elif args.sub_command == "query-stat":
             self.handle_create_stat_log(args.input_proj)
         else:
             parser.print_help()
             return
 
-        self.finalize(args.clear_existing)
+        self.finalize(args.clear_existing, args.no_build)
 
         if args.record_build_stats:
             log_check(ext != None, "extension not intended for build stats!")
@@ -330,12 +333,20 @@ class NinjaPasta:
         
     def handle_create_shake_log(self, in_proj):
         self.output_dir = in_proj.get_log_dir(KnownExt.SHK_LOG)
+        ot_proj = in_proj.get_alt_dir(PT.from_str("shkf.z3"))
+
         for qid in in_proj.qids:
             i = in_proj.get_path(qid)
-            o = in_proj.get_path(qid, KnownExt.SHK_LOG)
-            self.ninja_stuff += [f"build {o}: shake-log {i}\n"]
+            l = in_proj.get_path(qid, KnownExt.SHK_LOG)
+            o = path.join(ot_proj, f"{qid}.smt2")
+            # self.ninja_stuff += [f"build {o}: shake-log {i}\n"]
+            self.ninja_stuff += [f"build {o}: shake {i}\n", 
+                                 f"    log={l}\n"]
             self.expect_targets.add(o)
-            
+
+    def handle_time_shake(self, in_proj):
+        pass
+
     def handle_create_stat_log(self, in_proj):
         self.output_dir = in_proj.get_log_dir(KnownExt.Q_LOG)
         for qid in in_proj.qids:
@@ -344,7 +355,7 @@ class NinjaPasta:
             self.ninja_stuff += [f"build {o}: query-stat {i}\n"]
             self.expect_targets.add(o)
 
-    def finalize(self, clear):
+    def finalize(self, clear, no_build):
         if len(self.ninja_stuff) == 0:
             log_info("no targets to build")
             return
@@ -357,6 +368,9 @@ class NinjaPasta:
             f.write(self.ninja_stuff)
 
         log_info(f"generated {len(self.expect_targets)} targets in {NINJA_BUILD_FILE}")
+
+        if no_build:
+            return
 
         confirm_input(f"run `ninja -j 6 -k 0` to start building?")
 

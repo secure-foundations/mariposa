@@ -22,6 +22,17 @@ def handle_basic(args):
     ba = ExperAnalyzer(exp, args.analyzer)
     ba.print_status(args.category_verbosity, args.query_verbosity)
 
+def set_up_verify(subparsers):
+    p = subparsers.add_parser('verify', help='analyze the verification performance only')
+    add_input_dir_option(p)
+    add_analysis_options(p)
+
+def handle_verify(args):
+    exp = args.experiment
+    log_check(exp.is_done(), "experiment results do not exist")
+    ba = ExperAnalyzer(exp, args.analyzer)
+    ba.print_plain_status()
+
 def set_up_cvc5_perf(subparsers):
     p = subparsers.add_parser('perf', help='analyze the raw performance of cvc5/z3 on a project group')
     add_input_dir_option(p, is_group=True)
@@ -73,6 +84,7 @@ if __name__ == '__main__':
     subparsers = parser.add_subparsers(dest='sub_command', help="mode to run analysis in")
 
     set_up_basic(subparsers)
+    set_up_verify(subparsers)
     set_up_cvc5_perf(subparsers)
     set_up_cvc5_inst(subparsers)
     set_up_unstable(subparsers)
@@ -86,6 +98,8 @@ if __name__ == '__main__':
 
     if args.sub_command == "basic":
         handle_basic(args)
+    elif args.sub_command == "verify":
+        handle_verify(args)
     elif args.sub_command == "perf":
         PrefAnalyzer(args.input_group, args.analyzer)
     elif args.sub_command == "inst":

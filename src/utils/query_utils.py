@@ -64,6 +64,11 @@ def convert_smtlib(in_file, out_file, incremental):
             continue
         if "(declare-datatypes () ())" in line:
             continue
+        if line.startswith("(declare-fun regex_2_U"):
+            new_lines.append("(declare-sort RegEx 1)")
+
+        if line.startswith("(push") and not incremental:
+            continue
         # Replace bv2int with bv2nat
         line = line.strip().replace("bv2int", "bv2nat")
         new_lines.append(line)

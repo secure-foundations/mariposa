@@ -95,7 +95,7 @@ def handle_manager(args, wargs):
         os.remove(temp_db_path)
     log_info(f"done importing")
 
-    ExperAnalyzer(exp, args.analyzer).print_status(args.verbose)
+    ExperAnalyzer(exp, args.analyzer).print_status()
 
 def handle_worker(args):
     from multiprocessing.managers import BaseManager
@@ -229,10 +229,10 @@ def handle_data_sync(input_dir, clear):
         f.close()
 
     log_info(f"{len(lines)} commands written to sync.sh")
-    confirm_input("run `cat sync.sh | parallel`?")
+    # confirm_input("run `cat sync.sh | parallel`?")
     os.system("cat sync.sh | parallel")
 
-    confirm_input("remove temp files?")
+    # confirm_input("remove temp files?")
     os.remove("sync.sh")
     os.remove(SYNC_ZIP)
 

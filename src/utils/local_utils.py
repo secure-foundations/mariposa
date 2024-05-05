@@ -1,3 +1,4 @@
+from base.defs import MARIPOSA_GROUPS
 from base.factory import FACT
 from base.project import get_qid
 from base.exper_runner import Runner
@@ -37,9 +38,10 @@ def handle_multiple(args):
     return (exp.db_path, args.part)
 
 def handle_info(args):
-    for pg in FACT.get_project_groups():
-        print(f"project group: {pg.gid}")
-        for proj in pg.get_projects():
+    for gid in MARIPOSA_GROUPS:
+        print(f"project group: {gid}")
+        group = FACT.get_group(gid)
+        for proj in group.get_projects():
             print(f"\t{proj.ptype} ({len(proj.list_queries())})")
             exps = FACT.get_available_expers(proj)
             for exp in exps:

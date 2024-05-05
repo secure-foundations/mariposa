@@ -419,7 +419,7 @@ pub fn tree_shake(
     query_io::truncate_commands(&mut commands);
     let (ref_trivial, ref_defined) =
         get_commands_symbol_def_alt(&commands, shake_max_symbol_frequency);
-    println!("trivial {:?}", ref_trivial);
+    // println!("trivial {:?}", ref_trivial);
     let ref_trivial = Arc::new(ref_trivial);
     let defs = Arc::new(ref_defined);
     let cmds_info = query_io::load_mariposa_ids(&commands);

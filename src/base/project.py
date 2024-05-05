@@ -238,27 +238,29 @@ class Project:
         return os.path.join(NINJA_REPORTS_DIR, 
                             f"{self.full_name}.{ext}.pkl")
         
-    def get_assert_stats(self):
-        from tqdm import tqdm
-        data = []
-        for qid in tqdm(self.qids):
-            log_path = self.get_path(qid, KnownExt.Q_LOG)
-            assert_ids = dict()
-            qf_assert_count = 0
+    # def get_assert_stats(self):
+    #     from tqdm import tqdm
+    #     data = []
+    #     for qid in tqdm(self.qids):
+    #         log_path = self.get_path(qid, KnownExt.Q_LOG)
+    #         assert_ids = dict()
+    #         qf_assert_count = 0
 
-            with open(log_path, "r") as f:
-                lines = f.readlines()
-                for line in lines:
-                    line = line.split("|")
-                    aid, qqid, depth = line[0], line[1], int(line[2])
-                    if aid not in assert_ids:
-                        assert_ids[aid] = []
-                    assert_ids[aid].append((qqid, depth))
-                    if qqid == "NO_QID":
-                        qf_assert_count += 1
+    #         with open(log_path, "r") as f:
+    #             lines = f.readlines()
+    #             for line in lines:
+    #                 line = line.split("|")
+    #                 aid, qqid, depth = line[0], line[1], int(line[2])
+    #                 if aid not in assert_ids:
+    #                     assert_ids[aid] = []
+    #                 assert_ids[aid].append((qqid, depth))
+    #                 if qqid == "NO_QID":
+    #                     qf_assert_count += 1
 
-                data.append((qf_assert_count, len(assert_ids)))
-        return data
+    #             data.append((qf_assert_count, len(assert_ids)))
+    #     return data
+
+    # def get_assert_counts(self):
 
     def get_quantifier_stats(self):
         from tqdm import tqdm
