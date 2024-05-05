@@ -75,75 +75,41 @@ def handle_core_analysis():
     plt.grid()
     plt.savefig(f"fig/overall_RR.pdf")
 
-# def handle_quantifier_count():
-#     for gid in MARIPOSA_GROUPS:
-#         p = FACT.get_group(gid).get_project("base.z3")
-#         counts = load_cache_or(f"{gid}_assert_count", lambda: p.get_assert_stats())
-#         counts = np.array(counts)
-#         ratios = 100 - counts[:,0] * 100 / counts[:,1]
-#         data = PartialCDF(ratios)
-#         plt.plot(data.xs, data.ys, label=GROUP_PLOT_META[gid].tex_name, color=GROUP_PLOT_META[gid].color)
-#         p50 = data.valid_median
-#         plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
-#         if gid == "d_fvbkv":
-#             plt.text(p50[0]+1, p50[1]+1, f"{round(p50[0], 2)}\%", fontsize=8, va="bottom")
-#         if gid == "fs_vwasm" or gid == "fs_dice":
-#             plt.text(p50[0]-5, p50[1]+1, f"{round(p50[0], 2)}\%", fontsize=8, va="bottom")
-#         # if gid == "d_komodo":
-#         #     plt.text(p50[0]-5, p50[1]-2, f"{round(p50[0], 2)}\%", fontsize=8, va="top")
-
-#     plt.grid()
-#     plt.yticks(np.arange(0, 101, 10))
-#     plt.ylim(0, 100)
-#     # plt.xscale("log")
-#     plt.legend()
-#     plt.xlabel("Quantified Assertion Ratio (\%)")
-#     plt.ylabel("CDF (\%)")
-#     plt.savefig("fig/qf_assert_ratio.pdf")
-
-def handle_quantifier_count():
-    for gid in MARIPOSA_GROUPS:
-        p = FACT.get_group(gid).get_project("base.z3")
-        p.get_quantifier_stats()
-        break
-
-def get_shake_time(path):
+def get_query_shake_time(path):
     o = subprocess_run(f"{MARIPOSA} -a shake -i {path}", shell=True)[0]
     o = o.split("\n")
-    # print(o)
     assert len(o) == 2
     parse_time = int(o[0].split(": ")[-1])
     shake_time = int(o[1].split(": ")[-1])
     return parse_time, shake_time
 
-def get_shake_times():
-    pool = multiprocessing.Pool(4)
+def get_shake_times(gid):
+    cache_name= f"{gid}_shake_times"
 
-    for gid in ["d_fvbkv", "d_lvbkv", "fs_vwasm"]:    
-        cache_name= f"{gid}_shake_times"
+    if has_cache(cache_name):
+        return load_cache(cache_name)
 
-        if has_cache(cache_name):
-            return load_cache(cache_name)
+    pool = multiprocessing.Pool(6)
 
-        group = FACT.get_group(gid)
-        base = group.get_project("base.z3")
+    group = FACT.get_group(gid)
+    base = group.get_project("base.z3")
 
-        paths = [base.get_path(qid) for qid in tqdm(base.qids)]
-        pts, sts = zip(*pool.map(get_shake_time, paths))
+    paths = [base.get_path(qid) for qid in base.qids]
+    pts, sts = zip(*pool.map(get_query_shake_time, paths))
 
-        shake_times = {}
-        for i, qid in enumerate(base.qids):
-            shake_times[qid] = (pts[i], sts[i])
+    shake_times = {}
 
-        save_cache(cache_name, shake_times)
+    for i, qid in enumerate(base.qids):
+        shake_times[qid] = (pts[i], sts[i])
 
-def handle_shake_analysis2():
-    gid = 'fs_vwasm'
+    save_cache(cache_name, shake_times)
+
+def handle_shake_survival(gid):
+    # if gid != "d_fvbkv":
+    #     return
     ana = FACT.get_analyzer("60nq")
     group = FACT.get_group(gid)
-
-    # base = group.get_project("base.z3")
-    # qids = base.qids
+    shake_times = get_shake_times(gid)
 
     for poj in ["base.z3", "shkf.z3", "shko.z3", "base.cvc5", "shkf.cvc5", "shko.cvc5"]:
         exp = FACT.load_any_analysis(group.get_project(poj), ana)
@@ -153,6 +119,10 @@ def handle_shake_analysis2():
             # if qid not in exp.qids:
             qr: QueryAnaResult = exp[qid]
             rc, et = qr.get_original_status()
+
+            if poj.startswith("shk"):
+                et += shake_times[qid][1] 
+
             if rc == RCode.UNSAT.value and et < 6e4:
                 perf += [et]
 
@@ -181,50 +151,41 @@ def handle_shake_analysis2():
     plt.grid()
     plt.savefig(f"fig/shake_survival_{gid}.pdf")
 
-def handle_shake_time_analysis():
-    ana = FACT.get_analyzer("60nq")
-    base = FACT.load_any_analysis(FACT.get_group(BS_GID).get_project("base.z3"), ana)
+# def handle_shake_time_analysis():
+#     ana = FACT.get_analyzer("60nq")
+#     base = FACT.load_any_analysis(FACT.get_group(BS_GID).get_project("base.z3"), ana)
 
-    # for qid in base.qids:
-    #     path = base.get_path(qid)
-    #     o = subprocess_run(f"{MARIPOSA} -a shake -i {path}", shell=True)[0]
-    #     o = o.split("\n")
-    #     assert len(o) == 2
-    #     parse_time = int(o[0].split(": ")[-1])
-    #     shake_time = int(o[1].split(": ")[-1])
-    #     print(f"{qid},{parse_time},{shake_time}")
+#     dps = []
+#     for line in open("doc/stable_shake_time"):
+#         line = line.strip().split(",")
+#         qid = line[0]
+#         m = base[qid].get_mean_time()
+#         dps.append((int(line[1]), int(line[2]), m))
 
-    dps = []
-    for line in open("doc/stable_shake_time"):
-        line = line.strip().split(",")
-        qid = line[0]
-        m = base[qid].get_mean_time()
-        dps.append((int(line[1]), int(line[2]), m))
-
-    dps = np.array(dps)
-    dps = np.sort(dps, axis=0)
+#     dps = np.array(dps)
+#     dps = np.sort(dps, axis=0)
     
-    for i in range(0, len(dps)):
-        if i != 0:
-            plt.bar(i, dps[i,1], color="blue", alpha=0.5)
-            plt.bar(i, dps[i,0], bottom=dps[i,1], color="red", alpha=0.5)
-            plt.bar(i, dps[i,2], color="green", alpha=0.5)
-        else:
-            plt.bar(i, dps[i,1], color="blue", alpha=0.5, label="shake")
-            plt.bar(i, dps[i,0], bottom=dps[i,1], color="red", alpha=0.5, label="parse")
-            plt.bar(i, dps[i,2], color="green", alpha=0.5, label="solve (success mean)")
+#     for i in range(0, len(dps)):
+#         if i != 0:
+#             plt.bar(i, dps[i,1], color="blue", alpha=0.5)
+#             plt.bar(i, dps[i,0], bottom=dps[i,1], color="red", alpha=0.5)
+#             plt.bar(i, dps[i,2], color="green", alpha=0.5)
+#         else:
+#             plt.bar(i, dps[i,1], color="blue", alpha=0.5, label="shake")
+#             plt.bar(i, dps[i,0], bottom=dps[i,1], color="red", alpha=0.5, label="parse")
+#             plt.bar(i, dps[i,2], color="green", alpha=0.5, label="solve (success mean)")
 
-    print(np.median(dps[i,0]/dps[i,2]))
-    # # plt.yticks(np.arange(0, 101, 10))
-    plt.xlim(0)
-    # plt.xticks([])
-    # plt.ylim(0, 1000)
-    # # plt.xlabel("Ratio")
-    plt.ylabel("time (ms)")
-    plt.xlabel("queries (sorted by solve time)")
-    plt.legend()
-    # # plt.grid()
-    plt.savefig("fig/shake_stable_time.pdf")
+#     print(np.median(dps[i,0]/dps[i,2]))
+#     # # plt.yticks(np.arange(0, 101, 10))
+#     plt.xlim(0)
+#     # plt.xticks([])
+#     # plt.ylim(0, 1000)
+#     # # plt.xlabel("Ratio")
+#     plt.ylabel("time (ms)")
+#     plt.xlabel("queries (sorted by solve time)")
+#     plt.legend()
+#     # # plt.grid()
+#     plt.savefig("fig/shake_stable_time.pdf")
 
 def handle_wombo_analysis():
     wuc = WomboAnalyzer(FACT.get_group(BU_GID))
@@ -292,10 +253,10 @@ if __name__ == "__main__":
     elif args.sub_command == "core":
         handle_core_analysis()
     elif args.sub_command == "shake":
-        handle_shake_analysis2()
+        for gid in MARIPOSA_GROUPS:
+            handle_shake_survival(gid)
     elif args.sub_command == "shake-time":
-        get_shake_times()
+        for gid in MARIPOSA_GROUPS:
+            get_shake_times(gid)
     elif args.sub_command == "wombo":
         handle_wombo_analysis()
-    elif args.sub_command == "stat":
-        handle_quantifier_count()
