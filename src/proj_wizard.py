@@ -333,16 +333,18 @@ class NinjaPasta:
         
     def handle_create_shake_log(self, in_proj):
         self.output_dir = in_proj.get_log_dir(KnownExt.SHK_LOG)
-        ot_proj = in_proj.get_alt_dir(PT.from_str("shkf.z3"))
+        # ot_proj = in_proj.get_alt_dir(PT.from_str("shkf.z3"))
 
         for qid in in_proj.qids:
             i = in_proj.get_path(qid)
             l = in_proj.get_path(qid, KnownExt.SHK_LOG)
-            o = path.join(ot_proj, f"{qid}.smt2")
-            # self.ninja_stuff += [f"build {o}: shake-log {i}\n"]
-            self.ninja_stuff += [f"build {o}: shake {i}\n", 
-                                 f"    log={l}\n"]
-            self.expect_targets.add(o)
+
+            self.ninja_stuff += [f"build {l}: shake-log {i}\n"]
+            self.expect_targets.add(l)
+
+            # o = path.join(ot_proj, f"{qid}.smt2")
+            # self.ninja_stuff += [f"build {o}: shake {i}\n", 
+            #                      f"    log={l}\n"]
 
     def handle_time_shake(self, in_proj):
         pass
