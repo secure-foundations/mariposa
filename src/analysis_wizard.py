@@ -8,6 +8,7 @@ from analysis.perf_analyzer import PrefAnalyzer
 from analysis.shake_analyzer import ShakeAnalyzer
 from analysis.wombo_analyzer import WomboAnalyzer
 from base.factory import FACT
+from base.query_analyzer import Stability
 from utils.option_utils import *
 from proj_wizard import *
 
@@ -71,13 +72,41 @@ def set_up_wombo(subparsers):
     p = subparsers.add_parser('wombo', help='no help is coming')
     add_input_dir_option(p, is_group=True)
 
+def find_oracle_path(qid):
+    for group in "fs_dice", "d_fvbkv", "d_lvbkv", "d_komodo", "fs_vwasm":
+        if qid.startswith(group):
+            actual = qid[len(group)+2:]
+            return f"data/projs/{group}/shko.cvc5/{actual}.smt2"
+    assert False
+
 def handle_special():
-    in_proj = FACT.get_project_by_path("data/projs/bench_unstable/base.z3")
-    ot_proj = FACT.get_project_by_path("data/projs/data/projs/bench_unstable_simp/base.z3")
-    for qid in in_proj.qids:
-        in_path = in_proj.get_path(qid)
-        ot_path = ot_proj.get_path(qid)
-        print(f"{MARIPOSA} -a add-ids -i {ot_path} -o {ot_path} --reassign-ids")
+    proj = FACT.get_project_by_path("data/projs/pre_cvc5/base.cvc5")
+    ana = FACT.get_analyzer("60nq")
+    exp = FACT.load_any_analysis(proj, ana)
+
+    eta = 0
+
+    for qid in exp.stability_categories[Stability.STABLE].items:
+        qr = exp[qid]
+        mt, std = qr.get_mean_time()
+        if std/1000 < 1:
+            continue
+
+        os.system(f"cp {find_oracle_path(qid)} data/projs/bench_unstable_cvc5/shko.cvc5/{qid}.smt2")
+        
+        eta += mt
+
+    for qid in exp.stability_categories[Stability.UNSTABLE].items:
+        qr = exp[qid]
+        mt, std = qr.get_mean_time()
+        eta += mt
+        os.system(f"cp {find_oracle_path(qid)} data/projs/bench_unstable_cvc5/shko.cvc5/{qid}.smt2")
+        # print(find_oracle_path(qid))
+        # os.system(f"cp {qr.query_path} data/projs/bench_unstable_cvc5/base.cvc5")
+
+    # eta = eta * 180 / 1000 / 60 / 60 
+    # print(f"ETA: {eta} cpu hours")
+    # print(f"ETA: {eta/ 42} hours")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")

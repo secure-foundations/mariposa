@@ -94,19 +94,23 @@ class QueryExpResult:
         print(tabulate(table, headers="firstrow"))
         print("")
 
-    def get_mean_time(self):
+    def get_mean_time(self, passing_only=False):
         pass_times = []
         all_times = []
+
         for m in self.mutations:
             rcodes, times = self.get_mutation_status(m)
             for rc, et in zip(rcodes, times):
                 if rc == RCode.UNSAT.value:
                     pass_times.append(et)
                 all_times.append(et)
-        # print(np.mean(all_times), np.mean(pass_times))
-        # if len(pass_times) == 0:
-        #     return np.nan
-        return np.mean(all_times)
+
+        if not passing_only:
+            return np.mean(all_times), np.std(all_times)
+
+        if len(pass_times) == 0:
+            return np.nan, np.nan
+        return np.mean(pass_times), np.std(pass_times)
 
     # def get_fast_pass(self):
     #     if self.blob is None:

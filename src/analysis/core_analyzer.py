@@ -75,7 +75,9 @@ class CoreAnalyzer:
         self.group = group
 
         base = group.get_project(PT.from_str("base.z3"))
-        self.base: ExperAnalyzer = FACT.load_default_analysis(base)
+        self.base: ExperAnalyzer = FACT.load_any_analysis(
+            base, FACT.get_analyzer("60nq")
+        )
 
         core = group.get_project(PT.from_str("core.z3"), build=True)
         self.core: ExperAnalyzer = FACT.load_any_analysis(

@@ -39,7 +39,6 @@ class ExperAnalyzer:
 
         log_check(path_exists_qids.issuperset(set(qers.keys())), 
                     "there are queries experimented, but no files exist for them")
-
         if not allow_missing_exper:
             log_check(path_exists_qids == set(qers.keys()), 
                         "there are queries with files, but no experiments done")

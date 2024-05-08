@@ -3,8 +3,9 @@
 import argparse
 import multiprocessing
 import os
-from analysis.shake_context import handle_core_analysis, handle_shake_context_analysis
+from analysis.shake_context import handle_core_context_analysis, handle_shake_context_analysis
 from analysis.core_analyzer import CoreAnalyzer
+from analysis.shake_stability import handle_core_stability_analysis
 from analysis.shake_survivial import get_shake_times, handle_shake_survival
 from analysis.wombo_analyzer import WomboAnalyzer
 from base.defs import MARIPOSA, MARIPOSA_GROUPS
@@ -175,7 +176,8 @@ if __name__ == "__main__":
     )
 
     subparsers.add_parser("bench", help="create benchmark projects")
-    subparsers.add_parser("core", help="analyze core")
+    subparsers.add_parser("core-ctx", help="analyze core")
+    subparsers.add_parser("core-stb", help="analyze core")
     subparsers.add_parser("wombo", help="analyze wombo")
     subparsers.add_parser("shake", help="analyze shake")
     subparsers.add_parser("stat", help="analyze quantifier count")
@@ -188,12 +190,13 @@ if __name__ == "__main__":
 
     if args.sub_command == "bench":
         handle_create_benchmark()
-    elif args.sub_command == "core":
-        handle_core_analysis()
+    elif args.sub_command == "core-ctx":
+        handle_core_context_analysis()
+    elif args.sub_command == "core-stb":
+        handle_core_stability_analysis()
     elif args.sub_command == "shake":
         for gid in MARIPOSA_GROUPS:
             handle_shake_survival(gid)
-            break
             # handle_shake_cvc5(gid)
     elif args.sub_command == "shake-time":
         for gid in MARIPOSA_GROUPS:
