@@ -474,6 +474,7 @@ pub fn tree_shake(
             //     println!("should add?? {} {}", should_include, pos);
             // }
             if should_include {
+                // FIXME: the live symbols are already changed here
                 delayed.extend(tracker.live_symbols.iter().cloned());
                 poss.insert(pos);
                 if !stamps.contains_key(&pos) {

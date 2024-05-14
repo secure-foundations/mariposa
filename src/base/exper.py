@@ -112,6 +112,8 @@ class QueryExpResult:
             return np.nan, np.nan
         return np.mean(pass_times), np.std(pass_times)
 
+
+
     # def get_fast_pass(self):
     #     if self.blob is None:
     #         return False

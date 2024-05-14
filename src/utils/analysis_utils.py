@@ -67,16 +67,6 @@ class PartialCDF:
         index = np.argmax(self.cdf[0] > v)
         return self.cdf[:,index]
 
-def tex_fmt_percent(x, suffix=False):
-    assert x >= -100 and x <= 100
-    res = f"%.1f" % x
-    if suffix: res += r"\%"
-    assert x >= 0
-    return res
-
-def tex_double_column(x):
-    return r"\multicolumn{2}{c}{" + x + r"}"
-
 class CatItem:
     def __init__(self, cat, items, percent):
         self.category = cat

@@ -53,21 +53,27 @@ def get_shake_times(gid):
 
     save_cache(cache_name, shake_times)
 
+SURVIVAL_TEX_LABELS = {
+    "base.z3": "Baseline Z3",
+    "shkf.z3": "Default Shake Z3",
+    "shko.z3": "Oracle Shake Z3",
+    "base.cvc5": "Baseline CVC5",
+    "shkf.cvc5": "Default Shake CVC5",
+    "shko.cvc5": "Oracle Shake CVC5",
+}
+
 def handle_shake_survival(gid):
-    # if gid != "d_fvbkv":
-    #     return
     ana = FACT.get_analyzer("60nq")
     group = FACT.get_group(gid)
     shake_times = get_shake_times(gid)
     
-    base_z3 = FACT.load_any_analysis(group.get_project("base.z3"), ana)
-    base_cvc5 = FACT.load_any_analysis(group.get_project("base.cvc5"), ana)
+    # base_z3 = FACT.load_any_analysis(group.get_project("base.z3"), ana)
+    # base_cvc5 = FACT.load_any_analysis(group.get_project("base.cvc5"), ana)
     
-    qids = base_z3.qids
-    
-    oracle_fallback_ids = set()
-    shko = FACT.load_any_analysis(group.get_project("shko.z3"), ana)
-    shkf = group.get_project("shko.z3")
+    # qids = base_z3.qids
+    # oracle_fallback_ids = set()
+    # shko = FACT.load_any_analysis(group.get_project("shko.z3"), ana)
+    # shkf = group.get_project("shko.z3")
 
     # for qid in qids:
     #     if qid not in shko.qids:
@@ -92,10 +98,10 @@ def handle_shake_survival(gid):
             rc, et = qr.get_original_status()
 
             if poj.startswith("shk"):
-                et += shake_times[qid][1] 
+                et += shake_times[qid][1]
 
             if rc == RCode.UNSAT.value and et < 6e4:
-                perf += [et]
+                perf += [et/1000]
 
         if poj.startswith("shko"):
             style = "dashed"
@@ -109,15 +115,16 @@ def handle_shake_survival(gid):
         else:
             color = "blue"
 
+        label = SURVIVAL_TEX_LABELS[poj]
         perf = np.array(np.sort(perf))
         perf = np.cumsum(perf)
-        plt.plot(perf, np.arange(0, len(perf)), label=poj, linestyle=style, color=color)
+        plt.plot(perf, np.arange(0, len(perf)), label=label, linestyle=style, color=color)
 
     plt.legend()
     plt.ylim(0)
-    plt.xlim(10)
+    plt.xlim(0.1)
     plt.xscale("log")
-    plt.xlabel("Log-scaled Time (ms)")
+    plt.xlabel("Time Log Scale (s)")
     plt.ylabel("Instances Soveld")
     plt.grid()
     plt.savefig(f"fig/survival/shake_{gid}.pdf")

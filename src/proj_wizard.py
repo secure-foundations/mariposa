@@ -3,6 +3,7 @@
 from os import path
 import argparse, time, pickle, numpy as np
 from base.exper import Experiment
+from base.factory import FACT
 from base.project import KnownExt, Project, ProjectType as PT, get_qid
 from base.defs import MARIPOSA, NINJA_BUILD_FILE, NINJA_LOG_FILE, NINJA_REPORTS_DIR, PROJ_ROOT, QUERY_WIZARD
 from utils.option_utils import *
@@ -14,9 +15,6 @@ rule split
 
 rule format
     command = {MARIPOSA} -i $in -o $out -a format
-
-rule shake
-    command = {MARIPOSA} -i $in -o $out -a shake --shake-log-path $log
 
 rule build-core
     command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 120 -s z3_4_8_5 --ids-available --restarts 10
@@ -45,8 +43,14 @@ rule trace-z3
 rule check-subset
     command = {QUERY_WIZARD} subset-check $in $sub && touch $out
 
+rule shake
+    command = {MARIPOSA} -i $in -o $out -a shake
+
 rule shake-log
     command = {MARIPOSA} -i $in -a shake --shake-log-path $out
+
+rule shake-log-naive
+    command = {MARIPOSA} -i $in -a shake-naive --shake-log-path $out
 
 rule pre-inst-z3
     command = {MARIPOSA} -i $in -o $out -a pre-inst-z3
@@ -128,6 +132,12 @@ def set_up_log_shake(subparsers):
     add_clear_option(p)
     add_ninja_log_option(p)
 
+def set_up_log_shake_naive(subparsers):
+    p = subparsers.add_parser('log-shake-naive', help='create shake logs for a project')
+    add_input_dir_option(p)
+    add_clear_option(p)
+    add_ninja_log_option(p)
+
 def set_up_query_stat(subparsers):
     p = subparsers.add_parser('query-stat', help='query stats')
     add_input_dir_option(p)
@@ -173,6 +183,8 @@ class NinjaPasta:
             self.handle_create_benchmark()
         elif args.sub_command == "log-shake":
             self.handle_create_shake_log(args.input_proj)
+        elif args.sub_command == "log-shake-naive":
+            self.handle_create_naive_shake_log(args.input_proj)
         elif args.sub_command == "time-shake":
             self.handle_time_shake(args.input_proj)
         elif args.sub_command == "query-stat":
@@ -346,6 +358,16 @@ class NinjaPasta:
             # self.ninja_stuff += [f"build {o}: shake {i}\n", 
             #                      f"    log={l}\n"]
 
+    def handle_create_naive_shake_log(self, in_proj):
+        group = FACT.get_group(in_proj.gid)
+        ot_proj = group.get_project(PT.from_str("shkn.z3"), build=True)
+        # in_proj.get_alt_dir(PT.from_str("shkn.z3"))
+        for qid in in_proj.qids:
+            i = in_proj.get_path(qid)
+            # o = ot_proj.get_path(qid)
+            l = ot_proj.get_path(qid, KnownExt.SHK_LOG)
+            self.ninja_stuff += [f"build {l}: shake-log-naive {i}\n"]
+
     def handle_time_shake(self, in_proj):
         pass
 
@@ -463,6 +485,7 @@ if __name__ == "__main__":
     set_up_create_benchmark(subparsers)
     set_up_log_shake(subparsers)
     set_up_query_stat(subparsers)
+    set_up_log_shake_naive(subparsers)
 
     cmd = " ".join(sys.argv)
 

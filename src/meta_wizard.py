@@ -3,9 +3,9 @@
 import argparse
 import multiprocessing
 import os
-from analysis.shake_context import handle_core_context_analysis, handle_shake_context_analysis
+from analysis.shake_context import handle_shake_depth_analysis, handle_core_context_analysis, handle_shake_context_analysis
 from analysis.core_analyzer import CoreAnalyzer
-from analysis.shake_stability import handle_core_stability_analysis
+from analysis.shake_stability import handle_core_stability_analysis, handle_shake_stability_analysis
 from analysis.shake_survivial import get_shake_times, handle_shake_survival
 from analysis.wombo_analyzer import WomboAnalyzer
 from base.defs import MARIPOSA, MARIPOSA_GROUPS
@@ -166,7 +166,6 @@ def fix_cids(gid):
     pool = multiprocessing.Pool(7)
     pool.map(fix_query_cids, args)
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Mariposa Meta Wizard operates on multiple projects."
@@ -184,6 +183,8 @@ if __name__ == "__main__":
     subparsers.add_parser("shake-time", help="analyze shake time")
     subparsers.add_parser("fix-cids", help="fix cid in queries")
     subparsers.add_parser("shake-ctx", help="analyze shake ctx")
+    subparsers.add_parser("shake-depth", help="analyze shake depth")
+    subparsers.add_parser("shake-stb", help="analyze shake stability")
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -198,14 +199,20 @@ if __name__ == "__main__":
         for gid in MARIPOSA_GROUPS:
             handle_shake_survival(gid)
             # handle_shake_cvc5(gid)
+    elif args.sub_command == "shake-stb":
+        handle_shake_stability_analysis()
     elif args.sub_command == "shake-time":
         for gid in MARIPOSA_GROUPS:
             get_shake_times(gid)
     elif args.sub_command == "shake-ctx":
-        handle_shake_context_analysis()
+        # handle_shake_context_analysis(oracle=True, naive=False)
+        # handle_shake_context_analysis(oracle=False, naive=False)
+        handle_shake_context_analysis(oracle=True, naive=True)
+        handle_shake_context_analysis(oracle=False, naive=True)
+    elif args.sub_command == "shake-depth":
+        handle_shake_depth_analysis()
     elif args.sub_command == "wombo":
         handle_wombo_analysis()
     elif args.sub_command == "fix-cids":
         for gid in MARIPOSA_GROUPS:
-            # fix_cids(gid)
-            pass
+            fix_cids(gid)

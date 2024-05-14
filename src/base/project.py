@@ -62,7 +62,11 @@ class _ProjectType(enum.Enum):
     EXTD = "extd" # unsat core extension
     SHKF = "shkf" # shake full
     SHKO = "shko" # shake oracle
-    SHKP = "shkp" # shake partial
+    SHKT = "shkt" # shake term-freq
+
+    SHKN = "shkn" # shake naive
+    SHNO = "shno" # shake naive oracle
+
     INTD = "intd" # instantiated
     PINS = "pins" # pre-inst
     WOCO = "woco" # wombo combo

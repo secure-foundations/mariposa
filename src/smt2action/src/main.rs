@@ -21,6 +21,7 @@ mod inst_z3;
 mod term_inst_cvc5;
 mod term_substitute;
 mod tree_shake;
+mod tree_shake_naive;
 mod tree_shake_idf;
 
 const DEFAULT_SEED: u64 = 1234567890;
@@ -80,6 +81,12 @@ enum Action {
         message = "prune the query using the shake algorithm"
     )]
     Shake,
+
+    #[strum(
+        serialize = "shake-naive",
+        message = "prune the query using the shake algorithm"
+    )]
+    ShakeNaive,
 
     #[strum(
         serialize = "inst-cvc5",
@@ -326,6 +333,21 @@ fn main() {
             assert!(args.shake_init_strategy < 2);
             assert!(args.shake_max_symbol_frequency <= 100);
             commands = tree_shake::tree_shake(
+                commands,
+                args.shake_max_depth,
+                args.shake_max_symbol_frequency,
+                args.shake_init_strategy,
+                args.shake_log_path,
+                args.shake_debug,
+            );
+            if args.out_query_path.is_none() {
+                return;
+            }
+        }
+        Action::ShakeNaive => {
+            assert!(args.shake_init_strategy < 2);
+            assert!(args.shake_max_symbol_frequency <= 100);
+            commands = tree_shake_naive::tree_shake_naive(
                 commands,
                 args.shake_max_depth,
                 args.shake_max_symbol_frequency,

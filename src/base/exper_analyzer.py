@@ -18,6 +18,21 @@ class QueryAnaResult:
         self.stability: Stability = ss
         self.failure_type: FailureType = ft
 
+    def get_timeout_counts(self):
+        tos = []
+        for m in self.qer.mutations:
+            rcodes, times = self.qer.get_mutation_status(m)
+            tos.append(np.sum(rcodes == RCode.TIMEOUT.value))
+        return tos
+    
+    def unsolvable_TO(self):
+        give_up = True
+        for m in self.qer.mutations:
+            rcodes, times = self.qer.get_mutation_status(m)
+            if np.sum(rcodes == RCode.TIMEOUT.value) < 50:
+                give_up = False
+        return give_up
+
     def print_status(self, verbosity=0):
         print(f"\n{self.query_path}")
         if self.failure_type != FailureType.NONE:
