@@ -205,10 +205,7 @@ if __name__ == "__main__":
         for gid in MARIPOSA_GROUPS:
             get_shake_times(gid)
     elif args.sub_command == "shake-ctx":
-        # handle_shake_context_analysis(oracle=True, naive=False)
-        # handle_shake_context_analysis(oracle=False, naive=False)
-        handle_shake_context_analysis(oracle=True, naive=True)
-        handle_shake_context_analysis(oracle=False, naive=True)
+        handle_shake_context_analysis()
     elif args.sub_command == "shake-depth":
         handle_shake_depth_analysis()
     elif args.sub_command == "wombo":

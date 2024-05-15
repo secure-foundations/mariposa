@@ -94,19 +94,21 @@ def _get_shake_stats(args):
 class ShakeAnalyzer(CoreAnalyzer):
     def __init__(self, group: ProjectGroup):
         super().__init__(group)
-        self.build_shake_stats()
+        # self.build_shake_stats()
         # self.shake = FACT.load_default_analysis(self.p_shake)
         # self.create_shake_queries()
         # self.check_shake_perf()
 
-    def build_shake_stats(self, naive=False):
+    def build_shake_stats(self, freq=100):
         args = []
         shkn = self.group.get_project(PT.from_str("shkn.z3"))
 
         for qid, qcs in self.qids.items():
-            if naive:
+            if freq == 0:
                 shake_log = shkn.get_path(qid, KnownExt.SHK_LOG)
             else:
+                if freq != 100:
+                    qid = f"{qid}.{freq}"
                 shake_log = self.base.get_path(qid, KnownExt.SHK_LOG)
             oracle_query_path = None
             if qcs.core_is_enabled():
@@ -131,16 +133,49 @@ class ShakeAnalyzer(CoreAnalyzer):
         
         return df
 
-def load_shake_stats(gid, naive=False):
+    def debug_shake(self, freq=100):
+        maybe = 0
+        rrs = []
+        df = self.build_shake_stats(freq)
+        for qid in self.base_adj[STB.UNSTABLE].items:
+            qcs = self.qids[qid]
+            if freq == 0:
+                shake_log = self.group.get_project(PT.from_str("shkn.z3")).get_path(qid, KnownExt.SHK_LOG)
+            elif freq != 100:
+                qid = f"{qid}.{freq}"
+                shake_log = self.base.get_path(qid, KnownExt.SHK_LOG)
+            else:
+                shake_log = self.base.get_path(qid, KnownExt.SHK_LOG)
+
+            if qcs.patch_path == qcs.base_path:
+                # print("no core:", qid)
+                continue
+
+            df_row = df[df["qid"] == qid].iloc[0]
+            if df_row["default_missing_count"] != 0:
+                continue
+            rrs += [df_row.oracle_count / df_row.core_count]
+            maybe += 1
+            print(f"./src/query_wizard.py create-shake -i {qcs.base_path} --input-log {shake_log} --max-score {df_row.max_core_depth} -o data/projs/{self.group.gid}.special/shko.z3/{qid}.smt2")
+
+            # print(
+            #     "./src/query_wizard.py debug-shake",
+            #     "-i %s --core-query-path %s --input-log-path %s"
+            #     % (qcs.base_path, qcs.patch_path + ".fixed", shake_log),
+            # )
+
+def load_shake_stats(gid, freq):
     cache_name = f"shake_stats_{gid}"
 
-    if naive:
+    if freq == 0:
         cache_name += "_naive"
+    elif freq != 100:
+        cache_name += f"_{freq}"
 
     if has_cache(cache_name):
         return load_cache(cache_name)
     
-    df = ShakeAnalyzer(FACT.get_group(gid)).build_shake_stats(naive)
+    df = ShakeAnalyzer(FACT.get_group(gid)).build_shake_stats(freq)
     save_cache(cache_name, df)
 
     return df

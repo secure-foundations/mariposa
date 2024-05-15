@@ -76,14 +76,56 @@ def handle_core_context_analysis():
     plt.savefig(f"fig/relevance/overall_count_original.pdf")
     plt.close()
 
-def handle_shake_context_analysis(oracle=False, naive=False):
+def handle_shake_context_analysis():
+    # shake_plot_rr()
+    # oracle = True
     for gid in MARIPOSA_GROUPS:
-        df = load_shake_stats(gid, naive)
+        if gid != "d_lvbkv":
+            continue
+        sa = ShakeAnalyzer(FACT.get_group(gid))
+        sa.debug_shake(15)
+
+    # for gid in MARIPOSA_GROUPS:
+        # meta = GROUP_PLOT_META[gid]
+        # row0 = [meta.tex_cmd, "MRR"]
+        # row1 = ["", "CMR"]
+        # mid, mis = foo(gid)
+        # row0 += [str(mid)]
+        # row1 += [str(mis)]
+        # for freq in [0, 100, 30, 15, 10]:
+        #     mid, mis = shake_freq_analysis(gid, freq, oracle)
+        #     row0 += [str(mid)]
+        #     row1 += [str(mis)]
+        # print(" & ".join(row0) + " \\\\")
+        # print(" & ".join(row1) + " \\\\")
+        # print("\midrule")
+
+def foo(gid):
+    df = load_shake_stats(gid, 100)
+    core_count = np.array(df.core_count, dtype=float)
+    shkf_count = np.array(df.base_counts, dtype=float)
+    
+    missing = np.array(df.default_missing_count, dtype=float)
+    miss_count = 0
+    valid_count = 0
+
+    ratios = []
+    for i in range(len(core_count)):
+        if np.isnan(core_count[i]):
+            continue
+        ratios += [core_count[i] * 100 / shkf_count[i]]
+        valid_count += 1
+    ratios = PartialCDF(ratios)
+    return round(ratios.valid_median[0], 2), round(miss_count * 100 / valid_count, 2)
+
+def shake_plot_rr():
+    for gid in MARIPOSA_GROUPS:
+        df = load_shake_stats(gid, 100)
+        pm = GROUP_PLOT_META[gid]
         core_count = np.array(df.core_count, dtype=float)
         base_count = np.array(df.base_counts, dtype=float)
         shko_count = np.array(df.oracle_count, dtype=float)
-        
-        shkf_count = np.array(df.default_count, dtype=float)
+        # shkf_count = np.array(df.default_count, dtype=float)
         missing = np.array(df.default_missing_count, dtype=float)
 
         ratios = []
@@ -91,30 +133,21 @@ def handle_shake_context_analysis(oracle=False, naive=False):
             if np.isnan(core_count[i]):
                 continue
 
-            if oracle:
-                ratios += [core_count[i] * 100 / shko_count[i]]
-            else:
-                if missing[i] != 0:
-                    ratios += [100 / base_count[i]]
-                else:
-                    ratios += [core_count[i] * 100 / shkf_count[i]]
-        ratios = PartialCDF(ratios)
+            shkoc = shko_count[i]
+            if missing[i] != 0:
+                shkoc = base_count[i]
+            ratios += [core_count[i] * 100 / shkoc]
 
-        pm = GROUP_PLOT_META[gid]
+        ratios = PartialCDF(ratios)
+        
         plt.plot(ratios.xs, ratios.ys, label=pm.tex_name, color=pm.color)
         p50 = ratios.valid_median
         plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
 
-        if oracle:
-            if gid in {"fs_vwasm", "d_lvbkv"}:
-                add_text(plt, p50[0], p50[1], fmt_percent(p50[0]))
-            elif gid in {"fs_dice",  "d_komodo"}:
-                add_text(plt, p50[0], p50[1], fmt_percent(p50[0]), left=False)
-        else:
-            if gid in {"fs_vwasm", "d_komodo"}:
-                add_text(plt, p50[0], p50[1], fmt_percent(p50[0]))
-            elif gid in {"d_lvbkv", "fs_dice"}:
-                add_text(plt, p50[0], p50[1], fmt_percent(p50[0]), left=False)
+        if gid in {"fs_vwasm", "d_lvbkv"}:
+            add_text(plt, p50[0], p50[1], fmt_percent(p50[0]))
+        elif gid in {"fs_dice",  "d_komodo"}:
+            add_text(plt, p50[0], p50[1], fmt_percent(p50[0]), left=False)
 
     plt.legend()
     plt.xlabel("Shake Query Relevance Ratio Log Scale (\%)")
@@ -126,12 +159,44 @@ def handle_shake_context_analysis(oracle=False, naive=False):
     plt.xscale("log")
     plt.grid()
     plt.tight_layout()
-    
-    suffix = "oracle" if oracle else "default"
-    suffix += "_naive" if naive else "_quanti"
+    plt.savefig(f"fig/relevance/shake_oracle_quanti.pdf")
 
-    plt.savefig(f"fig/relevance/shake_{suffix}.pdf")
-    plt.close()
+def shake_freq_analysis(gid, freq, oracle):
+    df = load_shake_stats(gid, freq)
+    core_count = np.array(df.core_count, dtype=float)
+    base_count = np.array(df.base_counts, dtype=float)
+    shko_count = np.array(df.oracle_count, dtype=float)
+    shkf_count = np.array(df.default_count, dtype=float)
+    missing = np.array(df.default_missing_count, dtype=float)
+    miss_count = 0
+    valid_count = 0
+
+    ratios = []
+    for i in range(len(core_count)):
+        if np.isnan(core_count[i]):
+            continue
+        valid_count += 1
+
+        if missing[i] != 0:
+            miss_count += 1
+
+        if oracle:
+            shkoc = shko_count[i]
+            if missing[i] != 0:
+                shkoc = base_count[i]
+            ratios += [core_count[i] * 100 / shkoc]
+        else:
+            if missing[i] != 0:
+                continue
+            ratios += [core_count[i] * 100 / shkf_count[i]]
+    return round(np.median(ratios), 2), round(miss_count * 100 / valid_count, 2)
+
+
+    # suffix = "oracle" if oracle else "default"
+    # suffix += str(freq)
+
+    # plt.savefig(f"fig/relevance/shake_{suffix}.pdf")
+    # plt.close()
 
 def _shake_depth_analysis(gid, naive=False):
     df = load_shake_stats(gid, naive)

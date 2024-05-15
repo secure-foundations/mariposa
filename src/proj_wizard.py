@@ -131,6 +131,7 @@ def set_up_log_shake(subparsers):
     add_input_dir_option(p)
     add_clear_option(p)
     add_ninja_log_option(p)
+    p.add_argument("--frequency", default=100, required=True, help="shake max symbol frequency")
 
 def set_up_log_shake_naive(subparsers):
     p = subparsers.add_parser('log-shake-naive', help='create shake logs for a project')
@@ -182,7 +183,7 @@ class NinjaPasta:
         elif args.sub_command == "create-benchmark":
             self.handle_create_benchmark()
         elif args.sub_command == "log-shake":
-            self.handle_create_shake_log(args.input_proj)
+            self.handle_create_shake_log(args.input_proj, int(args.frequency))
         elif args.sub_command == "log-shake-naive":
             self.handle_create_naive_shake_log(args.input_proj)
         elif args.sub_command == "time-shake":
@@ -343,15 +344,21 @@ class NinjaPasta:
     #             self.ninja_stuff += [f"build {o}: add-ids {i}\n"]
     #     random.shuffle(self.ninja_stuff)
         
-    def handle_create_shake_log(self, in_proj):
+    def handle_create_shake_log(self, in_proj, frequency):
         self.output_dir = in_proj.get_log_dir(KnownExt.SHK_LOG)
         # ot_proj = in_proj.get_alt_dir(PT.from_str("shkf.z3"))
+        assert 0 < frequency and frequency <= 100
+
+        self.ninja_stuff += [f"""
+rule shake-log-{frequency}
+    command = {MARIPOSA} -i $in -a shake --shake-log-path $out --shake-max-symbol-frequency {frequency}
+"""]
 
         for qid in in_proj.qids:
             i = in_proj.get_path(qid)
-            l = in_proj.get_path(qid, KnownExt.SHK_LOG)
+            l = in_proj.get_path(qid + "." + str(frequency) , KnownExt.SHK_LOG)
 
-            self.ninja_stuff += [f"build {l}: shake-log {i}\n"]
+            self.ninja_stuff += [f"build {l}: shake-log-{frequency} {i}\n"]
             self.expect_targets.add(l)
 
             # o = path.join(ot_proj, f"{qid}.smt2")
@@ -396,12 +403,12 @@ class NinjaPasta:
         if no_build:
             return
 
-        confirm_input(f"run `ninja -j 6 -k 0` to start building?")
+        # confirm_input(f"run `ninja -j 14 -k 0` to start building?")
 
         if os.path.exists(NINJA_LOG_FILE):
             os.remove(NINJA_LOG_FILE)
 
-        os.system("ninja -j 6 -k 0")
+        os.system("ninja -j 7 -k 0")
 
     def save_build_stats(self, meta_path):
         ninja_log = open(NINJA_LOG_FILE).readlines()

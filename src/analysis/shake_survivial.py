@@ -33,7 +33,7 @@ def get_query_shake_time(path):
     return parse_time, shake_time
 
 def get_shake_times(gid):
-    cache_name= f"{gid}_shake_times"
+    cache_name= f"shake_times_{gid}"
 
     if has_cache(cache_name):
         return load_cache(cache_name)
@@ -85,6 +85,7 @@ def handle_shake_survival(gid):
     #             print(f"{MARIPOSA} -a shake -i {base_z3.get_path(qid)} --shake-log-path {shake_log} -o {shkf.get_path(qid)}")
                 # core_cids = load_query_cids(qcs.patch_path)
 
+    solved = {}
     for poj in ["base.z3", "shkf.z3", "shko.z3", "base.cvc5", "shkf.cvc5", "shko.cvc5"]:
         exp = FACT.load_any_analysis(group.get_project(poj), ana)
         perf = []
@@ -119,6 +120,13 @@ def handle_shake_survival(gid):
         perf = np.array(np.sort(perf))
         perf = np.cumsum(perf)
         plt.plot(perf, np.arange(0, len(perf)), label=label, linestyle=style, color=color)
+        solved[poj] = len(perf)
+
+    for solver in ["z3", "cvc5"]:
+        for k in ["shkf", "shko"]:
+            shk = f"{k}.{solver}"
+            base = f"base.{solver}"
+            print(f"{base}: {solved[shk]}")
 
     plt.legend()
     plt.ylim(0)

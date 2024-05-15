@@ -50,7 +50,7 @@ def create_shake_query_from_log(base_path, log_path, max_score, out_path):
 def debug_shake(input_query_path, core_query_path, input_log_path):
     scores = parse_shake_log(input_log_path)
     core_cids = load_query_cids(core_query_path)
-    base_cids = load_query_cids(input_query_path)
+    # base_cids = load_query_cids(input_query_path)
 
     max_core_score = max([scores[cid] for cid in core_cids.keys()])
     max_base_score = max(scores.values())
