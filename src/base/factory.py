@@ -139,7 +139,7 @@ class Factory:
         if skip_split:
             subprocess_run(f"cp {query_path} {sub_root}/", shell=True, check=True)
         else:
-            command = f"{MARIPOSA} -i {query_path} -o {sub_root}/split.smt2 -a split --convert-comments"
+            command = f"{MARIPOSA} -i '{query_path}' -o {sub_root}/split.smt2 -a split --convert-comments"
             subprocess_run(command, shell=True, check=True)
 
         proj.reload()

@@ -196,9 +196,8 @@ if __name__ == "__main__":
     elif args.sub_command == "core-stb":
         handle_core_stability_analysis()
     elif args.sub_command == "shake":
-        for gid in MARIPOSA_GROUPS:
-            handle_shake_survival(gid)
-            # handle_shake_cvc5(gid)
+        handle_shake_survival()
+        # handle_shake_cvc5(gid)
     elif args.sub_command == "shake-stb":
         handle_shake_stability_analysis()
     elif args.sub_command == "shake-time":

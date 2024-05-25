@@ -1,3 +1,4 @@
+import binascii
 import os, random
 import numpy as np
 
@@ -72,10 +73,12 @@ class QueryExpResult:
             print(f"alternative timeout: {self.timeout/1000}s")
 
         table = [["mutation"] + [str(rc) for rc in EXPECTED_CODES] 
-                 + ["mean", "std"]]
+                 + ["mean (pass/fail)", "std"]]
         for m in self.mutations:
             trow = [m]
             rcodes, times = self.get_mutation_status(m)
+            pass_times = [et for rc, et in zip(rcodes, times) if rc == RCode.UNSAT.value]
+            fail_times = [et for rc, et in zip(rcodes, times) if rc != RCode.UNSAT.value]
             rcs = {rc: 0 for rc in EXPECTED_CODES}
 
             for rc in rcodes:
@@ -88,12 +91,29 @@ class QueryExpResult:
                 trow.append(rcs[rc])
 
             times = times / 1000
-            trow.append(round(np.mean(times), 2))
+            pass_times = np.array(pass_times) / 1000
+            fail_times = np.array(fail_times) / 1000
+            te = ""
+            
+            if len(pass_times) == 0:
+                te += " -- "
+            else:
+                te += "%.2f" % np.mean(pass_times)
+
+            te += " / "
+            
+            if len(fail_times) == 0:
+                te += " -- "
+            else:
+                te += "%.2f" % np.mean(fail_times)
+
+            trow.append(te)
             trow.append(round(np.std(times), 2))
+            trow = [str(x) for x in trow]
             table.append(trow)
         print(tabulate(table, headers="firstrow"))
         print("")
-
+        
     def get_mean_time(self, passing_only=False):
         pass_times = []
         all_times = []
@@ -235,7 +255,7 @@ class Experiment(ExpConfig):
                 continue
 
             for _ in range(self.num_mutant):
-                s = random.randint(0, 0xffffffffffffffff)
+                s = int(binascii.hexlify(os.urandom(8)), 16)
                 mut_path = f"{self.gen_dir}/{base}.{str(s)}.{m}.smt2"
                 task = ExpTask(origin_path, mut_path, m, s)
                 tasks.append(task)

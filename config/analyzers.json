@@ -19,6 +19,9 @@
   "60sec": {
     "timeout": 60
   },
+  "10sec": {
+    "timeout": 10
+  },
   "5sec": {
     "timeout": 5
   },

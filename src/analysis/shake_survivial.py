@@ -52,6 +52,7 @@ def get_shake_times(gid):
         shake_times[qid] = (pts[i], sts[i])
 
     save_cache(cache_name, shake_times)
+    return shake_times
 
 SURVIVAL_TEX_LABELS = {
     "base.z3": "Baseline Z3",
@@ -62,7 +63,47 @@ SURVIVAL_TEX_LABELS = {
     "shko.cvc5": "Oracle Shake CVC5",
 }
 
-def handle_shake_survival(gid):
+def perf_delta(base, new):
+    prefix = ""
+    if new > base:
+        prefix = "+"
+    return prefix + "%.2f" % round((new - base) * 100 / base, 2) + "\%"
+
+def handle_shake_survival():
+    # solved = {}
+    # for gid in MARIPOSA_GROUPS:
+    #     solved[gid] = _handle_shake_survival(gid)
+    
+    solved = {'d_komodo': {'base.z3': 1983, 'shkf.z3': 1981, 'shko.z3': 1989, 'base.cvc5': 342, 'shkf.cvc5': 348, 'shko.cvc5': 416}, 'd_fvbkv': {'base.z3': 5103, 'shkf.z3': 5063, 'shko.z3': 5072, 'base.cvc5': 2571, 'shkf.cvc5': 2806, 'shko.cvc5': 3105}, 'd_lvbkv': {'base.z3': 5167, 'shkf.z3': 5146, 'shko.z3': 5165, 'base.cvc5': 3158, 'shkf.cvc5': 3439, 'shko.cvc5': 3569}, 'fs_dice': {'base.z3': 1493, 'shkf.z3': 1492, 'shko.z3': 1498, 'base.cvc5': 259, 'shkf.cvc5': 449, 'shko.cvc5': 683}, 'fs_vwasm': {'base.z3': 1733, 'shkf.z3': 1728, 'shko.z3': 1727, 'base.cvc5': 1630, 'shkf.cvc5': 1628, 'shko.cvc5': 1628}}
+    
+    overall = [0 for _ in range(6)]    
+    for proj, perf in solved.items():
+        meta = GROUP_PLOT_META[proj]
+        row = [meta.tex_cmd]
+        z3 = perf["base.z3"]
+        row += ["z3", z3, perf_delta(z3, perf["shkf.z3"]), perf_delta(z3, perf["shko.z3"])]
+        overall[0] += z3
+        overall[1] += perf["shkf.z3"]
+        overall[2] += perf["shko.z3"]
+        print(" & ".join(map(str, row)) + " \\\\")
+        cvc5 = perf["base.cvc5"]
+        row = ["", "cvc5", cvc5, perf_delta(cvc5, perf["shkf.cvc5"]), perf_delta(cvc5, perf["shko.cvc5"])]
+        print(" & ".join(map(str, row)) + " \\\\")
+        print("\\midrule")
+        overall[3] += cvc5
+        overall[4] += perf["shkf.cvc5"]
+        overall[5] += perf["shko.cvc5"]
+    
+    print("\\midrule")
+    row = ["Overall"]
+    row += ["z3", overall[0], perf_delta(overall[0], overall[1]), perf_delta(overall[0], overall[2])]
+    print(" & ".join(map(str, row)) + " \\\\")
+    row = ["", "cvc5", overall[3], perf_delta(overall[3], overall[4]), perf_delta(overall[3], overall[5])]
+    print(" & ".join(map(str, row)) + " \\\\")
+    print("\\midrule")
+
+def _handle_shake_survival(gid):
+    plt.figure(figsize=(5, 3.5))
     ana = FACT.get_analyzer("60nq")
     group = FACT.get_group(gid)
     shake_times = get_shake_times(gid)
@@ -122,18 +163,15 @@ def handle_shake_survival(gid):
         plt.plot(perf, np.arange(0, len(perf)), label=label, linestyle=style, color=color)
         solved[poj] = len(perf)
 
-    for solver in ["z3", "cvc5"]:
-        for k in ["shkf", "shko"]:
-            shk = f"{k}.{solver}"
-            base = f"base.{solver}"
-            print(f"{base}: {solved[shk]}")
-
-    plt.legend()
+    plt.legend(fontsize=8)
     plt.ylim(0)
     plt.xlim(0.1)
     plt.xscale("log")
-    plt.xlabel("Time Log Scale (s)")
+    plt.xlabel("Cumulative Time Log Scale (s)")
     plt.ylabel("Instances Soveld")
     plt.grid()
-    plt.savefig(f"fig/survival/shake_{gid}.pdf")
+    plt.tight_layout()
+    plt.savefig(f"fig/survival/shake_{gid}.pdf",bbox_inches='tight',pad_inches = 0)
     plt.close()
+    
+    return solved

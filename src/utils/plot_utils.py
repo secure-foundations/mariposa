@@ -1,9 +1,14 @@
 import matplotlib.pyplot as plt
+import matplotlib
 
 plt.rcParams['text.usetex'] = True
-plt.rcParams["font.family"] = "cmr"
 
-FSIZE = 100
+font = {'family' : 'normal',
+        # 'weight' : 'bold',
+        'size'   : 12}
+
+matplotlib.rc('font', **font)
+
 # FNAME ='cmr'
 
 COLORS = [
@@ -34,9 +39,9 @@ GROUP_PLOT_META = {
 
 def add_text(ax, x, y, text, left=True):
     if left:
-        ax.text(x, y, text, ha="left", va="bottom")
+        ax.text(x, y, text, ha="left", va="bottom", fontsize=8)
     else:
-        ax.text(x, y, text, ha="right", va="bottom")
+        ax.text(x, y, text, ha="right", va="bottom", fontsize=8)
 
 def fmt_percent(x):
     return f"%.2f" % x + "\%"
