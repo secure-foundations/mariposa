@@ -104,6 +104,12 @@ enum Action {
     InstZ3,
 
     #[strum(
+        serialize = "parse-inst-z3",
+        message = "read the Z3 instantiation log"
+    )]
+    ParseInstZ3,
+
+    #[strum(
         serialize = "post-inst-z3",
         message = "transform the Z3 query to extract more nested quantifiers"
     )]
@@ -178,7 +184,7 @@ struct Args {
     // #[arg(long, default_value_t = true)]
     // remove_debug: bool,
     /// lower the asserts to check-sat (experimental)
-    #[arg(long, default_value_t = false)]
+    #[arg(long, default_value_t = true)]
     lower_asserts: bool,
 
     /// seed for randomness
@@ -388,6 +394,21 @@ fn main() {
                 exit(1);
             }
             inst_z3::handle_z3_trace_v2(path, &mut commands, args.max_trace_insts);
+        }
+        Action::ParseInstZ3 => {
+            if args.z3_trace_log_path.is_none() {
+                println!("[ERROR] parse-inst-z3 requires a Z3 trace log file");
+                exit(1);
+            }
+
+            let path = std::path::Path::new(args.z3_trace_log_path.as_ref().unwrap());
+
+            if !path.is_file() {
+                println!("[ERROR] parse-inst-z3 requires a Z3 trace log file");
+                exit(1);
+            }
+            inst_z3::parse_inst_log(path);
+            return;
         }
         Action::PostInstZ3 => {
             panic!("unimplemented action: {}", action);

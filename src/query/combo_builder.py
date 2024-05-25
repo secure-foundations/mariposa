@@ -139,6 +139,8 @@ class ComboBuilder:
         return self.counts[-1][1]
 
     def has_converged(self):
+        if len(self.counts) == 1:
+            return False
         diff = abs(self.c_qc - self.p_qc)
         if self.c_qc == 0:
             return True

@@ -87,64 +87,15 @@ def valid_max(scores):
     return max([s for s in scores if not np.isnan(s)])
 
 def handle_special():
-    # proj = FACT.get_project_by_path("data/projs/data/projs/fs_dice/base.z3")
-    # ana = FACT.get_analyzer("60nq")
-    # exp = FACT.load_any_analysis(proj, ana)
-    ana = FACT.get_analyzer("60nq")
-    group = FACT.get_group("pre_cvc5")
-    proj = group.get_project("base.cvc5")
-    solver = FACT.get_solver("cvc5_1_1_1")
-    cfg = FACT.get_config("debug")
+    ana = FACT.get_analyzer("5sec")
+    group = FACT.get_group("v_systems")
+    proj = group.get_project("base.z3")
+    cfg = FACT.get_config("quake")
+    solver = FACT.get_solver("z3_4_12_5")
 
-    exp = FACT.load_analysis(
-        proj, cfg, solver, ana)
-    
-    groups = {gid: set() for gid in MARIPOSA_GROUPS}
-    stable = exp.stability_categories[STB.STABLE].items
-    for qid in stable:
-        # qr = exp[qid]
-        gid, qid = qid.split("--")
-        groups[gid].add(qid)
-
-    problems = 0
-    for gid in groups:
-        samples = set(random.sample(groups[gid], 111)) - {"semantics-common-queries-Semantics.Common.CFG.LLInstructionSemantics-20.smt2"}
-        samples = list(samples)
-        for qid in samples[:110]:
-            oracle = find_oracle_path(f"{gid}--{qid}")
-            if not os.path.exists(oracle):
-                problems += 1
-                continue
-            print("cp", find_oracle_path(f"{gid}--{qid}"), f"data/projs/bench_stable_cvc5/shko.cvc5/{gid}--{qid}.smt2")
-        # print(gid, len(groups[gid]))
-        # qr.print_status(1)
-    # proj = group.get_project("shko.cvc5")
-    
-    # group = FACT.get_group("fs_dice")
-    # ca = CoreAnalyzer(group)
-    # for qid in ca.base.stability_categories[Stability.UNSTABLE]:
-    #     qr = ca.qids[qid]
-    #     in_path = qr.base_path
-    #     patch_path = qr.patch_path
-    #     log_path = f"data/logs/fs_dice.special/base.z3/shk-log/{qid}.shk_log"
-    #     ot_path = f"data/projs/fs_dice.special/shko.z3/{qid}.smt2"
-
-    #     # print(f"./src/smt2action/target/release/mariposa -a shake -i {in_path} --shake-max-symbol-frequency 30 --shake-log-path {log_path}")
-    #     scores = parse_shake_log(log_path)
-    #     if qr.patch_path == qr.base_path:
-    #         max_core = np.nan
-    #         comp = np.nan
-    #     else:
-    #         core_path = qr.patch_path + ".fixed"
-    #         core_cids = load_query_cids(core_path)
-    #         core_scores = [scores[cid] for cid in core_cids.keys()]
-    #         max_core = valid_max(core_scores)
-    #         comp = 0 if np.nan in core_scores else 1
-    #     max_base = valid_max(scores.values())
-    #     # print(f"{qid} {max_base} {max_core} {comp}")
-    #     if np.isnan(max_core):
-    #         max_core = 6
-    #     print(f"./src/smt2action/target/release/mariposa -a shake --shake-max-symbol-frequency 30 -i {in_path} -o {ot_path} --shake-max-depth {max_core}")
+    exp = FACT.load_analysis(proj, cfg, solver, ana)
+    for qid in exp.stability_categories[STB.UNSTABLE]:
+        os.system(f"cp {exp.get_path(qid)} data/projs/v_bench/base.z3/{qid}.smt2")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")

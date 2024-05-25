@@ -25,7 +25,7 @@
             "reseed",
             "quake"
         ],
-        "exp_timeout": 10
+        "exp_timeout": 5
     },
     "verify": {
         "num_mutants": 0,
@@ -48,8 +48,8 @@
             "reseed"
         ],
         "keep_mutants": true,
-        "num_mutants": 5,
-        "exp_timeout": 30,
+        "num_mutants": 30,
+        "exp_timeout": 5,
         "num_procs": 5
     },
     "compose": {

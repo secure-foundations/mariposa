@@ -71,21 +71,20 @@ class CoreQueryStatus:
 
 
 class CoreAnalyzer:
-    def __init__(self, group: ProjectGroup):
+    def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
         self.group = group
 
         base = group.get_project(PT.from_str("base.z3"))
         self.base: ExperAnalyzer = FACT.load_any_analysis(
-            base, FACT.get_analyzer("60nq")
+            base, ana
         )
-
         core = group.get_project(PT.from_str("core.z3"), build=True)
         self.core: ExperAnalyzer = FACT.load_any_analysis(
-            core, FACT.get_analyzer("60nq"), group_qids=self.base.qids
+            core, ana, group_qids=self.base.qids
         )
         extd = group.get_project(PT.from_str("extd.z3"), build=True)
-        self.extd: ExperAnalyzer = FACT.load_default_analysis(
-            extd, group_qids=self.base.qids
+        self.extd: ExperAnalyzer = FACT.load_any_analysis(
+            extd, ana, group_qids=self.base.qids
         )
 
         self.qids: Dict[str, CoreQueryStatus] = dict()

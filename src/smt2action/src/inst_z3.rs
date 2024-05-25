@@ -539,6 +539,39 @@ pub fn handle_z3_trace_v2(
     commands.extend(rest);
 }
 
+pub fn parse_inst_log(
+    path: &std::path::Path,
+    // commands: &mut Vec<concrete::Command>,
+) {
+    let (_metadata, parser) = Z3Parser::from_file(path).unwrap();
+    let parser = parser.process_all().unwrap();
+    let mut inst_counts = HashMap::new();
+    for inst in &parser.insts.matches {
+        match &inst.kind {
+            MatchKind::Quantifier {
+                quant, bound_terms, ..
+            } => {
+                if let Quantifier {
+                    kind: QuantKind::NamedQuant(name_id),
+                    ..
+                } = parser.quantifiers[*quant]
+                {
+                    let name = parser.strings[name_id].to_string();
+                    inst_counts.insert(name.clone(), inst_counts.get(&name).unwrap_or(&0) + 1);
+                }
+            }
+            _ => {}
+        }
+    }
+    // sort by count
+    let mut inst_counts: Vec<_> = inst_counts.into_iter().collect();
+    inst_counts.sort_by(|a, b| b.1.cmp(&a.1));
+    for (name, count) in inst_counts {
+        println!("{}: {}", name, count);
+    }
+}
+
+
 // pub fn print_mariposa_funs(commands: &Vec<concrete::Command>) {
 //     let inserter = Inserter::new(commands);
 //     for (name, cid) in inserter.forall_funs.iter() {
