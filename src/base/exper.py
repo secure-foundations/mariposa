@@ -132,8 +132,6 @@ class QueryExpResult:
             return np.nan, np.nan
         return np.mean(pass_times), np.std(pass_times)
 
-
-
     # def get_fast_pass(self):
     #     if self.blob is None:
     #         return False
@@ -211,8 +209,8 @@ class Experiment(ExpConfig):
             os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
 
         # this just clears the gen dir
-        reset_dir(self.gen_dir, True)
-        
+        # reset_dir(self.gen_dir, True)
+
         self.retry_count = 0
 
     def signature(self):
@@ -447,7 +445,8 @@ class Experiment(ExpConfig):
                     sums.add(part)
         return exps
 
-    def get_mutants(self, v_path):
+    def get_mutants(self, qid):
+        v_path = self.get_path(qid)
         con, cur = get_cursor(self.db_path)
         res = cur.execute(f"""SELECT query_path, result_code, elapsed_milli FROM {self.exp_table_name} WHERE vanilla_path = ?""", (v_path,))
         rows = res.fetchall()

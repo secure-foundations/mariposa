@@ -28,7 +28,9 @@ def add_solver_option(parser):
 def add_analysis_options(parser):
     parser.add_argument("-e", "--exp-config", default="default", help="the experiment configuration name (from exps.json)")
     add_solver_option(parser)
-    add_analyzer_options(parser)
+    parser.add_argument("--analyzer", default="default", help="the analyzer name (from config/expers.json) to use")
+    parser.add_argument("-cv", "--category-verbosity", type=int, default=0, help="level of verbosity for categories in the analysis")
+    parser.add_argument("-qv", "--query-verbosity", type=int, default=0, help="level of verbosity for each query in the analysis")
 
 def add_experiment_options(parser):
     add_analysis_options(parser)
@@ -51,11 +53,6 @@ def add_clear_option(parser):
 
 def add_debug_option(parser):
     parser.add_argument("--debug", default=False, action='store_true', help="run in debug mode")
-
-def add_analyzer_options(parser):
-    parser.add_argument("--analyzer", default="default", help="the analyzer name (from config/expers.json) to use")
-    parser.add_argument("-cv", "--category-verbosity", type=int, default=0, help="level of verbosity for categories in the analysis")
-    parser.add_argument("-qv", "--query-verbosity", type=int, default=0, help="level of verbosity for each query in the analysis")
 
 def add_authkey_option(parser):
     parser.add_argument("--authkey", required=True, help="the authkey to use for the server pool")
@@ -101,7 +98,7 @@ def deep_parse_args(args):
     if hasattr(args, "mutation"):
         args.mutation = Mutation(args.mutation)
 
-    single = args.sub_command == "single"
+    single = args.sub_command in {"single", "trace-diff"}
 
     if hasattr(args, "exp_config") and not args.is_group:
         args.exp_config = FACT.get_config(args.exp_config)

@@ -269,9 +269,9 @@ fn main() {
         return;
     }
 
-    let now = Instant::now();
+    // let now = Instant::now();
     let (mut commands, plain_total) = parse_query(&args);
-    println!("parse time: {}", now.elapsed().as_millis());
+    // println!("parse time: {}", now.elapsed().as_millis());
 
     if action == Action::Check {
         println!(

@@ -134,7 +134,7 @@ class Factory:
 
         sub_root = proj.sub_root
 
-        reset_dir(sub_root, True)
+        reset_dir(sub_root, clear)
 
         if skip_split:
             subprocess_run(f"cp {query_path} {sub_root}/", shell=True, check=True)
@@ -190,8 +190,8 @@ class Factory:
         return ExperAnalyzer(exp, ana, allow_missing_exper, group_qids)
 
     def load_any_analysis(self, proj: Project, ana: QueryAnalyzer, group_qids=None) -> ExperAnalyzer:
-        exp = self.get_available_expers(proj)[0]
-        return ExperAnalyzer(exp, ana, group_qids=group_qids)
+        exps = self.get_available_expers(proj)
+        return ExperAnalyzer(exps[0], ana, group_qids=group_qids)
 
     def load_default_analysis(self, proj: Project, group_qids=None) -> ExperAnalyzer:
         solver = self.get_solver("z3_4_12_5")

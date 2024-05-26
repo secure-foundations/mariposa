@@ -43,7 +43,7 @@ class QueryAnaResult:
         #     print(f"procedure name:\t\t{proc}")
         self.qer.print_status(verbosity)
 
-@delegate('exp', 'get_path', 'list_queries', 'get_log_dir')
+@delegate('exp', 'get_path', 'list_queries', 'get_log_dir', 'get_mutants')
 class ExperAnalyzer:
     def __init__(self, exp: Experiment, ana: QueryAnalyzer, allow_missing_exper=False, group_qids=None):
         self.exp = exp
@@ -54,6 +54,7 @@ class ExperAnalyzer:
 
         log_check(path_exists_qids.issuperset(set(qers.keys())), 
                     "there are queries experimented, but no files exist for them")
+
         if not allow_missing_exper:
             log_check(path_exists_qids == set(qers.keys()), 
                         "there are queries with files, but no experiments done")
@@ -152,7 +153,7 @@ class ExperAnalyzer:
         print_banner("Report End")
 
     def get_mutant_details(self, qr):
-        rows = self.exp.get_mutants(qr.query_path)
+        rows = self.exp.get_mutants(qr.qid)
         passed, failed = dict(), dict()
         for (m_path, rc, et) in rows:
             rc = RCode(rc)

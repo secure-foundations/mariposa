@@ -2,6 +2,9 @@
 
 import argparse, os
 
+from analysis.trace_analyzer import TraceDiffer
+from base.exper_analyzer import ExperAnalyzer
+from base.exper_runner import Runner
 from query.combo_builder import handle_inst_z3, handle_trace_z3
 from query.core_completer import CoreCompleter
 from query.inst_builder import InstBuilder
@@ -11,7 +14,7 @@ from query.combo_builder import ComboBuilder
 from query.proof_builder import ProofBuilder, check_lfsc_proof
 from utils.query_utils import convert_smtlib, diff_queries, emit_quake_query, is_assertion_subset
 from utils.shake_utils import create_shake_query_from_log, debug_shake
-from utils.system_utils import log_check
+from utils.system_utils import log_check, log_warn
 
 def setup_build_core(subparsers):
     p = subparsers.add_parser('build-core', help='create core query form a given query (by performing mutations)')

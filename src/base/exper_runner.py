@@ -111,7 +111,7 @@ class Runner:
         for qid in qids:
             path = self.exp.proj.get_path(qid)
             # TODO: handle overwrite
-            log_check(self.exp.get_mutants(path) == [], 
+            log_check(self.exp.get_mutants(qid) == [], 
                       f"experiment already exists for {path}")
             tasks.extend(self.exp.create_query_tasks(path))
         self.__run(tasks)

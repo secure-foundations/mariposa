@@ -17,7 +17,7 @@ rule format
     command = {MARIPOSA} -i $in -o $out -a format
 
 rule build-core
-    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 120 -s z3_4_8_5 --ids-available --restarts 10
+    command = {QUERY_WIZARD} build-core -i $in -o $out --timeout 5 -s z3_4_12_5 --ids-available --restarts 10
 
 rule add-ids
     command = {MARIPOSA} -i $in -o $out -a add-ids

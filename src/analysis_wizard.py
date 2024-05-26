@@ -3,6 +3,7 @@
 import argparse
 import random
 from analysis.core_analyzer import CoreAnalyzer
+from analysis.trace_analyzer import TraceAnalyzer
 from base.defs import MARIPOSA_GROUPS
 from base.exper_analyzer import ExperAnalyzer
 from analysis.inst_analyzer import InstAnalyzer
@@ -76,6 +77,11 @@ def set_up_wombo(subparsers):
     p = subparsers.add_parser('wombo', help='no help is coming')
     add_input_dir_option(p, is_group=True)
 
+def set_up_trace(subparsers):
+    p = subparsers.add_parser('trace', help='no help is coming')
+    add_input_dir_option(p, is_group=True)
+    add_analysis_options(p)
+
 def find_oracle_path(qid):
     for group in "fs_dice", "d_fvbkv", "d_lvbkv", "d_komodo", "fs_vwasm":
         if qid.startswith(group):
@@ -90,12 +96,12 @@ def handle_special():
     ana = FACT.get_analyzer("5sec")
     group = FACT.get_group("v_systems")
     proj = group.get_project("base.z3")
-    cfg = FACT.get_config("quake")
+    cfg = FACT.get_config("verus")
     solver = FACT.get_solver("z3_4_12_5")
 
     exp = FACT.load_analysis(proj, cfg, solver, ana)
     for qid in exp.stability_categories[STB.UNSTABLE]:
-        os.system(f"cp {exp.get_path(qid)} data/projs/v_bench/base.z3/{qid}.smt2")
+        os.system(f"{MARIPOSA} -a add-ids -i {exp.get_path(qid)} -o data/projs/v_bench/base.z3/{qid}.smt2")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")
@@ -109,6 +115,7 @@ if __name__ == '__main__':
     set_up_core(subparsers)
     set_up_shake(subparsers)
     set_up_wombo(subparsers)
+    set_up_trace(subparsers)
     p = subparsers.add_parser('special', help='placeholder for special analysis')
 
     args = parser.parse_args()
@@ -125,12 +132,14 @@ if __name__ == '__main__':
     elif args.sub_command == "unstable":
         handle_unstable(args)
     elif args.sub_command == "core":
-        ca = CoreAnalyzer(args.input_group)
+        ca = CoreAnalyzer(args.input_group, args.analyzer)
         ca.print_status()
     elif args.sub_command == "shake":
         handle_shake(args)
     elif args.sub_command == "wombo":
         WomboAnalyzer(args.input_group)
+    elif args.sub_command == "trace":
+        TraceAnalyzer(args.input_group)
     elif args.sub_command == "special":
         handle_special()
     else:

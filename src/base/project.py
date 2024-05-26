@@ -147,17 +147,16 @@ class Project:
 
     def __init_dirs(self, gid):
         if self.single_mode:
-            self._sub_root =  SINGLE_PROJ_ROOT_PREFIX + gid
-        else:
-            self._sub_root = os.path.join(PROJ_ROOT, gid, str(self.ptype))
-            log_check(self._sub_root.startswith(PROJ_ROOT),
-                  f"invalid sub_root {self._sub_root}")
-
-        if self.single_mode: 
+            self._sub_root = SINGLE_PROJ_ROOT_PREFIX + gid
             create_dir(self._sub_root)
             self._db_dir = self._sub_root
             self._gen_dir = SINGLE_MUT_ROOT_PREFIX + gid
         else:
+            self._sub_root = os.path.join(PROJ_ROOT, gid, str(self.ptype))
+            if not os.path.exists(self._sub_root):
+                os.makedirs(self._sub_root)
+            log_check(self._sub_root.startswith(PROJ_ROOT),
+                  f"invalid sub_root {self._sub_root}")
             self._db_dir = self._sub_root.replace(PROJ_ROOT, DB_ROOT)
             self._gen_dir = self.sub_root.replace(PROJ_ROOT, GEN_ROOT)
             self._log_dir = self.sub_root.replace(PROJ_ROOT, LOG_ROOT)

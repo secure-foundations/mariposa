@@ -27,6 +27,16 @@
         ],
         "exp_timeout": 5
     },
+    "verus_ext": {
+        "mutations": [
+            "shuffle",
+            "rename",
+            "reseed",
+            "quake"
+        ],
+        "num_mutants": 120,
+        "exp_timeout": 5
+    },
     "verify": {
         "num_mutants": 0,
         "num_procs": 8
