@@ -208,3 +208,25 @@ def diff_queries(this, that):
         print_banner("in that, not in this")
         for key in diff:
             print(that[key])
+
+def parse_trace(orig_path, trace_path):
+    lines = subprocess_run([
+            MARIPOSA,
+            "-a" , 
+            "parse-inst-z3",
+            "-i",
+            orig_path,
+            "--z3-trace-log-path",
+            trace_path
+        ])[0]
+
+    lines = lines.split("\n")
+
+    qids = dict()
+
+    for line in lines:
+        line = line.split(": ")
+        qid, count = line[0], int(line[1])
+        qids[qid] = count
+
+    return qids

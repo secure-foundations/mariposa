@@ -25,13 +25,15 @@ def count_insts(query_path):
             inst_count += 1
     return quanti_count, inst_count
 
-def handle_trace_z3(input_query, output_trace, search, timeout, restarts):
+def handle_trace_z3(input_query, output_trace, search, timeout, restarts, seed=None):
     solver: Z3Solver = FACT.get_solver("z3_4_12_5")
+    if seed is not None:
+        log_check(not search, "seed is not valid in search mode")
 
     remove_file(output_trace)
 
     if not search:
-        rc, _ = solver.trace(input_query, timeout, output_trace)
+        rc, _ = solver.trace(input_query, timeout, output_trace, seeds=seed)
         log_info(f"not in search mode, trace result {rc}")
     else:
         name_hash = get_name_hash(input_query)

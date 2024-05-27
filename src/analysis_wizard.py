@@ -96,10 +96,11 @@ def handle_special():
     ana = FACT.get_analyzer("5sec")
     group = FACT.get_group("v_systems")
     proj = group.get_project("base.z3")
-    cfg = FACT.get_config("verus")
+    cfg = FACT.get_config("verus_ext")
     solver = FACT.get_solver("z3_4_12_5")
 
     exp = FACT.load_analysis(proj, cfg, solver, ana)
+
     for qid in exp.stability_categories[STB.UNSTABLE]:
         os.system(f"{MARIPOSA} -a add-ids -i {exp.get_path(qid)} -o data/projs/v_bench/base.z3/{qid}.smt2")
 

@@ -196,7 +196,7 @@ def handle_data_sync(input_dir, clear):
     if os.path.exists(SYNC_ZIP):
         os.remove(SYNC_ZIP)
 
-    cur_host = subprocess_run("hostname")[0]
+    cur_host = subprocess_run(["hostname"])[0]
     lines = []
 
     for host in S190X_HOSTS:

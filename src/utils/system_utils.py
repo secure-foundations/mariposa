@@ -42,6 +42,7 @@ def subprocess_run(command, timeout=None, debug=False, cwd=None, shell=False, ch
     if shell:
         debug_cmd = command
     else:
+        # command = list(map(str, command))
         debug_cmd = " ".join(command)
 
     if debug:

@@ -47,7 +47,7 @@ class MutCoreBuilder:
             remove_file(self.core_log)
 
             s = random.randint(0, 0xFFFFFFFFFFFFFFFF)
-            emit_mutant_query(self.lbl_query, self.lbl_mut_query, Mutation.COMPOSE, s)
+            emit_mutant_query(self.lbl_query, self.lbl_mut_query, Mutation.RENAME, s)
 
             with open(self.lbl_mut_query, "a") as f:
                 f.write("(get-unsat-core)\n")
