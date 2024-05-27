@@ -105,7 +105,7 @@ class TraceDebugger:
         # with open(woco_path, "w+") as woco_file:
         for line in open(orig_path).readlines():
             if any([qid in line for qid in remove_qids]):
-                print(f"```\n{format_print_sexpr(line)}```")
+                print(f"```\n{format_print_sexpr(line)}\n```")
                 print("")
                 continue
                 # woco_file.write(line)

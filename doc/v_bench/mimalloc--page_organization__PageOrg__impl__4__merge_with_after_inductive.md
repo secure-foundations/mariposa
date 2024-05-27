@@ -32,8 +32,8 @@ trace path: `shuffle.3620106236152871826.unknown.5082.trace`
 | mariposa_qid_475  |    2535 | Y         |
 | mariposa_qid_477  |    2517 | Y         |
 | mariposa_qid_468  |    2394 | Y         |
-| mariposa_qid_9    |    2324 | Y         |
 | mariposa_qid_30   |    2324 | Y         |
+| mariposa_qid_9    |    2324 | Y         |
 | mariposa_qid_168  |    2278 | Y         |
 | mariposa_qid_26   |    2231 | N         |
 | mariposa_qid_472  |    2177 | Y         |
@@ -79,9 +79,9 @@ trace path: `shuffle.3620106236152871826.unknown.5082.trace`
 | mariposa_qid_251  |     720 | N         |
 | mariposa_qid_481  |     692 | N         |
 | mariposa_qid_480  |     688 | N         |
+| mariposa_qid_479  |     681 | N         |
 | mariposa_qid_482  |     681 | N         |
 | mariposa_qid_159  |     681 | Y         |
-| mariposa_qid_479  |     681 | N         |
 | mariposa_qid_2    |     646 | N         |
 | mariposa_qid_158  |     644 | N         |
 | mariposa_qid_160  |     644 | N         |
@@ -125,8 +125,8 @@ trace path: `shuffle.3620106236152871826.unknown.5082.trace`
 | mariposa_qid_741  |     100 | Y         |
 | mariposa_qid_1004 |      96 | Y         |
 | mariposa_qid_738  |      93 | Y         |
-| mariposa_qid_763  |      79 | Y         |
 | mariposa_qid_766  |      79 | Y         |
+| mariposa_qid_763  |      79 | Y         |
 | mariposa_qid_1013 |      72 | N         |
 | mariposa_qid_185  |      60 | Y         |
 | mariposa_qid_154  |      47 | N         |
@@ -135,22 +135,22 @@ trace path: `shuffle.3620106236152871826.unknown.5082.trace`
 | mariposa_qid_1059 |      44 | Y         |
 | mariposa_qid_1003 |      42 | N         |
 | mariposa_qid_501  |      41 | Y         |
-| mariposa_qid_451  |      27 | Y         |
 | mariposa_qid_449  |      27 | Y         |
+| mariposa_qid_451  |      27 | Y         |
 | mariposa_qid_760  |      26 | Y         |
 | mariposa_qid_1033 |      25 | N         |
 | mariposa_qid_1052 |      24 | N         |
 | mariposa_qid_711  |      24 | Y         |
-| mariposa_qid_1009 |      23 | N         |
 | mariposa_qid_1014 |      23 | N         |
+| mariposa_qid_1009 |      23 | N         |
 | mariposa_qid_968  |      23 | N         |
+| mariposa_qid_1005 |      22 | N         |
 | mariposa_qid_941  |      22 | N         |
 | mariposa_qid_1055 |      22 | Y         |
-| mariposa_qid_1005 |      22 | N         |
-| mariposa_qid_934  |      21 | N         |
-| mariposa_qid_1066 |      21 | Y         |
 | mariposa_qid_1068 |      21 | Y         |
+| mariposa_qid_1066 |      21 | Y         |
 | mariposa_qid_937  |      21 | Y         |
+| mariposa_qid_934  |      21 | N         |
 | mariposa_qid_457  |      21 | Y         |
 | mariposa_qid_936  |      19 | N         |
 | mariposa_qid_939  |      19 | N         |
@@ -158,132 +158,132 @@ trace path: `shuffle.3620106236152871826.unknown.5082.trace`
 | mariposa_qid_1046 |      18 | Y         |
 | mariposa_qid_943  |      18 | N         |
 | mariposa_qid_1048 |      16 | Y         |
-| mariposa_qid_1026 |      16 | N         |
-| mariposa_qid_1017 |      16 | Y         |
 | mariposa_qid_970  |      16 | N         |
+| mariposa_qid_1017 |      16 | Y         |
+| mariposa_qid_1026 |      16 | N         |
+| mariposa_qid_947  |      15 | N         |
 | mariposa_qid_1062 |      15 | Y         |
 | mariposa_qid_922  |      15 | Y         |
-| mariposa_qid_947  |      15 | N         |
 | mariposa_qid_952  |      14 | Y         |
 | mariposa_qid_1045 |      12 | Y         |
 | mariposa_qid_951  |      12 | N         |
 | mariposa_qid_974  |      12 | N         |
-| mariposa_qid_462  |      11 | N         |
 | mariposa_qid_978  |      11 | N         |
-| mariposa_qid_1008 |      11 | N         |
 | mariposa_qid_463  |      11 | N         |
-| mariposa_qid_156  |      10 | Y         |
-| mariposa_qid_959  |      10 | N         |
-| mariposa_qid_157  |      10 | Y         |
+| mariposa_qid_462  |      11 | N         |
+| mariposa_qid_1008 |      11 | N         |
+| mariposa_qid_931  |      10 | N         |
 | mariposa_qid_1060 |      10 | N         |
 | mariposa_qid_929  |      10 | N         |
+| mariposa_qid_959  |      10 | N         |
 | mariposa_qid_994  |      10 | N         |
-| mariposa_qid_931  |      10 | N         |
-| mariposa_qid_972  |       9 | N         |
-| mariposa_qid_976  |       9 | N         |
-| mariposa_qid_980  |       9 | N         |
-| mariposa_qid_500  |       9 | Y         |
-| mariposa_qid_949  |       9 | N         |
-| mariposa_qid_1050 |       9 | N         |
+| mariposa_qid_156  |      10 | Y         |
+| mariposa_qid_157  |      10 | Y         |
 | mariposa_qid_986  |       9 | N         |
+| mariposa_qid_1050 |       9 | N         |
+| mariposa_qid_972  |       9 | N         |
+| mariposa_qid_500  |       9 | Y         |
 | mariposa_qid_990  |       9 | N         |
-| mariposa_qid_957  |       8 | N         |
+| mariposa_qid_949  |       9 | N         |
+| mariposa_qid_980  |       9 | N         |
+| mariposa_qid_976  |       9 | N         |
 | mariposa_qid_1019 |       8 | N         |
 | mariposa_qid_155  |       8 | N         |
 | mariposa_qid_982  |       8 | N         |
-| mariposa_qid_1018 |       7 | N         |
-| mariposa_qid_988  |       7 | N         |
-| mariposa_qid_992  |       7 | N         |
-| mariposa_qid_192  |       7 | N         |
+| mariposa_qid_957  |       8 | N         |
 | mariposa_qid_191  |       7 | N         |
+| mariposa_qid_992  |       7 | N         |
 | mariposa_qid_984  |       7 | N         |
 | mariposa_qid_996  |       7 | N         |
-| mariposa_qid_1007 |       6 | N         |
-| mariposa_qid_490  |       6 | N         |
-| mariposa_qid_573  |       6 | Y         |
-| mariposa_qid_486  |       6 | N         |
-| mariposa_qid_131  |       6 | N         |
-| mariposa_qid_161  |       6 | N         |
-| mariposa_qid_568  |       6 | N         |
+| mariposa_qid_1018 |       7 | N         |
+| mariposa_qid_988  |       7 | N         |
+| mariposa_qid_192  |       7 | N         |
 | mariposa_qid_1038 |       6 | Y         |
-| mariposa_qid_491  |       6 | N         |
-| mariposa_qid_162  |       6 | N         |
-| mariposa_qid_163  |       6 | N         |
+| mariposa_qid_490  |       6 | N         |
+| mariposa_qid_1007 |       6 | N         |
+| mariposa_qid_573  |       6 | Y         |
 | mariposa_qid_487  |       6 | N         |
+| mariposa_qid_131  |       6 | N         |
+| mariposa_qid_568  |       6 | N         |
+| mariposa_qid_163  |       6 | N         |
+| mariposa_qid_161  |       6 | N         |
+| mariposa_qid_491  |       6 | N         |
+| mariposa_qid_486  |       6 | N         |
+| mariposa_qid_162  |       6 | N         |
 | mariposa_qid_569  |       6 | N         |
-| mariposa_qid_1011 |       5 | N         |
-| mariposa_qid_1058 |       5 | N         |
 | mariposa_qid_1016 |       5 | N         |
+| mariposa_qid_1011 |       5 | N         |
 | mariposa_qid_1020 |       5 | Y         |
-| mariposa_qid_499  |       4 | Y         |
-| mariposa_qid_498  |       4 | Y         |
-| mariposa_qid_950  |       4 | Y         |
-| mariposa_qid_1065 |       4 | Y         |
+| mariposa_qid_1058 |       5 | N         |
 | mariposa_qid_942  |       4 | Y         |
-| mariposa_qid_497  |       4 | Y         |
 | mariposa_qid_946  |       4 | Y         |
+| mariposa_qid_498  |       4 | Y         |
 | mariposa_qid_496  |       4 | N         |
+| mariposa_qid_499  |       4 | Y         |
+| mariposa_qid_497  |       4 | Y         |
+| mariposa_qid_1065 |       4 | Y         |
+| mariposa_qid_950  |       4 | Y         |
 | mariposa_qid_1061 |       3 | Y         |
 | mariposa_qid_1054 |       3 | N         |
-| mariposa_qid_975  |       3 | Y         |
-| mariposa_qid_958  |       3 | Y         |
-| mariposa_qid_483  |       3 | Y         |
-| mariposa_qid_995  |       3 | Y         |
-| mariposa_qid_983  |       3 | Y         |
-| mariposa_qid_182  |       3 | N         |
-| mariposa_qid_484  |       3 | N         |
 | mariposa_qid_921  |       3 | N         |
+| mariposa_qid_182  |       3 | N         |
+| mariposa_qid_983  |       3 | Y         |
+| mariposa_qid_484  |       3 | N         |
+| mariposa_qid_958  |       3 | Y         |
+| mariposa_qid_995  |       3 | Y         |
 | mariposa_qid_1021 |       3 | N         |
-| mariposa_qid_1047 |       2 | Y         |
-| mariposa_qid_979  |       2 | Y         |
-| mariposa_qid_458  |       2 | Y         |
-| mariposa_qid_36   |       2 | Y         |
-| mariposa_qid_190  |       2 | Y         |
-| mariposa_qid_1022 |       2 | Y         |
-| mariposa_qid_1034 |       2 | Y         |
-| mariposa_qid_735  |       2 | Y         |
-| mariposa_qid_186  |       2 | N         |
-| mariposa_qid_1037 |       2 | Y         |
+| mariposa_qid_483  |       3 | Y         |
+| mariposa_qid_975  |       3 | Y         |
+| mariposa_qid_183  |       2 | Y         |
+| mariposa_qid_932  |       2 | Y         |
 | mariposa_qid_188  |       2 | Y         |
-| mariposa_qid_39   |       2 | Y         |
-| mariposa_qid_935  |       2 | Y         |
-| mariposa_qid_189  |       2 | Y         |
 | mariposa_qid_987  |       2 | Y         |
-| mariposa_qid_181  |       2 | Y         |
+| mariposa_qid_1063 |       2 | Y         |
+| mariposa_qid_971  |       2 | Y         |
 | mariposa_qid_132  |       2 | N         |
+| mariposa_qid_735  |       2 | Y         |
+| mariposa_qid_938  |       2 | Y         |
+| mariposa_qid_133  |       2 | N         |
+| mariposa_qid_1010 |       2 | Y         |
+| mariposa_qid_189  |       2 | Y         |
+| mariposa_qid_1037 |       2 | Y         |
+| mariposa_qid_36   |       2 | Y         |
+| mariposa_qid_979  |       2 | Y         |
+| mariposa_qid_1015 |       2 | Y         |
+| mariposa_qid_1034 |       2 | Y         |
 | mariposa_qid_991  |       2 | Y         |
+| mariposa_qid_39   |       2 | Y         |
+| mariposa_qid_1023 |       2 | N         |
+| mariposa_qid_1047 |       2 | Y         |
+| mariposa_qid_190  |       2 | Y         |
+| mariposa_qid_1006 |       2 | Y         |
+| mariposa_qid_456  |       2 | Y         |
+| mariposa_qid_181  |       2 | Y         |
+| mariposa_qid_186  |       2 | N         |
+| mariposa_qid_458  |       2 | Y         |
+| mariposa_qid_1022 |       2 | Y         |
+| mariposa_qid_935  |       2 | Y         |
+| mariposa_qid_184  |       2 | N         |
 | mariposa_qid_1067 |       2 | Y         |
 | mariposa_qid_180  |       2 | Y         |
-| mariposa_qid_183  |       2 | Y         |
-| mariposa_qid_1010 |       2 | Y         |
-| mariposa_qid_1063 |       2 | Y         |
-| mariposa_qid_1015 |       2 | Y         |
-| mariposa_qid_1023 |       2 | N         |
-| mariposa_qid_1006 |       2 | Y         |
-| mariposa_qid_133  |       2 | N         |
-| mariposa_qid_184  |       2 | N         |
-| mariposa_qid_456  |       2 | Y         |
-| mariposa_qid_932  |       2 | Y         |
-| mariposa_qid_938  |       2 | Y         |
-| mariposa_qid_971  |       2 | Y         |
 | mariposa_qid_187  |       2 | Y         |
-| mariposa_qid_590  |       1 | Y         |
-| mariposa_qid_597  |       1 | Y         |
-| mariposa_qid_567  |       1 | Y         |
-| mariposa_qid_229  |       1 | N         |
-| mariposa_qid_769  |       1 | Y         |
 | mariposa_qid_595  |       1 | Y         |
-| mariposa_qid_905  |       1 | Y         |
-| mariposa_qid_768  |       1 | Y         |
-| mariposa_qid_1064 |       1 | Y         |
-| mariposa_qid_593  |       1 | Y         |
-| mariposa_qid_1036 |       1 | Y         |
+| mariposa_qid_597  |       1 | Y         |
+| mariposa_qid_228  |       1 | N         |
 | mariposa_qid_599  |       1 | Y         |
 | mariposa_qid_572  |       1 | Y         |
+| mariposa_qid_1064 |       1 | Y         |
+| mariposa_qid_229  |       1 | N         |
+| mariposa_qid_1036 |       1 | Y         |
+| mariposa_qid_590  |       1 | Y         |
 | mariposa_qid_908  |       1 | N         |
-| mariposa_qid_1035 |       1 | N         |
+| mariposa_qid_567  |       1 | Y         |
+| mariposa_qid_905  |       1 | Y         |
+| mariposa_qid_768  |       1 | Y         |
 | mariposa_qid_712  |       1 | N         |
-| mariposa_qid_228  |       1 | N         |
+| mariposa_qid_593  |       1 | Y         |
+| mariposa_qid_1035 |       1 | N         |
+| mariposa_qid_769  |       1 | Y         |
 
 removed:
 ```
@@ -318,7 +318,8 @@ removed:
     :named
     mariposa_cid_117
   )
-)```
+)
+```
 
 ```
 
@@ -359,7 +360,8 @@ removed:
     :named
     mariposa_cid_900
   )
-)```
+)
+```
 
 ```
 
@@ -564,5 +566,6 @@ removed:
     :named
     mariposa_cid_1726
   )
-)```
+)
+```
 
