@@ -34,12 +34,12 @@ trace path: `shuffle.5867719531549102908.unknown.5115.trace`
 | mariposa_qid_260  |    1827 | Y         |
 | mariposa_qid_469  |    1818 | Y         |
 | mariposa_qid_475  |    1811 | Y         |
-| mariposa_qid_477  |    1801 | Y         |
 | mariposa_qid_939  |    1801 | Y         |
+| mariposa_qid_477  |    1801 | Y         |
 | mariposa_qid_943  |    1779 | Y         |
 | mariposa_qid_1031 |    1769 | Y         |
-| mariposa_qid_947  |    1761 | Y         |
 | mariposa_qid_819  |    1761 | Y         |
+| mariposa_qid_947  |    1761 | Y         |
 | mariposa_qid_471  |    1750 | Y         |
 | mariposa_qid_972  |    1743 | Y         |
 | mariposa_qid_992  |    1727 | Y         |
@@ -52,8 +52,8 @@ trace path: `shuffle.5867719531549102908.unknown.5115.trace`
 | mariposa_qid_952  |    1479 | N         |
 | mariposa_qid_261  |    1438 | Y         |
 | mariposa_qid_255  |    1426 | Y         |
-| mariposa_qid_9    |    1314 | Y         |
 | mariposa_qid_30   |    1314 | Y         |
+| mariposa_qid_9    |    1314 | Y         |
 | mariposa_qid_26   |    1313 | Y         |
 | mariposa_qid_258  |    1240 | Y         |
 | mariposa_qid_259  |    1201 | Y         |
@@ -61,8 +61,8 @@ trace path: `shuffle.5867719531549102908.unknown.5115.trace`
 | mariposa_qid_257  |    1148 | Y         |
 | mariposa_qid_5    |    1119 | Y         |
 | mariposa_qid_1027 |    1107 | N         |
-| mariposa_qid_1029 |    1106 | Y         |
 | mariposa_qid_1028 |    1106 | Y         |
+| mariposa_qid_1029 |    1106 | Y         |
 | mariposa_qid_250  |    1095 | Y         |
 | mariposa_qid_251  |    1094 | N         |
 | mariposa_qid_1030 |    1088 | Y         |
@@ -93,16 +93,16 @@ trace path: `shuffle.5867719531549102908.unknown.5115.trace`
 | mariposa_qid_791  |     332 | Y         |
 | mariposa_qid_1058 |     276 | Y         |
 | mariposa_qid_27   |     228 | N         |
-| mariposa_qid_10   |     225 | N         |
 | mariposa_qid_31   |     225 | N         |
+| mariposa_qid_10   |     225 | N         |
 | mariposa_qid_128  |     200 | Y         |
 | mariposa_qid_455  |     199 | Y         |
 | mariposa_qid_25   |     195 | Y         |
 | mariposa_qid_0    |     178 | Y         |
 | mariposa_qid_22   |     176 | N         |
 | mariposa_qid_962  |     168 | Y         |
-| mariposa_qid_763  |     164 | Y         |
 | mariposa_qid_766  |     164 | Y         |
+| mariposa_qid_763  |     164 | Y         |
 | mariposa_qid_606  |     159 | Y         |
 | mariposa_qid_758  |     132 | Y         |
 | mariposa_qid_457  |     115 | N         |
@@ -117,9 +117,9 @@ trace path: `shuffle.5867719531549102908.unknown.5115.trace`
 | mariposa_qid_458  |      91 | Y         |
 | mariposa_qid_453  |      90 | Y         |
 | mariposa_qid_451  |      85 | Y         |
-| mariposa_qid_498  |      83 | N         |
 | mariposa_qid_998  |      83 | Y         |
 | mariposa_qid_497  |      83 | Y         |
+| mariposa_qid_498  |      83 | N         |
 | mariposa_qid_999  |      83 | N         |
 | mariposa_qid_744  |      81 | Y         |
 | mariposa_qid_501  |      77 | Y         |
@@ -129,15 +129,15 @@ trace path: `shuffle.5867719531549102908.unknown.5115.trace`
 | mariposa_qid_449  |      67 | Y         |
 | mariposa_qid_816  |      64 | Y         |
 | mariposa_qid_499  |      63 | Y         |
-| mariposa_qid_1003 |      62 | Y         |
 | mariposa_qid_500  |      62 | Y         |
+| mariposa_qid_1003 |      62 | Y         |
 | mariposa_qid_154  |      58 | Y         |
-| mariposa_qid_1012 |      54 | N         |
 | mariposa_qid_450  |      54 | Y         |
+| mariposa_qid_1012 |      54 | N         |
 | mariposa_qid_760  |      53 | Y         |
 | mariposa_qid_447  |      52 | N         |
-| mariposa_qid_1000 |      50 | Y         |
 | mariposa_qid_727  |      50 | Y         |
+| mariposa_qid_1000 |      50 | Y         |
 | mariposa_qid_166  |      49 | Y         |
 | mariposa_qid_1002 |      49 | N         |
 | mariposa_qid_738  |      44 | Y         |
@@ -152,139 +152,415 @@ trace path: `shuffle.5867719531549102908.unknown.5115.trace`
 | mariposa_qid_1071 |      23 | N         |
 | mariposa_qid_463  |      23 | Y         |
 | mariposa_qid_151  |      21 | Y         |
-| mariposa_qid_735  |      19 | Y         |
-| mariposa_qid_973  |      19 | N         |
 | mariposa_qid_933  |      19 | N         |
-| mariposa_qid_1008 |      18 | N         |
+| mariposa_qid_973  |      19 | N         |
+| mariposa_qid_735  |      19 | Y         |
 | mariposa_qid_940  |      18 | N         |
-| mariposa_qid_944  |      18 | N         |
 | mariposa_qid_981  |      18 | N         |
-| mariposa_qid_985  |      17 | N         |
+| mariposa_qid_944  |      18 | N         |
+| mariposa_qid_1008 |      18 | N         |
+| mariposa_qid_936  |      17 | Y         |
 | mariposa_qid_989  |      17 | N         |
 | mariposa_qid_1051 |      17 | N         |
-| mariposa_qid_977  |      17 | N         |
-| mariposa_qid_936  |      17 | Y         |
 | mariposa_qid_935  |      17 | Y         |
+| mariposa_qid_985  |      17 | N         |
+| mariposa_qid_977  |      17 | N         |
 | mariposa_qid_993  |      16 | N         |
 | mariposa_qid_1054 |      16 | Y         |
 | mariposa_qid_956  |      15 | N         |
 | mariposa_qid_938  |      15 | N         |
-| mariposa_qid_1053 |      15 | N         |
 | mariposa_qid_1061 |      15 | N         |
+| mariposa_qid_1053 |      15 | N         |
+| mariposa_qid_975  |      14 | N         |
+| mariposa_qid_991  |      14 | N         |
+| mariposa_qid_1046 |      14 | Y         |
 | mariposa_qid_971  |      14 | N         |
+| mariposa_qid_1004 |      14 | N         |
 | mariposa_qid_979  |      14 | N         |
 | mariposa_qid_983  |      14 | N         |
 | mariposa_qid_987  |      14 | N         |
-| mariposa_qid_1004 |      14 | N         |
-| mariposa_qid_975  |      14 | N         |
-| mariposa_qid_1046 |      14 | Y         |
-| mariposa_qid_991  |      14 | N         |
-| mariposa_qid_948  |      13 | N         |
 | mariposa_qid_970  |      13 | Y         |
+| mariposa_qid_948  |      13 | N         |
+| mariposa_qid_942  |      12 | N         |
 | mariposa_qid_995  |      12 | N         |
 | mariposa_qid_1017 |      12 | N         |
 | mariposa_qid_946  |      12 | N         |
-| mariposa_qid_942  |      12 | N         |
-| mariposa_qid_711  |      11 | Y         |
+| mariposa_qid_149  |      11 | N         |
 | mariposa_qid_1006 |      11 | Y         |
+| mariposa_qid_711  |      11 | Y         |
 | mariposa_qid_7    |      11 | Y         |
 | mariposa_qid_461  |      11 | Y         |
-| mariposa_qid_149  |      11 | N         |
-| mariposa_qid_1059 |      10 | N         |
 | mariposa_qid_1016 |      10 | Y         |
+| mariposa_qid_464  |      10 | N         |
+| mariposa_qid_1059 |      10 | N         |
+| mariposa_qid_958  |      10 | N         |
 | mariposa_qid_1010 |      10 | N         |
 | mariposa_qid_460  |      10 | N         |
-| mariposa_qid_958  |      10 | N         |
-| mariposa_qid_464  |      10 | N         |
-| mariposa_qid_950  |       9 | N         |
 | mariposa_qid_1013 |       9 | N         |
-| mariposa_qid_486  |       8 | N         |
+| mariposa_qid_950  |       9 | N         |
 | mariposa_qid_487  |       8 | N         |
 | mariposa_qid_490  |       8 | N         |
-| mariposa_qid_491  |       8 | N         |
 | mariposa_qid_185  |       8 | Y         |
+| mariposa_qid_486  |       8 | N         |
+| mariposa_qid_491  |       8 | N         |
+| mariposa_qid_192  |       7 | N         |
+| mariposa_qid_1015 |       7 | N         |
 | mariposa_qid_156  |       7 | Y         |
 | mariposa_qid_157  |       7 | Y         |
-| mariposa_qid_1015 |       7 | N         |
 | mariposa_qid_1047 |       7 | Y         |
 | mariposa_qid_191  |       7 | N         |
-| mariposa_qid_192  |       7 | N         |
+| mariposa_qid_1018 |       6 | N         |
 | mariposa_qid_949  |       6 | Y         |
 | mariposa_qid_155  |       6 | N         |
-| mariposa_qid_1018 |       6 | N         |
 | mariposa_qid_1041 |       6 | Y         |
-| mariposa_qid_934  |       5 | Y         |
-| mariposa_qid_706  |       5 | Y         |
 | mariposa_qid_1014 |       5 | Y         |
 | mariposa_qid_462  |       5 | Y         |
+| mariposa_qid_934  |       5 | Y         |
 | mariposa_qid_945  |       5 | Y         |
 | mariposa_qid_941  |       5 | Y         |
-| mariposa_qid_931  |       4 | N         |
-| mariposa_qid_1036 |       4 | Y         |
-| mariposa_qid_162  |       4 | N         |
-| mariposa_qid_1057 |       4 | N         |
-| mariposa_qid_994  |       4 | Y         |
-| mariposa_qid_929  |       4 | N         |
-| mariposa_qid_1020 |       4 | N         |
-| mariposa_qid_161  |       4 | N         |
-| mariposa_qid_163  |       4 | N         |
-| mariposa_qid_974  |       4 | Y         |
+| mariposa_qid_706  |       5 | Y         |
 | mariposa_qid_957  |       4 | Y         |
+| mariposa_qid_1036 |       4 | Y         |
+| mariposa_qid_161  |       4 | N         |
+| mariposa_qid_1020 |       4 | N         |
+| mariposa_qid_994  |       4 | Y         |
+| mariposa_qid_1057 |       4 | N         |
+| mariposa_qid_162  |       4 | N         |
+| mariposa_qid_163  |       4 | N         |
+| mariposa_qid_931  |       4 | N         |
+| mariposa_qid_974  |       4 | Y         |
+| mariposa_qid_929  |       4 | N         |
+| mariposa_qid_1066 |       3 | Y         |
 | mariposa_qid_937  |       3 | Y         |
 | mariposa_qid_1019 |       3 | Y         |
-| mariposa_qid_39   |       3 | N         |
 | mariposa_qid_1069 |       3 | Y         |
-| mariposa_qid_1066 |       3 | Y         |
-| mariposa_qid_484  |       3 | Y         |
-| mariposa_qid_36   |       3 | N         |
-| mariposa_qid_483  |       3 | Y         |
-| mariposa_qid_1025 |       3 | N         |
 | mariposa_qid_982  |       3 | Y         |
-| mariposa_qid_1070 |       2 | N         |
-| mariposa_qid_905  |       2 | N         |
-| mariposa_qid_133  |       2 | N         |
-| mariposa_qid_189  |       2 | Y         |
-| mariposa_qid_712  |       2 | N         |
-| mariposa_qid_132  |       2 | N         |
-| mariposa_qid_182  |       2 | N         |
-| mariposa_qid_1009 |       2 | Y         |
+| mariposa_qid_36   |       3 | N         |
+| mariposa_qid_39   |       3 | N         |
+| mariposa_qid_1025 |       3 | N         |
+| mariposa_qid_484  |       3 | Y         |
+| mariposa_qid_483  |       3 | Y         |
+| mariposa_qid_1033 |       2 | Y         |
 | mariposa_qid_1065 |       2 | Y         |
-| mariposa_qid_928  |       2 | Y         |
 | mariposa_qid_768  |       2 | Y         |
-| mariposa_qid_190  |       2 | Y         |
-| mariposa_qid_181  |       2 | Y         |
+| mariposa_qid_905  |       2 | N         |
+| mariposa_qid_928  |       2 | Y         |
 | mariposa_qid_986  |       2 | Y         |
-| mariposa_qid_188  |       2 | Y         |
+| mariposa_qid_1009 |       2 | Y         |
+| mariposa_qid_183  |       2 | Y         |
+| mariposa_qid_1024 |       2 | Y         |
+| mariposa_qid_1034 |       2 | N         |
+| mariposa_qid_1005 |       2 | Y         |
+| mariposa_qid_990  |       2 | Y         |
+| mariposa_qid_190  |       2 | Y         |
+| mariposa_qid_496  |       2 | N         |
+| mariposa_qid_180  |       2 | Y         |
+| mariposa_qid_132  |       2 | N         |
+| mariposa_qid_189  |       2 | Y         |
+| mariposa_qid_181  |       2 | Y         |
+| mariposa_qid_186  |       2 | N         |
+| mariposa_qid_187  |       2 | Y         |
 | mariposa_qid_769  |       2 | Y         |
 | mariposa_qid_131  |       2 | N         |
-| mariposa_qid_184  |       2 | N         |
-| mariposa_qid_180  |       2 | Y         |
-| mariposa_qid_1005 |       2 | Y         |
-| mariposa_qid_1033 |       2 | Y         |
-| mariposa_qid_1024 |       2 | Y         |
-| mariposa_qid_187  |       2 | Y         |
-| mariposa_qid_908  |       2 | Y         |
-| mariposa_qid_186  |       2 | N         |
 | mariposa_qid_978  |       2 | Y         |
-| mariposa_qid_496  |       2 | N         |
-| mariposa_qid_183  |       2 | Y         |
-| mariposa_qid_1034 |       2 | N         |
-| mariposa_qid_990  |       2 | Y         |
-| mariposa_qid_1035 |       1 | Y         |
-| mariposa_qid_229  |       1 | N         |
+| mariposa_qid_712  |       2 | N         |
+| mariposa_qid_908  |       2 | Y         |
+| mariposa_qid_182  |       2 | N         |
+| mariposa_qid_188  |       2 | Y         |
+| mariposa_qid_133  |       2 | N         |
+| mariposa_qid_1070 |       2 | N         |
+| mariposa_qid_184  |       2 | N         |
 | mariposa_qid_1060 |       1 | Y         |
 | mariposa_qid_228  |       1 | N         |
+| mariposa_qid_229  |       1 | N         |
+| mariposa_qid_1035 |       1 | Y         |
 
 removed:
 ```
-(assert (! (forall ((bits Int) (i Int)) (! (and (<= 0 (uClip bits i)) (< (uClip bits i) (uHi bits)) (=> (and (<= 0 i) (< i (uHi bits))) (= i (uClip bits i)))) :pattern ((uClip bits i)) :skolemid skolem_prelude_u_clip :qid mariposa_qid_19)) :named mariposa_cid_107))
-```
+
+(assert 
+  (! 
+    (forall 
+      (
+        (bits Int)
+        (i Int)
+      )
+      (! 
+        (and 
+          (<= 
+            0
+            (uClip bits i)
+          )
+          (< 
+            (uClip bits i)
+            (uHi bits)
+          )
+          (=> 
+            (and 
+              (<= 0 i)
+              (< 
+                i
+                (uHi bits)
+              )
+            )
+            (= 
+              i
+              (uClip bits i)
+            )
+          )
+        )
+        :pattern
+        (
+          (uClip bits i)
+        )
+        :skolemid
+        skolem_prelude_u_clip
+        :qid
+        mariposa_qid_19
+      )
+    )
+    :named
+    mariposa_cid_107
+  )
+)```
 
 ```
-(assert (! (=> (fuel_bool fuel%vstd!std_specs.bits.axiom_u64_leading_zeros.) (forall ((i! Poly)) (! (=> (has_type i! (UINT 64)) (and (and (and (and (let ((tmp%%$ (vstd!std_specs.bits.u64_leading_zeros.? i!))) (and (<= 0 tmp%%$) (<= tmp%%$ 64))) (= (= (%I i!) 0) (= (vstd!std_specs.bits.u64_leading_zeros.? i!) 64))) (=> (let ((tmp%%$ (vstd!std_specs.bits.u64_leading_zeros.? i!))) (and (<= 0 tmp%%$) (< tmp%%$ 64))) (not (= (uClip 64 (uintand 64 (I (uClip 64 (uintshr 64 (I (%I i!)) (I (uClip 64 (Sub 63 (uClip 64 (vstd!std_specs.bits.u64_leading_zeros.? i!)))))))) (I 1))) 0)))) (= (uClip 64 (uintshr 64 (I (%I i!)) (I (uClip 64 (Sub 64 (uClip 64 (vstd!std_specs.bits.u64_leading_zeros.? i!))))))) 0)) (forall ((j$ Poly)) (! (=> (has_type j$ (UINT 64)) (=> (and (<= (Sub 64 (vstd!std_specs.bits.u64_leading_zeros.? i!)) (%I j$)) (< (%I j$) 64)) (= (uClip 64 (uintand 64 (I (uClip 64 (uintshr 64 (I (%I i!)) (I (%I j$))))) (I 1))) 0))) :pattern ((uClip 64 (uintshr 64 (I (%I i!)) (I (%I j$))))) :skolemid skolem_user_vstd__std_specs__bits__axiom_u64_leading_zeros_43 :qid mariposa_qid_688)))) :pattern ((vstd!std_specs.bits.u64_leading_zeros.? i!)) :skolemid skolem_user_vstd__std_specs__bits__axiom_u64_leading_zeros_44 :qid mariposa_qid_689))) :named mariposa_cid_1722))
-```
+
+(assert 
+  (! 
+    (=> 
+      (fuel_bool fuel%vstd!std_specs.bits.axiom_u64_leading_zeros.)
+      (forall 
+        (
+          (i! Poly)
+        )
+        (! 
+          (=> 
+            (has_type 
+              i!
+              (UINT 64)
+            )
+            (and 
+              (and 
+                (and 
+                  (and 
+                    (let 
+                      (
+                        (tmp%%$ 
+                          (vstd!std_specs.bits.u64_leading_zeros.? i!)
+                        )
+                      )
+                      (and 
+                        (<= 0 tmp%%$)
+                        (<= tmp%%$ 64)
+                      )
+                    )
+                    (= 
+                      (= 
+                        (%I i!)
+                        0
+                      )
+                      (= 
+                        (vstd!std_specs.bits.u64_leading_zeros.? i!)
+                        64
+                      )
+                    )
+                  )
+                  (=> 
+                    (let 
+                      (
+                        (tmp%%$ 
+                          (vstd!std_specs.bits.u64_leading_zeros.? i!)
+                        )
+                      )
+                      (and 
+                        (<= 0 tmp%%$)
+                        (< tmp%%$ 64)
+                      )
+                    )
+                    (not 
+                      (= 
+                        (uClip 
+                          64
+                          (uintand 
+                            64
+                            (I 
+                              (uClip 
+                                64
+                                (uintshr 
+                                  64
+                                  (I 
+                                    (%I i!)
+                                  )
+                                  (I 
+                                    (uClip 
+                                      64
+                                      (Sub 
+                                        63
+                                        (uClip 
+                                          64
+                                          (vstd!std_specs.bits.u64_leading_zeros.? i!)
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                            (I 1)
+                          )
+                        )
+                        0
+                      )
+                    )
+                  )
+                )
+                (= 
+                  (uClip 
+                    64
+                    (uintshr 
+                      64
+                      (I 
+                        (%I i!)
+                      )
+                      (I 
+                        (uClip 
+                          64
+                          (Sub 
+                            64
+                            (uClip 
+                              64
+                              (vstd!std_specs.bits.u64_leading_zeros.? i!)
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                  0
+                )
+              )
+              (forall 
+                (
+                  (j$ Poly)
+                )
+                (! 
+                  (=> 
+                    (has_type 
+                      j$
+                      (UINT 64)
+                    )
+                    (=> 
+                      (and 
+                        (<= 
+                          (Sub 
+                            64
+                            (vstd!std_specs.bits.u64_leading_zeros.? i!)
+                          )
+                          (%I j$)
+                        )
+                        (< 
+                          (%I j$)
+                          64
+                        )
+                      )
+                      (= 
+                        (uClip 
+                          64
+                          (uintand 
+                            64
+                            (I 
+                              (uClip 
+                                64
+                                (uintshr 
+                                  64
+                                  (I 
+                                    (%I i!)
+                                  )
+                                  (I 
+                                    (%I j$)
+                                  )
+                                )
+                              )
+                            )
+                            (I 1)
+                          )
+                        )
+                        0
+                      )
+                    )
+                  )
+                  :pattern
+                  (
+                    (uClip 
+                      64
+                      (uintshr 
+                        64
+                        (I 
+                          (%I i!)
+                        )
+                        (I 
+                          (%I j$)
+                        )
+                      )
+                    )
+                  )
+                  :skolemid
+                  skolem_user_vstd__std_specs__bits__axiom_u64_leading_zeros_43
+                  :qid
+                  mariposa_qid_688
+                )
+              )
+            )
+          )
+          :pattern
+          (
+            (vstd!std_specs.bits.u64_leading_zeros.? i!)
+          )
+          :skolemid
+          skolem_user_vstd__std_specs__bits__axiom_u64_leading_zeros_44
+          :qid
+          mariposa_qid_689
+        )
+      )
+    )
+    :named
+    mariposa_cid_1722
+  )
+)```
 
 ```
-(assert (! (forall ((self! Poly) (segment_id! Poly)) (! (=> (and (has_type self! TYPE%lib!page_organization.PageOrg.State.) (has_type segment_id! TYPE%lib!tokens.SegmentId.)) (<= 0 (lib!page_organization.PageOrg.impl&%4.ucount.? self! segment_id!))) :pattern ((lib!page_organization.PageOrg.impl&%4.ucount.? self! segment_id!)) :skolemid skolem_internal_lib!page_organization.PageOrg.impl&__4.ucount.?_pre_post_definition :qid mariposa_qid_952)) :named mariposa_cid_2395))
-```
+
+(assert 
+  (! 
+    (forall 
+      (
+        (self! Poly)
+        (segment_id! Poly)
+      )
+      (! 
+        (=> 
+          (and 
+            (has_type self! TYPE%lib!page_organization.PageOrg.State.)
+            (has_type segment_id! TYPE%lib!tokens.SegmentId.)
+          )
+          (<= 
+            0
+            (lib!page_organization.PageOrg.impl&%4.ucount.? self! segment_id!)
+          )
+        )
+        :pattern
+        (
+          (lib!page_organization.PageOrg.impl&%4.ucount.? self! segment_id!)
+        )
+        :skolemid
+        skolem_internal_lib!page_organization.PageOrg.impl&__4.ucount.?_pre_post_definition
+        :qid
+        mariposa_qid_952
+      )
+    )
+    :named
+    mariposa_cid_2395
+  )
+)```
 
