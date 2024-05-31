@@ -9,6 +9,7 @@ from query.combo_builder import handle_inst_z3, handle_trace_z3
 from query.core_completer import CoreCompleter
 from query.inst_builder import InstBuilder
 from query.trace_debugger import TraceDebugger
+from query.trace_debugger2 import TraceDebugger2
 from utils.option_utils import *
 from query.core_builder import CompleteCoreBuilder, MutCoreBuilder
 from query.combo_builder import ComboBuilder
@@ -97,7 +98,7 @@ def setup_trace_z3(subparsers):
         action="store_true",
         help="search for a (shuffled) mutant that would produce unsat, output the trace of the mutant, otherwise, output the trace of the original query, regardless of unsat or not",
     )
-    p.add_argument("--seed", required=False, help="the seed to use")
+    p.add_argument("--seed", required=False, default=MAGIC_IGNORE_SEED, help="the seed to use")
     add_restart_option(p)
     add_output_log_option(p)
     add_timeout_option(p)
@@ -180,6 +181,11 @@ def setup_trace_debug(subparsers):
     p.add_argument("--core-query-path", default=None, help="the core query")
     add_output_query_option(p)
 
+def setup_debug2(subparsers):
+    p = subparsers.add_parser("debug2", help="debug2")
+    add_input_query_option(p)
+    p.add_argument("--clear", default=False, action="store_true", help="clear the debug directory")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Mariposa Query Wizard operates on the single-query level. Typically, the input is a single smt2 query, and the output is a new query and/or a log file. Please note there are operations that in the Rust codebase that are not exposed here. Instead, use the built binary directly."
@@ -203,6 +209,7 @@ if __name__ == "__main__":
     setup_inst_z3(subparsers)
     setup_wombo_combo(subparsers)
     setup_trace_debug(subparsers)
+    setup_debug2(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -303,5 +310,7 @@ if __name__ == "__main__":
         cb.run()
     elif args.sub_command == "debug-trace":
         TraceDebugger(args.input_query_path, args.input_log_path, args.core_query_path, args.output_query_path)
+    elif args.sub_command == "debug2":
+        TraceDebugger2(args.input_query_path, args.clear)
     else:
         parser.print_help()

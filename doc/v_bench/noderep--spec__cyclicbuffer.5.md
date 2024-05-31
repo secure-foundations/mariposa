@@ -11,17 +11,17 @@ trace path: `reseed.9468741365361355720.unsat.39.trace`
 | mariposa_qid_0   |      95 | Y         |
 | mariposa_qid_6   |       3 | Y         |
 | mariposa_qid_18  |       3 | Y         |
-| mariposa_qid_286 |       2 | Y         |
 | mariposa_qid_287 |       2 | N         |
-| mariposa_qid_37  |       2 | Y         |
+| mariposa_qid_286 |       2 | Y         |
 | mariposa_qid_40  |       2 | N         |
-| mariposa_qid_22  |       1 | N         |
+| mariposa_qid_37  |       2 | Y         |
 | mariposa_qid_25  |       1 | N         |
+| mariposa_qid_22  |       1 | N         |
 | mariposa_qid_8   |       1 | Y         |
-| mariposa_qid_19  |       1 | Y         |
-| mariposa_qid_35  |       1 | Y         |
 | mariposa_qid_33  |       1 | Y         |
+| mariposa_qid_19  |       1 | Y         |
 | mariposa_qid_38  |       1 | Y         |
+| mariposa_qid_35  |       1 | Y         |
 
 removed:
 ```
@@ -30,32 +30,28 @@ removed:
   (! 
     (forall 
       (
-        (bits Int)
-        (i Int)
+        (x Int)
       )
       (! 
-        (= 
-          (uInv bits i)
-          (and 
-            (<= 0 i)
-            (< 
-              i
-              (uHi bits)
-            )
-          )
+        (has_type 
+          (I x)
+          INT
         )
         :pattern
         (
-          (uInv bits i)
+          (has_type 
+            (I x)
+            INT
+          )
         )
         :skolemid
-        skolem_prelude_u_inv
+        skolem_prelude_has_type_int
         :qid
-        mariposa_qid_22
+        mariposa_qid_25
       )
     )
     :named
-    mariposa_cid_113
+    mariposa_cid_116
   )
 )
 ```

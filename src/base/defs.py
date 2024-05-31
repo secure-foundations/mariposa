@@ -2,6 +2,7 @@ PROJ_ROOT = "data/projs/"
 DB_ROOT = "data/dbs/"
 LOG_ROOT = "data/logs/"
 GEN_ROOT = "gen/"
+DEBUG_ROOT = "dbg/"
 SINGLE_PROJ_ROOT_PREFIX = "gen/sproj_"
 SINGLE_MUT_ROOT_PREFIX = "gen/smut_"
 

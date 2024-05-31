@@ -92,7 +92,7 @@ def handle_inst_z3(input_query, output_query, timeout, restarts):
             input_query,
             "--z3-trace-log-path",
             trace_path,
-            "--max-trace-insts=300",
+            "--max-trace-insts=3000",
             "-o",
             output_query,
         ],
@@ -150,7 +150,7 @@ class ComboBuilder:
         return self.p_qc != -1 and diff == 0
 
     def run(
-        self, trace_timeout=30, trace_restarts=10, core_timeout=65, core_restarts=5
+        self, trace_timeout=10, trace_restarts=10, core_timeout=65, core_restarts=5
     ):
         if self.has_converged():
             log_info("no change in quantifiers")

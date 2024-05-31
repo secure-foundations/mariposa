@@ -11,18 +11,20 @@ from utils.analysis_utils import *
 from utils.system_utils import subprocess_run
 import matplotlib.pyplot as plt
 
-class WomboAnalyzer(CoreAnalyzer):
+class WomboAnalyzer:
     def __init__(self, group: ProjectGroup):
-        super().__init__(group)
-        self.ana = FACT.get_analyzer("60nq")
+        self.ana = FACT.get_analyzer("5sec")
         self.cmds = []
 
+        self.base = group.get_project(PT.from_str("base.z3"), build=True)
+        self.core = group.get_project(PT.from_str("core.z3"), build=True)
         self.pins = group.get_project(PT.from_str("pins.z3"), build=True)
-        temp = group.get_project(PT.from_str("temp.z3"), build=True)
-        self.temp: ExperAnalyzer = FACT.load_default_analysis(temp)
+        # temp = group.get_project(PT.from_str("temp.z3"), build=True)
+        # self.temp: ExperAnalyzer = FACT.load_default_analysis(temp)
 
-        # for qid in self.qids:
-            # self.try_converge(qid)
+        for qid in self.core.qids:
+            # self.build_pin(qid)
+            self.try_converge(qid)
             # cqs = self.qids[qid]
             # if cqs.patch == STB.STABLE and self.temp.get_stability(qid) == STB.UNSTABLE:
             #     cb = self.get_cb(qid)
@@ -31,7 +33,7 @@ class WomboAnalyzer(CoreAnalyzer):
             #     self.core[qid].print_status(5)
             #     self.temp[qid].print_status(5)
             #     print("")
-        # self.print_cmds()
+        self.print_cmds()
 
     def print_core_delta(self):
         mig = self.core_adj.get_migration_status(self.temp.stability_categories)
@@ -70,8 +72,9 @@ class WomboAnalyzer(CoreAnalyzer):
         return qc_data, ic_data
 
     def build_pin(self, qid):
-        cqs = self.qids[qid]
-        in_path = cqs.patch_path
+        in_path = self.core.get_path(qid)
+        if not os.path.exists(in_path):
+            return
         ot_path = self.pins.get_path(qid)
         if os.path.exists(ot_path):
             return
@@ -91,10 +94,16 @@ class WomboAnalyzer(CoreAnalyzer):
         # if cb.no_progress():
         #     continue
         if not cb.has_converged():
-            print(cb.counts)
+            # print(cb.counts)
             cmd = f"{QUERY_WIZARD} wombo-combo -i {cb.input_query} -o {cb.output_dir}"
-        #     # self.cmds.append(cmd)
+            # self.cmds.append(cmd)
             print(cmd)
-            cmd = "src/query_wizard.py build-core -i " + cb.output_dir + "/0.smt2" + " -o " + cb.output_dir + "/1.smt2" + " --complete" + " --restarts 5" + " --ids-available" + " --solver z3_4_8_5" + " --timeout 120"
-            print(cmd)
-            print("")
+            # cmd = "src/query_wizard.py build-core -i " + cb.output_dir + "/0.smt2" + " -o " + cb.output_dir + "/1.smt2" + " --complete" + " --restarts 5" + " --ids-available" + " --solver z3_4_8_5" + " --timeout 120"
+            # print(cmd)
+            # print("")
+        # else:
+        #     print("cp",
+        #         cb.cur_file,
+        #         "data/projs/v_bench/woco.z3/" + qid + ".smt2",
+        #         )
+            

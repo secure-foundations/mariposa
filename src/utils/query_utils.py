@@ -162,8 +162,8 @@ def emit_mutant_query(query_path, output_path, mutation, seed):
 
     command = f"{MARIPOSA} -i '{query_path}' -a {mutation} -o '{output_path}' -s {seed}"
     
-    if mutation == Mutation.COMPOSE:
-        command += " --lower-asserts"
+    # if mutation == Mutation.COMPOSE:
+    #     command += " --lower-asserts"
 
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     log_check(result.returncode == 0 and os.path.exists(output_path),
