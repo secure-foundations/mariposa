@@ -176,9 +176,16 @@ class TraceDebugger2:
         self.sub_root = f"{DEBUG_ROOT}{base_name}"
         self.orig_path = f"{self.sub_root}/orig.smt2"
         self.pins_path = f"{self.sub_root}/pins.smt2"
+        self.pins_cvc5_path = f"{self.sub_root}/pins.cvc5.smt2"
+
         self.core_dir = f"{self.sub_root}/cores"
         self.trace_dir = f"{self.sub_root}/traces"
         self.temp_dir = f"{self.sub_root}/temp"
+        self.proof_dir = f"{self.sub_root}/proofs"
+
+        # if clear:
+        #     os.system(f"rm -rf {self.sub_root}")
+        #     os.makedirs(self.sub_root)
 
         if not os.path.exists(self.sub_root):
             os.makedirs(self.sub_root)
@@ -186,38 +193,40 @@ class TraceDebugger2:
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)
 
-        # elif clear:
-        #     os.system(f"rm -rf {self.sub_root}")
-        #     os.makedirs(self.sub_root)
+        if not os.path.exists(self.orig_path):
+            os.system(f"cp {query_path} {self.orig_path}")
 
-        os.system(f"cp {query_path} {self.orig_path}")
+        if not os.path.exists(self.pins_path):
+            subprocess_run(
+                [
+                    MARIPOSA,
+                    "-a",
+                    "pre-inst-z3",
+                    "-i",
+                    query_path,
+                    "-o",
+                    f"{self.pins_path}",
+                ],
+                check=True,
+                debug=True,
+            )
+            # os.system(f"cp {query_path} {self.pins_path}")
 
-        subprocess_run(
-            [
-                MARIPOSA,
-                "-a",
-                "pre-inst-z3",
-                "-i",
-                query_path,
-                "-o",
-                f"{self.pins_path}",
-            ],
-            check=True,
-            debug=True,
-        )
+        log_info(f"pins query: {self.pins_path}")
 
-        self.init_cores(False)
-        self.init_traces(False)
+        self.init_cores(clear)
+        self.init_traces(clear)
 
         # self.print_cores()
-        self.print_traces()
+        # self.print_traces()
 
         # some_core = self.pick_any_core()
         # print(some_core)
 
         slow_trace = self.pick_slowest_trace()
         print(slow_trace)
-        self.analyze_trace(slow_trace)
+        votes = self.analyze_trace(slow_trace)
+        self.create_candidate(votes)
 
     def init_cores(self, clear):
         if clear:
@@ -347,6 +356,8 @@ class TraceDebugger2:
 
         qids = trace.get_qids(self.pins_path)
         table = []
+        
+        votes = dict()
 
         for qid, count in qids.items():
             row = [qid, count]
@@ -354,14 +365,32 @@ class TraceDebugger2:
                 if qid in a_core:
                     in_core = round(a_core[qid] * 100 / count, 2)
                 else:
-                    # if len(remove_qids) != 3:
-                    #     remove_qids.add(":qid " + qid + ")")
+                    votes[qid] = votes.get(qid, 0) + 1
                     in_core = "X"
                 row += [in_core]
             table.append(row)
 
-            if len(table) > QID_TABLE_LIMIT:
-                break
+        elided = max(len(table) - QID_TABLE_LIMIT, 0)
+        table = table[:QID_TABLE_LIMIT]
 
         headers = ["QID", "Count"] + [f"Core {i}" for i in range(len(core_qids))]
         print(tabulate(table, headers=headers, tablefmt="github"))
+        if elided > 0:
+            log_info(f"... elided {elided} rows")
+
+        return votes
+
+    def create_candidate(self, votes):
+        remove_qids = list(votes.keys())[:3]
+        print(remove_qids)
+        remove_qids = set([f":qid {qid})" for qid in remove_qids])
+        cand_path = f"{self.sub_root}/candi.smt2"
+        in_f = open(self.pins_path, "r")
+        ot_f = open(cand_path, "w")
+        for line in in_f.readlines():
+            if not any(rqid in line for rqid in remove_qids):
+                ot_f.write(line)
+        in_f.close()
+        ot_f.close()
+        print(f"created candidate: {cand_path}")
+

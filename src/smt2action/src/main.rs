@@ -110,6 +110,12 @@ enum Action {
     ParseInstZ3,
 
     #[strum(
+        serialize = "inst-qid-z3",
+        message = "read the Z3 instantiation log and add to the query"
+    )]
+    InstQIDZ3,
+
+    #[strum(
         serialize = "post-inst-z3",
         message = "transform the Z3 query to extract more nested quantifiers"
     )]

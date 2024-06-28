@@ -25,6 +25,7 @@
             "reseed",
             "quake"
         ],
+        "num_procs": 6,
         "exp_timeout": 5
     },
     "verus_ext": {
