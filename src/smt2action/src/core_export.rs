@@ -16,10 +16,11 @@ fn load_core_symbols(file_path: &String) -> HashSet<String> {
         .lines()
         .map(|x| x.unwrap())
         .collect::<vec::Vec<String>>();
-    // get the last line of the file
     if &lines[0] != "unsat" {
-        return HashSet::new();
+        panic!("Expected 'unsat' as the first line of the core file");
+        // return HashSet::new();
     }
+    // get the last line of the file
     let last_line = &lines[lines.len() - 1];
     // strip the first and last character
     let last_line = &last_line[1..last_line.len() - 1];

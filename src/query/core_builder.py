@@ -22,9 +22,9 @@ class MutCoreBuilder:
         log_check(
             os.path.exists(input_query), f"input query {input_query} does not exist"
         )
-        log_check(
-            solver.stype == SolverType.Z3, f"only z3 solver is supported, got {solver}"
-        )
+        # log_check(
+        #     solver.stype == SolverType.Z3, f"only z3 solver is supported, got {solver}"
+        # )
         self.solver = solver
 
         name_hash = get_name_hash(input_query)
@@ -103,8 +103,24 @@ class MutCoreBuilder:
         log_info(f"elapsed: {elapsed} seconds")
 
         if len(lines) == 0 or "unsat\n" not in lines:
-            os.remove(self.core_log)
             return False
+
+        # if self.solver.stype == SolverType.Z3:
+        #     last = lines[-1]
+        #     assert last.startswith("(")
+        #     assert last.endswith(")\n")
+        #     last = last[1:-2]
+
+        if self.solver.stype == SolverType.CVC5:
+            # this is hacky... covert the log file into z3 log format
+            assert lines[0] == "unsat\n"
+            assert lines[1] == "(\n"
+            assert lines[-1] == ")\n"
+            rest = " ".join([l.strip() for l in lines[2:-1]])
+            with open(self.core_log, "w") as f:
+                f.write("unsat\n")
+                f.write("(" + rest + ")\n")
+
         return True
 
     def __create_core_query(self, seed):
