@@ -112,7 +112,7 @@ class ShakeAnalyzer(CoreAnalyzer):
                 shake_log = self.base.get_path(qid, KnownExt.SHK_LOG)
             oracle_query_path = None
             if qcs.core_is_enabled():
-                oracle_query_path = qcs.patch_path + ".fixed"
+                oracle_query_path = qcs.patch_path # + ".fixed"
             args += [(qid, shake_log, oracle_query_path)]
 
         pool = multiprocessing.Pool(6)
@@ -147,16 +147,20 @@ class ShakeAnalyzer(CoreAnalyzer):
             else:
                 shake_log = self.base.get_path(qid, KnownExt.SHK_LOG)
 
+            oracle = df_row.max_core_depth
             if qcs.patch_path == qcs.base_path:
-                print("no core:", qid)
-                continue
+                oracle = int(df_row.max_base_depth / 3)
+                # print("no core:", qid)
+                # continue
 
             df_row = df[df["qid"] == qid].iloc[0]
             if df_row["default_missing_count"] != 0:
+                print(f"cp {qcs.base_path} data/projs/{self.group.gid}.special/shko.z3/{qid}.smt2")
                 continue
+
             rrs += [df_row.oracle_count / df_row.core_count]
             maybe += 1
-            print(f"./src/query_wizard.py create-shake -i {qcs.base_path} --input-log {shake_log} --max-score {df_row.max_core_depth} -o data/projs/{self.group.gid}.special/shko.z3/{qid}.smt2")
+            print(f"./src/query_wizard.py create-shake -i {qcs.base_path} --input-log {shake_log} --max-score {oracle} -o data/projs/{self.group.gid}.special/shko.z3/{qid}.smt2")
 
             # print(
             #     "./src/query_wizard.py debug-shake",
