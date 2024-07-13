@@ -92,8 +92,8 @@ def _get_shake_stats(args):
     return ShakeStats(qid, shake_log_path, oracle_query_path).as_list()
 
 class ShakeAnalyzer(CoreAnalyzer):
-    def __init__(self, group: ProjectGroup):
-        super().__init__(group)
+    def __init__(self, group: ProjectGroup, ana: QueryAnalyzer):
+        super().__init__(group, ana)
         # self.build_shake_stats()
         # self.shake = FACT.load_default_analysis(self.p_shake)
         # self.create_shake_queries()
@@ -148,7 +148,7 @@ class ShakeAnalyzer(CoreAnalyzer):
                 shake_log = self.base.get_path(qid, KnownExt.SHK_LOG)
 
             if qcs.patch_path == qcs.base_path:
-                # print("no core:", qid)
+                print("no core:", qid)
                 continue
 
             df_row = df[df["qid"] == qid].iloc[0]

@@ -94,8 +94,10 @@ def handle_shake_context_analysis():
     # for gid in MARIPOSA_GROUPS:
     #     if gid != "d_lvbkv":
     #         continue
-    #     sa = ShakeAnalyzer(FACT.get_group(gid))
-    #     sa.debug_shake(15)
+
+def handle_shake_create():
+    sa = ShakeAnalyzer(FACT.get_group("bench_unstable"), FACT.get_analyzer("60nq"))
+    sa.debug_shake(0)
 
     # for gid in MARIPOSA_GROUPS:
         # meta = GROUP_PLOT_META[gid]

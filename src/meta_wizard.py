@@ -3,7 +3,7 @@
 import argparse
 import multiprocessing
 import os
-from analysis.shake_context import handle_shake_depth_analysis, handle_core_context_analysis, handle_shake_context_analysis
+from analysis.shake_context import handle_shake_create, handle_shake_depth_analysis, handle_core_context_analysis, handle_shake_context_analysis
 from analysis.core_analyzer import CoreAnalyzer
 from analysis.shake_stability import handle_core_stability_analysis, handle_shake_stability_analysis
 from analysis.shake_survivial import get_shake_times, handle_shake_survival
@@ -185,6 +185,7 @@ if __name__ == "__main__":
     subparsers.add_parser("shake-ctx", help="analyze shake ctx")
     subparsers.add_parser("shake-depth", help="analyze shake depth")
     subparsers.add_parser("shake-stb", help="analyze shake stability")
+    subparsers.add_parser("shake-create", help="create shake queries")
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -212,3 +213,5 @@ if __name__ == "__main__":
     elif args.sub_command == "fix-cids":
         for gid in MARIPOSA_GROUPS:
             fix_cids(gid)
+    elif args.sub_command == "shake-create":
+        handle_shake_create()
