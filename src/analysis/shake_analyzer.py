@@ -147,13 +147,15 @@ class ShakeAnalyzer(CoreAnalyzer):
             else:
                 shake_log = self.base.get_path(qid, KnownExt.SHK_LOG)
 
+            df_row = df[df["qid"] == qid].iloc[0]
+
             oracle = df_row.max_core_depth
+
             if qcs.patch_path == qcs.base_path:
                 oracle = int(df_row.max_base_depth / 3)
                 # print("no core:", qid)
                 # continue
 
-            df_row = df[df["qid"] == qid].iloc[0]
             if df_row["default_missing_count"] != 0:
                 print(f"cp {qcs.base_path} data/projs/{self.group.gid}.special/shko.z3/{qid}.smt2")
                 continue
