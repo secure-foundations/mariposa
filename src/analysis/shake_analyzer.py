@@ -137,7 +137,7 @@ class ShakeAnalyzer(CoreAnalyzer):
         maybe = 0
         rrs = []
         df = self.build_shake_stats(freq)
-        for qid in self.base_adj[STB.UNSTABLE].items:
+        for qid in self.base_adj.tally:
             qcs = self.qids[qid]
             if freq == 0:
                 shake_log = self.group.get_project(PT.from_str("shkn.z3")).get_path(qid, KnownExt.SHK_LOG)

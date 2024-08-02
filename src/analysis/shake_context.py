@@ -95,8 +95,8 @@ def handle_shake_context_analysis():
     #     if gid != "d_lvbkv":
     #         continue
 
-def handle_shake_create():
-    sa = ShakeAnalyzer(FACT.get_group("bench_unstable"), FACT.get_analyzer("60nq"))
+def handle_shake_create(gid):
+    sa = ShakeAnalyzer(FACT.get_group(gid), FACT.get_analyzer("60nq"))
     sa.debug_shake(0)
 
     # for gid in MARIPOSA_GROUPS:

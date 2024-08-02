@@ -114,9 +114,40 @@ def __load_shake_oracle_results_cvc5():
 
     return groups
 
+def __load_naive_shake_oracle_results_z3():
+    groups = {gid: [0, 0, 0, 0] for gid in MARIPOSA_GROUPS}
+    groups["Overall"] = [0, 0, 0, 0]
+
+    group = FACT.get_group("bench_unstable.special")
+    exp = FACT.load_default_analysis(group.get_project("shko.z3"))
+
+    for qid in exp.qids:
+        qr = exp[qid]
+        gid, qid = qid.split("--")
+        groups[gid][0] += 1
+        groups["Overall"][0] += 1
+        if qr.stability == STB.STABLE:
+            groups[gid][1] += 1
+            groups["Overall"][1] += 1
+            
+    group = FACT.get_group("bench_stable.special")
+    exp = FACT.load_default_analysis(group.get_project("shko.z3"))
+
+    for qid in exp.qids:
+        qr = exp[qid]
+        gid, qid = qid.split("--")
+        groups[gid][2] += 1
+        groups["Overall"][2] += 1
+        if qr.stability == STB.STABLE:
+            groups[gid][3] += 1
+            groups["Overall"][3] += 1
+    return groups
+
+
 def handle_shake_stability_analysis():
     # data = __load_shake_oracle_results_z3()
-    data = __load_shake_oracle_results_cvc5()
+    # data = __load_shake_oracle_results_cvc5()
+    data = __load_naive_shake_oracle_results_z3()
 
     def into_row(name, data):
         [unstable, mitigated, stable, preserved] = data

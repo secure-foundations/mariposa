@@ -214,4 +214,5 @@ if __name__ == "__main__":
         for gid in MARIPOSA_GROUPS:
             fix_cids(gid)
     elif args.sub_command == "shake-create":
-        handle_shake_create()
+        handle_shake_create("bench_stable")
+        # handle_shake_create("bench_unstable")

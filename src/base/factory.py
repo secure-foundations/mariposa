@@ -13,6 +13,7 @@ from utils.system_utils import (
     list_smt2_files,
     log_check,
     log_info,
+    log_warn,
     reset_dir,
     subprocess_run,
 )
@@ -191,6 +192,9 @@ class Factory:
 
     def load_any_analysis(self, proj: Project, ana: QueryAnalyzer, group_qids=None) -> ExperAnalyzer:
         exps = self.get_available_expers(proj)
+        if len(exps) == 0:
+            log_warn(f"no available experiments for {proj.full_name}, returning a dummy")
+            return self.load_default_analysis(proj, group_qids=group_qids)
         return ExperAnalyzer(exps[0], ana, group_qids=group_qids)
 
     def load_default_analysis(self, proj: Project, group_qids=None) -> ExperAnalyzer:
