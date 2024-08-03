@@ -1,0 +1,115 @@
+Key Abstraction Levels:
+
+1. Query Level.
+
+In Mariposa, this level orients around a single SMT query,
+with a single check-sat. In practice, there often can be
+multiple check-sats in a single SMT file. We split up the
+query context and divide each check-sat into a separate
+query. This can be considered as a limitation of the current
+architecture. 
+
+2. Project Level.
+
+In Mariposa, this level orients around a single project,
+which contains multiple (related) queries. For example, a
+project may contain all the queries in some verification
+project. A special case of a project is created by a single
+SMT file, which contains multiple queries (from different
+check-sats). 
+
+3. Group Level.
+
+In Mariposa, this level orients around a single group, which
+contains multiple related projects. The relation here is
+based on query actions (transformations), i.e., two projects
+in a group can in theory be transformed from one to another
+at least (not necessarily the other around). Specifically, a
+project group always has a base project, which is the
+"natural form" of a project exported from a verification
+project (after splitting). Then there is also the "core"
+project, which contains the unsat core version of each
+query, forming a related project under the same group.
+
+
+Main Considerations (Current): 
+
+* Cluster Execution
+
+Being able to run experiments on the cluster is important to
+the current setup. Naturally, this requires cluster
+management, including: 
+    * job submission
+    * query synchronization
+    * progress monitoring 
+    * result retrieval 
+    * database merging
+    * fault recovery
+
+Each project can be partitioned into multiple subsets,
+merely for the cluster execution purpose. The database
+tables are partitioned accordingly. The head node is
+responsible for starting the experiments and merging the
+tables.  
+
+* Query Storage
+
+Mutants are temporarily stored on disk, and removed after
+experiments. Otherwise the mutants easily use up all the
+disk space.
+
+* Result Storage
+
+[TODO] schema needs to be updated. 
+
+Query "Transformations":
+
+- context splitting
+    effectively remove all push and pop scopes, split the
+    qury into multiple queries based on check-sats
+
+- simplification
+    constant propagation
+    constant folding
+    boolean simplification
+
+- assertion flattening 
+    let binding hoisting
+    rewrite nested and into separate assertions
+
+- variable renaming
+
+- assertion shuffling
+
+- pre-inst
+    replace quantified bodies with fresh function
+    definitions
+
+- instantiation
+    after pre-inst, make calls to the fresh functions
+    [TODO] this requires running the solver and creates a log file.
+    cvc5 can be get the necessary instantiation, Z3 does not.      
+    [TODO] this currently only works with non-nested quantifiers
+    [TODO] this does not handle any skloem variables created 
+
+- relabeling
+    replace :named attributes with fresh names
+    replace :qid attributes with fresh names
+
+- unsat core 
+    after relabeling, create a core version of the query   
+    [TODO] this actually creates a log file and requires
+    running the solver. Z3 and cvc5 have slightly different
+    formats for core.
+
+- unsat core (advanced)
+    unsat core may experience various issues. 
+
+- shake
+    after relabeling, use the SHAKE algorithm to assign
+    distances to assertions
+    [TODO] this actually creates a log file, from which we
+    create new queries   
+
+- cvc5 proof
+    get a proof from the cvc5 solver
