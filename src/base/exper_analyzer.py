@@ -4,7 +4,7 @@ from base.exper import Experiment, QueryExpResult
 from base.project import get_qid
 from base.query_analyzer import *
 from base.defs import delegate
-from utils.query_utils import Mutation
+from utils.query_utils import Mutation, find_verus_procedure_name
 from utils.system_utils import *
 from utils.analysis_utils import *
 from utils.cache_utils import *
@@ -33,14 +33,15 @@ class QueryAnaResult:
                 give_up = False
         return give_up
 
-    def print_status(self, verbosity=0):
-        print(f"\n{self.query_path}")
+    def print_status(self, verbosity=0, is_verus=False):
+        if is_verus:
+            proc = find_verus_procedure_name(self.query_path)
+            if proc != None:
+                print(f"verus procedure name:\t\t{proc}")
+        print(f"query path:\t\t{self.query_path}")
         if self.failure_type != FailureType.NONE:
             print(f"main failure type:\t{self.failure_type}")
         print("")
-        # proc = find_verus_procedure_name(self.query_path)
-        # if proc != None:
-        #     print(f"procedure name:\t\t{proc}")
         self.qer.print_status(verbosity)
 
 @delegate('exp', 'get_path', 'list_queries', 'get_log_dir', 'get_mutants')
@@ -113,7 +114,7 @@ class ExperAnalyzer:
         cats.finalize()
         cats.print_status()
 
-    def print_status(self, category_verbosity=0, query_verbosity=0):
+    def print_status(self, category_verbosity=0, query_verbosity=0, is_verus=False):
         print_banner("Overall Report")
         print("")
 
@@ -145,7 +146,7 @@ class ExperAnalyzer:
 
             for i, qid in enumerate(cs):
                 print_banner(f"{cat.value} ({i+1}/{ccount})")
-                self[qid].print_status(query_verbosity)
+                self[qid].print_status(query_verbosity, is_verus)
 
                 if query_verbosity >= 2:
                     self.print_mutant_details(self[qid])

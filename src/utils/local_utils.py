@@ -16,9 +16,9 @@ def handle_single(args):
         log_warn(f"you might want to use --clear-existing to overwrite the results.")
     else:
         Runner(exp).run_experiment(args.clear_existing)
-
     ExperAnalyzer(exp, args.analyzer).print_status(
-        args.category_verbosity, args.query_verbosity
+        args.category_verbosity, args.query_verbosity,
+        "verus" in exp.exp_name # TODO: this is a hack
     )
 
 def handle_multiple(args):
