@@ -16,7 +16,7 @@ fxhash = "0.2"
 duplicate = "1.0"
 gloo-console = "0.3.0"
 roaring = "0.10"
-lasso = { version = "0.7", features = ["serialize"] }
+lasso = { version = "0.7.3", features = ["serialize"] }
 
 [dev-dependencies]
 memory-stats = "1.1.0"
