@@ -9,14 +9,11 @@ class Worker:
         self.worker_id = worker_id
         self._exp = exp
         
-    def __getattr__(self, item):
-        return getattr(self._exp, item)
-
     def __generate_mutant(self, task):
         if task.perturb == Mutation.QUAKE:
             emit_quake_query(task.origin_path, 
                 task.mutant_path, 
-                self.num_mutant)
+                self._exp.num_mutant)
             return
 
         emit_mutant_query(task.origin_path, 
@@ -25,14 +22,14 @@ class Worker:
             task.mut_seed)
 
     def run_quake_task(self, task):
-        self.solver.start_process(task.mutant_path, self.timeout)
+        self._exp.solver.start_process(task.mutant_path, self._exp.timeout)
 
-        for i in range(self.num_mutant):
-            rcode, elapsed = self.solver.run_quake_iteration(self.timeout)    
+        for i in range(self._exp.num_mutant):
+            rcode, elapsed = self._exp.solver.run_quake_iteration(self._exp.timeout)    
             mutant_path = task.mutant_path + "." + str(i)
-            self.insert_exp_row(task, mutant_path, rcode.value, elapsed)
+            self._exp.insert_exp_row(task, mutant_path, rcode.value, elapsed)
 
-        self.solver.end_process()
+        self._exp.solver.end_process()
 
     def run_task(self, task):
         actual_path = task.mutant_path
@@ -48,10 +45,10 @@ class Worker:
             self.run_quake_task(task)
         else:
             seeds = task.mut_seed if is_reseed or is_compose else None
-            rcode, elapsed = self.solver.run(actual_path, self.timeout, seeds)
-            self.insert_exp_row(task, task.mutant_path, rcode.value, elapsed)
+            rcode, elapsed = self._exp.solver.run(actual_path, self._exp.timeout, seeds)
+            self._exp.insert_exp_row(task, task.mutant_path, rcode.value, elapsed)
 
-        if not self.keep_mutants and actual_path != task.origin_path:
+        if not self._exp.keep_mutants and actual_path != task.origin_path:
             os.system(f"rm '{actual_path}'")
 
 def print_eta(elapsed, cur_size, init_size):
