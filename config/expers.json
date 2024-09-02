@@ -35,8 +35,8 @@
             "reseed",
             "quake"
         ],
-        "num_mutants": 120,
-        "exp_timeout": 5
+        "num_mutants": 60,
+        "exp_timeout": 10
     },
     "verify": {
         "num_mutants": 0,
