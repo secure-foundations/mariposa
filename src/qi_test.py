@@ -11,7 +11,7 @@ print(res)
 p = s.proof()
 count = 0
 
-def format_qi(e, depth):
+def format_expr(e, depth):
   if is_const(e):
     return str(e)
     return
@@ -20,7 +20,7 @@ def format_qi(e, depth):
   items = []
   prefix = " " * (depth + 1)
   for i in e.children():
-    items += [format_qi(i, depth + 1)]
+    items += [format_expr(i, depth + 1)]
   length = sum([len(i) for i in items]) + len(name)
   if length > 80:
     items = [prefix + i for i in items]
@@ -38,11 +38,25 @@ def match_qi(p):
   l, r = p.arg(0), p.arg(1)
   assert is_app_of(l, Z3_OP_NOT)
   l = l.arg(0)
-  assert isinstance(l, QuantifierRef)
+  assert is_quantifier(l)
 
-  print(l.qid())
-  print("(assert " + format_qi(r, 0) +")")
+  # print(l.qid())
+  # print("(assert " + format_expr(r, 0) +")")
 
+  return True
+
+def match_sk(p):
+  if p.decl().name() != "sk":
+    return False
+  assert p.num_args() == 1
+  p = p.arg(0)
+  assert is_app_of(p, Z3_OP_OEQ)
+  l, r = p.arg(0), p.arg(1)
+  assert is_app_of(l, Z3_OP_NOT)
+  l = l.arg(0)
+  assert is_quantifier(l)
+  print(l.skolem_id())
+  # print(format_expr(r, 0))
   return True
 
 def match_qis(p, visited):
@@ -54,10 +68,10 @@ def match_qis(p, visited):
   
   visited.add(oid)
 
-  if is_const(p):
+  if not is_app(p) or is_const(p):
     return
 
-  if not is_app(p):
+  if match_sk(p):
     return
 
   if match_qi(p):
@@ -68,7 +82,7 @@ def match_qis(p, visited):
     match_qis(i, visited)
 
 v = set()
+# print(p)
 match_qis(p, v)
-
 # print(len(v))
-print(count)
+# print(count)
