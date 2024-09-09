@@ -1,237 +1,182 @@
-=== Overall Report ===
+=== unstable (1/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg.69.smt2
+main failure type:	mostly_timeout
 
-project dir:	data/projs/v_systems/base.z3
-exper config:	verus_ext
-solver path:	bin/z3-4.12.5
-analyzer:	5sec
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          41          0         20  7.38 / 10.00         1.78
+rename            0          0         61  --  / 10.00          0
+reseed           16          0         45  8.54 / 10.00         0.9
+quake            32          0         29  8.51 / 10.00         1.03
 
-| category   |   count | percentage   |
-|------------|---------|--------------|
-| stable     |    1592 | 98.33 %      |
-| unstable   |      17 | 1.05 %       |
-| unsolvable |      10 | 0.62 %       |
-| total      |    1619 | 100.00 %     |
-
-=== unstable (1/17) ===
-
-data/projs/v_systems/base.z3/mimalloc--commit_segment.1.smt2
+=== unstable (2/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--layoutlib_layout.calculate_segment_ptr_from_block._01.smt2
 main failure type:	mixed
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle         108          0         13  0.49 / 5.00          1.65
-rename          121          0          0  0.15 /  --           0.01
-reseed          118          0          3  0.24 / 5.00          0.84
-quake           108         13          0  0.38 / 5.00          1.68
+shuffle          61          0          0  0.06 /  --           0
+rename           61          0          0  0.07 /  --           0.01
+reseed           61          0          0  0.07 /  --           0.01
+quake             1         25         35  0.07 / 10.00         1.26
 
-=== unstable (2/17) ===
-
-data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__into_used_list_inductive.smt2
+=== unstable (3/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--queues__page_queue_remove.smt2
 main failure type:	mostly_timeout
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle         121          0          0  2.77 /  --           0.32
-rename          121          0          0  2.42 /  --           0.08
-reseed          113          0          8  2.75 / 5.00          0.65
-quake           118          0          3  2.64 / 5.00          0.91
+shuffle           0          0         61  --  / 10.00          0
+rename            0          0         61  --  / 10.00          0
+reseed            0          0         61  --  / 10.00          0
+quake             7          0         54  9.46 / 10.00         0.22
 
-=== unstable (3/17) ===
-
-data/projs/v_systems/base.z3/ironsht--marshal_ironsht_specific_v.46.smt2
+=== unstable (4/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--queues__page_queue_push_back.smt2
 main failure type:	mostly_timeout
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle         114          0          7  1.81 / 5.00          1.03
-rename          121          0          0  1.54 /  --           0.05
-reseed          113          0          8  3.12 / 5.00          1.28
-quake            88          2         31  2.23 / 4.99          1.47
+shuffle           3          0         58  9.94 / 10.00         0.02
+rename            4          0         57  9.95 / 10.00         0.01
+reseed            0          0         61  --  / 10.00          0
+quake             0          1         60  --  / 10.00          0
 
-=== unstable (4/17) ===
+=== unstable (5/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__merge_with_before_ll_inv_valid_unused.smt2
+main failure type:	mixed
 
-data/projs/v_systems/base.z3/mimalloc--queues__page_queue_push.smt2
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          54          1          6  6.63 / 9.61          1.73
+rename           61          0          0  4.58 /  --           0.07
+reseed           36         24          1  5.62 / 5.93          0.88
+quake            52          1          8  6.90 / 9.99          1.87
+
+=== unstable (6/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--commit_segment__segment_commitx.smt2
 main failure type:	mostly_timeout
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle          60          0         61  4.39 / 5.00          0.47
-rename            4          0        117  4.83 / 5.00          0.05
-reseed           61          0         60  4.56 / 5.00          0.39
-quake           119          0          2  4.23 / 5.00          0.19
+shuffle          59          0          2  1.62 / 10.00         1.71
+rename           61          0          0  1.29 /  --           0.03
+reseed           59          0          2  1.69 / 10.00         1.79
+quake            55          0          6  1.90 / 10.00         2.92
 
-=== unstable (5/17) ===
-
-data/projs/v_systems/base.z3/ironsht--marshal_ironsht_specific_v.41.smt2
+=== unstable (7/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--segment__segment_span_free.smt2
 main failure type:	mostly_timeout
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle         114          0          7  3.42 / 5.00          0.65
-rename          121          0          0  2.84 /  --           0.09
-reseed          121          0          0  3.64 /  --           0.4
-quake            15          1        105  4.26 / 5.00          0.34
+shuffle          35          0         26  8.94 / 10.00         0.74
+rename            0          0         61  --  / 10.00          0
+reseed            1          0         60  10.00 / 10.00        0
+quake            30          0         31  7.01 / 10.00         1.61
 
-=== unstable (6/17) ===
+=== unstable (8/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--segment__span_queue_delete.smt2
+main failure type:	mostly_timeout
 
-data/projs/v_systems/base.z3/mimalloc--config.35.smt2
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          32          0         29  8.45 / 10.00         0.93
+rename           61          0          0  8.08 /  --           0.29
+reseed           61          0          0  8.42 /  --           0.47
+quake            23          2         36  8.96 / 9.99          0.62
+
+=== unstable (9/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--segment__segment_span_free_coalesce_before.smt2
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          14          0         47  9.25 / 10.00         0.42
+rename            0          0         61  --  / 10.00          0
+reseed           12          0         49  8.53 / 10.00         0.63
+quake            12          1         48  9.51 / 10.00         0.28
+
+=== unstable (10/15) ===
+query path:		data/projs/v_systems/base.z3/noderep--spec__cyclicbuffer.3.smt2
 main failure type:	mostly_unknown
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle          69         52          0  0.04 / 0.04             0
-rename          121          0          0  0.04 /  --              0
-reseed          121          0          0  0.04 /  --              0
-quake           121          0          0  0.00 /  --              0
+shuffle          48         13          0  0.06 / 0.04          0.13
+rename           61          0          0  0.04 /  --           0
+reseed           61          0          0  0.04 /  --           0
+quake            61          0          0  0.01 /  --           0.07
 
-=== unstable (7/17) ===
-
-data/projs/v_systems/base.z3/mimalloc--commit_segment__segment_commitx.smt2
-main failure type:	mostly_timeout
-
-alternative timeout: 5.0s
-mutation      unsat    unknown    timeout  mean (pass/fail)      std
-----------  -------  ---------  ---------  ------------------  -----
-shuffle          98          0         23  1.50 / 5.00          1.46
-rename          121          0          0  1.26 /  --           0.05
-reseed          118          0          3  1.42 / 5.00          0.67
-quake            97          0         24  1.55 / 5.00          1.48
-
-=== unstable (8/17) ===
-
-data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg.69.smt2
-main failure type:	mostly_timeout
-
-alternative timeout: 5.0s
-mutation      unsat    unknown    timeout  mean (pass/fail)      std
-----------  -------  ---------  ---------  ------------------  -----
-shuffle           7          0        114  4.12 / 5.00          0.25
-rename            0          0        121  --  / 5.00           0
-reseed            0          0        121  --  / 5.00           0
-quake            12          3        106  4.13 / 4.99          0.29
-
-=== unstable (9/17) ===
-
-data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__merge_with_before_ll_inv_valid_unused.smt2
-main failure type:	mostly_timeout
-
-alternative timeout: 5.0s
-mutation      unsat    unknown    timeout  mean (pass/fail)      std
-----------  -------  ---------  ---------  ------------------  -----
-shuffle          20          0        101  4.30 / 5.00          0.36
-rename          121          0          0  4.54 /  --           0.13
-reseed           21          1         99  4.52 / 5.00          0.23
-quake            11          5        105  4.45 / 4.98          0.18
-
-=== unstable (10/17) ===
-
-data/projs/v_systems/base.z3/noderep--spec__cyclicbuffer.5.smt2
+=== unstable (11/15) ===
+query path:		data/projs/v_systems/base.z3/noderep--spec__cyclicbuffer.5.smt2
 main failure type:	mostly_unknown
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle          59         62          0  0.04 / 0.04             0
-rename          121          0          0  0.04 /  --              0
-reseed          121          0          0  0.04 /  --              0
-quake           121          0          0  0.00 /  --              0
+shuffle          29         32          0  0.04 / 0.04          0
+rename           61          0          0  0.04 /  --           0
+reseed           61          0          0  0.04 /  --           0
+quake            61          0          0  0.00 /  --           0.01
 
-=== unstable (11/17) ===
+=== unstable (12/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--commit_segment.1.smt2
+main failure type:	mixed
 
-data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__free_to_unused_queue_inductive.smt2
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          56          0          5  1.06 / 10.00         3.14
+rename           61          0          0  0.15 /  --           0
+reseed           61          0          0  0.21 /  --           0.28
+quake            53          8          0  0.91 / 10.00         3.63
+
+=== unstable (13/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2
 main failure type:	mostly_timeout
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle         115          0          6  3.14 / 5.00          0.96
-rename          121          0          0  2.56 /  --           0.06
-reseed          115          0          6  3.69 / 5.00          0.64
-quake           113          0          8  3.43 / 5.00          0.83
+shuffle          34          0         27  8.00 / 10.00         1.3
+rename            3          0         58  9.92 / 10.00         0.02
+reseed           18          0         43  8.07 / 10.00         1.07
+quake            49          1         11  8.05 / 10.00         1.25
 
-=== unstable (12/17) ===
-
-data/projs/v_systems/base.z3/mimalloc--layoutlib_layout.calculate_segment_ptr_from_block._01.smt2
-main failure type:	mostly_unknown
-
-alternative timeout: 5.0s
-mutation      unsat    unknown    timeout  mean (pass/fail)      std
-----------  -------  ---------  ---------  ------------------  -----
-shuffle         121          0          0  0.06 /  --           0
-rename          121          0          0  0.07 /  --           0
-reseed          121          0          0  0.07 /  --           0
-quake             1        119          1  0.07 / 4.99          0.45
-
-=== unstable (13/17) ===
-
-data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__merge_with_after_inductive.smt2
+=== unstable (14/15) ===
+query path:		data/projs/v_systems/base.z3/mimalloc--segment.1.smt2
 main failure type:	mostly_timeout
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle         102          0         19  4.26 / 5.00          0.43
-rename            7          0        114  4.93 / 5.00          0.02
-reseed          106          0         15  4.11 / 5.00          0.4
-quake            72          1         48  4.65 / 4.99          0.26
+shuffle           1          0         60  9.72 / 10.00         0.04
+rename            3          0         58  9.43 / 10.00         0.2
+reseed           16          0         45  9.52 / 10.00         0.27
+quake            18          0         43  9.48 / 10.00         0.35
 
-=== unstable (14/17) ===
-
-data/projs/v_systems/base.z3/ironsht--single_delivery_model_v.5.smt2
+=== unstable (15/15) ===
+query path:		data/projs/v_systems/base.z3/ironsht--marshal_ironsht_specific_v.46.smt2
 main failure type:	mostly_timeout
 
-alternative timeout: 5.0s
+alternative timeout: 10.0s
 mutation      unsat    unknown    timeout  mean (pass/fail)      std
 ----------  -------  ---------  ---------  ------------------  -----
-shuffle          87          0         34  3.39 / 5.00          1.02
-rename          121          0          0  2.50 /  --           0.07
-reseed          121          0          0  2.84 /  --           0.47
-quake            76          0         45  3.56 / 5.00          0.95
-
-=== unstable (15/17) ===
-
-data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__out_of_used_list_inductive.smt2
-main failure type:	mostly_timeout
-
-alternative timeout: 5.0s
-mutation      unsat    unknown    timeout  mean (pass/fail)      std
-----------  -------  ---------  ---------  ------------------  -----
-shuffle           6          0        115  4.63 / 5.00          0.1
-rename            0          0        121  --  / 5.00           0
-reseed           10          0        111  4.69 / 5.00          0.12
-quake             1          3        117  4.96 / 4.99          0.04
-
-=== unstable (16/17) ===
-
-data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__split_page_inductive.smt2
-main failure type:	mostly_timeout
-
-alternative timeout: 5.0s
-mutation      unsat    unknown    timeout  mean (pass/fail)      std
-----------  -------  ---------  ---------  ------------------  -----
-shuffle          69          0         52  3.54 / 5.00          0.92
-rename            0          0        121  --  / 5.00           0
-reseed          113          0          8  2.93 / 5.00          0.83
-quake            93          1         27  3.45 / 4.99          0.89
-
-=== unstable (17/17) ===
-
-data/projs/v_systems/base.z3/ptable--impl_u__os_refinement.8.smt2
-main failure type:	mostly_timeout
-
-alternative timeout: 5.0s
-mutation      unsat    unknown    timeout  mean (pass/fail)      std
-----------  -------  ---------  ---------  ------------------  -----
-shuffle         111          0         10  3.51 / 5.00          0.65
-rename          121          0          0  3.50 /  --           0.09
-reseed          121          0          0  3.42 /  --           0.16
-quake           121          0          0  2.68 /  --           0.64
+shuffle          61          0          0  2.20 /  --           1.5
+rename           61          0          0  1.51 /  --           0.05
+reseed           61          0          0  2.96 /  --           1.54
+quake            57          0          4  2.66 / 10.00         2.52
 
 
 === Report End ===
