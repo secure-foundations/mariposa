@@ -1,5 +1,6 @@
 import binascii, random
 import sqlite3
+import pickle
 from base.solver import RCode
 from utils.database_utils import get_cursor, table_exists, conclude
 import multiprocessing
@@ -13,13 +14,14 @@ from tabulate import tabulate
 from query.instantiater import Instantiater
 
 TRACE_TIME_LIMIT_SEC = 10
-MUTANT_COUNT = 10
+MUTANT_COUNT = 8
 PROC_COUNT = 4
+TARGET_PROOF_COUNT = 4
 QID_TABLE_LIMIT = 30
 
 TRACES = "traces"
 MUTANTS = "mutants"
-
+INSTS = "insts"
 
 class MutantInfo:
     def __init__(self, sub_root, mutation, seed):
@@ -28,6 +30,7 @@ class MutantInfo:
         self.mutation = mutation
         self.mut_path = f"{sub_root}/{MUTANTS}/{mutation}.{seed}.smt2"
         self.trace_path = f"{sub_root}/{TRACES}/{mutation}.{seed}"
+        self.insts_path = f"{sub_root}/{INSTS}/{mutation}.{seed}"
 
         self.trace_rcode = -1
         self.trace_time = -1
@@ -56,7 +59,10 @@ class MutantInfo:
 
     def get_qids(self):
         return parse_trace(self.orig_path, self.trace_path)
-
+    
+    def load_insts(self):
+        with open(self.insts_path, "rb") as f:
+            self.insts = pickle.load(f)
 
 def _build_trace(mi: MutantInfo):
     res = mi.build_trace()
@@ -70,6 +76,7 @@ def _build_proof(mi: MutantInfo):
 
     if ins.process():
         log_info(f"[build-inst] success {mi.mut_path}")
+        ins.save_insts(mi.insts_path)
         return (mi.mutation, mi.seed, ins.proof_time)
 
     log_warn(f"[build-inst] failed {mi.mut_path}")
@@ -96,12 +103,13 @@ class Debugger3:
         self.orig_path = f"{self.sub_root}/orig.smt2"
         self.trace_dir = f"{self.sub_root}/{TRACES}"
         self.mutant_dir = f"{self.sub_root}/{MUTANTS}"
+        self.insts_dir = f"{self.sub_root}/{INSTS}"
         self.db_path = f"{self.sub_root}/db.sqlite"
 
         if clear and os.path.exists(self.sub_root):
             os.system(f"rm -rf {self.sub_root}")
 
-        for dir in [self.sub_root, self.trace_dir, self.mutant_dir]:
+        for dir in [self.sub_root, self.trace_dir, self.mutant_dir, self.insts_dir]:
             if not os.path.exists(dir):
                 os.makedirs(dir)
 
@@ -171,6 +179,7 @@ class Debugger3:
             elif r[4] != -1:
                 mi = MutantInfo(self.sub_root, r[0], int(r[1])) 
                 mi.proof_time = r[4]
+                mi.load_insts()
                 self.proofs.append(mi)
 
     def __init_proofs(self):
@@ -179,53 +188,48 @@ class Debugger3:
         count = cur.fetchall()[0][0]
         cur.close()
 
-        if count > 0:
+        if count >= TARGET_PROOF_COUNT:
             return
 
-        args = self.create_mutants([Mutation.SHUFFLE, Mutation.RESEED])
-
-        res = []
         pool = multiprocessing.Pool(PROC_COUNT)
+        success = []
+        attempts = 0
 
-        while len(args) > 0:
-            batch, args = args[:PROC_COUNT], args[PROC_COUNT:]
-            res = pool.map(_build_proof, batch)
+        while len(success) < TARGET_PROOF_COUNT and attempts < 5:
+            args = self.create_mutants([Mutation.SHUFFLE, Mutation.RESEED])
+            res = pool.map(_build_proof, args[:PROC_COUNT])
             res = [r for r in res if r is not None]
-            if len(res) > 0:
-                break
+            success += res
+            attempts += 1
         pool.close()
 
-        log_check(len(res) != 0, "no proof found")
+        log_check(len(success) != 0, "no proof found")
 
-        for r in res:
+        for r in success:
             cur = self.con.cursor()
             cur.execute(
                 "INSERT INTO mutants (mutation, seed, proof_time) VALUES (?, ?, ?)", (r[0], str(r[1]), r[2])
             )
         self.con.commit()
 
-    def debug_trace(self, pmi: MutantInfo):
-        ins = Instantiater(pmi.mut_path)
-        ins.process()
-        proof = ins.inst_freq
-        ins.output("out.smt2")
+    def get_candidate_trace(self):
+        return max(self.traces, key=lambda x: x.trace_time)
 
-        for v in self.traces:
-            if v.trace_rcode == RCode.UNSAT:
-                continue
+    def debug_trace(self, tmi: MutantInfo):
+        log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
+        explored = tmi.get_qids()
+        table = []
 
-            table = []
-            explored = v.get_qids()
-
-            for qid in explored:
-                table += [(qid, explored[qid], proof[qid] if qid in proof else 0)]
-
-            print(tabulate(table, headers=["QID", "Trace Count", "Proof Count"]))
-            break
+        for qid in explored:
+            row = [qid, explored[qid]]
+            for pmi in self.proofs:
+                row += [len(pmi.insts[qid]) if qid in pmi.insts else 0]
+            table.append(row)
+        headers = ["QID", "Trace Count"] + [f"Proof {i}" for i in range(len(self.proofs))]
+        print(tabulate(table, headers=headers))
 
     def print_mutants(self):
         table = []
-        print("trace mutants")
         for v in self.traces:
             table.append([v.mutation, v.seed, v.trace_time, v.trace_rcode])
         log_info(f"listing {len(table)} trace mutants:")
@@ -240,5 +244,6 @@ class Debugger3:
 if __name__ == "__main__":
     debugger = Debugger3(sys.argv[1], False)
     debugger.print_mutants()
-    proof = debugger.proofs[0]
-    debugger.debug_trace(proof)
+    tmi = debugger.get_candidate_trace()
+    debugger.debug_trace(tmi)
+

@@ -1,4 +1,5 @@
 import time
+import pickle
 from z3 import *
 
 set_param(proof=True)
@@ -47,7 +48,7 @@ def match_sk(p):
     assert is_app_of(l, Z3_OP_NOT)
     l = l.arg(0)
     assert is_quantifier(l)
-    print(l.skolem_id())
+    # print(l.skolem_id())
     # print(format_expr(r, 0))
     return True
 
@@ -85,7 +86,7 @@ class Instantiater:
         self.solver_opts = []
         self.proof_time = None
 
-        self.proc_solver.set("timeout", 30000)
+        self.proc_solver.set("timeout", 80000)
 
         with open(in_file_path, "r") as f:
             for line in f.readlines():
@@ -121,11 +122,12 @@ class Instantiater:
 
         self.inst_freq = dict(map(lambda x: (x[0], len(x[1])), self.insts.items()))
 
-        # self.inst_freq = sorted(inst_freq, key=lambda x: x[1], reverse=True)
         return True
 
     def print_report(self):
-        for qid, count in self.inst_freq:
+        inst_freq = sorted(self.inst_freq.items(), key=lambda x: x[1], reverse=True)
+
+        for qid, count in inst_freq:
             # q = self.quants[qid]
             # qf = is_quantifier_free(q.body())
             print(count, qid, end=" ")
@@ -159,20 +161,23 @@ class Instantiater:
         for c in p.children():
             self.match_qis(c)
 
+    def save_insts(self, out_file_path):
+        insts = dict()
+        for qid, inss in self.insts.items():
+            # res = [format_expr(i, 0) for i in inss]
+            res = [i.sexpr() for i in inss]
+            insts[qid] = res
+        with open(out_file_path, 'wb+') as f:
+            pickle.dump(insts, f)
+
     def output(self, out_file_path):
         out_solver = Solver()
 
-        replaced = set()
-        added = 0
+        added_insts = 0
+        removed = 0
 
         for qid, count in self.inst_freq.items():
-            # if qid != "user_lib__page_organization__PageOrg__State__good_range0_173":
-            #     continue
-
-            if qid not in self.handled_quants:
-                continue
-
-            added += count
+            added_insts += count
             replaced |= {qid}
 
             for inst in self.insts[qid]:
@@ -186,8 +191,8 @@ class Instantiater:
               continue
             out_solver.add(a)
 
-        print("replaced", len(replaced), "assertions")
-        print("added", added, "assertions")
+        print("added", added_insts, "instantiations")
+        print("removed", len(replaced), "assertions")
 
         with open(out_file_path, "w") as f:
             for opt in self.solver_opts:
