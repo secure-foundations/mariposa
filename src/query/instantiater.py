@@ -1,17 +1,5 @@
-import sys
 from z3 import *
 set_param(proof=True)
-
-VERUS_OPTS = """(set-option :auto_config false)
-(set-option :smt.mbqi false)
-(set-option :smt.case_split 3)
-(set-option :smt.qi.eager_threshold 100.0)
-(set-option :smt.delay_units true)
-(set-option :smt.arith.solver 2)
-(set-option :smt.arith.nl false)
-(set-option :pi.enabled false)
-(set-option :rewriter.sort_disjunctions false)
-"""
 
 def format_expr(e, depth):
   if is_const(e):
@@ -83,9 +71,22 @@ def get_assertion_qid(exp: z3.ExprRef):
 
     return None 
 
+
 class Instantiater:
-  def __init__(self, in_file_path, out_file_path):
+  def __init__(self, in_file_path, seed):
     self.proc_solver = Solver()
+    self.solver_opts = []
+
+    if seed is not None:
+      self.proc_solver.set("random_seed", seed)
+
+    self.proc_solver.set("timeout", 30000)
+
+    with open(in_file_path, "r") as f:
+      for line in f.readlines():
+        if line.startswith("(set-option"):
+          self.solver_opts.append(line)
+
     self.proc_solver.from_file(in_file_path)
 
     # map qid to its assertion (incomplete)
@@ -100,21 +101,24 @@ class Instantiater:
     self.insts = dict()
     self.__visited = set()
 
-    self.process()
-    self.output(out_file_path)
+    self.inst_freq = []
 
   def process(self):
     res = self.proc_solver.check()
-    print(res)
+
+    if res != unsat:
+      return False
 
     p = self.proc_solver.proof()
     self.match_qis(p)
 
-    inst_freq = map(lambda x: (x[0], len(x[1])),
-                    self.insts.items())
-    self.inst_freq = sorted(inst_freq, 
-                            key=lambda x: x[1], reverse=True)
+    self.inst_freq = dict(map(lambda x: (x[0], len(x[1])),
+                    self.insts.items()))
 
+    # self.inst_freq = sorted(inst_freq, key=lambda x: x[1], reverse=True)
+    return True
+
+  def print_report(self):
     for qid, count in self.inst_freq:
       # q = self.quants[qid]
       # qf = is_quantifier_free(q.body())
@@ -141,8 +145,8 @@ class Instantiater:
     if res is not None:
       qid, qi = res
       # if not is_quantifier_free(qi):
-        # print(qid)
-        # print(qi)
+      #   print(qid)
+      #   print(qi)
       self.insts[qid] = self.insts.get(qid, set()) | {qi}
       return
 
@@ -158,32 +162,29 @@ class Instantiater:
     for qid, count in self.inst_freq:
       if qid not in self.handled_quants:
         continue
-      # if qid not in {"mariposa_qid_37"}:
-      #   continue
       added += count
       replaced |= {qid}
 
-      print(qid)
       for inst in self.insts[qid]:
         out_solver.add(inst)
-        print(format_expr(inst, 0))
-
-    replaced = {"mariposa_qid_33"}
+        # print(format_expr(inst, 0))
 
     for a in self.proc_solver.assertions():
       qid = get_assertion_qid(a)
-
       # if qid in replaced:
       #   print("replaced", qid)
       #   continue
       out_solver.add(a)
 
-    print("replaced", len(replaced), "assertions")
+    # print("replaced", len(replaced), "assertions")
     print("added", added, "assertions")
-
+    
     with open(out_file_path, "w") as f:
-      f.write(VERUS_OPTS)
+      for opt in self.solver_opts:
+        f.write(opt)
       f.write(out_solver.to_smt2())
 
-if __name__ == "__main__":
-  Instantiater(sys.argv[1], "out.smt2")
+# if __name__ == "__main__":
+#   i = Instantiater(sys.argv[1])
+#   i.print_report()
+#   i.output(sys.argv[2])
