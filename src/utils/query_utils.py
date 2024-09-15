@@ -152,7 +152,7 @@ def emit_quake_query(query_path, output_path, repeat=4):
 
 def find_verus_procedure_name(file):
     lines = open(file).readlines()
-
+    prev = None
     for line in reversed(lines):
         if (
             line.startswith('(set-info :comment ";; Function-Def')
@@ -160,7 +160,8 @@ def find_verus_procedure_name(file):
             or line.startswith('(set-info :comment ";; Function-Termination')
             or line.startswith('(set-info :comment ";; Function-Recommends')
         ):
-            return line[23:-3]
+            return line[23:-3] + "\n" + prev[23:].split(" ")[0]
+        prev = line
     return None
 
 

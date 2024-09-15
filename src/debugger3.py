@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+
 import binascii, random
 import sqlite3
 import pickle
 import subprocess
 import time
 from base.solver import RCode
-from utils.database_utils import get_cursor, table_exists, conclude
+from utils.database_utils import table_exists
 import multiprocessing
 import os, sys
 from typing import Dict, List
@@ -27,7 +29,7 @@ PROOF_TOTAL_TIME_LIMIT_SEC = 120
 PROOF_GOAL_COUNT = 4
 CORE_GOAL_COUNT = 8
 
-QID_TABLE_LIMIT = 30
+QID_TABLE_LIMIT = 50
 
 TRACES = "traces"
 MUTANTS = "mutants"
@@ -50,6 +52,9 @@ class MutantInfo:
         self.trace_rcode = -1
         self.trace_time = -1
         self.proof_time = -1
+
+    def __hash__(self) -> int:
+        return hash((self.mutation, self.seed))
 
     def create_mutant(self, source=None):
         if source is None:
@@ -88,7 +93,7 @@ class MutantInfo:
         with open(self.mut_path, "a") as f:
             f.write("(get-unsat-core)\n")
 
-        log_info(f"[core] attempting {self.mut_path}")
+        log_info(f"[core] attempt {self.mut_path}")
 
         cf = open(self.core_log, "w+")
         subprocess.run(
@@ -149,20 +154,20 @@ def _build_core(mi: MutantInfo):
 def _build_proof(mi: MutantInfo):
     target = mi.mut_path
     if os.path.exists(mi.core_path):
-        log_info(f"[inst] from core (!) {mi.core_path}")
+        log_info(f"[proof] from core (!) {mi.core_path}")
         target = mi.core_path
     else:
         mi.create_mutant()
 
-    log_info(f"[inst] attempt {target}")
+    log_info(f"[proof] attempt {target}")
     ins = Instantiater(target)
 
     if ins.process():
-        log_info(f"[inst] success {target}")
+        log_info(f"[proof] success {target}")
         ins.save_insts(mi.insts_path)
         return (mi.mutation, mi.seed, ins.proof_time)
 
-    log_warn(f"[inst] failure {mi.mut_path}")
+    log_warn(f"[proof] failure {mi.mut_path}")
     return None
 
 
@@ -270,7 +275,7 @@ class Debugger3:
 
         while True:
             if len(success) >= goal:
-                log_info(f"[pool] goal reached: {len(success)}")
+                log_info(f"[pool] goal reached, {len(success)} successes")
                 break
 
             if len(args) == 0:
@@ -350,7 +355,7 @@ class Debugger3:
             skip = set([(mi.mutation, mi.seed) for mi in self.proofs])
             args = [mi for mi in self.cores if (mi.mutation, mi.seed) not in skip]
             log_info(
-                f"[inst] from core (!) skipping {len(self.cores) - len(args)} cores"
+                f"[proof] from core (!) skipping {len(self.cores) - len(args)} cores"
             )
 
             res = self.__run_with_pool(
@@ -408,7 +413,8 @@ class Debugger3:
         for tmi in self.traces:
             if tmi.trace_rcode != RCode.UNSAT and tmi.trace_time < 200:
                 return tmi
-        return max(self.traces, key=lambda x: x.trace_time)
+        tomis = [tmi for tmi in self.traces if tmi.trace_time >= TRACE_TIME_LIMIT_SEC * 1000]
+        return random.choice(tomis)
 
     def debug_trace(self, tmi: MutantInfo):
         log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
@@ -432,24 +438,14 @@ class Debugger3:
         if len(explored) > QID_TABLE_LIMIT:
             log_info(f"elided {len(explored) - QID_TABLE_LIMIT} rows ...")
 
-    def print_proof_insts(self, qid):
+    def get_proof_insts(self, qid):
+        res = dict()
         for pmi in self.proofs:
-            print(f"from proof: {pmi.mutation} {pmi.seed}")
-            print("")
             if qid in pmi.insts:
-                for ins in pmi.insts[qid]:
-                    print("(assert " + ins + ")")
+                res[pmi] = pmi.insts[qid]
             else:
-                print("no inst")
-            print("")
-
-    # def output_test(self):
-    #     mi = self.proofs[0]
-    #     ins = Instantiater(mi.mut_path)
-    #     ins.process()
-    #     # ids = {}
-    #     ids = {"internal_lib!spec.cyclicbuffer.log_entry_idx.?_definition"}
-    #     ins.output("out.smt2", ids)
+                res[pmi] = []
+        return res
 
     def print_status(self):
         table = []
@@ -470,14 +466,65 @@ class Debugger3:
         log_info(f"listing {len(table)} proof mutants:")
         print(tabulate(table, headers=["mutation", "seed", "time"]))
 
+    def output_query(self, out_path, remove_ids, inst_ids):
+        inserted = []
+        for qid in inst_ids:
+            proof_insts = self.get_proof_insts(qid)
+            scores = dict()
+            for pim, insts in proof_insts.items():
+                total = sum([len(i) for i in insts])
+                scores[pim] = total
+            pim = min(scores, key=scores.get)    
+            insts = proof_insts[pim]
+            log_info(f"using {len(insts)} instances for {qid} from {pim.mutation} {pim.seed}")
+
+            for inst in insts:
+                print(inst)
+                print("")
+                inserted.append(f"(assert {inst})")
+
+        out_file = open(out_path, "w+")
+
+        for line in open(self.orig_path, "r"):
+            should_skip = False
+            for qid in remove_ids:
+                if qid in line:
+                    log_info(f"skipping the following assertion")
+                    print(line, end="") 
+                    should_skip = True
+                    remove_ids.remove(qid)
+                    break
+
+            if line == "(check-sat)\n":
+                for inst in inserted:
+                    out_file.write(inst + "\n")
+
+            if not should_skip:
+                out_file.write(line)
+
 
 if __name__ == "__main__":
-    debugger = Debugger3(sys.argv[1], False)
-    debugger.print_status()
-    tmi = debugger.get_candidate_trace()
-    debugger.debug_trace(tmi)
-    # debugger.print_proof_insts(
-        # "internal_vstd__set__Set<int.>_box_axiom_definition"
-        # "user_vstd__set__axiom_set_ext_equal_100"
-    # )
-    # debugger.output_test()
+    dbg = Debugger3(sys.argv[1], False)
+    dbg.print_status()
+    tmi = dbg.get_candidate_trace()
+    dbg.debug_trace(tmi)
+
+    remove_ids = set([
+        "user_vstd__std_specs__bits__axiom_u64_leading_zeros_43",
+        "user_lib__page_organization__PageOrg__State__count_is_right_141",
+        "user_lib__page_organization__PageOrg__State__attached_ranges_157",
+        # "internal_vstd__set__Set<int.>_box_axiom_definition",
+        # "user_vstd__seq_lib__impl&%0__add_empty_left_75",
+    ])
+    
+    inst_ids = set([
+        # "internal_core!option.Option./Some_constructor_definition",
+        # "user_vstd__seq_lib__impl&%0__add_empty_right_76",
+        # "internal_core!option.Option./Some_constructor_definition"
+    ])
+
+    remove_ids |= inst_ids
+
+    # remove_ids, inst_ids = set(), set()
+
+    dbg.output_query("output.smt2", remove_ids, inst_ids)
