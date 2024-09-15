@@ -86,7 +86,7 @@ class Instantiater:
         self.solver_opts = []
         self.proof_time = None
 
-        self.proc_solver.set("timeout", 80000)
+        self.proc_solver.set("timeout", 60000)
 
         with open(in_file_path, "r") as f:
             for line in f.readlines():

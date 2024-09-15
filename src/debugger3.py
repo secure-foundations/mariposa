@@ -25,6 +25,7 @@ CORE_TOTOAL_TIME_LIMIT_SEC = 120
 PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 PROOF_GOAL_COUNT = 4
+CORE_GOAL_COUNT = 8
 
 QID_TABLE_LIMIT = 30
 
@@ -146,12 +147,18 @@ def _build_core(mi: MutantInfo):
 
 
 def _build_proof(mi: MutantInfo):
-    mi.create_mutant()
-    log_info(f"[inst] attempt {mi.mut_path}")
-    ins = Instantiater(mi.mut_path)
+    target = mi.mut_path
+    if os.path.exists(mi.core_path):
+        log_info(f"[inst] from core (!) {mi.core_path}")
+        target = mi.core_path
+    else:
+        mi.create_mutant()
+
+    log_info(f"[inst] attempt {target}")
+    ins = Instantiater(target)
 
     if ins.process():
-        log_info(f"[inst] success {mi.mut_path}")
+        log_info(f"[inst] success {target}")
         ins.save_insts(mi.insts_path)
         return (mi.mutation, mi.seed, ins.proof_time)
 
@@ -167,6 +174,7 @@ def create_mut_table(cur):
         trace_rcode INTEGER DEFAULT -1,
         trace_time INTEGER DEFAULT -1,
         proof_time INTEGER DEFAULT -1,
+        from_core BOOLEAN DEFAULT FALSE,
         PRIMARY KEY (mutation, seed))"""
     )
 
@@ -194,7 +202,7 @@ class Debugger3:
         self.__init_traces()
         self.__init_cores()
         self.__init_proofs()
-        self.refresh()
+        self.refresh_status()
 
     def __init_dirs(self, query_path, clear):
         if clear and os.path.exists(self.sub_root):
@@ -238,7 +246,7 @@ class Debugger3:
             create_mut_table(cur)
             self.con.commit()
         else:
-            self.refresh()
+            self.refresh_status()
 
     def create_mutants_info(self, mutations: List[Mutation]):
         args = []
@@ -254,7 +262,6 @@ class Debugger3:
     def __run_with_pool(self, func, args, goal=0, time_bound=600):
         success = []
         start_time = time.time()
-        time_elapsed = 0
 
         pool = multiprocessing.Pool(PROC_COUNT)
 
@@ -266,15 +273,23 @@ class Debugger3:
                 log_info(f"[pool] goal reached: {len(success)}")
                 break
 
-            if time_elapsed > time_bound:
-                log_info(f"[pool] time budget exceeded: {time_elapsed}")
+            if len(args) == 0:
+                log_info(f"[pool] no more args")
                 break
 
             res = pool.map(func, args[:PROC_COUNT])
+            args = args[PROC_COUNT:]
             success += [r for r in res if r is not None]
+
             time_elapsed = int(time.time() - start_time)
 
-            log_info(f"[pool] {len(success)} successes, {time_elapsed}(s) elapsed")
+            log_info(
+                f"[pool] {len(success)} successes, {time_elapsed}(s) elapsed, {len(args)} jobs left"
+            )
+
+            if time_elapsed >= time_bound:
+                log_info(f"[pool] time budget exceeded: {time_elapsed}")
+                break
 
         pool.close()
         return success
@@ -302,16 +317,21 @@ class Debugger3:
         self.con.commit()
 
     def __init_cores(self):
-        if len(self.cores) > 0:
-            log_info(f"[init] currently {len(self.cores)} cores")
+        count = len(self.cores)
+
+        log_info(f"[init] currently {count} cores")
+
+        if count >= CORE_GOAL_COUNT:
             return
+
+        goal = CORE_GOAL_COUNT - count
 
         args = self.create_mutants_info(
             [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
         )
 
         res = self.__run_with_pool(
-            _build_core, args, goal=4, time_bound=CORE_TOTOAL_TIME_LIMIT_SEC
+            _build_core, args, goal=goal, time_bound=CORE_TOTOAL_TIME_LIMIT_SEC
         )
         log_check(len(res) != 0, "no core built")
 
@@ -324,22 +344,42 @@ class Debugger3:
             return
 
         goal = PROOF_GOAL_COUNT - count
+        res = []
 
-        args = self.create_mutants_info([Mutation.SHUFFLE, Mutation.RENAME])
-        res = self.__run_with_pool(
-            _build_proof, args, goal=goal, time_bound=PROOF_TOTAL_TIME_LIMIT_SEC
-        )
-        log_check(len(res) != 0, "no proof found")
+        if len(self.cores) != 0:
+            skip = set([(mi.mutation, mi.seed) for mi in self.proofs])
+            args = [mi for mi in self.cores if (mi.mutation, mi.seed) not in skip]
+            log_info(
+                f"[inst] from core (!) skipping {len(self.cores) - len(args)} cores"
+            )
+
+            res = self.__run_with_pool(
+                _build_proof,
+                args,
+                goal=goal,
+                time_bound=PROOF_TOTAL_TIME_LIMIT_SEC,
+            )
+        else:
+            args = self.create_mutants_info([Mutation.SHUFFLE, Mutation.RESEED])
+            res = self.__run_with_pool(
+                _build_proof, args, goal=goal, time_bound=PROOF_TOTAL_TIME_LIMIT_SEC
+            )
+            log_check(len(res) != 0, "no proof found")
+
+        cur = self.con.cursor()
 
         for r in res:
-            cur = self.con.cursor()
             cur.execute(
                 "INSERT INTO mutants (mutation, seed, proof_time) VALUES (?, ?, ?)",
                 (r[0], str(r[1]), r[2]),
             )
         self.con.commit()
 
-    def refresh(self):
+    def refresh_status(self):
+        self.traces: List[MutantInfo] = []
+        self.proofs: List[MutantInfo] = []
+        self.cores: List[MutantInfo] = []
+
         cur = self.con.cursor()
         cur.execute("SELECT * FROM mutants")
         mutants = cur.fetchall()
@@ -392,6 +432,17 @@ class Debugger3:
         if len(explored) > QID_TABLE_LIMIT:
             log_info(f"elided {len(explored) - QID_TABLE_LIMIT} rows ...")
 
+    def print_proof_insts(self, qid):
+        for pmi in self.proofs:
+            print(f"from proof: {pmi.mutation} {pmi.seed}")
+            print("")
+            if qid in pmi.insts:
+                for ins in pmi.insts[qid]:
+                    print("(assert " + ins + ")")
+            else:
+                print("no inst")
+            print("")
+
     # def output_test(self):
     #     mi = self.proofs[0]
     #     ins = Instantiater(mi.mut_path)
@@ -400,12 +451,18 @@ class Debugger3:
     #     ids = {"internal_lib!spec.cyclicbuffer.log_entry_idx.?_definition"}
     #     ins.output("out.smt2", ids)
 
-    def print_mutants(self):
+    def print_status(self):
         table = []
         for v in self.traces:
             table.append([v.mutation, v.seed, v.trace_time, v.trace_rcode])
         log_info(f"listing {len(table)} trace mutants:")
         print(tabulate(table, headers=["mutation", "seed", "time", "result"]))
+
+        table = []
+        for v in self.cores:
+            table.append([v.mutation, v.seed])
+        log_info(f"listing {len(table)} core mutants:")
+        print(tabulate(table, headers=["mutation", "seed"]))
 
         table = []
         for v in self.proofs:
@@ -416,7 +473,11 @@ class Debugger3:
 
 if __name__ == "__main__":
     debugger = Debugger3(sys.argv[1], False)
-    # debugger.print_mutants()
-    # tmi = debugger.get_candidate_trace()
-    # debugger.debug_trace(tmi)
+    debugger.print_status()
+    tmi = debugger.get_candidate_trace()
+    debugger.debug_trace(tmi)
+    # debugger.print_proof_insts(
+        # "internal_vstd__set__Set<int.>_box_axiom_definition"
+        # "user_vstd__set__axiom_set_ext_equal_100"
+    # )
     # debugger.output_test()
