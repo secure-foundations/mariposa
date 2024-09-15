@@ -269,7 +269,8 @@ def parse_trace(orig_path, trace_path):
             orig_path,
             "--z3-trace-log-path",
             trace_path,
-        ]
+        ], 
+        debug=True
     )[0]
 
     lines = lines.split("\n")

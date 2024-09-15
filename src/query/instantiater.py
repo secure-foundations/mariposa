@@ -170,29 +170,30 @@ class Instantiater:
         with open(out_file_path, 'wb+') as f:
             pickle.dump(insts, f)
 
-    def output(self, out_file_path):
+    def output(self, out_file_path, inst_ids):
         out_solver = Solver()
 
         added_insts = 0
         removed = 0
 
-        for qid, count in self.inst_freq.items():
-            added_insts += count
-            replaced |= {qid}
+        for qid in inst_ids:
+        # for qid, count in self.inst_freq.items():
+            # added_insts += count
+            # replaced |= {qid}
 
             for inst in self.insts[qid]:
-                out_solver.add(inst)
-                # print(format_expr(inst, 0))
+                # out_solver.add(inst)
+                print(format_expr(inst, 0))
 
         for a in self.proc_solver.assertions():
-            qid = get_assertion_qid(a)
-            if qid in replaced:
-              print("replaced", qid)
-              continue
+        #     qid = get_assertion_qid(a)
+        #     if qid in replaced:
+        #       print("replaced", qid)
+        #       continue
             out_solver.add(a)
 
-        print("added", added_insts, "instantiations")
-        print("removed", len(replaced), "assertions")
+        # print("added", added_insts, "instantiations")
+        # print("removed", len(replaced), "assertions")
 
         with open(out_file_path, "w") as f:
             for opt in self.solver_opts:
