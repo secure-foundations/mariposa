@@ -190,8 +190,8 @@ def emit_mutant_query(query_path, output_path, mutation, seed):
         ot_file = open(output_path, "w")
         ot_file.writelines(
             [
-                f"(set-option :smt.random_seed {seed})",
-                f"(set-option :sat.random_seed {seed})",
+                f"(set-option :smt.random_seed {seed})\n",
+                f"(set-option :sat.random_seed {seed})\n",
             ]
         )
         in_file = open(query_path, "r")

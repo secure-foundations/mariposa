@@ -90,8 +90,8 @@ class MutantInfo:
     def build_core(self):
         self.create_mutant(self.lbl_path)
 
-        with open(self.mut_path, "a") as f:
-            f.write("(get-unsat-core)\n")
+        # with open(self.mut_path, "a") as f:
+        #     f.write("(get-unsat-core)\n")
 
         log_info(f"[core] attempt {self.mut_path}")
 
@@ -413,30 +413,50 @@ class Debugger3:
         for tmi in self.traces:
             if tmi.trace_rcode != RCode.UNSAT and tmi.trace_time < 200:
                 return tmi
+
         tomis = [tmi for tmi in self.traces if tmi.trace_time >= TRACE_TIME_LIMIT_SEC * 1000]
-        return random.choice(tomis)
+
+        if len(tomis) >= 1:
+            return random.choice(tomis)
+
+        return max(self.traces, key=lambda tmi: tmi.trace_time)
 
     def debug_trace(self, tmi: MutantInfo):
         log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
         explored = tmi.get_qids()
         table = []
+        inst_sums = [0] * (len(self.proofs) + 1)
 
         for qid in explored:
             row = [qid, explored[qid]]
+            inst_sums[0] += explored[qid]
 
-            for pmi in self.proofs:
-                row += [len(pmi.insts[qid]) if qid in pmi.insts else 0]
+            for i, pmi in enumerate(self.proofs):
+                count = len(pmi.insts[qid]) if qid in pmi.insts else 0
+                row += [count]
+                inst_sums[i+1] += count
 
             if len(table) < QID_TABLE_LIMIT:
                 table.append(row)
 
-        headers = ["QID", "Trace Count"] + [
-            f"Proof {i}" for i in range(len(self.proofs))
+
+        headers = ["QID", "T"] + [
+            f"P{i}" for i in range(len(self.proofs))
         ]
-        print(tabulate(table, headers=headers))
 
         if len(explored) > QID_TABLE_LIMIT:
-            log_info(f"elided {len(explored) - QID_TABLE_LIMIT} rows ...")
+            table.append([f"... elided {len(explored) - QID_TABLE_LIMIT} rows ..."] + ["..."] * (len(self.proofs) + 1))
+        
+        table.append(["total"] + inst_sums)
+        
+        print(tabulate(table, headers=headers))
+
+        fishy = set()
+        for pmi in self.proofs:
+            for qid in pmi.insts:
+                fishy.add(qid)
+        print(f"fishy: {len(fishy - set(explored.keys()))}")
+
 
     def get_proof_insts(self, qid):
         res = dict()
@@ -510,17 +530,9 @@ if __name__ == "__main__":
     dbg.debug_trace(tmi)
 
     remove_ids = set([
-        "user_vstd__std_specs__bits__axiom_u64_leading_zeros_43",
-        "user_lib__page_organization__PageOrg__State__count_is_right_141",
-        "user_lib__page_organization__PageOrg__State__attached_ranges_157",
-        # "internal_vstd__set__Set<int.>_box_axiom_definition",
-        # "user_vstd__seq_lib__impl&%0__add_empty_left_75",
     ])
     
     inst_ids = set([
-        # "internal_core!option.Option./Some_constructor_definition",
-        # "user_vstd__seq_lib__impl&%0__add_empty_right_76",
-        # "internal_core!option.Option./Some_constructor_definition"
     ])
 
     remove_ids |= inst_ids
