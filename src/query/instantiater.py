@@ -8,7 +8,6 @@ set_param(proof=True)
 def format_expr(e, depth):
     if is_const(e):
         return str(e)
-        return
 
     name = e.decl().name()
     items = []
@@ -40,7 +39,7 @@ def match_qi(p):
 
 def match_sk(p):
     if p.decl().name() != "sk":
-        return False
+        return None
     assert p.num_args() == 1
     p = p.arg(0)
     assert is_app_of(p, Z3_OP_OEQ)
@@ -50,7 +49,7 @@ def match_sk(p):
     assert is_quantifier(l)
     # print(l.skolem_id())
     # print(format_expr(r, 0))
-    return True
+    return (l.skolem_id(), r)
 
 
 def is_quantifier_free(e):
@@ -119,6 +118,7 @@ class Instantiater:
 
         p = self.proc_solver.proof()
         self.match_qis(p)
+        # print(p)
 
         self.inst_freq = dict(map(lambda x: (x[0], len(x[1])), self.insts.items()))
 
@@ -145,7 +145,10 @@ class Instantiater:
         if not is_app(p) or is_const(p):
             return
 
-        if match_sk(p):
+        skv = match_sk(p)
+        if skv is not None:
+            skid, sk = skv
+            # print(skid)
             return
 
         res = match_qi(p)

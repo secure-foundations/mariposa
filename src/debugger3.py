@@ -423,13 +423,13 @@ class Debugger3:
 
     def debug_trace(self, tmi: MutantInfo):
         log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
-        explored = tmi.get_qids()
+        traced = tmi.get_qids()
         table = []
         inst_sums = [0] * (len(self.proofs) + 1)
 
-        for qid in explored:
-            row = [qid, explored[qid]]
-            inst_sums[0] += explored[qid]
+        for qid in traced:
+            row = [qid, traced[qid]]
+            inst_sums[0] += traced[qid]
 
             for i, pmi in enumerate(self.proofs):
                 count = len(pmi.insts[qid]) if qid in pmi.insts else 0
@@ -439,23 +439,31 @@ class Debugger3:
             if len(table) < QID_TABLE_LIMIT:
                 table.append(row)
 
-
         headers = ["QID", "T"] + [
             f"P{i}" for i in range(len(self.proofs))
         ]
 
-        if len(explored) > QID_TABLE_LIMIT:
-            table.append([f"... elided {len(explored) - QID_TABLE_LIMIT} rows ..."] + ["..."] * (len(self.proofs) + 1))
+        if len(traced) > QID_TABLE_LIMIT:
+            table.append([f"... elided {len(traced) - QID_TABLE_LIMIT} rows ..."] + ["..."] * (len(self.proofs) + 1))
         
         table.append(["total"] + inst_sums)
         
         print(tabulate(table, headers=headers))
 
-        fishy = set()
+        used = set()
         for pmi in self.proofs:
             for qid in pmi.insts:
-                fishy.add(qid)
-        print(f"fishy: {len(fishy - set(explored.keys()))}")
+                used.add(qid)
+        table = []
+
+        for qid in used:
+            if qid not in traced:
+                table.append([qid] + [0] + [len(pmi.insts[qid]) if qid in pmi.insts else 0 for pmi in self.proofs])
+
+        if len(table) > 0:
+            log_info(f"listing untraced qids:")
+            print(tabulate(table, headers=headers))
+            
 
 
     def get_proof_insts(self, qid):
@@ -524,15 +532,21 @@ class Debugger3:
 
 
 if __name__ == "__main__":
+    # i = Instantiater("dbg/noderep--spec__cyclicbuffer.3.smt2/mutants/reseed.2253263266940508904.smt2")
+    # i.process()
     dbg = Debugger3(sys.argv[1], False)
     dbg.print_status()
     tmi = dbg.get_candidate_trace()
     dbg.debug_trace(tmi)
 
     remove_ids = set([
+        # "prelude_u_clip",
+        # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_43",
+        # "internal_core__option__Option_unbox_axiom_definition",
     ])
-    
+
     inst_ids = set([
+        "prelude_eucmod"
     ])
 
     remove_ids |= inst_ids
