@@ -122,6 +122,9 @@ def __split_query_context(query_path):
     return main_context, query_context
 
 def emit_quake_query(query_path, output_path, repeat=4):
+    output_dir = os.path.dirname(output_path)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     out_file = open(output_path, "w")
     main_context, query_context = __split_query_context(query_path)
     out_file.writelines(main_context)
