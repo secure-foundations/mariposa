@@ -271,7 +271,6 @@ def parse_trace(orig_path, trace_path):
             "--z3-trace-log-path",
             trace_path,
         ], 
-        # debug=True
     )[0]
 
     lines = lines.split("\n")
@@ -279,8 +278,13 @@ def parse_trace(orig_path, trace_path):
     qids = dict()
 
     for line in lines:
+        if line == "":
+            continue
         line = line.split(": ")
         qid, count = line[0], int(line[1])
         qids[qid] = count
+    
+    if len(qids) == 0:
+        log_warn(f"no insts found in trace: {trace_path}")
 
     return qids

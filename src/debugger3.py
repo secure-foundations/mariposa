@@ -27,7 +27,7 @@ CORE_TOTOAL_TIME_LIMIT_SEC = 120
 PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 PROOF_GOAL_COUNT = 4
-CORE_GOAL_COUNT = 8
+CORE_GOAL_COUNT = 4
 
 QID_TABLE_LIMIT = 50
 
@@ -463,7 +463,21 @@ class Debugger3:
         if len(table) > 0:
             log_info(f"listing untraced qids:")
             print(tabulate(table, headers=headers))
-            
+
+
+    def suppress_top_n(self, tmi, n):
+        traced = tmi.get_qids()
+        suppress_qids = set()
+        for qid in traced:
+            proof_inst_count = 0
+            for pmi in self.proofs:
+                proof_inst_count += len(pmi.insts[qid]) if qid in pmi.insts else 0
+            if proof_inst_count == 0:
+                log_info(f"suppressing {qid}")
+                suppress_qids.add(qid)
+            if len(suppress_qids) >= n:
+                break
+        return suppress_qids
 
 
     def get_proof_insts(self, qid):
@@ -538,19 +552,18 @@ if __name__ == "__main__":
     dbg.print_status()
     tmi = dbg.get_candidate_trace()
     dbg.debug_trace(tmi)
+    remove_ids = dbg.suppress_top_n(tmi, 3)
 
-    remove_ids = set([
-        # "prelude_u_clip",
-        # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_43",
-        # "internal_core__option__Option_unbox_axiom_definition",
-    ])
+    # remove_ids = set([
+    #     "internal_core__option__Option_unbox_axiom_definition",
+    # ])
 
     inst_ids = set([
-        "prelude_eucmod"
+        # "prelude_eucmod"
     ])
 
-    remove_ids |= inst_ids
+    # remove_ids |= inst_ids
 
     # remove_ids, inst_ids = set(), set()
 
-    dbg.output_query("output.smt2", remove_ids, inst_ids)
+    dbg.output_query(sys.argv[2], remove_ids, inst_ids)

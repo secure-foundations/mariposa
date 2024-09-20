@@ -57,6 +57,9 @@ class ExperAnalyzer:
                     "there are queries experimented, but no files exist for them")
 
         if not allow_missing_exper:
+            for qid in path_exists_qids:
+                if qid not in qers:
+                    log_warn(f"query {qid} has no experiment results")
             log_check(path_exists_qids == set(qers.keys()), 
                         "there are queries with files, but no experiments done")
 
