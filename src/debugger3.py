@@ -15,7 +15,7 @@ from base.solver import output_as_rcode
 from utils.query_utils import Mutation, emit_mutant_query, parse_trace
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from tabulate import tabulate
-from query.instantiater import Instantiater
+from query.instantiater import Instantiater, ProofInfo
 
 PROC_COUNT = 4
 MUTANT_COUNT = 8
@@ -86,13 +86,10 @@ class MutantInfo:
 
     def load_insts(self):
         with open(self.insts_path, "rb") as f:
-            self.insts = pickle.load(f)
+            self.proof_info: ProofInfo = pickle.load(f)
 
     def build_core(self):
         self.create_mutant(self.lbl_path)
-
-        # with open(self.mut_path, "a") as f:
-        #     f.write("(get-unsat-core)\n")
 
         log_info(f"[core] attempt {self.mut_path}")
 
@@ -137,11 +134,17 @@ class MutantInfo:
         return True
 
 
-def _build_trace(mi: MutantInfo):
+def _build_fail_trace(mi: MutantInfo):
     res = mi.build_trace()
-    log_info(f"[trace] {mi.trace_path}, {res[0]}, {res[1]}")
+    log_info(f"[trace-fail] {mi.trace_path}, {res[0]}, {res[1]}")
     if res[0] == RCode.UNSAT:
         return None
+    return res
+
+
+def _build_any_trace(mi: MutantInfo):
+    res = mi.build_trace()
+    log_info(f"[trace-any] {mi.trace_path}, {res[0]}, {res[1]}")
     return res
 
 
@@ -167,7 +170,7 @@ def _build_proof(mi: MutantInfo):
 
     if ins.process():
         log_info(f"[proof] success {target}")
-        ins.save_insts(mi.insts_path)
+        ins.save_state(mi.insts_path)
         return (mi.mutation, mi.seed, ins.proof_time)
 
     log_warn(f"[proof] failure {mi.mut_path}")
@@ -322,20 +325,20 @@ class Debugger3:
             log_info(f"[init] currently {count} traces")
             return
 
-        args = self.create_mutants_info(
-            [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
-        )
-
-        res = self.__run_with_pool(_build_trace, args, goal=TRACE_GOAL_COUNT)
-
-        cur = self.con.cursor()
-        for i, r in enumerate(res):
-            cur.execute(
-                f"""INSERT INTO mutants (mutation, seed, trace_rcode, trace_time)
-                VALUES (?, ?, ?, ?)""",
-                (args[i].mutation, str(args[i].seed), r[0].value, r[1]),
+        for f in [_build_any_trace, _build_fail_trace]:
+            args = self.create_mutants_info(
+                [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
             )
-        self.con.commit()
+
+            res = self.__run_with_pool(f, args, goal=TRACE_GOAL_COUNT)
+            cur = self.con.cursor()
+            for i, r in enumerate(res):
+                cur.execute(
+                    f"""INSERT INTO mutants (mutation, seed, trace_rcode, trace_time)
+                    VALUES (?, ?, ?, ?)""",
+                    (args[i].mutation, str(args[i].seed), r[0].value, r[1]),
+                )
+            self.con.commit()
 
     def __init_cores(self):
         count = len(self.cores)
@@ -450,7 +453,7 @@ class Debugger3:
             inst_sums[0] += traced[qid]
 
             for i, pmi in enumerate(self.proofs):
-                count = len(pmi.insts[qid]) if qid in pmi.insts else 0
+                count = pmi.proof_info.get_inst_count(qid)
                 row += [count]
                 inst_sums[i + 1] += count
 
@@ -471,50 +474,41 @@ class Debugger3:
 
         used = set()
         for pmi in self.proofs:
-            for qid in pmi.insts:
+            for qid in pmi.proof_info.used_qids:
                 used.add(qid)
         table = []
 
         for qid in used:
-            if qid not in traced:
-                table.append(
-                    [qid]
-                    + [0]
-                    + [
-                        len(pmi.insts[qid]) if qid in pmi.insts else 0
-                        for pmi in self.proofs
-                    ]
-                )
+            if qid in traced:
+                continue
+            table.append(
+                [qid, 0]
+                + [
+                    pmi.proof_info.get_inst_count(qid)
+                    for pmi in self.proofs
+                ]
+            )
 
         if len(table) > 0:
             log_info(f"listing untraced qids:")
             print(tabulate(table, headers=headers))
 
-    def suppress_top_n(self, tmi, n):
-        ins = Instantiater(tmi.mut_path)
+    # def suppress_top_n(self, tmi, n):
+    #     ins = Instantiater(tmi.mut_path)
 
-        traced = tmi.get_qids()
-        suppress_qids = set()
-        for qid in traced:
-            proof_inst_count = 0
-            for pmi in self.proofs:
-                proof_inst_count += ins.get_qid_inst_count(qid, pmi.insts)
-                # len(pmi.insts[qid]) if qid in pmi.insts else 0
-            if proof_inst_count == 0:
-                log_info(f"suppressing {qid}")
-                suppress_qids.add(qid)
-            if len(suppress_qids) >= n:
-                break
-        return suppress_qids
-
-    def get_proof_insts(self, qid):
-        res = dict()
-        for pmi in self.proofs:
-            if qid in pmi.insts:
-                res[pmi] = pmi.insts[qid]
-            else:
-                res[pmi] = []
-        return res
+    #     traced = tmi.get_qids()
+    #     suppress_qids = set()
+    #     for qid in traced:
+    #         proof_inst_count = 0
+    #         for pmi in self.proofs:
+    #             proof_inst_count += ins.get_qid_inst_count(qid, pmi.insts)
+    #             # len(pmi.insts[qid]) if qid in pmi.insts else 0
+    #         if proof_inst_count == 0:
+    #             log_info(f"suppressing {qid}")
+    #             suppress_qids.add(qid)
+    #         if len(suppress_qids) >= n:
+    #             break
+    #     return suppress_qids
 
     def print_status(self):
         table = []
@@ -537,29 +531,34 @@ class Debugger3:
 
     def output_query(self, out_path, remove_ids, inst_ids):
         inserted = []
+        suppressed = set()
+        pi = self.proofs[0].proof_info
+
+        for sk_fun in pi.sk_funs:
+            inserted.append(sk_fun)
+
         for qid in inst_ids:
-            proof_insts = self.get_proof_insts(qid)
-            scores = dict()
-            for pim, insts in proof_insts.items():
-                total = sum([len(i) for i in insts])
-                scores[pim] = total
-            pim = min(scores, key=scores.get)
-            insts = proof_insts[pim]
-            log_info(
-                f"using {len(insts)} instances for {qid} from {pim.mutation} {pim.seed}"
-            )
+            if qid in pi.handled:
+                insts = pi.handled[qid]
+                log_info(f"using {len(insts)} instances for {qid}")
+            elif qid in pi.errors:
+                msg = pi.errors[qid][0]
+                log_warn(f"error insting {qid}: {msg}")
+                continue
+            else:
+                log_warn(f"no instances for {qid}")
+            suppressed.add(qid)
 
             for inst in insts:
-                print(inst)
-                print("")
-                inserted.append(f"(assert {inst})")
+                inserted.append(inst)
 
         out_file = open(out_path, "w+")
+        remove_ids |= suppressed
 
         for line in open(self.orig_path, "r"):
             should_skip = False
             for qid in remove_ids:
-                if qid in line:
+                if qid + " " in line:
                     log_info(f"skipping the following assertion")
                     print(line, end="")
                     should_skip = True
@@ -573,26 +572,30 @@ class Debugger3:
             if not should_skip:
                 out_file.write(line)
 
+        out_file.close()
+
 
 if __name__ == "__main__":
     # i = Instantiater(sys.argv[1])
     # i.process()
-    # # i.print_report()
-    # i.find_insts()
+    # i.print_report()
+    # i.save_state("insts.pickle")
+    # pi = ProofInfo.load("insts.pickle")
 
     dbg = Debugger3(sys.argv[1], False)
     dbg.print_status()
     tmi = dbg.get_candidate_trace()
     dbg.debug_trace(tmi)
 
-    # remove_ids = set([
-    # ])
-    # remove_ids = dbg.suppress_top_n(tmi, 3)
+    remove_ids = set([
+        "user_vstd__std_specs__bits__axiom_u64_leading_zeros_43",
+        "internal_core__option__Option_unbox_axiom_definition",
+    ])
 
-    # inst_ids = set([
-    # ])
-
-    # remove_ids |= inst_ids
-
-    remove_ids, inst_ids = set(), set()
+    inst_ids = set([
+        "internal_lib!page_organization.is_used_header.?_definition",
+        "user_vstd__set__axiom_set_ext_equal_101",
+        "internal_core!option.Option./Some_constructor_definition"
+    ])
+    # remove_ids, inst_ids = set(), set()
     dbg.output_query(sys.argv[2], remove_ids, inst_ids)
