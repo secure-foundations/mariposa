@@ -345,84 +345,117 @@ pub fn split_commands(
     (included_checks, skipped_checks)
 }
 
-fn add_qids_rec(cur_term: &mut concrete::Term, count: &mut usize, enable: bool) {
-    match cur_term {
-        concrete::Term::Application {
-            qual_identifier: _,
-            arguments,
-        } => {
-            for argument in arguments.iter_mut() {
-                add_qids_rec(argument, count, false)
-            }
-        }
-        concrete::Term::Let { var_bindings, term } => {
-            for var_binding in var_bindings.iter_mut() {
-                add_qids_rec(&mut var_binding.1, count, false)
-            }
-            add_qids_rec(&mut *term, count, false)
-        }
-        concrete::Term::Forall { vars: _, term } => {
-            // TODO: maybe refactor
-            if !matches!(&**term, concrete::Term::Attributes { .. }) {
-                // this is for the case where the quantified term has no attributes
-                let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String(
-                    "".to_string(),
-                )));
-                std::mem::swap(term, &mut temp);
-                **term = concrete::Term::Attributes {
-                    term: temp,
-                    attributes: vec![],
-                };
-            }
-            add_qids_rec(&mut *term, count, true)
-        }
-        concrete::Term::Exists { vars: _, term } => {
-            if !matches!(&**term, concrete::Term::Attributes { .. }) {
-                // this is for the case where the quantified term has no attributes
-                let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String(
-                    "".to_string(),
-                )));
-                std::mem::swap(term, &mut temp);
-                **term = concrete::Term::Attributes {
-                    term: temp,
-                    attributes: vec![],
-                };
-            }
-            add_qids_rec(&mut *term, count, true)
-        }
-        concrete::Term::Attributes { term, attributes } => {
-            add_qids_rec(term, count, false);
-            // remove existing qid
-            attributes.retain(|(k, _)| {
-                let concrete::Keyword(k) = k;
-                k != "qid"
-            });
+struct QidAdder {
+    count: usize,
+    encountered: HashSet<String>,
+    reassign: bool,
+}
 
-            if enable {
-                attributes.push((
-                    concrete::Keyword("qid".to_owned()),
-                    concrete::AttributeValue::Symbol(concrete::Symbol(format!(
-                        "{}{}",
-                        QID_PREFIX, count
-                    ))),
-                ));
-                *count += 1;
-            }
+impl QidAdder {
+    fn new(reassign: bool) -> QidAdder {
+        QidAdder {
+            count: 0,
+            encountered: HashSet::new(),
+            reassign,
         }
-        concrete::Term::Constant(_) => (),
-        concrete::Term::QualIdentifier(_) => (),
-        concrete::Term::Match { term, cases: _ } => {
-            panic!("unsupported term: {:?}", term)
+    }
+
+    fn add_qids_rec(&mut self, cur_term: &mut concrete::Term, enable: bool) {
+        match cur_term {
+            concrete::Term::Application {
+                qual_identifier: _,
+                arguments,
+            } => {
+                for argument in arguments.iter_mut() {
+                    self.add_qids_rec(argument, false)
+                }
+            }
+            concrete::Term::Let { var_bindings, term } => {
+                for var_binding in var_bindings.iter_mut() {
+                    self.add_qids_rec(&mut var_binding.1, false)
+                }
+                self.add_qids_rec(&mut *term, false)
+            }
+            concrete::Term::Forall { vars: _, term } => {
+                // TODO: maybe refactor
+                if !matches!(&**term, concrete::Term::Attributes { .. }) {
+                    // this is for the case where the quantified term has no attributes
+                    let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String(
+                        "".to_string(),
+                    )));
+                    std::mem::swap(term, &mut temp);
+                    **term = concrete::Term::Attributes {
+                        term: temp,
+                        attributes: vec![],
+                    };
+                }
+                self.add_qids_rec(&mut *term, true)
+            }
+            concrete::Term::Exists { vars: _, term } => {
+                if !matches!(&**term, concrete::Term::Attributes { .. }) {
+                    // this is for the case where the quantified term has no attributes
+                    let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String(
+                        "".to_string(),
+                    )));
+                    std::mem::swap(term, &mut temp);
+                    **term = concrete::Term::Attributes {
+                        term: temp,
+                        attributes: vec![],
+                    };
+                }
+                self.add_qids_rec(&mut *term, true)
+            }
+            concrete::Term::Attributes { term, attributes } => {
+                self.add_qids_rec(term, false);
+                if !enable {
+                    return;
+                }
+                let mut should_push = false;
+                let mut should_remove = false;
+
+                if let Some(qid) = get_attr_qid(attributes) {
+                    if self.encountered.contains(qid) {
+                        should_remove = true;
+                    }
+                    self.encountered.insert(qid.clone());
+                    if self.reassign || should_remove {
+                        // remove existing qid
+                        attributes.retain(|(k, _)| {
+                            let concrete::Keyword(k) = k;
+                            k != "qid"
+                        });
+                        should_push = true;
+                    }
+                } else {
+                    should_push = true;
+                }
+
+                if should_push {
+                    attributes.push((
+                        concrete::Keyword("qid".to_owned()),
+                        concrete::AttributeValue::Symbol(concrete::Symbol(format!(
+                            "{}{}",
+                            QID_PREFIX, self.count
+                        ))),
+                    ));
+                    self.count += 1;
+                }
+            }
+            concrete::Term::Constant(_) => (),
+            concrete::Term::QualIdentifier(_) => (),
+            concrete::Term::Match { term, cases: _ } => {
+                panic!("unsupported term: {:?}", term)
+            }
         }
     }
 }
 
-pub fn add_qids(commands: &mut Vec<concrete::Command>) {
-    let mut qid = 0;
+pub fn add_qids(commands: &mut Vec<concrete::Command>, reassign: bool) {
+    let mut adder = QidAdder::new(reassign);
     for command in commands.iter_mut() {
         match command {
             concrete::Command::Assert { term } => {
-                add_qids_rec(term, &mut qid, false);
+                adder.add_qids_rec(term, false);
             }
             concrete::Command::MariposaArbitrary(_) => panic!("unexpected mariposa-arbitrary"),
             _ => {}
@@ -436,8 +469,7 @@ fn add_cid(command: &mut concrete::Command, ct: usize, reassign: bool) {
     };
 
     let named = concrete::Keyword("named".to_owned());
-    let cid =
-        concrete::AttributeValue::Symbol(concrete::Symbol(format!("{}{}", CID_PREFIX, ct)));
+    let cid = concrete::AttributeValue::Symbol(concrete::Symbol(format!("{}{}", CID_PREFIX, ct)));
 
     // does assert have attributes?
     if let concrete::Term::Attributes {
@@ -542,8 +574,8 @@ impl AssertInfo {
                 }
                 self.load_qids(&term, depth)
             }
-            concrete::Term::Forall { vars: _, term } => self.load_qids(&*term, depth+1),
-            concrete::Term::Exists { vars: _, term } => self.load_qids(&*term, depth+1),
+            concrete::Term::Forall { vars: _, term } => self.load_qids(&*term, depth + 1),
+            concrete::Term::Exists { vars: _, term } => self.load_qids(&*term, depth + 1),
             concrete::Term::Attributes { term, attributes } => {
                 if let Some(qid) = get_attr_qid(attributes) {
                     self.qids.insert(qid.clone(), depth);
@@ -588,7 +620,9 @@ pub fn get_actual_asserted_term(command: &concrete::Command) -> Option<(&concret
     Some((term, cid))
 }
 
-pub fn get_mariposa_cid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String {
+pub fn get_mariposa_cid(
+    attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>,
+) -> &String {
     let cid = get_attr_cid(attributes);
     let Some(cid) = cid else {
         panic!("expecting cid");
@@ -597,13 +631,16 @@ pub fn get_mariposa_cid(attributes: &Vec<(concrete::Keyword, concrete::Attribute
     cid
 }
 
-pub fn get_mariposa_cid_usize(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> usize {
+pub fn get_mariposa_cid_usize(
+    attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>,
+) -> usize {
     let cid = get_mariposa_cid(attributes);
     cid[CID_PREFIX.len()..].to_string().parse().unwrap()
 }
 
-pub fn get_mariposa_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> &String 
-{
+pub fn get_mariposa_qid(
+    attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>,
+) -> &String {
     let qid = term_match::get_attr_qid(attributes);
     let Some(qid) = qid else {
         panic!("expecting qid");
@@ -652,4 +689,3 @@ pub fn print_stats(commands: &Vec<concrete::Command>, stat_log_path: &String) {
         }
     }
 }
-

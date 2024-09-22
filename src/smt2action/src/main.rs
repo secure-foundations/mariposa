@@ -128,6 +128,12 @@ enum Action {
     AddIds,
 
     #[strum(
+        serialize = "add-qids",
+        message = "add qids (to quantifiers)"
+    )]
+    AddQIds,
+
+    #[strum(
         serialize = "clean",
         message = "remove unused definitions from the query"
     )]
@@ -384,7 +390,7 @@ fn main() {
             commands = tree_rewrite::tree_rewrite(commands);
             tree_shake::remove_unused_symbols(&mut commands);
             query_io::add_cids(&mut commands, true);
-            query_io::add_qids(&mut commands);
+            query_io::add_qids(&mut commands, false);
             inst_z3::preprocess_for_instantiation(&mut commands);
         }
         Action::InstZ3 => {
@@ -424,9 +430,12 @@ fn main() {
             // query_io::add_qids(&mut commands);
             // inst_z3::preprocess_for_instantiation(&mut commands);
         }
+        Action::AddQIds => {
+            query_io::add_qids(&mut commands, false);
+        }
         Action::AddIds => {
             query_io::add_cids(&mut commands, args.reassign_ids);
-            query_io::add_qids(&mut commands);
+            query_io::add_qids(&mut commands, args.reassign_ids);
         }
         // Action::ReplaceQuant => {
         //     inst_z3::replace_quant(&mut commands);

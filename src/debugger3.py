@@ -26,6 +26,7 @@ CORE_TIME_LIMIT_SEC = 60
 CORE_TOTOAL_TIME_LIMIT_SEC = 120
 PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
+TRACE_GOAL_COUNT = 4
 PROOF_GOAL_COUNT = 4
 CORE_GOAL_COUNT = 4
 
@@ -139,6 +140,8 @@ class MutantInfo:
 def _build_trace(mi: MutantInfo):
     res = mi.build_trace()
     log_info(f"[trace] {mi.trace_path}, {res[0]}, {res[1]}")
+    if res[0] == RCode.UNSAT:
+        return None
     return res
 
 
@@ -224,7 +227,20 @@ class Debugger3:
                 os.makedirs(dir)
 
         if not os.path.exists(self.orig_path):
-            os.system(f"cp {query_path} {self.orig_path}")
+            subprocess_run(
+                [
+                    MARIPOSA,
+                    "--action=add-qids",
+                    "-i",
+                    query_path,
+                    "-o",
+                    self.orig_path,
+                ],
+                check=True,
+            )
+            log_check(
+                os.path.exists(self.orig_path), f"failed to create {self.orig_path}"
+            )
 
         if not os.path.exists(self.lbl_path):
             subprocess_run(
@@ -310,7 +326,7 @@ class Debugger3:
             [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
         )
 
-        res = self.__run_with_pool(_build_trace, args)
+        res = self.__run_with_pool(_build_trace, args, goal=TRACE_GOAL_COUNT)
 
         cur = self.con.cursor()
         for i, r in enumerate(res):
@@ -414,7 +430,9 @@ class Debugger3:
             if tmi.trace_rcode != RCode.UNSAT and tmi.trace_time < 200:
                 return tmi
 
-        tomis = [tmi for tmi in self.traces if tmi.trace_time >= TRACE_TIME_LIMIT_SEC * 1000]
+        tomis = [
+            tmi for tmi in self.traces if tmi.trace_time >= TRACE_TIME_LIMIT_SEC * 1000
+        ]
 
         if len(tomis) >= 1:
             return random.choice(tomis)
@@ -434,20 +452,21 @@ class Debugger3:
             for i, pmi in enumerate(self.proofs):
                 count = len(pmi.insts[qid]) if qid in pmi.insts else 0
                 row += [count]
-                inst_sums[i+1] += count
+                inst_sums[i + 1] += count
 
             if len(table) < QID_TABLE_LIMIT:
                 table.append(row)
 
-        headers = ["QID", "T"] + [
-            f"P{i}" for i in range(len(self.proofs))
-        ]
+        headers = ["QID", "T"] + [f"P{i}" for i in range(len(self.proofs))]
 
         if len(traced) > QID_TABLE_LIMIT:
-            table.append([f"... elided {len(traced) - QID_TABLE_LIMIT} rows ..."] + ["..."] * (len(self.proofs) + 1))
-        
+            table.append(
+                [f"... elided {len(traced) - QID_TABLE_LIMIT} rows ..."]
+                + ["..."] * (len(self.proofs) + 1)
+            )
+
         table.append(["total"] + inst_sums)
-        
+
         print(tabulate(table, headers=headers))
 
         used = set()
@@ -458,27 +477,35 @@ class Debugger3:
 
         for qid in used:
             if qid not in traced:
-                table.append([qid] + [0] + [len(pmi.insts[qid]) if qid in pmi.insts else 0 for pmi in self.proofs])
+                table.append(
+                    [qid]
+                    + [0]
+                    + [
+                        len(pmi.insts[qid]) if qid in pmi.insts else 0
+                        for pmi in self.proofs
+                    ]
+                )
 
         if len(table) > 0:
             log_info(f"listing untraced qids:")
             print(tabulate(table, headers=headers))
 
-
     def suppress_top_n(self, tmi, n):
+        ins = Instantiater(tmi.mut_path)
+
         traced = tmi.get_qids()
         suppress_qids = set()
         for qid in traced:
             proof_inst_count = 0
             for pmi in self.proofs:
-                proof_inst_count += len(pmi.insts[qid]) if qid in pmi.insts else 0
+                proof_inst_count += ins.get_qid_inst_count(qid, pmi.insts)
+                # len(pmi.insts[qid]) if qid in pmi.insts else 0
             if proof_inst_count == 0:
                 log_info(f"suppressing {qid}")
                 suppress_qids.add(qid)
             if len(suppress_qids) >= n:
                 break
         return suppress_qids
-
 
     def get_proof_insts(self, qid):
         res = dict()
@@ -516,9 +543,11 @@ class Debugger3:
             for pim, insts in proof_insts.items():
                 total = sum([len(i) for i in insts])
                 scores[pim] = total
-            pim = min(scores, key=scores.get)    
+            pim = min(scores, key=scores.get)
             insts = proof_insts[pim]
-            log_info(f"using {len(insts)} instances for {qid} from {pim.mutation} {pim.seed}")
+            log_info(
+                f"using {len(insts)} instances for {qid} from {pim.mutation} {pim.seed}"
+            )
 
             for inst in insts:
                 print(inst)
@@ -532,7 +561,7 @@ class Debugger3:
             for qid in remove_ids:
                 if qid in line:
                     log_info(f"skipping the following assertion")
-                    print(line, end="") 
+                    print(line, end="")
                     should_skip = True
                     remove_ids.remove(qid)
                     break
@@ -546,24 +575,24 @@ class Debugger3:
 
 
 if __name__ == "__main__":
-    # i = Instantiater("dbg/noderep--spec__cyclicbuffer.3.smt2/mutants/reseed.2253263266940508904.smt2")
+    # i = Instantiater(sys.argv[1])
     # i.process()
+    # # i.print_report()
+    # i.find_insts()
+
     dbg = Debugger3(sys.argv[1], False)
     dbg.print_status()
     tmi = dbg.get_candidate_trace()
     dbg.debug_trace(tmi)
-    remove_ids = dbg.suppress_top_n(tmi, 3)
 
     # remove_ids = set([
-    #     "internal_core__option__Option_unbox_axiom_definition",
     # ])
+    # remove_ids = dbg.suppress_top_n(tmi, 3)
 
-    inst_ids = set([
-        # "prelude_eucmod"
-    ])
+    # inst_ids = set([
+    # ])
 
     # remove_ids |= inst_ids
 
-    # remove_ids, inst_ids = set(), set()
-
+    remove_ids, inst_ids = set(), set()
     dbg.output_query(sys.argv[2], remove_ids, inst_ids)
