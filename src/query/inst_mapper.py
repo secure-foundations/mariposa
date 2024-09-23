@@ -1,5 +1,6 @@
 from z3 import *
 
+
 def format_expr(e, depth=0, offset=0):
     if is_const(e):
         return str(e)
@@ -51,10 +52,12 @@ def find_matching_brackets(s):
             stack.append(i)
         elif c == ")":
             assert len(stack) != 0
-            results.append((stack.pop(), i))
+            depth = len(stack)
+            results.append((stack.pop(), i + 1, depth))
     assert len(stack) == 0
     results = sorted(results, key=lambda x: x[0])
     return results
+
 
 def collapse_sexpr(s):
     res, index = "", 0
@@ -69,9 +72,10 @@ def collapse_sexpr(s):
         res += c
     return res
 
+
 # TODO: this is a very hacky way to do it
 def hack_quantifier_body(quant):
-    args = []    
+    args = []
     for i in range(quant.num_vars()):
         args += [f"({quant.var_name(i)} {quant.var_sort(i)})"]
     # sanity check
@@ -79,12 +83,25 @@ def hack_quantifier_body(quant):
     args = " ".join(args)
     expected = "(forall (" + args + ")"
     assert quant.startswith(expected)
-    func_body = quant[len(expected):-1].strip()
+    func_body = quant[len(expected) : -1].strip()
     assert func_body.startswith("(!")
     assert func_body.endswith(")")
     brackets = find_matching_brackets(func_body)
-    s, e = brackets[1]
-    return func_body[s:e+1].strip()
+    s, e, _ = brackets[1]
+    return func_body[s:e].strip()
+
+
+def hack_quantifier_removal(expr, qid):
+    expr = collapse_sexpr(expr)
+    brackets = find_matching_brackets(expr)
+    best, depth = None, -1
+    for s, e, d in brackets:
+        if (qid + " " in expr[s:e] or qid + ")" in expr[s:e]) and d > depth:
+            depth = d
+            best = (s, e)
+    s, e = best
+    return expr[:s] + " true" + expr[e:]
+
 
 class Quant:
     def __init__(self, quant, parent):
@@ -107,7 +124,7 @@ class Quant:
 
     def rewrite_as_let(self, subs):
         res = self.__as_let(self.assertion, subs)
-        return ("(assert " + res + ")")
+        return "(assert " + res + ")"
 
     def __as_let(self, e, subs):
         if is_const(e):
@@ -120,7 +137,7 @@ class Quant:
                 for idx in range(e.num_vars()):
                     lets.append(f"({e.var_name(idx)} {subs[idx].sexpr()})")
                 lets = " ".join(lets)
-                lets = f"(let\n({lets}) {self.__qbody_str})" 
+                lets = f"(let\n({lets}) {self.__qbody_str})"
                 return lets
             else:
                 return e.sexpr()
@@ -130,13 +147,16 @@ class Quant:
         items = "(" + e.decl().name() + " " + items + ")"
         return items
 
+
 class SubsMapper:
     def __init__(self, qt: Quant):
         self.app_map = dict()
         self.unmapped = 0
 
         self.num_vars = qt.quant.num_vars()
-        self.find_apps(qt.quant, 0)
+        self.__visited = set()
+        self.__find_apps(qt.quant, 0)
+        self.__visited = set()
 
         mapped = set()
         self.app_map = {k: v for k, v in self.app_map.items() if v != []}
@@ -149,16 +169,21 @@ class SubsMapper:
             if i not in mapped:
                 self.unmapped += 1
 
-    def find_apps(self, exp, offset):
+    def __find_apps(self, exp, offset):
+        oid = exp.get_id()
+        if oid in self.__visited:
+            return
+        self.__visited.add(oid)
+
         if is_const(exp) or is_var(exp):
             return
 
         if is_quantifier(exp):
-            self.find_apps(exp.body(), offset + exp.num_vars())
+            self.__find_apps(exp.body(), offset + exp.num_vars())
             return
 
         fun, idxs = exp.decl().name(), []
-        
+
         for i, c in enumerate(exp.children()):
             if not is_var(c):
                 continue
@@ -184,27 +209,34 @@ class SubsMapper:
             self.app_map[fun] = idxs
 
         for c in exp.children():
-            self.find_apps(c, offset)
+            self.__find_apps(c, offset)
 
-    def _match_vars(self, exp):
+    def _match_vars(self, exp, var_bindings):
+        oid = exp.get_id()
+        if oid in self.__visited:
+            return
+        self.__visited.add(oid)
+
         if is_const(exp) or is_var(exp):
             return
 
         if is_quantifier(exp):
-            self._match_vars(exp.body())
+            self._match_vars(exp.body(), var_bindings)
             return
 
         fun = exp.decl().name()
-        
+
         if fun in self.app_map:
             idxs = self.app_map[fun]
             for i, j in idxs:
-                self.var_bindings[i] = exp.children()[j]
+                var_bindings[i] = exp.children()[j]
 
         for c in exp.children():
-            self._match_vars(c)
+            self._match_vars(c, var_bindings)
 
     def map_inst(self, exp):
         assert self.unmapped == 0
-        self.var_bindings = dict()
-        self._match_vars(exp)
+        self.__visited = set()
+        var_bindings = dict()
+        self._match_vars(exp, var_bindings)
+        return var_bindings

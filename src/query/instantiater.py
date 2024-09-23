@@ -1,11 +1,14 @@
 import time
 import pickle
 from typing import Dict
+
+from tabulate import tabulate
 from base.defs import MARIPOSA
 from query.inst_mapper import SubsMapper, Quant, collapse_sexpr
 from z3 import *
+from enum import Enum
 
-from utils.system_utils import log_warn, subprocess_run
+from utils.system_utils import log_info, log_warn, subprocess_run
 
 set_param(proof=True)
 
@@ -54,27 +57,51 @@ class ProofInfo:
         self.sk_funs = sk_funs
         self.used_qids = set(handled.keys()) | set(errors.keys())
 
-    def get_inst_count(self, qid):
+    def get_inst_count(self, qid, transitive=False):
         if qid in self.handled:
             return len(self.handled[qid])
         if qid in self.errors:
-            return self.errors[qid][1]
+            count = self.errors[qid][1]
+            if transitive:
+                return count + self.get_inst_count(self.errors[qid][2], True)
+            return count
         return 0
 
     def has_qid(self, qid):
         return qid in self.handled or qid in self.errors
+    
+    def print_report(self):
+        table = []
+        for qid, insts in self.handled.items():
+            table.append((qid, len(insts)))
+        log_info("listing handled quantifiers:")
+        print(tabulate(table, headers=["qid", "insts"]))
+        log_info("listing errors:")
+        table = []
+        for qid, (msg, count, parent) in self.errors.items():
+            table.append((qid, msg, count, parent))
+        print(tabulate(table, headers=["qid", "error", "count", "parent"]))
+        log_info("listing skolem functions:")
+        for sk_fun in self.sk_funs:
+            print(sk_fun)
 
     @staticmethod
     def load(file_path):
         with open(file_path, "rb") as f:
             return pickle.load(f)
 
+class InstError(Enum):
+    UNMAPPED_VARS = 1
+    NON_ROOT = 2
+    SKOLEM_FUNS = 3
+
 class Instantiater:
     def __init__(self, in_file_path):
         self.proc_solver = Solver()
         self.solver_opts = []
         self.proof_time = None
-        self.sk_vars = dict()
+        # self.sk_vars = dict()
+        self.sk_funcs = dict()
         self.in_file_path = in_file_path
 
         self.proc_solver.set("timeout", 60000)
@@ -100,6 +127,7 @@ class Instantiater:
 
     def __init_qids(self):
         for a in self.proc_solver.assertions():
+            # print(collapse_sexpr(a.sexpr()))
             self.__load_quantifiers(a, None, a)
 
         for qid, qtf in self.quants.items():
@@ -138,21 +166,12 @@ class Instantiater:
         self.proof_time = int((time.time() - start) * 1000)
 
         if res != unsat:
-            log_warn("query is not unsat")
+            log_warn("[proof] query returned {0}".format(res))
             return False
 
         p = self.proc_solver.proof()
         self.__match_qis(p)
-        self.sk_funcs = dict()
 
-        for skid, exprs in self.sk_vars.items():
-            if not skid.startswith("skolem_"):
-                print("unhandled skid", skid)
-                continue
-
-            for expr in exprs:
-                self.__find_sk_funs(skid, expr)
-        
         self.inst_freq = dict(map(lambda x: (x[0], len(x[1])), self.insts.items()))
 
         return True
@@ -169,12 +188,6 @@ class Instantiater:
         if is_quantifier(p):
             p = p.body()
 
-        res = match_sk(p)
-
-        if res is not None:
-            skid, sk = res
-            self.sk_vars[skid] = self.sk_vars.get(skid, set()) | {sk}
-
         res = match_qi(p)
 
         if res is not None:
@@ -184,51 +197,69 @@ class Instantiater:
         for c in p.children():
             self.__match_qis(c)
 
-    def __find_sk_funs(self, skid, e):
+    def __has_sk_fun(self, e):        
         if is_const(e) or is_var(e):
-            return
+            return False
+
+        oid = e.get_id()
+        if oid in self.__visited:
+            return self.__visited[oid]
 
         if is_quantifier(e):
-            e = e.body()
-        
+            res = self.__has_sk_fun(e.body())
+            self.__visited[oid] = res
+            return res
+
         name = e.decl().name()
+        
+        if name in self.sk_funcs:
+            self.__visited[oid] = True
+            return True
 
-        if skid in name:
-            if name not in self.sk_funcs:
-                self.sk_funcs[name] = e.decl()
+        if "$!skolem_" in name:
+            self.__visited[oid] = True
+            self.sk_funcs[name] = e.decl()
+            return True
 
-        for c in e.children():
-            self.__find_sk_funs(skid, c)
+        res = any(self.__has_sk_fun(c) for c in e.children())
+        self.__visited[oid] = res
+        return res
 
     def save_state(self, out_file_path):
         handled = dict()
         error_insts = dict()
         sk_funs = []
 
-        for _, sk_fun in self.sk_funcs.items():
-            sk_funs.append(collapse_sexpr(sk_fun.sexpr()))
-
         for qid, insts in self.insts.items():
+            parent = self.quants[qid].parent
             if qid not in self.root_qids:
-                error_insts[qid] = ("fail to handle insts of non-root qid", len(insts))
+                error_insts[qid] = (InstError.NON_ROOT, len(insts), parent)
                 continue
 
             qt = self.quants[qid]
             m = SubsMapper(qt)
 
             if m.unmapped != 0:
-                error_insts[qid] = ("fail to handle due to unmapped vars", len(insts))
+                error_insts[qid] = (InstError.NON_ROOT, len(insts), parent)
                 continue
 
-            asserts = []
+            asserts, skolem = [], False
 
+            self.__visited = dict()
             for inst in insts:
-                m.map_inst(inst)
-                a = qt.rewrite_as_let(m.var_bindings)
+                bindings = m.map_inst(inst)
+                skolem = any(self.__has_sk_fun(b) for b in bindings.values())
+                a = qt.rewrite_as_let(bindings)
                 asserts.append(a)
 
-            handled[qid] = asserts
-            
+            if not skolem:
+                handled[qid] = asserts
+            else:
+                error_insts[qid] = (InstError.SKOLEM_FUNS, len(insts), parent)
+
+        for _, sk_fun in self.sk_funcs.items():
+            sk_funs.append(collapse_sexpr(sk_fun.sexpr()))
+
         pi = ProofInfo(handled, error_insts, sk_funs)
 
         with open(out_file_path, "wb") as f:
@@ -257,40 +288,3 @@ class Instantiater:
                 print("(parent:", parent, end=")")
             print("")
 
-    # def save_as_smt2(self, out_file_path, qids):
-    #     with open(self.in_file_path, "r") as f:
-    #         lines = f.readlines()
-
-    #     insts, replaced_qids = self.replace_insts(qids)
-
-    #     f = open(out_file_path, "w")
-    #     last = lines[-2]
-    #     for line in lines[:-2]:
-    #         should_skip = False
-    #         for qid in replaced_qids:
-    #             if qid + " " in line:
-    #                 should_skip = True
-    #                 break
-    #         if should_skip:
-    #             print("skipping", line, end="")
-    #             continue
-    #         f.write(line)
-
-    #     for inst in sk_funs + insts:
-    #         f.write(inst)
-    #         f.write("\n")
-    #     f.write(last)
-    #     f.write("(check-sat)\n")
-    #     f.close()
-
-    #     args = [
-    #         MARIPOSA,
-    #         "-i",
-    #         out_file_path,
-    #         "--action=format",
-    #         "-o",
-    #         out_file_path,
-    #     ]
-
-    #     subprocess_run(args, check=True, debug=True)
-    

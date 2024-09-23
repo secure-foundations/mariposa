@@ -6,6 +6,7 @@ import pickle
 import subprocess
 import time
 from base.solver import RCode
+from query.inst_mapper import hack_quantifier_removal
 from utils.database_utils import table_exists
 import multiprocessing
 import os, sys
@@ -91,6 +92,9 @@ class MutantInfo:
     def build_core(self):
         self.create_mutant(self.lbl_path)
 
+        with open(self.mut_path, "a") as f:
+            f.write("(get-unsat-core)\n")
+
         log_info(f"[core] attempt {self.mut_path}")
 
         cf = open(self.core_log, "w+")
@@ -106,8 +110,7 @@ class MutantInfo:
         cf = open(self.core_log, "r")
         lines = cf.readlines()
         cf.close()
-        # print(lines)
-
+        
         if len(lines) == 0 or "unsat\n" not in lines:
             return None
 
@@ -212,6 +215,7 @@ class Debugger3:
         self.__init_db()
         self.__init_traces()
         self.__init_cores()
+        self.refresh_status()
         self.__init_proofs()
         self.refresh_status()
 
@@ -442,6 +446,26 @@ class Debugger3:
 
         return max(self.traces, key=lambda tmi: tmi.trace_time)
 
+    def suppress_top_n(self, tmi: MutantInfo, n, user=False):
+        traced = tmi.get_qids()
+        suppress_qids = set()
+
+        log_check(len(self.proofs) != 0, "no proofs available")
+
+        for qid in traced:
+            if user and not qid.startswith("user_") and not qid.startswith("internal_"):
+                continue
+            proof_inst_count = 0
+            for pmi in self.proofs:
+                proof_inst_count += pmi.proof_info.get_inst_count(qid)
+            if proof_inst_count == 0:
+                log_info(f"suppressing {qid}")
+                suppress_qids.add(qid)
+            if len(suppress_qids) >= n:
+                break
+        return suppress_qids
+
+
     def debug_trace(self, tmi: MutantInfo):
         log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
         traced = tmi.get_qids()
@@ -493,23 +517,6 @@ class Debugger3:
             log_info(f"listing untraced qids:")
             print(tabulate(table, headers=headers))
 
-    # def suppress_top_n(self, tmi, n):
-    #     ins = Instantiater(tmi.mut_path)
-
-    #     traced = tmi.get_qids()
-    #     suppress_qids = set()
-    #     for qid in traced:
-    #         proof_inst_count = 0
-    #         for pmi in self.proofs:
-    #             proof_inst_count += ins.get_qid_inst_count(qid, pmi.insts)
-    #             # len(pmi.insts[qid]) if qid in pmi.insts else 0
-    #         if proof_inst_count == 0:
-    #             log_info(f"suppressing {qid}")
-    #             suppress_qids.add(qid)
-    #         if len(suppress_qids) >= n:
-    #             break
-    #     return suppress_qids
-
     def print_status(self):
         table = []
         for v in self.traces:
@@ -534,68 +541,78 @@ class Debugger3:
         suppressed = set()
         pi = self.proofs[0].proof_info
 
-        for sk_fun in pi.sk_funs:
-            inserted.append(sk_fun)
+        # pi.print_report()
+        # for sk_fun in pi.sk_funs:
+        #     print(sk_fun)
 
         for qid in inst_ids:
-            if qid in pi.handled:
-                insts = pi.handled[qid]
-                log_info(f"using {len(insts)} instances for {qid}")
-            elif qid in pi.errors:
+            if qid in pi.errors:
                 msg = pi.errors[qid][0]
                 log_warn(f"error insting {qid}: {msg}")
                 continue
+            if qid in pi.handled:
+                insts = pi.handled[qid]
+                log_info(f"using {len(insts)} instances for {qid}")
+                suppressed.add(qid)
+                for inst in insts:
+                    inserted.append(inst)                
             else:
                 log_warn(f"no instances for {qid}")
-            suppressed.add(qid)
-
-            for inst in insts:
-                inserted.append(inst)
+                continue
 
         out_file = open(out_path, "w+")
         remove_ids |= suppressed
 
+        # "erasing" quantifiers, rather than removing
         for line in open(self.orig_path, "r"):
-            should_skip = False
+            removed = set()
             for qid in remove_ids:
-                if qid + " " in line:
-                    log_info(f"skipping the following assertion")
-                    print(line, end="")
-                    should_skip = True
-                    remove_ids.remove(qid)
-                    break
+                if qid + " " in line or qid + ")" in line:
+                    line = hack_quantifier_removal(line, qid)
+                    removed.add(qid)
+                    # log_info(f"skipping the following assertion")
+            remove_ids -= removed
 
             if line == "(check-sat)\n":
                 for inst in inserted:
                     out_file.write(inst + "\n")
 
-            if not should_skip:
-                out_file.write(line)
+            out_file.write(line)
 
         out_file.close()
 
+        args = [
+            MARIPOSA,
+            "-i",
+            out_path,
+            "--action=add-qids",
+            "-o",
+            out_path,
+        ]
+
+        subprocess_run(args, check=True, debug=True)
+    
 
 if __name__ == "__main__":
     # i = Instantiater(sys.argv[1])
     # i.process()
-    # i.print_report()
     # i.save_state("insts.pickle")
     # pi = ProofInfo.load("insts.pickle")
+    # pi.print_report()
 
     dbg = Debugger3(sys.argv[1], False)
     dbg.print_status()
     tmi = dbg.get_candidate_trace()
     dbg.debug_trace(tmi)
+    remove_ids = dbg.suppress_top_n(tmi, 3, True)
 
     remove_ids = set([
-        "user_vstd__std_specs__bits__axiom_u64_leading_zeros_43",
-        "internal_core__option__Option_unbox_axiom_definition",
     ])
 
     inst_ids = set([
-        "internal_lib!page_organization.is_used_header.?_definition",
-        "user_vstd__set__axiom_set_ext_equal_101",
-        "internal_core!option.Option./Some_constructor_definition"
+        # "internal_core!option.Option./Some_constructor_definition",
+        # "internal_lib!page_organization.PageOrg.impl&__4.good_range0.?_definition",
+        # "internal_lib!page_organization.PageOrg.impl&__4.good_range0.?_definition",
+        # "internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definition",
     ])
-    # remove_ids, inst_ids = set(), set()
     dbg.output_query(sys.argv[2], remove_ids, inst_ids)

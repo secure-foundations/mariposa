@@ -376,22 +376,7 @@ impl QidAdder {
                 }
                 self.add_qids_rec(&mut *term, false)
             }
-            concrete::Term::Forall { vars: _, term } => {
-                // TODO: maybe refactor
-                if !matches!(&**term, concrete::Term::Attributes { .. }) {
-                    // this is for the case where the quantified term has no attributes
-                    let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String(
-                        "".to_string(),
-                    )));
-                    std::mem::swap(term, &mut temp);
-                    **term = concrete::Term::Attributes {
-                        term: temp,
-                        attributes: vec![],
-                    };
-                }
-                self.add_qids_rec(&mut *term, true)
-            }
-            concrete::Term::Exists { vars: _, term } => {
+            concrete::Term::Forall { vars: _, term } | concrete::Term::Exists { vars: _, term } => {
                 if !matches!(&**term, concrete::Term::Attributes { .. }) {
                     // this is for the case where the quantified term has no attributes
                     let mut temp = Box::new(concrete::Term::Constant(concrete::Constant::String(
@@ -414,7 +399,7 @@ impl QidAdder {
                 let mut should_remove = false;
 
                 if let Some(qid) = get_attr_qid(attributes) {
-                    if self.encountered.contains(qid) {
+                    if self.encountered.contains(qid) || qid.starts_with(QID_PREFIX) {
                         should_remove = true;
                     }
                     self.encountered.insert(qid.clone());
@@ -422,7 +407,7 @@ impl QidAdder {
                         // remove existing qid
                         attributes.retain(|(k, _)| {
                             let concrete::Keyword(k) = k;
-                            k != "qid"
+                            k != "qid" && k != "skolemid"
                         });
                         should_push = true;
                     }
@@ -431,13 +416,18 @@ impl QidAdder {
                 }
 
                 if should_push {
+                    let qid = format!("{}{}", QID_PREFIX, self.count);
+                    let skolemid = format!("skolem_{}", qid);
                     attributes.push((
                         concrete::Keyword("qid".to_owned()),
-                        concrete::AttributeValue::Symbol(concrete::Symbol(format!(
-                            "{}{}",
-                            QID_PREFIX, self.count
-                        ))),
+                        concrete::AttributeValue::Symbol(concrete::Symbol(qid.clone())),
                     ));
+                    attributes.push((
+                        concrete::Keyword("skolemid".to_owned()),
+                        concrete::AttributeValue::Symbol(concrete::Symbol(skolemid)),
+                    ));
+                    // the original query may have mariposa qids in them
+                    self.encountered.insert(qid);
                     self.count += 1;
                 }
             }
