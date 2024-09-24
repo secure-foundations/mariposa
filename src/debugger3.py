@@ -7,6 +7,7 @@ import subprocess
 import time
 from base.solver import RCode
 from query.inst_mapper import hack_quantifier_removal
+from query.trace_analyzer import TraceAnalzyer
 from utils.database_utils import table_exists
 import multiprocessing
 import os, sys
@@ -189,13 +190,11 @@ def create_mut_table(cur):
         from_core BOOLEAN DEFAULT FALSE,
         PRIMARY KEY (mutation, seed))"""
     )
-
-
+    
 class Debugger3:
     def __init__(self, query_path, clear):
-        base_name = os.path.basename(query_path)
-        self.sub_root = f"{DEBUG_ROOT}{base_name}"
-
+        self.base_name = os.path.basename(query_path)
+        self.sub_root = f"{DEBUG_ROOT}{self.base_name}"
         self.orig_path = f"{self.sub_root}/orig.smt2"
         self.lbl_path = f"{self.sub_root}/lbl.smt2"
         self.trace_dir = f"{self.sub_root}/{TRACES}"
@@ -205,10 +204,12 @@ class Debugger3:
         self.db_path = f"{self.sub_root}/db.sqlite"
 
         self.__init_dirs(query_path, clear)
-
+        
         self.traces: List[MutantInfo] = []
         self.proofs: List[MutantInfo] = []
         self.cores: List[MutantInfo] = []
+
+        log_info(f"[init] {self.orig_path}")
 
         self.__init_db()
         self.__init_traces()
@@ -372,7 +373,7 @@ class Debugger3:
         goal = PROOF_GOAL_COUNT - count
         res = []
 
-        if len(self.cores) != 0:
+        if len(self.cores) != 0 and False:
             skip = set([(mi.mutation, mi.seed) for mi in self.proofs])
             args = [mi for mi in self.cores if (mi.mutation, mi.seed) not in skip]
             log_info(
@@ -444,25 +445,6 @@ class Debugger3:
 
         return max(self.traces, key=lambda tmi: tmi.trace_time)
 
-    def suppress_top_n(self, tmi: MutantInfo, n, user=False):
-        traced = tmi.get_qids()
-        suppress_qids = set()
-
-        log_check(len(self.proofs) != 0, "no proofs available")
-
-        for qid in traced:
-            if user and not qid.startswith("user_") and not qid.startswith("internal_"):
-                continue
-            proof_inst_count = 0
-            for pmi in self.proofs:
-                proof_inst_count += pmi.proof_info.get_inst_count(qid)
-            if proof_inst_count == 0:
-                log_info(f"suppressing {qid}")
-                suppress_qids.add(qid)
-            if len(suppress_qids) >= n:
-                break
-        return suppress_qids
-
     def get_proof_inst_counts(self, qids):
         result = dict()
         for qid in qids:
@@ -473,73 +455,20 @@ class Debugger3:
             result[qid] = counts
         return result
 
-    def debug_trace(self, tmi: MutantInfo, table_limit):
+    def debug_trace(self, tmi: MutantInfo, table_limit, report_file=None):
         log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
-        traced = tmi.get_qids()
-        table = []
-        inst_sums = [0] * (len(self.proofs) + 1)
-        assert len(self.proofs) != 0
-        ins = Instantiater(tmi.mut_path)
-        accu = ins.accumulate_inst_count(traced)
-        accu = dict(sorted(accu.items(), key=lambda x: x[1]["isum"], reverse=True))
-        pcounts = self.get_proof_inst_counts(traced.keys())
+        self.traced = tmi.get_qids()
+        pins = [p.proof_info for p in self.proofs]
+        ta = TraceAnalzyer(tmi.mut_path, pins)
+        report = ta.get_report(self.traced, table_limit)
 
-        for rid, entry in accu.items():
-            row = [rid, entry["isum"]]
-
-            if len(entry) == 2:
-                table.append(row + pcounts[rid])
-                continue
-
-            table.append(row)
-            table.append(["- [root]", entry[rid]] + pcounts[rid])
-    
-            for qid in entry:
-                if qid == "isum" or qid == rid:
-                    continue
-                row = ["- " + qid, entry[qid]] + pcounts[qid]
-                table.append(row)
-
-        #     row = [qid, tc]
-        #     inst_sums[0] += tc
-        #         inst_sums[i + 1] += count
-
-            if len(table) >= table_limit:
-                break
-
-        headers = ["QID", "T"] + [f"P{i}" for i in range(len(self.proofs))]
-
-        if len(accu) > table_limit:
-            table.append(
-                [f"... elided {len(accu) - table_limit} root qid rows ..."]
-                + ["..."] * (len(self.proofs) + 1)
-            )
-
-        # table.append(["total"] + inst_sums)
-
-        print(tabulate(table, headers=headers))
-
-        # used = set()
-        # for pmi in self.proofs:
-        #     for qid in pmi.proof_info.used_qids:
-        #         used.add(qid)
-        # table = []
-
-        # for qid in used:
-        #     if qid in traced:
-        #         continue
-        #     table.append(
-        #         [qid, 0]
-        #         + [
-        #             pmi.proof_info.get_inst_count(qid)
-        #             for pmi in self.proofs
-        #         ]
-        #     )
-
-        # if len(table) > 0:
-        #     log_info(f"listing untraced qids:")
-        #     headers = ["QID"] + [f"P{i}" for i in range(len(self.proofs))]
-        #     print(tabulate(table, headers=headers))
+        if report_file is not None:
+            with open(report_file, "w+") as f:
+                f.write(self.base_name + "\n")
+                f.write(self.orig_path + "\n")
+                f.write(report)
+        else:
+            print(report)
 
     def print_status(self):
         table = []
@@ -564,8 +493,8 @@ class Debugger3:
         inserted = []
         suppressed = set()
         pi = self.proofs[0].proof_info
-
         # pi.print_report()
+
         # for sk_fun in pi.sk_funs:
         #     print(sk_fun)
 
@@ -594,13 +523,12 @@ class Debugger3:
                 if qid + " " in line or qid + ")" in line:
                     line = hack_quantifier_removal(line, qid)
                     removed.add(qid)
-                    # log_info(f"skipping the following assertion")
+                    log_info(f"suppressing {qid}")
             remove_ids -= removed
 
             if line == "(check-sat)\n":
                 for inst in inserted:
                     out_file.write(inst + "\n")
-
             out_file.write(line)
 
         out_file.close()
@@ -627,15 +555,20 @@ if __name__ == "__main__":
     dbg = Debugger3(sys.argv[1], False)
     # dbg.print_status()
     tmi = dbg.get_candidate_trace()
-    dbg.debug_trace(tmi, 10)
-    remove_ids = dbg.suppress_top_n(tmi, 3)
+    dbg.debug_trace(tmi, 1000, sys.argv[2])
 
-    remove_ids = set([
-        "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-        "user_vstd__set__axiom_set_ext_equal_100",
-        "internal_lib!types.page_organization_used_queues_match.?_definition",
-    ])
+    # remove_ids = set([
+    #     "internal_vstd!set.impl&__0.subset_of.?_definition"
+    #     "internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definition",
+    #     "internal_lib!page_organization.PageOrg.impl&__4.count_is_right.?_definition",
+    #     "user_vstd__set__axiom_set_ext_equal_100",
+    #     # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
+    #     # "user_vstd__set__axiom_set_ext_equal_100",
+    #     # "internal_lib!types.page_organization_used_queues_match.?_definition",
+    # ])
 
-    inst_ids = set([
-    ])
-    dbg.output_query(sys.argv[2], remove_ids, inst_ids)
+    # inst_ids = set([
+    #     "internal_lib!types.impl&__21.wf_main.?_definition"
+    # ])
+
+    # dbg.output_query(sys.argv[2], remove_ids, inst_ids)

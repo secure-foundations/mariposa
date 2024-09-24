@@ -56,7 +56,6 @@ class ProofInfo:
         self.errors = errors
         self.sk_funs = sk_funs
         self.used_qids = set(handled.keys()) | set(errors.keys())
-        self.parents = dict()
 
     def get_inst_count(self, qid):
         if qid in self.handled:
@@ -66,8 +65,14 @@ class ProofInfo:
         return 0
 
     def has_qid(self, qid):
-        return qid in self.handled or qid in self.errors
-    
+        return qid in self.used_qids
+
+    def as_frequency(self):
+        res = dict()
+        for qid in self.used_qids:
+            res[qid] = self.get_inst_count(qid)
+        return res
+
     def print_report(self):
         table = []
         for qid, insts in self.handled.items():
@@ -93,55 +98,46 @@ class InstError(Enum):
     NON_ROOT = 2
     SKOLEM_FUNS = 3
 
-class Instantiater:
+class QueryLoader:
     def __init__(self, in_file_path):
         self.proc_solver = Solver()
-        self.solver_opts = []
-        self.proof_time = None
-        # self.sk_vars = dict()
-        self.sk_funcs = dict()
         self.in_file_path = in_file_path
-
         self.proc_solver.set("timeout", 60000)
-
-        with open(in_file_path, "r") as f:
-            for line in f.readlines():
-                if line.startswith("(set-option"):
-                    self.solver_opts.append(line)
-
         self.proc_solver.from_file(in_file_path)
-
         # map qid to its quantifier
         self.quants: Dict[str, Quant] = dict()
         # root qids with nested quantifiers
         self.root_qids = set()
-        self.__init_qids()
-        
-        assert "user_vstd__set__axiom_set_remove_different_94" in self.root_qids
+        self.parents = dict()
 
-        # map qid to its quant-inst applications
-        self.insts = dict()
+        self.__visited = set()
+        self.__init_qids()
         self.__visited = set()
 
-        self.inst_freq = dict()
+        self.all_qids = set(self.quants.keys())
 
     def __init_qids(self):
         for a in self.proc_solver.assertions():
-            # print(collapse_sexpr(simplify(a).sexpr()))
             self.__load_quantifiers(a, None, a)
 
         for qid, qtf in self.quants.items():
             if qtf.parent is None:
                 self.root_qids.add(qid)
+            else:
+                self.parents[qid] = qtf.parent
 
-        self.parents = dict()
-
-        for qid, qt in self.quants.items():
-            if qt.parent is not None:
-                self.parents[qid] = qt.parent
+    def visit(self, e: ExprRef):
+        oid = e.get_id()
+        if oid in self.__visited:
+            return True
+        self.__visited.add(oid)
+        return False
 
     def __load_quantifiers(self, exp: z3.ExprRef, parent, assertion):
         if is_const(exp) or is_var(exp):
+            return
+
+        if self.visit(exp):
             return
 
         if is_quantifier(exp):
@@ -158,18 +154,17 @@ class Instantiater:
         while qid in self.parents:
             qid = self.parents[qid]
         return qid
+    
+class Instantiater(QueryLoader):
+    def __init__(self, in_file_path):
+        super().__init__(in_file_path)
+        self.proof_time = None
 
-    def accumulate_inst_count(self, trace):
-        roots = dict()
-        # attribute the count to the root quantifier
-        for qid, count in trace.items():
-            root = self.get_root(qid)
-            if root not in roots:
-                roots[root] = dict()
-            roots[root][qid] = count
-        for qid in roots:
-            roots[qid]["isum"] = sum(roots[qid].values())
-        return roots
+        # self.sk_vars = dict()
+        self.sk_funcs = dict()
+        # map qid to its quant-inst applications
+        self.insts = dict()
+        self.inst_freq = dict()
 
     def process(self):
         start = time.time()
@@ -188,10 +183,8 @@ class Instantiater:
         return True
 
     def __match_qis(self, p):
-        oid = p.get_id()
-        if oid in self.__visited:
+        if self.visit(p):
             return
-        self.__visited.add(oid)
 
         if is_const(p) or is_var(p):
             return
@@ -280,27 +273,4 @@ class Instantiater:
 
         with open(out_file_path, "wb") as f:
             pickle.dump(pi, f)
-
-    def print_report(self):
-        # print("nested quantifiers:")
-        # for qid, qt in self.quants.items():
-        #     if qt.parent is None:
-        #         continue
-        #     chain, cur = [qid], qt.parent
-        #     while cur is not None:
-        #         chain.append(cur)
-        #         cur = self.quants[cur].parent
-        #     print("\t".join(chain))
-        inst_freq = sorted(self.inst_freq.items(), key=lambda x: x[1], reverse=True)
-
-        print("instantiation frequency:")
-        for qid, count in inst_freq:
-            print(count, qid, end=" ")
-            if qid not in self.quants:
-                print("(unhandled)")
-                continue
-            parent = self.quants[qid].parent
-            if parent is not None:
-                print("(parent:", parent, end=")")
-            print("")
 
