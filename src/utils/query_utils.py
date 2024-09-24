@@ -161,7 +161,7 @@ def find_verus_procedure_name(file):
             or line.startswith('(set-info :comment ";; Function-Recommends')
             or line.startswith('(set-info :comment ";; Function-Expand-Errors')
         ):
-            return line[23:-3] + "\n" + prev[23:].split(" ")[0]
+            return line[23:-3] + "\n" + prev[23:].split(" ")[0][:-3]
         prev = line
     return None
 

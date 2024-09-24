@@ -56,15 +56,13 @@ class ProofInfo:
         self.errors = errors
         self.sk_funs = sk_funs
         self.used_qids = set(handled.keys()) | set(errors.keys())
+        self.parents = dict()
 
-    def get_inst_count(self, qid, transitive=False):
+    def get_inst_count(self, qid):
         if qid in self.handled:
             return len(self.handled[qid])
         if qid in self.errors:
-            count = self.errors[qid][1]
-            if transitive:
-                return count + self.get_inst_count(self.errors[qid][2], True)
-            return count
+            return self.errors[qid][1]
         return 0
 
     def has_qid(self, qid):
@@ -118,6 +116,8 @@ class Instantiater:
         # root qids with nested quantifiers
         self.root_qids = set()
         self.__init_qids()
+        
+        assert "user_vstd__set__axiom_set_remove_different_94" in self.root_qids
 
         # map qid to its quant-inst applications
         self.insts = dict()
@@ -127,12 +127,18 @@ class Instantiater:
 
     def __init_qids(self):
         for a in self.proc_solver.assertions():
-            # print(collapse_sexpr(a.sexpr()))
+            # print(collapse_sexpr(simplify(a).sexpr()))
             self.__load_quantifiers(a, None, a)
 
         for qid, qtf in self.quants.items():
             if qtf.parent is None:
                 self.root_qids.add(qid)
+
+        self.parents = dict()
+
+        for qid, qt in self.quants.items():
+            if qt.parent is not None:
+                self.parents[qid] = qt.parent
 
     def __load_quantifiers(self, exp: z3.ExprRef, parent, assertion):
         if is_const(exp) or is_var(exp):
@@ -148,17 +154,22 @@ class Instantiater:
         for c in exp.children():
             self.__load_quantifiers(c, parent, assertion)
 
-    def get_qid_inst_count(self, qid, insts, transitive=True):
-        if qid not in self.quants:
-            return 0
+    def get_root(self, qid):
+        while qid in self.parents:
+            qid = self.parents[qid]
+        return qid
 
-        count = len(insts[qid]) if qid in insts else 0
-        qt = self.quants[qid]
-
-        if not transitive or qt.parent is None:
-            return count
-
-        return count + self.get_qid_inst_count(qt.parent, insts, transitive)
+    def accumulate_inst_count(self, trace):
+        roots = dict()
+        # attribute the count to the root quantifier
+        for qid, count in trace.items():
+            root = self.get_root(qid)
+            if root not in roots:
+                roots[root] = dict()
+            roots[root][qid] = count
+        for qid in roots:
+            roots[qid]["isum"] = sum(roots[qid].values())
+        return roots
 
     def process(self):
         start = time.time()
@@ -198,12 +209,18 @@ class Instantiater:
             self.__match_qis(c)
 
     def __has_sk_fun(self, e):        
-        if is_const(e) or is_var(e):
-            return False
-
         oid = e.get_id()
         if oid in self.__visited:
             return self.__visited[oid]
+
+        if is_const(e):
+            if "$!skolem_" in str(e):
+                self.sk_funcs[str(e)] = e.decl()
+                return True
+            return False
+
+        if is_var(e):
+            return False
 
         if is_quantifier(e):
             res = self.__has_sk_fun(e.body())
@@ -231,16 +248,15 @@ class Instantiater:
         sk_funs = []
 
         for qid, insts in self.insts.items():
-            parent = self.quants[qid].parent
             if qid not in self.root_qids:
-                error_insts[qid] = (InstError.NON_ROOT, len(insts), parent)
+                error_insts[qid] = (InstError.NON_ROOT, len(insts))
                 continue
 
             qt = self.quants[qid]
             m = SubsMapper(qt)
 
             if m.unmapped != 0:
-                error_insts[qid] = (InstError.NON_ROOT, len(insts), parent)
+                error_insts[qid] = (InstError.UNMAPPED_VARS, len(insts))
                 continue
 
             asserts, skolem = [], False
@@ -248,14 +264,14 @@ class Instantiater:
             self.__visited = dict()
             for inst in insts:
                 bindings = m.map_inst(inst)
-                skolem = any(self.__has_sk_fun(b) for b in bindings.values())
+                skolem |= any(self.__has_sk_fun(b) for b in bindings.values())
                 a = qt.rewrite_as_let(bindings)
                 asserts.append(a)
 
             if not skolem:
                 handled[qid] = asserts
             else:
-                error_insts[qid] = (InstError.SKOLEM_FUNS, len(insts), parent)
+                error_insts[qid] = (InstError.SKOLEM_FUNS, len(insts))
 
         for _, sk_fun in self.sk_funcs.items():
             sk_funs.append(collapse_sexpr(sk_fun.sexpr()))

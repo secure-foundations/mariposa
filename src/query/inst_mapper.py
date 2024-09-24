@@ -94,14 +94,15 @@ def hack_quantifier_body(quant):
 def hack_quantifier_removal(expr, qid):
     expr = collapse_sexpr(expr)
     brackets = find_matching_brackets(expr)
-    best, depth = None, -1
+    found, depth = [], -1
     for s, e, d in brackets:
         if (qid + " " in expr[s:e] or qid + ")" in expr[s:e]) and d > depth:
             depth = d
-            best = (s, e)
-    s, e = best
-    return expr[:s] + " true" + expr[e:]
-
+            found += [(s, e, d)]
+    for (s, e, d) in found:
+        if d == depth -1:
+            return expr[:s] + "true" + expr[e:]
+    assert False
 
 class Quant:
     def __init__(self, quant, parent):

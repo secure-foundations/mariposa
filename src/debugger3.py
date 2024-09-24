@@ -28,10 +28,8 @@ CORE_TOTOAL_TIME_LIMIT_SEC = 120
 PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 TRACE_GOAL_COUNT = 4
-PROOF_GOAL_COUNT = 4
+PROOF_GOAL_COUNT = 1
 CORE_GOAL_COUNT = 4
-
-QID_TABLE_LIMIT = 50
 
 TRACES = "traces"
 MUTANTS = "mutants"
@@ -465,57 +463,83 @@ class Debugger3:
                 break
         return suppress_qids
 
+    def get_proof_inst_counts(self, qids):
+        result = dict()
+        for qid in qids:
+            counts = []
+            for pmi in self.proofs:
+                count = pmi.proof_info.get_inst_count(qid)
+                counts.append(count)
+            result[qid] = counts
+        return result
 
-    def debug_trace(self, tmi: MutantInfo):
+    def debug_trace(self, tmi: MutantInfo, table_limit):
         log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
         traced = tmi.get_qids()
         table = []
         inst_sums = [0] * (len(self.proofs) + 1)
+        assert len(self.proofs) != 0
+        ins = Instantiater(tmi.mut_path)
+        accu = ins.accumulate_inst_count(traced)
+        accu = dict(sorted(accu.items(), key=lambda x: x[1]["isum"], reverse=True))
+        pcounts = self.get_proof_inst_counts(traced.keys())
 
-        for qid in traced:
-            row = [qid, traced[qid]]
-            inst_sums[0] += traced[qid]
+        for rid, entry in accu.items():
+            row = [rid, entry["isum"]]
 
-            for i, pmi in enumerate(self.proofs):
-                count = pmi.proof_info.get_inst_count(qid)
-                row += [count]
-                inst_sums[i + 1] += count
+            if len(entry) == 2:
+                table.append(row + pcounts[rid])
+                continue
 
-            if len(table) < QID_TABLE_LIMIT:
+            table.append(row)
+            table.append(["- [root]", entry[rid]] + pcounts[rid])
+    
+            for qid in entry:
+                if qid == "isum" or qid == rid:
+                    continue
+                row = ["- " + qid, entry[qid]] + pcounts[qid]
                 table.append(row)
+
+        #     row = [qid, tc]
+        #     inst_sums[0] += tc
+        #         inst_sums[i + 1] += count
+
+            if len(table) >= table_limit:
+                break
 
         headers = ["QID", "T"] + [f"P{i}" for i in range(len(self.proofs))]
 
-        if len(traced) > QID_TABLE_LIMIT:
+        if len(accu) > table_limit:
             table.append(
-                [f"... elided {len(traced) - QID_TABLE_LIMIT} rows ..."]
+                [f"... elided {len(accu) - table_limit} root qid rows ..."]
                 + ["..."] * (len(self.proofs) + 1)
             )
 
-        table.append(["total"] + inst_sums)
+        # table.append(["total"] + inst_sums)
 
         print(tabulate(table, headers=headers))
 
-        used = set()
-        for pmi in self.proofs:
-            for qid in pmi.proof_info.used_qids:
-                used.add(qid)
-        table = []
+        # used = set()
+        # for pmi in self.proofs:
+        #     for qid in pmi.proof_info.used_qids:
+        #         used.add(qid)
+        # table = []
 
-        for qid in used:
-            if qid in traced:
-                continue
-            table.append(
-                [qid, 0]
-                + [
-                    pmi.proof_info.get_inst_count(qid)
-                    for pmi in self.proofs
-                ]
-            )
+        # for qid in used:
+        #     if qid in traced:
+        #         continue
+        #     table.append(
+        #         [qid, 0]
+        #         + [
+        #             pmi.proof_info.get_inst_count(qid)
+        #             for pmi in self.proofs
+        #         ]
+        #     )
 
-        if len(table) > 0:
-            log_info(f"listing untraced qids:")
-            print(tabulate(table, headers=headers))
+        # if len(table) > 0:
+        #     log_info(f"listing untraced qids:")
+        #     headers = ["QID"] + [f"P{i}" for i in range(len(self.proofs))]
+        #     print(tabulate(table, headers=headers))
 
     def print_status(self):
         table = []
@@ -601,18 +625,17 @@ if __name__ == "__main__":
     # pi.print_report()
 
     dbg = Debugger3(sys.argv[1], False)
-    dbg.print_status()
+    # dbg.print_status()
     tmi = dbg.get_candidate_trace()
-    dbg.debug_trace(tmi)
-    remove_ids = dbg.suppress_top_n(tmi, 3, True)
+    dbg.debug_trace(tmi, 10)
+    remove_ids = dbg.suppress_top_n(tmi, 3)
 
     remove_ids = set([
+        "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
+        "user_vstd__set__axiom_set_ext_equal_100",
+        "internal_lib!types.page_organization_used_queues_match.?_definition",
     ])
 
     inst_ids = set([
-        # "internal_core!option.Option./Some_constructor_definition",
-        # "internal_lib!page_organization.PageOrg.impl&__4.good_range0.?_definition",
-        # "internal_lib!page_organization.PageOrg.impl&__4.good_range0.?_definition",
-        # "internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definition",
     ])
     dbg.output_query(sys.argv[2], remove_ids, inst_ids)
