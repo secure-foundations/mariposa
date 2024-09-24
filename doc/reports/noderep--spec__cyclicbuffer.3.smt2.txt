@@ -1,0 +1,35 @@
+noderep--spec__cyclicbuffer.3.smt2
+dbg/noderep--spec__cyclicbuffer.3.smt2/orig.smt2
+traced instantiations:
+QID                                                                   T    P0    P1    P2    P3
+------------------------------------------------------------------  ---  ----  ----  ----  ----
+prelude_fuel_defaults                                                95     5     5     5     5
+prelude_unbox_box_int                                                 5     2     2     2     2
+prelude_eucmod                                                        4     4     4     4     4
+prelude_has_type_nat                                                  4     0     0     0     0
+prelude_mod_unsigned_in_bounds                                        4     0     0     0     0
+prelude_unbox_int                                                     4     0     0     0     0
+prelude_box_unbox_bool                                                4     0     0     0     0
+prelude_box_unbox_nat                                                 4     0     0     0     0
+prelude_nat_clip                                                      3     2     2     2     2
+prelude_unbox_box_bool                                                3     0     0     0     0
+prelude_has_type_bool                                                 3     0     0     0     0
+internal_lib!spec.cyclicbuffer.log_entry_idx.?_definition             2     2     2     2     2
+internal_lib!spec.cyclicbuffer.log_entry_alive_value.?_definition     2     2     2     2     2
+internal_vstd__map__Map<nat./bool.>_has_type_always_definition        2     0     0     0     0
+internal_vstd__map__Map<nat./bool.>_unbox_axiom_definition            2     0     0     0     0
+prelude_add                                                           2     1     1     1     1
+internal_lib!spec.cyclicbuffer.log_entry_idx.?_pre_post_definition    2     0     0     0     0
+internal_vstd!map.impl&__0.index.?_pre_post_definition                2     0     0     0     0
+prelude_div_unsigned_in_bounds                                        2     0     0     0     0
+prelude_eucdiv                                                        2     2     2     2     2
+internal_lib!spec.cyclicbuffer.log_entry_is_alive.?_definition        2     2     2     2     2
+prelude_u_clip                                                        1     1     1     1     1
+prelude_has_type_int                                                  1     0     0     0     0
+prelude_mul_nats                                                      1     1     1     1     1
+prelude_box_unbox_int                                                 1     1     1     1     1
+internal_vstd__map__Map<nat./bool.>_box_axiom_definition              1     0     0     0     0
+internal_lib!spec.cyclicbuffer.add_buffersize.?_definition            1     1     1     1     1
+prelude_mul                                                           1     1     1     1     1
+prelude_u_inv                                                         1     0     0     0     0
+total                                                               161    27    27    27    27
