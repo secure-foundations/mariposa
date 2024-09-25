@@ -6,7 +6,7 @@ import pickle
 import subprocess
 import time
 from base.solver import RCode
-from query.inst_mapper import hack_quantifier_removal
+from query.inst_mapper import collapse_sexpr, hack_quantifier_removal
 from query.trace_analyzer import TraceAnalzyer
 from utils.database_utils import table_exists
 import multiprocessing
@@ -17,7 +17,7 @@ from base.solver import output_as_rcode
 from utils.query_utils import Mutation, emit_mutant_query, find_verus_procedure_name, parse_trace
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from tabulate import tabulate
-from query.instantiater import Instantiater, ProofInfo
+from query.instantiater import InstError, Instantiater, ProofInfo
 
 PROC_COUNT = 4
 MUTANT_COUNT = 8
@@ -30,7 +30,7 @@ PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 TRACE_GOAL_COUNT = 4
 PROOF_GOAL_COUNT = 1
-CORE_GOAL_COUNT = 4
+CORE_GOAL_COUNT = 2
 
 TRACES = "traces"
 MUTANTS = "mutants"
@@ -460,7 +460,7 @@ class Debugger3:
         pins = [p.proof_info for p in self.proofs]
         ta = TraceAnalzyer(tmi.mut_path, pins)
         report = ta.get_report(traced, table_limit)
-        
+
         # verus_proc = find_verus_procedure_name(self.orig_path)
         verus_proc = "unknown"
 
@@ -484,8 +484,8 @@ class Debugger3:
         traced = tmi.get_qids()
         pins = [p.proof_info for p in self.proofs]
         ta = TraceAnalzyer(tmi.mut_path, pins)
-        return ta.select_qids_v1(traced, 5)
-        # return ta.select_qids_v2(traced, 5)
+        # return ta.select_qids_v1(traced, 5)
+        return ta.select_qids_v2(traced, 5)
 
     def print_status(self):
         table = []
@@ -520,13 +520,18 @@ class Debugger3:
             if qid in pi.errors:
                 msg = pi.errors[qid][0]
                 log_warn(f"error insting {qid}: {msg}")
+                if msg == InstError.SKOLEM_FUNS:
+                    insts = pi.handled[qid]
+                    for inst in insts:
+                        # print(collapse_sexpr(ins))
+                        inserted.append(inst)
                 continue
             if qid in pi.handled:
                 insts = pi.handled[qid]
                 log_info(f"using {len(insts)} instances for {qid}")
                 suppressed.add(qid)
                 for inst in insts:
-                    inserted.append(inst)                
+                    inserted.append(inst)
             else:
                 log_warn(f"no instances for {qid}")
                 continue
@@ -579,13 +584,18 @@ if __name__ == "__main__":
     remove_ids = dbg.select_suppress_qids(tmi)
 
     # remove_ids = set([
-    #     "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-    #     "user_vstd__set__axiom_set_ext_equal_100",
-    #     "internal_lib!types.page_organization_used_queues_match.?_definition",
+    #     # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
+    #     # "user_vstd__set__axiom_set_ext_equal_100",
+    #     # "internal_lib!types.page_organization_used_queues_match.?_definition",
     # ])
 
     inst_ids = set([
-    #     "internal_lib!types.impl&__21.wf_main.?_definition"
+        # "user_lib__types__Local__wf_main_172",
+        # "user_lib__types__Local__wf_main_173",
+        # "user_lib__types__Local__wf_main_174",
+        # "user_lib__types__Local__wf_main_175",
+        # "user_lib__types__Local__wf_main_176",
+        # "internal_lib!types.impl&__21.wf_main.?_definition"
     ])
 
     dbg.output_query(sys.argv[2], remove_ids, inst_ids)

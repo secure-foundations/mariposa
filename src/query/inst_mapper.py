@@ -1,5 +1,7 @@
 from z3 import *
 
+from utils.system_utils import log_warn
+
 
 def format_expr(e, depth=0, offset=0):
     if is_const(e):
@@ -88,8 +90,6 @@ def hack_quantifier_body(quant):
     quant = collapse_sexpr(quant.sexpr())
     args = " ".join(args)
     expected = "(forall (" + args + ")"
-    # print(quant)
-    # print(expected)
     assert quant.startswith(expected)
     func_body = quant[len(expected) : -1].strip()
     assert func_body.startswith("(!")
@@ -144,6 +144,8 @@ class Quant:
                 # create let bindings for the quantified variables
                 lets = []
                 for idx in range(e.num_vars()):
+                    if idx not in subs:
+                        print(self.qid, idx)
                     lets.append(f"({e.var_name(idx)} {subs[idx].sexpr()})")
                 lets = " ".join(lets)
                 lets = f"(let\n({lets}) {self.__qbody_str})"
@@ -161,6 +163,7 @@ class SubsMapper:
     def __init__(self, qt: Quant):
         self.app_map = dict()
         self.unmapped = 0
+        self.qid = qt.qid
 
         self.num_vars = qt.quant.num_vars()
         self.__visited = set()
@@ -220,32 +223,36 @@ class SubsMapper:
         for c in exp.children():
             self.__find_apps(c, offset)
 
-    def _match_vars(self, exp, var_bindings):
-        oid = exp.get_id()
-        if oid in self.__visited:
-            return
-        self.__visited.add(oid)
-
+    def _match_vars(self, exp, bindings):
         if is_const(exp) or is_var(exp):
             return
 
         if is_quantifier(exp):
-            self._match_vars(exp.body(), var_bindings)
+            self._match_vars(exp.body(), bindings)
             return
 
         fun = exp.decl().name()
+        # debug = fun == "%Poly%zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster."
 
         if fun in self.app_map:
             idxs = self.app_map[fun]
             for i, j in idxs:
-                var_bindings[i] = exp.children()[j]
+                bindings[i] = exp.children()[j]
+            # if debug:
+            #     print("what????", id(bindings))
+            #     assert 42 in bindings
 
         for c in exp.children():
-            self._match_vars(c, var_bindings)
+            self._match_vars(c, bindings)
 
     def map_inst(self, exp):
         assert self.unmapped == 0
-        self.__visited = set()
         var_bindings = dict()
         self._match_vars(exp, var_bindings)
+        failed = False
+        for i in range(self.num_vars):
+            failed |= i not in var_bindings
+        if failed:
+            log_warn("failed to map all variables when insting " + self.qid)
+            return None
         return var_bindings

@@ -81,9 +81,9 @@ class ProofInfo:
         print(tabulate(table, headers=["qid", "insts"]))
         log_info("listing errors:")
         table = []
-        for qid, (msg, count, parent) in self.errors.items():
-            table.append((qid, msg, count, parent))
-        print(tabulate(table, headers=["qid", "error", "count", "parent"]))
+        for qid, (msg, count) in self.errors.items():
+            table.append((qid, msg, count))
+        print(tabulate(table, headers=["qid", "error", "count"]))
         log_info("listing skolem functions:")
         for sk_fun in self.sk_funs:
             print(sk_fun)
@@ -97,6 +97,7 @@ class InstError(Enum):
     UNMAPPED_VARS = 1
     NON_ROOT = 2
     SKOLEM_FUNS = 3
+    INST_ERROR = 4
 
 class QueryLoader:
     def __init__(self, in_file_path):
@@ -253,18 +254,25 @@ class Instantiater(QueryLoader):
                 continue
 
             asserts, skolem = [], False
+            error = False
 
             self.__visited = dict()
+
             for inst in insts:
                 bindings = m.map_inst(inst)
+                if bindings is None:
+                    error = True
+                    continue
                 skolem |= any(self.__has_sk_fun(b) for b in bindings.values())
                 a = qt.rewrite_as_let(bindings)
                 asserts.append(a)
 
-            if not skolem:
-                handled[qid] = asserts
-            else:
+            if error:
+                error_insts[qid] = (InstError.INST_ERROR, len(insts))
+            elif skolem:
                 error_insts[qid] = (InstError.SKOLEM_FUNS, len(insts))
+
+            handled[qid] = asserts
 
         for _, sk_fun in self.sk_funcs.items():
             sk_funs.append(collapse_sexpr(sk_fun.sexpr()))

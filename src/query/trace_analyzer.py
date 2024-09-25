@@ -166,9 +166,9 @@ class TraceAnalzyer(QueryLoader):
         for rid, tg in t_freq:
             if tg.total_count == 0:
                 continue
-            ptotals = any(self.get_proof_inst_counts(rid))
+            necessary = all([c != 0 for c in self.get_proof_inst_counts(rid)])
 
-            if ptotals == 0:
+            if not necessary:
                 selected.add(rid)
 
             if len(selected) >= top_n:
