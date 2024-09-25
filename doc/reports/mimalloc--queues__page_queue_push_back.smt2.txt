@@ -1,0 +1,867 @@
+base name:
+mimalloc--queues__page_queue_push_back.smt2
+
+query path:
+dbg/mimalloc--queues__page_queue_push_back.smt2/orig.smt2
+
+trace path:
+dbg/mimalloc--queues__page_queue_push_back.smt2/traces/reseed.7848911614489877186
+
+10172 unknown
+
+verus procedure:
+Function-Def lib::queues::page_queue_push_back
+verus-mimalloc/queues.rs:402
+
+traced instantiations:
+QID                                                                                  T    P0    P1    P2    P3
+------------------------------------------------------------------------------  ------  ----  ----  ----  ----
+internal_core__option__Option_box_axiom_definition                                8541   134   129   137   129
+prelude_unbox_box_int                                                             7188    29    28    30    28
+internal_core!option.Option./Some/0_invariant_definition                          7158    40    44    42    44
+internal_core!option.Option./Some_constructor_definition                          6989     7     7     7     7
+internal_core__option__Option_unbox_axiom_definition                              6652     0     0     0     0
+internal_vstd__set__Set<int.>_box_axiom_definition                                6348     0     0     0     0
+internal_core!option.Option./Some/0_accessor_definition                           6047    69    69    70    69
+internal_vstd!map.impl&__0.index.?_pre_post_definition                            4886    39    41    38    41
+prelude_add                                                                       3710     5     5     5     5
+internal_vstd__set__Set<int.>_unbox_axiom_definition                              3419     0     0     0     0
+internal_vstd!set.impl&__0.subset_of.?_definition                                 3386
+- [root]                                                                          2753     0     0     0     0
+- user_vstd__set__impl&%0__subset_of_118                                           633     0     0     0     0
+prelude_u_inv                                                                     3285     1     1     0     1
+internal_vstd!cell.impl&__2.view.?_pre_post_definition                            3021    16    16    15    16
+internal_vstd__cell__PointsToData_box_axiom_definition                            2982    96    95    95    95
+internal_vstd!cell.PointsToData./PointsToData/value_accessor_definition           2809    66    64    65    64
+internal_vstd!cell.PointsToData./PointsToData_constructor_definition              2758     0     0     0     0
+internal_vstd__set__Set<int.>_has_type_always_definition                          2745     0     0     0     0
+internal_vstd!cell.PointsToData./PointsToData/pcell_accessor_definition           2660    31    29    29    29
+internal_lib!types.impl&__21.wf_main.?_definition                                 2636
+- [root]                                                                           124     2     2     2     2
+- user_lib__types__Local__wf_main_162                                              566     6     6     7     6
+- user_lib__types__Local__wf_main_165                                              407     1     1     1     1
+- user_lib__types__Local__wf_main_161                                              566     7     7     8     7
+- user_lib__types__Local__wf_main_163                                              566     2     2     2     2
+- user_lib__types__Local__wf_main_164                                              407     1     1     1     1
+internal_vstd__cell__PointsToData_unbox_axiom_definition                          2522     0     0     0     0
+internal_vstd!cell.PointsToData./PointsToData/value_invariant_definition          2441    16    16    15    16
+internal_lib!types.impl&__21.page_organization_valid.?_definition                 2427
+- [root]                                                                            55     2     2     2     2
+- user_lib__types__Local__page_organization_valid_158                              410     5     3     4     3
+- user_lib__types__Local__page_organization_valid_159                              410     3     3     3     3
+- user_lib__types__Local__page_organization_valid_157                              566     9     9    10     9
+- user_lib__types__Local__page_organization_valid_160                              420     7     7     7     7
+- user_lib__types__Local__page_organization_valid_156                              566     9     9    10     9
+internal_lib!page_organization.PageData./PageData_constructor_definition          2093     4     4     4     4
+user_vstd__set__axiom_set_ext_equal_101                                           2048
+- [root]                                                                           406     3     3     4     3
+- user_vstd__set__axiom_set_ext_equal_100                                         1642     0     0     0     0
+user_vstd__set__axiom_set_insert_different_91                                     2023    46    43    49    43
+user_vstd__map__axiom_map_insert_different_79                                     1752    71    71    80    71
+internal_vstd!map.impl&__0.dom.?_pre_post_definition                              1701    18    18    18    18
+internal_lib__tokens__PageId_unbox_axiom_definition                               1700    27    25    27    25
+internal_vstd!seq.Seq.index.?_pre_post_definition                                 1669    19    18    20    18
+internal_lib__commit_mask__CommitMask_box_axiom_definition                        1611     0     0     0     0
+internal_lib!tokens.PageId./PageId/segment_id_invariant_definition                1558     0     0     0     0
+prelude_mul_nats                                                                  1406     3     3     3     3
+prelude_mul                                                                       1406     6     6     6     6
+internal_lib__tokens__SegmentId_unbox_axiom_definition                            1402     0     0     0     0
+internal_lib!tokens.PageId./PageId/idx_invariant_definition                       1345     8     9     9     9
+internal_lib__atomic_ghost_modified__Duplicable_box_axiom_definition              1246     4     4     4     4
+prelude_box_unbox_int                                                             1239     7     6     8     6
+internal_vstd!set.impl&__0.union.?_pre_post_definition                            1173     0     0     0     0
+internal_lib!atomic_ghost_modified.impl&__0.view.?_definition                     1152     3     3     3     3
+internal_lib!atomic_ghost_modified.impl&__0.view.?_pre_post_definition            1152     0     0     0     0
+internal_lib!atomic_ghost_modified.Dupe.impl&__4.val.?_pre_post_definition        1149     0     0     0     0
+internal_lib!atomic_ghost_modified.Duplicable./Duplicable/inst_accessor_def...    1149     3     3     3     3
+internal_crate__fun__1_box_axiom_definition                                       1148     0     0     0     0
+prelude_mk_fun                                                                    1148     0     0     0     0
+prelude_unbox_box_bool                                                            1143     6     6     5     6
+internal_vstd!set.impl&__0.new.?_pre_post_definition                              1143     0     0     0     0
+internal_vstd__ptr__PPtr<lib!types.Page.>_box_axiom_definition                    1139     4     4     4     4
+user_vstd__set__axiom_set_remove_different_94                                     1135     9     9    10     9
+internal_lib__atomic_ghost_modified__Cancellable__b_token_data_box_axiom_de...    1114     0     0     0     0
+internal_lib!atomic_ghost_modified.Cancellable.b_token_data./b_token_data/v...    1114     0     0     0     0
+internal_tuple__3./tuple__3/2_accessor_definition                                 1114     0     0     0     0
+internal_lib__atomic_ghost_modified__Cancellable__b_box_axiom_definition          1114     0     0     0     0
+internal_lib!atomic_ghost_modified.Cancellable.b_token_data./b_token_data/i...    1114     0     0     0     0
+internal_tuple__3./tuple__3/0_accessor_definition                                 1114     2     2     2     2
+internal_tuple__3./tuple__3/1_accessor_definition                                 1114     0     0     0     0
+internal_vstd!invariant.impl&__0.constant.?_pre_post_definition                   1114     0     0     0     0
+internal_vstd!seq.Seq.len.?_pre_post_definition                                   1106     5     4     5     4
+prelude_has_type_int                                                              1090    11    10    12    10
+internal_lib!page_organization.PageOrg.impl&__4.page_id_domain.?_definition       1078
+- [root]                                                                            20     2     2     2     2
+- user_lib__page_organization__PageOrg__State__page_id_domain_127                 1058    12    12    12    12
+internal_lib!page_organization.PageOrg.impl&__4.data_for_unused_header.?_de...    1078
+- [root]                                                                            20     0     0     0     0
+- user_lib__page_organization__PageOrg__State__data_for_unused_header_138         1058     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.public_invariant.?_definiti...    1078
+- [root]                                                                            20     2     2     2     2
+- user_lib__page_organization__PageOrg__State__public_invariant_126               1058     8     8     8     8
+internal_lib!page_organization.PageOrg.impl&__4.data_for_used_header.?_defi...    1078
+- [root]                                                                            20     2     1     1     1
+- user_lib__page_organization__PageOrg__State__data_for_used_header_133           1058     5     4     4     4
+internal_lib!page_organization.PageOrg.impl&__4.end_is_unused.?_definition        1078
+- [root]                                                                            20     0     0     0     0
+- user_lib__page_organization__PageOrg__State__end_is_unused_129                  1058     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.count_off0.?_definition           1078
+- [root]                                                                            20     1     1     1     1
+- user_lib__page_organization__PageOrg__State__count_off0_128                     1058     2     2     2     2
+internal_vstd__cell__PointsTo<vstd!ptr.PPtr<lib!types.Page.>.>_box_axiom_de...    1063     8     8     8     8
+internal_lib!page_organization.PageData./PageData/dlist_entry_accessor_defi...    1053     8     5     7     5
+internal_lib!layout.is_page_ptr.?_definition                                      1032     6     6     6     6
+prelude_has_type_nat                                                              1029     0     0     0     0
+internal_lib!page_organization.PageData./PageData/dlist_entry_invariant_def...    1029     2     2     2     2
+internal_lib!page_organization.PageData./PageData/full_accessor_definition         995     8    11    11    11
+internal_lib!page_organization.is_used_header.?_definition                         991     4     3     3     3
+prelude_box_unbox_bool                                                             990     3     4     4     4
+internal_lib__atomic_ghost_modified__Duplicable_unbox_axiom_definition             990     0     0     0     0
+internal_lib!atomic_ghost_modified.Duplicable./Duplicable_constructor_defin...     990     0     0     0     0
+internal_lib!atomic_ghost_modified.Duplicable./Duplicable/inst_invariant_de...     988     0     0     0     0
+internal_lib!tokens.SegmentId./SegmentId_constructor_definition                    988     0     0     0     0
+internal_lib!page_organization.PageData./PageData/is_used_accessor_definiti...     977    16    16    17    16
+internal_lib!page_organization.PageData./PageData/full_invariant_definition        968     4     4     4     4
+internal_tuple__3./tuple__3_constructor_definition                                 952     0     0     0     0
+internal_tuple__3./tuple__3/0_invariant_definition                                 952     0     0     0     0
+internal_tuple__3./tuple__3/1_invariant_definition                                 952     0     0     0     0
+internal_lib__atomic_ghost_modified__Cancellable__Instance_unbox_axiom_defi...     952     0     0     0     0
+internal_crate__tuple__3_box_axiom_definition                                      952     0     0     0     0
+internal_tuple__3./tuple__3/2_invariant_definition                                 952     0     0     0     0
+internal_crate__tuple__3_unbox_axiom_definition                                    952     0     0     0     0
+internal_tuple__2./tuple__2/0_invariant_definition                                 951     0     0     1     0
+internal_tuple__2./tuple__2/1_invariant_definition                                 951     0     0     0     0
+internal_lib__atomic_ghost_modified__Cancellable__Instance_has_type_always_...     951     0     0     0     0
+internal_lib__atomic_ghost_modified__Cancellable__Instance_box_axiom_defini...     951     0     0     0     0
+internal_lib__tokens__Mim__Instance_unbox_axiom_definition                         951     1     1     1     1
+internal_lib!page_organization.PageData./PageData/offset_accessor_definitio...     950    15    14    14    14
+internal_lib!page_organization.PageData./PageData/count_accessor_definition        917     9    10    10    10
+internal_lib!layout.is_page_ptr_opt.?_definition                                   914    10     9     9     9
+internal_vstd!ptr.impl&__2.view.?_pre_post_definition                              883     5     7     6     7
+internal_vstd__cell__PCell<vstd!ptr.PPtr<lib!types.Page.>.>_box_axiom_defin...     882     0     0     0     0
+internal_vstd__ptr__PointsToData_box_axiom_definition                              882    18    18    18    18
+internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_used2.?_defini...     880
+- [root]                                                                            20     2     2     2     2
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_used2_145              185     5     4     5     4
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_used2_144              675     6     6     7     6
+internal_lib!page_organization.PageData./PageData/offset_invariant_definiti...     858     1     1     1     1
+internal_lib!page_organization.PageData./PageData/page_header_kind_accessor...     856    12    12    12    12
+internal_lib!page_organization.PageData./PageData/count_invariant_definitio...     849     4     4     4     4
+internal_lib__page_organization__PageData_unbox_axiom_definition                   848     5     7     7     7
+prelude_sub                                                                        843     4     4     5     4
+internal_vstd!ptr.PointsToData./PointsToData/value_accessor_definition             836    12    12    12    12
+internal_lib!types.impl&__21.commit_mask.?_definition                              829     4     4     4     4
+internal_vstd!ptr.PointsToData./PointsToData/pptr_accessor_definition              828     2     2     2     2
+internal_lib!page_organization.PageOrg.impl&__4.count_is_right.?_definition        826
+- [root]                                                                            20     0     0     0     0
+- user_lib__page_organization__PageOrg__State__count_is_right_130                  806     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definitio...     826
+- [root]                                                                            20     0     0     0     0
+- user_lib__page_organization__PageOrg__State__attached_ranges_146                 806     0     0     0     0
+internal_lib!types.impl&__21.decommit_mask.?_definition                            815     4     4     4     4
+internal_lib!tokens.PageId./PageId_constructor_definition                          812     0     0     0     0
+internal_tuple__4./tuple__4/0_accessor_definition                                  805    10    10     9    10
+internal_lib!linked_list.impl&__2.len.?_pre_post_definition                        802     0     0     0     0
+internal_lib!page_organization.PageData./PageData/page_header_kind_invarian...     801     4     4     4     4
+internal_tuple__2./tuple__2/1_accessor_definition                                  797     5     5     5     5
+internal_lib!types.PageInner./PageInner/flags1_invariant_definition                797     0     0     0     0
+internal_tuple__2./tuple__2/0_accessor_definition                                  795     1     1     2     1
+internal_lib!os_mem_util.impl&__1.mem_chunk_good.?_definition                      795     0     0     0     0
+internal_lib!os_mem_util.mem_chunk_good1.?_definition                              795     0     0     0     0
+internal_lib!types.PageInner./PageInner/flags1_accessor_definition                 793     0     0     0     0
+internal_lib__linked_list__LL_box_axiom_definition                                 792     2     2     2     2
+internal_tuple__2./tuple__2_constructor_definition                                 789     0     0     0     0
+internal_tuple__4./tuple__4/2_accessor_definition                                  789     8     9     8     9
+internal_lib__page_organization__PageData_box_axiom_definition                     785     8     8     7     8
+internal_tuple__4./tuple__4/3_accessor_definition                                  781     8     9     8     9
+prelude_box_unbox_nat                                                              778     4     4     4     4
+prelude_unbox_int                                                                  778     0     0     1     0
+internal_lib!types.Local./Local_constructor_definition                             770     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.ucount.?_pre_post_definitio...     763     0     0     0     0
+internal_vstd!set_lib.set_int_range.?_definition                                   762     0     0     0     0
+internal_lib!flags.impl&__0.in_full.?_definition                                   761     0     0     0     0
+internal_tuple__4./tuple__4/1_accessor_definition                                  756    15    16    15    16
+internal_lib!atomic_ghost_modified.AtomicUsize./AtomicUsize/not_cancelled_t...     733     0     0     0     0
+internal_lib!atomic_ghost_modified.impl&__4.well_formed.?_definition               733     0     0     0     0
+internal_lib!atomic_ghost_modified.AtomicUsize./AtomicUsize/atomic_inv_acce...     733     0     0     0     0
+internal_lib!atomic_ghost_modified.impl&__4.constant.?_pre_post_definition         733     2     2     2     2
+internal_lib__atomic_ghost_modified__AtomicUsize_box_axiom_definition              733     0     0     0     0
+internal_lib!atomic_ghost_modified.AtomicUsize./AtomicUsize/cancellable_ins...     733     0     0     0     0
+internal_lib!atomic_ghost_modified.impl&__4.constant.?_definition                  733     2     2     2     2
+internal_lib!atomic_ghost_modified.AtomicUsize./AtomicUsize/patomic_accesso...     733     0     0     0     0
+internal_vstd__atomic__PAtomicUsize_box_axiom_definition                           733     0     0     0     0
+internal_lib!linked_list.impl&__2.block_size.?_pre_post_definition                 726     0     0     0     0
+internal_lib!page_organization.PageHeaderKind./Normal/0_accessor_definition        725     3     3     3     3
+internal_crate__tuple__4_box_axiom_definition                                      723    14    13    13    13
+internal_lib!linked_list.impl&__2.page_id.?_pre_post_definition                    706     0     0     0     0
+internal_lib!linked_list.impl&__2.heap_id.?_pre_post_definition                    700     0     0     0     0
+internal_lib!page_organization.PageHeaderKind./Normal/1_accessor_definition        694     3     3     3     3
+internal_vstd!ptr.PointsToData./PointsToData_constructor_definition                691     0     0     0     0
+internal_vstd__ptr__PointsToData_unbox_axiom_definition                            691     0     0     0     0
+internal_vstd!ptr.PointsToData./PointsToData/value_invariant_definition            688     5     7     6     7
+internal_lib__page_organization__PageHeaderKind_unbox_axiom_definition             677     3     3     3     3
+internal_crate__tuple__2_box_axiom_definition                                      667     5     5     5     5
+internal_crate__tuple__2_unbox_axiom_definition                                    651     0     0     0     0
+internal_vstd__set__Set<lib!tokens.PageId.>_unbox_axiom_definition                 647     1     1     1     1
+internal_lib!types.PageLocalAccess./PageLocalAccess/inner_accessor_definiti...     646    23    22    24    22
+internal_lib!types.page_organization_used_queues_match.?_definition                637
+- [root]                                                                            13     4     4     4     4
+- user_lib__types__page_organization_used_queues_match_152                         312     5     5     5     5
+- user_lib__types__page_organization_used_queues_match_153                         312     5     5     5     5
+internal_lib!atomic_ghost_modified.AtomicUsize./AtomicUsize_constructor_def...     630     0     0     0     0
+internal_lib!atomic_ghost_modified.AtomicUsize./AtomicUsize/atomic_inv_inva...     630     0     0     0     0
+internal_lib__atomic_ghost_modified__AtomicUsize_unbox_axiom_definition            630     0     0     0     0
+internal_lib__types__PageInner_box_axiom_definition                                626    10     8    10     8
+internal_lib!types.page_organization_pages_match.?_definition                      624
+- [root]                                                                            29     4     3     4     3
+- user_lib__types__page_organization_pages_match_154                               595     8     9    10     9
+internal_lib!types.PageSharedAccess./PageSharedAccess/points_to_accessor_de...     620    23    23    22    23
+internal_lib!types.PageLocalAccess./PageLocalAccess/count_accessor_definiti...     610    22    21    22    21
+internal_lib!types.PageInner./PageInner_constructor_definition                     609     0     0     0     0
+internal_core!option.Option./None_constructor_definition                           608     0     0     0     0
+internal_vstd__cell__PointsTo<lib!types.PageInner.>_box_axiom_definition           607     4     4     4     4
+internal_lib__types__PageLocalAccess_box_axiom_definition                          604    11    11    11    11
+internal_lib!types.PageLocalAccess./PageLocalAccess/next_accessor_definitio...     595    20    18    18    18
+internal_lib!types.PageLocalAccess./PageLocalAccess/prev_accessor_definitio...     595    20    18    18    18
+internal_lib__types__PageLocalAccess_has_type_always_definition                    582     4     4     4     4
+prelude_has_type_bool                                                              577     2     2     2     2
+internal_lib!types.Local./Local/pages_accessor_definition                          570     5     5     5     5
+internal_lib!tokens.PageId./PageId/segment_id_accessor_definition                  566     0     0     0     0
+internal_lib__types__PageLocalAccess_unbox_axiom_definition                        563    16    17    17    17
+internal_lib!page_organization.PageOrg.impl&__4.inv_used.?_definition              559
+- [root]                                                                            20     1     1     1     1
+- user_lib__page_organization__PageOrg__State__inv_used_137                        539     1     1     1     1
+internal_lib!types.PageQueue./PageQueue/block_size_accessor_definition             559    13    13    13    13
+internal_lib!types.Local./Local/heap_accessor_definition                           558    12    12    13    12
+internal_lib!types.Local./Local/thread_token_accessor_definition                   555     6     6     5     6
+internal_lib__types__PageSharedAccess_box_axiom_definition                         553    17    17    17    17
+internal_lib!types.Local./Local/instance_accessor_definition                       543     6     6     5     6
+internal_lib!types.Local./Local/page_organization_accessor_definition              541     8     8     8     8
+internal_lib!types.Page./Page/offset_accessor_definition                           536     0     0     0     0
+internal_lib__types__Page_box_axiom_definition                                     535    11     9    10     9
+internal_lib!tokens.PageId./PageId/idx_accessor_definition                         535     6     6     6     6
+internal_lib__tokens__PageId_box_axiom_definition                                  529     6     6     6     6
+user_vstd__map__axiom_map_insert_domain_77                                         527    15    15    18    15
+internal_vstd!set.impl&__0.insert.?_pre_post_definition                            527     0     0     0     0
+internal_lib!layout.page_header_start.?_definition                                 526     0     0     0     0
+internal_lib!page_organization.DlistHeader./DlistHeader_constructor_definit...     526     3     3     3     3
+internal_lib!types.Page./Page/offset_invariant_definition                          524     0     0     0     0
+internal_lib__tokens__SegmentId_box_axiom_definition                               523     0     0     0     0
+internal_lib!types.Local./Local/thread_id_accessor_definition                      522    15    15    15    15
+internal_lib__types__PageInner_unbox_axiom_definition                              517    10    10     9    10
+internal_lib!types.SegmentLocalAccess./SegmentLocalAccess/mem_accessor_defi...     511     2     2     2     2
+prelude_has_type_uint                                                              511     0     0     0     0
+internal_lib!types.Local./Local/segments_accessor_definition                       506     5     5     4     5
+internal_lib!types.Local./Local/unused_pages_accessor_definition                   504     5     5     5     5
+internal_lib__types__Local_box_axiom_definition                                    503    12    12    13    12
+internal_ens__lib!os_mem_util.preserves_mem_chunk_good._definition                 503
+- [root]                                                                            68     2     2     2     2
+- user_lib__os_mem_util__preserves_mem_chunk_good_173                              435     2     2     2     2
+internal_lib!types.Local./Local/page_empty_global_accessor_definition              503     7     7     7     7
+internal_lib__os_mem__MemChunk_box_axiom_definition                                503     0     0     0     0
+internal_lib!types.PageQueue./PageQueue/last_accessor_definition                   500     7     7     7     7
+internal_lib!types.Local./Local/heap_id_accessor_definition                        489     8     8     9     8
+internal_lib!types.Local./Local/tld_id_accessor_definition                         486     8     8     8     8
+internal_vstd__ptr__PointsTo<lib!types.Page.>_box_axiom_definition                 483     0     0     0     0
+internal_vstd__cell__PointsTo<u32.>_box_axiom_definition                           480     4     4     4     4
+internal_lib!types.PageInner./PageInner/capacity_accessor_definition               480     6     6    11     6
+internal_lib!types.Local./Local/tld_accessor_definition                            479     4     4     4     4
+internal_lib!types.Local./Local/psa_accessor_definition                            478     5     5     5     5
+internal_lib!types.PageInner./PageInner/reserved_accessor_definition               477     3     3     4     3
+internal_lib!types.Local./Local/checked_token_accessor_definition                  476     4     4     4     4
+internal_lib!types.Local./Local/my_inst_accessor_definition                        476     4     4     4     4
+internal_lib!types.Local./Local/is_thread_accessor_definition                      472     4     4     4     4
+internal_lib__types__PageQueue_box_axiom_definition                                470     3     3     3     3
+internal_lib!types.PageQueue./PageQueue/first_accessor_definition                  468    14    13    14    13
+internal_vstd__cell__PCell<lib!types.PageInner.>_box_axiom_definition              451     0     0     0     0
+internal_lib!types.Page./Page/inner_accessor_definition                            451     2     2     2     2
+internal_lib!types.Page./Page/next_accessor_definition                             449     6     5     5     5
+internal_lib!types.impl&__18.wf_basic.?_definition                                 449
+- [root]                                                                            56     4     4     4     4
+- user_lib__types__HeapLocalAccess__wf_basic_149                                   393     4     4     4     4
+internal_lib!tokens.PageState./PageState_constructor_definition                    449     0     0     0     0
+internal_lib!types.SegmentHeader./SegmentHeader_constructor_definition             445     0     0     0     0
+internal_vstd__ptr__PPtr<lib!types.Page.>_has_type_always_definition               443     0     0     0     0
+internal_vstd__set__Set<lib!tokens.PageId.>_has_type_always_definition             441     0     0     0     0
+internal_vstd__set__Set<lib!tokens.PageId.>_box_axiom_definition                   441     0     0     0     0
+internal_lib!types.SegmentHeaderMain2./SegmentHeaderMain2_constructor_defin...     441     0     0     0     0
+internal_lib!types.PageInner./PageInner/xblock_size_accessor_definition            438     4     4     6     4
+internal_lib!types.page_organization_pages_match_data.?_definition                 437    15    13    19    13
+internal_vstd__ptr__PPtr<lib!types.Page.>_unbox_axiom_definition                   435     1     1     1     1
+internal_lib!types.Page./Page/prev_accessor_definition                             433     2     2     2     2
+internal_vstd__map__Map<lib!tokens.PageId./lib!types.PageLocalAccess.>_box_...     433     3     3     3     3
+internal_lib!types.Page./Page_constructor_definition                               433     0     0     0     0
+internal_lib!types.PageInner./PageInner/capacity_invariant_definition              431     0     0     0     0
+internal_lib!types.PageInner./PageInner/free_accessor_definition                   430     3     3     3     3
+internal_lib!types.PageInner./PageInner/reserved_invariant_definition              426     0     0     0     0
+internal_lib!types.SegmentHeaderMain./SegmentHeaderMain_constructor_definit...     424     0     0     0     0
+internal_lib!types.page_organization_segments_match.?_definition                   424
+- [root]                                                                             6     0     0     0     0
+- user_lib__types__page_organization_segments_match_155                            418     0     0     0     0
+internal_lib!os_mem.impl&__0.wf_os.?_definition                                    416
+- [root]                                                                           381     0     0     0     0
+- user_lib__os_mem__MemChunk__wf_os_147                                             35     0     0     0     0
+internal_lib!page_organization.DlistEntry./DlistEntry_constructor_definitio...     413     5     5     5     5
+internal_lib!types.PageQueue./PageQueue_constructor_definition                     407     4     4     4     4
+internal_lib!types.Page./Page/count_accessor_definition                            406     0     0     0     0
+prelude_ext_eq                                                                     406     4     3     4     3
+internal_vstd__cell__PCell<u32.>_box_axiom_definition                              406     0     0     0     0
+internal_lib!types.PageInner./PageInner/used_accessor_definition                   405     3     3     3     3
+internal_lib!types.Local./Local/page_organization_invariant_definition             397     1     1     1     1
+internal_lib!types.Page./Page/xthread_free_accessor_definition                     394     0     0     0     0
+internal_lib__linked_list__ThreadLLWithDelayBits_box_axiom_definition              394     0     0     0     0
+internal_lib!linked_list.ThreadLLWithDelayBits./ThreadLLWithDelayBits/insta...     393     0     0     0     0
+internal_lib!linked_list.impl&__7.wf.?_definition                                  393     0     0     1     0
+internal_lib!linked_list.impl&__8.is_empty.?_definition                            393     0     0     0     0
+internal_lib!linked_list.StuffAgree.x_token_data./x_token_data/value_access...     391     0     0     0     0
+internal_lib!linked_list.ThreadLLWithDelayBits./ThreadLLWithDelayBits/emp_a...     391     0     0     0     0
+internal_lib__linked_list__StuffAgree__x_box_axiom_definition                      391     0     0     0     0
+internal_lib__linked_list__StuffAgree__x_token_data_box_axiom_definition           391     0     0     0     0
+internal_lib!linked_list.StuffAgree.impl&__4.view.?_pre_post_definition            391     0     0     0     0
+internal_lib__types__PageQueue_unbox_axiom_definition                              390     0     0     0     0
+internal_lib!linked_list.ThreadLLWithDelayBits./ThreadLLWithDelayBits/atomi...     390     0     0     0     0
+internal_lib!linked_list.ThreadLLWithDelayBits./ThreadLLWithDelayBits/emp_i...     390     0     0     0     0
+internal_lib!linked_list.StuffAgree.x_token_data./x_token_data/instance_acc...     390     0     0     0     0
+internal_vstd__cell__PointsTo<lib!types.SegmentHeaderMain2.>_box_axiom_defi...     389     0     0     0     0
+internal_lib!types.SegmentLocalAccess./SegmentLocalAccess/main2_accessor_de...     389     0     0     0     0
+internal_lib!types.impl&__6.wf.?_definition                                        388    10    11    10    11
+internal_lib!types.PageInner./PageInner/xblock_size_invariant_definition           388     0     0     0     0
+internal_lib!types.SegmentHeaderMain./SegmentHeaderMain/decommit_mask_acces...     386     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.SegmentHeader.>_box_axiom_definition        385     0     0     0     0
+internal_lib__types__SegmentSharedAccess_box_axiom_definition                      385     0     0     0     0
+internal_lib!tokens.SegmentState./SegmentState/shared_access_accessor_defin...     385     0     0     0     0
+internal_lib__tokens__PageState_unbox_axiom_definition                             385     7     6     4     6
+internal_lib!types.SegmentSharedAccess./SegmentSharedAccess/points_to_acces...     385     0     0     0     0
+internal_lib!types.impl&__13.wf.?_definition                                       385     0     0     0     0
+internal_lib!types.Local./Local/page_empty_global_invariant_definition             384     0     0     0     0
+internal_lib!types.PageQueue./PageQueue/block_size_invariant_definition            384     2     2     2     2
+user_vstd__map__axiom_map_remove_different_81                                      384    32    32    32    32
+internal_lib__types__PageSharedAccess_unbox_axiom_definition                       383     8     9     9     9
+internal_lib__types__Local_unbox_axiom_definition                                  383     1     1     1     1
+internal_lib!types.Local./Local/heap_invariant_definition                          383     2     2     2     2
+internal_lib!page_organization.SegmentData./SegmentData/used_accessor_defin...     382     0     0     0     0
+internal_lib!os_mem.MemChunk./MemChunk/os_accessor_definition                      381     0     0     0     0
+internal_vstd__cell__PCell<lib!types.SegmentHeaderMain2.>_box_axiom_definit...     381     0     0     0     0
+internal_lib__atomic_ghost_modified__AtomicU64_box_axiom_definition                381     0     0     0     0
+internal_lib!tokens.SegmentState./SegmentState/is_enabled_accessor_definiti...     381     0     0     0     0
+internal_lib!os_mem.impl&__0.os_exact_range.?_definition                           381     0     0     0     0
+internal_lib!atomic_ghost_modified.impl&__2.well_formed.?_definition               381     0     0     0     0
+internal_lib!atomic_ghost_modified.impl&__2.constant.?_definition                  381     0     0     0     0
+internal_lib!os_mem.impl&__0.wf.?_definition                                       381     0     0     0     0
+internal_lib!os_mem.impl&__0.range_os_rw.?_definition                              381     0     0     0     0
+internal_lib!atomic_ghost_modified.AtomicU64./AtomicU64/patomic_accessor_de...     381     0     0     0     0
+internal_lib!atomic_ghost_modified.impl&__2.constant.?_pre_post_definition         381     0     0     0     0
+internal_lib!atomic_ghost_modified.AtomicU64./AtomicU64/not_cancelled_token...     381     0     0     0     0
+internal_lib!types.SegmentHeader./SegmentHeader/segment_id_accessor_definit...     381     0     0     0     0
+internal_lib!types.SegmentHeader./SegmentHeader/main_accessor_definition           381     0     0     0     0
+internal_vstd__atomic__PAtomicU64_box_axiom_definition                             381     0     0     0     0
+internal_lib!types.impl&__11.wf.?_definition                                       381     0     0     0     0
+internal_lib!layout.is_segment_ptr.?_definition                                    381     0     0     0     0
+internal_vstd!set.impl&__0.difference.?_pre_post_definition                        381     0     0     0     0
+internal_lib!atomic_ghost_modified.AtomicU64./AtomicU64/atomic_inv_accessor...     381     0     0     0     0
+internal_lib!os_mem_util.impl&__0.os_rw_bytes.?_definition                         381     0     0     0     0
+internal_lib!os_mem.MemChunk./MemChunk/points_to_accessor_definition               381     0     0     0     0
+internal_vstd__ptr__PointsToRaw_box_axiom_definition                               381     0     0     0     0
+internal_lib!types.SegmentHeader./SegmentHeader/thread_id_accessor_definiti...     381     0     0     0     0
+internal_lib!types.SegmentHeader./SegmentHeader/instance_accessor_definitio...     381     0     0     0     0
+internal_vstd__map__Map<int./lib!os_mem.OsMem.>_box_axiom_definition               381     0     0     0     0
+internal_lib__types__SegmentHeader_box_axiom_definition                            381     0     0     0     0
+internal_lib!atomic_ghost_modified.AtomicU64./AtomicU64/cancellable_instanc...     381     0     0     0     0
+internal_vstd__map__Map<int./u8.>_box_axiom_definition                             381     0     0     0     0
+internal_lib!types.SegmentHeaderMain2./SegmentHeaderMain2/used_accessor_def...     381     0     0     0     0
+internal_lib!types.impl&__12.wf.?_definition                                       381     0     0     0     0
+internal_lib!types.SegmentHeader./SegmentHeader/main2_accessor_definition          381     0     0     0     0
+internal_lib!os_mem_util.segment_info_range.?_definition                           381     0     0     0     0
+internal_vstd__cell__PCell<lib!types.SegmentHeaderMain.>_box_axiom_definiti...     381     0     0     0     0
+prelude_nat_clip                                                                   380     2     3     3     3
+internal_lib!tokens.PageState./PageState/shared_access_accessor_definition         380     6     6     6     6
+internal_lib!types.impl&__0.wf.?_definition                                        378     4     4     4     4
+internal_lib!types.page_organization_matches_token_page.?_definition               376    12    12    12    12
+internal_lib!tokens.PageState./PageState/block_size_accessor_definition            375     0     0     0     0
+internal_lib__tokens__PageState_box_axiom_definition                               373     0     0     0     0
+internal_vstd__cell__PointsTo<lib!types.SegmentHeaderMain.>_box_axiom_defin...     372     0     0     0     0
+internal_lib!types.SegmentLocalAccess./SegmentLocalAccess/main_accessor_def...     372     0     0     0     0
+internal_lib!types.AtomicHeapPtr./AtomicHeapPtr_constructor_definition             369     0     0     0     0
+internal_lib!types.PageInner./PageInner/used_invariant_definition                  368     0     0     0     0
+internal_lib!types.Local./Local/heap_id_invariant_definition                       367     0     0     0     0
+internal_lib!types.PageInner./PageInner/local_free_accessor_definition             367     3     3     3     3
+internal_lib!types.Local./Local/tld_id_invariant_definition                        367     0     0     0     0
+internal_lib__types__PageSharedAccess_has_type_always_definition                   367     0     0     0     0
+internal_lib!types.SegmentHeaderMain./SegmentHeaderMain/commit_mask_accesso...     367     0     0     0     0
+internal_lib!tokens.PageState./PageState/block_size_invariant_definition           367     0     0     0     0
+internal_lib!tokens.PageState./PageState/offset_accessor_definition                365     6     6     6     6
+internal_lib__page_organization__SegmentData_has_type_always_definition            365     0     0     0     0
+internal_lib__page_organization__SegmentData_box_axiom_definition                  365     0     0     0     0
+internal_lib__tokens__SegmentState_box_axiom_definition                            365     0     0     0     0
+internal_lib__tokens__SegmentState_has_type_always_definition                      365     0     0     0     0
+internal_lib__tokens__SegmentState_unbox_axiom_definition                          365     0     0     0     0
+internal_lib__page_organization__SegmentData_unbox_axiom_definition                365     0     0     0     0
+internal_lib__types__SegmentLocalAccess_unbox_axiom_definition                     364     0     0     0     0
+internal_tuple__4./tuple__4_constructor_definition                                 362     0     0     0     0
+internal_lib!tokens.PageState./PageState/is_enabled_accessor_definition            362     0     0     0     0
+internal_tuple__4./tuple__4/3_invariant_definition                                 360     0     0     0     0
+internal_tuple__4./tuple__4/1_invariant_definition                                 360     1     1     1     1
+internal_tuple__4./tuple__4/2_invariant_definition                                 360     0     0     0     0
+internal_tuple__4./tuple__4/0_invariant_definition                                 360     1     1     0     1
+internal_lib__types__SegmentLocalAccess_box_axiom_definition                       360     0     0     0     0
+internal_lib__types__SegmentLocalAccess_has_type_always_definition                 360     0     0     0     0
+internal_lib!types.Local./Local/thread_id_invariant_definition                     358     0     0     0     0
+internal_lib__types__Page_unbox_axiom_definition                                   357     2     4     3     4
+internal_lib!types.wf_reserved.?_definition                                        356     0     0     0     0
+prelude_box_unbox_uint                                                             355     6     6     6     6
+prelude_unbox_uint                                                                 355     0     0     0     0
+internal_lib!types.impl&__5.wf.?_definition                                        355     6     7     5     7
+user_vstd__map__axiom_map_remove_domain_80                                         352     6     6     6     6
+internal_lib!tokens.PageState./PageState/num_blocks_accessor_definition            346     3     4     0     4
+internal_lib!tokens.PageState./PageState/num_blocks_invariant_definition           346     0     0     0     0
+internal_lib!types.impl&__4.wf.?_definition                                        345     6     8     6     8
+internal_lib!linked_list.BlockSizePageId./BlockSizePageId/block_size_access...     344     0     0     0     0
+internal_lib!linked_list.impl&__8.block_size.?_definition                          344     0     0     0     0
+internal_lib!linked_list.impl&__8.block_size.?_pre_post_definition                 344     0     0     0     0
+internal_lib!types.AtomicHeapPtr./AtomicHeapPtr/emp_inst_accessor_definitio...     343     0     0     0     0
+internal_lib__types__BoolAgree__x_box_axiom_definition                             343     0     0     0     0
+internal_lib__types__BoolAgree__x_token_data_box_axiom_definition                  343     0     0     0     0
+internal_lib!types.impl&__2.wf.?_definition                                        343     5     6     6     6
+internal_lib__types__AtomicHeapPtr_box_axiom_definition                            343     5     7     7     7
+internal_lib!types.BoolAgree.x_token_data./x_token_data/instance_accessor_d...     343     0     0     0     0
+internal_lib!linked_list.impl&__8.page_id.?_pre_post_definition                    343     0     0     0     0
+internal_lib!types.AtomicHeapPtr./AtomicHeapPtr/emp_accessor_definition            343     0     0     0     0
+internal_lib!linked_list.impl&__8.page_id.?_definition                             343     0     0     0     0
+internal_lib!types.Page./Page/xheap_accessor_definition                            343     5     7     7     7
+internal_lib!types.impl&__3.is_empty.?_definition                                  343     0     0     0     0
+internal_lib!types.AtomicHeapPtr./AtomicHeapPtr/instance_accessor_definitio...     343     0     0     0     0
+internal_lib!linked_list.BlockSizePageId./BlockSizePageId/page_id_accessor_...     343     0     0     0     0
+internal_lib!types.AtomicHeapPtr./AtomicHeapPtr/atomic_accessor_definition         343     0     0     0     0
+internal_lib!types.BoolAgree.x_token_data./x_token_data/value_accessor_defi...     343     0     0     0     0
+internal_lib!types.AtomicHeapPtr./AtomicHeapPtr/page_id_accessor_definition        343     5     7     7     7
+internal_lib!types.Page./Page/xthread_free_invariant_definition                    333     0     0     1     0
+internal_lib__types__SegmentHeaderMain2_box_axiom_definition                       332     0     0     0     0
+internal_lib__types__SegmentHeaderMain2_unbox_axiom_definition                     332     0     0     0     0
+internal_lib!linked_list.StuffAgree.x_token_data./x_token_data_constructor_...     330     0     0     0     0
+internal_lib!linked_list.ThreadLLWithDelayBits./ThreadLLWithDelayBits_const...     330     0     0     0     0
+internal_lib__linked_list__ThreadLLWithDelayBits_unbox_axiom_definition            330     0     0     0     0
+internal_lib!linked_list.ThreadLLWithDelayBits./ThreadLLWithDelayBits/atomi...     330     0     0     1     0
+internal_lib__linked_list__StuffAgree__Instance_box_axiom_definition               329     0     0     0     0
+internal_lib__linked_list__StuffAgree__Instance_unbox_axiom_definition             329     0     0     0     0
+internal_lib__linked_list__StuffAgree__Instance_has_type_always_definition         329     0     0     0     0
+internal_lib!types.SegmentHeaderMain2./SegmentHeaderMain2/used_invariant_de...     329     0     0     0     0
+internal_lib!bin_sizes.valid_bin_idx.?_definition                                  327     8     8     8     8
+user_vstd__map__axiom_map_insert_same_78                                           324    13    12    13    12
+internal_lib__atomic_ghost_modified__AtomicU64_unbox_axiom_definition              322     0     0     0     0
+internal_lib!atomic_ghost_modified.AtomicU64./AtomicU64_constructor_definit...     322     0     0     0     0
+internal_lib!types.SegmentHeader./SegmentHeader/segment_id_invariant_defini...     322     0     0     0     0
+internal_lib__types__SegmentHeader_unbox_axiom_definition                          322     0     0     0     0
+internal_lib!types.SegmentHeader./SegmentHeader/thread_id_invariant_definit...     322     0     0     0     0
+internal_lib!atomic_ghost_modified.AtomicU64./AtomicU64/atomic_inv_invarian...     322     0     0     0     0
+internal_lib__page_organization__DlistEntry_box_axiom_definition                   316    11    10    10    10
+internal_lib__types__SegmentHeaderMain_box_axiom_definition                        316     0     0     0     0
+internal_lib__types__SegmentHeaderMain_unbox_axiom_definition                      316     0     0     0     0
+internal_lib__linked_list__StuffAgree__x_token_data_unbox_axiom_definition         311     0     0     0     0
+internal_lib!linked_list.StuffAgree.x_token_data./x_token_data/value_invari...     311     0     0     0     0
+internal_lib!linked_list.BlockSizePageId./BlockSizePageId_constructor_defin...     307     0     0     0     0
+internal_lib__linked_list__BlockSizePageId_box_axiom_definition                    306     0     0     0     0
+internal_lib__linked_list__BlockSizePageId_unbox_axiom_definition                  306     0     0     0     0
+internal_vstd!set.impl&__0.remove.?_pre_post_definition                            303     0     0     0     0
+user_vstd__set__axiom_set_remove_insert_93                                         303     6     6     6     6
+internal_lib__types__BoolAgree__x_has_type_always_definition                       301     0     0     0     0
+internal_lib__types__BoolAgree__x_unbox_axiom_definition                           301     0     0     0     0
+internal_lib!types.Page./Page/xheap_invariant_definition                           301     2     2     1     2
+internal_lib!types.AtomicHeapPtr./AtomicHeapPtr/atomic_invariant_definition        301     2     2     1     2
+internal_lib__types__BoolAgree__Instance_has_type_always_definition                301     0     0     0     0
+internal_lib__types__AtomicHeapPtr_unbox_axiom_definition                          301     0     0     0     0
+internal_crate__tuple__4_unbox_axiom_definition                                    301     0     0     0     0
+internal_lib!types.AtomicHeapPtr./AtomicHeapPtr/page_id_invariant_definitio...     301     0     0     0     0
+internal_lib__types__BoolAgree__Instance_box_axiom_definition                      301     0     0     0     0
+internal_lib__types__BoolAgree__Instance_unbox_axiom_definition                    301     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_used.?_definit...     298
+- [root]                                                                            20     2     2     2     2
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_used_141               278     5     5     5     5
+internal_vstd__map__Map<lib!tokens.PageId./lib!types.PageLocalAccess.>_has_...     298     2     2     3     2
+internal_lib__page_organization__PageHeaderKind_box_axiom_definition               297     1     1     1     1
+internal_lib!linked_list.BlockSizePageId./BlockSizePageId/page_id_invariant...     293     0     0     0     0
+internal_lib!linked_list.BlockSizePageId./BlockSizePageId/block_size_invari...     293     0     0     0     0
+internal_lib!bin_sizes.size_of_bin.?_pre_post_definition                           282     0     0     0     0
+internal_lib__page_organization__PageHeaderKind_has_type_always_definition         280     0     0     0     0
+user_vstd__seq__axiom_seq_update_different_57                                      259    26    26    26    26
+prelude_fuel_defaults                                                              256    69    69    70    69
+internal_vstd__map__Map<lib!tokens.PageId./lib!types.PageSharedAccess.>_box...     240     4     4     4     4
+internal_vstd__cell__PointsTo<vstd!ptr.PPtr<lib!types.Page.>.>_has_type_alw...     236     0     0     0     0
+internal_vstd__seq__Seq<lib!tokens.PageId.>_unbox_axiom_definition                 234     2     1     2     1
+internal_lib__page_organization__DlistEntry_unbox_axiom_definition                 229     0     0     0     0
+prelude_u_clip                                                                     222     2     2     2     2
+internal_lib__page_organization__DlistHeader_unbox_axiom_definition                218     0     0     0     0
+user_vstd__set__axiom_set_insert_same_90                                           217     8     7     8     7
+internal_lib__page_organization__DlistHeader_box_axiom_definition                  217     2     2     2     2
+internal_vstd__cell__PointsTo<vstd!ptr.PPtr<lib!types.Page.>.>_unbox_axiom_...     212     0     0     0     0
+internal_vstd!map.impl&__0.insert.?_pre_post_definition                            204     7     6     7     6
+internal_lib!page_organization.DlistHeader./DlistHeader/last_invariant_defi...     200     5     5     5     5
+internal_lib!page_organization.valid_ll.?_definition                               199
+- [root]                                                                           199     5     5     5     5
+- user_lib__page_organization__valid_ll_139                                          0     0     0     0     0
+internal_lib__tokens__HeapId_box_axiom_definition                                  193     2     2     2     2
+internal_vstd__map__Map<lib!tokens.PageId./lib!page_organization.PageData.>...     183     5     5     5     5
+internal_vstd__seq__Seq<lib!tokens.PageId.>_has_type_always_definition             183     0     0     0     0
+internal_vstd__map__Map<lib!tokens.PageId./lib!types.PageLocalAccess.>_unbo...     182     6     5     6     5
+internal_ens__vstd!ptr.impl&__10.borrow._definition                                181    11    11    11    11
+internal_vstd__seq__Seq<lib!page_organization.DlistHeader.>_unbox_axiom_def...     176     3     3     3     3
+internal_lib__page_organization__PageOrg__State_box_axiom_definition               171     7     7     7     7
+internal_lib!page_organization.DlistHeader./DlistHeader/first_invariant_def...     167     5     5     5     5
+internal_vstd__cell__CellId_box_axiom_definition                                   167     9     9     9     9
+internal_lib!types.HeapLocalAccess./HeapLocalAccess_constructor_definition         167     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.valid_used_page.?_definitio...     164     2     2     2     2
+internal_lib!page_organization.DlistHeader./DlistHeader/last_accessor_defin...     162     8     7     9     7
+internal_ens__vstd!cell.impl&__3.put._definition                                   162     5     5     5     5
+internal_ens__vstd!cell.impl&__3.take._definition                                  161     8     8     8     8
+internal_vstd__cell__PointsTo<lib!types.PageInner.>_has_type_always_definit...     158     9     9     8     9
+internal_lib!page_organization.DlistEntry./DlistEntry/next_accessor_definit...     155     2     2     2     2
+internal_lib__types__HeapLocalAccess_box_axiom_definition                          151     7     7     7     7
+internal_lib!types.HeapLocalAccess./HeapLocalAccess/pages_accessor_definiti...     148     6     6     7     6
+internal_lib!types.HeapLocalAccess./HeapLocalAccess/pages_free_direct_acces...     147     4     4     4     4
+internal_lib!page_organization.DlistEntry./DlistEntry/prev_invariant_defini...     146     2     2     2     2
+internal_lib!page_organization.DlistEntry./DlistEntry/next_invariant_defini...     145     0     0     0     0
+internal_lib__tokens__Mim__thread_local_state_box_axiom_definition                 139     3     3     3     3
+internal_lib!page_organization.DlistEntry./DlistEntry/prev_accessor_definit...     137     2     2     2     2
+internal_vstd!view.View.view.?_pre_post_definition                                 137     6     6     6     6
+internal_ens__lib!tokens.Mim.impl&__16.thread_local_state_guards_page._defi...     136     4     5     5     5
+internal_vstd__seq__Seq<lib!tokens.PageId.>_box_axiom_definition                   136     0     0     0     0
+internal_lib!types.HeapLocalAccess./HeapLocalAccess/page_count_accessor_def...     135     3     3     4     3
+internal_vstd__cell__PointsTo<lib!types.PageInner.>_unbox_axiom_definition         135     0     0     0     0
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!types.SegmentLocalAccess....     135     3     3     3     3
+internal_lib!types.HeapLocalAccess./HeapLocalAccess/pages_invariant_definit...     131     1     1     1     1
+internal_lib__types__HeapLocalAccess_unbox_axiom_definition                        130     0     0     0     0
+internal_lib!types.HeapLocalAccess./HeapLocalAccess/pages_free_direct_invar...     130     2     2     2     2
+internal_lib!types.HeapLocalAccess./HeapLocalAccess/page_retired_max_access...     124     4     4     5     4
+internal_lib!types.HeapLocalAccess./HeapLocalAccess/page_retired_min_access...     124     4     4     5     4
+internal_lib!types.impl&__21.wf.?_definition                                       122     1     1     1     1
+internal_crate__fun__1_constructor_definition                                      119
+- [root]                                                                           119     0     0     0     0
+- internal_crate__fun__1_constructor_inner_definition                                0     0     0     0     0
+internal_crate__fun__1_unbox_axiom_definition                                      119     0     0     0     0
+internal_ens__vstd!map.impl&__0.tracked_remove._definition                         118     5     5     5     5
+internal_lib!page_organization.DlistHeader./DlistHeader/first_accessor_defi...     118     9     8     9     8
+internal_crate__fun__1_apply_definition                                            116     0     0     0     0
+internal_ens__vstd!map.impl&__0.tracked_insert._definition                         116     5     6     5     6
+internal_lib__tokens__Mim__Instance_box_axiom_definition                           113     3     3     3     3
+internal_vstd__map__Map<lib!tokens.PageId./lib!page_organization.PageData.>...     112     5     5     5     5
+internal_lib!types.impl&__21.is_used_primary.?_definition                          112     9     9     9     9
+internal_ens__vstd!ptr.impl&__10.to_usize._definition                              111     3     3     3     3
+internal_lib__tokens__TldId_box_axiom_definition                                   111     2     2     2     2
+internal_vstd__cell__PointsTo<usize.>_box_axiom_definition                         110     7     7     7     7
+mariposa_qid_24                                                                    110     0     0     0     0
+internal_vstd__seq__Seq<lib!page_organization.DlistHeader.>_has_type_always...     108     2     2     2     2
+internal_vstd__ptr__PointsTo<lib!types.Tld.>_box_axiom_definition                  108     2     2     2     2
+internal_lib!page_organization.PageOrg.State./State_constructor_definition         106     0     0     0     0
+internal_lib__tokens__Mim__my_inst_box_axiom_definition                            105     2     2     2     2
+internal_vstd__map__Map<lib!tokens.PageId./lib!page_organization.PageData.>...     105     3     3     3     3
+internal_lib__tokens__Mim__thread_checked_state_box_axiom_definition               105     2     2     2     2
+user_vstd__seq__axiom_seq_update_len_55                                            101     2     2     2     2
+internal_lib__thread__IsThread_box_axiom_definition                                101     2     2     2     2
+internal_lib__thread__ThreadId_box_axiom_definition                                 95     2     2     2     2
+internal_lib!tokens.HeapId./HeapId_constructor_definition                           91     0     0     0     0
+internal_lib__tokens__HeapId_unbox_axiom_definition                                 91     0     0     0     0
+internal_lib!flags.impl&__0.has_aligned.?_definition                                90     0     0     0     0
+internal_lib!page_organization.is_unused_header.?_definition                        89     0     0     0     0
+internal_req__vstd!map.impl&__0.tracked_remove._definition                          84     5     5     5     5
+internal_vstd__seq__Seq<lib!types.PageQueue.>_box_axiom_definition                  81     0     0     0     0
+internal_vstd__seq__Seq<lib!types.PageQueue.>_has_type_always_definition            81     0     0     0     0
+internal_vstd!seq.Seq.update.?_pre_post_definition                                  77     2     2     2     2
+internal_vstd!map.impl&__0.remove.?_pre_post_definition                             74     3     3     3     3
+internal_ens__lib!page_organization.PageOrg.impl&__4.preserved_by_into_used...      70     3     3     3     3
+internal_vstd__seq__Seq<lib!page_organization.DlistHeader.>_box_axiom_defin...      70     0     0     0     0
+internal_req__lib!os_mem_util.preserves_mem_chunk_good._definition                  68
+- [root]                                                                            53     2     2     2     2
+- user_lib__os_mem_util__preserves_mem_chunk_good_172                                0     0     0     0     0
+- user_lib__os_mem_util__preserves_mem_chunk_good_168                                7     0     0     0     0
+- user_lib__os_mem_util__preserves_mem_chunk_good_171                                1     0     0     0     0
+- user_lib__os_mem_util__preserves_mem_chunk_good_169                                7     0     0     0     0
+- user_lib__os_mem_util__preserves_mem_chunk_good_170                                0     0     0     0     0
+internal_lib!page_organization.PageOrg.State./State/used_dlist_headers_acce...      65     3     3     3     3
+internal_lib!types.impl&__21.page_capacity.?_definition                             64    10    10    10    10
+internal_lib!types.impl&__21.page_reserved.?_definition                             62    10    10    10    10
+internal_lib!page_organization.PageOrg.State./State/pages_accessor_definiti...      59     5     5     5     5
+mariposa_qid_25                                                                     55     0     0     0     0
+internal_ens__lib!queues.holds_on_present_value._definition                         54
+- [root]                                                                            50     1     1     1     1
+- user_lib__queues__holds_on_present_value_174                                       4     1     1     1     1
+internal_lib!types.impl&__0.zeroed_except_block_size.?_definition                   53     0     0     0     0
+user_vstd__set__axiom_set_remove_same_92                                            52     0     0     0     0
+internal_lib!types.impl&__6.wf_unused.?_definition                                  47     5     4     4     4
+user_vstd__seq__axiom_seq_update_same_56                                            47     7     7     7     7
+internal_vstd__seq__Seq<lib!types.PageQueue.>_unbox_axiom_definition                47     3     3     3     3
+internal_lib!types.Heap./Heap/pages_accessor_definition                             46     2     2     2     2
+internal_lib!types.HeapSharedAccess./HeapSharedAccess/points_to_accessor_de...      46     2     2     2     2
+internal_lib__types__Heap_box_axiom_definition                                      46     2     2     2     2
+internal_ens__vstd!array.impl&__3.set._definition                                   46     2     2     2     2
+internal_lib__types__HeapSharedAccess_box_axiom_definition                          46     2     2     2     2
+internal_lib!types.PageInner./PageInner/flags0_accessor_definition                  45     0     0     0     0
+internal_ens__vstd!array.array_index_get._definition                                45     2     2     2     2
+internal_lib!types.PageInner./PageInner/flags0_invariant_definition                 45     0     0     0     0
+internal_ens__lib!tokens.Mim.impl&__16.thread_local_state_guards_heap._defi...      45     1     1     1     1
+internal_lib!tokens.Mim.impl&__6.view.?_pre_post_definition                         45     0     0     0     0
+internal_lib__tokens__Mim__thread_local_state_token_data_box_axiom_definiti...      45     4     4     4     4
+internal_ens__lib!flags.impl&__0.set_in_full._definition                            45     2     2     2     2
+internal_lib!types.PageInner./PageInner/flags2_accessor_definition                  45     0     0     0     0
+internal_lib!types.PageInner./PageInner/flags2_invariant_definition                 45     0     0     0     0
+internal_lib!page_organization.PageOrg.State./State/popped_accessor_definit...      44     1     1     1     1
+internal_lib!types.impl&__5.wf_unused.?_definition                                  44     0     0     0     0
+internal_lib!types.impl&__4.wf_unused.?_definition                                  43     0     0     0     0
+internal_lib!types.impl&__21.wf_basic.?_definition                                  42     3     3     3     3
+internal_lib__tokens__ThreadState_box_axiom_definition                              39     4     4     4     4
+internal_lib!tokens.Mim.thread_local_state_token_data./thread_local_state_t...      39     4     4     4     4
+internal_req__vstd!cell.impl&__3.take._definition                                   39     6     6     6     6
+internal_lib__linked_list__LL_has_type_always_definition                            38     0     0     0     0
+internal_lib!types.PageFullAccess./PageFullAccess/s_accessor_definition             38     3     3     3     3
+internal_lib!page_organization.PageOrg.State./State/popped_invariant_defini...      37     1     1     1     1
+internal_lib__linked_list__LL_unbox_axiom_definition                                36     0     0     0     0
+internal_lib__types__PageFullAccess_unbox_axiom_definition                          36     0     0     0     0
+internal_ens__lib!types.impl&__24.get_page_count._definition                        35     0     0     0     0
+internal_ens__lib!types.impl&__24.set_page_count._definition                        35     2     2     2     2
+internal_vstd!std_specs.num.usize_specs.wrapping_add.?_pre_post_definition          35     0     0     0     0
+internal_lib__types__PageFullAccess_box_axiom_definition                            35     0     0     0     0
+internal_ens__core!num.impl&__11.wrapping_add._definition                           35     1     1     1     1
+internal_lib!types.local_page_count_update.?_definition                             35     2     2     2     2
+internal_lib__types__PageFullAccess_has_type_always_definition                      35     0     0     0     0
+internal_vstd!std_specs.num.usize_specs.wrapping_add.?_definition                   35     0     0     0     0
+internal_vstd__cell__PointsTo<lib!types.SegmentHeaderMain.>_has_type_always...      34     0     0     0     0
+internal_vstd__cell__PointsTo<lib!types.SegmentHeaderMain.>_unbox_axiom_def...      34     0     0     0     0
+prelude_div_unsigned_in_bounds                                                      33     0     0     0     0
+prelude_eucdiv                                                                      33     0     0     0     0
+internal_lib!types.PagePtr./PagePtr_constructor_definition                          31     0     0     0     0
+internal_vstd__map__Map<lib!tokens.PageId./lib!tokens.PageState.>_box_axiom...      30     0     0     0     0
+internal_lib!tokens.ThreadState./ThreadState/pages_accessor_definition              30     2     2     2     2
+internal_vstd__cell__PointsTo<lib!types.SegmentHeaderMain2.>_unbox_axiom_de...      28     0     0     0     0
+internal_ens__vstd!ptr.impl&__10.from_usize._definition                             28     1     1     1     1
+internal_vstd__cell__PointsTo<lib!types.SegmentHeaderMain2.>_has_type_alway...      28     0     0     0     0
+user_vstd__set__axiom_set_new_89                                                    28     0     0     0     0
+internal_vstd__cell__PointsTo<u32.>_has_type_always_definition                      27     4     4     4     4
+internal_req__lib!types.impl&__24.get_page_count._definition                        27     2     2     2     2
+internal_vstd__cell__PointsTo<u32.>_unbox_axiom_definition                          27     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.SegmentHeader.>_has_type_always_defi...      26     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.Page.>_unbox_axiom_definition                26     0     0     0     0
+internal_lib!types.Heap./Heap_constructor_definition                                26     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.SegmentHeader.>_unbox_axiom_definiti...      26     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.Page.>_has_type_always_definition            26     4     6     5     6
+internal_vstd__map__Map<int./u8.>_unbox_axiom_definition                            26     0     0     0     0
+internal_vstd__map__Map<int./u8.>_has_type_always_definition                        26     0     0     0     0
+internal_lib!types.impl&__21.page_count.?_definition                                26    10    10    10    10
+internal_lib!types.impl&__18.wf.?_definition                                        25     3     3     3     3
+internal_lib!page_organization.PageOrg.State./State/segments_accessor_defin...      25     0     0     0     0
+internal_vstd__map__Map<int./lib!os_mem.OsMem.>_has_type_always_definition          25     0     0     0     0
+internal_vstd__map__Map<int./lib!os_mem.OsMem.>_unbox_axiom_definition              25     0     0     0     0
+internal_lib!page_organization.PageOrg.State./State/unused_dlist_headers_ac...      24     0     0     0     0
+internal_lib__page_organization__Popped_box_axiom_definition                        23     1     1     1     1
+internal_lib!page_organization.PageOrg.impl&__4.invariant.?_definition              23     2     2     2     2
+internal_lib__linked_list__StuffAgree__x_has_type_always_definition                 23     0     0     0     0
+internal_lib__linked_list__StuffAgree__x_unbox_axiom_definition                     23     0     0     0     0
+internal_ens__lib!queues.heap_queue_first_update._definition                        22     2     2     2     2
+internal_lib__page_organization__PageOrg__State_unbox_axiom_definition              22     0     0     0     0
+internal_ens__lib!page_organization.PageOrg.take_step.into_used_list_back._...      21     3     3     3     3
+internal_vstd__seq__Seq<vstd!seq.Seq<lib!tokens.PageId.>.>_box_axiom_defini...      21     0     0     0     0
+internal_lib!page_organization.PageOrg.State./State/unused_lists_accessor_d...      20     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.inv_ready.?_definition              20
+- [root]                                                                            20     0     0     0     0
+- user_lib__page_organization__PageOrg__State__inv_ready_136                         0     0     0     0     0
+internal_lib!types.pages_free_direct_match.?_definition                             20     0     0     0     0
+internal_req__lib!queues.heap_queue_first_update._definition                        20
+- [root]                                                                            20     2     2     2     2
+- user_lib__queues__heap_queue_first_update_175                                      0     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.popped_basics.?_definition          20
+- [root]                                                                            20     1     1     1     1
+- user_lib__page_organization__PageOrg__State__popped_basics_132                     0     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_unused.?_defin...      20
+- [root]                                                                            20     0     0     0     0
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_unused_140               0     0     0     0     0
+internal_lib__types__PagePtr_box_axiom_definition                                   20     5     5     5     5
+internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_unused2.?_defi...      20
+- [root]                                                                            20     0     0     0     0
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_unused2_142              0     0     0     0     0
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_unused2_143              0     0     0     0     0
+internal_lib__tokens__Mim__Instance_has_type_always_definition                      20     0     0     0     0
+internal_lib!page_organization.Popped./Used/0_invariant_definition                  20     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.inv_segment_creating.?_defi...      20
+- [root]                                                                            20     0     0     0     0
+- user_lib__page_organization__PageOrg__State__inv_segment_creating_134              0     0     0     0     0
+internal_lib!page_organization.Popped./Used/0_accessor_definition                   20     1     1     1     1
+internal_lib!page_organization.PageOrg.impl&__4.inv_very_unready.?_definiti...      20
+- [root]                                                                            20     0     0     0     0
+- user_lib__page_organization__PageOrg__State__inv_very_unready_135                  0     0     0     0     0
+internal_lib!types.PagePtr./PagePtr/page_ptr_accessor_definition                    20     3     3     3     3
+internal_lib!page_organization.Popped./Used/1_accessor_definition                   20     1     1     1     1
+internal_lib!page_organization.PageOrg.impl&__4.ll_basics.?_definition              20     2     2     2     2
+internal_lib!page_organization.PageOrg.State./State/used_lists_accessor_def...      20     2     2     2     2
+internal_lib!types.PagePtr./PagePtr/page_id_accessor_definition                     19     5     5     5     5
+internal_lib!page_organization.PageOrg.impl&__4.into_used_list_back_strong....      19     3     3     3     3
+user_vstd__array__array_len_matches_n_69                                            19     0     0     0     0
+internal_lib!types.pages_free_direct_is_correct.?_definition                        18
+- [root]                                                                             6     5     5     5     5
+- user_lib__types__pages_free_direct_is_correct_148                                 12     3     3     3     3
+internal_lib!types.impl&__21.block_size.?_definition                                16    10    10    10    10
+internal_lib!bin_sizes.smallest_bin_fitting_size.?_definition                       13     0     0     0     0
+internal_req__lib!page_organization.PageOrg.impl&__4.preserved_by_into_used...      11     5     5     5     5
+internal_req__vstd!ptr.impl&__10.borrow._definition                                 11     4     4     4     4
+internal_lib__tokens__Mim__my_inst_token_data_box_axiom_definition                  10     2     2     2     2
+internal_lib__tokens__Mim__thread_checked_state_token_data_box_axiom_defini...      10     2     2     2     2
+internal_lib!tokens.Mim.impl&__15.view.?_pre_post_definition                        10     0     0     0     0
+internal_lib!types.common_preserves.?_definition                                    10     1     1     1     1
+internal_req__vstd!cell.impl&__3.put._definition                                    10     6     6     6     6
+internal_lib!layout.is_tld_ptr.?_definition                                          9     0     0     0     0
+internal_lib!types.impl&__5.wf_secondary.?_definition                                9     0     0     0     0
+internal_vstd__cell__PointsTo<usize.>_unbox_axiom_definition                         8     0     0     0     0
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!tokens.SegmentState.>_box...       8     0     0     0     0
+internal_vstd__cell__PointsTo<usize.>_has_type_always_definition                     8     0     0     0     0
+internal_req__lib!bin_sizes.bounds_for_smallest_bin_fitting_size._definitio...       8     3     3     3     3
+internal_lib!tokens.ThreadState./ThreadState/segments_accessor_definition            8     0     0     0     0
+internal_ens__lib!bin_sizes.bounds_for_smallest_bin_fitting_size._definitio...       8     3     3     3     3
+internal_lib!tokens.Mim.thread_local_state_token_data./thread_local_state_t...       8     0     0     0     0
+internal_lib!queues.pfd_direct_update.?_definition                                   7
+- [root]                                                                             3     1     1     1     1
+- user_lib__queues__pfd_direct_update_167                                            2     1     1     1     1
+- user_lib__queues__pfd_direct_update_166                                            2     1     1     1     1
+internal_req__lib!types.impl&__24.set_page_count._definition                         7     2     2     2     2
+internal_lib!page_organization.PageOrg.impl&__4.into_used_list_back.?_defin...       7     2     2     2     2
+internal_lib!types.impl&__4.wf_secondary.?_definition                                7     0     0     0     0
+internal_lib!tokens.Mim.thread_checked_state_token_data./thread_checked_sta...       6     2     2     2     2
+internal_lib!types.impl&__17.wf.?_definition                                         6     1     1     1     1
+internal_lib!tokens.Mim.thread_checked_state_token_data./thread_checked_sta...       6     0     0     0     0
+internal_lib!types.Heap./Heap/thread_delayed_free_invariant_definition               6     0     0     0     0
+internal_vstd__seq__Seq<vstd!ptr.PPtr<lib!types.Page.>.>_box_axiom_definiti...       6     0     0     0     0
+internal_lib!tokens.Mim.my_inst_token_data./my_inst_token_data/instance_acc...       6     0     0     0     0
+internal_lib!thread.impl&__2.view.?_pre_post_definition                              6     0     0     0     0
+internal_lib!tokens.Mim.my_inst_token_data./my_inst_token_data/value_access...       6     0     0     0     0
+internal_lib!types.Heap./Heap/tld_ptr_invariant_definition                           6     0     0     0     0
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!page_organization.Segment...       6     0     0     0     0
+internal_lib!types.Heap./Heap/pages_free_direct_invariant_definition                 6     0     0     0     0
+internal_lib!types.Heap./Heap/pages_invariant_definition                             6     0     0     0     0
+internal_vstd__seq__Seq<vstd!ptr.PPtr<lib!types.Page.>.>_has_type_always_de...       6     0     0     0     0
+internal_req__vstd!array.impl&__3.set._definition                                    5     2     2     2     2
+internal_lib__tokens__HeapState_box_axiom_definition                                 5     1     1     1     1
+internal_lib!tokens.ThreadState./ThreadState/heap_accessor_definition                5     3     3     3     3
+internal_lib!types.page_organization_queues_match.?_definition                       5
+- [root]                                                                             5     0     0     0     0
+- user_lib__types__page_organization_queues_match_151                                0     0     0     0     0
+- user_lib__types__page_organization_queues_match_150                                0     0     0     0     0
+internal_req__lib!bin_sizes.idx_out_of_range_has_different_bin_size._defini...       5     1     1     1     1
+internal_proj__vstd!view.View./V_assoc_type_impl_false_definition                    5     2     2     2     2
+internal_req__lib!queues.holds_on_present_value._definition                          4     2     2     2     2
+internal_vstd__seq__Seq<vstd!seq.Seq<lib!tokens.PageId.>.>_has_type_always_...       4     2     2     2     2
+internal_vstd__seq__Seq<vstd!seq.Seq<lib!tokens.PageId.>.>_unbox_axiom_defi...       4     0     0     0     0
+internal_lib!tokens.Mim.thread_checked_state_token_data./thread_checked_sta...       4     0     0     0     0
+internal_vstd__set__Set<lib!tokens.SegmentId.>_unbox_axiom_definition                4     0     0     0     0
+internal_vstd__map__Map<lib!tokens.PageId./lib!types.PageSharedAccess.>_unb...       4     0     0     0     0
+internal_lib!tokens.Mim.thread_local_state_token_data./thread_local_state_t...       4     0     0     0     0
+internal_vstd__seq__Seq<vstd!ptr.PPtr<lib!types.Page.>.>_unbox_axiom_defini...       4     2     2     2     2
+internal_lib!page_organization.Popped./VeryUnready/1_accessor_definition             4     0     0     0     0
+internal_lib!tokens.Mim.thread_checked_state_token_data./thread_checked_sta...       4     0     0     0     0
+internal_req__lib!tokens.Mim.impl&__16.thread_local_state_guards_page._defi...       4     2     3     3     3
+internal_req__vstd!array.array_index_get._definition                                 4     2     2     2     2
+internal_lib__tokens__Mim__thread_checked_state_token_data_unbox_axiom_defi...       4     0     0     0     0
+internal_vstd__map__Map<lib!tokens.PageId./lib!types.PageSharedAccess.>_has...       4     2     2     2     2
+internal_lib__tokens__Mim__thread_local_state_token_data_unbox_axiom_defini...       4     0     0     0     0
+internal_lib!tokens.Mim.thread_local_state_token_data./thread_local_state_t...       4     0     0     0     0
+internal_lib!tokens.Mim.thread_local_state_token_data./thread_local_state_t...       4     0     0     0     0
+internal_lib!types.Tld./Tld/segments_invariant_definition                            3     0     0     0     0
+internal_lib!types.Tld./Tld/segments_accessor_definition                             3     0     0     0     0
+internal_vstd__cell__PCell<usize.>_box_axiom_definition                              3     0     0     0     0
+internal_lib!types.Tld./Tld_constructor_definition                                   3     0     0     0     0
+internal_vstd__set__Set<lib!tokens.SegmentId.>_has_type_always_definition            3     0     0     0     0
+internal_vstd__set__Set<lib!tokens.SegmentId.>_box_axiom_definition                  3     0     0     0     0
+internal_lib!types.SegmentsTld./SegmentsTld_constructor_definition                   3     0     0     0     0
+internal_lib!bin_sizes.pfd_upper.?_definition                                        3     0     0     0     0
+internal_vstd__seq__Seq<lib!types.SpanQueueHeader.>_has_type_always_definit...       3     0     0     0     0
+internal_lib!thread.ThreadId./ThreadId_constructor_definition                        3     0     0     0     0
+internal_lib!linked_list.ThreadLLSimple./ThreadLLSimple_constructor_definit...       3     0     0     0     0
+internal_lib!tokens.ThreadState./ThreadState/heap_id_invariant_definition            3     0     0     0     0
+internal_vstd__seq__Seq<lib!types.SpanQueueHeader.>_unbox_axiom_definition           3     0     0     0     0
+internal_lib__types__TldPtr_unbox_axiom_definition                                   3     0     0     0     0
+internal_lib!queues.local_direct_update.?_definition                                 3     1     1     1     1
+internal_lib!types.SegmentsTld./SegmentsTld/span_queue_headers_invariant_de...       3     0     0     0     0
+internal_lib__types__Tld_box_axiom_definition                                        3     0     0     0     0
+internal_lib__types__Heap_unbox_axiom_definition                                     3     1     1     1     1
+internal_req__lib!page_organization.PageOrg.take_step.into_used_list_back._...       3     2     2     2     2
+internal_lib__types__Tld_unbox_axiom_definition                                      3     0     0     0     0
+internal_lib__types__SegmentsTld_unbox_axiom_definition                              3     0     0     0     0
+internal_lib__tokens__ThreadState_unbox_axiom_definition                             3     0     0     0     0
+internal_lib__thread__ThreadId_unbox_axiom_definition                                3     0     0     0     0
+internal_lib!bin_sizes.pfd_lower.?_pre_post_definition                               3     0     0     0     0
+internal_lib__linked_list__ThreadLLSimple_unbox_axiom_definition                     3     0     0     0     0
+internal_ens__lib!bin_sizes.idx_out_of_range_has_different_bin_size._defini...       3     1     1     1     1
+internal_lib!bin_sizes.pfd_lower.?_definition                                        3     0     0     0     0
+prelude_type_id_const_int                                                            3     1     1     1     1
+internal_lib!types.TldPtr./TldPtr/tld_id_invariant_definition                        3     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.into_used_list_back_enabled...       3     2     2     2     2
+internal_lib!tokens.ThreadState./ThreadState_constructor_definition                  3     0     0     0     0
+internal_lib__tokens__TldId_unbox_axiom_definition                                   3     0     0     0     0
+internal_lib__types__SegmentsTld_box_axiom_definition                                3     0     0     0     0
+internal_vstd__seq__Seq<lib!types.SpanQueueHeader.>_box_axiom_definition             3     0     0     0     0
+internal_lib!bin_sizes.pfd_upper.?_pre_post_definition                               3     0     0     0     0
+internal_lib!types.TldPtr./TldPtr_constructor_definition                             3     0     0     0     0
+internal_lib!tokens.TldId./TldId_constructor_definition                              3     0     0     0     0
+internal_lib!types.SegmentsTld./SegmentsTld/span_queue_headers_accessor_def...       3     0     0     0     0
+internal_lib!linked_list.ThreadLLSimple./ThreadLLSimple/heap_id_invariant_d...       3     0     0     0     0
+internal_lib!layout.is_heap_ptr.?_definition                                         2     2     2     2     2
+internal_lib!types.HeapPtr./HeapPtr_constructor_definition                           2     0     0     0     0
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!tokens.SegmentState.>_unb...       2     0     0     0     0
+internal_req__lib!tokens.Mim.impl&__16.thread_local_state_guards_heap._defi...       2     1     1     1     1
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!types.SegmentLocalAccess....       2     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.Heap.>_has_type_always_definition             2     1     1     1     1
+internal_vstd__map__Map<lib!tokens.PageId./lib!tokens.PageState.>_has_type_...       2     1     1     1     1
+internal_lib__tokens__Mim__thread_checked_state_has_type_always_definition           2     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.Tld.>_has_type_always_definition              2     0     0     0     0
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!types.SegmentLocalAccess....       2     0     0     0     0
+internal_lib__tokens__Mim__thread_local_state_has_type_always_definition             2     0     0     0     0
+internal_lib!tokens.Mim.thread_local_state_token_data./thread_local_state_t...       2     0     0     0     0
+internal_lib__tokens__Mim__thread_local_state_unbox_axiom_definition                 2     0     0     0     0
+internal_vstd__map__Map<lib!tokens.PageId./lib!tokens.PageState.>_unbox_axi...       2     0     0     0     0
+internal_lib__tokens__Mim__thread_checked_state_unbox_axiom_definition               2     0     0     0     0
+internal_lib__page_organization__Popped_unbox_axiom_definition                       2     2     2     2     2
+internal_ens__lib!bin_sizes.idx_in_range_has_bin_size._definition                    2     1     1     1     1
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!page_organization.Segment...       2     0     0     0     0
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!page_organization.Segment...       2     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.Heap.>_unbox_axiom_definition                 2     0     0     0     0
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!tokens.SegmentState.>_has...       2     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.Tld.>_unbox_axiom_definition                  2     0     0     0     0
+internal_req__lib!bin_sizes.idx_in_range_has_bin_size._definition                    2     1     1     1     1
+internal_lib!tokens.ThreadState./ThreadState/heap_id_accessor_definition             2     0     0     0     0
+internal_lib!tokens.TldId./TldId/id_invariant_definition                             1     0     0     0     0
+internal_lib!types.impl&__7.wf_empty_page_global.?_definition                        1     0     0     0     0
+internal_lib!types.Heap./Heap/page_count_accessor_definition                         1     0     0     0     0
+internal_lib__linked_list__ThreadLLSimple_box_axiom_definition                       1     0     0     0     0
+internal_lib!tokens.HeapId./HeapId/id_accessor_definition                            1     0     0     0     0
+internal_lib!linked_list.ThreadLLSimple./ThreadLLSimple/instance_accessor_d...       1     0     0     0     0
+internal_lib!linked_list.ThreadLLSimple./ThreadLLSimple/heap_id_accessor_de...       1     0     0     0     0
+internal_lib__types__PagePtr_unbox_axiom_definition                                  1     0     0     0     0
+internal_lib!types.HeapPtr./HeapPtr/heap_id_invariant_definition                     1     0     0     0     0
+internal_lib!types.Heap./Heap/page_retired_min_accessor_definition                   1     0     0     0     0
+internal_lib!types.impl&__0.zeroed.?_definition                                      1     0     0     0     0
+internal_lib!page_organization.Popped./Used_constructor_definition                   1     0     0     0     0
+internal_lib!types.PageFullAccess./PageFullAccess/l_accessor_definition              1     0     0     0     0
+internal_lib__types__TldPtr_box_axiom_definition                                     1     0     0     0     0
+internal_lib!types.HeapPtr./HeapPtr/heap_id_accessor_definition                      1     0     0     0     0
+internal_lib!types.Heap./Heap/page_retired_max_accessor_definition                   1     0     0     0     0
+internal_lib!types.Heap./Heap/thread_delayed_free_accessor_definition                1     0     0     0     0
+internal_lib!types.Heap./Heap/pages_free_direct_accessor_definition                  1     0     0     0     0
+internal_lib!types.Heap./Heap/tld_ptr_accessor_definition                            1     0     0     0     0
+internal_vstd__raw_ptr__Metadata_unbox_axiom_definition                              1     0     0     0     0
+internal_lib!types.HeapPtr./HeapPtr/heap_ptr_accessor_definition                     1     0     0     0     0
+internal_lib!tokens.HeapId./HeapId/id_invariant_definition                           1     0     0     0     0
+internal_lib!types.impl&__16.wf.?_definition                                         1     0     0     0     0
+internal_vstd__ptr__PointsTo<lib!types.Heap.>_box_axiom_definition                   1     0     0     0     0
+internal_vstd__ptr__PPtr<lib!types.Heap.>_box_axiom_definition                       1     0     0     0     0
+internal_vstd__ptr__PPtr<lib!types.Tld.>_box_axiom_definition                        1     0     0     0     0
+internal_lib__types__HeapPtr_unbox_axiom_definition                                  1     0     0     0     0
+internal_lib!types.TldPtr./TldPtr/tld_ptr_accessor_definition                        1     0     0     0     0
+internal_lib!types.Heap./Heap/page_empty_ptr_accessor_definition                     1     0     0     0     0
+internal_lib!tokens.TldId./TldId/id_accessor_definition                              1     0     0     0     0
+user_lib__queues__page_queue_push_back_177                                           1     1     1     1     1
+internal_lib!types.PagePtr./PagePtr/page_id_invariant_definition                     1     1     1     1     1
+internal_vstd__raw_ptr__Metadata_box_axiom_definition                                1     0     0     0     0
+internal_lib!types.TldPtr./TldPtr/tld_id_accessor_definition                         1     0     0     0     0
+internal_lib__types__HeapPtr_box_axiom_definition                                    1     0     0     0     0
+internal_lib!tokens.HeapState./HeapState/shared_access_accessor_definition           1     1     1     1     1
+user_lib__queues__page_queue_push_back_178                                           1     2     2     2     2
+total                                                                           345371  2452  2438  2498  2438
+
+missing instantiations:
+QID                                           T    P0    P1    P2
+------------------------------------------  ---  ----  ----  ----
+user_lib__queues__page_queue_push_back_176    1     1     1     1

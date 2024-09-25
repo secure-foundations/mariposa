@@ -37,8 +37,8 @@ class QueryAnaResult:
         if is_verus:
             proc = find_verus_procedure_name(self.query_path)
             if proc != None:
-                print(f"verus procedure name:\t\t{proc}")
-        print(f"query path:\t\t{self.query_path}")
+                print(f"verus procedure:\n{proc}\n")
+        print(f"query path:\n{self.query_path}\n")
         if self.failure_type != FailureType.NONE:
             print(f"main failure type:\t{self.failure_type}")
         print("")
@@ -57,6 +57,9 @@ class ExperAnalyzer:
                     "there are queries experimented, but no files exist for them")
 
         if not allow_missing_exper:
+            for qid in path_exists_qids:
+                if qid not in qers:
+                    log_warn(f"query {qid} has no experiment results")
             log_check(path_exists_qids == set(qers.keys()), 
                         "there are queries with files, but no experiments done")
 

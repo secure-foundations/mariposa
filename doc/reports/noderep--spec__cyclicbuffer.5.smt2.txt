@@ -1,0 +1,33 @@
+base name:
+noderep--spec__cyclicbuffer.5.smt2
+
+query path:
+dbg/noderep--spec__cyclicbuffer.5.smt2/orig.smt2
+
+trace path:
+dbg/noderep--spec__cyclicbuffer.5.smt2/traces/shuffle.15962753448719086541
+
+37 unknown
+
+verus procedure:
+Function-Def lib::spec::cyclicbuffer::log_entry_idx_wrap_around
+verus-nr/src/spec/cyclicbuffer.rs:791
+
+traced instantiations:
+QID                                                                   T    P0    P1    P2    P3
+------------------------------------------------------------------  ---  ----  ----  ----  ----
+prelude_fuel_defaults                                                95     2     2     2     2
+prelude_unbox_box_int                                                 3     2     2     2     2
+prelude_nat_clip                                                      3     3     3     3     3
+internal_lib!spec.cyclicbuffer.log_entry_idx.?_definition             2     2     2     2     2
+prelude_mod_unsigned_in_bounds                                        2     0     0     0     0
+internal_lib!spec.cyclicbuffer.log_entry_idx.?_pre_post_definition    2     0     0     0     0
+prelude_eucmod                                                        2     2     2     2     2
+prelude_u_inv                                                         1     0     0     0     0
+prelude_mul                                                           1     1     1     1     1
+prelude_u_clip                                                        1     1     1     1     1
+prelude_box_unbox_int                                                 1     1     1     1     1
+prelude_add                                                           1     1     1     1     1
+prelude_mul_nats                                                      1     1     1     1     1
+prelude_has_type_int                                                  1     0     0     0     0
+total                                                               116    16    16    16    16

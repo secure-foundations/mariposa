@@ -1,0 +1,247 @@
+=== Overall Report ===
+
+project dir:	data/projs/dbg.v2/base.z3
+exper config:	verus_ext
+solver path:	bin/z3-4.13.0
+analyzer:	default
+
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| unstable   |       9 | 69.23 %      |
+| stable     |       4 | 30.77 %      |
+| total      |      13 | 100.00 %     |
+
+=== unstable (1/9) ===
+verus procedure:
+Function-Def lib::cmessage_v::CMessage::lemma_serialization_is_not_a_prefix_of
+src/marshal_v.rs:1508:
+
+query path:
+data/projs/dbg.v2/base.z3/ironsht--marshal_ironsht_specific_v.46.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          60          0          1  5.41 / 10.00         1.9
+rename           61          0          0  8.14 /  --           0.29
+reseed           61          0          0  4.70 /  --           1.75
+quake            48          0         13  6.51 / 10.00         2.23
+
+=== unstable (2/9) ===
+verus procedure:
+Function-Def lib::queues::page_queue_remove
+verus-mimalloc/queues.rs:29
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--queues__page_queue_remove.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           1          0         60  9.88 / 10.00         0.01
+rename            0          0         61  --  / 10.00          0
+reseed            0          0         61  --  / 10.00          0
+quake            30          0         31  8.50 / 10.00         0.9
+
+=== unstable (3/9) ===
+verus procedure:
+Function-Def lib::commit_segment::segment_commit_mask
+verus-mimalloc/commit_segment.rs:23
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--commit_segment.1.smt2
+
+main failure type:	mixed
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          57          0          4  0.63 / 10.00         2.74
+rename           61          0          0  0.18 /  --           0
+reseed           59          0          2  0.40 / 10.00         1.82
+quake            59          2          0  0.59 / 10.00         2.36
+
+=== unstable (4/9) ===
+verus procedure:
+Function-Def lib::queues::page_queue_push_back
+verus-mimalloc/queues.rs:402
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--queues__page_queue_push_back.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           7          0         54  9.50 / 10.00         0.2
+rename            0          0         61  --  / 10.00          0
+reseed            1          0         60  9.77 / 10.00         0.03
+quake            33          0         28  5.84 / 10.00         2.09
+
+=== unstable (5/9) ===
+verus procedure:
+Function-Def lib::spec::cyclicbuffer::log_entry_idx_wrap_around
+verus-nr/src/spec/cyclicbuffer.rs:791
+
+query path:
+data/projs/dbg.v2/base.z3/noderep--spec__cyclicbuffer.5.smt2
+
+main failure type:	mostly_unknown
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          30         31          0  0.04 / 0.03          0
+rename           61          0          0  0.03 /  --           0
+reseed           61          0          0  0.03 /  --           0
+quake            61          0          0  0.00 /  --           0.01
+
+=== unstable (6/9) ===
+verus procedure:
+Function-Def lib::segment::segment_span_free_coalesce_before
+verus-mimalloc/segment.rs:2140
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--segment__segment_span_free_coalesce_before.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          13          0         48  9.54 / 10.00         0.25
+rename            1          0         60  9.89 / 10.00         0.01
+reseed            8          0         53  9.69 / 10.00         0.14
+quake             1          0         60  9.23 / 10.00         0.1
+
+=== unstable (7/9) ===
+verus procedure:
+Function-Def lib::segment::segment_span_free_coalesce
+verus-mimalloc/segment.rs:2001
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--segment.1.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           1          0         60  9.67 / 10.00         0.04
+rename            0          0         61  --  / 10.00          0
+reseed            0          0         61  --  / 10.00          0
+quake            13          0         48  7.83 / 10.00         0.95
+
+=== unstable (8/9) ===
+verus procedure:
+Function-Def lib::commit_segment::segment_commitx
+verus-mimalloc/commit_segment.rs:129
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--commit_segment__segment_commitx.smt2
+
+main failure type:	mixed
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          57          1          3  1.43 / 7.64          2.01
+rename           61          0          0  0.98 /  --           0.03
+reseed           57          0          4  1.58 / 10.00         2.7
+quake            50          0         11  1.72 / 10.00         3.63
+
+=== unstable (9/9) ===
+verus procedure:
+Function-Def lib::segment::span_queue_delete
+verus-mimalloc/segment.rs:333
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--segment__span_queue_delete.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          54          0          7  9.09 / 10.00         0.51
+rename            1          0         60  8.84 / 10.00         0.15
+reseed           58          0          3  8.32 / 10.00         0.53
+quake            48          0         13  6.37 / 10.00         2.23
+
+
+=== stable (1/4) ===
+verus procedure:
+Function-Def lib::page_organization::PageOrg::State::take_page_from_unused_queue_ll_inv_valid_unused
+verus-mimalloc/page_organization.rs:1991
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  1.67 /  --           0.26
+rename           61          0          0  1.58 /  --           0.02
+reseed           61          0          0  1.54 /  --           0.18
+quake            61          0          0  1.29 /  --           0.41
+
+=== stable (2/4) ===
+verus procedure:
+Function-Def lib::segment::segment_span_free
+verus-mimalloc/segment.rs:1605
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--segment__segment_span_free.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          60          0          1  8.49 / 10.00         0.34
+rename           61          0          0  8.45 /  --           0.14
+reseed           61          0          0  8.45 /  --           0.13
+quake            61          0          0  6.78 /  --           2.06
+
+=== stable (3/4) ===
+verus procedure:
+Function-Def lib::spec::cyclicbuffer::log_entry_alive_wrap_around
+verus-nr/src/spec/cyclicbuffer.rs:821
+
+query path:
+data/projs/dbg.v2/base.z3/noderep--spec__cyclicbuffer.3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --           0
+rename           61          0          0  0.04 /  --           0
+reseed           61          0          0  0.04 /  --           0
+quake            61          0          0  0.01 /  --           0.07
+
+=== stable (4/4) ===
+verus procedure:
+Function-Def lib::page_organization::PageOrg::State::merge_with_after_ll_inv_valid_unused
+verus-mimalloc/page_organization.rs:3003
+
+query path:
+data/projs/dbg.v2/base.z3/mimalloc--page_organization__PageOrg.69.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  2.68 /  --           0.65
+rename           61          0          0  2.72 /  --           0.06
+reseed           61          0          0  2.27 /  --           0.31
+quake            61          0          0  2.19 /  --           0.71
+
+
+=== Report End ===

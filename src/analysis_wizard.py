@@ -26,7 +26,7 @@ def handle_basic(args):
     exp = args.experiment
     log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
-    ba.print_status(args.category_verbosity, args.query_verbosity)
+    ba.print_status(args.category_verbosity, args.query_verbosity, "verus" in exp.exp_name)
 
 def set_up_verify(subparsers):
     p = subparsers.add_parser('verify', help='analyze the verification performance only')
