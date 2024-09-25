@@ -34,7 +34,7 @@ class GroupInstFreq:
         self.__finalized = True
         self.total_count = sum(self.group.values())
         self.root_count = self.group[self.rid]
-        
+
     def is_user_only(self):
         if self.is_singleton():
             return self.rid.startswith("user_")
@@ -44,10 +44,12 @@ class GroupInstFreq:
                 return False
         return True
 
+
 def shorten_qid(qid):
     if len(qid) <= 75:
         return qid
     return qid[:75] + "..."
+
 
 class TraceAnalzyer(QueryLoader):
     def __init__(self, query_path, proofs: List[ProofInfo]):
@@ -55,11 +57,20 @@ class TraceAnalzyer(QueryLoader):
         log_check(len(proofs) != 0, "no proofs provided")
         self.proofs = proofs
         self.pf_freqs = []
+        self.sk_funs = set()
 
         for proof in proofs:
             freq = proof.as_frequency()
             freq = self.group_frequencies(freq)
             self.pf_freqs.append(freq)
+            self.sk_funs |= set(proof.sk_funs)
+
+    def needed_for_skolem(self, qid):
+        target = "$!skolem_" + qid + "!"
+        for sk_fun in self.sk_funs:
+            if target in sk_fun:
+                return True
+        return False
 
     def group_frequencies(self, freq: Dict[str, int]) -> Dict[str, GroupInstFreq]:
         res = dict()
@@ -83,7 +94,7 @@ class TraceAnalzyer(QueryLoader):
             else:
                 res.append(pf_freq[rid].total_count)
         return res
-    
+
     def get_report(self, trace_freq: Dict[str, int], table_limit):
         report = "traced instantiations:\n"
         t_freq = self.group_frequencies(trace_freq)
@@ -115,13 +126,17 @@ class TraceAnalzyer(QueryLoader):
             for qid in tg:
                 if qid == rid:
                     continue
-                row = ["- " + shorten_qid(qid), tg[qid]] + self.get_proof_inst_counts(rid, qid)
+                row = ["- " + shorten_qid(qid), tg[qid]] + self.get_proof_inst_counts(
+                    rid, qid
+                )
                 table.append(row)
 
         headers = ["QID", "T"] + [f"P{i}" for i in range(len(self.proofs))]
-        
+
         if len(table) > table_limit:
-            row = [f"... eliding {len(table) - table_limit} more rows ..."] + ["..."] * (len(headers) - 1)
+            row = [f"... eliding {len(table) - table_limit} more rows ..."] + [
+                "..."
+            ] * (len(headers) - 1)
             table = table[:table_limit]
             table.append(row)
         table.append(["total"] + group_sums)
@@ -134,7 +149,9 @@ class TraceAnalzyer(QueryLoader):
 
         if len(table) > table_limit:
             headers = ["QID"] + [f"P{i}" for i in range(len(self.proofs))]
-            row = [f"... eliding {len(table) - table_limit} more rows ..."] + ["..."] * (len(headers) - 1)
+            row = [f"... eliding {len(table) - table_limit} more rows ..."] + [
+                "..."
+            ] * (len(headers) - 1)
             table = table[:table_limit]
             table.append(row)
 
@@ -168,6 +185,9 @@ class TraceAnalzyer(QueryLoader):
                 continue
             necessary = all([c != 0 for c in self.get_proof_inst_counts(rid)])
 
+            if self.needed_for_skolem(rid):
+                continue
+
             if not necessary:
                 selected.add(rid)
 
@@ -193,25 +213,32 @@ class TraceAnalzyer(QueryLoader):
 
             if len(selected) >= top_n:
                 break
-            
-            necessary = all([c != 0 for c in self.get_proof_inst_counts(rid)])
 
-            if rid.startswith("user_") and not necessary:
+            if self.needed_for_skolem(rid):
+                continue
+
+            useless = all([c == 0 for c in self.get_proof_inst_counts(rid)])
+
+            if rid.startswith("user_") and useless:
                 selected.add(rid)
                 continue
 
-            if tg.is_user_only() and not necessary:
+            if tg.is_user_only() and useless:
                 selected.add(rid)
                 continue
 
             for qid in tg:
-                necessary = all([c != 0 for c in self.get_proof_inst_counts(rid, qid)])
+                useless = all([c == 0 for c in self.get_proof_inst_counts(rid, qid)])
                 # if there is a nested quantifier that is not needed
-                if tg[qid] != 0 and not necessary and qid.startswith("user_"):
+                if (
+                    tg[qid] != 0
+                    and useless
+                    and qid.startswith("user_")
+                    and not self.needed_for_skolem(qid)
+                ):
                     selected.add(qid)
 
         return selected
-
 
     # def accumulate_inst_count(self, trace) -> Dict[str, GroupInstCounter]:
     #     roots = dict()

@@ -14,7 +14,12 @@ import os, sys
 from typing import Dict, List
 from base.defs import DEBUG_ROOT, MARIPOSA
 from base.solver import output_as_rcode
-from utils.query_utils import Mutation, emit_mutant_query, find_verus_procedure_name, parse_trace
+from utils.query_utils import (
+    Mutation,
+    emit_mutant_query,
+    find_verus_procedure_name,
+    parse_trace,
+)
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from tabulate import tabulate
 from query.instantiater import InstError, Instantiater, ProofInfo
@@ -109,7 +114,7 @@ class MutantInfo:
         cf = open(self.core_log, "r")
         lines = cf.readlines()
         cf.close()
-        
+
         if len(lines) == 0 or "unsat\n" not in lines:
             return None
 
@@ -190,7 +195,8 @@ def create_mut_table(cur):
         from_core BOOLEAN DEFAULT FALSE,
         PRIMARY KEY (mutation, seed))"""
     )
-    
+
+
 class Debugger3:
     def __init__(self, query_path, clear):
         self.base_name = os.path.basename(query_path)
@@ -204,7 +210,7 @@ class Debugger3:
         self.db_path = f"{self.sub_root}/db.sqlite"
 
         self.__init_dirs(query_path, clear)
-        
+
         self.traces: List[MutantInfo] = []
         self.proofs: List[MutantInfo] = []
         self.cores: List[MutantInfo] = []
@@ -478,7 +484,7 @@ class Debugger3:
                 f.write(report)
         else:
             print(report)
-            
+
     def select_suppress_qids(self, tmi: MutantInfo):
         log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
         traced = tmi.get_qids()
@@ -583,19 +589,31 @@ if __name__ == "__main__":
     # dbg.debug_trace(tmi, 1000, sys.argv[2])
     remove_ids = dbg.select_suppress_qids(tmi)
 
+    # remove_ids = {
+    #     "user_vstd__seq_lib__impl&%0__filter_lemma_broadcast_62",
+    #     "mariposa_qid_116",
+    #     # "user_rabbitmq_controller__state_machine__state_machine__StateMachine__next_result_108",
+    #     # "user_vstd__set__axiom_set_remove_insert_70",
+    #     # "user_rabbitmq_controller__state_machine__state_machine__StateMachine__next_result_10",
+    # }
     # remove_ids = set([
-    #     # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-    #     # "user_vstd__set__axiom_set_ext_equal_100",
-    #     # "internal_lib!types.page_organization_used_queues_match.?_definition",
+    #     "internal_crate__fun__2_constructor_definition",
+    #     "internal_core__result__Result_unbox_axiom_definition",
+    #     "ser_vstd__seq_lib__impl&%0__filter_lemma_broadcast_62",
+    # #     # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
+    # #     # "user_vstd__set__axiom_set_ext_equal_100",
+    # #     # "internal_lib!types.page_organization_used_queues_match.?_definition",
     # ])
 
-    inst_ids = set([
-        # "user_lib__types__Local__wf_main_172",
-        # "user_lib__types__Local__wf_main_173",
-        # "user_lib__types__Local__wf_main_174",
-        # "user_lib__types__Local__wf_main_175",
-        # "user_lib__types__Local__wf_main_176",
-        # "internal_lib!types.impl&__21.wf_main.?_definition"
-    ])
+    inst_ids = set(
+        [
+            # "user_lib__types__Local__wf_main_172",
+            # "user_lib__types__Local__wf_main_173",
+            # "user_lib__types__Local__wf_main_174",
+            # "user_lib__types__Local__wf_main_175",
+            # "user_lib__types__Local__wf_main_176",
+            # "internal_lib!types.impl&__21.wf_main.?_definition"
+        ]
+    )
 
     dbg.output_query(sys.argv[2], remove_ids, inst_ids)
