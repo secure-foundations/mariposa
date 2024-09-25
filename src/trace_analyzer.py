@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from tabulate import tabulate
-from query.instantiater import ProofInfo, QueryLoader
+from instantiater import ProofInfo, QueryLoader
 from utils.system_utils import log_check, log_info
 
 # trace_qids
@@ -217,7 +217,8 @@ class TraceAnalzyer(QueryLoader):
             if self.needed_for_skolem(rid):
                 continue
 
-            useless = all([c == 0 for c in self.get_proof_inst_counts(rid)])
+            # useless = all([c == 0 for c in self.get_proof_inst_counts(rid)])
+            useless = any([c == 0 for c in self.get_proof_inst_counts(rid)])
 
             if rid.startswith("user_") and useless:
                 selected.add(rid)

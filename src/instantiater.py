@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time
 import pickle
 from typing import Dict
@@ -282,3 +284,9 @@ class Instantiater(QueryLoader):
         with open(out_file_path, "wb") as f:
             pickle.dump(pi, f)
 
+if __name__ == "__main__":
+    i = Instantiater(sys.argv[1])
+    i.process()
+    i.save_state("insts.pickle")
+    pi = ProofInfo.load("insts.pickle")
+    pi.print_report()

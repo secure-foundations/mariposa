@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import binascii, random
 import sqlite3
 import pickle
@@ -7,7 +8,7 @@ import subprocess
 import time
 from base.solver import RCode
 from query.inst_mapper import collapse_sexpr, hack_quantifier_removal
-from query.trace_analyzer import TraceAnalzyer
+from trace_analyzer import TraceAnalzyer
 from utils.database_utils import table_exists
 import multiprocessing
 import os, sys
@@ -22,7 +23,7 @@ from utils.query_utils import (
 )
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from tabulate import tabulate
-from query.instantiater import InstError, Instantiater, ProofInfo
+from instantiater import InstError, Instantiater, ProofInfo
 
 PROC_COUNT = 4
 MUTANT_COUNT = 8
@@ -30,11 +31,12 @@ MUTANT_COUNT = 8
 TRACE_TIME_LIMIT_SEC = 10
 CORE_TIME_LIMIT_SEC = 60
 
-CORE_TOTOAL_TIME_LIMIT_SEC = 120
+TRACE_TOTAL_TIME_LIMIT_SEC = 120
+CORE_TOTAL_TIME_LIMIT_SEC = 120
 PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 TRACE_GOAL_COUNT = 4
-PROOF_GOAL_COUNT = 1
+PROOF_GOAL_COUNT = 2
 CORE_GOAL_COUNT = 2
 
 TRACES = "traces"
@@ -198,7 +200,7 @@ def create_mut_table(cur):
 
 
 class Debugger3:
-    def __init__(self, query_path, clear):
+    def __init__(self, query_path, clear, from_core):
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.base_name}"
         self.orig_path = f"{self.sub_root}/orig.smt2"
@@ -208,6 +210,7 @@ class Debugger3:
         self.insts_dir = f"{self.sub_root}/{INSTS}"
         self.cores_dir = f"{self.sub_root}/{CORES}"
         self.db_path = f"{self.sub_root}/db.sqlite"
+        self.__build_proof_from_core = from_core
 
         self.__init_dirs(query_path, clear)
 
@@ -339,7 +342,7 @@ class Debugger3:
                 [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
             )
 
-            res = self.__run_with_pool(f, args, goal=TRACE_GOAL_COUNT)
+            res = self.__run_with_pool(f, args, goal=TRACE_GOAL_COUNT, time_bound=TRACE_TOTAL_TIME_LIMIT_SEC)
             cur = self.con.cursor()
             for i, r in enumerate(res):
                 cur.execute(
@@ -364,7 +367,7 @@ class Debugger3:
         )
 
         res = self.__run_with_pool(
-            _build_core, args, goal=goal, time_bound=CORE_TOTOAL_TIME_LIMIT_SEC
+            _build_core, args, goal=goal, time_bound=CORE_TOTAL_TIME_LIMIT_SEC
         )
         log_check(len(res) != 0, "no core built")
 
@@ -379,7 +382,7 @@ class Debugger3:
         goal = PROOF_GOAL_COUNT - count
         res = []
 
-        if len(self.cores) != 0:
+        if len(self.cores) != 0 and self.__build_proof_from_core:
             skip = set([(mi.mutation, mi.seed) for mi in self.proofs])
             args = [mi for mi in self.cores if (mi.mutation, mi.seed) not in skip]
             log_info(
@@ -467,8 +470,8 @@ class Debugger3:
         ta = TraceAnalzyer(tmi.mut_path, pins)
         report = ta.get_report(traced, table_limit)
 
-        # verus_proc = find_verus_procedure_name(self.orig_path)
-        verus_proc = "unknown"
+        verus_proc = find_verus_procedure_name(self.orig_path)
+        # verus_proc = "unknown"
 
         if report_file is not None:
             with open(report_file, "w+") as f:
@@ -576,44 +579,31 @@ class Debugger3:
 
 
 if __name__ == "__main__":
-    # i = Instantiater(sys.argv[1])
-    # i.process()
-    # i.save_state("insts.pickle")
-    # pi = ProofInfo.load("insts.pickle")
-    # pi.print_report()
-    # assert False
+    parser = argparse.ArgumentParser(description="Mariposa Debugger. ")
+    # subparsers = parser.add_subparsers(dest='sub_command', help="")
+    parser.add_argument("-i", "--input-query-path", required=True, help="the input query path")
+    parser.add_argument("-o", "--output-query-path", required=False, help="the output query path")
+    parser.add_argument("-r", "--report-path", required=False, help="the output report path")
+    parser.add_argument("--from-core", default=True, action='store_false', help="build proofs from cores")
+    parser.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment")
 
-    dbg = Debugger3(sys.argv[1], False)
+    args = parser.parse_args()
+    dbg = Debugger3(args.input_query_path, args.clear, args.from_core)
     # dbg.print_status()
     tmi = dbg.get_candidate_trace()
-    # dbg.debug_trace(tmi, 1000, sys.argv[2])
-    remove_ids = dbg.select_suppress_qids(tmi)
+    if args.report_path is not None:
+        dbg.debug_trace(tmi, 2000, args.report_path)
+    else:
+        dbg.debug_trace(tmi, 50)
 
-    # remove_ids = {
-    #     "user_vstd__seq_lib__impl&%0__filter_lemma_broadcast_62",
-    #     "mariposa_qid_116",
-    #     # "user_rabbitmq_controller__state_machine__state_machine__StateMachine__next_result_108",
-    #     # "user_vstd__set__axiom_set_remove_insert_70",
-    #     # "user_rabbitmq_controller__state_machine__state_machine__StateMachine__next_result_10",
-    # }
+    if args.output_query_path is None:
+        sys.exit(0)
+
+    remove_ids = dbg.select_suppress_qids(tmi)
     # remove_ids = set([
-    #     "internal_crate__fun__2_constructor_definition",
-    #     "internal_core__result__Result_unbox_axiom_definition",
-    #     "ser_vstd__seq_lib__impl&%0__filter_lemma_broadcast_62",
-    # #     # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-    # #     # "user_vstd__set__axiom_set_ext_equal_100",
-    # #     # "internal_lib!types.page_organization_used_queues_match.?_definition",
     # ])
 
-    inst_ids = set(
-        [
-            # "user_lib__types__Local__wf_main_172",
-            # "user_lib__types__Local__wf_main_173",
-            # "user_lib__types__Local__wf_main_174",
-            # "user_lib__types__Local__wf_main_175",
-            # "user_lib__types__Local__wf_main_176",
-            # "internal_lib!types.impl&__21.wf_main.?_definition"
-        ]
-    )
+    inst_ids = set([
+    ])
 
-    dbg.output_query(sys.argv[2], remove_ids, inst_ids)
+    dbg.output_query(args.output_query_path, remove_ids, inst_ids)
