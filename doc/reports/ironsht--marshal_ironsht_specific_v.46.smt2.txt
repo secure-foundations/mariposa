@@ -1,196 +1,209 @@
+base name:
 ironsht--marshal_ironsht_specific_v.46.smt2
+
+query path:
 dbg/ironsht--marshal_ironsht_specific_v.46.smt2/orig.smt2
+
+trace path:
+dbg/ironsht--marshal_ironsht_specific_v.46.smt2/traces/rename.17545535265080152562
+
+11406 unknown
+
+verus procedure:
+Function-Def lib::cmessage_v::CMessage::lemma_serialization_is_not_a_prefix_of
+src/marshal_v.rs:1508:
+
 traced instantiations:
-QID                                                                                                                                           T    P0    P1    P2
----------------------------------------------------------------------------------------------------------------------------------------  ------  ----  ----  ----
-internal_vstd__seq__Seq<u8.>_unbox_axiom_definition                                                                                        7110    30    30    30
-prelude_unbox_box_int                                                                                                                      6802    71    71    71
-internal_vstd__seq__Seq<u8.>_box_axiom_definition                                                                                          6290    21    21    21
-internal_vstd__seq__Seq<u8.>_has_type_always_definition                                                                                    5897    13    13    13
-internal_lib!marshal_v.Marshalable.ghost_serialize.?_pre_post_definition                                                                   4945    46    46    46
-internal_vstd!seq.Seq.len.?_pre_post_definition                                                                                            4521    63    63    63
-user_vstd__seq__axiom_seq_add_len_19                                                                                                       3906    45    45    45
-user_vstd__seq_lib__impl&%0__add_empty_left_75                                                                                             3811     0     0     0
-user_vstd__seq_lib__impl&%0__add_empty_right_76                                                                                            3811     0     0     0
-internal_vstd!seq.Seq.add.?_pre_post_definition                                                                                            3811    25    25    25
-prelude_add                                                                                                                                3468    80    80    80
-internal_core!option.Option./Some/0_accessor_definition                                                                                    2818     0     0     0
-prelude_nat_clip                                                                                                                           2562    40    40    40
-internal_vstd!seq.Seq.index.?_pre_post_definition                                                                                          2559     0     0     0
-internal_vstd!seq_lib.impl&__0.fold_left._fuel_to_zero_definition                                                                          2429     0     0     0
-prelude_u_inv                                                                                                                              2422    14    14    14
-internal_core__option__Option_box_axiom_definition                                                                                         2227    22    22    22
-prelude_sub                                                                                                                                2011    35    35    35
-prelude_has_type_uint                                                                                                                      1966    14    14    14
-internal_lib__keys_t__SHTKey_box_axiom_definition                                                                                          1867    32    32    32
-prelude_box_unbox_uint                                                                                                                     1832     7     7     7
-prelude_unbox_uint                                                                                                                         1832     0     0     0
-internal_lib!keys_t.SHTKey./SHTKey/ukey_accessor_definition                                                                                1738    30    30    30
-internal_core!option.Option./Some_constructor_definition                                                                                   1700     0     0     0
-user_vstd__seq__axiom_seq_add_index2_21                                                                                                    1688    26    26    26
-user_vstd__seq__axiom_seq_add_index1_20                                                                                                    1688    64    64    64
-internal_lib!marshal_v.Marshalable.ghost_serialize.?_definition                                                                            1686    22    22    22
-internal_core!option.Option./Some/0_invariant_definition                                                                                   1474     0     0     0
-internal_vstd!seq.Seq.subrange.?_pre_post_definition                                                                                       1220    12    12    12
-internal_lib__keys_t__SHTKey_unbox_axiom_definition                                                                                        1197     0     0     0
-internal_lib!keys_t.SHTKey./SHTKey/ukey_invariant_definition                                                                               1192     0     0     0
-internal_lib!keys_t.SHTKey./SHTKey_constructor_definition                                                                                  1141     0     0     0
-prelude_u_clip                                                                                                                             1064    13    13    13
-internal_crate__tuple__2_box_axiom_definition                                                                                              1063    30    30    30
-internal_tuple__2./tuple__2/0_accessor_definition                                                                                          1033    30    30    30
-internal_tuple__2./tuple__2/1_accessor_definition                                                                                           955    30    30    30
-internal_vstd!seq.Seq.last.?_definition                                                                                                     842     0     0     0
-internal_vstd!seq_lib.impl&__0.drop_last.?_pre_post_definition                                                                              842     0     0     0
-internal_vstd!seq.Seq.last.?_pre_post_definition                                                                                            842     0     0     0
-internal_vstd!seq_lib.impl&__0.drop_last.?_definition                                                                                       842     0     0     0
-mariposa_qid_52                                                                                                                             841     2     2     2
-internal_lib!keys_t.KeyIterator./KeyIterator/k_accessor_definition                                                                          756    18    18    18
-internal_lib__keys_t__KeyIterator_box_axiom_definition                                                                                      756    18    18    18
-internal_core__option__Option_unbox_axiom_definition                                                                                        749     0     0     0
-internal_lib!marshal_v.Marshalable.view_equal.?_pre_post_definition                                                                         613     8     8     8
-internal_lib__keys_t__KeyRange_box_axiom_definition                                                                                         595    10    10    10
-prelude_unbox_box_bool                                                                                                                      551     4     4     4
-internal_vstd!view.View.view.?_pre_post_definition                                                                                          538     5     5     5
-prelude_has_type_bool                                                                                                                       537     0     0     0
-internal_vstd!seq_lib.impl&__0.fold_left.?_definition                                                                                       526     0     0     0
-internal_vstd!seq_lib.impl&__0.fold_left.?_pre_post_definition                                                                              526     3     3     3
-mariposa_qid_28                                                                                                                             519     6     6     6
-mariposa_qid_53                                                                                                                             516     4     4     4
-prelude_box_unbox_int                                                                                                                       509    50    50    50
-mariposa_qid_34                                                                                                                             469    20    20    20
-mariposa_qid_31                                                                                                                             460     3     3     3
-prelude_box_unbox_bool                                                                                                                      420     8     8     8
-mariposa_qid_41                                                                                                                             415    16    16    16
-internal_lib!keys_t.KeyRange./KeyRange/lo_accessor_definition                                                                               378     9     9     9
-internal_lib!keys_t.KeyRange./KeyRange/hi_accessor_definition                                                                               378     9     9     9
-internal_vstd!seq_lib.impl&__0.fold_left._fuel_to_body_definition                                                                           376     0     0     0
-internal_alloc__vec__Vec<u8./alloc!alloc.Global.>_box_axiom_definition                                                                      370     0     0     0
-internal_alloc__vec__Vec<u8./alloc!alloc.Global.>_unbox_axiom_definition                                                                    358     0     0     0
-prelude_has_type_int                                                                                                                        355    46    46    46
-mariposa_qid_63                                                                                                                             312
-- [root]                                                                                                                                    120    19    19    19
-- mariposa_qid_62                                                                                                                             0     0     0     0
-- user_lib__cmessage_v__CMessage__lemma_serialization_is_not_a_prefix_of_96                                                                 192    19    19    19
-internal_lib!keys_t.KeyIterator./KeyIterator/k_invariant_definition                                                                         269     0     0     0
-internal_lib!keys_t.KeyIterator./KeyIterator_constructor_definition                                                                         269     0     0     0
-internal_lib__keys_t__KeyIterator_unbox_axiom_definition                                                                                    267     0     0     0
-internal_vstd!seq.Seq.push.?_pre_post_definition                                                                                            253     6     6     6
-user_vstd__seq__axiom_seq_subrange_index_18                                                                                                 253    32    32    32
-user_vstd__seq__axiom_seq_push_len_5                                                                                                        238     6     6     6
-user_vstd__seq__axiom_seq_subrange_len_17                                                                                                   233    17    17    17
-internal_lib!keys_t.KeyRange./KeyRange_constructor_definition                                                                               206     0     0     0
-internal_lib!marshal_v.Marshalable.view_equal.?_definition                                                                                  206     3     3     3
-internal_vstd__seq__Seq<lib!hashmap_t.CKeyKV.>_unbox_axiom_definition                                                                       199     0     0     0
-mariposa_qid_45                                                                                                                             191     9     9     9
-internal_vstd__seq__Seq<lib!hashmap_t.CKeyKV.>_box_axiom_definition                                                                         187     0     0     0
-internal_vstd__seq__Seq<lib!hashmap_t.CKeyKV.>_has_type_always_definition                                                                   187     0     0     0
-internal_lib__keys_t__KeyRange_unbox_axiom_definition                                                                                       186     0     0     0
-internal_alloc__vec__Vec<u8./alloc!alloc.Global.>_has_type_always_definition                                                                182     4     4     4
-mariposa_qid_46                                                                                                                             172    11    11    11
-prelude_fuel_defaults                                                                                                                       165    24    24    24
-mariposa_qid_32                                                                                                                             165     0     0     0
-internal_tuple__4./tuple__4/1_accessor_definition                                                                                           151    11    11    11
-internal_lib!keys_t.KeyRange./KeyRange/lo_invariant_definition                                                                              151     0     0     0
-internal_tuple__4./tuple__4/0_accessor_definition                                                                                           151    11    11    11
-internal_lib!keys_t.KeyRange./KeyRange/hi_invariant_definition                                                                              151     0     0     0
-internal_crate__tuple__4_box_axiom_definition                                                                                               151    11    11    11
-mariposa_qid_49                                                                                                                             140     0     0     0
-internal_lib!hashmap_t.CKeyKV./CKeyKV/v_accessor_definition                                                                                 140     0     0     0
-internal_lib!hashmap_t.CKeyKV./CKeyKV/k_invariant_definition                                                                                127     0     0     0
-internal_lib!hashmap_t.CKeyKV./CKeyKV_constructor_definition                                                                                127     0     0     0
-internal_lib__hashmap_t__CKeyKV_box_axiom_definition                                                                                        127     0     0     0
-internal_lib__hashmap_t__CKeyKV_unbox_axiom_definition                                                                                      127     1     1     1
-internal_lib!cmessage_v.CMessage./Shard/kr_invariant_definition                                                                             109     2     2     2
-internal_lib!cmessage_v.CMessage./Shard/kr_accessor_definition                                                                              109     2     2     2
-mariposa_qid_59                                                                                                                              92
-- [root]                                                                                                                                     92     0     0     0
-- user_alloc__vec__Vec__view_equal_90                                                                                                         0     0     0     0
-mariposa_qid_25                                                                                                                              92     0     0     0
-internal_lib!hashmap_t.CKeyKV./CKeyKV/k_accessor_definition                                                                                  90     0     0     0
-internal_tuple__2./tuple__2_constructor_definition                                                                                           87     0     0     0
-prelude_as_type                                                                                                                              86    19    19    19
-user_vstd__seq__axiom_seq_push_index_different_7                                                                                             85     0     0     0
-user_vstd__seq__axiom_seq_push_index_same_6                                                                                                  85    16    16    16
-internal_lib!cmessage_v.CMessage./SetRequest/k_accessor_definition                                                                           81     2     2     2
-internal_lib!cmessage_v.CMessage./SetRequest/k_invariant_definition                                                                          81     2     2     2
-internal_lib!marshal_v.Marshalable.is_marshalable.?_pre_post_definition                                                                      79     0     0     0
-internal_lib!cmessage_v.CMessage./Reply/v_accessor_definition                                                                                78     0     0     0
-internal_lib!cmessage_v.CMessage./Reply/v_invariant_definition                                                                               78     2     2     2
-mariposa_qid_42                                                                                                                              74     8     8     8
-internal_lib!marshal_ironsht_specific_v.impl&__5.forward_bijection_for_view_equality_do_not_use_for_anything_else.?_pre_post_definition      70     0     0     0
-internal_lib!marshal_ironsht_specific_v.impl&__5.forward_bijection_for_view_equality_do_not_use_for_anything_else.?_definition               70     0     0     0
-internal_alloc__vec__Vec<lib!hashmap_t.CKeyKV./alloc!alloc.Global.>_box_axiom_definition                                                     70     2     2     2
-internal_lib__hashmap_t__CKeyHashMap_box_axiom_definition                                                                                    66     4     4     4
-internal_core!option.Option./None_constructor_definition                                                                                     65     0     0     0
-mariposa_qid_55                                                                                                                              60     2     2     2
-internal_lib!cmessage_v.CMessage./Delegate/range_accessor_definition                                                                         58     0     0     0
-internal_lib!cmessage_v.CMessage./SetRequest/v_accessor_definition                                                                           57     0     0     0
-internal_lib!cmessage_v.CMessage./SetRequest/v_invariant_definition                                                                          57     2     2     2
-internal_lib!io_t.EndPoint./EndPoint/id_accessor_definition                                                                                  56     4     4     4
-internal_lib!cmessage_v.CMessage./Delegate/range_invariant_definition                                                                        56     2     2     2
-mariposa_qid_11                                                                                                                              55     2     2     2
-prelude_mk_fun                                                                                                                               51     2     2     2
-internal_tuple__4./tuple__4/2_accessor_definition                                                                                            51    11    11    11
-internal_tuple__4./tuple__4/3_accessor_definition                                                                                            51    11    11    11
-internal_ens__lib!marshal_v.Marshalable.lemma_view_equal_symmetric._definition                                                               51     7     7     7
-internal_crate__fun__2_box_axiom_definition                                                                                                  51     2     2     2
-internal_lib!marshal_ironsht_specific_v.impl&__9.forward_bijection_for_view_equality_do_not_use_for_anything_else.?_definition               50     6     6     6
-mariposa_qid_36                                                                                                                              50     0     0     0
-internal_lib!marshal_ironsht_specific_v.impl&__9.forward_bijection_for_view_equality_do_not_use_for_anything_else.?_pre_post_definition      50     0     0     0
-prelude_ext_eq                                                                                                                               47    11    11    11
-internal_lib__io_t__EndPoint_box_axiom_definition                                                                                            47    11    11    11
-user_vstd__seq__axiom_seq_ext_equal_13                                                                                                       47
-- [root]                                                                                                                                     47    11    11    11
-- user_vstd__seq__axiom_seq_ext_equal_12                                                                                                      0     0     0     0
-internal_ens__lib!marshal_v.Marshalable.lemma_serialization_is_not_a_prefix_of._definition                                                   46    11    11    11
-internal_tuple__2./tuple__2/0_invariant_definition                                                                                           46     0     0     0
-internal_crate__tuple__2_unbox_axiom_definition                                                                                              46     0     0     0
-mariposa_qid_35                                                                                                                              46     0     0     0
-internal_tuple__2./tuple__2/1_invariant_definition                                                                                           46     0     0     0
-internal_lib!cmessage_v.CMessage./Delegate/h_accessor_definition                                                                             46     1     1     1
-internal_lib!cmessage_v.CMessage./Reply/k_accessor_definition                                                                                45     2     2     2
-mariposa_qid_27                                                                                                                              44     3     3     3
-mariposa_qid_33                                                                                                                              43     0     0     0
-internal_lib!cmessage_v.CMessage./Reply/k_invariant_definition                                                                               38     2     2     2
-internal_req__lib!marshal_v.Marshalable.lemma_serialization_is_not_a_prefix_of._definition                                                   32    12    12    12
-internal_lib!cmessage_v.CMessage./Delegate_constructor_definition                                                                            25     0     0     0
-internal_lib!cmessage_v.CMessage./Shard/recipient_accessor_definition                                                                        20     2     2     2
-user_vstd__seq__axiom_seq_empty_2                                                                                                            20     1     1     1
-internal_lib!cmessage_v.CMessage./Redirect/id_accessor_definition                                                                            19     2     2     2
-internal_vstd!seq.Seq.empty.?_pre_post_definition                                                                                            18     1     1     1
-internal_lib!cmessage_v.CMessage./Redirect/k_accessor_definition                                                                             17     2     2     2
-internal_lib!cmessage_v.CMessage./Redirect/k_invariant_definition                                                                            17     2     2     2
-internal_lib!cmessage_v.CMessage./Redirect_constructor_definition                                                                            17     0     0     0
-mariposa_qid_30                                                                                                                              16     0     0     0
-internal_lib!cmessage_v.CMessage./Reply_constructor_definition                                                                               14     0     0     0
-internal_lib!cmessage_v.CMessage./SetRequest_constructor_definition                                                                          14     0     0     0
-internal_lib__io_t__EndPoint_has_type_always_definition                                                                                      12     8     8     8
-internal_lib__io_t__EndPoint_unbox_axiom_definition                                                                                          12     0     0     0
-internal_lib!cmessage_v.CMessage./Shard_constructor_definition                                                                               12     0     0     0
-mariposa_qid_40                                                                                                                              12     0     0     0
-internal_alloc__vec__Vec<lib!hashmap_t.CKeyKV./alloc!alloc.Global.>_unbox_axiom_definition                                                    9     0     0     0
-internal_alloc__vec__Vec<lib!hashmap_t.CKeyKV./alloc!alloc.Global.>_has_type_always_definition                                                9     2     2     2
-internal_lib!cmessage_v.CMessage./GetRequest/k_accessor_definition                                                                            8     2     2     2
-internal_ens__lib!marshal_v.Marshalable.lemma_same_views_serialize_the_same._definition                                                       8     5     5     5
-internal_lib!cmessage_v.CMessage./GetRequest_constructor_definition                                                                           8     0     0     0
-internal_lib!cmessage_v.CMessage./GetRequest/k_invariant_definition                                                                           8     2     2     2
-internal_crate__fun__2_constructor_definition                                                                                                 7
-- [root]                                                                                                                                      7     2     2     2
-- internal_crate__fun__2_constructor_inner_definition                                                                                         0     0     0     0
-internal_crate__fun__2_unbox_axiom_definition                                                                                                 7     0     0     0
-mariposa_qid_26                                                                                                                               6     0     0     0
-internal_lib__hashmap_t__CKeyHashMap_has_type_always_definition                                                                               6     4     4     4
-internal_lib__hashmap_t__CKeyHashMap_unbox_axiom_definition                                                                                   6     0     0     0
-user_vstd__seq_lib__impl&%0__push_distributes_over_add_77                                                                                     6     0     0     0
-internal_req__lib!marshal_v.Marshalable.lemma_same_views_serialize_the_same._definition                                                       5     5     5     5
-mariposa_qid_44                                                                                                                               4     0     0     0
-mariposa_qid_57                                                                                                                               4     2     2     2
-internal_lib!marshal_ironsht_specific_v.impl&__7.forward_bijection_for_view_equality_do_not_use_for_anything_else.?_definition                4     0     0     0
-mariposa_qid_43                                                                                                                               4     0     0     0
-internal_crate__fun__2_apply_definition                                                                                                       4     0     0     0
-mariposa_qid_37                                                                                                                               3     0     0     0
-mariposa_qid_38                                                                                                                               2     1     1     1
-internal_lib__cmessage_v__CMessage_box_axiom_definition                                                                                       2     0     0     0
-internal_lib__cmessage_v__CMessage_unbox_axiom_definition                                                                                     2     0     0     0
-internal_lib__marshal_v__impl&__4_trait_impl_definition                                                                                       1     0     0     0
-total                                                                                                                                    122736  1455  1455  1455
+QID                                                                                  T    P0    P1    P2
+------------------------------------------------------------------------------  ------  ----  ----  ----
+internal_vstd__seq__Seq<u8.>_unbox_axiom_definition                               7110    30    30    30
+prelude_unbox_box_int                                                             6802    71    71    71
+internal_vstd__seq__Seq<u8.>_box_axiom_definition                                 6290    21    21    21
+internal_vstd__seq__Seq<u8.>_has_type_always_definition                           5897    13    13    13
+internal_lib!marshal_v.Marshalable.ghost_serialize.?_pre_post_definition          4945    46    46    46
+internal_vstd!seq.Seq.len.?_pre_post_definition                                   4521    63    63    63
+user_vstd__seq__axiom_seq_add_len_19                                              3906    45    45    45
+internal_vstd!seq.Seq.add.?_pre_post_definition                                   3811    25    25    25
+user_vstd__seq_lib__impl&%0__add_empty_left_75                                    3811     0     0     0
+user_vstd__seq_lib__impl&%0__add_empty_right_76                                   3811     0     0     0
+prelude_add                                                                       3468    80    80    80
+internal_core!option.Option./Some/0_accessor_definition                           2818     0     0     0
+prelude_nat_clip                                                                  2562    40    40    40
+internal_vstd!seq.Seq.index.?_pre_post_definition                                 2559     0     0     0
+internal_vstd!seq_lib.impl&__0.fold_left._fuel_to_zero_definition                 2429     0     0     0
+prelude_u_inv                                                                     2422    14    14    14
+internal_core__option__Option_box_axiom_definition                                2227    22    22    22
+prelude_sub                                                                       2011    35    35    35
+prelude_has_type_uint                                                             1966    14    14    14
+internal_lib__keys_t__SHTKey_box_axiom_definition                                 1867    32    32    32
+prelude_unbox_uint                                                                1832     0     0     0
+prelude_box_unbox_uint                                                            1832     7     7     7
+internal_lib!keys_t.SHTKey./SHTKey/ukey_accessor_definition                       1738    30    30    30
+internal_core!option.Option./Some_constructor_definition                          1700     0     0     0
+user_vstd__seq__axiom_seq_add_index1_20                                           1688    64    64    64
+user_vstd__seq__axiom_seq_add_index2_21                                           1688    26    26    26
+internal_lib!marshal_v.Marshalable.ghost_serialize.?_definition                   1686    22    22    22
+internal_core!option.Option./Some/0_invariant_definition                          1474     0     0     0
+internal_vstd!seq.Seq.subrange.?_pre_post_definition                              1220    12    12    12
+internal_lib__keys_t__SHTKey_unbox_axiom_definition                               1197     0     0     0
+internal_lib!keys_t.SHTKey./SHTKey/ukey_invariant_definition                      1192     0     0     0
+internal_lib!keys_t.SHTKey./SHTKey_constructor_definition                         1141     0     0     0
+prelude_u_clip                                                                    1064    13    13    13
+internal_crate__tuple__2_box_axiom_definition                                     1063    30    30    30
+internal_tuple__2./tuple__2/0_accessor_definition                                 1033    30    30    30
+internal_tuple__2./tuple__2/1_accessor_definition                                  955    30    30    30
+internal_vstd!seq_lib.impl&__0.drop_last.?_definition                              842     0     0     0
+internal_vstd!seq.Seq.last.?_pre_post_definition                                   842     0     0     0
+internal_vstd!seq_lib.impl&__0.drop_last.?_pre_post_definition                     842     0     0     0
+internal_vstd!seq.Seq.last.?_definition                                            842     0     0     0
+mariposa_qid_52                                                                    841     2     2     2
+internal_lib__keys_t__KeyIterator_box_axiom_definition                             756    18    18    18
+internal_lib!keys_t.KeyIterator./KeyIterator/k_accessor_definition                 756    18    18    18
+internal_core__option__Option_unbox_axiom_definition                               749     0     0     0
+internal_lib!marshal_v.Marshalable.view_equal.?_pre_post_definition                613     8     8     8
+internal_lib__keys_t__KeyRange_box_axiom_definition                                595    10    10    10
+prelude_unbox_box_bool                                                             551     4     4     4
+internal_vstd!view.View.view.?_pre_post_definition                                 538     5     5     5
+prelude_has_type_bool                                                              537     0     0     0
+internal_vstd!seq_lib.impl&__0.fold_left.?_definition                              526     0     0     0
+internal_vstd!seq_lib.impl&__0.fold_left.?_pre_post_definition                     526     3     3     3
+mariposa_qid_28                                                                    519     6     6     6
+mariposa_qid_53                                                                    516     4     4     4
+prelude_box_unbox_int                                                              509    50    50    50
+mariposa_qid_34                                                                    469    20    20    20
+mariposa_qid_31                                                                    460     3     3     3
+prelude_box_unbox_bool                                                             420     8     8     8
+mariposa_qid_41                                                                    415    16    16    16
+internal_lib!keys_t.KeyRange./KeyRange/hi_accessor_definition                      378     9     9     9
+internal_lib!keys_t.KeyRange./KeyRange/lo_accessor_definition                      378     9     9     9
+internal_vstd!seq_lib.impl&__0.fold_left._fuel_to_body_definition                  376     0     0     0
+internal_alloc__vec__Vec<u8./alloc!alloc.Global.>_box_axiom_definition             370     0     0     0
+internal_alloc__vec__Vec<u8./alloc!alloc.Global.>_unbox_axiom_definition           358     0     0     0
+prelude_has_type_int                                                               355    46    46    46
+mariposa_qid_63                                                                    312
+- [root]                                                                           120    19    19    19
+- user_lib__cmessage_v__CMessage__lemma_serialization_is_not_a_prefix_of_96        192    19    19    19
+- mariposa_qid_62                                                                    0     0     0     0
+internal_lib!keys_t.KeyIterator./KeyIterator/k_invariant_definition                269     0     0     0
+internal_lib!keys_t.KeyIterator./KeyIterator_constructor_definition                269     0     0     0
+internal_lib__keys_t__KeyIterator_unbox_axiom_definition                           267     0     0     0
+user_vstd__seq__axiom_seq_subrange_index_18                                        253    32    32    32
+internal_vstd!seq.Seq.push.?_pre_post_definition                                   253     6     6     6
+user_vstd__seq__axiom_seq_push_len_5                                               238     6     6     6
+user_vstd__seq__axiom_seq_subrange_len_17                                          233    17    17    17
+internal_lib!keys_t.KeyRange./KeyRange_constructor_definition                      206     0     0     0
+internal_lib!marshal_v.Marshalable.view_equal.?_definition                         206     3     3     3
+internal_vstd__seq__Seq<lib!hashmap_t.CKeyKV.>_unbox_axiom_definition              199     0     0     0
+mariposa_qid_45                                                                    191     9     9     9
+internal_vstd__seq__Seq<lib!hashmap_t.CKeyKV.>_box_axiom_definition                187     0     0     0
+internal_vstd__seq__Seq<lib!hashmap_t.CKeyKV.>_has_type_always_definition          187     0     0     0
+internal_lib__keys_t__KeyRange_unbox_axiom_definition                              186     0     0     0
+internal_alloc__vec__Vec<u8./alloc!alloc.Global.>_has_type_always_definitio...     182     4     4     4
+mariposa_qid_46                                                                    172    11    11    11
+prelude_fuel_defaults                                                              165    24    24    24
+mariposa_qid_32                                                                    165     0     0     0
+internal_lib!keys_t.KeyRange./KeyRange/lo_invariant_definition                     151     0     0     0
+internal_tuple__4./tuple__4/1_accessor_definition                                  151    11    11    11
+internal_tuple__4./tuple__4/0_accessor_definition                                  151    11    11    11
+internal_lib!keys_t.KeyRange./KeyRange/hi_invariant_definition                     151     0     0     0
+internal_crate__tuple__4_box_axiom_definition                                      151    11    11    11
+mariposa_qid_49                                                                    140     0     0     0
+internal_lib!hashmap_t.CKeyKV./CKeyKV/v_accessor_definition                        140     0     0     0
+internal_lib__hashmap_t__CKeyKV_box_axiom_definition                               127     0     0     0
+internal_lib__hashmap_t__CKeyKV_unbox_axiom_definition                             127     1     1     1
+internal_lib!hashmap_t.CKeyKV./CKeyKV_constructor_definition                       127     0     0     0
+internal_lib!hashmap_t.CKeyKV./CKeyKV/k_invariant_definition                       127     0     0     0
+internal_lib!cmessage_v.CMessage./Shard/kr_accessor_definition                     109     2     2     2
+internal_lib!cmessage_v.CMessage./Shard/kr_invariant_definition                    109     2     2     2
+mariposa_qid_59                                                                     92
+- [root]                                                                            92     0     0     0
+- user_alloc__vec__Vec__view_equal_90                                                0     0     0     0
+mariposa_qid_25                                                                     92     0     0     0
+internal_lib!hashmap_t.CKeyKV./CKeyKV/k_accessor_definition                         90     0     0     0
+internal_tuple__2./tuple__2_constructor_definition                                  87     0     0     0
+prelude_as_type                                                                     86    19    19    19
+user_vstd__seq__axiom_seq_push_index_same_6                                         85    16    16    16
+user_vstd__seq__axiom_seq_push_index_different_7                                    85     0     0     0
+internal_lib!cmessage_v.CMessage./SetRequest/k_accessor_definition                  81     2     2     2
+internal_lib!cmessage_v.CMessage./SetRequest/k_invariant_definition                 81     2     2     2
+internal_lib!marshal_v.Marshalable.is_marshalable.?_pre_post_definition             79     0     0     0
+internal_lib!cmessage_v.CMessage./Reply/v_invariant_definition                      78     2     2     2
+internal_lib!cmessage_v.CMessage./Reply/v_accessor_definition                       78     0     0     0
+mariposa_qid_42                                                                     74     8     8     8
+internal_lib!marshal_ironsht_specific_v.impl&__5.forward_bijection_for_view...      70     0     0     0
+internal_alloc__vec__Vec<lib!hashmap_t.CKeyKV./alloc!alloc.Global.>_box_axi...      70     2     2     2
+internal_lib!marshal_ironsht_specific_v.impl&__5.forward_bijection_for_view...      70     0     0     0
+internal_lib__hashmap_t__CKeyHashMap_box_axiom_definition                           66     4     4     4
+internal_core!option.Option./None_constructor_definition                            65     0     0     0
+mariposa_qid_55                                                                     60     2     2     2
+internal_lib!cmessage_v.CMessage./Delegate/range_accessor_definition                58     0     0     0
+internal_lib!cmessage_v.CMessage./SetRequest/v_accessor_definition                  57     0     0     0
+internal_lib!cmessage_v.CMessage./SetRequest/v_invariant_definition                 57     2     2     2
+internal_lib!io_t.EndPoint./EndPoint/id_accessor_definition                         56     4     4     4
+internal_lib!cmessage_v.CMessage./Delegate/range_invariant_definition               56     2     2     2
+mariposa_qid_11                                                                     55     2     2     2
+internal_crate__fun__2_box_axiom_definition                                         51     2     2     2
+internal_tuple__4./tuple__4/2_accessor_definition                                   51    11    11    11
+prelude_mk_fun                                                                      51     2     2     2
+internal_tuple__4./tuple__4/3_accessor_definition                                   51    11    11    11
+internal_ens__lib!marshal_v.Marshalable.lemma_view_equal_symmetric._definit...      51     7     7     7
+mariposa_qid_36                                                                     50     0     0     0
+internal_lib!marshal_ironsht_specific_v.impl&__9.forward_bijection_for_view...      50     0     0     0
+internal_lib!marshal_ironsht_specific_v.impl&__9.forward_bijection_for_view...      50     6     6     6
+prelude_ext_eq                                                                      47    11    11    11
+user_vstd__seq__axiom_seq_ext_equal_13                                              47
+- [root]                                                                            47    11    11    11
+- user_vstd__seq__axiom_seq_ext_equal_12                                             0     0     0     0
+internal_lib__io_t__EndPoint_box_axiom_definition                                   47    11    11    11
+internal_crate__tuple__2_unbox_axiom_definition                                     46     0     0     0
+internal_ens__lib!marshal_v.Marshalable.lemma_serialization_is_not_a_prefix...      46    11    11    11
+internal_tuple__2./tuple__2/1_invariant_definition                                  46     0     0     0
+internal_tuple__2./tuple__2/0_invariant_definition                                  46     0     0     0
+internal_lib!cmessage_v.CMessage./Delegate/h_accessor_definition                    46     1     1     1
+mariposa_qid_35                                                                     46     0     0     0
+internal_lib!cmessage_v.CMessage./Reply/k_accessor_definition                       45     2     2     2
+mariposa_qid_27                                                                     44     3     3     3
+mariposa_qid_33                                                                     43     0     0     0
+internal_lib!cmessage_v.CMessage./Reply/k_invariant_definition                      38     2     2     2
+internal_req__lib!marshal_v.Marshalable.lemma_serialization_is_not_a_prefix...      32    12    12    12
+internal_lib!cmessage_v.CMessage./Delegate_constructor_definition                   25     0     0     0
+internal_lib!cmessage_v.CMessage./Shard/recipient_accessor_definition               20     2     2     2
+user_vstd__seq__axiom_seq_empty_2                                                   20     1     1     1
+internal_lib!cmessage_v.CMessage./Redirect/id_accessor_definition                   19     2     2     2
+internal_vstd!seq.Seq.empty.?_pre_post_definition                                   18     1     1     1
+internal_lib!cmessage_v.CMessage./Redirect_constructor_definition                   17     0     0     0
+internal_lib!cmessage_v.CMessage./Redirect/k_invariant_definition                   17     2     2     2
+internal_lib!cmessage_v.CMessage./Redirect/k_accessor_definition                    17     2     2     2
+mariposa_qid_30                                                                     16     0     0     0
+internal_lib!cmessage_v.CMessage./SetRequest_constructor_definition                 14     0     0     0
+internal_lib!cmessage_v.CMessage./Reply_constructor_definition                      14     0     0     0
+mariposa_qid_40                                                                     12     0     0     0
+internal_lib__io_t__EndPoint_unbox_axiom_definition                                 12     0     0     0
+internal_lib!cmessage_v.CMessage./Shard_constructor_definition                      12     0     0     0
+internal_lib__io_t__EndPoint_has_type_always_definition                             12     8     8     8
+internal_alloc__vec__Vec<lib!hashmap_t.CKeyKV./alloc!alloc.Global.>_unbox_a...       9     0     0     0
+internal_alloc__vec__Vec<lib!hashmap_t.CKeyKV./alloc!alloc.Global.>_has_typ...       9     2     2     2
+internal_lib!cmessage_v.CMessage./GetRequest/k_accessor_definition                   8     2     2     2
+internal_lib!cmessage_v.CMessage./GetRequest/k_invariant_definition                  8     2     2     2
+internal_lib!cmessage_v.CMessage./GetRequest_constructor_definition                  8     0     0     0
+internal_ens__lib!marshal_v.Marshalable.lemma_same_views_serialize_the_same...       8     5     5     5
+internal_crate__fun__2_unbox_axiom_definition                                        7     0     0     0
+internal_crate__fun__2_constructor_definition                                        7
+- [root]                                                                             7     2     2     2
+- internal_crate__fun__2_constructor_inner_definition                                0     0     0     0
+internal_lib__hashmap_t__CKeyHashMap_unbox_axiom_definition                          6     0     0     0
+user_vstd__seq_lib__impl&%0__push_distributes_over_add_77                            6     0     0     0
+mariposa_qid_26                                                                      6     0     0     0
+internal_lib__hashmap_t__CKeyHashMap_has_type_always_definition                      6     4     4     4
+internal_req__lib!marshal_v.Marshalable.lemma_same_views_serialize_the_same...       5     5     5     5
+mariposa_qid_43                                                                      4     0     0     0
+mariposa_qid_44                                                                      4     0     0     0
+internal_crate__fun__2_apply_definition                                              4     0     0     0
+internal_lib!marshal_ironsht_specific_v.impl&__7.forward_bijection_for_view...       4     0     0     0
+mariposa_qid_57                                                                      4     2     2     2
+mariposa_qid_37                                                                      3     0     0     0
+mariposa_qid_38                                                                      2     1     1     1
+internal_lib__cmessage_v__CMessage_box_axiom_definition                              2     0     0     0
+internal_lib__cmessage_v__CMessage_unbox_axiom_definition                            2     0     0     0
+internal_lib__marshal_v__impl&__4_trait_impl_definition                              1     0     0     0
+total                                                                           122736  1455  1455  1455

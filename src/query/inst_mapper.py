@@ -77,11 +77,19 @@ def collapse_sexpr(s):
 def hack_quantifier_body(quant):
     args = []
     for i in range(quant.num_vars()):
-        args += [f"({quant.var_name(i)} {quant.var_sort(i)})"]
+        var = quant.var_name(i)
+        if "'" in var or "#" in var:
+            var = "|" + var + "|"
+        arg = f"({var} {quant.var_sort(i)})"
+        if "ReSort(" in arg:
+            arg = arg.replace("ReSort(", "(RegEx ")
+        args += [arg]
     # sanity check
     quant = collapse_sexpr(quant.sexpr())
     args = " ".join(args)
     expected = "(forall (" + args + ")"
+    # print(quant)
+    # print(expected)
     assert quant.startswith(expected)
     func_body = quant[len(expected) : -1].strip()
     assert func_body.startswith("(!")

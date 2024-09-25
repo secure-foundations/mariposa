@@ -1,5 +1,18 @@
+base name:
 mimalloc--commit_segment.1.smt2
+
+query path:
 dbg/mimalloc--commit_segment.1.smt2/orig.smt2
+
+trace path:
+dbg/mimalloc--commit_segment.1.smt2/traces/reseed.7327427080530483800
+
+10071 unknown
+
+verus procedure:
+Function-Def lib::commit_segment::segment_commit_mask
+verus-mimalloc/commit_segment.rs:23
+
 traced instantiations:
 QID                                                                T    P0    P1    P2    P3
 --------------------------------------------------------------  ----  ----  ----  ----  ----
@@ -11,18 +24,18 @@ prelude_eucdiv                                                    81     9     7
 prelude_div_unsigned_in_bounds                                    81     2     2     2     2
 prelude_unbox_box_int                                             66     5     6     5     6
 prelude_sub                                                       49    12    12    12    12
-prelude_mul                                                       46     6     6     6     6
 prelude_mul_nats                                                  46     1     0     1     0
 mariposa_qid_24                                                   46     9    11     9    11
+prelude_mul                                                       46     6     6     6     6
 prelude_unbox_box_bool                                            45     7     9     7     9
-prelude_mod_unsigned_in_bounds                                    37     1     1     1     1
 prelude_eucmod                                                    37     6     6     6     6
+prelude_mod_unsigned_in_bounds                                    37     1     1     1     1
 user_vstd__set__axiom_set_new_89                                  33     6     7     6     7
 internal_vstd__set__Set<int.>_has_type_always_definition          29     1     1     1     1
 internal_vstd__set__Set<int.>_box_axiom_definition                28     1     1     1     1
-prelude_mk_fun                                                    27     3     3     3     3
-internal_vstd!set.impl&__0.new.?_pre_post_definition              27     3     3     3     3
 internal_crate__fun__1_box_axiom_definition                       27     3     3     3     3
+internal_vstd!set.impl&__0.new.?_pre_post_definition              27     3     3     3     3
+prelude_mk_fun                                                    27     3     3     3     3
 internal_vstd__set__Set<int.>_unbox_axiom_definition              26     5     5     5     5
 prelude_has_type_int                                              24     1     1     1     1
 user_vstd__set__axiom_set_ext_equal_101                           20
@@ -33,28 +46,28 @@ prelude_box_unbox_int                                             19     2     2
 internal_ens__lib!commit_mask.impl&__0.create._definition         19     2     2     2     2
 prelude_has_type_bool                                             16     2     2     2     2
 internal_vstd!set_lib.set_int_range.?_definition                  12     1     1     1     1
-internal_ens__lib!layout.align_up._definition                     12     2     2     2     2
 prelude_ext_eq                                                    12     0     1     0     1
+internal_ens__lib!layout.align_up._definition                     12     2     2     2     2
 internal_req__lib!commit_mask.impl&__0.create._definition         11     2     2     2     2
-prelude_box_unbox_bool                                            10     0     0     0     0
 internal_crate__tuple__2_box_axiom_definition                     10     1     1     1     1
-internal_tuple__2./tuple__2/0_accessor_definition                 10     1     1     1     1
 internal_crate__fun__1_apply_definition                           10     0     0     0     0
+internal_tuple__2./tuple__2/0_accessor_definition                 10     1     1     1     1
+prelude_box_unbox_bool                                            10     0     0     0     0
 internal_req__lib!layout.align_up._definition                      9     2     2     2     2
+internal_crate__fun__1_unbox_axiom_definition                      9     0     0     0     0
 internal_crate__fun__1_constructor_definition                      9
 - [root]                                                           9     2     2     2     2
 - internal_crate__fun__1_constructor_inner_definition              0     0     0     0     0
-internal_crate__fun__1_unbox_axiom_definition                      9     0     0     0     0
-internal_ens__lib!layout.align_down._definition                    7     2     2     2     2
 internal_tuple__2./tuple__2/1_accessor_definition                  7     1     1     1     1
+internal_ens__lib!layout.align_down._definition                    7     2     2     2     2
 internal_vstd!layout.size_of.?_pre_post_definition                 4     0     0     0     0
 internal_vstd!layout.align_of.?_pre_post_definition                4     0     0     0     0
 internal_req__lib!layout.align_down._definition                    3     2     2     2     2
 user_vstd__set__axiom_set_empty_88                                 2     2     2     2     2
+internal_lib__page_organization__Popped_box_axiom_definition       1     0     0     0     0
+internal_vstd__raw_ptr__Metadata_box_axiom_definition              1     0     0     0     0
+internal_ens__lib!config.const_facts._definition                   1     1     1     1     1
 internal_lib__page_organization__Popped_unbox_axiom_definition     1     0     0     0     0
 internal_vstd__raw_ptr__Metadata_unbox_axiom_definition            1     0     0     0     0
 internal_vstd!set.impl&__0.empty.?_pre_post_definition             1     1     1     1     1
-internal_lib__page_organization__Popped_box_axiom_definition       1     0     0     0     0
-internal_ens__lib!config.const_facts._definition                   1     1     1     1     1
-internal_vstd__raw_ptr__Metadata_box_axiom_definition              1     0     0     0     0
 total                                                           1595   160   170   160   173

@@ -14,7 +14,7 @@ import os, sys
 from typing import Dict, List
 from base.defs import DEBUG_ROOT, MARIPOSA
 from base.solver import output_as_rcode
-from utils.query_utils import Mutation, emit_mutant_query, parse_trace
+from utils.query_utils import Mutation, emit_mutant_query, find_verus_procedure_name, parse_trace
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from tabulate import tabulate
 from query.instantiater import Instantiater, ProofInfo
@@ -373,7 +373,7 @@ class Debugger3:
         goal = PROOF_GOAL_COUNT - count
         res = []
 
-        if len(self.cores) != 0 and False:
+        if len(self.cores) != 0:
             skip = set([(mi.mutation, mi.seed) for mi in self.proofs])
             args = [mi for mi in self.cores if (mi.mutation, mi.seed) not in skip]
             log_info(
@@ -456,19 +456,36 @@ class Debugger3:
         return result
 
     def debug_trace(self, tmi: MutantInfo, table_limit, report_file=None):
-        log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
-        self.traced = tmi.get_qids()
+        traced = tmi.get_qids()
         pins = [p.proof_info for p in self.proofs]
         ta = TraceAnalzyer(tmi.mut_path, pins)
-        report = ta.get_report(self.traced, table_limit)
+        report = ta.get_report(traced, table_limit)
+        
+        # verus_proc = find_verus_procedure_name(self.orig_path)
+        verus_proc = "unknown"
 
         if report_file is not None:
             with open(report_file, "w+") as f:
-                f.write(self.base_name + "\n")
-                f.write(self.orig_path + "\n")
+                f.write("base name:\n")
+                f.write(self.base_name + "\n\n")
+                f.write("query path:\n")
+                f.write(self.orig_path + "\n\n")
+                f.write("trace path:\n")
+                f.write(tmi.trace_path + "\n\n")
+                f.write(f"{tmi.trace_time} {tmi.trace_rcode}\n\n")
+                f.write("verus procedure:\n")
+                f.write(verus_proc + "\n\n")
                 f.write(report)
         else:
             print(report)
+            
+    def select_suppress_qids(self, tmi: MutantInfo):
+        log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
+        traced = tmi.get_qids()
+        pins = [p.proof_info for p in self.proofs]
+        ta = TraceAnalzyer(tmi.mut_path, pins)
+        return ta.select_qids_v1(traced, 5)
+        # return ta.select_qids_v2(traced, 5)
 
     def print_status(self):
         table = []
@@ -492,6 +509,7 @@ class Debugger3:
     def output_query(self, out_path, remove_ids, inst_ids):
         inserted = []
         suppressed = set()
+        log_check(len(self.proofs) != 0, "no proofs")
         pi = self.proofs[0].proof_info
         # pi.print_report()
 
@@ -520,6 +538,7 @@ class Debugger3:
         for line in open(self.orig_path, "r"):
             removed = set()
             for qid in remove_ids:
+                # internal_vstd!cell.impl&__2.view.?_pre_post_definition
                 if qid + " " in line or qid + ")" in line:
                     line = hack_quantifier_removal(line, qid)
                     removed.add(qid)
@@ -543,7 +562,7 @@ class Debugger3:
         ]
 
         subprocess_run(args, check=True, debug=True)
-    
+
 
 if __name__ == "__main__":
     # i = Instantiater(sys.argv[1])
@@ -551,24 +570,22 @@ if __name__ == "__main__":
     # i.save_state("insts.pickle")
     # pi = ProofInfo.load("insts.pickle")
     # pi.print_report()
+    # assert False
 
     dbg = Debugger3(sys.argv[1], False)
     # dbg.print_status()
     tmi = dbg.get_candidate_trace()
-    dbg.debug_trace(tmi, 1000, sys.argv[2])
+    # dbg.debug_trace(tmi, 1000, sys.argv[2])
+    remove_ids = dbg.select_suppress_qids(tmi)
 
     # remove_ids = set([
-    #     "internal_vstd!set.impl&__0.subset_of.?_definition"
-    #     "internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definition",
-    #     "internal_lib!page_organization.PageOrg.impl&__4.count_is_right.?_definition",
+    #     "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
     #     "user_vstd__set__axiom_set_ext_equal_100",
-    #     # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-    #     # "user_vstd__set__axiom_set_ext_equal_100",
-    #     # "internal_lib!types.page_organization_used_queues_match.?_definition",
+    #     "internal_lib!types.page_organization_used_queues_match.?_definition",
     # ])
 
-    # inst_ids = set([
+    inst_ids = set([
     #     "internal_lib!types.impl&__21.wf_main.?_definition"
-    # ])
+    ])
 
-    # dbg.output_query(sys.argv[2], remove_ids, inst_ids)
+    dbg.output_query(sys.argv[2], remove_ids, inst_ids)
