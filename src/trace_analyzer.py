@@ -175,44 +175,39 @@ class TraceAnalzyer(QueryLoader):
 
     def select_qids_v1(self, trace_freq: Dict[str, int], top_n):
         t_freq = self.group_frequencies(trace_freq)
-        # missing = self.__get_missing_rids(t_freq)
         t_freq: List[(str, GroupInstFreq)] = sorted(
             t_freq.items(), key=lambda x: x[1].total_count, reverse=True
         )
         selected = set()
+
         for rid, tg in t_freq:
-            if tg.total_count == 0:
-                continue
-            necessary = all([c != 0 for c in self.get_proof_inst_counts(rid)])
-
-            if self.needed_for_skolem(rid):
-                continue
-
-            if not necessary:
-                selected.add(rid)
-
             if len(selected) >= top_n:
                 break
+            if tg.total_count == 0:
+                continue
+
+            useless = any([c == 0 for c in self.get_proof_inst_counts(rid)])
+            if not self.needed_for_skolem(rid) and useless:
+                selected.add(rid)
 
         return selected
 
     def select_qids_v2(self, trace_freq: Dict[str, int], top_n):
         t_freq = self.group_frequencies(trace_freq)
-        # missing = self.__get_missing_rids(t_freq)
         t_freq: List[(str, GroupInstFreq)] = sorted(
             t_freq.items(), key=lambda x: x[1].total_count, reverse=True
         )
         selected = set()
         for rid, tg in t_freq:
+            if len(selected) >= top_n:
+                break
+
             if tg.total_count == 0:
                 continue
 
             # skip prelude qids
             if rid.startswith("prelude_"):
                 continue
-
-            if len(selected) >= top_n:
-                break
 
             if self.needed_for_skolem(rid):
                 continue

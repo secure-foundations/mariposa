@@ -1,0 +1,915 @@
+=== Overall Report ===
+
+project dir:	data/projs/anvil.v1/base.z3
+exper config:	verus_ext
+solver path:	bin/z3-4.13.0
+analyzer:	default
+
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| unstable   |      43 | 86.0 %       |
+| stable     |       5 | 10.0 %       |
+| unsolvable |       2 | 4.0 %        |
+| total      |      50 | 100.00 %     |
+
+=== unstable (1/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit::proof::liveness::resource_match::lemma_resource_state_matches_at_after_update_resource_step
+controller_examples/fluent_controller/fluentbit/proof/liveness/resource_match.rs:713
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit__proof__liveness__resource_match.4.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          23          0         38  8.37 / 10.00         1.01
+rename            8          0         53  9.57 / 10.00         0.19
+reseed            4          0         57  9.92 / 10.00         0.02
+quake            49          0         12  7.39 / 10.00         1.41
+
+=== unstable (2/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_eventually_always_no_delete_resource_request_msg_in_flight
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:1509
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_no_delete_resource_request_msg_in_flight.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          50          0         11  7.75 / 10.00         1.15
+rename           32          0         29  8.40 / 10.00         1.07
+reseed           61          0          0  6.04 /  --           0.25
+quake             3          0         58  7.22 / 10.00         0.69
+
+=== unstable (3/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::validation::lemma_always_stateful_set_update_request_msg_does_not_change_owner_reference
+controller_examples/zookeeper_controller/proof/helper_invariants/validation.rs:139
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__helper_invariants__validation.3.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          58          0          3  5.54 / 10.00         1.6
+rename           61          0          0  5.93 /  --           1.35
+reseed           61          0          0  5.48 /  --           0.41
+quake            47          0         14  7.60 / 10.00         1.96
+
+=== unstable (4/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::validation::lemma_always_stateful_set_in_etcd_satisfies_unchangeable
+controller_examples/zookeeper_controller/proof/helper_invariants/validation.rs:60
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__helper_invariants__validation.4.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          50          0         11  6.85 / 10.00         1.73
+rename           61          0          0  6.81 /  --           1.02
+reseed           61          0          0  7.06 /  --           0.26
+quake            42          0         19  7.54 / 10.00         1.47
+
+=== unstable (5/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_resource_create_request_msg_implies_key_in_reconcile_equals
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:1344
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_resource_create_request_msg_implies_key_in_reconcile_equals.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           1          0         60  9.79 / 10.00         0.03
+rename           36          0         25  9.77 / 10.00         0.17
+reseed           12          0         49  9.04 / 10.00         0.47
+quake            21          0         40  7.49 / 10.00         1.63
+
+=== unstable (6/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit::proof::liveness::resource_match::lemma_from_after_get_resource_step_to_after_update_resource_step
+controller_examples/fluent_controller/fluentbit/proof/liveness/resource_match.rs:805
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_update_resource_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          57          0          4  5.95 / 10.00         1.63
+rename           61          0          0  5.10 /  --           0.56
+reseed           61          0          0  4.39 /  --           0.06
+quake            54          0          7  6.63 / 10.00         2.2
+
+=== unstable (7/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::validation::lemma_always_stateful_set_in_create_request_msg_satisfies_unchangeable
+controller_examples/zookeeper_controller/proof/helper_invariants/validation.rs:267
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__helper_invariants__validation.2.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           0          0         61  --  / 10.00          0
+rename           13          0         48  9.47 / 10.00         0.32
+reseed            0          0         61  --  / 10.00          0
+quake             9          0         52  8.12 / 10.00         0.8
+
+=== unstable (8/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit_config::proof::liveness::resource_match::lemma_resource_state_matches_at_after_update_resource_step
+controller_examples/fluent_controller/fluentbit_config/proof/liveness/resource_match.rs:521
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit_config__proof__liveness__resource_match.6.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          39          0         22  8.20 / 10.00         1.27
+rename           33          0         28  8.56 / 10.00         1
+reseed            5          0         56  8.45 / 10.00         0.43
+quake            21          0         40  8.21 / 10.00         0.97
+
+=== unstable (9/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::liveness::resource_match::lemma_from_after_get_resource_step_to_after_update_resource_step
+controller_examples/zookeeper_controller/proof/liveness/resource_match.rs:863
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__liveness__resource_match.6.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          56          0          5  6.83 / 10.00         1.35
+rename           61          0          0  6.68 /  --           0.61
+reseed           61          0          0  7.15 /  --           0.21
+quake            57          0          4  6.43 / 10.00         1.34
+
+=== unstable (10/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit_config::proof::liveness::resource_match::lemma_from_after_get_resource_step_to_after_create_resource_step
+controller_examples/fluent_controller/fluentbit_config/proof/liveness/resource_match.rs:327
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit_config__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_create_resource_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          52          0          9  5.49 / 10.00         2.3
+rename           61          0          0  4.24 /  --           0.96
+reseed           61          0          0  5.02 /  --           0.29
+quake            48          0         13  4.50 / 10.00         2.76
+
+=== unstable (11/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit::proof::helper_invariants::proof::lemma_always_response_at_after_get_resource_step_is_resource_get_response
+controller_examples/fluent_controller/fluentbit/proof/helper_invariants/proof.rs:98
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit__proof__helper_invariants__proof__lemma_always_response_at_after_get_resource_step_is_resource_get_response.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  5.68 /  --           0.59
+rename           61          0          0  6.08 /  --           1.2
+reseed           61          0          0  7.15 /  --           1.51
+quake            50          0         11  6.64 / 10.00         2.06
+
+=== unstable (12/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::validation::lemma_always_stateful_set_in_etcd_satisfies_unchangeable
+controller_examples/rabbitmq_controller/proof/helper_invariants/validation.rs:61
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__validation__lemma_always_stateful_set_in_etcd_satisfies_unchangeable.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          39          0         22  6.26 / 10.00         2.25
+rename            1          0         60  9.99 / 10.00         0
+reseed            0          0         61  --  / 10.00          0
+quake            43          0         18  6.73 / 10.00         1.88
+
+=== unstable (13/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::owner_ref::object_in_every_resource_create_or_update_request_msg_only_has_valid_owner_references_helper
+controller_examples/rabbitmq_controller/proof/helper_invariants/owner_ref.rs:97
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__owner_ref__object_in_every_resource_create_or_update_request_msg_only_has_valid_owner_references_helper.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          18          0         43  8.18 / 10.00          0.9
+rename            0          0         61  --  / 10.00           0
+reseed            0          0         61  --  / 10.00           0
+quake             0          0         61  --  / 10.00           0
+
+=== unstable (14/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::liveness::stateful_set_match::lemma_from_after_get_stateful_set_step_to_after_update_stateful_set_step
+controller_examples/zookeeper_controller/proof/liveness/stateful_set_match.rs:290
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__liveness__stateful_set_match.2.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          47          0         14  7.74 / 10.00         1.36
+rename           45          0         16  8.11 / 10.00         1.22
+reseed           61          0          0  7.16 /  --           0.23
+quake            50          0         11  6.83 / 10.00         1.83
+
+=== unstable (15/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit_config::proof::liveness::resource_match::lemma_resource_state_matches_at_after_create_resource_step
+controller_examples/fluent_controller/fluentbit_config/proof/liveness/resource_match.rs:383
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit_config__proof__liveness__resource_match.2.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          60          0          1  5.75 / 10.00         1.4
+rename           61          0          0  5.84 /  --           1.05
+reseed           61          0          0  7.03 /  --           0.15
+quake            56          0          5  6.74 / 10.00         1.67
+
+=== unstable (16/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::object_in_response_at_after_update_resource_step_is_same_as_etcd_helper
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:481
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__object_in_response_at_after_update_resource_step_is_same_as_etcd_helper.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  5.18 /  --           0.39
+rename           61          0          0  4.88 /  --           0.41
+reseed           61          0          0  4.92 /  --           0.26
+quake            33          0         28  5.54 / 10.00         2.67
+
+=== unstable (17/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::validation::lemma_always_stateful_set_in_create_request_msg_satisfies_unchangeable
+controller_examples/rabbitmq_controller/proof/helper_invariants/validation.rs:272
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__validation__lemma_always_stateful_set_in_create_request_msg_satisfies_unchangeable.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          20          0         41  8.29 / 10.00         0.94
+rename            5          0         56  9.24 / 10.00         0.29
+reseed            0          0         61  --  / 10.00          0
+quake            21          0         40  8.06 / 10.00         1.1
+
+=== unstable (18/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::proof::lemma_resource_create_or_update_request_msg_implies_key_in_reconcile_equals
+controller_examples/zookeeper_controller/proof/helper_invariants/proof.rs:1115
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__helper_invariants__proof__lemma_resource_create_or_update_request_msg_implies_key_in_reconcile_equals.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  5.69 /  --           1.22
+rename           61          0          0  4.41 /  --           0.7
+reseed           61          0          0  4.75 /  --           0.42
+quake            55          0          6  7.41 / 10.00         1.45
+
+=== unstable (19/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::liveness::resource_match::lemma_resource_state_matches_at_after_update_resource_step
+controller_examples/zookeeper_controller/proof/liveness/resource_match.rs:768
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__liveness__resource_match.7.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          12          0         49  9.28 / 10.00         0.36
+rename           17          0         44  9.04 / 10.00         0.55
+reseed            0          0         61  --  / 10.00          0
+quake            38          0         23  7.59 / 10.00         1.69
+
+=== unstable (20/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::liveness::resource_match::lemma_from_after_get_resource_step_to_after_create_resource_step
+controller_examples/zookeeper_controller/proof/liveness/resource_match.rs:524
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__liveness__resource_match.2.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          52          0          9  6.24 / 10.00         1.94
+rename           61          0          0  4.92 /  --           0.32
+reseed           61          0          0  5.08 /  --           0.36
+quake            56          0          5  6.66 / 10.00         1.53
+
+=== unstable (21/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_eventually_always_object_in_every_resource_update_request_only_has_owner_references_pointing_to_current_cr
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:785
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_object_in_every_resource_update_request_only_has_owner_references_pointing_to_current_cr.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          43          0         18  7.36 / 10.00         1.8
+rename           61          0          0  8.11 /  --           0.71
+reseed           61          0          0  7.76 /  --           0.55
+quake            43          0         18  6.78 / 10.00         1.94
+
+=== unstable (22/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::proof::lemma_eventually_always_object_in_response_at_after_create_resource_step_is_same_as_etcd
+controller_examples/zookeeper_controller/proof/helper_invariants/proof.rs:207
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__helper_invariants__proof__lemma_eventually_always_object_in_response_at_after_create_resource_step_is_same_as_etcd.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          27          0         34  8.47 / 10.00         1.01
+rename           27          0         34  8.02 / 10.00         1.21
+reseed           42          0         19  9.03 / 10.00         0.48
+quake            11          0         50  9.23 / 10.00         0.38
+
+=== unstable (23/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::liveness::resource_match::lemma_from_after_get_resource_step_to_after_create_resource_step
+controller_examples/rabbitmq_controller/proof/liveness/resource_match.rs:506
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_create_resource_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           0          0         61  --  / 10.00          0
+rename           59          0          2  7.30 / 10.00         1.18
+reseed            5          0         56  9.97 / 10.00         0.01
+quake            47          0         14  8.45 / 10.00         1
+
+=== unstable (24/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit_config::proof::liveness::resource_match::lemma_from_after_get_resource_step_to_after_update_resource_step
+controller_examples/fluent_controller/fluentbit_config/proof/liveness/resource_match.rs:589
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit_config__proof__liveness__resource_match.5.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          23          0         38  8.81 / 10.00         0.73
+rename           55          0          6  6.92 / 10.00         1.79
+reseed           61          0          0  7.57 /  --           0.09
+quake            24          0         37  7.74 / 10.00         1.53
+
+=== unstable (25/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit::proof::liveness::daemon_set_match::lemma_daemon_set_state_matches_at_after_update_daemon_set_step
+controller_examples/fluent_controller/fluentbit/proof/liveness/daemon_set_match.rs:355
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit__proof__liveness__daemon_set_match__lemma_daemon_set_state_matches_at_after_update_daemon_set_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          60          0          1  6.92 / 10.00         0.98
+rename           56          0          5  5.78 / 10.00         1.43
+reseed           61          0          0  5.02 /  --           0.47
+quake            61          0          0  7.39 /  --           0.95
+
+=== unstable (26/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit::proof::liveness::daemon_set_match::lemma_from_after_get_daemon_set_step_to_after_update_daemon_set_step
+controller_examples/fluent_controller/fluentbit/proof/liveness/daemon_set_match.rs:273
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit__proof__liveness__daemon_set_match__lemma_from_after_get_daemon_set_step_to_after_update_daemon_set_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           6          0         55  7.28 / 10.00         0.89
+rename            8          0         53  7.87 / 10.00         0.8
+reseed            0          0         61  --  / 10.00          0
+quake            46          0         15  6.06 / 10.00         2.3
+
+=== unstable (27/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::liveness::stateful_set_match::lemma_stateful_set_state_matches_at_after_update_stateful_set_step
+controller_examples/zookeeper_controller/proof/liveness/stateful_set_match.rs:387
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__liveness__stateful_set_match.3.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          37          0         24  8.29 / 10.00         1.06
+rename           44          0         17  9.02 / 10.00         0.66
+reseed            0          0         61  --  / 10.00          0
+quake            41          0         20  8.60 / 10.00         0.91
+
+=== unstable (28/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::liveness::resource_match::lemma_resource_state_matches_at_after_create_resource_step
+controller_examples/rabbitmq_controller/proof/liveness/resource_match.rs:582
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__liveness__resource_match.1.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          20          0         41  9.00 / 10.00         0.65
+rename           23          0         38  9.17 / 10.00         0.52
+reseed           29          0         32  9.89 / 10.00         0.09
+quake            10          0         51  8.04 / 10.00         0.93
+
+=== unstable (29/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit::proof::helper_invariants::proof::lemma_eventually_always_every_resource_update_request_implies_at_after_update_resource_step
+controller_examples/fluent_controller/fluentbit/proof/helper_invariants/proof.rs:187
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit__proof__helper_invariants__proof__lemma_eventually_always_every_resource_update_request_implies_at_after_update_resource_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          12          0         49  8.83 / 10.00         0.62
+rename            0          0         61  --  / 10.00          0
+reseed            0          0         61  --  / 10.00          0
+quake            28          0         33  7.22 / 10.00         1.87
+
+=== unstable (30/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_always_resource_object_create_or_update_request_msg_has_one_controller_ref_and_no_finalizers
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:1135
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_always_resource_object_create_or_update_request_msg_has_one_controller_ref_and_no_finalizers.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          37          0         24  8.29 / 10.00         1.18
+rename           12          0         49  9.18 / 10.00         0.33
+reseed           61          0          0  9.21 /  --           0.18
+quake            33          0         28  8.21 / 10.00         1.24
+
+=== unstable (31/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::proof::lemma_always_response_at_after_get_resource_step_is_resource_get_response
+controller_examples/zookeeper_controller/proof/helper_invariants/proof.rs:474
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__helper_invariants__proof__lemma_always_response_at_after_get_resource_step_is_resource_get_response.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          33          0         28  6.49 / 10.00         2.15
+rename           32          0         29  9.53 / 10.00         0.27
+reseed            0          0         61  --  / 10.00          0
+quake            23          0         38  6.62 / 10.00         1.82
+
+=== unstable (32/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_eventually_always_object_in_response_at_after_update_resource_step_is_same_as_etcd
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:393
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_object_in_response_at_after_update_resource_step_is_same_as_etcd.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          58          0          3  7.32 / 10.00         0.97
+rename           61          0          0  6.98 /  --           0.29
+reseed           61          0          0  6.67 /  --           0.08
+quake            39          0         22  5.71 / 10.00         2.72
+
+=== unstable (33/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::liveness::stateful_set_match::lemma_stateful_set_state_matches_at_after_update_stateful_set_step
+controller_examples/rabbitmq_controller/proof/liveness/stateful_set_match.rs:386
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__liveness__stateful_set_match__lemma_stateful_set_state_matches_at_after_update_stateful_set_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          34          0         27  7.99 / 10.00         1.24
+rename           35          0         26  8.31 / 10.00         1.23
+reseed           15          0         46  9.59 / 10.00         0.31
+quake            31          0         30  7.33 / 10.00         1.53
+
+=== unstable (34/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::proof::lemma_eventually_always_cm_rv_is_the_same_as_etcd_server_cm_if_cm_updated
+controller_examples/zookeeper_controller/proof/helper_invariants/proof.rs:118
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__helper_invariants__proof__lemma_eventually_always_cm_rv_is_the_same_as_etcd_server_cm_if_cm_updated.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           7          0         54  9.39 / 10.00         0.23
+rename            0          0         61  --  / 10.00          0
+reseed            0          0         61  --  / 10.00          0
+quake             1          0         60  9.47 / 10.00         0.07
+
+=== unstable (35/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::object_in_response_at_after_create_resource_step_is_same_as_etcd_helper
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:300
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__object_in_response_at_after_create_resource_step_is_same_as_etcd_helper.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          58          0          3  5.05 / 10.00         2.13
+rename           61          0          0  5.89 /  --           0.46
+reseed           61          0          0  6.26 /  --           0.29
+quake            57          0          4  4.56 / 10.00         1.54
+
+=== unstable (36/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_eventually_always_object_in_response_at_after_create_resource_step_is_same_as_etcd
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:213
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_object_in_response_at_after_create_resource_step_is_same_as_etcd.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          15          0         46  7.36 / 10.00         1.24
+rename           22          0         39  9.22 / 10.00         0.39
+reseed            0          0         61  --  / 10.00          0
+quake            18          0         43  7.40 / 10.00         1.45
+
+=== unstable (37/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_always_request_at_after_get_request_step_is_resource_get_request
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:546
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_always_request_at_after_get_request_step_is_resource_get_request.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           0          0         61  --  / 10.00          0
+rename            0          0         61  --  / 10.00          0
+reseed            0          0         61  --  / 10.00          0
+quake            12          0         49  8.49 / 10.00         0.71
+
+=== unstable (38/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::liveness::stateful_set_match::lemma_from_after_get_stateful_set_step_to_after_update_stateful_set_step
+controller_examples/rabbitmq_controller/proof/liveness/stateful_set_match.rs:294
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__liveness__stateful_set_match__lemma_from_after_get_stateful_set_step_to_after_update_stateful_set_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          37          0         24  7.56 / 10.00         1.52
+rename           33          0         28  8.91 / 10.00         0.75
+reseed           61          0          0  9.18 /  --           0.11
+quake            44          0         17  8.09 / 10.00         1.32
+
+=== unstable (39/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_eventually_always_every_resource_create_request_implies_at_after_create_resource_step
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:870
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_every_resource_create_request_implies_at_after_create_resource_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          56          0          5  7.22 / 10.00         1.56
+rename           60          0          1  6.87 / 10.00         1.27
+reseed           50          0         11  5.74 / 10.00         1.79
+quake            25          0         36  7.42 / 10.00         1.46
+
+=== unstable (40/43) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_resource_update_request_msg_implies_key_in_reconcile_equals
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:1212
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_resource_update_request_msg_implies_key_in_reconcile_equals.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          40          0         21  9.07 / 10.00         0.72
+rename           52          0          9  8.86 / 10.00         0.6
+reseed           56          0          5  8.73 / 10.00         0.5
+quake            10          0         51  9.33 / 10.00         0.32
+
+=== unstable (41/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::proof::lemma_always_cr_objects_in_etcd_satisfy_state_validation
+controller_examples/zookeeper_controller/proof/helper_invariants/proof.rs:46
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__helper_invariants__proof.2.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  6.74 /  --           1.14
+rename           61          0          0  8.03 /  --           1.25
+reseed           61          0          0  7.33 /  --           0.07
+quake            57          0          4  6.69 / 10.00         1.74
+
+=== unstable (42/43) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit::proof::helper_invariants::proof::lemma_always_resource_object_has_no_finalizers_or_timestamp_and_only_has_controller_owner_ref
+controller_examples/fluent_controller/fluentbit/proof/helper_invariants/proof.rs:615
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit__proof__helper_invariants__proof.9.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          16          0         45  9.26 / 10.00         0.4
+rename           38          0         23  7.60 / 10.00         1.58
+reseed            0          0         61  --  / 10.00          0
+quake            15          0         46  8.67 / 10.00         0.71
+
+=== unstable (43/43) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::proof::lemma_always_resource_object_has_no_finalizers_or_timestamp_and_only_has_controller_owner_ref
+controller_examples/zookeeper_controller/proof/helper_invariants/proof.rs:994
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__helper_invariants__proof.12.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          33          0         28  7.96 / 10.00         1.44
+rename           50          0         11  7.76 / 10.00         1.51
+reseed           61          0          0  8.23 /  --           0.29
+quake            40          1         20  7.68 / 10.00         1.74
+
+
+=== stable (1/5) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::liveness::resource_match::lemma_resource_state_matches_at_after_create_resource_step
+controller_examples/zookeeper_controller/proof/liveness/resource_match.rs:599
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__liveness__resource_match.3.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          60          0          1  7.05 / 10.00         1.3
+rename           61          0          0  5.81 /  --           0.92
+reseed           61          0          0  6.74 /  --           0.11
+quake            59          0          2  6.94 / 10.00         1.38
+
+=== stable (2/5) ===
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::liveness::stateful_set_match::lemma_from_key_exists_to_receives_ok_resp_at_after_get_stateful_set_step
+controller_examples/zookeeper_controller/proof/liveness/stateful_set_match.rs:194
+
+query path:
+data/projs/anvil.v1/base.z3/zookeeper-log-zookeeper_controller__proof__liveness__stateful_set_match.1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  4.07 /  --           1.49
+rename           61          0          0  2.80 /  --           0.58
+reseed           61          0          0  2.30 /  --           0.03
+quake            61          0          0  3.53 /  --           0.85
+
+=== stable (3/5) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit::proof::helper_invariants::validation::lemma_always_daemon_set_update_request_msg_does_not_change_owner_reference
+controller_examples/fluent_controller/fluentbit/proof/helper_invariants/validation.rs:138
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit__proof__helper_invariants__validation.3.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          59          0          2  5.38 / 10.00         1.95
+rename           61          0          0  6.02 /  --           1.57
+reseed           61          0          0  6.14 /  --           0.11
+quake            60          0          1  5.15 / 10.00         1.47
+
+=== stable (4/5) ===
+verus procedure:
+Function-Def fluent_controller::fluent_controller::fluentbit::proof::liveness::spec::lemma_always_for_all_step_pending_req_in_flight_or_resp_in_flight_at_reconcile_state
+controller_examples/fluent_controller/fluentbit/proof/liveness/spec.rs:356
+
+query path:
+data/projs/anvil.v1/base.z3/fluent-log-fluent_controller__fluentbit__proof__liveness__spec.14.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  5.04 /  --           0.82
+rename           61          0          0  5.65 /  --           0.14
+reseed           61          0          0  5.63 /  --           0.13
+quake            61          0          0  5.57 /  --           1.28
+
+=== stable (5/5) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::liveness::spec::lemma_always_for_all_step_pending_req_in_flight_or_resp_in_flight_at_reconcile_state
+controller_examples/rabbitmq_controller/proof/liveness/spec.rs:362
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__liveness__spec.14.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  6.96 /  --           0.19
+rename           61          0          0  6.77 /  --           0.33
+reseed           61          0          0  6.95 /  --           0.08
+quake            61          0          0  6.88 /  --           0.55
+
+
+=== unsolvable (1/2) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::liveness::resource_match::lemma_resource_state_matches_at_after_update_resource_step
+controller_examples/rabbitmq_controller/proof/liveness/resource_match.rs:760
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__liveness__resource_match.4.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           1          0         60  9.58 / 10.00         0.05
+rename            0          0         61  --  / 10.00          0
+reseed            0          0         61  --  / 10.00          0
+quake             0          0         61  --  / 10.00          0
+
+=== unsolvable (2/2) ===
+verus procedure:
+Function-Def rabbitmq_controller::rabbitmq_controller::proof::helper_invariants::proof::lemma_eventually_always_every_resource_update_request_implies_at_after_update_resource_step
+controller_examples/rabbitmq_controller/proof/helper_invariants/proof.rs:655
+
+query path:
+data/projs/anvil.v1/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_every_resource_update_request_implies_at_after_update_resource_step.smt2
+
+main failure type:	mostly_timeout
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle           0          0         61  --  / 10.00             0
+rename            0          0         61  --  / 10.00             0
+reseed            0          0         61  --  / 10.00             0
+quake             0          0         61  --  / 10.00             0
+
+
+=== Report End ===

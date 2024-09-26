@@ -493,8 +493,8 @@ class Debugger3:
         traced = tmi.get_qids()
         pins = [p.proof_info for p in self.proofs]
         ta = TraceAnalzyer(tmi.mut_path, pins)
-        # return ta.select_qids_v1(traced, 5)
-        return ta.select_qids_v2(traced, 5)
+        return ta.select_qids_v1(traced, 5)
+        # return ta.select_qids_v2(traced, 5)
 
     def print_status(self):
         table = []
@@ -584,7 +584,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input-query-path", required=True, help="the input query path")
     parser.add_argument("-o", "--output-query-path", required=False, help="the output query path")
     parser.add_argument("-r", "--report-path", required=False, help="the output report path")
-    parser.add_argument("--from-core", default=True, action='store_false', help="build proofs from cores")
+    parser.add_argument("--from-core", default=False, action='store_true', help="build proofs from cores")
     parser.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment")
 
     args = parser.parse_args()
