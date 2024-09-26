@@ -38,13 +38,13 @@
         "num_mutants": 60,
         "exp_timeout": 10
     },
-    "verus_simple": {
+    "verus_quick": {
         "mutations": [
             "shuffle",
             "rename",
             "reseed"
         ],
-        "num_procs": 6,
+        "num_procs": 7,
         "num_mutants": 60,
         "exp_timeout": 10
     },

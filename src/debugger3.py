@@ -488,13 +488,16 @@ class Debugger3:
         else:
             print(report)
 
-    def select_suppress_qids(self, tmi: MutantInfo):
+    def select_suppress_qids(self, tmi: MutantInfo, version):
         log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
         traced = tmi.get_qids()
         pins = [p.proof_info for p in self.proofs]
         ta = TraceAnalzyer(tmi.mut_path, pins)
-        return ta.select_qids_v1(traced, 5)
-        # return ta.select_qids_v2(traced, 5)
+        if version == 1:
+            return ta.select_qids_v1(traced, 5)
+        elif version == 2:
+            return ta.select_qids_v2(traced, 5)
+        assert False
 
     def print_status(self):
         table = []
@@ -586,6 +589,7 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--report-path", required=False, help="the output report path")
     parser.add_argument("--from-core", default=False, action='store_true', help="build proofs from cores")
     parser.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment")
+    parser.add_argument("--version", default=1, help="suppressor version")
 
     args = parser.parse_args()
     dbg = Debugger3(args.input_query_path, args.clear, args.from_core)
@@ -598,8 +602,10 @@ if __name__ == "__main__":
 
     if args.output_query_path is None:
         sys.exit(0)
+        
+    version = int(args.version)
 
-    remove_ids = dbg.select_suppress_qids(tmi)
+    remove_ids = dbg.select_suppress_qids(tmi, version)
     # remove_ids = set([
     # ])
 

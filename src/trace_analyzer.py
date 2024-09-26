@@ -50,6 +50,8 @@ def shorten_qid(qid):
         return qid
     return qid[:75] + "..."
 
+def is_prelude_qid(qid):
+    return qid.startswith("prelude_") or qid.startswith("internal_vstd") or qid.startswith("internal_core")
 
 class TraceAnalzyer(QueryLoader):
     def __init__(self, query_path, proofs: List[ProofInfo]):
@@ -147,8 +149,9 @@ class TraceAnalzyer(QueryLoader):
             row = [shorten_qid(rid)] + self.get_proof_inst_counts(rid)
             table.append(row)
 
+        headers = ["QID"] + [f"P{i}" for i in range(len(self.proofs))]
+
         if len(table) > table_limit:
-            headers = ["QID"] + [f"P{i}" for i in range(len(self.proofs))]
             row = [f"... eliding {len(table) - table_limit} more rows ..."] + [
                 "..."
             ] * (len(headers) - 1)
@@ -206,20 +209,17 @@ class TraceAnalzyer(QueryLoader):
                 continue
 
             # skip prelude qids
-            if rid.startswith("prelude_"):
+            if is_prelude_qid(rid):
                 continue
 
             if self.needed_for_skolem(rid):
+                log_info(f"skolem needed: {rid}")
                 continue
 
             # useless = all([c == 0 for c in self.get_proof_inst_counts(rid)])
             useless = any([c == 0 for c in self.get_proof_inst_counts(rid)])
 
-            if rid.startswith("user_") and useless:
-                selected.add(rid)
-                continue
-
-            if tg.is_user_only() and useless:
+            if useless:
                 selected.add(rid)
                 continue
 
@@ -229,21 +229,9 @@ class TraceAnalzyer(QueryLoader):
                 if (
                     tg[qid] != 0
                     and useless
-                    and qid.startswith("user_")
+                    and not is_prelude_qid(qid)
                     and not self.needed_for_skolem(qid)
                 ):
                     selected.add(qid)
 
         return selected
-
-    # def accumulate_inst_count(self, trace) -> Dict[str, GroupInstCounter]:
-    #     roots = dict()
-    #     # attribute the count to the root quantifier
-    #     for qid, count in trace.items():
-    #         root = self.get_root(qid)
-    #         if root not in roots:
-    #             roots[root] = GroupInstCounter(root)
-    #         roots[root][qid] = count
-    #     for qid in roots:
-    #         roots[qid].finalize()
-    #     return roots
