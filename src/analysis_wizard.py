@@ -93,16 +93,27 @@ def valid_max(scores):
     return max([s for s in scores if not np.isnan(s)])
 
 def handle_special():
-    ana = FACT.get_analyzer("5sec")
-    group = FACT.get_group("v_systems")
+    ana = FACT.get_analyzer("10sec")
+    group = FACT.get_group("anvil.v1")
     proj = group.get_project("base.z3")
-    cfg = FACT.get_config("verus_ext")
-    solver = FACT.get_solver("z3_4_12_5")
+    cfg = FACT.get_config("verus_quick")
+    solver = FACT.get_solver("z3_4_13_0")
+    v0 = FACT.load_analysis(proj, cfg, solver, ana)
 
-    exp = FACT.load_analysis(proj, cfg, solver, ana)
+    group = FACT.get_group("anvil.v2")
+    proj = group.get_project("base.z3")
+    v1 = FACT.load_analysis(proj, cfg, solver, ana)
+    
+    results = dict()
 
-    for qid in exp.stability_categories[STB.UNSTABLE]:
-        os.system(f"{MARIPOSA} -a add-ids -i {exp.get_path(qid)} -o data/projs/v_bench/base.z3/{qid}.smt2")
+    mi = v0.stability_categories.get_migration_status(v1.stability_categories)
+
+    for cat in [STB.UNSOLVABLE, STB.UNSTABLE, STB.STABLE]:
+        print(cat)
+        mi[cat].print_status()
+        # for qid in v0.stability_categories[cat]:
+        #     results[v0[qid].query_path] = cat.name
+    # print(results)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")

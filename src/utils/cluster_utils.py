@@ -241,7 +241,7 @@ def handle_code_sync():
     for host in S190X_HOSTS:
         if host == "s1904":
             continue
-        remote_cmd = f"""ssh {host} "(cd mariposa; rm -r data/dbs/ ; rm -r gen/ ; git checkout master; git pull; cd src/smt2action/; cargo build --release) &> /dev/null &" """
+        remote_cmd = f"""ssh -t {host} "(cd mariposa; rm -r data/dbs/ ; rm -r gen/ ; git checkout master; git pull; cd src/smt2action/; cargo build --release) &> /dev/null &" """
         log_info("running " + remote_cmd)
         os.system(remote_cmd)
 

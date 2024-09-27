@@ -5,9 +5,9 @@ query path:
 dbg/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2/orig.smt2
 
 trace path:
-dbg/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2/traces/shuffle.8955111974130967213
+dbg/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2/traces/reseed.8400199832195796362
 
-10084 unknown
+10108 unknown
 
 verus procedure:
 Function-Def lib::page_organization::PageOrg::State::take_page_from_unused_queue_ll_inv_valid_unused
@@ -16,240 +16,240 @@ verus-mimalloc/page_organization.rs:1991
 traced instantiations:
 QID                                                                                  T    P0    P1    P2    P3
 ------------------------------------------------------------------------------  ------  ----  ----  ----  ----
-internal_lib!page_organization.PageOrg.impl&__4.good_range0.?_definition         61216
-- [root]                                                                          1541     0     0     0     0
-- user_lib__page_organization__PageOrg__State__good_range0_147                   59675     0     0     0     0
-prelude_u_clip                                                                   16293     0     0     0     0
-internal_core__option__Option_box_axiom_definition                               15975    51    51    46    49
-prelude_unbox_box_int                                                            13618    29    28    27    28
-user_vstd__std_specs__bits__axiom_u64_leading_zeros_44                            6976
-- [root]                                                                           346     0     0     0     0
-- user_vstd__std_specs__bits__axiom_u64_leading_zeros_43                          6630     0     0     0     0
-internal_core__option__Option_unbox_axiom_definition                              6136     0     0     0     0
-internal_vstd!map.impl&__0.index.?_pre_post_definition                            5508     6     5     6     6
-prelude_sub                                                                       4419    18    16    15    17
-internal_lib!page_organization.PageData./PageData/offset_accessor_definitio...    4177     1     1     3     1
-internal_lib!page_organization.PageData./PageData/dlist_entry_accessor_defi...    3812    12    13    11    11
-internal_lib!page_organization.PageData./PageData/page_header_kind_accessor...    3719     1     1     1     1
-internal_lib!page_organization.PageData./PageData/full_accessor_definition        3717     1     1     1     1
-internal_core!option.Option./Some_constructor_definition                          3395     2     2     2     2
-internal_lib!page_organization.PageData./PageData/count_accessor_definition       3243     8     9     6     9
-prelude_add                                                                       3102    16    16    16    16
-internal_lib!page_organization.PageData./PageData/dlist_entry_invariant_def...    2851     4     4     4     4
-internal_lib__tokens__PageId_box_axiom_definition                                 2788     2     2     2     2
-internal_lib!page_organization.PageData./PageData/offset_invariant_definiti...    2776     1     1     1     1
-internal_lib!page_organization.PageData./PageData/full_invariant_definition       2763     4     4     4     4
-internal_lib!page_organization.PageData./PageData/page_header_kind_invarian...    2763     4     4     4     4
-internal_lib!page_organization.PageData./PageData_constructor_definition          2658     4     4     4     4
-internal_lib__page_organization__PageData_box_axiom_definition                    2645     7     7     7     7
-internal_lib__tokens__PageId_unbox_axiom_definition                               2634    17    16    17    17
-internal_lib!page_organization.PageData./PageData/is_used_accessor_definiti...    2572     0     0     0     0
-internal_core!option.Option./Some/0_invariant_definition                          2565    11    11     9    11
-internal_lib!page_organization.PageOrg.impl&__4.count_off0.?_definition           2548
+internal_lib!page_organization.PageOrg.impl&__4.good_range0.?_definition         58253
+- [root]                                                                          1608     0     0     0     0
+- user_lib__page_organization__PageOrg__State__good_range0_147                   56645     0     0     0     0
+prelude_u_clip                                                                   17274     0     0     0     0
+internal_core__option__Option_box_axiom_definition                               14822    51    46    47    44
+prelude_unbox_box_int                                                            14328    28    30    32    33
+user_vstd__std_specs__bits__axiom_u64_leading_zeros_44                            6540
+- [root]                                                                           378     0     0     0     0
+- user_vstd__std_specs__bits__axiom_u64_leading_zeros_43                          6162     0     0     0     0
+internal_core__option__Option_unbox_axiom_definition                              5983     0     0     0     0
+internal_vstd!map.impl&__0.index.?_pre_post_definition                            5389     5     6     5     4
+prelude_sub                                                                       4774    16    18    17    17
+internal_lib!page_organization.PageData./PageData/offset_accessor_definitio...    3937     1     1     1     1
+internal_core!option.Option./Some_constructor_definition                          3642     2     2     2     2
+internal_lib!page_organization.PageData./PageData/dlist_entry_accessor_defi...    3469    13    10    11     9
+internal_lib!page_organization.PageData./PageData/page_header_kind_accessor...    3259     1     1     1     1
+internal_lib!page_organization.PageData./PageData/full_accessor_definition        3257     1     1     1     1
+prelude_add                                                                       3164    16    16    17    15
+internal_lib!page_organization.PageData./PageData/count_accessor_definition       3111     9     6     5     4
+internal_lib!page_organization.PageData./PageData/offset_invariant_definiti...    2708     1     1     1     1
+internal_lib!page_organization.PageData./PageData_constructor_definition          2660     4     4     4     4
+internal_lib__tokens__PageId_box_axiom_definition                                 2654     2     2     1     1
+internal_lib!page_organization.PageData./PageData/dlist_entry_invariant_def...    2628     4     4     4     4
+internal_lib!page_organization.PageOrg.impl&__4.data_for_unused_header.?_de...    2558
+- [root]                                                                             1     1     1     0     0
+- user_lib__page_organization__PageOrg__State__data_for_unused_header_139         2557     1     1     0     0
+internal_lib!page_organization.PageOrg.impl&__4.data_for_used_header.?_defi...    2558
+- [root]                                                                             1     0     0     0     0
+- user_lib__page_organization__PageOrg__State__data_for_used_header_134           2557     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.count_off0.?_definition           2558
 - [root]                                                                             1     1     1     1     1
-- user_lib__page_organization__PageOrg__State__count_off0_127                     2547     4     3     3     7
-internal_lib!page_organization.PageOrg.impl&__4.page_id_domain.?_definition       2548
+- user_lib__page_organization__PageOrg__State__count_off0_127                     2557     3     3     3     3
+internal_lib!page_organization.PageOrg.impl&__4.end_is_unused.?_definition        2558
 - [root]                                                                             1     0     0     0     0
-- user_lib__page_organization__PageOrg__State__page_id_domain_126                 2547     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.data_for_unused_header.?_de...    2548
-- [root]                                                                             1     1     1     0     1
-- user_lib__page_organization__PageOrg__State__data_for_unused_header_139         2547     1     1     0     1
-internal_lib!page_organization.PageOrg.impl&__4.public_invariant.?_definiti...    2548
+- user_lib__page_organization__PageOrg__State__end_is_unused_128                  2557     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.page_id_domain.?_definition       2558
+- [root]                                                                             1     0     0     0     0
+- user_lib__page_organization__PageOrg__State__page_id_domain_126                 2557     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.public_invariant.?_definiti...    2558
 - [root]                                                                             1     1     1     1     1
-- user_lib__page_organization__PageOrg__State__public_invariant_125               2547     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.end_is_unused.?_definition        2548
+- user_lib__page_organization__PageOrg__State__public_invariant_125               2557     0     0     0     0
+internal_lib!page_organization.PageData./PageData/page_header_kind_invarian...    2508     4     4     4     4
+internal_lib!page_organization.PageData./PageData/full_invariant_definition       2508     4     4     4     4
+internal_lib__page_organization__PageData_box_axiom_definition                    2481     7     7     7     7
+internal_core!option.Option./Some/0_invariant_definition                          2468    11    11     8     9
+internal_lib!page_organization.PageOrg.impl&__4.count_is_right.?_definition       2451
 - [root]                                                                             1     0     0     0     0
-- user_lib__page_organization__PageOrg__State__end_is_unused_128                  2547     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.data_for_used_header.?_defi...    2548
+- user_lib__page_organization__PageOrg__State__count_is_right_129                 2450     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definitio...    2451
 - [root]                                                                             1     0     0     0     0
-- user_lib__page_organization__PageOrg__State__data_for_used_header_134           2547     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.count_is_right.?_definition       2441
-- [root]                                                                             1     0     0     0     0
-- user_lib__page_organization__PageOrg__State__count_is_right_129                 2440     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definitio...    2441
-- [root]                                                                             1     0     0     0     0
-- user_lib__page_organization__PageOrg__State__attached_ranges_148                2440     0     0     0     0
-internal_lib__page_organization__PageData_unbox_axiom_definition                  2221     1     1     2     2
-internal_lib!tokens.PageId./PageId/segment_id_accessor_definition                 2158     1     1     1     1
-internal_lib!tokens.PageId./PageId/idx_accessor_definition                        2112     2     2     1     2
-internal_core!option.Option./Some/0_accessor_definition                           2079    18    16    14    15
-internal_lib!page_organization.PageData./PageData/count_invariant_definitio...    2070     5     5     3     5
-internal_lib__tokens__SegmentId_box_axiom_definition                              1991     1     1     1     1
-prelude_has_type_nat                                                              1809     0     0     0     0
-prelude_box_unbox_nat                                                             1758     1     1     0     1
-prelude_unbox_int                                                                 1758     1     1     0     1
-prelude_nat_clip                                                                  1681     3     3     3     3
-prelude_unbox_box_bool                                                            1658     3     3     3     3
-internal_lib!page_organization.PageOrg.impl&__4.popped_for_seg.?_definition       1541     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.attached_rec0.?_definition        1541     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_unused2.?_defi...    1389
+- user_lib__page_organization__PageOrg__State__attached_ranges_148                2450     0     0     0     0
+internal_lib!page_organization.PageData./PageData/is_used_accessor_definiti...    2282     0     0     0     0
+internal_lib__tokens__PageId_unbox_axiom_definition                               2206    16    17    15    17
+internal_lib!tokens.PageId./PageId/segment_id_accessor_definition                 2145     1     1     1     1
+internal_lib__page_organization__PageData_unbox_axiom_definition                  2121     1     2     2     1
+internal_lib!tokens.PageId./PageId/idx_accessor_definition                        2072     2     2     0     0
+internal_core!option.Option./Some/0_accessor_definition                           2039    16    15     9    13
+internal_lib!page_organization.PageData./PageData/count_invariant_definitio...    1989     5     5     3     3
+internal_lib__tokens__SegmentId_box_axiom_definition                              1979     1     1     1     1
+internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_unused2.?_defi...    1869
 - [root]                                                                             1     1     1     1     1
-- user_lib__page_organization__PageOrg__State__ll_inv_valid_unused2_144             88     3     3     2     2
-- user_lib__page_organization__PageOrg__State__ll_inv_valid_unused2_143           1300    11    11    11    12
-internal_lib!page_organization.is_unused_header.?_definition                      1225     3     3     5     0
-internal_vstd!seq.Seq.index.?_pre_post_definition                                 1123    20    18    18    20
-internal_lib!bin_sizes.smallest_sbin_fitting_size.?_definition                     839     1     1     1     1
-internal_core!option.Option./None_constructor_definition                           831     2     2     2     2
-internal_lib__page_organization__SegmentData_box_axiom_definition                  822     0     0     0     0
-internal_lib__page_organization__SegmentData_unbox_axiom_definition                822     0     0     0     0
-internal_lib__page_organization__SegmentData_has_type_always_definition            822     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.ucount.?_pre_post_definitio...     820     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.attached_ranges_segment.?_d...     820     0     0     0     0
-internal_lib!page_organization.SegmentData./SegmentData/used_accessor_defin...     820     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.popped_ec.?_definition             820     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.ec_of_popped.?_definition          817     0     0     0     0
-internal_lib!tokens.PageId./PageId/idx_invariant_definition                        784     1     1     1     1
-internal_lib!tokens.PageId./PageId_constructor_definition                          739     1     1     1     1
-internal_vstd__map__Map<lib!tokens.PageId./lib!page_organization.PageData.>...     688     9     7     9     8
-user_vstd__map__axiom_map_insert_different_74                                      661    34    28    30    29
-internal_lib!tokens.PageId./PageId/segment_id_invariant_definition                 639     1     1     1     1
-internal_lib!tokens.SegmentId./SegmentId_constructor_definition                    638     0     0     0     0
-internal_lib__tokens__SegmentId_unbox_axiom_definition                             637     0     0     0     0
-internal_vstd!map.impl&__0.insert.?_pre_post_definition                            615    15    11    10    13
-internal_lib!page_organization.DlistEntry./DlistEntry_constructor_definitio...     533     2     2     2     2
-prelude_box_unbox_int                                                              525    15    14    14    14
-internal_vstd__map__Map<lib!tokens.PageId./lib!page_organization.PageData.>...     518     4     4     5     5
-internal_vstd__map__Map<lib!tokens.PageId./lib!page_organization.PageData.>...     472     3     3     3     3
-internal_lib__page_organization__DlistEntry_box_axiom_definition                   437     6     6     6     6
-prelude_has_type_uint                                                              433     0     0     0     0
-prelude_unbox_uint                                                                 427     0     0     0     0
-prelude_box_unbox_uint                                                             427     0     0     0     0
-internal_lib__page_organization__DlistEntry_unbox_axiom_definition                 426     2     2     2     2
-user_vstd__seq__axiom_seq_subrange_index_65                                        380    29    32    26    27
-prelude_u_inv                                                                      362     0     0     0     0
-internal_lib!page_organization.DlistEntry./DlistEntry/prev_invariant_defini...     337     2     2     2     2
-internal_lib!page_organization.DlistEntry./DlistEntry/next_invariant_defini...     316     2     2     2     2
-user_vstd__map__axiom_map_insert_domain_72                                         311    10     8    12    11
-internal_vstd!map.impl&__0.dom.?_pre_post_definition                               306     4     4     5     4
-internal_lib!page_organization.is_used_header.?_definition                         299     0     0     0     0
-internal_vstd__set__Set<lib!tokens.PageId.>_unbox_axiom_definition                 293     0     0     0     0
-internal_vstd!set.impl&__0.insert.?_pre_post_definition                            289     0     0     0     0
-internal_lib!page_organization.DlistEntry./DlistEntry/next_accessor_definit...     284     6     7     7     5
-internal_lib!page_organization.DlistEntry./DlistEntry/prev_accessor_definit...     284     6     6     6     5
-internal_vstd__set__Set<lib!tokens.PageId.>_has_type_always_definition             274     0     0     0     0
-user_vstd__seq__axiom_seq_add_index1_67                                            274     6     5     5     5
-user_vstd__seq__axiom_seq_add_index2_68                                            274     5     5     5     5
-internal_vstd__set__Set<lib!tokens.PageId.>_box_axiom_definition                   274     0     0     0     0
-internal_lib!page_organization.get_next.?_pre_post_definition                      247     0     0     0     0
-internal_lib!page_organization.get_next.?_definition                               247     8     8     5     5
-internal_lib!page_organization.get_prev.?_pre_post_definition                      236     0     0     0     0
-internal_lib!page_organization.get_prev.?_definition                               236     8     9     4     6
-prelude_has_type_int                                                               224    22    21    21    21
-user_vstd__set__axiom_set_insert_different_86                                      211    19    19    17    18
-internal_vstd__seq__Seq<lib!tokens.PageId.>_unbox_axiom_definition                 202     5     5     5     5
-prelude_has_type_bool                                                              175     0     0     0     0
-internal_lib!page_organization.PageOrg.State./State/unused_dlist_headers_ac...     168     1     1     1     1
-internal_lib__page_organization__Popped_unbox_axiom_definition                     162     0     0     0     0
-internal_lib__page_organization__Popped_box_axiom_definition                       162     0     0     0     0
-internal_lib!page_organization.PageOrg.State./State/popped_accessor_definit...     161     0     0     0     0
-internal_lib!page_organization.PageOrg.State./State/popped_invariant_defini...     161     0     0     0     0
-internal_lib!page_organization.Popped./VeryUnready_constructor_definition          160     0     0     0     0
-prelude_fuel_defaults                                                              151    33    33    31    32
-internal_ens__lib!page_organization.PageOrg.impl&__4.ll_unused_distinct._de...     137    13    13    12    13
-internal_lib!page_organization.valid_ll.?_definition                               133
-- [root]                                                                            32     5     6     4     4
-- user_lib__page_organization__valid_ll_140                                        101     4     6     4     4
-prelude_box_unbox_bool                                                             105     0     0     0     0
-internal_vstd!seq.Seq.len.?_pre_post_definition                                    104     1     1     0     1
-internal_lib!page_organization.PageOrg.State./State/pages_accessor_definiti...     103     1     1     2     2
-internal_lib__page_organization__PageHeaderKind_unbox_axiom_definition              94     0     0     0     0
-internal_lib__page_organization__PageHeaderKind_box_axiom_definition                94     0     0     0     0
-internal_lib__page_organization__PageHeaderKind_has_type_always_definition          94     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_unused.?_defin...      89
-- [root]                                                                             1     2     2     2     2
-- user_lib__page_organization__PageOrg__State__ll_inv_valid_unused_141              88     2     2     2     2
-internal_lib!page_organization.valid_ll_i.?_definition                              83     6     8     6     6
-user_vstd__seq__axiom_seq_subrange_len_64                                           80     2     2     2     2
-user_vstd__seq__axiom_seq_add_len_66                                                73     1     1     1     1
-internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_used.?_definit...      68
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_unused2_144             66     3     3     3     2
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_unused2_143           1802    11    13     9     9
+prelude_unbox_box_bool                                                            1734     3     3     3     3
+prelude_has_type_nat                                                              1668     0     0     0     0
+prelude_nat_clip                                                                  1658     3     3     2     2
+prelude_box_unbox_nat                                                             1612     1     1     0     0
+prelude_unbox_int                                                                 1612     1     1     0     0
+internal_lib!page_organization.PageOrg.impl&__4.attached_rec0.?_definition        1609     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.popped_for_seg.?_definition       1609     0     0     0     0
+internal_vstd!seq.Seq.index.?_pre_post_definition                                 1168    18    19    18    17
+internal_lib!page_organization.is_unused_header.?_definition                      1120     3     4     4     5
+internal_core!option.Option./None_constructor_definition                           888     2     2     2     2
+user_vstd__map__axiom_map_insert_different_74                                      782    28    24    29    27
+internal_lib!bin_sizes.smallest_sbin_fitting_size.?_definition                     782     1     1     0     0
+internal_lib__page_organization__SegmentData_unbox_axiom_definition                748     0     0     0     0
+internal_lib__page_organization__SegmentData_has_type_always_definition            747     0     0     0     0
+internal_lib__page_organization__SegmentData_box_axiom_definition                  747     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.attached_ranges_segment.?_d...     740     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.ucount.?_pre_post_definitio...     740     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.popped_ec.?_definition             740     0     0     0     0
+internal_lib!page_organization.SegmentData./SegmentData/used_accessor_defin...     740     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.ec_of_popped.?_definition          738     0     0     0     0
+internal_vstd__map__Map<lib!tokens.PageId./lib!page_organization.PageData.>...     703     7     9     8     7
+internal_lib!tokens.PageId./PageId/idx_invariant_definition                        698     1     1     0     0
+internal_lib!tokens.PageId./PageId_constructor_definition                          656     1     1     1     1
+internal_vstd!map.impl&__0.insert.?_pre_post_definition                            606    11    12    12    12
+internal_lib!page_organization.DlistEntry./DlistEntry_constructor_definitio...     605     2     2     2     2
+prelude_box_unbox_int                                                              565    14    18    16    15
+internal_vstd__map__Map<lib!tokens.PageId./lib!page_organization.PageData.>...     527     4     5     5     4
+internal_lib!tokens.PageId./PageId/segment_id_invariant_definition                 523     1     1     1     1
+internal_lib__page_organization__DlistEntry_unbox_axiom_definition                 513     2     2     2     2
+internal_lib__page_organization__DlistEntry_box_axiom_definition                   506     6     6     6     6
+internal_lib__tokens__SegmentId_unbox_axiom_definition                             482     0     0     0     0
+internal_lib!tokens.SegmentId./SegmentId_constructor_definition                    465     0     0     0     0
+user_vstd__map__axiom_map_insert_domain_72                                         462     8     7     6     7
+internal_vstd__map__Map<lib!tokens.PageId./lib!page_organization.PageData.>...     461     3     3     3     3
+internal_vstd!map.impl&__0.dom.?_pre_post_definition                               423     4     4     4     4
+internal_vstd__set__Set<lib!tokens.PageId.>_unbox_axiom_definition                 400     0     0     0     0
+internal_vstd!set.impl&__0.insert.?_pre_post_definition                            398     0     0     0     0
+internal_lib!page_organization.DlistEntry./DlistEntry/prev_invariant_defini...     394     2     2     2     2
+internal_lib!page_organization.DlistEntry./DlistEntry/next_invariant_defini...     391     2     2     2     2
+internal_vstd__set__Set<lib!tokens.PageId.>_box_axiom_definition                   386     0     0     0     0
+internal_vstd__set__Set<lib!tokens.PageId.>_has_type_always_definition             386     0     0     0     0
+user_vstd__seq__axiom_seq_subrange_index_65                                        361    32    26    25    26
+internal_lib!page_organization.DlistEntry./DlistEntry/prev_accessor_definit...     337     6     5     4     5
+internal_lib!page_organization.DlistEntry./DlistEntry/next_accessor_definit...     334     7     6     5     6
+user_vstd__set__axiom_set_insert_different_86                                      308    19    13    14    17
+prelude_has_type_uint                                                              308     0     0     0     0
+prelude_box_unbox_uint                                                             307     0     0     0     0
+prelude_unbox_uint                                                                 307     0     0     0     0
+internal_lib!page_organization.get_prev.?_definition                               300     9     6     5     5
+internal_lib!page_organization.get_prev.?_pre_post_definition                      300     0     0     0     0
+internal_lib!page_organization.get_next.?_pre_post_definition                      296     0     0     0     0
+internal_lib!page_organization.get_next.?_definition                               296     8     5     5     5
+internal_lib!page_organization.is_used_header.?_definition                         277     0     0     0     0
+prelude_u_inv                                                                      245     0     0     0     0
+user_vstd__seq__axiom_seq_add_index1_67                                            234     5     5     5     5
+user_vstd__seq__axiom_seq_add_index2_68                                            234     5     5     5     6
+prelude_has_type_int                                                               223    21    24    24    22
+internal_vstd__seq__Seq<lib!tokens.PageId.>_unbox_axiom_definition                 188     5     5     5     5
+prelude_has_type_bool                                                              181     0     0     0     0
+internal_lib__page_organization__Popped_unbox_axiom_definition                     160     0     0     0     0
+internal_lib__page_organization__Popped_box_axiom_definition                       160     0     0     0     0
+internal_lib!page_organization.PageOrg.State./State/popped_accessor_definit...     159     0     0     0     0
+internal_lib!page_organization.PageOrg.State./State/popped_invariant_defini...     159     0     0     0     0
+internal_lib!page_organization.Popped./VeryUnready_constructor_definition          158     0     0     0     0
+internal_ens__lib!page_organization.PageOrg.impl&__4.ll_unused_distinct._de...     155    13    13    13    13
+prelude_fuel_defaults                                                              151    33    32    31    30
+internal_lib!page_organization.valid_ll.?_definition                               145
+- [root]                                                                            33     6     4     4     4
+- user_lib__page_organization__valid_ll_140                                        112     6     4     4     4
+internal_lib!page_organization.PageOrg.State./State/unused_dlist_headers_ac...     145     1     1     1     1
+prelude_box_unbox_bool                                                             112     0     0     0     0
+user_vstd__map__axiom_map_insert_same_73                                           101    10    10    10    11
+internal_lib!page_organization.PageOrg.State./State/pages_accessor_definiti...      97     1     2     2     1
+internal_lib__page_organization__PageHeaderKind_unbox_axiom_definition              97     0     0     0     0
+internal_lib__page_organization__PageHeaderKind_box_axiom_definition                97     0     0     0     0
+internal_lib!page_organization.valid_ll_i.?_definition                              97     8     6     6     6
+internal_lib__page_organization__PageHeaderKind_has_type_always_definition          97     0     0     0     0
+internal_vstd!seq.Seq.len.?_pre_post_definition                                     71     1     1     2     2
+user_vstd__seq__axiom_seq_subrange_len_64                                           71     2     2     2     2
+internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_unused.?_defin...      68
+- [root]                                                                             2     2     2     2     2
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_unused_141              66     2     2     2     2
+internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_used2.?_defini...      60
 - [root]                                                                             1     0     0     0     0
-- user_lib__page_organization__PageOrg__State__ll_inv_valid_used_142                67     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_used2.?_defini...      68
-- [root]                                                                             1     0     0     0     0
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_used2_146               59     0     0     0     0
 - user_lib__page_organization__PageOrg__State__ll_inv_valid_used2_145                0     0     0     0     0
-- user_lib__page_organization__PageOrg__State__ll_inv_valid_used2_146               67     0     0     0     0
-internal_lib!page_organization.Popped./Ready/0_invariant_definition                 67     0     0     0     0
-internal_lib!page_organization.Popped./VeryUnready/1_accessor_definition            67     0     0     0     0
-internal_lib!page_organization.Popped./Ready/0_accessor_definition                  67     0     0     0     0
-internal_lib!page_organization.Popped./Used/0_accessor_definition                   67     0     0     0     0
-internal_lib!page_organization.Popped./VeryUnready/0_accessor_definition            67     0     0     0     0
-internal_lib!page_organization.Popped./VeryUnready/0_invariant_definition           67     0     0     0     0
-internal_vstd!pervasive.arbitrary.?_pre_post_definition                             67     0     0     0     0
-internal_lib!page_organization.Popped./Used/0_invariant_definition                  67     0     0     0     0
-internal_vstd__seq__Seq<lib!tokens.PageId.>_has_type_always_definition              64     0     0     0     0
-internal_vstd__seq__Seq<lib!tokens.PageId.>_box_axiom_definition                    63     0     0     0     0
-user_vstd__map__axiom_map_insert_same_73                                            61    13    10    12    11
-internal_lib!page_organization.DlistHeader./DlistHeader/last_accessor_defin...      53     3     3     3     3
-internal_lib!page_organization.DlistHeader./DlistHeader/last_invariant_defi...      52     2     2     2     2
-internal_lib!page_organization.DlistHeader./DlistHeader/first_accessor_defi...      49     3     3     3     3
-internal_vstd!seq.Seq.subrange.?_pre_post_definition                                49     2     2     2     2
-internal_lib!page_organization.DlistHeader./DlistHeader/first_invariant_def...      48     2     2     2     2
-internal_lib__page_organization__DlistHeader_box_axiom_definition                   42     4     4     4     4
-internal_lib__page_organization__DlistHeader_unbox_axiom_definition                 42     3     3     3     3
-internal_vstd!seq.Seq.update.?_pre_post_definition                                  40     6     4     4     6
-user_vstd__seq__axiom_seq_update_len_55                                             40     1     1     1     1
-internal_req__lib!page_organization.PageOrg.impl&__4.ll_unused_distinct._de...      39     9     9     9     9
-user_vstd__seq__axiom_seq_update_same_56                                            36     4     5     5     4
-user_vstd__seq__axiom_seq_update_different_57                                       33     4     4     4     4
-internal_vstd__seq__Seq<lib!page_organization.DlistHeader.>_unbox_axiom_def...      32     3     3     3     3
-user_vstd__set__axiom_set_insert_same_85                                            31     7     8     9     7
-internal_vstd__seq__Seq<lib!page_organization.DlistHeader.>_has_type_always...      28     1     1     1     1
-internal_lib!page_organization.DlistHeader./DlistHeader_constructor_definit...      28     3     3     3     3
-internal_vstd__seq__Seq<lib!page_organization.DlistHeader.>_box_axiom_defin...      20     0     0     0     0
-internal_ens__lib!page_organization.PageOrg.impl&__4.unused_ll_stuff._defin...      14     1     1     1     1
+internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_used.?_definit...      60
+- [root]                                                                             1     0     0     0     0
+- user_lib__page_organization__PageOrg__State__ll_inv_valid_used_142                59     0     0     0     0
+internal_lib!page_organization.Popped./VeryUnready/1_accessor_definition            59     0     0     0     0
+internal_vstd!pervasive.arbitrary.?_pre_post_definition                             59     0     0     0     0
+internal_lib!page_organization.Popped./VeryUnready/0_invariant_definition           59     0     0     0     0
+internal_lib!page_organization.Popped./Used/0_invariant_definition                  59     0     0     0     0
+internal_lib!page_organization.Popped./Ready/0_invariant_definition                 59     0     0     0     0
+internal_lib!page_organization.Popped./VeryUnready/0_accessor_definition            59     0     0     0     0
+internal_lib!page_organization.Popped./Ready/0_accessor_definition                  59     0     0     0     0
+internal_lib!page_organization.Popped./Used/0_accessor_definition                   59     0     0     0     0
+internal_req__lib!page_organization.PageOrg.impl&__4.ll_unused_distinct._de...      55     9     9     9     9
+internal_vstd__seq__Seq<lib!page_organization.DlistHeader.>_unbox_axiom_def...      48     3     3     3     3
+internal_vstd__seq__Seq<lib!tokens.PageId.>_has_type_always_definition              48     0     0     0     0
+internal_lib__page_organization__DlistHeader_box_axiom_definition                   45     4     4     4     4
+user_vstd__seq__axiom_seq_update_different_57                                       45     4     4     4     4
+user_vstd__seq__axiom_seq_add_len_66                                                43     1     1     1     1
+user_vstd__set__axiom_set_insert_same_85                                            42     8     6     7     9
+internal_vstd!seq.Seq.subrange.?_pre_post_definition                                38     2     2     2     2
+internal_vstd__seq__Seq<lib!tokens.PageId.>_box_axiom_definition                    37     0     0     0     0
+internal_vstd__seq__Seq<lib!page_organization.DlistHeader.>_has_type_always...      33     1     1     1     1
+internal_lib!page_organization.DlistHeader./DlistHeader_constructor_definit...      33     3     3     3     3
+user_vstd__seq__axiom_seq_update_same_56                                            33     5     4     4     4
+internal_lib__page_organization__DlistHeader_unbox_axiom_definition                 32     3     3     3     3
+internal_vstd__seq__Seq<lib!page_organization.DlistHeader.>_box_axiom_defin...      30     0     0     0     0
+internal_lib!page_organization.DlistHeader./DlistHeader/first_accessor_defi...      29     3     4     3     3
+internal_lib!page_organization.DlistHeader./DlistHeader/first_invariant_def...      29     2     2     2     2
+internal_vstd!seq.Seq.update.?_pre_post_definition                                  25     4     6     6     5
+internal_lib!page_organization.DlistHeader./DlistHeader/last_accessor_defin...      23     3     4     3     3
+internal_lib!page_organization.DlistHeader./DlistHeader/last_invariant_defi...      23     2     2     1     2
+user_vstd__seq__axiom_seq_update_len_55                                             21     1     1     1     1
+internal_ens__lib!page_organization.PageOrg.impl&__4.unused_ll_stuff._defin...      13     1     1     1     1
 internal_vstd__seq__Seq<vstd!seq.Seq<lib!tokens.PageId.>.>_unbox_axiom_defi...       9     1     1     1     1
-internal_vstd!seq.Seq.add.?_pre_post_definition                                      8     0     0     0     0
-user_vstd__seq_lib__impl&%0__add_empty_left_119                                      8     1     1     1     1
-user_vstd__seq_lib__impl&%0__add_empty_right_120                                     8     1     1     1     1
-internal_lib__page_organization__PageOrg__Step_unbox_axiom_definition                7     0     0     0     0
 internal_lib__page_organization__PageOrg__Step_box_axiom_definition                  7     0     0     0     0
+internal_lib__page_organization__PageOrg__Step_unbox_axiom_definition                7     0     0     0     0
 internal_vstd__seq__Seq<vstd!seq.Seq<lib!tokens.PageId.>.>_has_type_always_...       6     1     1     1     1
+internal_vstd__set__Set<lib!tokens.SegmentId.>_box_axiom_definition                  5     0     0     0     0
+internal_vstd__set__Set<lib!tokens.SegmentId.>_unbox_axiom_definition                5     0     0     0     0
+internal_vstd__set__Set<lib!tokens.SegmentId.>_has_type_always_definition            5     0     0     0     0
 internal_vstd__seq__Seq<vstd!seq.Seq<lib!tokens.PageId.>.>_box_axiom_defini...       5     0     0     0     0
-internal_vstd__set__Set<lib!tokens.SegmentId.>_box_axiom_definition                  4     0     0     0     0
-internal_vstd__set__Set<lib!tokens.SegmentId.>_has_type_always_definition            4     0     0     0     0
-internal_vstd__set__Set<lib!tokens.SegmentId.>_unbox_axiom_definition                4     0     0     0     0
 internal_lib!page_organization.PageOrg.State./State/used_dlist_headers_acce...       2     0     0     0     0
-internal_lib!page_organization.PageOrg.State./State/segments_accessor_defin...       2     0     0     0     0
 internal_vstd__map__Map<lib!tokens.SegmentId./lib!page_organization.Segment...       2     0     0     0     0
-prelude_eucdiv                                                                       2     0     0     0     0
-prelude_div_unsigned_in_bounds                                                       2     0     0     0     0
-internal_vstd__map__Map<lib!tokens.SegmentId./lib!page_organization.Segment...       2     0     0     0     0
-internal_lib!page_organization.PageOrg.State./State_constructor_definition           2     0     0     0     0
 internal_lib__page_organization__PageOrg__State_box_axiom_definition                 2     1     1     1     1
-internal_lib__page_organization__PageOrg__State_unbox_axiom_definition               2     2     2     2     2
-internal_lib!page_organization.PageOrg.State./State/used_lists_accessor_def...       2     0     0     0     0
+prelude_eucdiv                                                                       2     0     0     0     0
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!page_organization.Segment...       2     0     0     0     0
+user_lib__page_organization__PageOrg__State__take_page_from_unused_queue_ll...       2     1     1     1     1
+prelude_div_unsigned_in_bounds                                                       2     0     0     0     0
 internal_lib!page_organization.PageOrg.State./State/unused_lists_accessor_d...       2     1     1     1     1
+internal_lib!page_organization.PageOrg.State./State/used_lists_accessor_def...       2     0     0     0     0
+internal_lib__page_organization__PageOrg__State_unbox_axiom_definition               2     2     2     2     2
+user_vstd__seq_lib__impl&%0__add_empty_right_120                                     2     1     1     1     1
+internal_vstd!seq.Seq.add.?_pre_post_definition                                      2     0     0     0     0
+user_vstd__seq_lib__impl&%0__add_empty_left_119                                      2     1     1     1     1
+internal_lib!page_organization.PageOrg.State./State/segments_accessor_defin...       2     0     0     0     0
+internal_lib!page_organization.PageOrg.State./State_constructor_definition           2     0     0     0     0
 internal_lib__page_organization__PageOrg__Config_unbox_axiom_definition              1     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.popped_basics.?_definition           1
-- [root]                                                                             1     0     0     0     0
-- user_lib__page_organization__PageOrg__State__popped_basics_133                     0     0     0     0     0
 internal_lib!page_organization.PageOrg.impl&__4.take_page_from_unused_queue...       1     1     1     1     1
-user_lib__page_organization__PageOrg__State__take_page_from_unused_queue_ll...       1     1     1     1     1
-internal_lib!page_organization.PageOrg.impl&__4.valid_unused_page.?_definit...       1     1     1     1     1
-internal_lib!page_organization.PageOrg.impl&__4.inv_used.?_definition                1
-- [root]                                                                             1     0     0     0     0
-- user_lib__page_organization__PageOrg__State__inv_used_138                          0     0     0     0     0
-internal_lib!page_organization.PageOrg.impl&__4.inv_ready.?_definition               1
-- [root]                                                                             1     0     0     0     0
-- user_lib__page_organization__PageOrg__State__inv_ready_137                         0     0     0     0     0
 internal_lib!page_organization.PageOrg.impl&__4.inv_segment_creating.?_defi...       1
 - [root]                                                                             1     0     0     0     0
 - user_lib__page_organization__PageOrg__State__inv_segment_creating_135              0     0     0     0     0
-internal_vstd!seq_lib.impl&__0.remove.?_pre_post_definition                          1     1     1     1     1
+internal_lib!page_organization.PageOrg.impl&__4.inv_used.?_definition                1
+- [root]                                                                             1     0     0     0     0
+- user_lib__page_organization__PageOrg__State__inv_used_138                          0     0     0     0     0
 internal_lib!page_organization.PageOrg.impl&__4.inv_very_unready.?_definiti...       1
 - [root]                                                                             1     0     0     0     0
 - user_lib__page_organization__PageOrg__State__inv_very_unready_136                  0     0     0     0     0
-internal_vstd__map__Map<lib!tokens.SegmentId./lib!page_organization.Segment...       1     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.popped_basics.?_definition           1
+- [root]                                                                             1     0     0     0     0
+- user_lib__page_organization__PageOrg__State__popped_basics_133                     0     0     0     0     0
+user_lib__page_organization__PageOrg__State__take_page_from_unused_queue_ll...       1     1     1     1     1
+internal_lib!page_organization.PageOrg.impl&__4.inv_ready.?_definition               1
+- [root]                                                                             1     0     0     0     0
+- user_lib__page_organization__PageOrg__State__inv_ready_137                         0     0     0     0     0
+internal_lib!page_organization.PageOrg.impl&__4.valid_unused_page.?_definit...       1     1     1     1     1
 internal_lib!page_organization.PageOrg.impl&__4.invariant.?_definition               1     1     1     1     1
+internal_vstd__map__Map<lib!tokens.SegmentId./lib!page_organization.Segment...       1     0     0     0     0
+internal_vstd!seq_lib.impl&__0.remove.?_definition                                   1     1     1     1     1
+user_lib__page_organization__PageOrg__State__take_page_from_unused_queue_ll...       1     1     1     1     1
+internal_vstd!seq_lib.impl&__0.remove.?_pre_post_definition                          1     1     1     1     1
 internal_lib!page_organization.PageOrg.impl&__4.ll_basics.?_definition               1     1     1     1     1
 internal_lib__page_organization__PageOrg__Config_box_axiom_definition                1     0     0     0     0
-user_lib__page_organization__PageOrg__State__take_page_from_unused_queue_ll...       1     1     1     1     1
-internal_vstd!seq_lib.impl&__0.remove.?_definition                                   1     1     1     1     1
-total                                                                           258730   667   649   619   639
+total                                                                           252249   650   630   600   599
 
 missing instantiations:
-QID                                                                               T    P0    P1    P2
-------------------------------------------------------------------------------  ---  ----  ----  ----
-user_lib__page_organization__PageOrg__State__take_page_from_unused_queue_ll...    1     1     1     1
-prelude_ext_eq                                                                    1     1     1     1
-internal_req__lib!page_organization.PageOrg.impl&__4.unused_ll_stuff._defin...    1     1     1     1
+QID                                                                               P0    P1    P2    P3
+------------------------------------------------------------------------------  ----  ----  ----  ----
+prelude_ext_eq                                                                     1     1     1     1
+internal_req__lib!page_organization.PageOrg.impl&__4.unused_ll_stuff._defin...     1     1     1     1

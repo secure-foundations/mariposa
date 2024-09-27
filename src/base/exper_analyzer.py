@@ -78,7 +78,7 @@ class ExperAnalyzer:
         for qid in group_qids:
             if qid in qers:
                 qer = qers[qid]
-                ss = ana.categorize_query(qer)[0]
+                ss, vs = ana.categorize_query(qer)
                 ft = ana.get_failure_type(qer.blob)
             else:
                 if qid in path_exists_qids:

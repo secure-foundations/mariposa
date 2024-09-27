@@ -53,7 +53,7 @@ def shorten_qid(qid):
 def is_prelude_qid(qid):
     return qid.startswith("prelude_") or qid.startswith("internal_vstd") or qid.startswith("internal_core")
 
-class TraceAnalzyer(QueryLoader):
+class TraceAnalyzer(QueryLoader):
     def __init__(self, query_path, proofs: List[ProofInfo]):
         super().__init__(query_path)
         log_check(len(proofs) != 0, "no proofs provided")
@@ -96,6 +96,14 @@ class TraceAnalzyer(QueryLoader):
             else:
                 res.append(pf_freq[rid].total_count)
         return res
+
+    def get_proof_total_inst_counts(self):
+        gsums = [0] * len(self.proofs)
+        for i, pi in enumerate(self.proofs):
+            pf = pi.as_frequency()
+            for rid in pf:
+                gsums[i] += pf[rid]
+        return gsums
 
     def get_report(self, trace_freq: Dict[str, int], table_limit):
         report = "traced instantiations:\n"

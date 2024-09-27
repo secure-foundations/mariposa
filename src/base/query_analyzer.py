@@ -85,7 +85,12 @@ class QueryAnalyzer:
         if sr >= self.r_stable:
             return Stability.STABLE
 
-        return Stability.UNSTABLE
+        unsat_indices = group_blob[0] == RCode.UNSAT.value
+
+        if np.mean(group_blob[1][unsat_indices]) < self._timeout * self.discount:
+            return Stability.UNSTABLE
+
+        return Stability.UNSOLVABLE
 
     def _categorize_strict(self, group_blob):
         size = len(group_blob[0])

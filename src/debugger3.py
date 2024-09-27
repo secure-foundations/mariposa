@@ -8,7 +8,7 @@ import subprocess
 import time
 from base.solver import RCode
 from query.inst_mapper import collapse_sexpr, hack_quantifier_removal
-from trace_analyzer import TraceAnalzyer
+from trace_analyzer import TraceAnalyzer
 from utils.database_utils import table_exists
 import multiprocessing
 import os, sys
@@ -226,6 +226,9 @@ class Debugger3:
         self.refresh_status()
         self.__init_proofs()
         self.refresh_status()
+        
+        pins = [p.proof_info for p in self.proofs]
+        self.analyzer = TraceAnalyzer(self.orig_path, pins)        
 
     def __init_dirs(self, query_path, clear):
         if clear and os.path.exists(self.sub_root):
@@ -463,12 +466,13 @@ class Debugger3:
                 counts.append(count)
             result[qid] = counts
         return result
+    
+    def get_proof_total_inst_counts(self):
+        return self.analyzer.get_proof_total_inst_counts()
 
     def debug_trace(self, tmi: MutantInfo, table_limit, report_file=None):
         traced = tmi.get_qids()
-        pins = [p.proof_info for p in self.proofs]
-        ta = TraceAnalzyer(tmi.mut_path, pins)
-        report = ta.get_report(traced, table_limit)
+        report = self.analyzer.get_report(traced, table_limit)
 
         verus_proc = find_verus_procedure_name(self.orig_path)
         # verus_proc = "unknown"
@@ -491,12 +495,10 @@ class Debugger3:
     def select_suppress_qids(self, tmi: MutantInfo, version):
         log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
         traced = tmi.get_qids()
-        pins = [p.proof_info for p in self.proofs]
-        ta = TraceAnalzyer(tmi.mut_path, pins)
         if version == 1:
-            return ta.select_qids_v1(traced, 5)
+            return self.analyzer.select_qids_v1(traced, 5)
         elif version == 2:
-            return ta.select_qids_v2(traced, 5)
+            return self.analyzer.select_qids_v2(traced, 5)
         assert False
 
     def print_status(self):
@@ -583,7 +585,6 @@ class Debugger3:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mariposa Debugger. ")
-    # subparsers = parser.add_subparsers(dest='sub_command', help="")
     parser.add_argument("-i", "--input-query-path", required=True, help="the input query path")
     parser.add_argument("-o", "--output-query-path", required=False, help="the output query path")
     parser.add_argument("-r", "--report-path", required=False, help="the output report path")
@@ -593,16 +594,17 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     dbg = Debugger3(args.input_query_path, args.clear, args.from_core)
-    # dbg.print_status()
+    # counts = dbg.get_proof_total_inst_counts()
+    # print(counts)
+    # sys.exit(0)
+
     tmi = dbg.get_candidate_trace()
     if args.report_path is not None:
         dbg.debug_trace(tmi, 2000, args.report_path)
-    else:
-        dbg.debug_trace(tmi, 50)
 
     if args.output_query_path is None:
         sys.exit(0)
-        
+
     version = int(args.version)
 
     remove_ids = dbg.select_suppress_qids(tmi, version)

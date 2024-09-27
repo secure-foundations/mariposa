@@ -1,0 +1,1278 @@
+base name:
+zookeeper-log-zookeeper_controller__proof__helper_invariants__proof__lemma_eventually_always_every_resource_update_request_implies_at_after_update_resource_step.smt2
+
+query path:
+dbg/zookeeper-log-zookeeper_controller__proof__helper_invariants__proof__lemma_eventually_always_every_resource_update_request_implies_at_after_update_resource_step.smt2/orig.smt2
+
+trace path:
+dbg/zookeeper-log-zookeeper_controller__proof__helper_invariants__proof__lemma_eventually_always_every_resource_update_request_implies_at_after_update_resource_step.smt2/traces/reseed.7807174857826818893
+
+10191 unknown
+
+verus procedure:
+Function-Def zookeeper_controller::zookeeper_controller::proof::helper_invariants::proof::lemma_eventually_always_every_resource_update_request_implies_at_after_update_resource_step
+controller_examples/zookeeper_controller/proof/helper_invariants/proof.rs:557
+
+traced instantiations:
+QID                                                                                    T    P0    P1    P2    P3
+--------------------------------------------------------------------------------  ------  ----  ----  ----  ----
+prelude_unbox_box_bool                                                             17901   106   108   118   116
+internal_core__option__Option_box_axiom_definition                                 13794   287   214   233   228
+internal_core__option__Option_unbox_axiom_definition                               10501     4     5     4     4
+internal_core__result__Result_box_axiom_definition                                  8217    56    64    82    75
+internal_core!option.Option./Some/0_invariant_definition                            6210    10    10    10    10
+internal_core__result__Result_unbox_axiom_definition                                5364     0     0     0     0
+internal_core!option.Option./Some_constructor_definition                            5186     8     7     8     8
+prelude_has_type_bool                                                               4604     1     1     1     1
+internal_core!result.Result./Ok/0_accessor_definition                               4519    18    25    20    17
+internal_crate__fun__1_apply_definition                                             4439     3     4     4     5
+prelude_box_unbox_bool                                                              4437     4     4     6     6
+internal_core!option.Option./Some/0_accessor_definition                             4142    26    29    30    27
+internal_core!result.Result./Ok_constructor_definition                              3827     0     0     0     0
+prelude_mk_fun                                                                      3790   111   110   111   111
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...      3757     1     1     1     1
+internal_core!result.Result./Ok/0_invariant_definition                              3613    13    14    14    14
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.DynamicOb...      3166     1     1     1     1
+internal_crate__fun__2_apply_definition                                             2924     3     3     3     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.common.ObjectRef....      2898     0     0     0     0
+internal_crate__tuple__2_box_axiom_definition                                       2776    41    40    41    42
+prelude_unbox_box_int                                                               2733    15    14    15     7
+internal_tuple__2./tuple__2_constructor_definition                                  2710     0     0     0     0
+internal_tuple__2./tuple__2/0_accessor_definition                                   2693    32    31    31    31
+internal_zookeeper_controller__kubernetes_api_objects__spec__marshal__Value...      2602     2     2     2     2
+internal_crate__fun__1_box_axiom_definition                                         2558    55    55    55    55
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.DynamicOb...      2347     2     1     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...      2340     5     5     5     5
+internal_zookeeper_controller__kubernetes_api_objects__spec__marshal__Value...      2318     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__message__MessageCo...      2317     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__object_meta__O...      2242     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__object_meta__O...      2191    89    69    74    76
+internal_zookeeper_controller!kubernetes_cluster.spec.message.Message./Mess...      2005     0     0     0     0
+internal_crate__tuple__2_unbox_axiom_definition                                     1973     0     0     0     0
+prelude_box_unbox_int                                                               1959     0     0     0     0
+prelude_has_type_int                                                                1953     4     4     3     4
+internal_tuple__2./tuple__2/0_invariant_definition                                  1916     6     6     6     6
+mariposa_qid_223                                                                    1911
+- [root]                                                                             270     3     3     3     3
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__each...    1641     3     3     3     3
+internal_zookeeper_controller__kubernetes_api_objects__spec__dynamic__Dynam...      1902    11    11    12    12
+mariposa_qid_218                                                                    1713
+- [root]                                                                             135     1     1     1     1
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__ever...     900     2     1     1     3
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__ever...     678     1     1     1     2
+internal_crate__fun__2_constructor_definition                                       1707
+- [root]                                                                            1707     0     0     0     0
+- internal_crate__fun__2_constructor_inner_definition                                  0     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...      1702     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.DynamicOb...      1698     1     2     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__common__Object...      1680     4     4     4     4
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...      1669     0     1     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.config_map.Config...      1638     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__config_map__Co...      1638     8     5     7     8
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...      1635     0     0     0     0
+internal_crate__fun__2_unbox_axiom_definition                                       1593     0     0     0     0
+internal_vstd!multiset.impl&__0.count.?_pre_post_definition                         1545     3     4     0     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...      1518    19    12    11    12
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...      1512     3     1     2     2
+internal_zookeeper_controller__temporal_logic__defs__TempPred_unbox_axiom_d...      1474     2     2     2     2
+internal_zookeeper_controller!temporal_logic.defs.TempPred./TempPred_constr...      1474     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__common__Object...      1454    27    19    33    35
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.DynamicOb...      1437    17    15    19    19
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.DynamicOb...      1419     3     3     4     3
+internal_crate__fun__2_box_axiom_definition                                         1411    32    32    31    32
+internal_crate__fun__1_unbox_axiom_definition                                       1357     0     0     0     0
+internal_vstd__multiset__Multiset<zookeeper_controller!kubernetes_cluster.s...      1350     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.DynamicOb...      1349    10     9    10    11
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...      1344     1     1     1     1
+internal_vstd__set__Set<zookeeper_controller!kubernetes_api_objects.spec.co...      1344     0     0     0     0
+internal_vstd__set__Set<zookeeper_controller!kubernetes_api_objects.spec.co...      1337     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__message__Message_b...      1320     6     6     6     6
+internal_core!option.Option./None_constructor_definition                            1316     3     3     3     3
+internal_vstd__multiset__Multiset<zookeeper_controller!kubernetes_cluster.s...      1307     0     0     0     0
+internal_vstd__multiset__Multiset<zookeeper_controller!kubernetes_cluster.s...      1307     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.DynamicOb...      1301     0     0     0     0
+internal_crate__fun__1_constructor_definition                                       1278
+- [root]                                                                            1278     1     1     1     1
+- internal_crate__fun__1_constructor_inner_definition                                  0     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...      1269     2     2     2     2
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.new.?_definition         1244    36    36    36    36
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.new.?_pre_post_d...      1244     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...      1237     1     1     1     1
+internal_zookeeper_controller__temporal_logic__defs__TempPred_box_axiom_def...      1229    52    53    52    53
+internal_tuple__2./tuple__2/1_accessor_definition                                   1225    11    10     9    10
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...      1223     1     0     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...      1208     3     4     4     4
+internal_zookeeper_controller__kubernetes_api_objects__spec__config_map__Co...      1185     0     0     0     0
+internal_vstd!map.impl&__0.dom.?_pre_post_definition                                1176     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...      1174     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...      1169     9     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...      1166     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__dynamic__Dynam...      1103    25    35    31    31
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...      1072    14    14    17    16
+internal_vstd!multiset.impl&__0.contains.?_definition                               1059     2     2     0     2
+mariposa_qid_74                                                                     1047     3     4     4     4
+mariposa_qid_226                                                                    1035
+- [root]                                                                             135     1     1     1     1
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__obje...     900     1     1     1     1
+internal_vstd__set__Set<zookeeper_controller!kubernetes_api_objects.spec.co...      1027     0     0     0     0
+internal_vstd!set.impl&__0.insert.?_pre_post_definition                             1010     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__message__MessageCo...       980     8     7     8     9
+internal_zookeeper_controller__state_machine__action__Action_box_axiom_defi...       971    26    32    26    26
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...       958     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       944    19    10    13    12
+internal_zookeeper_controller__kubernetes_cluster__spec__message__Message_u...       936     4     4     4     4
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       929     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__service__Servi...       902     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__service__Servi...       899     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServicePo...       899     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...       890     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.DynamicOb...       878     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__spec_types__Z...       877     6     4     6     4
+internal_zookeeper_controller__zookeeper_controller__trusted__spec_types__Z...       875     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       870    18     9    12    11
+prelude_unbox_box_strslice                                                           847     1     1     0     1
+prelude_strlit_injective                                                             847     0     0     0     0
+internal_vstd!string.impl&__0.view.?_pre_post_definition                             847     1     1     0     1
+internal_zookeeper_controller__kubernetes_api_objects__error__APIError_has_...       842     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       815     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       815     0     0     0     0
+internal_zookeeper_controller__state_machine__action__ActionResult_box_axio...       807    11    11    10    11
+mariposa_qid_222                                                                     806     4     3     4     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceVi...       797     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       790     0     0     0     0
+internal_core!result.Result./Err_constructor_definition                              789     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__error__APIError_box_...       786     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Ongo...       748     3     4     4     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.impl&...       747     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.cluster_safety.impl&...       742     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.cluster_safety.impl&...       742     2     2     2     2
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.ow...       734     3     3     3     3
+internal_tuple__2./tuple__2/1_invariant_definition                                   726     5     5     5     5
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       723    16    11    10     9
+internal_zookeeper_controller!state_machine.action.Action./Action/precondit...       722    15    15    15    15
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Ongo...       709     3     3     4     4
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.ow...       701     0     0     0     0
+internal_zookeeper_controller!state_machine.action.ActionResult./Enabled/1_...       697     1     1     0     1
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...       692     3     3     4     4
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...       689     4     4     4     4
+internal_zookeeper_controller!state_machine.action.Action./Action/precondit...       687     3     3     3     3
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.and.?_definition          687    14    14    14    14
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.and.?_pre_post_d...       687     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       685     0     0     0     0
+internal_zookeeper_controller!state_machine.action.Action./Action_construct...       682     0     0     0     0
+mariposa_qid_171                                                                     677     5     5     5     5
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.GetReq...       667     0     0     0     0
+internal_zookeeper_controller!state_machine.action.Action./Action/transitio...       647     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.cluster_safety.impl&...       643     2     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__network__types__Ne...       638     4     4     1     4
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.ow...       635     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Ge...       634     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__AP...       633     6     4     6     4
+internal_zookeeper_controller__state_machine__action__Action_unbox_axiom_de...       621     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__service__Servi...       615    21    15    18    16
+internal_zookeeper_controller!kubernetes_cluster.spec.network.types.Network...       589     1     1     0     1
+internal_zookeeper_controller!state_machine.action.Action./Action/transitio...       582    17    16    17    17
+internal_zookeeper_controller__kubernetes_cluster__spec__network__types__Ne...       578     0     0     0     0
+prelude_fuel_defaults                                                                573   171   161   159   156
+internal_zookeeper_controller!kubernetes_cluster.spec.message.Message./Mess...       568    11    11    13    11
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...       562     2     2     2     1
+internal_zookeeper_controller__state_machine__action__ActionResult_unbox_ax...       544     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       542     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       538     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       538     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...       526     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...       519     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...       517     1     1     0     1
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...       514     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__error__APIError_unbo...       511     0     0     0     0
+mariposa_qid_224                                                                     510
+- [root]                                                                             135     1     1     1     1
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__each...     375     1     1     1     1
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.se...       508     2     2     0     2
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...       504     2     2     2     1
+internal_zookeeper_controller!kubernetes_cluster.spec.network.types.Network...       501     0     0     0     0
+internal_vstd!map.impl&__0.index.?_pre_post_definition                               494    10    10    11    10
+internal_vstd!seq.Seq.push.?_pre_post_definition                                     493     3     3     2     3
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.se...       493     1     1     4     3
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.se...       492     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServicePo...       492     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServicePo...       492     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__service__Servi...       488    15     8    13    12
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       488     1     1     1     1
+internal_vstd__map__Map<zookeeper_controller!kubernetes_api_objects.spec.co...       481     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServicePo...       478     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServicePo...       478     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...       472     0     0     0     0
+internal_vstd__map__Map<zookeeper_controller!kubernetes_api_objects.spec.co...       469     2     3     3     3
+internal_zookeeper_controller__kubernetes_api_objects__spec__common__Kind_b...       468    20    12    14    14
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.impl&__0....       466     3     3     3     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.impl&__0....       466     9     5     8     9
+internal_vstd__map__Map<zookeeper_controller!kubernetes_api_objects.spec.co...       465     0     0     0     0
+internal_vstd__map__Map<zookeeper_controller!kubernetes_api_objects.spec.co...       465     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.network.types.Network...       459     2     2     0     2
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...       458     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.GetReq...       457     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__AP...       447    16     8    22    12
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       444     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       444     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       443     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       441     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       440     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceVi...       436     9     9    11    10
+internal_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster_b...       436     9     9     9     9
+internal_zookeeper_controller!state_machine.action.ActionResult./Enabled/0_...       434     6     6     5     7
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...       433     8     9    12    11
+mariposa_qid_115                                                                     433     5     5     5     5
+internal_zookeeper_controller!state_machine.action.ActionResult./Disabled_c...       426     0     0     0     0
+mariposa_qid_174                                                                     422
+- [root]                                                                             139     1     1     1     1
+- user_zookeeper_controller__zookeeper_controller__proof__helper_invariants__...     283     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...       420     2     2     1     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       416     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       416     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__service__Servi...       415     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceVi...       413     3     3     3     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServicePo...       410     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.impl&__3....       410     1     1     0     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.impl&__3....       410     1     1     0     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.impl&__3....       410    10    10     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.impl&__3....       410     0     0     0     0
+internal_vstd__map__Map<zookeeper_controller!kubernetes_api_objects.spec.co...       397     1     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       397    14     7     7     7
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...       396     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...       396     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServicePo...       396     0     0     0     0
+user_vstd__multiset__axiom_multiset_singleton_different_19                           389     1     2     0     1
+internal_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster_u...       376     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceVi...       372     2     3     3     3
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__AP...       371     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Ge...       369    16    11    16    17
+internal_zookeeper_controller!kubernetes_cluster.spec.message.Message./Mess...       369     4     4     3     4
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceVi...       360     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       357     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.empty_st...       357     0     0     0     0
+internal_zookeeper_controller!state_machine.action.impl&__0.forward.?_defin...       357    12    12    12    12
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       357     0     0     0     0
+internal_zookeeper_controller!state_machine.action.impl&__0.forward.?_pre_p...       357     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceVi...       355    14    12    13    13
+user_vstd__multiset__axiom_multiset_singleton_18                                     353     0     0     0     0
+internal_vstd!multiset.impl&__0.singleton.?_pre_post_definition                      353     1     1     0     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...       348     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Ge...       348     4     3     4     3
+internal_vstd__map__Map<zookeeper_controller!kubernetes_api_objects.spec.co...       348     6     7     7     7
+mariposa_qid_185                                                                     347    12    12    12    12
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.GetRes...       342     4     4     5     4
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIRes...       341     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Up...       340     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceVi...       340     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...       336     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Up...       336     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.valid.?_definition                 335
+- [root]                                                                             335     3     3     3     3
+- user_zookeeper_controller__temporal_logic__defs__valid_125                           0     0     0     0     0
+internal_zookeeper_controller!state_machine.action.ActionResult./Enabled_co...       332     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...       331     2     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...       330     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...       330     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__service__Servi...       325     3     3     3     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceSp...       325     0     0     0     0
+internal_zookeeper_controller!state_machine.action.ActionResult./Enabled/0_...       324     1     1     1     2
+internal_zookeeper_controller__kubernetes_cluster__spec__cluster_state_mach...       322     5     4     5     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...       322     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...       322     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...       319     2     2     2     3
+internal_zookeeper_controller!reconciler.spec.resource_builder.ResourceBuil...       317     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__message__HostId_bo...       316     6     3     6     5
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...       309     3     3     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...       308     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.satisfied_by.?_d...       305    38    38    40    40
+internal_vstd!seq.Seq.len.?_pre_post_definition                                      305     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__resource__Empt...       303     0     0     0     0
+internal_vstd!seq.Seq.add.?_pre_post_definition                                      294     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.TempPred./TempPred/pred_a...       292    36    37    36    37
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...       289     5     6     6     5
+internal_zookeeper_controller__kubernetes_cluster__spec__message__RestIdAll...       287     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Ongo...       280     7     7     8     8
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...       276     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.TempPred./TempPred/pred_i...       267     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...       262     3     4     5     5
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...       262     3     4     5     5
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...       257     2     2     2     2
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.implies.?_pre_po...       255     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Up...       255    13    17    16    16
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.implies.?_defini...       255     2     2     2     2
+internal_zookeeper_controller__kubernetes_api_objects__spec__resource__Empt...       250     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__resource__Empt...       250     0     0     0     0
+internal_vstd!map.impl&__0.insert.?_pre_post_definition                              249     4     4     4     4
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...       247     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.config_ma...       246     3     1     2     1
+internal_zookeeper_controller!zookeeper_controller.model.resource.config_ma...       246     3     0     3     0
+mariposa_qid_145                                                                     246     1     1     1     3
+internal_zookeeper_controller!zookeeper_controller.model.resource.config_ma...       246     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.config_ma...       246     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__message__RestIdAll...       245     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Cr...       238     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...       234     2     1     3     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...       234     4     5     7     6
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...       233     2     2     1     2
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Up...       232     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.RestIdAllocat...       231     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...       230     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...       229     4     6     7     6
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...       224     1     1     2     1
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...       223     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       218     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       218     1     1     1     1
+mariposa_qid_265                                                                     214    13    10    18    13
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...       211     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...       210     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...       210     2     2     0     2
+internal_zookeeper_controller!kubernetes_cluster.spec.message.Message./Mess...       210     3     0     4     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Ongo...       209     3     2     3     3
+user_vstd__map__axiom_map_insert_domain_4                                            206     6     6     7     7
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       205     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...       205     0     0     0     0
+mariposa_qid_266                                                                     204     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.common.ObjectRef....       201     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__cluster_state_mach...       201     1     1     1     1
+mariposa_qid_180                                                                     200
+- [root]                                                                             200     0     0     0     0
+- user_zookeeper_controller__zookeeper_controller__proof__helper_invariants__...       0     0     0     0     0
+internal_vstd!multiset.impl&__0.add.?_pre_post_definition                            200     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...       199     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.always.?_definition                197     0     0     0     0
+mariposa_qid_220                                                                     196
+- [root]                                                                             135     1     1     1     1
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__obje...      61     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Ongo...       194     0     1     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...       192     2     2     2     2
+mariposa_qid_173                                                                     190
+- [root]                                                                             138     1     1     1     1
+- user_zookeeper_controller__zookeeper_controller__proof__helper_invariants__...      52     1     1     1     1
+internal_zookeeper_controller!state_machine.action.ActionResult./Enabled/1_...       188     1     1     0     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       185     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__spec_types__Z...       185     1     1     1     1
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...       183     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__spec_types__Z...       183     1     1     1     1
+internal_zookeeper_controller!temporal_logic.defs.always.?_pre_post_definit...       182     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...       180     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...       180     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       172     1     1     1     1
+internal_zookeeper_controller!temporal_logic.defs.Execution./Execution/nat_...       172     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       172     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...       171     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...       171     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...       169     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...       168     0     0     0     0
+internal_zookeeper_controller!state_machine.state_machine.impl&__1.next_res...       167     2     2     2     2
+internal_zookeeper_controller!state_machine.state_machine.impl&__1.next_res...       167     0     0     0     0
+mariposa_qid_138                                                                     166     4     4     4     4
+internal_zookeeper_controller__reconciler__spec__io__RequestView_box_axiom_...       165     7     8     7     7
+internal_zookeeper_controller__kubernetes_cluster__spec__message__MessageOp...       165     4     4     3     4
+prelude_add                                                                          161     4     4     2     6
+mariposa_qid_73                                                                      159     4     8     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...       159     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceSp...       157     6     6     6     6
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       155     9     0     0     0
+mariposa_qid_260                                                                     154
+- [root]                                                                             152     1     1     1     1
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__ever...       2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       151     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       151     1     1     1     1
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.entails.?_defini...       150     4     4     4     4
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...       150     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...       150     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.io.RequestView./ExternalReque...       149     2     2     2     2
+internal_zookeeper_controller!reconciler.spec.io.RequestView./KRequest/0_in...       149     2     2     2     2
+mariposa_qid_184                                                                     148     4     4     4     4
+user_vstd__map__axiom_map_insert_different_6                                         148     6     7     7     7
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceSp...       147     0     0     0     0
+internal_vstd!seq.Seq.empty.?_pre_post_definition                                    145     2     2     1     2
+mariposa_qid_169                                                                     144     2     2     2     2
+internal_zookeeper_controller__reconciler__spec__io__RequestView_unbox_axio...       143     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__zookeeper_api...       142     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...       140     0     0     0     0
+internal_vstd!set.impl&__0.empty.?_pre_post_definition                               140     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...       140     0     0     0     0
+mariposa_qid_176                                                                     139     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.is_u...       139     2     3     2     2
+mariposa_qid_124                                                                     139     1     3     1     1
+mariposa_qid_229                                                                     138     1     1     1     1
+internal_zookeeper_controller!zookeeper_controller.model.resource.headless_...       137     4     3     3     4
+internal_zookeeper_controller!zookeeper_controller.model.resource.headless_...       137     0     0     0     0
+mariposa_qid_227                                                                     135     1     1     1     1
+mariposa_qid_178                                                                     135
+- [root]                                                                             135     0     0     0     0
+- user_zookeeper_controller__zookeeper_controller__proof__helper_invariants__...       0     0     0     0     0
+mariposa_qid_212                                                                     135
+- [root]                                                                             135     1     1     1     1
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__next...       0     0     0     0     0
+mariposa_qid_228                                                                     135     1     1     1     1
+mariposa_qid_142                                                                     134     3     3     3     3
+mariposa_qid_187                                                                     134
+- [root]                                                                              44     3     3     3     3
+- user_zookeeper_controller__state_machine__state_machine__StateMachine__next...      90     3     3     3     3
+- mariposa_qid_186                                                                     0     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...       133     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceSp...       133     2     3     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...       131     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.io.RequestView./KRequest_cons...       130     0     0     0     0
+internal_crate__tuple__0_unbox_axiom_definition                                      130     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceSp...       130     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...       130     0     0     0     0
+mariposa_qid_158                                                                     129     5     6     6     7
+internal_zookeeper_controller!reconciler.spec.resource_builder.ResourceBuil...       129     5     4     5     6
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...       128     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.Message./Mess...       128     2     2     4     3
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...       127     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...       127     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...       126     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...       126     1     1     0     1
+user_vstd__seq_lib__impl&%0__filter_lemma_broadcast_62                               125
+- [root]                                                                             125     0     0     0     0
+- user_vstd__seq_lib__impl&%0__filter_lemma_broadcast_61                               0     0     0     0     0
+- user_vstd__seq_lib__impl&%0__filter_lemma_broadcast_60                               0     0     0     0     0
+internal_zookeeper_controller!state_machine.state_machine.impl&__0.next_res...       125
+- [root]                                                                              48     4     4     4     4
+- user_zookeeper_controller__state_machine__state_machine__StateMachine__next...      77     0     0     0     0
+internal_vstd!seq_lib.impl&__0.filter.?_pre_post_definition                          125     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageOps./M...       124     4     4     3     4
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.GetRes...       123     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.impl&...       121     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...       120     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Ge...       118     0     0     0     0
+internal_zookeeper_controller!state_machine.state_machine.NetworkStateMachi...       116     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...       116     2     2     2     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       116    18    11    12    12
+internal_zookeeper_controller!state_machine.state_machine.NetworkStateMachi...       116     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.Objec...       116    13    11    12    12
+internal_crate__tuple__0_has_type_always_definition                                  115     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__zookeeper_api...       115     0     0     0     0
+prelude_as_type                                                                      113     5     4     5     4
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...       112     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...       111     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.GetRes...       111     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...       111     0     0     0     0
+prelude_nat_clip                                                                     110     3     3     1     3
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...       109     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.upda...       108     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.upda...       108     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...       107     0     0     0     0
+user_vstd__multiset__axiom_multiset_add_20                                           107     2     2     0     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       107     2     2     2     2
+user_vstd__set__axiom_set_insert_different_68                                        107     5     5     5     5
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       107     0     0     0     0
+internal_vstd!set.impl&__0.remove.?_pre_post_definition                              106     0     0     0     0
+mariposa_qid_143                                                                     106     1     1     0     1
+user_vstd__set__axiom_set_remove_insert_70                                           106     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__AP...       106     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIRes...       105     0     0     0     0
+mariposa_qid_133                                                                     104     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...       103     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       103     3     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...       102     1     1     1     1
+internal_zookeeper_controller__zookeeper_controller__trusted__step__Zookeep...       102    10     6    10    10
+user_vstd__map__axiom_map_remove_different_8                                         102     3     3     4     3
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...       102     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...       102     1     1     1     1
+internal_zookeeper_controller__temporal_logic__defs__Execution_unbox_axiom_...       101     3     3     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageOps./M...       100     1     1     0     1
+internal_vstd!multiset.impl&__0.remove.?_pre_post_definition                         100     1     1     0     1
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...       100     0     0     0     0
+internal_vstd!multiset.impl&__0.remove.?_definition                                  100     1     1     0     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...        98     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...        98     1     1     1     1
+internal_vstd!multiset.impl&__0.sub.?_pre_post_definition                             97     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        96     1     1     1     1
+user_vstd__map__axiom_map_remove_domain_7                                             96     4     4     5     4
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        96     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        96     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...        95     3     4     4     5
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...        95     4     4     6     6
+internal_vstd!map.impl&__0.empty.?_pre_post_definition                                95     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.impl&_...        94     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.impl&_...        94     2     2     1     2
+internal_req__zookeeper_controller!temporal_logic.rules.implies_preserved_b...        93     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.proof.controller_runtime.i...        93     2     2     2     2
+internal_vstd!set.impl&__0.new.?_pre_post_definition                                  93     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        93     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        92     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.received_msg_...        92     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        91     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        91     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.impl&...        90     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.impl&...        90     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.Execution./Execution_cons...        89     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        89     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        88     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        88     3     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.common.ObjectRef....        88     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.headless_...        87     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.headless_...        87     3     2     2     3
+internal_zookeeper_controller!zookeeper_controller.model.resource.common.ma...        87     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        87     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        87     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...        85     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.upda...        85     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.upda...        85     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...        85     0     0     0     0
+user_vstd__set__axiom_set_remove_different_71                                         85     3     3     3     3
+mariposa_qid_195                                                                      85     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.common.ma...        84     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        84     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.common.ma...        84     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.common.ma...        84     9     6     8     8
+internal_zookeeper_controller!zookeeper_controller.model.resource.common.ma...        84     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.common.ma...        84     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.common.ma...        84     3     2     2     2
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...        83     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...        83     1     1     1     1
+internal_zookeeper_controller__zookeeper_controller__trusted__spec_types__Z...        82     2     2     2     2
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Cr...        82     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        82     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.impl&__3....        82     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Create...        82     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.impl&__3....        82     1     1     0     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...        82     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        82     2     2     2     2
+mariposa_qid_196                                                                      82     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        82     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServicePo...        82     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Create...        82     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.impl&__2....        82     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.impl&__2....        82     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        82     3     2     3     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        82     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        82     2     2     2     2
+mariposa_qid_214                                                                      82     2     2     2     2
+internal_vstd!set.impl&__0.mk_map.?_pre_post_definition                               81     0     0     0     0
+internal_vstd!map.impl&__0.new.?_definition                                           81     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...        81     1     1     1     1
+internal_vstd!map.impl&__0.new.?_pre_post_definition                                  81     0     0     0     0
+internal_vstd!map_lib.impl&__0.union_prefer_right.?_definition                        81     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.common.ObjectRef....        81     0     0     0     0
+internal_vstd!map_lib.impl&__0.union_prefer_right.?_pre_post_definition               81     0     0     0     0
+user_vstd__map__axiom_map_empty_3                                                     81     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__stateful_set__...        80     7     8     8     9
+mariposa_qid_192                                                                      78     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.common.ObjectRef....        78     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.impl&__0.head.?_pre_post_...        77     1     2     2     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.common.ObjectRef....        77     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.impl&__0.head.?_definitio...        77     2     2     3     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceSp...        75     6     6     8     7
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceSp...        75     6     6     6     6
+internal_zookeeper_controller!temporal_logic.defs.impl&__0.head_next.?_pre_...        74     1     1     1     1
+internal_zookeeper_controller__kubernetes_cluster__spec__external_api__type...        74     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.impl&__0.head_next.?_defi...        74     1     1     1     1
+mariposa_qid_194                                                                      74     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...        74     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...        72     1     1     1     2
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.crea...        72     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.crea...        72     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...        71     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Ongo...        71     3     3     3     3
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        68     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...        67     7     7     7     7
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...        67     4     4     4     4
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceSp...        66     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service.ServiceSp...        66     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__De...        66     0     0     0     0
+mariposa_qid_114                                                                      66     1     1     1     1
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        65     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...        65     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.external_api.types.Ex...        64     0     0     0     0
+internal_vstd!map.impl&__0.remove.?_pre_post_definition                               64     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...        63     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.types.ClientAc...        63     0     0     0     0
+prelude_has_type_nat                                                                  63     0     0     0     0
+prelude_box_unbox_nat                                                                 63     0     0     0     0
+prelude_unbox_int                                                                     63     0     0     0     0
+user_vstd__multiset__axiom_multiset_sub_21                                            62     1     1     0     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Cr...        61     8     0    10     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        61     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...        61     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.buil...        61     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...        61     3     3     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.buil...        61     0     0     0     0
+mariposa_qid_134                                                                      61     2     2     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Ongo...        60     4     3     3     3
+user_vstd__map__axiom_map_insert_same_5                                               59     5     5     5     5
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        59     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...        59     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.RestIdAllocat...        59     0     0     0     0
+internal_tuple__3./tuple__3/2_accessor_definition                                     58     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        58     1     3     1     1
+internal_tuple__3./tuple__3/1_accessor_definition                                     58     1     1     0     1
+internal_zookeeper_controller__state_machine__state_machine__StateMachine_b...        57     3     3     3     3
+internal_zookeeper_controller__zookeeper_controller__trusted__spec_types__Z...        57     3     3     3     2
+internal_zookeeper_controller__state_machine__state_machine__StateMachine_u...        57     0     0     0     0
+internal_zookeeper_controller!state_machine.state_machine.StateMachine./Sta...        57     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...        55     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        55     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...        55     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...        55     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        55     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        55     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Up...        55     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        55     3     3     3     3
+mariposa_qid_131                                                                      54     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        54     1     1     1     1
+prelude_sub                                                                           54     1     1     0     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        54     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...        54     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.ListRe...        53     0     0     0     0
+mariposa_qid_189                                                                      53     1     1     1     1
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...        52     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Delete...        51     1     1     1     1
+internal_zookeeper_controller!reconciler.spec.reconciler.Reconciler.reconci...        51     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...        51     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.reconciler.Reconciler.reconci...        51     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Delete...        51     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__De...        51     0     0     0     0
+internal_ens__zookeeper_controller!temporal_logic.rules.implies_preserved_b...        50     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...        50     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Create...        50     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...        50     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.reconciler.reconci...        50     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        50     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        50     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...        50     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        50     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...        50     0     0     0     0
+mariposa_qid_193                                                                      49     1     1     1     1
+mariposa_qid_191                                                                      49     1     1     1     1
+internal_zookeeper_controller!reconciler.spec.reconciler.Reconciler.reconci...        49     1     1     1     1
+internal_zookeeper_controller!reconciler.spec.reconciler.Reconciler.reconci...        49     0     0     0     0
+internal_ens__zookeeper_controller!temporal_logic.rules.always_to_always_la...        48     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Li...        48     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.reconciler.reconci...        48     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...        48     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...        48     0     0     0     0
+internal_zookeeper_controller!state_machine.state_machine.impl&__0.next_res...        48     1     1     1     2
+internal_zookeeper_controller!temporal_logic.defs.later.?_pre_post_definiti...        47     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.later.?_definition                  47     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__1.allo...        47     0     0     0     0
+internal_ens__zookeeper_controller!temporal_logic.rules.valid_implies_trans...        47     2     2     2     2
+mariposa_qid_135                                                                      47     1     1     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__1.allo...        47     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.upda...        46     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.upda...        46     0     0     0     0
+internal_vstd!set.impl&__0.subset_of.?_definition                                     45
+- [root]                                                                              45     0     0     0     0
+- user_vstd__set__impl&%0__subset_of_0                                                 0     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.resp...        44     2     1     4     1
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...        44     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.state_machine....        43     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.state_machine....        43     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.state_machine....        43     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.state_machine....        43     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.state_machine....        43     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.state_machine....        43     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.state_machine....        43     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.state_machine....        43     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...        42     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Up...        40     0     0     0     0
+internal_zookeeper_controller!state_machine.state_machine.StateMachine./Sta...        40     4     4     4     4
+internal_zookeeper_controller!state_machine.state_machine.StateMachine./Sta...        40     0     0     0     0
+internal_zookeeper_controller!state_machine.state_machine.StateMachine./Sta...        40     1     1     1     1
+internal_zookeeper_controller!state_machine.state_machine.StateMachine./Sta...        40     4     4     4     4
+mariposa_qid_188                                                                      40     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__stateful_set__...        39     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...        39     1     1     1     1
+mariposa_qid_202                                                                      39     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Create...        39     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        39     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...        39     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...        39     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        39     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        39     0     0     0     0
+mariposa_qid_78                                                                       39     2     3     4     4
+mariposa_qid_123                                                                      39     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.dele...        39     0     0     0     0
+mariposa_qid_80                                                                       39     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.dele...        39     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...        39     2     2     2     2
+mariposa_qid_201                                                                      39     0     0     0     0
+mariposa_qid_122                                                                      39     0     0     0     0
+mariposa_qid_77                                                                       39     2     2     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        39     1     1     1     1
+internal_zookeeper_controller!temporal_logic.defs.lift_state.?_definition             38    15    15    15    15
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...        37     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        37     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__De...        37     0     0     0     0
+user_vstd__set__axiom_set_insert_same_67                                              37     1     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        37     0     0     0     0
+internal_zookeeper_controller__reconciler__spec__io__ResponseView_box_axiom...        36     5     4     4     4
+mariposa_qid_190                                                                      36     1     1     1     1
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...        36     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...        36     0     0     0     0
+user_vstd__multiset__axiom_multiset_empty_15                                          35     1     1     0     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Delete...        35     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...        34     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.types.ClientAc...        34     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__step__SubReso...        34     8     5     6     6
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...        34     0     0     0     1
+internal_zookeeper_controller__kubernetes_cluster__spec__client__types__Cli...        34     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.external_api.types.Ex...        34     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__client__types__Cli...        34     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...        33     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...        33     0     0     0     0
+user_vstd__set__axiom_set_intersect_finite_86                                         33     0     0     0     0
+mariposa_qid_156                                                                      33     3     2     3     3
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...        33     4     4     4     4
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...        33     0     0     0     0
+mariposa_qid_112                                                                      33     1     1     1     1
+mariposa_qid_111                                                                      33     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_crea...        32     0     0     0     0
+mariposa_qid_168                                                                      32     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_crea...        32     0     0     0     0
+mariposa_qid_200                                                                      31     1     1     1     1
+internal_zookeeper_controller!zookeeper_controller.model.resource.headless_...        31     3     2     3     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.owner_reference.O...        31     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...        31     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.headless_...        31     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        30     0     0     0     0
+mariposa_qid_216                                                                      30    16    16    18    18
+mariposa_qid_199                                                                      30     0     0     0     0
+mariposa_qid_197                                                                      30     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.headless_...        30     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.headless_...        30     0     1     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__common__Kind_u...        30     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.impl&__0....        29     3     3     3     3
+mariposa_qid_198                                                                      29     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.impl&__0....        29     3     3     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.client.types.ClientAc...        29     0     0     0     0
+mariposa_qid_219                                                                      28     1     1     1     1
+internal_core!result.Result./Err/0_invariant_definition                               28     0     0     0     0
+internal_req__zookeeper_controller!temporal_logic.rules.entails_and_temp._d...        28    14    14    14    14
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...        28     0     0     0     0
+internal_core!result.Result./Err/0_accessor_definition                                28     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.GetReq...        28     3     2     9    11
+mariposa_qid_181                                                                      28    14    14    14    14
+mariposa_qid_118                                                                      27
+- [root]                                                                              27     0     0     0     0
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__run_...       0     0     0     0     0
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.dy...        27     0     0     0     0
+mariposa_qid_132                                                                      27     2     2     2     2
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.dy...        27     0     0     0     0
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.dy...        27     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...        26     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.reconciler.reconci...        26     0     0     0     0
+mariposa_qid_205                                                                      26     0     0     0     0
+mariposa_qid_268                                                                      26
+- [root]                                                                              21     1     1     1     1
+- user_zookeeper_controller__zookeeper_controller__proof__helper_invariants__...       5     1     1     1     1
+- mariposa_qid_267                                                                     0     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.reconciler.reconci...        26    11     5     9     9
+internal_zookeeper_controller!zookeeper_controller.proof.resource.update.?_...        26     1     2     2     1
+internal_zookeeper_controller!zookeeper_controller.proof.resource.update.?_...        26     7     6     7     7
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        26     0     0     0     0
+internal_tuple__3./tuple__3/0_accessor_definition                                     25     2     2     3     3
+internal_crate__tuple__3_box_axiom_definition                                         25     2     2     3     3
+internal_zookeeper_controller!temporal_logic.defs.lift_state.?_pre_post_def...        24     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__owner_referenc...        24     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__common__Kind_h...        24     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Cr...        24     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Create...        24     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.cont...        23     1     1     1     1
+internal_zookeeper_controller!reconciler.spec.io.RequestView./ExternalReque...        23     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.cont...        23     2     2     2     2
+mariposa_qid_172                                                                      23     1     0     1     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...        23     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.impl&...        23     3     2     3     3
+internal_zookeeper_controller!reconciler.spec.io.RequestView./KRequest/0_ac...        23     1     1     1     1
+internal_zookeeper_controller!temporal_logic.defs.lift_action.?_definition            23     3     3     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.cont...        23     2     2     2     2
+internal_zookeeper_controller!reconciler.spec.reconciler.Reconciler.reconci...        23     3     2     3     3
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...        23     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.reconciler.Reconciler.reconci...        23     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.impl&...        23     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.cont...        23     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        22     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Create...        22     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.step.ZookeeperRe...        22     2     1     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.client_se...        22     3     2     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        22     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        22     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...        22     0     0     0     0
+prelude_box_unbox_strslice                                                            22     0     0     0     0
+mariposa_qid_159                                                                      22     0     0     0     0
+mariposa_qid_136                                                                      22     3     3     3     3
+mariposa_qid_157                                                                      22     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.resource_builder.ResourceBuil...        22     0     0     0     0
+prelude_has_type_strslice                                                             22     1     1     0     1
+internal_zookeeper_controller!zookeeper_controller.model.resource.client_se...        22     0     2     2     2
+mariposa_qid_160                                                                      22     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIRes...        22     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIRes...        22     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.client_se...        22     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.resource_builder.ResourceBuil...        22     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.resource_builder.ResourceBuil...        22     0     0     0     0
+mariposa_qid_146                                                                      22     1     1     3     3
+internal_zookeeper_controller!temporal_logic.defs.lift_action.?_pre_post_de...        22     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.client_se...        22     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Create...        21     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.reconciler.reconci...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        21     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Up...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.external_api.types.Ex...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIRes...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        21     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__stateful_set__...        21     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...        21     0     0     0     0
+mariposa_qid_119                                                                      21     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...        21     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIRes...        21     0     0     0     0
+internal_ens__zookeeper_controller!zookeeper_controller.proof.helper_invari...        21     5     4     4     4
+internal_zookeeper_controller__kubernetes_cluster__spec__external_api__type...        21     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.reconciler.reconci...        21     3     1     2     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.is_g...        20     0     1     1     1
+internal_zookeeper_controller__kubernetes_cluster__spec__external_api__type...        18     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...        18     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__De...        18     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...        18     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        17     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...        17     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__controller__types_...        17     2     2     2     2
+user_vstd__set__axiom_set_remove_same_69                                              17     1     1     2     1
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...        17     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        17     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__daemon_set__Da...        16     0     0     0     0
+mariposa_qid_153                                                                      16     3     2     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...        16     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.dele...        15     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.dele...        15     0     0     0     0
+internal_ens__zookeeper_controller!temporal_logic.rules.always_and_equality...        15    14    14    14    14
+internal_ens__zookeeper_controller!temporal_logic.rules.entails_and_temp._d...        15    14    14    14    14
+internal_zookeeper_controller!zookeeper_controller.model.resource.stateful_...        14     2     2     1     2
+internal_zookeeper_controller!zookeeper_controller.trusted.zookeeper_api_sp...        14     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.step.ZookeeperRe...        14     3     1     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.zookeeper_api_sp...        14     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.stateful_...        14     0     0     0     0
+internal_zookeeper_controller__temporal_logic__defs__Execution_box_axiom_de...        14     1     1     2     2
+internal_zookeeper_controller__zookeeper_controller__trusted__zookeeper_api...        14     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__external_api__type...        14     1     1     1     1
+internal_zookeeper_controller!reconciler.spec.io.ResponseView./KResponse/0_...        14     2     2     2     2
+internal_zookeeper_controller!reconciler.spec.io.ResponseView./ExternalResp...        14     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.stateful_...        13     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.is_g...        13     1     0     1     0
+internal_zookeeper_controller__zookeeper_controller__trusted__step__ActionK...        13     3     3     3     3
+internal_zookeeper_controller__zookeeper_controller__trusted__spec_types__Z...        13     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.stateful_...        13     3     2     2     3
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        13     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.Execution./Execution/nat_...        13     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        13     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        12     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        12     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        12     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...        12     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        12     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        12     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.impl&_...        12     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        12     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.impl&_...        12     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        12     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...        12     0     0     0     0
+mariposa_qid_204                                                                      12     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        12     0     0     0     0
+mariposa_qid_203                                                                      12     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        12     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        12     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        12     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...        12     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__owner_referenc...        11     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...        11     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     1     1     1     1
+mariposa_qid_209                                                                      10     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     0     0     0     0
+mariposa_qid_170                                                                      10     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     0     0     0     0
+mariposa_qid_210                                                                      10     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...        10     0     0     0     0
+mariposa_qid_208                                                                      10     1     1     1     1
+mariposa_qid_206                                                                      10     1     1     1     1
+internal_req__zookeeper_controller!temporal_logic.rules.valid_implies_trans...        10     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...        10     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIRes...         9     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__message__MessageOp...         9     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         9     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         9     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.api_server_liveness....         9     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         9     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         9     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.proof.api_server_liveness....         9     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         9     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.impl&__0....         8     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.impl&__0....         8     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageOps./M...         8     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...         8     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Delete...         8     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.external_api.types.Ex...         8     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...         8     1     1     0     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageOps./M...         8     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.client.types.ClientAc...         8     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         8     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageOps./M...         8     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...         8     1     1     1     1
+internal_zookeeper_controller__kubernetes_cluster__spec__external_api__type...         8     0     0     0     0
+mariposa_qid_89                                                                        8     2     0     0     0
+mariposa_qid_120                                                                       7     0     0     0     0
+mariposa_qid_116                                                                       7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...         7     2     1     2     1
+internal_zookeeper_controller!reconciler.spec.io.ResponseView./KResponse/0_...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.types.Cont...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         7     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Create...         7     1     1     1     1
+internal_zookeeper_controller__kubernetes_cluster__spec__api_server__types_...         7     1     1     1     1
+user_zookeeper_controller__zookeeper_controller__proof__helper_invariants__...         7     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         7     0     0     0     0
+mariposa_qid_121                                                                       7     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.RestIdAllocat...         7     0     0     0     0
+mariposa_qid_61                                                                        7     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.io.ResponseView./ExternalResp...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.daemon_set.Daemon...         7     0     0     0     0
+mariposa_qid_62                                                                        7     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__zookeeper_api...         7     0     0     0     0
+mariposa_qid_117                                                                       7     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.daemon_set.Daemon...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.Update...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...         7     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__daemon_set__Da...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         7     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.s...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.get_...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.s...         6     1     1     1     1
+internal_zookeeper_controller__zookeeper_controller__trusted__zookeeper_api...         6     0     0     0     0
+internal_vstd!set.impl&__0.intersect.?_pre_post_definition                             6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         6     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.s...         6     1     1     1     1
+mariposa_qid_211                                                                       6     1     1     1     1
+internal_vstd!set.impl&__0.filter.?_definition                                         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.list...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.s...         6     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Li...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.g...         6     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...         6     1     1     1     1
+internal_zookeeper_controller__reconciler__spec__io__ResponseView_unbox_axi...         6     0     0     0     0
+internal_vstd!map_lib.impl&__0.values.?_pre_post_definition                            6     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.ListRe...         6     0     0     0     0
+internal_vstd!set_lib.impl&__0.to_seq.?_definition                                     6     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.zookeeper_api_sp...         6     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Li...         6     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__builtin_controller...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.g...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.s...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...         6     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Up...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...         6     0     0     0     0
+internal_vstd!set.impl&__0.filter.?_pre_post_definition                                6     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__client__types__Cli...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.list...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         6     0     0     0     0
+internal_zookeeper_controller!vstd_ext.map_lib.map_to_seq.?_definition                 6     0     0     0     0
+internal_vstd!map_lib.impl&__0.values.?_definition                                     6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         6     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.ListRe...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.form...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster.Cluster./Clus...         6     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         6     0     0     0     0
+internal_zookeeper_controller!vstd_ext.map_lib.map_to_seq.?_pre_post_defini...         6     0     0     0     0
+internal_vstd!set_lib.impl&__0.to_seq.?_pre_post_definition                            6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.d...         6     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.types.ApiS...         6     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.d...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__4.get_...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.impl&__5.get_...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.s...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.ListRe...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIReq...         6     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.impl&__0....         5     1     0     1     1
+internal_zookeeper_controller!zookeeper_controller.trusted.zookeeper_api_sp...         5     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.state_mach...         5     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__zookeeper_api...         5     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.zookeeper_api_sp...         5     0     0     0     0
+mariposa_qid_261                                                                       5
+- [root]                                                                               4     2     2     3     3
+- user_zookeeper_controller__kubernetes_cluster__spec__cluster__Cluster__ever...       1     1     1     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         5     2     2     2     2
+prelude_ext_eq                                                                         5     3     3     3     3
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.state_mach...         5     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.leads_to.?_pre_p...         5     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.dynamic.impl&__0....         5     1     0     1     1
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.leads_to.?_defin...         5     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.resource.get_reque...         4     2     2     2     2
+internal_req__zookeeper_controller!zookeeper_controller.proof.helper_invari...         4     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.controller...         4     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.controller...         4     1     1     1     1
+internal_zookeeper_controller!temporal_logic.defs.tla_forall.?_definition              4     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...         4     0     0     0     0
+internal_core!option.Option./None_ext_equal_definition                                 4     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__step__Zookeep...         4     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.predicate.at_zk_st...         4     2     2     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.builtin_controllers.t...         4     0     0     0     0
+mariposa_qid_53                                                                        4     0     0     0     0
+internal_core!option.Option./Some_ext_equal_definition                                 4     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.controller...         4     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.controller...         4     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.io.RequestView./ExternalReque...         4     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.state_mach...         4     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.state_mach...         4     1     1     1     1
+internal_zookeeper_controller__zookeeper_controller__trusted__step__Zookeep...         4     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.controller...         4     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.controller.controller...         4     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__api_method__Li...         3     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.role_binding.Role...         3     0     0     0     0
+user_vstd__seq__axiom_seq_empty_37                                                     3     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.equals.?_pre_pos...         3     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.io.ResponseView./KResponse_co...         3     2     2     2     2
+internal_zookeeper_controller!temporal_logic.defs.eventually.?_pre_post_def...         3     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.MessageConten...         3     0     0     0     0
+mariposa_qid_175                                                                       3
+- [root]                                                                               2     0     0     0     0
+- user_zookeeper_controller__zookeeper_controller__proof__helper_invariants__...       1     1     1     2     2
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         3     0     0     0     0
+internal_req__zookeeper_controller!kubernetes_cluster.proof.api_server_live...         3     1     1     1     1
+mariposa_qid_110                                                                       3     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__step__ZKAPIEr...         3     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         3     1     1     1     1
+internal_zookeeper_controller__zookeeper_controller__trusted__step__ZKAPIEr...         3     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.predicate.at_zk_st...         3     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__role_binding__...         3     0     0     0     0
+user_vstd__seq__axiom_seq_push_len_40                                                  3     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.api_server_liveness....         3     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.ListRe...         3     0     0     0     0
+user_zookeeper_controller__zookeeper_controller__proof__helper_invariants__...         3     1     1     1     1
+internal_zookeeper_controller!temporal_logic.defs.eventually.?_definition              3     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.api_server_liveness....         3     1     1     1     1
+internal_zookeeper_controller__zookeeper_controller__trusted__step__ZKAPIEr...         3     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.impl&__1.equals.?_definit...         3     1     1     1     1
+internal_req__zookeeper_controller!temporal_logic.rules.temp_pred_equality....         3     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         2     1     1     1     1
+internal_zookeeper_controller!zookeeper_controller.trusted.zookeeper_api_sp...         2     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__zookeeper_api...         2     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.true_pred.?_pre_post_defi...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.role.RoleView./Ro...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.is_...         2     0     0     0     0
+internal_zookeeper_controller!state_machine.state_machine.NetworkStateMachi...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__persistent_vol...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_get_...         2     1     1     1     1
+internal_zookeeper_controller__zookeeper_controller__trusted__zookeeper_api...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__pod__PodView_b...         2     0     0     0     0
+internal_zookeeper_controller!state_machine.action.impl&__0.weak_fairness.?...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.eve...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.is_...         2     1     1     1     1
+internal_vstd!pervasive.arbitrary.?_pre_post_definition                                2     0     0     0     0
+internal_vstd!multiset.impl&__0.empty.?_pre_post_definition                            2     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.role_binding.impl...         2     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.resource.get_reque...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.network.state_machine...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         2     1     1     1     1
+mariposa_qid_82                                                                        2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__role_binding__...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         2     0     0     0     1
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.is_...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_dele...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__external_api__type...         2     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.impl&__0.suffix.?_pre_pos...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__role_binding__...         2     0     0     0     0
+mariposa_qid_182                                                                       2     1     1     1     1
+internal_zookeeper_controller!reconciler.spec.reconciler.Reconciler.reconci...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.obj...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.impl&...         2     0     0     0     0
+mariposa_qid_263                                                                       2     1     1     1     1
+internal_zookeeper_controller!zookeeper_controller.model.reconciler.reconci...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.controller_runtime_e...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.role_binding.Role...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__secret__Secret...         2     0     0     0     0
+mariposa_qid_264                                                                       2     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__message__HostId_ha...         2     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         2     1     1     1     1
+internal_zookeeper_controller__zookeeper_controller__trusted__step__SubReso...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__role_binding__...         2     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         2     1     1     1     1
+internal_zookeeper_controller__state_machine__state_machine__NetworkStateMa...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__pod__PodView_u...         2     0     0     0     0
+internal_zookeeper_controller!state_machine.action.impl&__0.weak_fairness.?...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.cluster_safety.impl&...         2     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__role__RoleView...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.daemon_set.Daemon...         2     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.external_api.state_ma...         2     0     0     0     0
+internal_crate__tuple__0_box_axiom_definition                                          2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.network.state_machine...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_dele...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_cluster__spec__message__HostId_un...         2     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         2     0     0     0     0
+internal_zookeeper_controller!external_api.spec.ExternalAPI.init_state.?_pr...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.external_api.state_ma...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.network.state_machine...         2     1     1     1     1
+internal_zookeeper_controller!temporal_logic.defs.tla_forall.?_pre_post_def...         2     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.true_pred.?_definition               2     0     0     0     0
+internal_zookeeper_controller__zookeeper_controller__trusted__step__SubReso...         2     1     1     2     1
+internal_zookeeper_controller!zookeeper_controller.trusted.zookeeper_api_sp...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_get_...         2     0     0     0     0
+internal_zookeeper_controller!state_machine.action.impl&__0.pre.?_definitio...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__role__RoleView...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.external_api.state_ma...         2     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         2     1     1     1     1
+internal_zookeeper_controller!state_machine.action.impl&__0.pre.?_pre_post_...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.eve...         2     0     0     0     0
+internal_zookeeper_controller!temporal_logic.defs.impl&__0.suffix.?_definit...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.is_...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_upda...         2     1     1     1     1
+internal_zookeeper_controller__kubernetes_cluster__spec__client__types__Cli...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.cluster_safety.impl&...         2     1     1     1     1
+internal_zookeeper_controller__kubernetes_api_objects__spec__secret__Secret...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__daemon_set__Da...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.impl&...         2     0     0     0     0
+internal_req__zookeeper_controller!temporal_logic.rules.always_to_always_la...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.role_binding.impl...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__persistent_vol...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.api_server.state_mach...         2     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__error__ParseDynamicO...         2     0     0     0     0
+internal_ens__zookeeper_controller!kubernetes_cluster.proof.api_server_live...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.network.state_machine...         2     1     1     1     1
+internal_zookeeper_controller__kubernetes_cluster__spec__client__types__Cli...         2     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.zookeeper_api_sp...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         2     1     1     1     1
+mariposa_qid_225                                                                       2     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.pod.PodView./PodV...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.persistent_volume...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.external_api.types.Ex...         2     0     0     0     0
+internal_zookeeper_controller!reconciler.spec.io.ResponseView./ExternalResp...         2     2     1     2     1
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.obj...         2     1     1     1     1
+internal_zookeeper_controller__state_machine__state_machine__NetworkStateMa...         2     1     1     1     1
+internal_zookeeper_controller!kubernetes_api_objects.spec.secret.SecretView...         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.external_api.state_ma...         2     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         2     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         1     1     1     1     1
+internal_zookeeper_controller!zookeeper_controller.model.reconciler.reconci...         1     1     1     1     1
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         1     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__service_accoun...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.cluster_safety.impl&...         1     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.api_method.APIRes...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         1     0     0     0     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__service_accoun...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.service_account.S...         1     0     0     0     0
+internal_ens__zookeeper_controller!temporal_logic.rules.temp_pred_equality....         1     1     1     1     1
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_upda...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.eve...         1     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         1     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         1     0     0     0     0
+mariposa_qid_98                                                                        1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.cluster_safety.impl&...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_upda...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.message.resource_upda...         1     0     0     0     0
+mariposa_qid_262                                                                       1     1     1     2     2
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.spec.cluster_state_machine...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.eve...         1     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.obj...         1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.message.impl&__0.obj...         1     0     0     0     0
+internal_vstd!seq_lib.impl&__0.to_set.?_definition                                     1     0     0     0     0
+internal_zookeeper_controller!kubernetes_cluster.proof.controller_runtime_e...         1     0     0     0     0
+internal_zookeeper_controller!zookeeper_controller.proof.helper_invariants....         1     0     0     0     0
+internal_vstd!seq_lib.impl&__0.to_set.?_pre_post_definition                            1     0     0     0     0
+total                                                                             362493  2818  2585  2736  2716
+
+missing instantiations:
+QID                                                                               P0    P1    P2    P3
+------------------------------------------------------------------------------  ----  ----  ----  ----
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.impl...     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.resource.Resource...     2     3     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.config_ma...     3     2     3     3
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     2     2     2     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...    12    12    12    10
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.impl&...     5     0     0     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     2     2     2     0
+internal_zookeeper_controller__kubernetes_api_objects__spec__label_selector...     0     0     0     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.impl...     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.admin_ser...     3     2     3     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.impl...     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     2     2     2     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.config_ma...     2     2     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...     4     4     4     4
+internal_zookeeper_controller__kubernetes_api_objects__spec__pod_template_s...     8     8     8     8
+internal_zookeeper_controller!zookeeper_controller.model.resource.config_ma...     4     2     4     4
+internal_zookeeper_controller__kubernetes_api_objects__spec__stateful_set__...    14    14    14    14
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.admin_ser...     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.stateful_...     2     2     2     3
+internal_zookeeper_controller!reconciler.spec.resource_builder.ResourceBuil...     2     2     3     3
+internal_zookeeper_controller!zookeeper_controller.model.resource.client_se...     3     2     3     3
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     2     2     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.config_map.Config...     6     4     6     6
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.object_meta.impl&...     5     0     0     0
+internal_zookeeper_controller!zookeeper_controller.model.resource.stateful_...     3     2     3     3
+internal_zookeeper_controller!reconciler.spec.resource_builder.ResourceBuil...     4     5     6     6
+mariposa_qid_162                                                                   4     6     7     7
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.client_se...     4     3     3     3
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.impl...     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.admin_ser...     0     2     0     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.impl...     2     2     2     2
+internal_zookeeper_controller__zookeeper_controller__trusted__spec_types__Z...     2     2     2     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...     0     0     0     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.admin_ser...     3     2     3     2
+internal_zookeeper_controller__zookeeper_controller__trusted__spec_types__Z...     3     0     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.impl...     2     2     2     0
+mariposa_qid_152                                                                   5     4     6     8
+internal_zookeeper_controller!zookeeper_controller.trusted.config_map.make_...     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     2     2     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+mariposa_qid_148                                                                   3     5     4     6
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     2     2     2     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.container.impl&__...    10    10    10     0
+internal_vstd__seq__Seq<zookeeper_controller!kubernetes_api_objects.spec.co...     2     2     2     0
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.Stat...     6     6     6     6
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.impl...     2     2     2     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.stateful_set.impl...     2     2     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     2     2     2     0
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!kubernetes_api_objects.spec.config_map.Config...     6     6     6     6
+internal_zookeeper_controller!zookeeper_controller.trusted.spec_types.Zooke...     3     0     2     2
+internal_zookeeper_controller!zookeeper_controller.model.resource.stateful_...     2     2     2     2
