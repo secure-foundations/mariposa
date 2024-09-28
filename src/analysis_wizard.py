@@ -3,6 +3,7 @@
 import argparse
 import random
 from analysis.core_analyzer import CoreAnalyzer
+from analysis.debug_analyzer import analyze_debug
 from analysis.trace_analyzer import TraceAnalyzer
 from base.defs import MARIPOSA_GROUPS
 from base.exper_analyzer import ExperAnalyzer
@@ -92,28 +93,11 @@ def find_oracle_path(qid):
 def valid_max(scores):
     return max([s for s in scores if not np.isnan(s)])
 
+def handle_debug():
+    analyze_debug()
+
 def handle_special():
-    ana = FACT.get_analyzer("10sec")
-    group = FACT.get_group("anvil.v1")
-    proj = group.get_project("base.z3")
-    cfg = FACT.get_config("verus_quick")
-    solver = FACT.get_solver("z3_4_13_0")
-    v0 = FACT.load_analysis(proj, cfg, solver, ana)
-
-    group = FACT.get_group("anvil.v2")
-    proj = group.get_project("base.z3")
-    v1 = FACT.load_analysis(proj, cfg, solver, ana)
-    
-    results = dict()
-
-    mi = v0.stability_categories.get_migration_status(v1.stability_categories)
-
-    for cat in [STB.UNSOLVABLE, STB.UNSTABLE, STB.STABLE]:
-        print(cat)
-        mi[cat].print_status()
-        # for qid in v0.stability_categories[cat]:
-        #     results[v0[qid].query_path] = cat.name
-    # print(results)
+    pass
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. ")
@@ -128,6 +112,7 @@ if __name__ == '__main__':
     set_up_shake(subparsers)
     set_up_wombo(subparsers)
     set_up_trace(subparsers)
+    p = subparsers.add_parser('debug', help='no help is coming')
     p = subparsers.add_parser('special', help='placeholder for special analysis')
 
     args = parser.parse_args()
@@ -152,6 +137,8 @@ if __name__ == '__main__':
         WomboAnalyzer(args.input_group)
     elif args.sub_command == "trace":
         TraceAnalyzer(args.input_group)
+    elif args.sub_command == "debug":
+        handle_debug()        
     elif args.sub_command == "special":
         handle_special()
     else:

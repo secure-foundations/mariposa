@@ -1,8 +1,10 @@
 from typing import Dict, List
 
 from tabulate import tabulate
-from instantiater import ProofInfo, QueryLoader
-from utils.system_utils import log_check, log_info
+from base.defs import MARIPOSA
+from debugger.z3_utils import collapse_sexpr, extract_skid_from_decl, hack_quantifier_removal
+from proof_reader import InstError, ProofInfo, QueryLoader
+from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 
 # trace_qids
 # traced = self.ins.accumulate_inst_count(trace_qids)
@@ -50,8 +52,26 @@ def shorten_qid(qid):
         return qid
     return qid[:75] + "..."
 
+
 def is_prelude_qid(qid):
-    return qid.startswith("prelude_") or qid.startswith("internal_vstd") or qid.startswith("internal_core")
+    return (
+        qid.startswith("prelude_")
+        or qid.startswith("internal_vstd")
+        or qid.startswith("internal_core")
+    )
+
+
+def add_qids_to_query(query_path):
+    args = [
+        MARIPOSA,
+        "-i",
+        query_path,
+        "--action=add-qids",
+        "-o",
+        query_path,
+    ]
+    subprocess_run(args, check=True, debug=True)
+
 
 class TraceAnalyzer(QueryLoader):
     def __init__(self, query_path, proofs: List[ProofInfo]):
@@ -59,20 +79,11 @@ class TraceAnalyzer(QueryLoader):
         log_check(len(proofs) != 0, "no proofs provided")
         self.proofs = proofs
         self.pf_freqs = []
-        self.sk_funs = set()
 
         for proof in proofs:
             freq = proof.as_frequency()
             freq = self.group_frequencies(freq)
             self.pf_freqs.append(freq)
-            self.sk_funs |= set(proof.sk_funs)
-
-    def needed_for_skolem(self, qid):
-        target = "$!skolem_" + qid + "!"
-        for sk_fun in self.sk_funs:
-            if target in sk_fun:
-                return True
-        return False
 
     def group_frequencies(self, freq: Dict[str, int]) -> Dict[str, GroupInstFreq]:
         res = dict()
@@ -85,7 +96,6 @@ class TraceAnalyzer(QueryLoader):
             res[rid][qid] = freq[qid]
         for rid in res:
             res[rid].finalize()
-        assert self.root_qids == set(res.keys())
         return res
 
     def get_proof_inst_counts(self, rid, qid=None):
@@ -183,6 +193,12 @@ class TraceAnalyzer(QueryLoader):
             if tg.total_count == 0 and rid in used:
                 res.add(rid)
         return res
+    
+    def needed_for_skolem(self, qid):
+        for pi in self.proofs:
+            if qid in pi.new_skolem_funs:
+                return True
+        return False
 
     def select_qids_v1(self, trace_freq: Dict[str, int], top_n):
         t_freq = self.group_frequencies(trace_freq)
@@ -243,3 +259,88 @@ class TraceAnalyzer(QueryLoader):
                     selected.add(qid)
 
         return selected
+
+    def __instantiate_qids(self, pi: ProofInfo, inst_ids):
+        suppressed = set()
+        commands = []
+
+        for qid in inst_ids:
+            if qid not in self.quants:
+                log_warn(f"cannot instantiate {qid}: not in query")
+                continue
+
+            if qid in pi.errors:
+                msg = pi.errors[qid][0]
+                if msg == InstError.SKOLEM_FUNS:
+                    log_warn(f"{qid} uses skolem functions")
+                    insts = pi.handled[qid]
+                    for inst in insts:
+                        print(collapse_sexpr(inst))
+                else:
+                    log_warn(f"cannot instantiate {qid}: {msg}")
+                continue
+
+            if qid in pi.handled:
+                insts = pi.handled[qid]
+                log_info(f"using {len(insts)} instances for {qid}")
+                suppressed.add(qid)
+                commands.append(f'(set-info :comment "instances for {qid}")')
+                for inst in insts:
+                    commands.append(collapse_sexpr(inst))
+            else:
+                log_warn(f"no instances for {qid}")
+                suppressed.add(qid)
+
+        return commands, suppressed
+
+    def output_query(self, out_path, skolem_ids, inst_ids, suppress_ids):
+        # TODO: use this proof specifically?
+        pi = self.proofs[0]
+
+        for qid in inst_ids:
+            log_check(qid not in pi.new_skolem_funs, f"cannot instantiate {qid},used for skolem")
+
+        commands, remove_ids = self.__instantiate_qids(pi, inst_ids)
+        remove_ids |= suppress_ids
+
+        out_file = open(out_path, "w+")
+        # "erasing" quantifiers, rather than removing
+        for line in open(self.in_file_path, "r"):
+            removed = set()
+            for qid in remove_ids:
+                if qid + " " in line or qid + ")" in line:
+                    line = hack_quantifier_removal(line, qid)
+                    removed.add(qid)
+                    log_info(f"suppressing {qid}")
+            remove_ids -= removed
+            if line == "(check-sat)\n":
+                for command in commands:
+                    out_file.write(command + "\n")
+            out_file.write(line)
+        out_file.close()
+
+        add_qids_to_query(out_path)
+
+        # l = QueryLoader(out_path)
+        # commands = []
+        # declss = []
+        # for a in l.proc_solver.assertions()[-2:]:
+        #     # print(collapse_sexpr(a.sexpr()))
+        #     res, decls = l.skolemize_assertion(a)
+        #     commands += res
+        #     declss += decls
+
+        # # "erasing" quantifiers, rather than removing
+        # lines = open(out_path, "r").readlines()
+        # lines = lines[:-4]
+
+        # out_file = open(out_path, "w+")
+        # for line in lines:
+        #     out_file.write(line)
+        # for decl in declss:
+        #     out_file.write(collapse_sexpr(decl) + "\n")
+        # for command in commands:
+        #     out_file.write(command + "\n")
+        # out_file.write("(check-sat)\n")
+        # out_file.close()
+        # add_qids_to_query(out_path)

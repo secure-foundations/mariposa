@@ -6,9 +6,10 @@ import sqlite3
 import pickle
 import subprocess
 import time
+from z3 import set_param
 from base.solver import RCode
-from query.inst_mapper import collapse_sexpr, hack_quantifier_removal
-from trace_analyzer import TraceAnalyzer
+from debugger.trace_analyzer import TraceAnalyzer
+from proof_reader import ProofReader
 from utils.database_utils import table_exists
 import multiprocessing
 import os, sys
@@ -23,7 +24,6 @@ from utils.query_utils import (
 )
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from tabulate import tabulate
-from instantiater import InstError, Instantiater, ProofInfo
 
 PROC_COUNT = 4
 MUTANT_COUNT = 8
@@ -175,12 +175,13 @@ def _build_proof(mi: MutantInfo):
         mi.create_mutant()
 
     log_info(f"[proof] attempt {target}")
-    ins = Instantiater(target)
+    pr = ProofReader(target)
+    pi = pr.try_prove()
 
-    if ins.process():
+    if pi is not None:
+        pi.save(mi.insts_path)
         log_info(f"[proof] success {target}")
-        ins.save_state(mi.insts_path)
-        return (mi.mutation, mi.seed, ins.proof_time)
+        return (mi.mutation, mi.seed, pr.proof_time)
 
     log_warn(f"[proof] failure {mi.mut_path}")
     return None
@@ -226,9 +227,9 @@ class Debugger3:
         self.refresh_status()
         self.__init_proofs()
         self.refresh_status()
-        
+
         pins = [p.proof_info for p in self.proofs]
-        self.analyzer = TraceAnalyzer(self.orig_path, pins)        
+        self.analyzer = TraceAnalyzer(self.orig_path, pins)
 
     def __init_dirs(self, query_path, clear):
         if clear and os.path.exists(self.sub_root):
@@ -345,7 +346,9 @@ class Debugger3:
                 [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
             )
 
-            res = self.__run_with_pool(f, args, goal=TRACE_GOAL_COUNT, time_bound=TRACE_TOTAL_TIME_LIMIT_SEC)
+            res = self.__run_with_pool(
+                f, args, goal=TRACE_GOAL_COUNT, time_bound=TRACE_TOTAL_TIME_LIMIT_SEC
+            )
             cur = self.con.cursor()
             for i, r in enumerate(res):
                 cur.execute(
@@ -466,7 +469,7 @@ class Debugger3:
                 counts.append(count)
             result[qid] = counts
         return result
-    
+
     def get_proof_total_inst_counts(self):
         return self.analyzer.get_proof_total_inst_counts()
 
@@ -520,76 +523,37 @@ class Debugger3:
         log_info(f"listing {len(table)} proof mutants:")
         print(tabulate(table, headers=["mutation", "seed", "time"]))
 
-    def output_query(self, out_path, remove_ids, inst_ids):
-        inserted = []
-        suppressed = set()
+    def output_query(self, out_path, remove_ids, inst_ids, skolem_ids):
         log_check(len(self.proofs) != 0, "no proofs")
-        pi = self.proofs[0].proof_info
-        # pi.print_report()
-
-        # for sk_fun in pi.sk_funs:
-        #     print(sk_fun)
-
-        for qid in inst_ids:
-            if qid in pi.errors:
-                msg = pi.errors[qid][0]
-                log_warn(f"error insting {qid}: {msg}")
-                if msg == InstError.SKOLEM_FUNS:
-                    insts = pi.handled[qid]
-                    for inst in insts:
-                        # print(collapse_sexpr(ins))
-                        inserted.append(inst)
-                continue
-            if qid in pi.handled:
-                insts = pi.handled[qid]
-                log_info(f"using {len(insts)} instances for {qid}")
-                suppressed.add(qid)
-                for inst in insts:
-                    inserted.append(inst)
-            else:
-                log_warn(f"no instances for {qid}")
-                continue
-
-        out_file = open(out_path, "w+")
-        remove_ids |= suppressed
-
-        # "erasing" quantifiers, rather than removing
-        for line in open(self.orig_path, "r"):
-            removed = set()
-            for qid in remove_ids:
-                # internal_vstd!cell.impl&__2.view.?_pre_post_definition
-                if qid + " " in line or qid + ")" in line:
-                    line = hack_quantifier_removal(line, qid)
-                    removed.add(qid)
-                    log_info(f"suppressing {qid}")
-            remove_ids -= removed
-
-            if line == "(check-sat)\n":
-                for inst in inserted:
-                    out_file.write(inst + "\n")
-            out_file.write(line)
-
-        out_file.close()
-
-        args = [
-            MARIPOSA,
-            "-i",
-            out_path,
-            "--action=add-qids",
-            "-o",
-            out_path,
-        ]
-
-        subprocess_run(args, check=True, debug=True)
+        # pi = self.proofs[0].proof_info
+        self.analyzer.output_query(out_path, remove_ids, inst_ids, skolem_ids)
 
 
 if __name__ == "__main__":
+    set_param(proof=True)
+
     parser = argparse.ArgumentParser(description="Mariposa Debugger. ")
-    parser.add_argument("-i", "--input-query-path", required=True, help="the input query path")
-    parser.add_argument("-o", "--output-query-path", required=False, help="the output query path")
-    parser.add_argument("-r", "--report-path", required=False, help="the output report path")
-    parser.add_argument("--from-core", default=False, action='store_true', help="build proofs from cores")
-    parser.add_argument("--clear", default=False, action='store_true', help="clear the existing experiment")
+    parser.add_argument(
+        "-i", "--input-query-path", required=True, help="the input query path"
+    )
+    parser.add_argument(
+        "-o", "--output-query-path", required=False, help="the output query path"
+    )
+    parser.add_argument(
+        "-r", "--report-path", required=False, help="the output report path"
+    )
+    parser.add_argument(
+        "--from-core",
+        default=False,
+        action="store_true",
+        help="build proofs from cores",
+    )
+    parser.add_argument(
+        "--clear",
+        default=False,
+        action="store_true",
+        help="clear the existing experiment",
+    )
     parser.add_argument("--version", default=1, help="suppressor version")
 
     args = parser.parse_args()
@@ -606,12 +570,27 @@ if __name__ == "__main__":
         sys.exit(0)
 
     version = int(args.version)
+    # remove_ids = dbg.select_suppress_qids(tmi, version)
 
-    remove_ids = dbg.select_suppress_qids(tmi, version)
-    # remove_ids = set([
-    # ])
-
-    inst_ids = set([
+    remove_ids = set([
+            # "user_lib__types__page_organization_segments_match_156",
+            # "mariposa_qid_43",
+            # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
     ])
 
-    dbg.output_query(args.output_query_path, remove_ids, inst_ids)
+    inst_ids = set(
+        [
+            # "internal_req__lib!os_mem_util.preserves_mem_chunk_good._definition",
+        ]
+    )
+
+    skolem_ids = set(
+        [
+            # "skolem_mariposa_qid_46",
+            # "skolem_user_lib__os_mem_util__preserves_mem_chunk_good_171",
+            # "user_lib__types__page_organization_pages_match_155",
+            # "internal_lib!types.impl&__21.wf_main.?_definition",
+        ]
+    )
+
+    dbg.output_query(args.output_query_path, remove_ids, inst_ids, skolem_ids)
