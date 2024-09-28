@@ -115,7 +115,7 @@ class TraceAnalyzer(QueryLoader):
         report = "traced instantiations:\n"
         t_freq = self.group_frequencies(trace_freq)
         missing = self.__get_missing_rids(t_freq)
-        group_sums = [0] * (1 + len(self.proofs))
+        group_sums = [0] * (1 + len(self.proofs) * 2)
 
         t_freq: List[(str, GroupInstFreq)] = sorted(
             t_freq.items(), key=lambda x: x[1].total_count, reverse=True
@@ -129,7 +129,7 @@ class TraceAnalyzer(QueryLoader):
             group_sums[0] += tg.total_count
             ptotals = self.get_proof_inst_counts(rid)
             for i in range(len(self.proofs)):
-                group_sums[i + 1] += ptotals[i * 2]
+                group_sums[i * 2 + 1] += ptotals[i * 2]
             if tg.is_singleton():
                 table.append(row + ptotals)
                 continue
@@ -259,74 +259,3 @@ class TraceAnalyzer(QueryLoader):
 
         return selected
 
-    # def __instantiate_qids(self, pi: ProofInfo, inst_ids):
-    #     suppressed = set()
-    #     commands = []
-
-    #     for qid in inst_ids:
-    #         if qid not in self.quants:
-    #             log_warn(f"cannot instantiate {qid}: not in query")
-    #             continue
-
-    #         if qid in pi.errors:
-    #             msg = pi.errors[qid][0]
-    #             if msg == InstError.SKOLEM_FUNS:
-    #                 log_warn(f"{qid} uses skolem functions")
-    #                 insts = pi.handled[qid]
-    #                 for inst in insts:
-    #                     print(collapse_sexpr(inst))
-    #             else:
-    #                 log_warn(f"cannot instantiate {qid}: {msg}")
-    #             continue
-
-    #         if qid in pi.handled:
-    #             insts = pi.handled[qid]
-    #             log_info(f"using {len(insts)} instances for {qid}")
-    #             suppressed.add(qid)
-    #             commands.append(f'(set-info :comment "instances for {qid}")')
-    #             for inst in insts:
-    #                 commands.append(collapse_sexpr(inst))
-    #         else:
-    #             log_warn(f"no instances for {qid}")
-    #             suppressed.add(qid)
-
-    #     return commands, suppressed
-
-    def output_query(self, out_path, remove_ids, inst_ids, skolem_ids):
-        # TODO: use this proof specifically?
-        pi = self.proofs[0]
-        
-        skolem_ids = {q[7:] if q.startswith("skolem_") else q for q in skolem_ids}
-
-        for qid in remove_ids:
-            log_warn(pi.is_skolemized(qid), f"instantiate {qid}, used as skolem")
-
-        w = QueryWriter(self.in_file_path)
-        w.skolemize_qids(skolem_ids, out_path)
-
-        inst_ids = {qid: pi.qi_infos[qid] for qid in inst_ids}
-        w.instantiate_qids(inst_ids, out_path)
-
-        # l = QueryLoader(out_path)
-        # commands = []
-        # declss = []
-        # for a in l.proc_solver.assertions()[-2:]:
-        #     # print(collapse_sexpr(a.sexpr()))
-        #     res, decls = l.skolemize_assertion(a)
-        #     commands += res
-        #     declss += decls
-
-        # # "erasing" quantifiers, rather than removing
-        # lines = open(out_path, "r").readlines()
-        # lines = lines[:-4]
-
-        # out_file = open(out_path, "w+")
-        # for line in lines:
-        #     out_file.write(line)
-        # for decl in declss:
-        #     out_file.write(collapse_sexpr(decl) + "\n")
-        # for command in commands:
-        #     out_file.write(command + "\n")
-        # out_file.write("(check-sat)\n")
-        # out_file.close()
-        # add_qids_to_query(out_path)

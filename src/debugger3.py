@@ -8,6 +8,7 @@ import subprocess
 import time
 from z3 import set_param
 from base.solver import RCode
+from debugger.query_writer import QueryWriter
 from debugger.trace_analyzer import TraceAnalyzer
 from proof_reader import ProofReader
 from utils.database_utils import table_exists
@@ -523,10 +524,9 @@ class Debugger3:
         log_info(f"listing {len(table)} proof mutants:")
         print(tabulate(table, headers=["mutation", "seed", "time"]))
 
-    def output_query(self, out_path, remove_ids, inst_ids, skolem_ids):
+    def get_writer(self, out_path) -> QueryWriter:
         log_check(len(self.proofs) != 0, "no proofs")
-        # pi = self.proofs[0].proof_info
-        self.analyzer.output_query(out_path, remove_ids, inst_ids, skolem_ids)
+        return QueryWriter(self.in_file_path, out_path, self.proofs[0].proof_info)
 
 
 if __name__ == "__main__":
@@ -575,22 +575,24 @@ if __name__ == "__main__":
     remove_ids = set(
         [
             # "user_lib__types__page_organization_segments_match_156",
-            # "mariposa_qid_43",
             # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
         ]
     )
 
     inst_ids = set(
         [
-            "prelude_eucmod",
-            # "internal_lib!spec.cyclicbuffer.log_entry_idx.?_definition",
+            # "prelude_eucmod",
         ]
     )
 
     skolem_ids = set(
         [
             # "skolem_user_lib__spec__cyclicbuffer__log_entry_idx_wrap_around_61",
+            # "user_lib__spec__cyclicbuffer__log_entry_alive_wrap_around_51",
         ]
     )
 
-    dbg.output_query(args.output_query_path, remove_ids, inst_ids, skolem_ids)
+    w = dbg.get_writer(args.output_query_path)
+    # w.skolemize_qids(skolem_ids)
+    # w.instantiate_qids(inst_ids)
+    w.erase_qids(remove_ids)
