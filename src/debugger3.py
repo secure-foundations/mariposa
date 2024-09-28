@@ -572,24 +572,24 @@ if __name__ == "__main__":
     version = int(args.version)
     # remove_ids = dbg.select_suppress_qids(tmi, version)
 
-    remove_ids = set([
+    remove_ids = set(
+        [
             # "user_lib__types__page_organization_segments_match_156",
             # "mariposa_qid_43",
             # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-    ])
+        ]
+    )
 
     inst_ids = set(
         [
-            # "internal_req__lib!os_mem_util.preserves_mem_chunk_good._definition",
+            "prelude_eucmod",
+            # "internal_lib!spec.cyclicbuffer.log_entry_idx.?_definition",
         ]
     )
 
     skolem_ids = set(
         [
-            # "skolem_mariposa_qid_46",
-            # "skolem_user_lib__os_mem_util__preserves_mem_chunk_good_171",
-            # "user_lib__types__page_organization_pages_match_155",
-            # "internal_lib!types.impl&__21.wf_main.?_definition",
+            # "skolem_user_lib__spec__cyclicbuffer__log_entry_idx_wrap_around_61",
         ]
     )
 

@@ -10,7 +10,7 @@ from enum import Enum
 # import networkx as nx
 
 from debugger.query_loader import QueryLoader, SkolemFinder
-from debugger.z3_utils import collapse_sexpr, match_qi
+from debugger.z3_utils import collapse_sexpr, extract_sk_qid_from_decl, match_qi
 from utils.system_utils import log_info, log_warn
 
 
@@ -44,6 +44,7 @@ class ProofInfo:
         self.cur_skolem_funs = cur_skolem_funs
         self.new_skolem_funs = dict()
         self.qi_infos = dict()
+        self.new_sk_qids = set()
 
     def add_qi(self, qid, m: SubsMapper, insts):
         qi = QunatInstInfo(qid, len(insts))
@@ -79,8 +80,9 @@ class ProofInfo:
         self.qi_infos[qid] = qi
 
     def set_skolemized(self):
-        for qid in self.new_skolem_funs:
-            print(qid)
+        for decl in self.new_skolem_funs.values():
+            qid = extract_sk_qid_from_decl(decl)
+            self.new_sk_qids.add(qid)
             if qid not in self.qi_infos:
                 continue
             self.qi_infos[qid].errors.add(InstError.SKOLEM_SELF)
@@ -118,6 +120,9 @@ class ProofInfo:
     def save(self, out_file_path):
         with open(out_file_path, "wb") as f:
             pickle.dump(self, f)
+
+    def is_skolemized(self, qid):
+        return qid in self.new_sk_qids
 
 class ProofReader(QueryLoader):
     def __init__(self, in_file_path):
@@ -164,7 +169,7 @@ class ProofReader(QueryLoader):
         for c in p.children():
             self.__collect_instantiations(c)
 
-    def __post_process(self):
+    def __post_process(self) -> ProofInfo:
         pi = ProofInfo(self.cur_skolem_funs)
         for qid, insts in self.instantiations.items():
             m = SubsMapper(self.quants[qid].quant)
@@ -172,18 +177,11 @@ class ProofReader(QueryLoader):
         pi.set_skolemized()
         return pi
 
-    # def save_state(self, out_file_path):
-    #     pi = ProofInfo(handled, error_insts, sk_funs)
-
-    #     with open(out_file_path, "wb") as f:
-    #         pickle.dump(pi, f)
-
-
 if __name__ == "__main__":
     set_param(proof=True)
 
     i = ProofReader(sys.argv[1])
     pi = i.try_prove()
-    pi.save_state("insts.pickle")
+    pi.save("insts.pickle")
     pi = ProofInfo.load("insts.pickle")
     pi.print_report()

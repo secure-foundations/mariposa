@@ -101,13 +101,17 @@ def hack_quantifier_removal(expr, qid):
     brackets = find_matching_brackets(expr)
     found, depth = [], -1
     for s, e, d in brackets:
-        if (qid + " " in expr[s:e] or qid + ")" in expr[s:e]) and d > depth:
+        if hack_contains_qid(expr[s:e], qid) and d > depth:
             depth = d
             found += [(s, e, d)]
     for s, e, d in found:
         if d == depth - 1:
             return expr[:s] + "true" + expr[e:]
     assert False
+
+def hack_contains_qid(line, qid):
+    qid = ":qid " + qid
+    return qid + " " in line or qid + ")" in line
 
 
 def match_qi(p):
@@ -147,7 +151,7 @@ def is_quantifier_free(e):
     return True
 
 
-def extract_skid_from_decl(sk_fun):
+def extract_sk_qid_from_decl(sk_fun):
     assert sk_fun.startswith("(declare-fun ")
     sk_fun = sk_fun.split(" ")[1]
     s = sk_fun.find("$!skolem_") + 9
