@@ -58,8 +58,9 @@ class QueryWriter(QueryLoader):
         if body in self.__fun_cache:
             return self.__fun_cache[body]
         name = self.__get_fresh_name()
-        func = f"(define-fun {name} () {sort} {body})"
-        self.__fun_defs.append(func)
+        func = [f"(declare-fun {name} () {sort})",
+                "(assert (= " + name + " " + body + "))"]
+        self.__fun_defs += func
         self.__fun_cache[body] = name
         return name
 
@@ -69,9 +70,11 @@ class QueryWriter(QueryLoader):
             removed = set()
             for qid in target_ids:
                 if hack_contains_qid(line, qid):
-                    self.__in_commands[i] = hack_quantifier_removal(line, qid)
+                    line = hack_quantifier_removal(line, qid)
                     removed.add(qid)
                     log_info(f"[erase] erasing qid: {qid}")
+                    self.__new_commands.append(f"(set-info :comment \"[erase] {qid}\")")
+                self.__in_commands[i] = line
             target_ids -= removed
 
         if len(target_ids) > 0:
@@ -88,13 +91,14 @@ class QueryWriter(QueryLoader):
                     removed.add(qid)
                     log_info(f"[banish] assertion:")
                     print(line, end="")
+                    self.__new_commands.append(f"(set-info :comment \"[banish] {qid}\")")
             target_ids -= removed
 
         if len(target_ids) > 0:
-            log_warn(f"failed to eliminate the following qids:")
+            log_warn(f"failed to banish the following qids:")
             print("\t".join(target_ids))
 
-    def skolemize_qids(self, target_ids: Set[str]):
+    def skolemize_qids(self, target_ids: Set[str], erase: bool = False):
         # reduce to qids
         target_ids = {q[7:] if q.startswith("skolem_") else q for q in target_ids}
         # target_ids = self.__basic_check(target_ids)
@@ -111,8 +115,15 @@ class QueryWriter(QueryLoader):
 
         for exp, qid in targets.items():
             commands, decls = self.__skolemize_assertion(exp)
+            if erase:
+                for i, line in enumerate(commands):
+                    for qid in target_ids:
+                        if hack_contains_qid(line, qid):
+                            line = hack_quantifier_removal(line, qid)
+                    commands[i] = line
             log_info(f"[skolem] qid: {qid}")
             log_info(f"[skolem] {len(decls)} skolem funs {len(commands)} asserts added")
+            commands = [f"(set-info :comment \"[skolem] {len(commands)} asserts for {qid}\")"] + commands
             self.__fun_defs += decls
             self.__new_commands += commands
 
@@ -158,8 +169,9 @@ class QueryWriter(QueryLoader):
             vars = quant.get_vars()
             log_info(f"[inst] qid {qid} with {len(qi.bindings)} bindings")
 
-            for bindings in qi.bindings:
+            for j, bindings in enumerate(qi.bindings):
                 subs = dict()
+                self.__new_commands.append(f"(set-info :comment \"[inst] qid {qid} {j+1}/{len(qi.bindings)} bindings\")")
                 for i, b in bindings.items():
                     name = self.__add_def_fun(b, vars[i][1])
                     subs[i] = name

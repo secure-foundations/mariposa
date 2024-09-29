@@ -138,6 +138,12 @@ class QueryLoader(AstVisitor):
             qid = pid
         return qid
 
+    def get_parent(self, qid):
+        if qid not in self.parent_id:
+            log_warn(f"parent (?) qid {qid} not found")
+            return qid
+        return self.parent_id[qid]
+
     def __load_root_conflicts(self):
         constraints = dict()
         for qid, qt in self.quants.items():

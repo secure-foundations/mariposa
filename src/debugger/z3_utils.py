@@ -150,13 +150,16 @@ def is_quantifier_free(e):
             return False
     return True
 
+def extract_sk_qid_from_name(name):
+    assert "$!skolem_" in name
+    s = name.find("$!skolem_") + 9
+    e = name.rfind("!")
+    return name[s:e]
 
 def extract_sk_qid_from_decl(sk_fun):
     assert sk_fun.startswith("(declare-fun ")
     sk_fun = sk_fun.split(" ")[1]
-    s = sk_fun.find("$!skolem_") + 9
-    e = sk_fun.rfind("!")
-    return sk_fun[s:e]
+    return extract_sk_qid_from_name(sk_fun)
 
 
 class AstVisitor:

@@ -7,10 +7,15 @@ from typing import Dict, Optional, Set
 from tabulate import tabulate
 from debugger.subs_mapper import SubsMapper
 from enum import Enum
-# import networkx as nx
+import networkx as nx
 
 from debugger.query_loader import QueryLoader, SkolemFinder
-from debugger.z3_utils import collapse_sexpr, extract_sk_qid_from_decl, match_qi
+from debugger.z3_utils import (
+    collapse_sexpr,
+    extract_sk_qid_from_name,
+    extract_sk_qid_from_decl,
+    match_qi,
+)
 from utils.system_utils import log_info, log_warn
 
 
@@ -38,6 +43,7 @@ class QunatInstInfo:
 
     def add_skolem_dep(self, dep):
         self.skolem_deps.add(dep)
+
 
 class ProofInfo:
     def __init__(self, cur_skolem_funs):
@@ -113,7 +119,7 @@ class ProofInfo:
             print(sk_fun)
 
     @staticmethod
-    def load(file_path):
+    def load(file_path) -> "ProofInfo":
         with open(file_path, "rb") as f:
             return pickle.load(f)
 
@@ -123,6 +129,7 @@ class ProofInfo:
 
     def is_skolemized(self, qid):
         return qid in self.new_sk_qids
+
 
 class ProofReader(QueryLoader):
     def __init__(self, in_file_path):
@@ -144,10 +151,6 @@ class ProofReader(QueryLoader):
         p = self.proc_solver.proof()
         self.__collect_instantiations(p)
         self.reset_visit()
-
-        # self.graph = nx.DiGraph()
-        # for qid in self.quants.keys():
-        #     self.graph.add_node(qid)
 
         return self.__post_process()
 
@@ -177,11 +180,64 @@ class ProofReader(QueryLoader):
         pi.set_skolemized()
         return pi
 
+
+class ProofAnalyzer(QueryLoader):
+    def __init__(self, in_file_path, proof_info: ProofInfo):
+        super().__init__(in_file_path)
+        self.pi = proof_info
+        # self.in_file_path = in_file_path
+        self.graph = nx.DiGraph()
+
+        short_ids = dict()
+        reverse_ids = dict()
+        
+        def get_short_id(qid):
+            if qid not in short_ids:
+                short_ids[qid] = len(short_ids)
+                reverse_ids[short_ids[qid]] = qid
+            return short_ids[qid]
+        
+        # print(self.pi.cur_skolem_funs)
+        # print(self.pi.new_skolem_funs.keys())
+
+        for qid, qi in self.pi.qi_infos.items():
+            if len(qi.skolem_deps) != 0:
+                for dep in qi.skolem_deps:
+                    dep = extract_sk_qid_from_name(dep)
+                    self.graph.add_edge(get_short_id(dep), get_short_id(qid), color="red")
+            if qi.inst_count == 0 and not pi.is_skolemized(qid):
+                continue
+            if not self.is_root(qid):
+                pid = self.get_parent(qid)
+                self.graph.add_edge(get_short_id(pid), get_short_id(qid), label=qi.inst_count)
+
+        for qid in self.pi.new_skolem_funs:
+            qid = extract_sk_qid_from_name(qid)
+            if not self.is_root(qid):
+                pid = self.get_parent(qid)
+                self.graph.add_edge(get_short_id(pid), get_short_id(qid), label=qi.inst_count)
+
+        # assert pi.is_skolemized("user_lib__os_mem_util__preserves_mem_chunk_good_180")
+        table = []
+        for n in self.graph.nodes:
+            qid = reverse_ids[n]
+            table.append((qid, self.graph.in_degree(n), self.graph.out_degree(n)))
+        
+        table = sorted(table, key=lambda x: x[2], reverse=True)
+        print(tabulate(table, headers=["qid", "in", "out"]))
+
+        # for qid in short_ids:
+        #     print(short_ids[qid], qid)
+
+        # nx.drawing.nx_agraph.write_dot(self.graph, "test.dot")
+
+
 if __name__ == "__main__":
     set_param(proof=True)
 
-    i = ProofReader(sys.argv[1])
-    pi = i.try_prove()
-    pi.save("insts.pickle")
-    pi = ProofInfo.load("insts.pickle")
-    pi.print_report()
+    # i = ProofReader(sys.argv[1])
+    # pi = i.try_prove()
+    # pi.save("cyclic.pickle")
+    pi = ProofInfo.load("dbg/mimalloc--segment__segment_span_free.smt2/insts/rename.8072387806861946866")
+    # pi.print_report()
+    pa = ProofAnalyzer(sys.argv[1], pi)

@@ -574,26 +574,69 @@ if __name__ == "__main__":
 
     remove_ids = set(
         [
-            # "user_lib__types__page_organization_segments_match_156",
             # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
+            # "user_lib__types__page_organization_segments_match_156",
+            # "user_lib__os_mem_util__preserves_mem_chunk_good_177",
+            # "user_lib__os_mem_util__preserves_mem_chunk_good_178",
+            # "user_lib__os_mem_util__preserves_mem_chunk_good_179",
+            # "user_lib__os_mem_util__preserves_mem_chunk_good_180",
+            # "user_lib__os_mem_util__preserves_mem_chunk_good_181",
+            # "internal_vstd!set.impl&__0.subset_of.?_definition",
+            # "internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definition",
+            # "internal_lib!page_organization.PageOrg.impl&__4.count_is_right.?_definition",
+            # "internal_lib!page_organization.PageOrg.impl&__4.end_is_unused.?_definition",
         ]
     )
 
     inst_ids = set(
         [
-            "prelude_eucmod",
+            # "user_vstd__set__axiom_set_ext_equal_101",
+            "internal_req__lib!os_mem_util.preserves_mem_chunk_good._definition",
         ]
     )
 
     skolem_ids = set(
         [
-            "user_lib__spec__cyclicbuffer__log_entry_alive_wrap_around_51",
+            # "user_vstd__set__axiom_set_ext_equal_100",
+            # "mariposa_qid_43",
+            # "mariposa_qid_44",
+            # "mariposa_qid_45",
+            # "mariposa_qid_46",
+            "user_lib__os_mem_util__preserves_mem_chunk_good_167",
+            "user_lib__os_mem_util__preserves_mem_chunk_good_168",
+            "user_lib__os_mem_util__preserves_mem_chunk_good_169",
+            "user_lib__os_mem_util__preserves_mem_chunk_good_170",
+            "user_lib__os_mem_util__preserves_mem_chunk_good_171",
+            "mariposa_qid_43",
+            "mariposa_qid_44",
+            "mariposa_qid_45",
+            "mariposa_qid_46",
+            "mariposa_qid_47",
+            
+            # "mariposa_qid_47",
+            # "mariposa_qid_48",
+            # "mariposa_qid_49",
+            # "mariposa_qid_50",
+            # "mariposa_qid_51",
         ]
     )
 
     w = dbg.get_writer()
-    # w.skolemize_qids(skolem_ids)
     w.instantiate_qids(inst_ids)
-    # w.erase_qids(remove_ids)
+    w.banish_qids(
+        {
+            "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
+            "internal_lib!page_organization.PageOrg.impl&__4.end_is_unused.?_definition",
+            "internal_vstd__set__Set<int.>_has_type_always_definition",
+            "internal_lib!types.page_organization_used_queues_match.?_definition",
+        }
+    )
+    w.write("v1.smt2")
 
-    w.write(args.output_query_path)
+    w = QueryWriter("v1.smt2", dbg.proofs[0].proof_info)
+    w.skolemize_qids(skolem_ids, erase=True)
+    w.write("v2.smt2")
+
+    # w = QueryWriter("v2.smt2", dbg.proofs[0].proof_info)
+    # w.erase_qids(skolem_ids)
+    # w.write("v3.smt2")
