@@ -45,7 +45,7 @@ class QueryWriter(QueryLoader):
     def skolemize_qids(self, target_ids: Set[str]):
         # reduce to qids 
         target_ids = {q[7:] if q.startswith("skolem_") else q for q in target_ids}
-        target_ids = self.__basic_check(target_ids)
+        # target_ids = self.__basic_check(target_ids)
 
         target_asserts = set()
         for qid in target_ids:

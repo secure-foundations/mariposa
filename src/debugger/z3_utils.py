@@ -93,7 +93,7 @@ def hack_quantifier_body(quant):
     assert func_body.endswith(")")
     brackets = find_matching_brackets(func_body)
     s, e, _ = brackets[1]
-    return func_body[s:e].strip()
+    return func_body[s:e].strip(), quant
 
 
 def hack_quantifier_removal(expr, qid):
@@ -167,9 +167,10 @@ class AstVisitor:
         self.__visited.clear()
 
     def visit(self, e: ExprRef):
-        if e in self.__visited:
+        eid = e.get_id()
+        if eid in self.__visited:
             return True
-        self.__visited.add(e)
+        self.__visited.add(eid)
         return False
     
     def reset_visit(self):

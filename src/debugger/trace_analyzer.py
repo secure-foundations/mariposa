@@ -58,9 +58,6 @@ def is_prelude_qid(qid):
     )
 
 
-
-
-
 class TraceAnalyzer(QueryLoader):
     def __init__(self, query_path, proofs: List[ProofInfo]):
         super().__init__(query_path)
@@ -125,7 +122,8 @@ class TraceAnalyzer(QueryLoader):
         for rid, tg in t_freq:
             if tg.total_count == 0:
                 continue
-            row = [shorten_qid(rid), tg.total_count]
+            conflict = "c" if self.has_conflicts(rid) else ""
+            row = [shorten_qid(rid), conflict, tg.total_count]
             group_sums[0] += tg.total_count
             ptotals = self.get_proof_inst_counts(rid)
             for i in range(len(self.proofs)):
@@ -136,17 +134,17 @@ class TraceAnalyzer(QueryLoader):
 
             table.append(row)
             table.append(
-                ["- [root]", tg.root_count] + self.get_proof_inst_counts(rid, rid)
+                ["- [root]", "", tg.root_count] + self.get_proof_inst_counts(rid, rid)
             )
             for qid in tg:
                 if qid == rid:
                     continue
-                row = ["- " + shorten_qid(qid), tg[qid]] + self.get_proof_inst_counts(
+                row = ["- " + shorten_qid(qid), "", tg[qid]] + self.get_proof_inst_counts(
                     rid, qid
                 )
                 table.append(row)
 
-        headers = ["QID", "T"]
+        headers = ["QID", "C", "T"]
 
         for i in range(len(self.proofs)):
             headers.append(f"P{i}#")
@@ -158,7 +156,7 @@ class TraceAnalyzer(QueryLoader):
             ] * (len(headers) - 1)
             table = table[:table_limit]
             table.append(row)
-        table.append(["total"] + group_sums)
+        table.append(["total", ""] + group_sums)
         report += tabulate(table, headers=headers)
 
         table = []
