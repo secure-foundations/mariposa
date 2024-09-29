@@ -524,9 +524,9 @@ class Debugger3:
         log_info(f"listing {len(table)} proof mutants:")
         print(tabulate(table, headers=["mutation", "seed", "time"]))
 
-    def get_writer(self, out_path) -> QueryWriter:
+    def get_writer(self) -> QueryWriter:
         log_check(len(self.proofs) != 0, "no proofs")
-        return QueryWriter(self.orig_path, out_path, self.proofs[0].proof_info)
+        return QueryWriter(self.orig_path, self.proofs[0].proof_info)
 
 
 if __name__ == "__main__":
@@ -581,24 +581,19 @@ if __name__ == "__main__":
 
     inst_ids = set(
         [
-            # "internal_lib!types.impl&__21.page_organization_valid.?_definition",
-            # "prelude_eucmod",
-            # "internal_lib!page_organization.PageOrg.impl&__4.data_for_unused_header.?_definition",
-            "user_vstd__set__axiom_set_ext_equal_101",
+            "prelude_eucmod",
         ]
     )
 
     skolem_ids = set(
         [
-            # "skolem_user_lib__spec__cyclicbuffer__log_entry_idx_wrap_around_61",
-            # "user_lib__spec__cyclicbuffer__log_entry_alive_wrap_around_51",
-            # "mariposa_qid_52",
+            "user_lib__spec__cyclicbuffer__log_entry_alive_wrap_around_51",
         ]
     )
 
-    w = dbg.get_writer(args.output_query_path)
-    w.instantiate_qids(inst_ids)
-
-    # w = QueryWriter(args.output_query_path, "out.v3.smt2", dbg.proofs[0].proof_info)
+    w = dbg.get_writer()
     # w.skolemize_qids(skolem_ids)
+    w.instantiate_qids(inst_ids)
     # w.erase_qids(remove_ids)
+
+    w.write(args.output_query_path)
