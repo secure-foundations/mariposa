@@ -1,8 +1,6 @@
 from typing import Dict, List
 
 from tabulate import tabulate
-from debugger.query_writer import QueryWriter, add_qids_to_query
-from debugger.z3_utils import collapse_sexpr
 from proof_reader import InstError, ProofInfo, QueryLoader
 from utils.system_utils import log_check, log_info, log_warn
 
@@ -108,7 +106,10 @@ class TraceAnalyzer(QueryLoader):
                 gsums[i] += pf[rid]
         return gsums
 
-    def get_report(self, trace_freq: Dict[str, int], table_limit):
+    def get_report(self, trace_freq: Dict[str, int], table_limit=None):
+        if table_limit is None:
+            table_limit = 1e9
+
         report = "traced instantiations:\n"
         t_freq = self.group_frequencies(trace_freq)
         missing = self.__get_missing_rids(t_freq)
@@ -177,6 +178,17 @@ class TraceAnalyzer(QueryLoader):
             # log_info("missing instantiations:")
             report += "\n\nmissing instantiations:\n"
             report += tabulate(table, headers=headers)
+
+        skids = set()
+
+        for (i, pi) in enumerate(self.proofs):
+            for qid in pi.new_sk_qids:
+                skids.add(qid)
+
+        if len(skids) != 0:
+            report += "\n\nskolemized qids:\n"
+            for qid in skids:
+                report += qid + "\n"
 
         return report
 

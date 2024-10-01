@@ -1,48 +1,29 @@
 import binascii
 from typing import Dict, Set
 from z3 import *
-from base.defs import MARIPOSA
 from debugger.query_loader import QueryLoader, SkolemFinder
 from debugger.z3_utils import collapse_sexpr, hack_contains_qid, hack_quantifier_removal
 from proof_reader import ProofInfo, QunatInstInfo
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
+from utils.query_utils import add_qids_to_query
 
 
-def add_qids_to_query(query_path):
-    args = [
-        MARIPOSA,
-        "-i",
-        query_path,
-        "--action=add-qids",
-        "-o",
-        query_path,
-    ]
-    subprocess_run(args, check=True, debug=True)
-
-
-class QueryWriter(QueryLoader):
-    def __init__(self, in_file_path, proof_info: ProofInfo):
+class BasicQueryWriter(QueryLoader):
+    def __init__(self, in_file_path):
         super().__init__(in_file_path)
-        self.pi = proof_info
         self.in_file_path = in_file_path
         self.__in_commands = open(self.in_file_path, "r").readlines()
 
         assert len(self.__in_commands) > 0
         assert self.__in_commands[-1] == "(check-sat)\n"
 
-        self.__fun_defs = []
-        self.__new_commands = []
-
-        # this is a lazy way to avoid name clashes
-        self.__fun_prefix = (
-            "fn_" + binascii.hexlify(os.urandom(4)).decode("utf-8") + "_"
-        )
-        self.__fun_cache = dict()
+        self._fun_defs = []
+        self._new_commands = []
 
         self._erase_ids = set()
         self._banish_ids = set()
 
-    def __basic_check(self, target_ids: Set[str]):
+    def _basic_check(self, target_ids: Set[str]):
         filtered = set()
         for qid in target_ids:
             if qid not in self.quants:
@@ -51,21 +32,8 @@ class QueryWriter(QueryLoader):
                 filtered.add(qid)
         return filtered
 
-    def __get_fresh_name(self):
-        return self.__fun_prefix + str(len(self.__fun_defs))
-
-    def __add_def_fun(self, body, sort):
-        if body in self.__fun_cache:
-            return self.__fun_cache[body]
-        name = self.__get_fresh_name()
-        func = [f"(declare-fun {name} () {sort})",
-                "(assert (= " + name + " " + body + "))"]
-        self.__fun_defs += func
-        self.__fun_cache[body] = name
-        return name
-
     def erase_qids(self, target_ids: Set[str]):
-        target_ids = self.__basic_check(target_ids)
+        target_ids = self._basic_check(target_ids)
         for i, line in enumerate(self.__in_commands):
             removed = set()
             for qid in target_ids:
@@ -73,7 +41,9 @@ class QueryWriter(QueryLoader):
                     line = hack_quantifier_removal(line, qid)
                     removed.add(qid)
                     log_info(f"[erase] erasing qid: {qid}")
-                    self.__new_commands.append(f"(set-info :comment \"[erase] {qid}\")")
+                    self._new_commands = [
+                        f'(set-info :comment "[erase] {qid}")'
+                    ] + self._new_commands
                 self.__in_commands[i] = line
             target_ids -= removed
 
@@ -82,7 +52,7 @@ class QueryWriter(QueryLoader):
             print("\t".join(target_ids))
 
     def banish_qids(self, target_ids: Set[str]):
-        target_ids = self.__basic_check(target_ids)
+        target_ids = self._basic_check(target_ids)
         for i, line in enumerate(self.__in_commands):
             removed = set()
             for qid in target_ids:
@@ -91,7 +61,9 @@ class QueryWriter(QueryLoader):
                     removed.add(qid)
                     log_info(f"[banish] assertion:")
                     print(line, end="")
-                    self.__new_commands.append(f"(set-info :comment \"[banish] {qid}\")")
+                    self._new_commands = [
+                        f'(set-info :comment "[banish] {qid}")'
+                    ] + self._new_commands
             target_ids -= removed
 
         if len(target_ids) > 0:
@@ -123,9 +95,11 @@ class QueryWriter(QueryLoader):
                     commands[i] = line
             log_info(f"[skolem] qid: {qid}")
             log_info(f"[skolem] {len(decls)} skolem funs {len(commands)} asserts added")
-            commands = [f"(set-info :comment \"[skolem] {len(commands)} asserts for {qid}\")"] + commands
-            self.__fun_defs += decls
-            self.__new_commands += commands
+            commands = [
+                f'(set-info :comment "[skolem] {len(commands)} asserts for {qid}")'
+            ] + commands
+            self._fun_defs += decls
+            self._new_commands += commands
 
     def __skolemize_assertion(self, exp):
         g = Goal()
@@ -145,8 +119,52 @@ class QueryWriter(QueryLoader):
                 decls.append(decl)
         return asserts, decls
 
+    def write(self, out_file_path):
+        self.erase_qids(self._erase_ids)
+        self.banish_qids(self._banish_ids)
+
+        out_file = open(out_file_path, "w+")
+        goal = self.__in_commands[-2]
+        for line in self.__in_commands[:-2]:
+            out_file.write(line)
+        assert self.__in_commands[-1] == "(check-sat)\n"
+        for line in self._fun_defs:
+            out_file.write(line + "\n")
+        for line in self._new_commands:
+            out_file.write(line + "\n")
+        out_file.write(goal)
+        out_file.write("(check-sat)\n")
+        out_file.close()
+        add_qids_to_query(out_file_path)
+
+
+class QueryEditor(BasicQueryWriter):
+    def __init__(self, in_file_path, pi: ProofInfo):
+        super().__init__(in_file_path)
+        self.pi = pi
+        # this is a lazy way to avoid name clashes
+        self.__fun_prefix = (
+            "fn_" + binascii.hexlify(os.urandom(4)).decode("utf-8") + "_"
+        )
+        self.__fun_cache = dict()
+
+    def __get_fresh_name(self):
+        return self.__fun_prefix + str(len(self._fun_defs))
+
+    def __add_def_fun(self, body, sort):
+        if body in self.__fun_cache:
+            return self.__fun_cache[body]
+        name = self.__get_fresh_name()
+        func = [
+            f"(declare-fun {name} () {sort})",
+            "(assert (= " + name + " " + body + "))",
+        ]
+        self._fun_defs += func
+        self.__fun_cache[body] = name
+        return name
+
     def instantiate_qids(self, target_ids):
-        target_ids = self.__basic_check(target_ids)
+        target_ids = self._basic_check(target_ids)
         target_ids = {qid: self.pi.qi_infos[qid] for qid in target_ids}
 
         for qid, qi in target_ids.items():
@@ -171,27 +189,13 @@ class QueryWriter(QueryLoader):
 
             for j, bindings in enumerate(qi.bindings):
                 subs = dict()
-                self.__new_commands.append(f"(set-info :comment \"[inst] qid {qid} {j+1}/{len(qi.bindings)} bindings\")")
+                self._new_commands.append(
+                    f'(set-info :comment "[inst] qid {qid} {j+1}/{len(qi.bindings)} bindings")'
+                )
                 for i, b in bindings.items():
                     name = self.__add_def_fun(b, vars[i][1])
                     subs[i] = name
-                self.__new_commands.append(quant.rewrite_as_let(subs))
+                self._new_commands.append(quant.rewrite_as_let(subs))
 
             # TODO: we erase the original quantifier
             self._erase_ids.add(qid)
-
-    def write(self, out_file_path):
-        self.erase_qids(self._erase_ids)
-        self.banish_qids(self._banish_ids)
-
-        out_file = open(out_file_path, "w+")
-        for line in self.__in_commands[:-1]:
-            out_file.write(line)
-        assert self.__in_commands[-1] == "(check-sat)\n"
-        for line in self.__fun_defs:
-            out_file.write(line + "\n")
-        for line in self.__new_commands:
-            out_file.write(line + "\n")
-        out_file.write("(check-sat)\n")
-        out_file.close()
-        add_qids_to_query(out_file_path)

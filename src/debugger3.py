@@ -8,7 +8,7 @@ import subprocess
 import time
 from z3 import set_param
 from base.solver import RCode
-from debugger.query_writer import QueryWriter
+from query_editor import BasicQueryWriter, QueryEditor
 from debugger.trace_analyzer import TraceAnalyzer
 from proof_reader import ProofInfo, ProofReader
 from utils.database_utils import table_exists
@@ -45,6 +45,7 @@ MUTANTS = "mutants"
 INSTS = "insts"
 CORES = "cores"
 
+TEMP = "temp"
 
 class MutantInfo:
     def __init__(self, sub_root, mutation, seed):
@@ -474,7 +475,10 @@ class Debugger3:
     def get_proof_total_inst_counts(self):
         return self.analyzer.get_proof_total_inst_counts()
 
-    def debug_trace(self, tmi: MutantInfo, table_limit, report_file=None):
+    def debug_trace(self, report_file=None, table_limit=None, tmi: MutantInfo=None):
+        if tmi is None:
+            tmi = self.get_candidate_trace()
+
         traced = tmi.get_qids()
         report = self.analyzer.get_report(traced, table_limit)
 
@@ -524,10 +528,17 @@ class Debugger3:
         log_info(f"listing {len(table)} proof mutants:")
         print(tabulate(table, headers=["mutation", "seed", "time"]))
 
-    def get_writer(self) -> QueryWriter:
+    def get_editor(self) -> QueryEditor:
         log_check(len(self.proofs) != 0, "no proofs")
-        return QueryWriter(self.orig_path, self.proofs[0].proof_info)
+        return QueryEditor(self.orig_path, self.proofs[0].proof_info)
 
+def make_iteration_dir(input_query_path):
+    base_name = os.path.basename(input_query_path)
+    temp_dir = f"{TEMP}/{base_name}/"
+    if os.path.exists(temp_dir):
+        os.system(f"rm -rf {temp_dir}/*")
+    os.system(f"mkdir -p {temp_dir}")
+    return temp_dir
 
 if __name__ == "__main__":
     set_param(proof=True)
@@ -558,85 +569,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     dbg = Debugger3(args.input_query_path, args.clear, args.from_core)
-    # counts = dbg.get_proof_total_inst_counts()
-    # print(counts)
-    # sys.exit(0)
 
-    tmi = dbg.get_candidate_trace()
     if args.report_path is not None:
-        dbg.debug_trace(tmi, 2000, args.report_path)
+        dbg.debug_trace(args.report_path)
 
-    if args.output_query_path is None:
-        sys.exit(0)
+    # if args.output_query_path is None:
+    #     sys.exit(0)
 
     version = int(args.version)
-    # remove_ids = dbg.select_suppress_qids(tmi, version)
-
-    remove_ids = set(
-        [
-            # "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-            # "user_lib__types__page_organization_segments_match_156",
-            # "user_lib__os_mem_util__preserves_mem_chunk_good_177",
-            # "user_lib__os_mem_util__preserves_mem_chunk_good_178",
-            # "user_lib__os_mem_util__preserves_mem_chunk_good_179",
-            # "user_lib__os_mem_util__preserves_mem_chunk_good_180",
-            # "user_lib__os_mem_util__preserves_mem_chunk_good_181",
-            # "internal_vstd!set.impl&__0.subset_of.?_definition",
-            # "internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definition",
-            # "internal_lib!page_organization.PageOrg.impl&__4.count_is_right.?_definition",
-            # "internal_lib!page_organization.PageOrg.impl&__4.end_is_unused.?_definition",
-        ]
-    )
-
-    inst_ids = set(
-        [
-            # "user_vstd__set__axiom_set_ext_equal_101",
-            "internal_req__lib!os_mem_util.preserves_mem_chunk_good._definition",
-        ]
-    )
-
-    skolem_ids = set(
-        [
-            # "user_vstd__set__axiom_set_ext_equal_100",
-            # "mariposa_qid_43",
-            # "mariposa_qid_44",
-            # "mariposa_qid_45",
-            # "mariposa_qid_46",
-            "user_lib__os_mem_util__preserves_mem_chunk_good_167",
-            "user_lib__os_mem_util__preserves_mem_chunk_good_168",
-            "user_lib__os_mem_util__preserves_mem_chunk_good_169",
-            "user_lib__os_mem_util__preserves_mem_chunk_good_170",
-            "user_lib__os_mem_util__preserves_mem_chunk_good_171",
-            "mariposa_qid_43",
-            "mariposa_qid_44",
-            "mariposa_qid_45",
-            "mariposa_qid_46",
-            "mariposa_qid_47",
-            
-            # "mariposa_qid_47",
-            # "mariposa_qid_48",
-            # "mariposa_qid_49",
-            # "mariposa_qid_50",
-            # "mariposa_qid_51",
-        ]
-    )
-
-    w = dbg.get_writer()
-    w.instantiate_qids(inst_ids)
-    w.banish_qids(
-        {
-            "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-            "internal_lib!page_organization.PageOrg.impl&__4.end_is_unused.?_definition",
-            "internal_vstd__set__Set<int.>_has_type_always_definition",
-            "internal_lib!types.page_organization_used_queues_match.?_definition",
-        }
-    )
-    w.write("v1.smt2")
-
-    w = QueryWriter("v1.smt2", dbg.proofs[0].proof_info)
-    w.skolemize_qids(skolem_ids, erase=True)
-    w.write("v2.smt2")
-
-    # w = QueryWriter("v2.smt2", dbg.proofs[0].proof_info)
-    # w.erase_qids(skolem_ids)
-    # w.write("v3.smt2")
+    

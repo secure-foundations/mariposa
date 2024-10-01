@@ -292,3 +292,14 @@ def parse_trace(orig_path, trace_path):
         log_warn(f"no insts found in trace: {trace_path}")
 
     return qids
+
+def add_qids_to_query(query_path):
+    args = [
+        MARIPOSA,
+        "-i",
+        query_path,
+        "--action=add-qids",
+        "-o",
+        query_path,
+    ]
+    subprocess_run(args, check=True, debug=True)
