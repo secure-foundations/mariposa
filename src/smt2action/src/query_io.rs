@@ -4,7 +4,7 @@ use std::fmt;
 use std::io::{stdout, BufRead, BufReader, BufWriter, Write};
 use std::{collections::HashSet, fs::File};
 
-use crate::term_match::{self, get_attr_cid, get_attr_qid};
+use crate::term_match::{self, get_attr_cid, get_attr_qid, remove_attr_qid_skolemid};
 
 const QID_PREFIX: &str = "mariposa_qid_";
 const CID_PREFIX: &str = "mariposa_cid_";
@@ -346,18 +346,40 @@ pub fn split_commands(
 }
 
 struct QidAdder {
-    count: usize,
-    encountered: HashSet<String>,
+    prefix_count: HashMap<String, usize>,
+    used: HashSet<String>,
     reassign: bool,
 }
 
 impl QidAdder {
     fn new(reassign: bool) -> QidAdder {
+        let mut prefix_count = HashMap::new();
+        prefix_count.insert(QID_PREFIX.to_string(), 0);
+
         QidAdder {
-            count: 0,
-            encountered: HashSet::new(),
+            prefix_count: prefix_count,
+            used: HashSet::new(),
             reassign,
         }
+    }
+
+    fn allocate_new_id(&mut self, qid: &String) -> String {
+        // always reset Mariposa qids to the prefix
+        let qid = if qid.starts_with(QID_PREFIX) {
+            String::from(QID_PREFIX)
+        } else {
+            qid.clone()
+        };
+        let new_id = if let Some(count) = self.prefix_count.get_mut(&qid) {
+            *count += 1;
+            format!("{}_{}", qid, count)
+        } else {
+            self.prefix_count.insert(qid.clone(), 0);
+            format!("{}", qid)
+        };
+        assert!(!self.used.contains(&new_id));
+        self.used.insert(new_id.clone());
+        new_id
     }
 
     fn add_qids_rec(&mut self, cur_term: &mut concrete::Term, enable: bool) {
@@ -395,41 +417,31 @@ impl QidAdder {
                 if !enable {
                     return;
                 }
-                let mut should_push = false;
-                let mut should_remove = false;
 
-                if let Some(qid) = get_attr_qid(attributes) {
-                    if self.encountered.contains(qid) || qid.starts_with(QID_PREFIX) {
-                        should_remove = true;
-                    }
-                    self.encountered.insert(qid.clone());
-                    if self.reassign || should_remove {
-                        // remove existing qid
-                        attributes.retain(|(k, _)| {
-                            let concrete::Keyword(k) = k;
-                            k != "qid" && k != "skolemid"
-                        });
-                        should_push = true;
-                    }
-                } else {
-                    should_push = true;
-                }
+                // use a placeholder qid for now
+                let mut cur_qid = String::from(QID_PREFIX);
 
-                if should_push {
-                    let qid = format!("{}{}", QID_PREFIX, self.count);
-                    let skolemid = format!("skolem_{}", qid);
-                    attributes.push((
-                        concrete::Keyword("qid".to_owned()),
-                        concrete::AttributeValue::Symbol(concrete::Symbol(qid.clone())),
-                    ));
-                    attributes.push((
-                        concrete::Keyword("skolemid".to_owned()),
-                        concrete::AttributeValue::Symbol(concrete::Symbol(skolemid)),
-                    ));
-                    // the original query may have mariposa qids in them
-                    self.encountered.insert(qid);
-                    self.count += 1;
+                if self.reassign {
+                    // ignore the current qid in the attributes
+                    // whether it exists or not
+                } else if let Some(qid) = get_attr_qid(attributes) {
+                    cur_qid = qid.clone();
                 }
+                // always remove the qid and skolemid
+                remove_attr_qid_skolemid(attributes);
+
+                // always "allocate" a new qid
+                let qid = self.allocate_new_id(&cur_qid);
+                let skolemid = format!("skolem_{}", qid);
+
+                attributes.push((
+                    concrete::Keyword("qid".to_owned()),
+                    concrete::AttributeValue::Symbol(concrete::Symbol(qid.clone())),
+                ));
+                attributes.push((
+                    concrete::Keyword("skolemid".to_owned()),
+                    concrete::AttributeValue::Symbol(concrete::Symbol(skolemid)),
+                ));
             }
             concrete::Term::Constant(_) => (),
             concrete::Term::QualIdentifier(_) => (),

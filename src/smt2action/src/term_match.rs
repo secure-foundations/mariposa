@@ -184,7 +184,9 @@ pub fn is_prop_term(term: &concrete::Term) -> bool {
     }
 }
 
-pub fn get_attr_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> Option<&String> {
+pub fn get_attr_qid(
+    attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>,
+) -> Option<&String> {
     let mut qid = None;
     attributes.iter().for_each(|(key, value)| {
         if key != &concrete::Keyword("qid".to_owned()) {
@@ -198,7 +200,18 @@ pub fn get_attr_qid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValu
     qid
 }
 
-pub fn get_attr_cid(attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>) -> Option<&String> {
+pub fn remove_attr_qid_skolemid(
+    attributes: &mut Vec<(concrete::Keyword, concrete::AttributeValue)>,
+) {
+    attributes.retain(|(key, _)| {
+        let concrete::Keyword(k) = key;
+        k != "qid" && k != "skolemid"
+    });
+}
+
+pub fn get_attr_cid(
+    attributes: &Vec<(concrete::Keyword, concrete::AttributeValue)>,
+) -> Option<&String> {
     let mut cid = None;
     attributes.iter().for_each(|(key, value)| {
         if key != &concrete::Keyword("named".to_owned()) {
