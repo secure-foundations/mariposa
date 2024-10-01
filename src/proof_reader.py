@@ -8,6 +8,7 @@ from tabulate import tabulate
 from debugger.subs_mapper import SubsMapper
 from enum import Enum
 import networkx as nx
+import matplotlib.pyplot as plt
 
 from debugger.query_loader import QueryLoader, SkolemFinder
 from debugger.z3_utils import (
@@ -140,7 +141,7 @@ class ProofReader(QueryLoader):
 
     def try_prove(self) -> Optional[ProofInfo]:
         start = time.time()
-        self.proc_solver.set("timeout", 60000)
+        self.proc_solver.set("timeout", 30000)
         res = self.proc_solver.check()
         self.proof_time = int((time.time() - start))
 
@@ -186,7 +187,7 @@ class ProofAnalyzer(QueryLoader):
         super().__init__(in_file_path)
         self.pi = proof_info
         # self.in_file_path = in_file_path
-        self.graph = nx.DiGraph()
+        G = nx.DiGraph()
 
         short_ids = dict()
         reverse_ids = dict()
@@ -204,32 +205,44 @@ class ProofAnalyzer(QueryLoader):
             if len(qi.skolem_deps) != 0:
                 for dep in qi.skolem_deps:
                     dep = extract_sk_qid_from_name(dep)
-                    self.graph.add_edge(get_short_id(dep), get_short_id(qid), color="red")
+                    G.add_edge(get_short_id(dep), get_short_id(qid), color="red")
             if qi.inst_count == 0 and not pi.is_skolemized(qid):
                 continue
             if not self.is_root(qid):
                 pid = self.get_parent(qid)
-                self.graph.add_edge(get_short_id(pid), get_short_id(qid), label=qi.inst_count)
+                G.add_edge(get_short_id(pid), get_short_id(qid), label=qi.inst_count)
 
         for qid in self.pi.new_skolem_funs:
             qid = extract_sk_qid_from_name(qid)
             if not self.is_root(qid):
                 pid = self.get_parent(qid)
-                self.graph.add_edge(get_short_id(pid), get_short_id(qid), label=qi.inst_count)
+                G.add_edge(get_short_id(pid), get_short_id(qid), label=qi.inst_count)
 
-        # assert pi.is_skolemized("user_lib__os_mem_util__preserves_mem_chunk_good_180")
-        table = []
-        for n in self.graph.nodes:
-            qid = reverse_ids[n]
-            table.append((qid, self.graph.in_degree(n), self.graph.out_degree(n)))
+        node_colors = dict()
+
+        for n in list(nx.selfloop_edges(G)):
+            node_colors[n[0]] = "red"
+            G.remove_edge(n[0], n[1])
+        nx.set_node_attributes(G, node_colors, name='color')
         
+        if not nx.is_directed_acyclic_graph(G):
+            log_warn("proof QI graph is cyclic!")
+            return
+            
+        log_info("proof QI graph is acyclic")
+        
+        cumulative = dict()
+        for n in reversed(list(nx.topological_sort(G))):
+            cumulative[n] = pi.get_inst_count(reverse_ids[n])
+            cumulative[n] += sum([cumulative[c] for c in G.successors(n)])
+        
+        table = []
+        for n in G.nodes:
+            qid = reverse_ids[n]
+            table.append((n, qid, cumulative[n]))
         table = sorted(table, key=lambda x: x[2], reverse=True)
-        print(tabulate(table, headers=["qid", "in", "out"]))
-
-        # for qid in short_ids:
-        #     print(short_ids[qid], qid)
-
-        # nx.drawing.nx_agraph.write_dot(self.graph, "test.dot")
+        print(tabulate(table, headers=["id", "qid", "insts"]))
+        nx.drawing.nx_agraph.write_dot(G, "test.dot")
 
 
 if __name__ == "__main__":
@@ -238,6 +251,6 @@ if __name__ == "__main__":
     # i = ProofReader(sys.argv[1])
     # pi = i.try_prove()
     # pi.save("cyclic.pickle")
-    pi = ProofInfo.load("dbg/mimalloc--segment__segment_span_free.smt2/insts/rename.8072387806861946866")
-    # pi.print_report()
+    pi = ProofInfo.load(sys.argv[2])
     pa = ProofAnalyzer(sys.argv[1], pi)
+

@@ -534,10 +534,12 @@ class Debugger3:
 
 def make_iteration_dir(input_query_path):
     base_name = os.path.basename(input_query_path)
-    temp_dir = f"{TEMP}/{base_name}/"
-    if os.path.exists(temp_dir):
-        os.system(f"rm -rf {temp_dir}/*")
-    os.system(f"mkdir -p {temp_dir}")
+    assert base_name.endswith(".smt2")
+    base_name = base_name[:-5]
+    temp_dir = f"{TEMP}/{base_name}."
+    if os.path.exists(TEMP):
+        os.system(f"rm {temp_dir}*")
+    os.system(f"mkdir {TEMP}")
     return temp_dir
 
 if __name__ == "__main__":

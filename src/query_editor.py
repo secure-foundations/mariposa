@@ -124,17 +124,17 @@ class BasicQueryWriter(QueryLoader):
         self.banish_qids(self._banish_ids)
 
         out_file = open(out_file_path, "w+")
-        goal = self.__in_commands[-2]
-        for line in self.__in_commands[:-2]:
+        for line in self.__in_commands[:-1]:
             out_file.write(line)
         assert self.__in_commands[-1] == "(check-sat)\n"
         for line in self._fun_defs:
             out_file.write(line + "\n")
         for line in self._new_commands:
             out_file.write(line + "\n")
-        out_file.write(goal)
+        out_file.write("(assert true)\n")
         out_file.write("(check-sat)\n")
         out_file.close()
+        print(f"written to {out_file_path}")
         add_qids_to_query(out_file_path)
 
 
