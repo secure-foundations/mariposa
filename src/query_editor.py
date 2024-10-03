@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
+
 import binascii
 from typing import Dict, Set
 from z3 import *
 from debugger.query_loader import QueryLoader, SkolemFinder
 from debugger.z3_utils import collapse_sexpr, hack_contains_qid, hack_quantifier_removal
-from proof_reader import ProofInfo, QunatInstInfo
+from proof_reader import ProofInfo, ProofReader, hack_search_hash_cons
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from utils.query_utils import add_qids_to_query
 
@@ -17,7 +19,8 @@ class BasicQueryWriter(QueryLoader):
         assert len(self.__in_commands) > 0
         assert self.__in_commands[-1] == "(check-sat)\n"
 
-        self._fun_defs = []
+        self._fun_decls = []
+        self._fun_asserts = []
         self._new_commands = []
 
         self._erase_ids = set()
@@ -98,7 +101,7 @@ class BasicQueryWriter(QueryLoader):
             commands = [
                 f'(set-info :comment "[skolem] {len(commands)} asserts for {qid}")'
             ] + commands
-            self._fun_defs += decls
+            self._fun_decls += decls
             self._new_commands += commands
 
     def __skolemize_assertion(self, exp):
@@ -127,7 +130,9 @@ class BasicQueryWriter(QueryLoader):
         for line in self.__in_commands[:-1]:
             out_file.write(line)
         assert self.__in_commands[-1] == "(check-sat)\n"
-        for line in self._fun_defs:
+        for line in self._fun_decls:
+            out_file.write(line + "\n")
+        for line in self._fun_asserts:
             out_file.write(line + "\n")
         for line in self._new_commands:
             out_file.write(line + "\n")
@@ -147,11 +152,21 @@ class QueryEditor(BasicQueryWriter):
             "fn_" + binascii.hexlify(os.urandom(4)).decode("utf-8") + "_"
         )
         self.__fun_cache = dict()
+        self.__proof_symbols = dict()
+        self.__enabled_symbols = set()
+
+        for (name, body, sort) in self.pi.conser_defs:
+            self.__proof_symbols[name] = [
+                f"(declare-fun {name} () {sort})",
+                f"(assert (= {name} {body}))",
+            ]
 
     def __get_fresh_name(self):
         return self.__fun_prefix + str(len(self._fun_defs))
 
     def __add_def_fun(self, body, sort):
+        if body in self.__proof_symbols:
+            return body
         if body in self.__fun_cache:
             return self.__fun_cache[body]
         name = self.__get_fresh_name()
@@ -162,6 +177,12 @@ class QueryEditor(BasicQueryWriter):
         self._fun_defs += func
         self.__fun_cache[body] = name
         return name
+
+    def register_dependencies(self, symbols):
+        for s in symbols:
+            ts = self.pi.transitive_deps[s]
+            self.__enabled_symbols.update(ts)
+            self.__enabled_symbols.add(s)
 
     def instantiate_qids(self, target_ids):
         target_ids = self._basic_check(target_ids)
@@ -184,7 +205,7 @@ class QueryEditor(BasicQueryWriter):
             #     for i, b in bindings.items():
             #         print(i, b)
 
-            vars = quant.get_vars()
+            _ = quant.get_vars()
             log_info(f"[inst] qid {qid} with {len(qi.bindings)} bindings")
 
             for j, bindings in enumerate(qi.bindings):
@@ -193,9 +214,33 @@ class QueryEditor(BasicQueryWriter):
                     f'(set-info :comment "[inst] qid {qid} {j+1}/{len(qi.bindings)} bindings")'
                 )
                 for i, b in bindings.items():
-                    name = self.__add_def_fun(b, vars[i][1])
-                    subs[i] = name
+                    deps = hack_search_hash_cons(b)
+                    self.register_dependencies(deps)
+                    # name = self.__add_def_fun(b, vars[i][1])
+                    subs[i] = b
                 self._new_commands.append(quant.rewrite_as_let(subs))
+
+            for dep in self.__enabled_symbols:
+                log_check(dep in self.__proof_symbols, f"symbol {dep} not found in proof")
+                decl, defi = self.__proof_symbols[dep]
+                self._fun_decls.append(decl)
+                self._fun_asserts.append(defi)
 
             # TODO: we erase the original quantifier
             self._erase_ids.add(qid)
+
+if __name__ == "__main__":
+    set_param(proof=True)
+
+    i = ProofReader(sys.argv[1])
+    pi = i.try_prove()
+    pi.save("cyclic.pickle")
+    pi = ProofInfo.load("cyclic.pickle")    
+
+    w = QueryEditor(sys.argv[1], pi)
+    w.instantiate_qids(
+        {
+            "prelude_eucmod",
+        }
+    )
+    w.write("test2.smt2")

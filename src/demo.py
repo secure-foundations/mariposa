@@ -114,5 +114,5 @@ def demo2():
 if __name__ == "__main__":
     set_param(proof=True)
     demo0()
-    demo1()
-    demo2()
+    # demo1()
+    # demo2()
