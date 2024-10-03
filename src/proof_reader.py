@@ -253,10 +253,12 @@ class ProofReader(QueryLoader):
         if res != unsat:
             log_warn("[proof] query returned {0}".format(res))
             return None
+        log_info(f"[proof] solver finished in {self.proof_time}(s)")
 
         p = self.proc_solver.proof()
         self.__collect_instantiations(p)
         self.reset_visit()
+        log_info(f"[proof] instantiations collected")
 
         return self.__post_process()
 
@@ -390,15 +392,56 @@ if __name__ == "__main__":
     pi = i.try_prove()
     pi.save("cyclic.pickle")
 
-    pi = ProofInfo.load(sys.argv[2])
+    pi = ProofInfo.load("cyclic.pickle")
     # print(pi.expr_deps)
-    # pa = ProofAnalyzer(sys.argv[1], pi)
+    pa = ProofAnalyzer(sys.argv[1], pi)
+    
 
     # pa.save_graph("test.dot")
-    # srcs = pa.list_sources()
+    srcs = pa.list_sources()
+    
+    G2 = nx.DiGraph()
 
     # for d in pa.pi.conser_defs:
-    #     print(d)
+    #     for dep in pi.expr_deps[d[0]]:
+    #         G2.add_edge(d[0], dep)
 
-    # for n, q in srcs.items():
-    #     print(n, q)
+    for d in pa.pi.conser_defs:
+        print(d[0], d[1])
+
+    deps = set()
+    for n, q in srcs.items():
+        for bind in pi.qi_infos[q].bindings:
+            print("nid", n, q)
+            for k, v in bind.items():
+                print("\t", k, v)
+                for dep in hack_search_hash_cons(v):
+                    G2.add_node(n, shape="box")
+                    G2.add_edge(dep, n)
+                    deps.add(dep)
+
+    t_deps = set()
+    for u in deps:
+        t_deps.update(pi.transitive_deps[u])
+        t_deps.add(u)
+    
+    for u in t_deps:
+        for v in pi.expr_deps[u]:
+            G2.add_edge(v, u, color="red")
+
+    dot_path = "test.dot"
+    nx.drawing.nx_agraph.write_dot(G2, dot_path)
+    # dot -Tpdf test.dot -o test.pdf  -Grankdir=TB -Granksep=0.5
+    subprocess_run(
+        [
+            "dot",
+            "-Tpdf",
+            dot_path,
+            "-o",
+            dot_path + ".pdf",
+            "-Grankdir=TB",
+            "-Granksep=0.5",
+        ],
+        debug=True,
+        check=True,
+    )

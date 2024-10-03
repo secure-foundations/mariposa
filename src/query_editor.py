@@ -220,27 +220,29 @@ class QueryEditor(BasicQueryWriter):
                     subs[i] = b
                 self._new_commands.append(quant.rewrite_as_let(subs))
 
-            for dep in self.__enabled_symbols:
-                log_check(dep in self.__proof_symbols, f"symbol {dep} not found in proof")
-                decl, defi = self.__proof_symbols[dep]
-                self._fun_decls.append(decl)
-                self._fun_asserts.append(defi)
-
             # TODO: we erase the original quantifier
             self._erase_ids.add(qid)
+
+        for dep in self.__enabled_symbols:
+            log_check(dep in self.__proof_symbols, f"symbol {dep} not found in proof")
+            decl, defi = self.__proof_symbols[dep]
+            self._fun_decls.append(decl)
+            self._fun_asserts.append(defi)
 
 if __name__ == "__main__":
     set_param(proof=True)
 
-    i = ProofReader(sys.argv[1])
-    pi = i.try_prove()
-    pi.save("cyclic.pickle")
+    # i = ProofReader(sys.argv[1])
+    # pi = i.try_prove()
+    # pi.save("cyclic.pickle")
     pi = ProofInfo.load("cyclic.pickle")    
 
     w = QueryEditor(sys.argv[1], pi)
     w.instantiate_qids(
         {
-            "prelude_eucmod",
+            # "user_vstd__set__axiom_set_ext_equal_101",
+            "internal_lib!types.impl&__21.wf_main.?_definition",
+            "internal_lib!types.impl&__21.page_organization_valid.?_definition",
         }
     )
     w.write("test2.smt2")
