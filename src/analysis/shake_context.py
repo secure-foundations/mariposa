@@ -10,80 +10,99 @@ from utils.cache_utils import *
 from utils.plot_utils import *
 from utils.query_utils import count_asserts
 from matplotlib import pyplot as plt
-import matplotlib.patheffects as pe
+# import matplotlib.patheffects as pe
 
 def handle_core_context_analysis():
-    plt.figure(figsize=(5,3.5))
-
-    for gid in MARIPOSA_GROUPS:
-        df = load_shake_stats(gid, 100)
-        core_count = np.array(df.core_count, dtype=float)
-        base_count = np.array(df.base_counts, dtype=float)
-        ratios = core_count * 100 / base_count
-        ratios = ratios[~np.isnan(ratios)]
-        ratios = PartialCDF(ratios)
-
-        pm = GROUP_PLOT_META[gid]
-        plt.plot(ratios.xs, ratios.ys, label=pm.tex_name, color=pm.color)
-        p50 = ratios.valid_median
-        plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
-        if gid in {"fs_vwasm",  "d_komodo"}:
-            plt.text(
-                p50[0] * 1.15, p50[1], f"{round(p50[0], 2)}\%", fontsize=8, va="bottom"
-            )
-        elif gid in {"fs_dice", "d_lvbkv"}:
-            plt.text(
-                p50[0] * 0.4, p50[1], f"{round(p50[0], 2)}\%", fontsize=8, va="bottom"
-            )
-    handles, labels = plt.gca().get_legend_handles_labels()
     order = [3,1,2,0,4]
-    plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], fontsize=10)
-
-    plt.xlabel("Original Query Relevance Ratio Log Scale (\%)")
-    plt.ylabel("CDF (\%)")
-    plt.yticks(np.arange(0, 101, 10))
-    plt.xlim(0.001, 100)
-    plt.ylim(0, 100)
-    plt.xscale("log")
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(f"fig/relevance/overall_original.pdf", bbox_inches='tight',pad_inches = 0)
-    plt.close()
+    groups = [MARIPOSA_GROUPS[i] for i in order]
     
-    plt.figure(figsize=(5,3.5))
+    for ver in range(len(groups)+1):
+        plt.figure(figsize=(6,3.5))
 
-    for gid in MARIPOSA_GROUPS:
-        df = load_shake_stats(gid, 100)
-        base_counts = np.array(df.base_counts, dtype=float)
-        base_counts = PartialCDF(base_counts)
+        for gid in groups[:ver]:
+            df = load_shake_stats(gid, 100)
+            core_count = np.array(df.core_count, dtype=float)
+            base_count = np.array(df.base_counts, dtype=float)
+            ratios = core_count * 100 / base_count
+            ratios = ratios[~np.isnan(ratios)]
+            ratios = PartialCDF(ratios)
 
-        pm = GROUP_PLOT_META[gid]
-        plt.plot(base_counts.xs, base_counts.ys, label=pm.tex_name, color=pm.color)
-        p50 = base_counts.valid_median
-        plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
-        if gid in {"fs_dice", "fs_vwasm", "d_komodo"}:
-            plt.text(
-                p50[0] * 1.05, p50[1], f"{tex_fmt_int(int(p50[0]))}", fontsize=8, va="bottom", ha="left"
-            )
-        if gid in {"d_lvbkv"}:
-            plt.text(
-                p50[0], p50[1], f"{tex_fmt_int(int(p50[0]))}", fontsize=8, va="bottom", ha="right"
-            )
+            pm = GROUP_PLOT_META[gid]
+            plt.plot(ratios.xs, ratios.ys, label=pm.tex_name, color=pm.color)
+            p50 = ratios.valid_median
+            plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
+            if gid in {"fs_vwasm",  "d_komodo"}:
+                plt.text(
+                    p50[0] * 1.15, p50[1], f"{round(p50[0], 2)}\%", fontsize=8, va="bottom"
+                )
+            elif gid in {"fs_dice", "d_lvbkv"}:
+                plt.text(
+                    p50[0] * 0.4, p50[1], f"{round(p50[0], 2)}\%", fontsize=8, va="bottom"
+                )
+        # handles, labels = plt.gca().get_legend_handles_labels()
 
-    handles, labels = plt.gca().get_legend_handles_labels()
-    order = [4,1,2,0,3]
-    plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], fontsize=10)
+        # order = [i for i in order if i < len(handles)]
+        plt.legend(fontsize=8, loc="upper left")
+        plt.title("Mariposa Query Set Context Relevance")
+        plt.xlabel("Relevance Ratio Log Scale (\%)", fontsize=10)
+        plt.ylabel("CDF (\%)", rotation=0, labelpad=20, fontsize=10)
+        plt.yticks(np.arange(0, 101, 10))
+        plt.xlim(0.001, 100)
+        plt.ylim(0, 100)
+        plt.xscale("log")
+        plt.grid()
+        plt.tight_layout()
+        plt.savefig(f"fig/relevance/overall_original.{ver}.png", bbox_inches='tight',pad_inches=0.1, dpi=600)
+        plt.close()
 
-    plt.xlabel("Original Query Assertion Count Log Scale")
-    plt.ylabel("CDF (\%)")
-    plt.yticks(np.arange(0, 101, 10))
-    plt.ylim(0, 100)
-    # plt.xlim(0.001, 100)
-    plt.xscale("log")
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(f"fig/relevance/overall_count_original.pdf", bbox_inches='tight',pad_inches = 0)
-    plt.close()
+    # x_max = 0
+    # for ver in [2, 1, 0]:
+    #     plt.figure(figsize=(5,3.5))
+
+    #     if ver == 0:
+    #         groups = []
+    #     elif ver == 1:
+    #         groups = ["fs_dice"]
+    #     elif ver == 2:
+    #         groups = MARIPOSA_GROUPS
+
+    #     for gid in groups:
+    #         df = load_shake_stats(gid, 100)
+    #         base_counts = np.array(df.base_counts, dtype=float)
+    #         base_counts = PartialCDF(base_counts)
+
+    #         pm = GROUP_PLOT_META[gid]
+    #         plt.plot(base_counts.xs, base_counts.ys, label=pm.tex_name, color=pm.color)
+    #         p50 = base_counts.valid_median
+    #         plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
+    #         if gid in {"fs_vwasm", "d_komodo"}:
+    #             plt.text(
+    #                 p50[0] * 1.05, p50[1], f"{tex_fmt_int(int(p50[0]))}", fontsize=8, va="bottom", ha="left"
+    #             )
+    #         if gid in {"fs_dice", "d_lvbkv"}:
+    #             plt.text(
+    #                 p50[0], p50[1], f"{tex_fmt_int(int(p50[0]))}", fontsize=8, va="bottom", ha="right"
+    #             )
+    #         x_max = max(x_max, base_counts.valid_max[0])
+
+    #     handles, labels = plt.gca().get_legend_handles_labels()
+
+    #     if ver == 2:
+    #         order = [4,1,2,0,3]
+    #         plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], fontsize=8, loc="upper left")
+    #     elif ver == 1:
+    #         plt.legend(fontsize=8, loc="upper left")
+
+    #     plt.xlabel("Original Query Assertion Count Log Scale")
+    #     plt.ylabel("CDF (\%)", rotation=0, labelpad=20)
+    #     plt.yticks(np.arange(0, 101, 10))
+    #     plt.ylim(0, 100)
+    #     plt.xlim(10, x_max)
+    #     plt.xscale("log")
+    #     plt.grid()
+    #     plt.tight_layout()
+    #     plt.savefig(f"fig/relevance/overall_count_original.{ver}.png", bbox_inches='tight',pad_inches=10, dpi=600)
+    #     plt.close()
 
 def handle_shake_context_analysis():
     shake_plot_rr(0, False)
@@ -133,7 +152,7 @@ def foo(gid):
     return round(ratios.valid_median[0], 2), round(miss_count * 100 / valid_count, 2)
 
 def shake_plot_rr(freq, oracle):
-    plt.figure(figsize=(5,3.5))
+    plt.figure(figsize=(6,3.5))
     for gid in MARIPOSA_GROUPS:
         df = load_shake_stats(gid, freq)
         pm = GROUP_PLOT_META[gid]
@@ -163,9 +182,9 @@ def shake_plot_rr(freq, oracle):
         plt.plot(p50[0], p50[1], c="black", marker="o", markersize=3)
 
         if gid in {"fs_vwasm", "d_lvbkv"}:
-            add_text(plt, p50[0]*1.2, p50[1], fmt_percent(p50[0]))
+            add_text(plt, p50[0]*1.1, p50[1], fmt_percent(p50[0]))
         elif gid in {"fs_dice",  "d_komodo"}:
-            add_text(plt, p50[0]*0.95, p50[1], fmt_percent(p50[0]), left=False)
+            add_text(plt, p50[0]*0.9, p50[1], fmt_percent(p50[0]), left=False)
 
     handles, labels = plt.gca().get_legend_handles_labels()
     order = [3,0,1,2,4]
@@ -181,8 +200,8 @@ def shake_plot_rr(freq, oracle):
         suffix += "_quanti"
 
     plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], fontsize=8)
-    plt.xlabel("Shake Query Relevance Ratio Log Scale (\%)")
-    plt.ylabel("CDF (\%)")
+    plt.xlabel("Shake Query Relevance Ratio Log Scale (\%)", fontsize=10)
+    plt.ylabel("CDF (\%)", rotation=0, labelpad=20, fontsize=10)
     plt.yticks(np.arange(0, 101, 10))
 
     plt.xlim(0.001, 100)
@@ -191,7 +210,7 @@ def shake_plot_rr(freq, oracle):
     plt.grid()
     plt.tight_layout()
     
-    plt.savefig(f"fig/relevance/shake_{suffix}.pdf", bbox_inches='tight',pad_inches = 0)
+    plt.savefig(f"fig/relevance/shake_{suffix}.png", bbox_inches='tight',pad_inches = 0.1, dpi=600)
 
 def shake_freq_analysis(gid, freq, oracle):
     df = load_shake_stats(gid, freq)
@@ -232,9 +251,12 @@ def shake_freq_analysis(gid, freq, oracle):
 
 def _shake_depth_analysis(gid):
     df = load_shake_stats(gid, 100)
-    plt.figure(figsize=(5,2.5))
 
-    for naive in [False]:
+    # for naive in [False]:
+    x_max = 0
+
+    for ver in [2, 1, 0]:
+        plt.figure(figsize=(7,3.5))
         core_depths = np.array(df.max_core_depth, dtype=float)
         valid_indices = ~np.isnan(core_depths)
         core_depths = core_depths[valid_indices]
@@ -244,39 +266,49 @@ def _shake_depth_analysis(gid):
         base = PartialCDF(base_depths)
         diff = PartialCDF(diff)
 
-        suffix = "Naive Shake" if naive else ""
+        # suffix = "Naive Shake" if naive else ""
         color = GROUP_PLOT_META[gid].color
-        plt.plot(core.xs, core.ys, label="Core " + suffix, color=color, linestyle="--", linewidth=1.5)
-        plt.plot(base.xs, base.ys, label="Original " + suffix, color=color,  linewidth=1.5)
-        # plt.plot(diff.xs, diff.ys, label="Difference " + suffix + " $\geq$", color=color, linestyle=":", linewidth=1.5)
+        plt.plot(base.xs, base.ys, label="Original", color=color,  linewidth=1.5)
+    
+        if ver >= 1:
+            plt.plot(core.xs, core.ys, label="Core", color=color, linestyle="--", linewidth=1.5)
+        if ver >= 2:
+            plt.plot(diff.xs, diff.ys, label="Difference", color=color, linestyle=":", linewidth=1.5)
 
-        p50 = core.valid_median
-        plt.plot(p50[0], p50[1], c="black", marker="o", markersize=5)
         p50 = base.valid_median
         plt.plot(p50[0], p50[1], c="black", marker="o", markersize=5)
 
-    plt.legend()
+        if ver >= 1:
+            p50 = core.valid_median
+            plt.plot(p50[0], p50[1], c="black", marker="o", markersize=5)
 
-    x_max = max(core.valid_max[0], base.valid_max[0])
-    plt.xlim(0, x_max)
-    plt.xticks(np.arange(0, x_max + 1, 1))
-    plt.ylim(0, 100)
-    plt.yticks(np.arange(0, 101, 10))
+        if ver >= 2:
+            p50 = diff.valid_median
+            plt.plot(p50[0], p50[1], c="black", marker="o", markersize=5)
 
-    plt.xlabel("Maximum Shake Distance")
-    plt.ylabel("CDF (\%)")
-    plt.grid()
+        plt.legend(fontsize=8, loc="lower right")
 
-    plt.tight_layout()
-    plt.savefig(f"fig/depth/{gid}.pdf", bbox_inches='tight',pad_inches = 0)
+        if ver == 2:
+            x_max = max(core.valid_max[0], base.valid_max[0])
 
-    plt.close()
+        plt.xlim(0, x_max)
+        plt.xticks(np.arange(0, x_max + 1, 1))
+        plt.ylim(0, 100)
+        plt.yticks(np.arange(0, 101, 10))
+
+        plt.xlabel("Maximum Shake Distance", fontsize=10)
+        plt.ylabel("CDF (\%)", rotation=0, labelpad=20, fontsize=10)
+        plt.grid()
+
+        plt.tight_layout()
+        plt.savefig(f"fig/depth/{gid}.{ver}.png", bbox_inches='tight',pad_inches = 0.1, dpi=600)
+
+        plt.close()
 
 def _shake_depth_analysis_overall():
     # if has_cache("shake_max_depth"):
     #     all_data = load_cache("shake_max_depth")
     # else:
-    print("?")
     plt.figure(figsize=(5,4))
 
     all_data = []
@@ -376,7 +408,7 @@ def _shake_depth_analysis_overall():
     plt.close()
 
 def handle_shake_depth_analysis():
-    _shake_depth_analysis_overall()
-    # for gid in MARIPOSA_GROUPS:
-    #     _shake_depth_analysis(gid)
+    # _shake_depth_analysis_overall()
+    for gid in MARIPOSA_GROUPS:
+        _shake_depth_analysis(gid)
         # _shake_depth_analysis(gid, naive=True)

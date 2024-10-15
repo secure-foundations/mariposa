@@ -166,6 +166,185 @@ def fix_cids(gid):
     pool = multiprocessing.Pool(7)
     pool.map(fix_query_cids, args)
 
+
+def plot_stability_impact():
+    # 1 len(base_stable),
+    # 2 len(core_stable),
+    # 3 len(base_unstable),
+    # 4 len(core_unstable),
+    # 5 len(base_unstable & core_stable),
+    # 6 len(base_stable & core_stable),
+
+    # data = {
+    #     "d_komodo": [2054, 1914, 1986, 93, 21, 84, 1902],
+    #     "d_fvbkv":  [5170, 4983, 5071, 172, 84, 111, 4960],
+    #     "d_lvbkv":  [5334, 4999, 5191, 256, 64, 214, 4977],
+    #     "fs_dice":  [1536, 1483, 1495, 20, 8, 18, 1477],
+    #     "fs_vwasm": [1755, 1731, 1728, 4, 7, 0, 1728],
+    # }
+
+    data_core_z3 = {
+        "d_komodo": [93, 84, 1986, 1902],
+        "d_fvbkv": [172, 111, 5071, 4960],
+        "d_lvbkv": [256, 214, 5191, 4977],
+        "fs_dice": [20, 18, 1495, 1477],
+        "fs_vwasm": [4, 0, 1728, 1728],
+    }
+
+    data_shake_z3 = {
+        "d_komodo": [93, 23, 110, 110],
+        "d_fvbkv": [172, 40, 110, 108],
+        "d_lvbkv": [256, 97, 110, 110],
+        "fs_dice": [20, 4, 110, 110],
+        "fs_vwasm": [4, 0, 110, 106],
+    }
+
+    data_naive_shake_z3 = {
+        "d_komodo": [93, 7, 110, 109],
+        "d_fvbkv": [172, 21, 110, 110],
+        "d_lvbkv": [256, 30, 110, 110],
+        "fs_dice": [20, 2, 110, 110],
+        "fs_vwasm": [4, 0, 110, 110],
+    }
+
+    data_shake_cvc5 = {
+        "d_komodo": [36, 15, 110, 110],
+        "d_fvbkv": [143, 69, 110, 104],
+        "d_lvbkv": [210, 78, 110, 110],
+        "fs_dice": [17, 17, 110, 110],
+        "fs_vwasm": [27, 0, 110, 109],
+    }
+
+    for data in [data_core_z3, data_shake_z3, data_shake_cvc5, data_naive_shake_z3]:
+        solver = "cvc5" if data == data_shake_cvc5 else "z3"
+
+        is_shake = data == data_shake_z3 or data == data_shake_cvc5 or data == data_naive_shake_z3
+
+        for ver in [0, 1]:
+            fig, ax = plt.subplots(1, 2, figsize=(10, 3.5), squeeze=False)
+
+            orig = [data[i][0] for i in data]
+            curr = [data[i][1] for i in data]
+            _plot_stability_impact(ax[0][0], data.keys(), orig, curr, True, is_shake, solver, ver)
+            fig.supylabel(r"Query Count", rotation=0, va="center", fontsize=10)
+
+            orig = [data[i][2] for i in data]
+            curr = [data[i][3] for i in data]
+            _plot_stability_impact(ax[0][1], data.keys(), orig, curr, False, is_shake, solver, ver)
+
+            name = "shake" if is_shake else "core"
+
+            if data == data_naive_shake_z3:
+                name = "naive_shake"
+
+            plt.tight_layout()
+            plt.savefig(f"fig/stability/{name}.{solver}.{ver}.png", bbox_inches='tight',pad_inches=0.1, dpi=600)
+            plt.close()
+
+def _plot_stability_impact(sp, labels, orig, curr, is_miti, is_shake, solver, ver):
+    bar_width = 0.1
+    x = np.arange(len(orig)) / 4
+
+    if is_miti:
+        color = "orange"
+        title = "Instability Mitigation"
+        label_0 = "Unstable (Original)"
+    else:
+        color = "lightseagreen"
+        title = "Stability Preservation"
+        label_0 = "Stable (Original)"
+
+    if solver == "cvc5":
+        title += " (cvc5 1.1.1)"
+    else:
+        title += " (z3 4.12.5)"
+
+    sp.bar(   
+        x,
+        orig,
+        bar_width,
+        label=label_0,
+        color=color,
+        edgecolor="black",
+    )
+
+    if ver == 1:
+        label = "Stable (Shake)" if is_shake else "Stable (Core)"
+        sp.bar(
+            x,
+            curr,
+            bar_width,
+            label=label,
+            color="white",
+            edgecolor="black",
+            hatch="//",
+            alpha=0.5,
+        )
+
+    sp.set_title(title)
+    # if is_miti:
+
+    sp.set_xticks(x, [GROUP_PLOT_META[i].tex_name for i in labels], fontsize=10)
+
+    if is_miti:
+        sp.legend(fontsize=8, loc="upper right")
+    else:
+        sp.legend(fontsize=8, loc="lower right")
+
+def plot_unstable_count():
+    data = {
+        "d_komodo":  [2054, 93,],
+        "d_fvbkv":   [5170,  172,],
+        "d_lvbkv":   [5334,  256,],
+        "fs_dice":   [1536,  20,],
+        "fs_vwasm":  [1755,  4,],
+    }
+
+    bar_width = 0.1
+
+    x = np.arange(len(data)) / 4
+    
+    for ver in range(3):
+        plt.figure(figsize=(7, 3.5))
+
+        # Create the stacked bar plot
+        tota = [data[i][0] for i in data]
+        unst = [data[i][1] for i in data]
+        
+        ratios = [unst[i] * 100 / tota[i] for i in range(len(tota))]
+        
+        plt.bar(
+            x,
+            tota,
+            bar_width,
+            label="Total",
+            color="white",
+            edgecolor="black",
+        )
+
+        if ver >= 1:
+            plt.bar(
+                x,
+                unst,
+                bar_width,
+                label="Unstable",
+                color="orange",
+                edgecolor="black",
+            )
+
+        if ver >= 2:        
+            for i in range(len(ratios)):
+                plt.text(x[i], unst[i] + 30, f"{round(ratios[i], 1)}\%", fontsize=10, va="bottom", ha="center")
+
+        plt.legend(fontsize=8, loc="upper right")
+        plt.title("Mariposa Query Set (z3 4.12.5)")
+        plt.ylabel(r"Query Count", rotation=0, labelpad=40, va="center", fontsize=10)
+        plt.xticks(x, [GROUP_PLOT_META[i].tex_name for i in data], fontsize=10)
+
+        plt.tight_layout()
+        plt.savefig(f"fig/stability/query_count.{ver}.png", bbox_inches='tight',pad_inches=0.1, dpi=600)
+        plt.close()
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Mariposa Meta Wizard operates on multiple projects."
@@ -186,6 +365,8 @@ if __name__ == "__main__":
     subparsers.add_parser("shake-depth", help="analyze shake depth")
     subparsers.add_parser("shake-stb", help="analyze shake stability")
     subparsers.add_parser("shake-create", help="create shake queries")
+    subparsers.add_parser("plot-count", help="plot unstable count")
+    subparsers.add_parser("plot-impact", help="plot stability impact")
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -216,3 +397,7 @@ if __name__ == "__main__":
     elif args.sub_command == "shake-create":
         handle_shake_create("bench_stable")
         # handle_shake_create("bench_unstable")
+    elif args.sub_command == "plot-count":
+        plot_unstable_count()
+    elif args.sub_command == "plot-impact":
+        plot_stability_impact()

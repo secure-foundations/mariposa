@@ -96,7 +96,7 @@ class QueryAnalyzer:
         size = len(group_blob[0])
         unsat_indices = group_blob[0] == RCode.UNSAT.value
         success = match_rcode(group_blob, RCode.UNSAT, self._timeout)
-        
+
         if success == 0:
             if match_rcode(group_blob, RCode.UNKNOWN, self._timeout) == size:
                 return Stability.UNKNOWN
@@ -125,8 +125,7 @@ class QueryAnalyzer:
         _, p_value = proportions_ztest(count=success,
                                         nobs=size,
                                         value=value, 
-                                        alternative='smaller',
-                                        prop_var=value)
+                                        alternative='smaller')
         if p_value <= self.confidence:
             return Stability.UNSOLVABLE
 
@@ -134,8 +133,7 @@ class QueryAnalyzer:
         _, p_value = proportions_ztest(count=success, 
                                         nobs=size,
                                         value=value,
-                                        alternative='smaller',
-                                        prop_var=value)
+                                        alternative='smaller')
 
         if self._timeout == None:
             if p_value <= self.confidence:
@@ -148,8 +146,7 @@ class QueryAnalyzer:
         _, p_value = proportions_ztest(count=success, 
                                         nobs=size,
                                         value=value,
-                                        alternative='larger',
-                                        prop_var=value)
+                                        alternative='larger')
 
         if p_value <= self.confidence:
             return Stability.STABLE

@@ -14,6 +14,7 @@ import re
 from debugger.query_loader import QueryLoader, SkolemFinder
 from debugger.z3_utils import (
     AstVisitor,
+    collapse_sexpr,
     extract_sk_qid_from_name,
     extract_sk_qid_from_decl,
     match_qi,
@@ -256,6 +257,8 @@ class ProofReader(QueryLoader):
         log_info(f"[proof] solver finished in {self.proof_time}(s)")
 
         p = self.proc_solver.proof()
+        # print(collapse_sexpr(p.sexpr()))
+
         self.__collect_instantiations(p)
         self.reset_visit()
         log_info(f"[proof] instantiations collected")
@@ -388,15 +391,12 @@ class ProofAnalyzer(QueryLoader):
 if __name__ == "__main__":
     set_param(proof=True)
 
-    i = ProofReader(sys.argv[1])
-    pi = i.try_prove()
-    pi.save("cyclic.pickle")
+    # i = ProofReader(sys.argv[1])
+    # pi = i.try_prove()
+    # pi.save("cyclic.pickle")
 
     pi = ProofInfo.load("cyclic.pickle")
-    # print(pi.expr_deps)
     pa = ProofAnalyzer(sys.argv[1], pi)
-    
-
     # pa.save_graph("test.dot")
     srcs = pa.list_sources()
     
@@ -411,6 +411,8 @@ if __name__ == "__main__":
 
     deps = set()
     for n, q in srcs.items():
+        if q not in pi.qi_infos:
+            continue
         for bind in pi.qi_infos[q].bindings:
             print("nid", n, q)
             for k, v in bind.items():

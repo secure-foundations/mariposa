@@ -18,7 +18,7 @@ def handle_core_stability_analysis():
 
     for gid in MARIPOSA_GROUPS:
         group = FACT.get_group(gid)
-        ana = CoreAnalyzer(group)
+        ana = CoreAnalyzer(group, FACT.get_analyzer("60nq"))
         base = ana.base_adj
         core = ana.core_adj
 

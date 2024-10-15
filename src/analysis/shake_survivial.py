@@ -1,7 +1,6 @@
 import argparse
 import multiprocessing
 import os
-from analysis.shake_context import handle_core_context_analysis, handle_shake_context_analysis
 from analysis.core_analyzer import CoreAnalyzer
 from analysis.wombo_analyzer import WomboAnalyzer
 from base.defs import MARIPOSA, MARIPOSA_GROUPS
@@ -67,9 +66,11 @@ def perf_delta(base, new):
     return prefix + "%.2f" % round((new - base) * 100 / base, 2) + "\%"
 
 def handle_shake_survival():
-    # solved = {}
-    # for gid in MARIPOSA_GROUPS:
-    #     solved[gid] = _handle_shake_survival(gid)
+    solved = {}
+    for gid in MARIPOSA_GROUPS:
+        solved[gid] = _handle_shake_survival(gid)
+        
+    return
     
     solved = {'d_komodo': {'base.z3': 1983, 'shkf.z3': 1981, 'shko.z3': 1989, 'base.cvc5': 342, 'shkf.cvc5': 348, 'shko.cvc5': 416}, 'd_fvbkv': {'base.z3': 5103, 'shkf.z3': 5063, 'shko.z3': 5072, 'base.cvc5': 2571, 'shkf.cvc5': 2806, 'shko.cvc5': 3105}, 'd_lvbkv': {'base.z3': 5167, 'shkf.z3': 5146, 'shko.z3': 5165, 'base.cvc5': 3158, 'shkf.cvc5': 3439, 'shko.cvc5': 3569}, 'fs_dice': {'base.z3': 1493, 'shkf.z3': 1492, 'shko.z3': 1498, 'base.cvc5': 259, 'shkf.cvc5': 449, 'shko.cvc5': 683}, 'fs_vwasm': {'base.z3': 1733, 'shkf.z3': 1728, 'shko.z3': 1727, 'base.cvc5': 1630, 'shkf.cvc5': 1628, 'shko.cvc5': 1628}}
     
@@ -100,7 +101,6 @@ def handle_shake_survival():
     print("\\midrule")
 
 def _handle_shake_survival(gid):
-    plt.figure(figsize=(5, 3.5))
     ana = FACT.get_analyzer("60nq")
     group = FACT.get_group(gid)
     shake_times = get_shake_times(gid)
@@ -124,51 +124,62 @@ def _handle_shake_survival(gid):
                 # core_cids = load_query_cids(qcs.patch_path)
 
     solved = {}
-    for poj in ["base.z3", "shkf.z3", "shko.z3", "base.cvc5", "shkf.cvc5", "shko.cvc5"]:
-        exp = FACT.load_any_analysis(group.get_project(poj), ana)
-        perf = []
+    max_x = 0
+    base_count = 0
 
-        for qid in exp.qids:
-            # if poj.startswith("shko"):
-            #     pass
-            # else:
-            qr: QueryAnaResult = exp[qid]
-
-            rc, et = qr.get_original_status()
-
-            if poj.startswith("shk"):
-                et += shake_times[qid][1]
-
-            if rc == RCode.UNSAT.value and et < 6e4:
-                perf += [et/1000]
-
-        if poj.startswith("shko"):
-            style = "dashed"
-        elif poj.startswith("shkf"):
-            style = "dotted"
+    for ver in [1, 0]:
+        plt.figure(figsize=(6, 3.5))
+        if ver == 0:
+            pojs = ["base.z3", "shkf.z3", "shko.z3"]
         else:
-            style = "solid"
+            pojs = ["base.z3", "shkf.z3", "shko.z3", "base.cvc5", "shkf.cvc5", "shko.cvc5"]
 
-        if poj.endswith("z3"):
-            color = "red"
-        else:
-            color = "blue"
+        for poj in pojs:
+            exp = FACT.load_any_analysis(group.get_project(poj), ana)
+            perf = []
 
-        label = SURVIVAL_TEX_LABELS[poj]
-        perf = np.array(np.sort(perf))
-        perf = np.cumsum(perf)
-        plt.plot(perf, np.arange(0, len(perf)), label=label, linestyle=style, color=color)
-        solved[poj] = len(perf)
+            if poj == "base.z3":
+                base_count = len(exp.qids)
 
-    plt.legend(fontsize=8)
-    plt.ylim(0)
-    plt.xlim(0.1)
-    plt.xscale("log")
-    plt.xlabel("Cumulative Time Log Scale (s)")
-    plt.ylabel("Instances Soveld")
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(f"fig/survival/shake_{gid}.pdf",bbox_inches='tight',pad_inches = 0)
-    plt.close()
-    
+            for qid in exp.qids:
+                qr: QueryAnaResult = exp[qid]
+                rc, et = qr.get_original_status()
+                
+
+                if poj.startswith("shk"):
+                    et += shake_times[qid][1]
+
+                if rc == RCode.UNSAT.value and et < 6e4:
+                    perf += [et/1000]
+
+            if poj.startswith("shko"):
+                style = "dashed"
+            elif poj.startswith("shkf"):
+                style = "dotted"
+            else:
+                style = "solid"
+
+            if poj.endswith("z3"):
+                color = "red"
+            else:
+                color = "blue"
+
+            label = SURVIVAL_TEX_LABELS[poj]
+            perf = np.array(np.sort(perf))
+            perf = np.cumsum(perf)
+            max_x = max(max_x, max(perf))
+            plt.plot(perf, np.arange(0, len(perf)), label=label, linestyle=style, color=color)
+            solved[poj] = len(perf)
+
+        plt.legend(fontsize=8)
+        plt.ylim(0, base_count)
+        plt.xlim(0.1, max_x)
+        plt.xscale("log")
+        plt.xlabel("Cumulative Time Log Scale (s)", fontsize=10)
+        plt.ylabel("Instances Solved", rotation=0, labelpad=50, fontsize=10)
+        plt.grid()
+        plt.tight_layout()
+        plt.savefig(f"fig/survival/shake_{gid}.{ver}.png",bbox_inches='tight',pad_inches = 0.1, dpi=600)
+        plt.close()
+
     return solved

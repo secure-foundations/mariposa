@@ -45,10 +45,12 @@ class CoreCompleter:
 
         if not os.path.exists(self.fmt_path):
             format_query(orig_path, self.fmt_path)
-    
+        print(self.fmt_path)
         orig_asserts = get_asserts(self.fmt_path)
         hint_asserts = get_asserts(hint_path)
-
+        print(f"orig asserts: {len(orig_asserts)}, hint asserts: {len(hint_asserts)}")
+        print(f"not in orig: {len(key_set(hint_asserts) - key_set(orig_asserts))}")
+        
         is_subset = key_set(hint_asserts).issubset(key_set(orig_asserts))
         log_check(is_subset, "hint is not a subset of orig")
         log_check(len(hint_asserts) > 0, "hint has no asserts")

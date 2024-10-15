@@ -53,8 +53,8 @@ class ExperAnalyzer:
 
         path_exists_qids = set([get_qid(p) for p in self.list_queries()])
 
-        log_check(path_exists_qids.issuperset(set(qers.keys())), 
-                    "there are queries experimented, but no files exist for them")
+        # log_check(path_exists_qids.issuperset(set(qers.keys())), 
+        #             "there are queries experimented, but no files exist for them")
 
         if not allow_missing_exper:
             for qid in path_exists_qids:
