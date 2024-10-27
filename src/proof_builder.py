@@ -12,8 +12,8 @@ import networkx as nx
 import re
 
 from debugger.query_loader import QueryLoader, SkolemFinder
+from debugger.term_table import TermTable
 from debugger.z3_utils import (
-    AstVisitor,
     collapse_sexpr,
     extract_sk_qid_from_name,
     extract_sk_qid_from_decl,
@@ -39,6 +39,8 @@ class QunatInstInfo:
         self.skolem_deps = set()
 
     def add_binding(self, binding):
+        if binding in self.bindings:
+            return
         self.bindings.append(binding)
 
     def add_error(self, error):
@@ -48,110 +50,15 @@ class QunatInstInfo:
         self.skolem_deps.add(dep)
 
 
-def hash_cons_name(id):
-    return f"hcf_{id}_fch"
-
-
-def hack_search_hash_cons(term: str):
-    return re.findall("hcf_\d+_fch", term)
-
-
-class HashConser(AstVisitor):
-    def __init__(self):
-        super().__init__()
-        self._ref_counts = dict()
-        self.defs = dict()
-        self.depends = dict()
-        self.__targets = set()
-
-    def __get_fresh_name(self):
-        return hash_cons_name(len(self.defs))
-
-    def process_expr(self, e):
-        self._count_refs(e)
-
-    def _count_refs(self, e: ExprRef):
-        if is_var(e) or is_const(e):
-            return
-
-        if self.visit(e):
-            self._ref_counts[e] += 1
-            return
-
-        self._ref_counts[e] = 1
-
-        for c in e.children():
-            self._count_refs(c)
-
-    def create_defs(self):
-        for e, c in self._ref_counts.items():
-            if c >= 1:
-                self.__targets.add(e)
-
-        for e in self.__targets:
-            self._create_defs(e)
-
-        res = list(self.defs.values())
-        res = {r[0]: r[1:] for r in res}
-
-        defs = []
-        # this is to print the definitions in order
-        for i in range(len(res)):
-            name = hash_cons_name(i)
-            defs.append((name, res[name][0], str(res[name][1])))
-        return defs
-
-    def _create_defs(self, e: ExprRef) -> Tuple[str, Set[str]]:
-        if is_var(e) or is_quantifier(e):
-            assert False
-
-        if is_const(e):
-            return (str(e), set())
-
-        if e in self.defs:
-            name = self.defs[e][0]
-            return (name, {name})
-
-        fun = e.decl().name()
-        res = [fun]
-        deps = set()
-
-        for c in e.children():
-            r, d = self._create_defs(c)
-            res.append(r)
-            deps.update(d)
-
-        res = "(" + " ".join(res) + ")"
-
-        if e in self.__targets:
-            new_name = self.__get_fresh_name()
-            self.depends[new_name] = deps
-            self.defs[e] = (new_name, res, e.sort())
-            return (new_name, {new_name})
-        return (res, deps)
-
-    def rewrite_expr(self, e: ExprRef):
-        if is_const(e) or is_var(e):
-            return str(e)
-
-        if e in self.defs:
-            return self.defs[e][0]
-
-        args = [self.rewrite_expr(c) for c in e.children()]
-        return f"({e.decl().name()} {' '.join(args)})"
-
-
 class ProofInfo:
     def __init__(self, cur_skolem_funs):
         self.cur_skolem_funs = cur_skolem_funs
         self.new_skolem_funs = dict()
         self.qi_infos = dict()
         self.new_sk_qids = set()
-        self.conser_defs = []
-        self.expr_deps = dict()
-        self.transitive_deps = dict()
-
-    def add_qi(self, qid, m: SubsMapper, insts, conser: HashConser):
+        self.tt: TermTable = TermTable()
+ 
+    def add_qi(self, qid, m: SubsMapper, insts):
         qi = QunatInstInfo(qid, len(insts))
 
         if m.unmapped != 0:
@@ -170,10 +77,7 @@ class ProofInfo:
                 continue
 
             for b in bind.values():
-                skf.find_sk_fun(b)
-
-            for b in bind.values():
-                conser.process_expr(b)
+                self.tt.process_expr(b)
 
             qi.add_binding(bind)
 
@@ -185,19 +89,22 @@ class ProofInfo:
 
         self.qi_infos[qid] = qi
 
-    def hash_cons_bindings(self, conser: HashConser):
-        for qi in self.qi_infos.values():
-            for b in qi.bindings:
-                for k, v in b.items():
-                    b[k] = conser.rewrite_expr(v)
+    def finalize(self):
+        self.tt.create_defs()
 
-    def set_skolemized(self):
         for decl in self.new_skolem_funs.values():
             qid = extract_sk_qid_from_decl(decl)
             self.new_sk_qids.add(qid)
             if qid not in self.qi_infos:
                 continue
             self.qi_infos[qid].errors.add(InstError.SKOLEM_SELF)
+
+        for qi in self.qi_infos.values():
+            for b in qi.bindings:
+                for k, v in b.items():
+                    b[k] = self.tt.rewrite_expr(v)
+
+        self.tt.finalize()
 
     def get_inst_count(self, qid):
         if qid not in self.qi_infos:
@@ -230,7 +137,6 @@ class ProofInfo:
             return pickle.load(f)
 
     def save(self, out_file_path):
-        self.lb = None
         with open(out_file_path, "wb") as f:
             pickle.dump(self, f)
 
@@ -238,7 +144,7 @@ class ProofInfo:
         return qid in self.new_sk_qids
 
 
-class ProofReader(QueryLoader):
+class ProofBuilder(QueryLoader):
     def __init__(self, in_file_path):
         super().__init__(in_file_path)
 
@@ -285,19 +191,10 @@ class ProofReader(QueryLoader):
 
     def __post_process(self) -> ProofInfo:
         pi = ProofInfo(self.cur_skolem_funs)
-        conser = HashConser()
         for qid, insts in self.instantiations.items():
             m = SubsMapper(self.quants[qid].quant)
-            pi.add_qi(qid, m, insts, conser)
-        defs = conser.create_defs()
-        pi.conser_defs = defs
-        pi.expr_deps = conser.depends
-        pi.transitive_deps = dict()
-        for k, v in conser.depends.items():
-            t = [pi.transitive_deps[d] for d in v] + [v]
-            pi.transitive_deps[k] = set.union(*t)
-        pi.hash_cons_bindings(conser)
-        pi.set_skolemized()
+            pi.add_qi(qid, m, insts)
+        pi.finalize()
         return pi
 
 
@@ -314,8 +211,9 @@ class ProofAnalyzer(QueryLoader):
 
         self._build_graph()
 
-    def get_nid(self, qid):
+    def get_nid(self, qid, add_missing=False):
         if qid not in self._nid_2_qid:
+            assert add_missing
             nid = len(self._nid_2_qid)
             self._nid_2_qid[qid] = nid
             self._qid_2_nid[nid] = qid
@@ -324,12 +222,13 @@ class ProofAnalyzer(QueryLoader):
         return nid
 
     def _add_edge(self, src, dst, color="black"):
-        src = self.get_nid(src)
-        dst = self.get_nid(dst)
+        src = self.get_nid(src, True)
+        dst = self.get_nid(dst, True)
         self.G.add_edge(src, dst, color=color)
 
     def _build_graph(self):
         for qid, qi in self.pi.qi_infos.items():
+
             if len(qi.skolem_deps) != 0:
                 for dep in qi.skolem_deps:
                     dep = extract_sk_qid_from_name(dep)
@@ -341,7 +240,8 @@ class ProofAnalyzer(QueryLoader):
             if not self.is_root(qid):
                 pid = self.get_parent(qid)
                 self._add_edge(pid, qid)
-                # G.add_edge(get_nid(pid), get_nid(qid), label=qi.inst_count)
+            else:
+                self.G.add_node(self.get_nid(qid, True))
 
         for qid in self.pi.new_skolem_funs:
             qid = extract_sk_qid_from_name(qid)
@@ -383,67 +283,47 @@ class ProofAnalyzer(QueryLoader):
         )
 
     def list_sources(self):
+        # nid = self.get_nid("user_vstd__set__axiom_set_ext_equal_101")
+        # print(self.G.in_degree(nid))
         nids = [n for n in self.G.nodes if self.G.in_degree(n) == 0]
         qids = {n: self._qid_2_nid[n] for n in nids}
         return qids
+    
+    def list_nodes(self):
+        return [(n, self._qid_2_nid[n]) for n in self.G.nodes]
 
 
 if __name__ == "__main__":
     set_param(proof=True)
-
-    # i = ProofReader(sys.argv[1])
-    # pi = i.try_prove()
+    
+    # query_file = sys.argv[1]
+    # pb = ProofBuilder(query_file)
+    # pi = pb.try_prove()
     # pi.save("cyclic.pickle")
 
     pi = ProofInfo.load("cyclic.pickle")
-    pa = ProofAnalyzer(sys.argv[1], pi)
+    pa = ProofAnalyzer("orig.smt2", pi)
     # pa.save_graph("test.dot")
+
     srcs = pa.list_sources()
-    
-    G2 = nx.DiGraph()
 
-    # for d in pa.pi.conser_defs:
-    #     for dep in pi.expr_deps[d[0]]:
-    #         G2.add_edge(d[0], dep)
-
-    for d in pa.pi.conser_defs:
-        print(d[0], d[1])
-
-    deps = set()
-    for n, q in srcs.items():
-        if q not in pi.qi_infos:
+    for n, qid in srcs.items():
+        if qid not in pi.qi_infos:
             continue
-        for bind in pi.qi_infos[q].bindings:
-            print("nid", n, q)
+        bindings = pi.qi_infos[qid].bindings
+
+        if len(bindings) == 0:
+            continue
+
+        # qid = "user_vstd__set__axiom_set_ext_equal_101"
+        bindings = pi.qi_infos[qid].bindings
+        symbols = set()
+        esize = 0
+        for i, bind in enumerate(bindings):
             for k, v in bind.items():
-                print("\t", k, v)
-                for dep in hack_search_hash_cons(v):
-                    G2.add_node(n, shape="box")
-                    G2.add_edge(dep, n)
-                    deps.add(dep)
-
-    t_deps = set()
-    for u in deps:
-        t_deps.update(pi.transitive_deps[u])
-        t_deps.add(u)
-    
-    for u in t_deps:
-        for v in pi.expr_deps[u]:
-            G2.add_edge(v, u, color="red")
-
-    dot_path = "test.dot"
-    nx.drawing.nx_agraph.write_dot(G2, dot_path)
-    # dot -Tpdf test.dot -o test.pdf  -Grankdir=TB -Granksep=0.5
-    subprocess_run(
-        [
-            "dot",
-            "-Tpdf",
-            dot_path,
-            "-o",
-            dot_path + ".pdf",
-            "-Grankdir=TB",
-            "-Granksep=0.5",
-        ],
-        debug=True,
-        check=True,
-    )
+                if v.startswith("hcf_"):
+                    symbols.add(v)
+                else:
+                    esize += len(v)
+        esize += pi.tt.estimate_size(symbols)
+        print(qid, esize, len(bindings))

@@ -10,7 +10,7 @@ from z3 import set_param
 from base.solver import RCode
 from query_editor import BasicQueryWriter, QueryEditor
 from debugger.trace_analyzer import TraceAnalyzer
-from proof_reader import ProofInfo, ProofReader
+from proof_builder import ProofInfo, ProofBuilder
 from utils.database_utils import table_exists
 import multiprocessing
 import os, sys
@@ -177,7 +177,7 @@ def _build_proof(mi: MutantInfo):
         mi.create_mutant()
 
     log_info(f"[proof] attempt {target}")
-    pr = ProofReader(target)
+    pr = ProofBuilder(target)
     pi = pr.try_prove()
 
     if pi is not None:

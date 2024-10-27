@@ -5,7 +5,7 @@ from typing import Dict, Set
 from z3 import *
 from debugger.query_loader import QueryLoader, SkolemFinder
 from debugger.z3_utils import collapse_sexpr, hack_contains_qid, hack_quantifier_removal
-from proof_reader import ProofInfo, ProofReader, hack_search_hash_cons
+from proof_builder import ProofInfo, ProofBuilder, QunatInstInfo, InstError
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from utils.query_utils import add_qids_to_query
 
@@ -147,46 +147,23 @@ class QueryEditor(BasicQueryWriter):
     def __init__(self, in_file_path, pi: ProofInfo):
         super().__init__(in_file_path)
         self.pi = pi
-        # this is a lazy way to avoid name clashes
-        self.__fun_prefix = (
-            "fn_" + binascii.hexlify(os.urandom(4)).decode("utf-8") + "_"
-        )
-        self.__fun_cache = dict()
-        self.__proof_symbols = dict()
+
         self.__enabled_symbols = set()
 
-        for (name, body, sort) in self.pi.conser_defs:
-            self.__proof_symbols[name] = [
-                f"(declare-fun {name} () {sort})",
-                f"(assert (= {name} {body}))",
-            ]
-
-    def __get_fresh_name(self):
-        return self.__fun_prefix + str(len(self._fun_defs))
-
-    def __add_def_fun(self, body, sort):
-        if body in self.__proof_symbols:
-            return body
-        if body in self.__fun_cache:
-            return self.__fun_cache[body]
-        name = self.__get_fresh_name()
-        func = [
-            f"(declare-fun {name} () {sort})",
-            "(assert (= " + name + " " + body + "))",
-        ]
-        self._fun_defs += func
-        self.__fun_cache[body] = name
-        return name
-
-    def register_dependencies(self, symbols):
+    def enable_symbol(self, symbols):
         for s in symbols:
-            ts = self.pi.transitive_deps[s]
-            self.__enabled_symbols.update(ts)
             self.__enabled_symbols.add(s)
 
     def instantiate_qids(self, target_ids):
         target_ids = self._basic_check(target_ids)
-        target_ids = {qid: self.pi.qi_infos[qid] for qid in target_ids}
+        filtered = set()
+        for qid in target_ids:
+            if qid not in self.pi.qi_infos:
+                log_warn(f"qid {qid} not found in proof!")
+                continue
+            filtered.add(qid)
+
+        target_ids = {qid: self.pi.qi_infos[qid] for qid in filtered}
 
         for qid, qi in target_ids.items():
             quant = self.quants[qid]
@@ -201,11 +178,8 @@ class QueryEditor(BasicQueryWriter):
                 log_warn(f"no bindings for {qid}")
                 continue
 
-            # for bindings in qi.bindings:
-            #     for i, b in bindings.items():
-            #         print(i, b)
-
             _ = quant.get_vars()
+
             log_info(f"[inst] qid {qid} with {len(qi.bindings)} bindings")
 
             for j, bindings in enumerate(qi.bindings):
@@ -214,35 +188,71 @@ class QueryEditor(BasicQueryWriter):
                     f'(set-info :comment "[inst] qid {qid} {j+1}/{len(qi.bindings)} bindings")'
                 )
                 for i, b in bindings.items():
-                    deps = hack_search_hash_cons(b)
-                    self.register_dependencies(deps)
-                    # name = self.__add_def_fun(b, vars[i][1])
-                    subs[i] = b
+                    # TODO: do we always expect a hash cons?
+                    if b.startswith("hcf_"):
+                        self.enable_symbol({b})
+                    subs[i] = self.pi.tt.expand_def(b)
                 self._new_commands.append(quant.rewrite_as_let(subs))
 
             # TODO: we erase the original quantifier
             self._erase_ids.add(qid)
 
-        for dep in self.__enabled_symbols:
-            log_check(dep in self.__proof_symbols, f"symbol {dep} not found in proof")
-            decl, defi = self.__proof_symbols[dep]
-            self._fun_decls.append(decl)
-            self._fun_asserts.append(defi)
+        # for name in self.__enabled_symbols:
+        #     log_check(name in self.pi.tt.defs, f"symbol {name} not found in proof")
+        #     decl, defi = self.pi.tt.defs[name]
+        #     self._fun_decls.append(decl)
+        #     self._fun_asserts.append(defi)
+
+# class AutoQueryEditor(QueryEditor):
+#     def __init__(self, in_file_path, pi: ProofInfo):
 
 if __name__ == "__main__":
     set_param(proof=True)
 
-    # i = ProofReader(sys.argv[1])
+    # i = ProofBuilder("orig.smt2")
     # pi = i.try_prove()
     # pi.save("cyclic.pickle")
-    pi = ProofInfo.load("cyclic.pickle")    
+    # pi.tt.debug()
 
-    w = QueryEditor(sys.argv[1], pi)
-    w.instantiate_qids(
-        {
-            # "user_vstd__set__axiom_set_ext_equal_101",
-            "internal_lib!types.impl&__21.wf_main.?_definition",
-            "internal_lib!types.impl&__21.page_organization_valid.?_definition",
-        }
-    )
-    w.write("test2.smt2")
+    pi = ProofInfo.load("cyclic.pickle")
+    # pi.tt.debug()
+    w = QueryEditor("orig.smt2", pi)
+    w.instantiate_qids({
+        # "prelude_u_inv",
+        # "prelude_box_unbox_int",
+        # "prelude_sub",
+        "internal_core__option__Option_unbox_axiom_definition",
+        "user_vstd__set__axiom_set_ext_equal_101",
+    })
+    w.erase_qids({
+        "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
+        # "prelude_u_clip",
+    }) 
+    w.write("v1.smt2")
+
+    # for qid, qi in pi.qi_infos.items():
+    #     if qid != "prelude_add":
+    #         continue
+    #     for b in qi.bindings:
+    #         for i, v in b.items():
+    #             print(pi.tt.expand_def(v))
+
+    # i = ProofReader("core.1.smt2")
+    # pi = i.try_prove()
+    # pi.save("core.1.pickle")
+    # pi = ProofInfo.load("core.1.pickle")
+
+    # w = QueryEditor("orig.smt2", pi)
+    # w.instantiate_qids(
+    #     {
+    #         "user_vstd__set__axiom_set_ext_equal_101",
+    #         "prelude_add",
+    #         "internal_vstd!set.impl&__0.subset_of.?_definition",
+    #     }
+    # )
+    # w.erase_qids({
+    #     "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
+    # })
+    # w.write("v1.smt2")
+
+    

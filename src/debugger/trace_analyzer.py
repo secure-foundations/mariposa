@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from tabulate import tabulate
-from proof_reader import InstError, ProofInfo, QueryLoader
+from proof_builder import InstError, ProofInfo, QueryLoader
 from utils.system_utils import log_check, log_info, log_warn
 
 

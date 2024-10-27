@@ -57,7 +57,7 @@ class Quant:
             res = hack_quantifier_body(self.quant)
             self.__qbody_str = res[0]
             self.__quant_str = res[1]
-            self.__assert_str = "(assert " +collapse_sexpr(self.assertion.sexpr()) + ")"
+            self.__assert_str = "(assert " + collapse_sexpr(self.assertion.sexpr()) + ")"
 
         lets = []
         for idx, (v, s) in enumerate(self.__vars):
