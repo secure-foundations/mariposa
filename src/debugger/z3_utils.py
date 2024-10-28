@@ -178,3 +178,6 @@ class AstVisitor:
     
     def reset_visit(self):
         self.__visited = set()
+        
+    def visited(self):
+        return self.__visited

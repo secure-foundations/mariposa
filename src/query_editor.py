@@ -116,7 +116,7 @@ class BasicQueryWriter(QueryLoader):
         for r in res:
             skf.find_sk_fun(r)
             asserts.append("(assert " + collapse_sexpr(r.sexpr()) + ")")
-            for name, decl in skf.funs.items():
+            for name, decl in skf.sk_funs.items():
                 if name in self.cur_skolem_funs:
                     continue
                 decls.append(decl)
@@ -221,8 +221,10 @@ if __name__ == "__main__":
         # "prelude_u_inv",
         # "prelude_box_unbox_int",
         # "prelude_sub",
-        "internal_core__option__Option_unbox_axiom_definition",
+        # "internal_core__option__Option_unbox_axiom_definition",
         "user_vstd__set__axiom_set_ext_equal_101",
+        # "internal_lib!types.Local./Local/page_organization_accessor_definition",
+        # "internal_vstd__set__Set<lib!tokens.PageId.>_unbox_axiom_definition",
     })
     w.erase_qids({
         "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",

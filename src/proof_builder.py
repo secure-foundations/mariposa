@@ -2,6 +2,7 @@
 
 import binascii
 import time, pickle
+from tqdm import tqdm
 from z3 import *
 from typing import Dict, Optional, Set, Tuple
 
@@ -78,21 +79,23 @@ class ProofInfo:
 
             for b in bind.values():
                 self.tt.process_expr(b)
+                skf.find_sk_fun(b)
 
             qi.add_binding(bind)
 
-        for fun in skf.funs:
+        for fun in skf.sk_funs:
             if fun not in self.cur_skolem_funs:
                 qi.add_error(InstError.SKOLEM_FUNS)
                 qi.add_skolem_dep(fun)
-                self.new_skolem_funs[fun] = skf.funs[fun]
+                self.new_skolem_funs[fun] = skf.sk_funs[fun]
 
         self.qi_infos[qid] = qi
 
     def finalize(self):
         self.tt.create_defs()
+        log_info(f"[proof] finalizing proof info")
 
-        for decl in self.new_skolem_funs.values():
+        for decl in self.tt.sk_funs.values():
             qid = extract_sk_qid_from_decl(decl)
             self.new_sk_qids.add(qid)
             if qid not in self.qi_infos:
@@ -160,14 +163,13 @@ class ProofBuilder(QueryLoader):
         if res != unsat:
             log_warn("[proof] query returned {0}".format(res))
             return None
-        log_info(f"[proof] solver finished in {self.proof_time}(s)")
+        log_info(f"[proof] solver finished in {self.proof_time} (s)")
 
         p = self.proc_solver.proof()
         # print(collapse_sexpr(p.sexpr()))
 
         self.__collect_instantiations(p)
         self.reset_visit()
-        log_info(f"[proof] instantiations collected")
 
         return self.__post_process()
 
@@ -191,7 +193,8 @@ class ProofBuilder(QueryLoader):
 
     def __post_process(self) -> ProofInfo:
         pi = ProofInfo(self.cur_skolem_funs)
-        for qid, insts in self.instantiations.items():
+        log_info(f"[proof] adding instantiations to proof ")
+        for qid, insts in tqdm(self.instantiations.items()):
             m = SubsMapper(self.quants[qid].quant)
             pi.add_qi(qid, m, insts)
         pi.finalize()
@@ -283,8 +286,6 @@ class ProofAnalyzer(QueryLoader):
         )
 
     def list_sources(self):
-        # nid = self.get_nid("user_vstd__set__axiom_set_ext_equal_101")
-        # print(self.G.in_degree(nid))
         nids = [n for n in self.G.nodes if self.G.in_degree(n) == 0]
         qids = {n: self._qid_2_nid[n] for n in nids}
         return qids
@@ -306,6 +307,8 @@ if __name__ == "__main__":
     # pa.save_graph("test.dot")
 
     srcs = pa.list_sources()
+    qid = "internal_lib!page_organization.PageData./PageData/dlist_entry_accessor_definition"
+    assert qid in pi.qi_infos
 
     for n, qid in srcs.items():
         if qid not in pi.qi_infos:
@@ -316,6 +319,7 @@ if __name__ == "__main__":
             continue
 
         # qid = "user_vstd__set__axiom_set_ext_equal_101"
+        
         bindings = pi.qi_infos[qid].bindings
         symbols = set()
         esize = 0

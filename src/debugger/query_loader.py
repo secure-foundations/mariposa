@@ -8,15 +8,16 @@ from utils.system_utils import log_warn
 class SkolemFinder(AstVisitor):
     def __init__(self) -> None:
         super().__init__()
-        self.funs = dict()
+        self.sk_funs = dict()
 
     def find_sk_fun(self, e):
         if self.visit(e) or is_var(e):
             return
 
         if is_const(e):
-            if "$!skolem_" in str(e):
-                self.funs[str(e)] = collapse_sexpr(e.decl().sexpr())
+            name = str(e)
+            if "$!skolem_" in name:
+                self.sk_funs[name] = collapse_sexpr(e.decl().sexpr())
             return
 
         if is_quantifier(e):
@@ -24,11 +25,11 @@ class SkolemFinder(AstVisitor):
 
         name = e.decl().name()
 
-        if name in self.funs:
+        if name in self.sk_funs:
             return
 
         if "$!skolem_" in name:
-            self.funs[name] = collapse_sexpr(e.decl().sexpr())
+            self.sk_funs[name] = collapse_sexpr(e.decl().sexpr())
             return
 
         for c in e.children():
@@ -105,7 +106,7 @@ class QueryLoader(AstVisitor):
             self.__load_quantifiers(a, None, a)
             finder.find_sk_fun(a)
 
-        self.cur_skolem_funs = finder.funs
+        self.cur_skolem_funs = finder.sk_funs
         self.all_qids = set(self.quants.keys())
         self.reset_visit()
         self.__load_root_conflicts()
