@@ -1,5 +1,6 @@
 from z3 import *
 
+
 def format_expr(e, depth=0, offset=0):
     if is_const(e):
         return str(e)
@@ -109,6 +110,7 @@ def hack_quantifier_removal(expr, qid):
             return expr[:s] + "true" + expr[e:]
     assert False
 
+
 def hack_contains_qid(line, qid):
     qid = ":qid " + qid
     return qid + " " in line or qid + ")" in line
@@ -150,16 +152,24 @@ def is_quantifier_free(e):
             return False
     return True
 
+
 def extract_sk_qid_from_name(name):
     assert "$!skolem_" in name
     s = name.find("$!skolem_") + 9
     e = name.rfind("!")
     return name[s:e]
 
+
 def extract_sk_qid_from_decl(sk_fun):
     assert sk_fun.startswith("(declare-fun ")
     sk_fun = sk_fun.split(" ")[1]
     return extract_sk_qid_from_name(sk_fun)
+
+
+def quote_name(name):
+    if "#" in name:
+        return f"|{name}|"
+    return name
 
 
 class AstVisitor:
@@ -175,9 +185,9 @@ class AstVisitor:
             return True
         self.__visited.add(eid)
         return False
-    
+
     def reset_visit(self):
         self.__visited = set()
-        
+
     def visited(self):
         return self.__visited

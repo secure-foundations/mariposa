@@ -1,45 +1,12 @@
+from enum import Enum
 from typing import Dict, List
 
 from tabulate import tabulate
+from debugger.query_loader import QueryInstFreq
+from debugger.z3_utils import extract_sk_qid_from_name
 from proof_builder import InstError, ProofInfo, QueryLoader
-from utils.system_utils import log_check, log_info, log_warn
-
-
-class GroupInstFreq:
-    def __init__(self, rid):
-        self.rid = rid
-        self.group = dict()
-        self.__finalized = False
-        self.total_count = 0
-        self.root_count = 0
-
-    def __getitem__(self, qid):
-        return self.group[qid]
-
-    def __setitem__(self, qid, count):
-        self.group[qid] = count
-
-    def __iter__(self):
-        assert self.__finalized
-        return iter(self.group)
-
-    def is_singleton(self):
-        return len(self.group) == 1
-
-    def finalize(self):
-        assert not self.__finalized
-        self.__finalized = True
-        self.total_count = sum(self.group.values())
-        self.root_count = self.group[self.rid]
-
-    def is_user_only(self):
-        if self.is_singleton():
-            return self.rid.startswith("user_")
-
-        for qid in self.group:
-            if qid != self.rid and not qid.startswith("user_"):
-                return False
-        return True
+from utils.system_utils import log_check, log_info, log_warn, subprocess_run
+import networkx as nx
 
 
 def shorten_qid(qid):
@@ -56,216 +23,492 @@ def is_prelude_qid(qid):
     )
 
 
-class TraceAnalyzer(QueryLoader):
-    def __init__(self, query_path, proofs: List[ProofInfo]):
-        super().__init__(query_path)
-        log_check(len(proofs) != 0, "no proofs provided")
-        self.proofs = proofs
-        self.pf_freqs = []
+# class TraceAnalyzer(QueryLoader):
+#     def __init__(self, query_path, proofs: List[ProofInfo]):
+#         super().__init__(query_path)
+#         log_check(len(proofs) != 0, "no proofs provided")
+#         self.proofs = proofs
+#         self.pf_freqs = []
 
-        for proof in proofs:
-            freq = proof.as_frequency()
-            freq = self.group_frequencies(freq)
-            self.pf_freqs.append(freq)
+#         for proof in proofs:
+#             freq = proof.as_frequency()
+#             freq = self.group_frequencies(freq)
+#             self.pf_freqs.append(freq)
 
-    def group_frequencies(self, freq: Dict[str, int]) -> Dict[str, GroupInstFreq]:
-        res = dict()
-        for qid in self.all_qids:
-            if qid not in freq:
-                freq[qid] = 0
-            rid = self.get_root(qid)
-            if rid not in res:
-                res[rid] = GroupInstFreq(rid)
-            res[rid][qid] = freq[qid]
-        for rid in res:
-            res[rid].finalize()
-        return res
+#     def group_frequencies(self, freq: Dict[str, int]) -> Dict[str, GroupInstFreq]:
+#         res = dict()
+#         for qid in self.all_qids:
+#             if qid not in freq:
+#                 freq[qid] = 0
+#             rid = self.get_root(qid)
+#             if rid not in res:
+#                 res[rid] = GroupInstFreq(rid)
+#             res[rid][qid] = freq[qid]
+#         for rid in res:
+#             res[rid].finalize()
+#         return res
 
-    def get_proof_inst_counts(self, rid, qid=None):
-        res = []
-        for i, pf_freq in enumerate(self.pf_freqs):
-            if qid is not None:                    
-                res.append(pf_freq[rid][qid])
-                if self.proofs[i].is_skolemized(qid):
-                    res.append("s")
-                else:
-                    res.append("-")
+#     def get_proof_inst_counts(self, rid, qid=None):
+#         res = []
+#         for i, pf_freq in enumerate(self.pf_freqs):
+#             if qid is not None:
+#                 res.append(pf_freq[rid][qid])
+#                 if self.proofs[i].is_skolemized(qid):
+#                     res.append("s")
+#                 else:
+#                     res.append("-")
+#             else:
+#                 res.append(pf_freq[rid].total_count)
+#                 if self.proofs[i].is_skolemized(rid):
+#                     res.append("s")
+#                 else:
+#                     res.append("-")
+#         return res
+
+#     def get_proof_total_inst_counts(self):
+#         gsums = [0] * len(self.proofs)
+#         for i, pi in enumerate(self.proofs):
+#             pf = pi.as_frequency()
+#             for rid in pf:
+#                 gsums[i] += pf[rid]
+#         return gsums
+
+#     def get_report(self, trace_freq: Dict[str, int], table_limit=None):
+#         if table_limit is None:
+#             table_limit = 1e9
+
+#         report = "traced instantiations:\n"
+#         t_freq = self.group_frequencies(trace_freq)
+#         missing = self.__get_missing_rids(t_freq)
+#         group_sums = [0] * (1 + len(self.proofs) * 2)
+#         ia = InstAnalyzer(self.in_file_path, self.proofs[0])
+#         srcs = ia.list_sources()
+
+#         t_freq: List[(str, GroupInstFreq)] = sorted(
+#             t_freq.items(), key=lambda x: x[1].total_count, reverse=True
+#         )
+#         table = []
+
+#         for rid, tg in t_freq:
+#             action = "-"
+#             inst_needed = self.pf_freqs[0][rid].total_count != 0
+
+#             if rid in srcs.values():
+#                 if self.has_conflicts(rid):
+#                     action = "X"
+#                 elif self.needed_for_skolem(rid):
+#                     assert not inst_needed
+#                     action = "S"
+#                 else:
+#                     action = "I"
+#             elif not inst_needed:
+#                 if self.needed_for_skolem(rid):
+#                     action = "S"
+#                 else:
+#                     action = "E"
+
+#             group_sums[0] += tg.total_count
+#             ptotals = self.get_proof_inst_counts(rid)
+
+#             row = [shorten_qid(rid), action, tg.total_count]
+
+#             for i in range(len(self.proofs)):
+#                 group_sums[i * 2 + 1] += ptotals[i * 2]
+
+#             if tg.is_singleton():
+#                 table.append(row + ptotals)
+#                 continue
+
+#             table.append(row)
+#             table.append(
+#                 ["- [root]", "", tg.root_count] + self.get_proof_inst_counts(rid, rid)
+#             )
+#             for qid in tg:
+#                 if qid == rid:
+#                     continue
+#                 row = ["- " + shorten_qid(qid), "", tg[qid]] + self.get_proof_inst_counts(
+#                     rid, qid
+#                 )
+#                 table.append(row)
+
+#         headers = ["QID", "Action", "T"]
+
+#         for i in range(len(self.proofs)):
+#             headers.append(f"P{i}#")
+#             headers.append("")
+
+#         if len(table) > table_limit:
+#             row = [f"... eliding {len(table) - table_limit} more rows ..."] + [
+#                 "..."
+#             ] * (len(headers) - 1)
+#             table = table[:table_limit]
+#             table.append(row)
+#         table.append(["total", ""] + group_sums)
+#         report += tabulate(table, headers=headers)
+
+#         table = []
+#         for rid in missing:
+#             row = [shorten_qid(rid)] + self.get_proof_inst_counts(rid)
+#             table.append(row)
+
+#         headers = ["QID"] + [f"P{i}" for i in range(len(self.proofs))]
+
+#         if len(table) > table_limit:
+#             row = [f"... eliding {len(table) - table_limit} more rows ..."] + [
+#                 "..."
+#             ] * (len(headers) - 1)
+#             table = table[:table_limit]
+#             table.append(row)
+
+#         if len(table) != 0:
+#             # log_info("missing instantiations:")
+#             report += "\n\nmissing instantiations:\n"
+#             report += tabulate(table, headers=headers)
+
+#         skids = set()
+
+#         for (i, pi) in enumerate(self.proofs):
+#             for qid in pi.new_sk_qids:
+#                 skids.add(qid)
+
+#         if len(skids) != 0:
+#             report += "\n\nskolemized qids:\n"
+#             for qid in skids:
+#                 report += qid + "\n"
+
+#         return report
+
+#     def __get_missing_rids(self, traced_qids: Dict[(str, GroupInstFreq)]):
+#         used, res = set(), set()
+#         for pf_freq in self.pf_freqs:
+#             for rid, pg in pf_freq.items():
+#                 if pg.total_count != 0:
+#                     used.add(rid)
+#         for rid, tg in traced_qids.items():
+#             if tg.total_count == 0 and rid in used:
+#                 res.add(rid)
+#         return res
+
+#     def needed_for_skolem(self, qid):
+#         for pi in self.proofs:
+#             if qid in pi.new_skolem_funs:
+#                 return True
+#         return False
+
+
+class ProofAnalyzer(QueryLoader):
+    def __init__(self, in_file_path, proof_info: ProofInfo):
+        super().__init__(in_file_path)
+        self.pi = proof_info
+        self.G = nx.DiGraph()
+
+        self._self_loops = set()
+        self._nid_2_qid = dict()
+        self._qid_2_nid = dict()
+
+        self._build_graph()
+
+    def get_nid(self, qid, add_missing=False):
+        if qid not in self._nid_2_qid:
+            assert add_missing
+            nid = len(self._nid_2_qid)
+            self._nid_2_qid[qid] = nid
+            self._qid_2_nid[nid] = qid
+        else:
+            nid = self._nid_2_qid[qid]
+        return nid
+
+    def _add_edge(self, src, dst, color="black"):
+        src = self.get_nid(src, True)
+        dst = self.get_nid(dst, True)
+        self.G.add_edge(src, dst, color=color)
+
+    def _build_graph(self):
+        for qid, qi in self.pi.qi_infos.items():
+
+            if len(qi.skolem_deps) != 0:
+                for dep in qi.skolem_deps:
+                    dep = extract_sk_qid_from_name(dep)
+                    self._add_edge(dep, qid, "red")
+
+            if qi.inst_count == 0 and not self.pi.is_skolemized(qid):
+                continue
+
+            if not self.is_root(qid):
+                pid = self.get_parent(qid)
+                self._add_edge(pid, qid)
             else:
-                res.append(pf_freq[rid].total_count)
-                if self.proofs[i].is_skolemized(rid):
-                    res.append("s")
-                else:
-                    res.append("-")
-        return res
+                self.G.add_node(self.get_nid(qid, True))
 
-    def get_proof_total_inst_counts(self):
-        gsums = [0] * len(self.proofs)
-        for i, pi in enumerate(self.proofs):
-            pf = pi.as_frequency()
-            for rid in pf:
-                gsums[i] += pf[rid]
-        return gsums
+        for qid in self.pi.new_skolem_funs:
+            qid = extract_sk_qid_from_name(qid)
+            if not self.is_root(qid):
+                pid = self.get_parent(qid)
+                self._add_edge(pid, qid)
 
-    def get_report(self, trace_freq: Dict[str, int], table_limit=None):
-        if table_limit is None:
-            table_limit = 1e9
+        node_colors = dict()
 
-        report = "traced instantiations:\n"
-        t_freq = self.group_frequencies(trace_freq)
-        missing = self.__get_missing_rids(t_freq)
-        group_sums = [0] * (1 + len(self.proofs) * 2)
+        # remove self loop edges
+        for n, _ in list(nx.selfloop_edges(self.G)):
+            node_colors[n] = "red"
+            self._self_loops.add(n)
+            self.G.remove_edge(n, n)
 
-        t_freq: List[(str, GroupInstFreq)] = sorted(
-            t_freq.items(), key=lambda x: x[1].total_count, reverse=True
+        nx.set_node_attributes(self.G, node_colors, name="color")
+
+        if not nx.is_directed_acyclic_graph(self.G):
+            log_warn("proof QI graph is cyclic!")
+            return
+
+        log_info("proof QI graph is acyclic")
+
+    def save_graph(self, dot_path):
+        nx.drawing.nx_agraph.write_dot(self.G, dot_path)
+        # dot -Tpdf test.dot -o test.pdf  -Grankdir=TB -Granksep=0.5
+        subprocess_run(
+            [
+                "dot",
+                "-Tpdf",
+                dot_path,
+                "-o",
+                dot_path + ".pdf",
+                "-Grankdir=TB",
+                "-Granksep=0.5",
+            ],
+            debug=True,
+            check=True,
         )
+
+    def list_sources(self):
+        nids = [n for n in self.G.nodes if self.G.in_degree(n) == 0]
+        qids = {self._qid_2_nid[n]: n for n in nids}
+        return qids
+
+    def list_nodes(self):
+        return [(n, self._qid_2_nid[n]) for n in self.G.nodes]
+
+
+class EditAction(Enum):
+    NONE = "-"
+    ERASE = "erase"
+    SKOLEMIZE = "skolemize"
+    INSTANTIATE = "instantiate"
+
+
+class InstDiffer(ProofAnalyzer):
+    def __init__(self, query_path, pi: ProofInfo, trace_freq: Dict[str, int]):
+        super().__init__(query_path, pi)
+
+        # TODO: this seems odd?
+        self.trace = QueryInstFreq(self, trace_freq)
+        self.proof = QueryInstFreq(self, pi.as_frequency())
+        self.sources = self.list_sources()
+
+        for qid in pi.qi_infos:
+            qi = pi.qi_infos[qid]
+            if qid not in {
+                "internal_ens__lib!delegation_map_v.impl&__3.mind_the_gap._definition",
+                "user_lib__delegation_map_v__StrictlyOrderedMap__mind_the_gap_135",
+            }:
+                continue
+
+            for binding in qi.bindings:
+                print(qid)
+                for k, v in binding.items():
+                    print(k, v)
+
+        # for qid in self.trace.order_by_freq():
+        #     print(qid, self.trace[qid].total_count, self.proof[qid].total_count)
+
+        # self.get_report()
+
+    def get_available_action(self, qid):
+        if qid not in self.all_qids:
+            log_warn(f"qid {qid} not found in query")
+            return EditAction.NONE
+
+        if qid not in self.proof:
+            log_warn(f"qid {qid} is not a root")
+            return EditAction.NONE
+
+        if self.proof[qid].total_count == 0:
+            # not instantiated or skolemized
+            if not self.pi.is_skolemized(qid):
+                return EditAction.ERASE
+            # not instantiated, but skolemized
+            return EditAction.SKOLEMIZE
+
+        if qid in self.sources:
+            return EditAction.INSTANTIATE
+
+        return EditAction.NONE
+
+    def get_report(self):
         table = []
 
-        for rid, tg in t_freq:
-            if tg.total_count == 0:
-                continue
-            conflict = "c" if self.has_conflicts(rid) else ""
-            row = [shorten_qid(rid), conflict, tg.total_count]
-            group_sums[0] += tg.total_count
-            ptotals = self.get_proof_inst_counts(rid)
-            for i in range(len(self.proofs)):
-                group_sums[i * 2 + 1] += ptotals[i * 2]
-            if tg.is_singleton():
-                table.append(row + ptotals)
+        for rid in self.trace.order_by_freq():
+            t = self.trace[rid]
+            p = self.proof[rid]
+
+            if t.total_count == 0 and p.total_count == 0:
+                # skip qids not instantiated at all
                 continue
 
-            table.append(row)
-            table.append(
-                ["- [root]", "", tg.root_count] + self.get_proof_inst_counts(rid, rid)
-            )
-            for qid in tg:
-                if qid == rid:
-                    continue
-                row = ["- " + shorten_qid(qid), "", tg[qid]] + self.get_proof_inst_counts(
-                    rid, qid
-                )
-                table.append(row)
+            action = self.get_available_action(rid)
+            table.append([shorten_qid(rid), t.total_count, p.total_count, action.value])
+            if not t.is_singleton():
+                table.append(["- [root]", t.root_count, p.root_count, ""])
+                for qid in t:
+                    if qid == rid:
+                        continue
+                    row = ["- " + shorten_qid(qid), t[qid], p[qid], ""]
+                    table.append(row)
 
-        headers = ["QID", "C", "T"]
+        print(tabulate(table, headers=["qid", "trace", "proof", "action"]))
 
-        for i in range(len(self.proofs)):
-            headers.append(f"P{i}#")
-            headers.append("")
+    # def get_proof_inst_counts(self, rid, qid=None):
+    #     res = []
+    #     for i, pf_freq in enumerate(self.pf_freqs):
+    #         if qid is not None:
+    #             res.append(pf_freq[rid][qid])
+    #             if self.proofs[i].is_skolemized(qid):
+    #                 res.append("s")
+    #             else:
+    #                 res.append("-")
+    #         else:
+    #             res.append(pf_freq[rid].total_count)
+    #             if self.proofs[i].is_skolemized(rid):
+    #                 res.append("s")
+    #             else:
+    #                 res.append("-")
+    #     return res
 
-        if len(table) > table_limit:
-            row = [f"... eliding {len(table) - table_limit} more rows ..."] + [
-                "..."
-            ] * (len(headers) - 1)
-            table = table[:table_limit]
-            table.append(row)
-        table.append(["total", ""] + group_sums)
-        report += tabulate(table, headers=headers)
+    # def get_proof_total_inst_counts(self):
+    #     gsums = [0] * len(self.proofs)
+    #     for i, pi in enumerate(self.proofs):
+    #         pf = pi.as_frequency()
+    #         for rid in pf:
+    #             gsums[i] += pf[rid]
+    #     return gsums
 
-        table = []
-        for rid in missing:
-            row = [shorten_qid(rid)] + self.get_proof_inst_counts(rid)
-            table.append(row)
+    # def get_report(self, trace_freq: Dict[str, int], table_limit=None):
+    #     if table_limit is None:
+    #         table_limit = 1e9
 
-        headers = ["QID"] + [f"P{i}" for i in range(len(self.proofs))]
+    #     report = "traced instantiations:\n"
+    #     t_freq = self.group_frequencies(trace_freq)
+    #     missing = self.__get_missing_rids(t_freq)
+    #     group_sums = [0] * (1 + len(self.proofs) * 2)
+    #     # ia = InstAnalyzer(self.in_file_path, self.proofs[0])
+    #     # srcs = ia.list_sources()
 
-        if len(table) > table_limit:
-            row = [f"... eliding {len(table) - table_limit} more rows ..."] + [
-                "..."
-            ] * (len(headers) - 1)
-            table = table[:table_limit]
-            table.append(row)
+    #     t_freq: List[(str, GroupInstFreq)] = sorted(
+    #         t_freq.items(), key=lambda x: x[1].total_count, reverse=True
+    #     )
+    #     table = []
 
-        if len(table) != 0:
-            # log_info("missing instantiations:")
-            report += "\n\nmissing instantiations:\n"
-            report += tabulate(table, headers=headers)
+    #     for rid, tg in t_freq:
+    #         action = "-"
+    #         inst_needed = self.pf_freqs[0][rid].total_count != 0
 
-        skids = set()
+    #         if rid in srcs.values():
+    #             if self.has_conflicts(rid):
+    #                 action = "X"
+    #             elif self.needed_for_skolem(rid):
+    #                 assert not inst_needed
+    #                 action = "S"
+    #             else:
+    #                 action = "I"
+    #         elif not inst_needed:
+    #             if self.needed_for_skolem(rid):
+    #                 action = "S"
+    #             else:
+    #                 action = "E"
 
-        for (i, pi) in enumerate(self.proofs):
-            for qid in pi.new_sk_qids:
-                skids.add(qid)
+    #         group_sums[0] += tg.total_count
+    #         ptotals = self.get_proof_inst_counts(rid)
 
-        if len(skids) != 0:
-            report += "\n\nskolemized qids:\n"
-            for qid in skids:
-                report += qid + "\n"
+    #         row = [shorten_qid(rid), action, tg.total_count]
 
-        return report
+    #         for i in range(len(self.proofs)):
+    #             group_sums[i * 2 + 1] += ptotals[i * 2]
 
-    def __get_missing_rids(self, traced_qids: Dict[(str, GroupInstFreq)]):
-        used, res = set(), set()
-        for pf_freq in self.pf_freqs:
-            for rid, pg in pf_freq.items():
-                if pg.total_count != 0:
-                    used.add(rid)
-        for rid, tg in traced_qids.items():
-            if tg.total_count == 0 and rid in used:
-                res.add(rid)
-        return res
-    
+    #         if tg.is_singleton():
+    #             table.append(row + ptotals)
+    #             continue
+
+    #         table.append(row)
+    #         table.append(
+    #             ["- [root]", "", tg.root_count] + self.get_proof_inst_counts(rid, rid)
+    #         )
+    #         for qid in tg:
+    #             if qid == rid:
+    #                 continue
+    #             row = ["- " + shorten_qid(qid), "", tg[qid]] + self.get_proof_inst_counts(
+    #                 rid, qid
+    #             )
+    #             table.append(row)
+
+    #     headers = ["QID", "Action", "T"]
+
+    #     for i in range(len(self.proofs)):
+    #         headers.append(f"P{i}#")
+    #         headers.append("")
+
+    #     if len(table) > table_limit:
+    #         row = [f"... eliding {len(table) - table_limit} more rows ..."] + [
+    #             "..."
+    #         ] * (len(headers) - 1)
+    #         table = table[:table_limit]
+    #         table.append(row)
+    #     table.append(["total", ""] + group_sums)
+    #     report += tabulate(table, headers=headers)
+
+    #     table = []
+    #     for rid in missing:
+    #         row = [shorten_qid(rid)] + self.get_proof_inst_counts(rid)
+    #         table.append(row)
+
+    #     headers = ["QID"] + [f"P{i}" for i in range(len(self.proofs))]
+
+    #     if len(table) > table_limit:
+    #         row = [f"... eliding {len(table) - table_limit} more rows ..."] + [
+    #             "..."
+    #         ] * (len(headers) - 1)
+    #         table = table[:table_limit]
+    #         table.append(row)
+
+    #     if len(table) != 0:
+    #         # log_info("missing instantiations:")
+    #         report += "\n\nmissing instantiations:\n"
+    #         report += tabulate(table, headers=headers)
+
+    #     skids = set()
+
+    #     for (i, pi) in enumerate(self.proofs):
+    #         for qid in pi.new_sk_qids:
+    #             skids.add(qid)
+
+    #     if len(skids) != 0:
+    #         report += "\n\nskolemized qids:\n"
+    #         for qid in skids:
+    #             report += qid + "\n"
+
+    #     return report
+
+    # def __get_missing_rids(self, traced_qids: Dict[(str, GroupInstFreq)]):
+    #     used, res = set(), set()
+    #     for pf_freq in self.pf_freqs:
+    #         for rid, pg in pf_freq.items():
+    #             if pg.total_count != 0:
+    #                 used.add(rid)
+    #     for rid, tg in traced_qids.items():
+    #         if tg.total_count == 0 and rid in used:
+    #             res.add(rid)
+    #     return res
+
     def needed_for_skolem(self, qid):
         for pi in self.proofs:
             if qid in pi.new_skolem_funs:
                 return True
         return False
-
-    def select_qids_v1(self, trace_freq: Dict[str, int], top_n):
-        t_freq = self.group_frequencies(trace_freq)
-        t_freq: List[(str, GroupInstFreq)] = sorted(
-            t_freq.items(), key=lambda x: x[1].total_count, reverse=True
-        )
-        selected = set()
-
-        for rid, tg in t_freq:
-            if len(selected) >= top_n:
-                break
-            if tg.total_count == 0:
-                continue
-
-            useless = any([c == 0 for c in self.get_proof_inst_counts(rid)])
-            if not self.needed_for_skolem(rid) and useless:
-                selected.add(rid)
-
-        return selected
-
-    def select_qids_v2(self, trace_freq: Dict[str, int], top_n):
-        t_freq = self.group_frequencies(trace_freq)
-        t_freq: List[(str, GroupInstFreq)] = sorted(
-            t_freq.items(), key=lambda x: x[1].total_count, reverse=True
-        )
-        selected = set()
-        for rid, tg in t_freq:
-            if len(selected) >= top_n:
-                break
-
-            if tg.total_count == 0:
-                continue
-
-            # skip prelude qids
-            if is_prelude_qid(rid):
-                continue
-
-            if self.needed_for_skolem(rid):
-                log_info(f"skolem needed: {rid}")
-                continue
-
-            # useless = all([c == 0 for c in self.get_proof_inst_counts(rid)])
-            useless = any([c == 0 for c in self.get_proof_inst_counts(rid)])
-
-            if useless:
-                selected.add(rid)
-                continue
-
-            for qid in tg:
-                useless = all([c == 0 for c in self.get_proof_inst_counts(rid, qid)])
-                # if there is a nested quantifier that is not needed
-                if (
-                    tg[qid] != 0
-                    and useless
-                    and not is_prelude_qid(qid)
-                    and not self.needed_for_skolem(qid)
-                ):
-                    selected.add(qid)
-
-        return selected
-

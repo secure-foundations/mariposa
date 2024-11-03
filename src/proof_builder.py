@@ -9,8 +9,6 @@ from typing import Dict, Optional, Set, Tuple
 from tabulate import tabulate
 from debugger.subs_mapper import SubsMapper
 from enum import Enum
-import networkx as nx
-import re
 
 from debugger.query_loader import QueryLoader, SkolemFinder
 from debugger.term_table import TermTable
@@ -58,7 +56,7 @@ class ProofInfo:
         self.qi_infos = dict()
         self.new_sk_qids = set()
         self.tt: TermTable = TermTable()
- 
+
     def add_qi(self, qid, m: SubsMapper, insts):
         qi = QunatInstInfo(qid, len(insts))
 
@@ -73,12 +71,12 @@ class ProofInfo:
             bind = m.map_inst(inst)
 
             if bind is None:
-                qi.add_error.add(InstError.BIND_ERROR)
-                log_warn("failed to map all variables when insting " + self.qid)
+                qi.add_error(InstError.BIND_ERROR)
+                log_warn("failed to map all variables when insting " + qid)
                 continue
 
-            for b in bind.values():
-                self.tt.process_expr(b)
+            for i, b in bind.items():
+                bind[i] = self.tt.process_expr(b)
                 skf.find_sk_fun(b)
 
             qi.add_binding(bind)
@@ -92,7 +90,6 @@ class ProofInfo:
         self.qi_infos[qid] = qi
 
     def finalize(self):
-        self.tt.create_defs()
         log_info(f"[proof] finalizing proof info")
 
         for decl in self.tt.sk_funs.values():
@@ -101,11 +98,6 @@ class ProofInfo:
             if qid not in self.qi_infos:
                 continue
             self.qi_infos[qid].errors.add(InstError.SKOLEM_SELF)
-
-        for qi in self.qi_infos.values():
-            for b in qi.bindings:
-                for k, v in b.items():
-                    b[k] = self.tt.rewrite_expr(v)
 
         self.tt.finalize()
 
@@ -171,7 +163,17 @@ class ProofBuilder(QueryLoader):
         self.__collect_instantiations(p)
         self.reset_visit()
 
-        return self.__post_process()
+        pi = ProofInfo(self.cur_skolem_funs)
+        log_info(f"[proof] adding instantiations to proof ")
+        for qid, insts in tqdm(self.instantiations.items()):
+            # if qid != "internal_vstd!seq_lib.impl&__0.no_duplicates.?_definition":
+            #     continue
+            # print(qid)
+            # print(collapse_sexpr(self.quants[qid].quant.sexpr()))
+            m = SubsMapper(self.quants[qid].quant)
+            pi.add_qi(qid, m, insts)
+        pi.finalize()
+        return pi
 
     def __collect_instantiations(self, p):
         if self.visit(p) or is_const(p) or is_var(p):
@@ -191,135 +193,19 @@ class ProofBuilder(QueryLoader):
         for c in p.children():
             self.__collect_instantiations(c)
 
-    def __post_process(self) -> ProofInfo:
-        pi = ProofInfo(self.cur_skolem_funs)
-        log_info(f"[proof] adding instantiations to proof ")
-        for qid, insts in tqdm(self.instantiations.items()):
-            m = SubsMapper(self.quants[qid].quant)
-            pi.add_qi(qid, m, insts)
-        pi.finalize()
-        return pi
-
-
-class ProofAnalyzer(QueryLoader):
-    def __init__(self, in_file_path, proof_info: ProofInfo):
-        super().__init__(in_file_path)
-        self.pi = proof_info
-        # self.in_file_path = in_file_path
-        self.G = nx.DiGraph()
-
-        self._self_loops = set()
-        self._nid_2_qid = dict()
-        self._qid_2_nid = dict()
-
-        self._build_graph()
-
-    def get_nid(self, qid, add_missing=False):
-        if qid not in self._nid_2_qid:
-            assert add_missing
-            nid = len(self._nid_2_qid)
-            self._nid_2_qid[qid] = nid
-            self._qid_2_nid[nid] = qid
-        else:
-            nid = self._nid_2_qid[qid]
-        return nid
-
-    def _add_edge(self, src, dst, color="black"):
-        src = self.get_nid(src, True)
-        dst = self.get_nid(dst, True)
-        self.G.add_edge(src, dst, color=color)
-
-    def _build_graph(self):
-        for qid, qi in self.pi.qi_infos.items():
-
-            if len(qi.skolem_deps) != 0:
-                for dep in qi.skolem_deps:
-                    dep = extract_sk_qid_from_name(dep)
-                    self._add_edge(dep, qid, "red")
-
-            if qi.inst_count == 0 and not pi.is_skolemized(qid):
-                continue
-
-            if not self.is_root(qid):
-                pid = self.get_parent(qid)
-                self._add_edge(pid, qid)
-            else:
-                self.G.add_node(self.get_nid(qid, True))
-
-        for qid in self.pi.new_skolem_funs:
-            qid = extract_sk_qid_from_name(qid)
-            if not self.is_root(qid):
-                pid = self.get_parent(qid)
-                self._add_edge(pid, qid)
-
-        node_colors = dict()
-
-        # remove self loop edges
-        for n, _ in list(nx.selfloop_edges(self.G)):
-            node_colors[n] = "red"
-            self._self_loops.add(n)
-            self.G.remove_edge(n, n)
-
-        nx.set_node_attributes(self.G, node_colors, name="color")
-
-        if not nx.is_directed_acyclic_graph(self.G):
-            log_warn("proof QI graph is cyclic!")
-            return
-
-        log_info("proof QI graph is acyclic")
-
-    def save_graph(self, dot_path):
-        nx.drawing.nx_agraph.write_dot(self.G, dot_path)
-        # dot -Tpdf test.dot -o test.pdf  -Grankdir=TB -Granksep=0.5
-        subprocess_run(
-            [
-                "dot",
-                "-Tpdf",
-                dot_path,
-                "-o",
-                dot_path + ".pdf",
-                "-Grankdir=TB",
-                "-Granksep=0.5",
-            ],
-            debug=True,
-            check=True,
-        )
-
-    def list_sources(self):
-        nids = [n for n in self.G.nodes if self.G.in_degree(n) == 0]
-        qids = {n: self._qid_2_nid[n] for n in nids}
-        return qids
-    
-    def list_nodes(self):
-        return [(n, self._qid_2_nid[n]) for n in self.G.nodes]
-
 
 if __name__ == "__main__":
     set_param(proof=True)
-    
-    # query_file = sys.argv[1]
-    # pb = ProofBuilder(query_file)
-    # pi = pb.try_prove()
-    # pi.save("cyclic.pickle")
 
+    query_file = sys.argv[1]
+    pb = ProofBuilder(query_file)
+    pi = pb.try_prove()
+    pi.save("cyclic.pickle")
     pi = ProofInfo.load("cyclic.pickle")
-    pa = ProofAnalyzer("orig.smt2", pi)
-    # pa.save_graph("test.dot")
 
-    srcs = pa.list_sources()
-    qid = "internal_lib!page_organization.PageData./PageData/dlist_entry_accessor_definition"
-    assert qid in pi.qi_infos
+    # pi.tt.debug()
 
-    for n, qid in srcs.items():
-        if qid not in pi.qi_infos:
-            continue
-        bindings = pi.qi_infos[qid].bindings
-
-        if len(bindings) == 0:
-            continue
-
-        # qid = "user_vstd__set__axiom_set_ext_equal_101"
-        
+    for qid in pi.qi_infos:
         bindings = pi.qi_infos[qid].bindings
         symbols = set()
         esize = 0
@@ -330,4 +216,3 @@ if __name__ == "__main__":
                 else:
                     esize += len(v)
         esize += pi.tt.estimate_size(symbols)
-        print(qid, esize, len(bindings))

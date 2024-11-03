@@ -203,9 +203,6 @@ class QueryEditor(BasicQueryWriter):
         #     self._fun_decls.append(decl)
         #     self._fun_asserts.append(defi)
 
-# class AutoQueryEditor(QueryEditor):
-#     def __init__(self, in_file_path, pi: ProofInfo):
-
 if __name__ == "__main__":
     set_param(proof=True)
 
@@ -224,7 +221,6 @@ if __name__ == "__main__":
         # "internal_core__option__Option_unbox_axiom_definition",
         "user_vstd__set__axiom_set_ext_equal_101",
         # "internal_lib!types.Local./Local/page_organization_accessor_definition",
-        # "internal_vstd__set__Set<lib!tokens.PageId.>_unbox_axiom_definition",
     })
     w.erase_qids({
         "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",

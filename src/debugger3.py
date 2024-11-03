@@ -7,9 +7,11 @@ import pickle
 import subprocess
 import time
 from z3 import set_param
+from analysis.inst_analyzer import InstAnalyzer
 from base.solver import RCode
+from debugger.query_loader import QueryInstFreq
+from debugger.trace_analyzer import InstDiffer
 from query_editor import BasicQueryWriter, QueryEditor
-from debugger.trace_analyzer import TraceAnalyzer
 from proof_builder import ProofInfo, ProofBuilder
 from utils.database_utils import table_exists
 import multiprocessing
@@ -44,8 +46,6 @@ TRACES = "traces"
 MUTANTS = "mutants"
 INSTS = "insts"
 CORES = "cores"
-
-TEMP = "temp"
 
 class MutantInfo:
     def __init__(self, sub_root, mutation, seed):
@@ -203,7 +203,7 @@ def create_mut_table(cur):
 
 
 class Debugger3:
-    def __init__(self, query_path, clear, from_core):
+    def __init__(self, query_path, clear, from_core, ids_available=False):
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.base_name}"
         self.orig_path = f"{self.sub_root}/orig.smt2"
@@ -215,7 +215,7 @@ class Debugger3:
         self.db_path = f"{self.sub_root}/db.sqlite"
         self.__build_proof_from_core = from_core
 
-        self.__init_dirs(query_path, clear)
+        self.__init_dirs(query_path, clear, ids_available)
 
         self.traces: List[MutantInfo] = []
         self.proofs: List[MutantInfo] = []
@@ -230,10 +230,9 @@ class Debugger3:
         self.__init_proofs()
         self.refresh_status()
 
-        pins = [p.proof_info for p in self.proofs]
-        self.analyzer = TraceAnalyzer(self.orig_path, pins)
+        self.pis = [p.proof_info for p in self.proofs]
 
-    def __init_dirs(self, query_path, clear):
+    def __init_dirs(self, query_path, clear, ids_available):
         if clear and os.path.exists(self.sub_root):
             os.system(f"rm -rf {self.sub_root}")
 
@@ -248,20 +247,25 @@ class Debugger3:
                 os.makedirs(dir)
 
         if not os.path.exists(self.orig_path):
-            subprocess_run(
-                [
-                    MARIPOSA,
-                    "--action=add-qids",
-                    "-i",
-                    query_path,
-                    "-o",
-                    self.orig_path,
-                ],
-                check=True,
-            )
-            log_check(
-                os.path.exists(self.orig_path), f"failed to create {self.orig_path}"
-            )
+            if ids_available:
+                subprocess_run(
+                    ["cp", query_path, self.orig_path]
+                )
+            else:
+                subprocess_run(
+                    [
+                        MARIPOSA,
+                        "--action=add-qids",
+                        "-i",
+                        query_path,
+                        "-o",
+                        self.orig_path,
+                    ],
+                    check=True,
+                )
+                log_check(
+                    os.path.exists(self.orig_path), f"failed to create {self.orig_path}"
+                )
 
         if not os.path.exists(self.lbl_path):
             subprocess_run(
@@ -462,52 +466,44 @@ class Debugger3:
 
         return max(self.traces, key=lambda tmi: tmi.trace_time)
 
-    def get_proof_inst_counts(self, qids):
-        result = dict()
-        for qid in qids:
-            counts = []
-            for pmi in self.proofs:
-                count = pmi.proof_info.get_inst_count(qid)
-                counts.append(count)
-            result[qid] = counts
-        return result
-
-    def get_proof_total_inst_counts(self):
-        return self.analyzer.get_proof_total_inst_counts()
-
     def debug_trace(self, report_file=None, table_limit=None, tmi: MutantInfo=None):
         if tmi is None:
             tmi = self.get_candidate_trace()
 
-        traced = tmi.get_qids()
-        report = self.analyzer.get_report(traced, table_limit)
+        # traced = QueryInstFreq(self.orig_path, tmi.get_qids())
 
-        verus_proc = find_verus_procedure_name(self.orig_path)
+        # for qid in traced.order_by_freq():
+        #     print(qid, traced[qid].total_count)
+        
+        idr = InstDiffer(self.orig_path, self.pis[0], tmi.get_qids())
+
+        # report = self.analyzer.get_report(traced, table_limit)
+        # verus_proc = find_verus_procedure_name(self.orig_path)
         # verus_proc = "unknown"
 
-        if report_file is not None:
-            with open(report_file, "w+") as f:
-                f.write("base name:\n")
-                f.write(self.base_name + "\n\n")
-                f.write("query path:\n")
-                f.write(self.orig_path + "\n\n")
-                f.write("trace path:\n")
-                f.write(tmi.trace_path + "\n\n")
-                f.write(f"{tmi.trace_time} {tmi.trace_rcode}\n\n")
-                f.write("verus procedure:\n")
-                f.write(verus_proc + "\n\n")
-                f.write(report)
-        else:
-            print(report)
+        # if report_file is not None:
+        #     with open(report_file, "w+") as f:
+        #         f.write("base name:\n")
+        #         f.write(self.base_name + "\n\n")
+        #         f.write("query path:\n")
+        #         f.write(self.orig_path + "\n\n")
+        #         f.write("trace path:\n")
+        #         f.write(tmi.trace_path + "\n\n")
+        #         f.write(f"{tmi.trace_time} {tmi.trace_rcode}\n\n")
+        #         f.write("verus procedure:\n")
+        #         f.write(verus_proc + "\n\n")
+        #         f.write(report)
+        # else:
+        #     print(report)
 
-    def select_suppress_qids(self, tmi: MutantInfo, version):
-        log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
-        traced = tmi.get_qids()
-        if version == 1:
-            return self.analyzer.select_qids_v1(traced, 5)
-        elif version == 2:
-            return self.analyzer.select_qids_v2(traced, 5)
-        assert False
+    # def select_suppress_qids(self, tmi: MutantInfo, version):
+    #     log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
+    #     traced = tmi.get_qids()
+    #     if version == 1:
+    #         return self.analyzer.select_qids_v1(traced, 5)
+    #     elif version == 2:
+    #         return self.analyzer.select_qids_v2(traced, 5)
+    #     assert False
 
     def print_status(self):
         table = []
@@ -531,16 +527,6 @@ class Debugger3:
     def get_editor(self) -> QueryEditor:
         log_check(len(self.proofs) != 0, "no proofs")
         return QueryEditor(self.orig_path, self.proofs[0].proof_info)
-
-def make_iteration_dir(input_query_path):
-    base_name = os.path.basename(input_query_path)
-    assert base_name.endswith(".smt2")
-    base_name = base_name[:-5]
-    temp_dir = f"{TEMP}/{base_name}."
-    if os.path.exists(TEMP):
-        os.system(f"rm {temp_dir}*")
-    os.system(f"mkdir {TEMP}")
-    return temp_dir
 
 if __name__ == "__main__":
     set_param(proof=True)
@@ -578,5 +564,5 @@ if __name__ == "__main__":
     # if args.output_query_path is None:
     #     sys.exit(0)
 
-    version = int(args.version)
+    # version = int(args.version)
     

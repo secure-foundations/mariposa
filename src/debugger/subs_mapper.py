@@ -23,6 +23,9 @@ class SubsMapper(AstVisitor):
             if i not in mapped:
                 self.unmapped += 1
 
+        # for fun, idxs in self.app_map.items():
+        #     print(f"Mapping for {fun}: {idxs}")
+
     def __find_apps(self, exp, offset):
         if self.visit(exp) or is_const(exp) or is_var(exp):
             return
@@ -38,23 +41,21 @@ class SubsMapper(AstVisitor):
                 continue
             idx = get_var_index(c)
             idx = offset - idx - 1
-            if idx >= self.num_vars:
+            # idx < 0: from a nested quantifier
+            # idx >= self.num_vars: from a parent quantifier
+            if idx < 0 or idx >= self.num_vars:
                 continue
             idxs.append((idx, i))
 
         if fun in self.app_map:
             idxs_ = self.app_map[fun]
-            inconsistent = False
-            if len(idxs_) != len(idxs):
-                inconsistent = True
-            else:
-                for i in range(len(idxs)):
-                    if idxs[i] != idxs_[i]:
-                        inconsistent = True
-                        break
-            if inconsistent:
+            consistent = len(idxs_) == len(idxs)
+            if consistent:
+                consistent = all([idxs[i] == idxs_[i] for i in range(len(idxs))])
+            if not consistent:
                 self.app_map[fun] = []
         else:
+            # print(f"Found new mapping for {fun}: {idxs}")
             self.app_map[fun] = idxs
 
         for c in exp.children():

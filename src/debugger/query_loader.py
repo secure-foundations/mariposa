@@ -1,8 +1,14 @@
 from typing import Dict
 from z3 import *
 
-from debugger.z3_utils import AstVisitor, collapse_sexpr, hack_quantifier_body
+from debugger.z3_utils import (
+    AstVisitor,
+    collapse_sexpr,
+    hack_quantifier_body,
+    quote_name,
+)
 from utils.system_utils import log_warn
+import networkx as nx
 
 
 class SkolemFinder(AstVisitor):
@@ -58,12 +64,15 @@ class Quant:
             res = hack_quantifier_body(self.quant)
             self.__qbody_str = res[0]
             self.__quant_str = res[1]
-            self.__assert_str = "(assert " + collapse_sexpr(self.assertion.sexpr()) + ")"
+            self.__assert_str = (
+                "(assert " + collapse_sexpr(self.assertion.sexpr()) + ")"
+            )
 
         lets = []
         for idx, (v, s) in enumerate(self.__vars):
             # if idx not in subs:
             #     print(self.qid, idx)
+            v = quote_name(v)
             lets.append(f"({v} {subs[idx]})")
         lets = " ".join(lets)
         # print(lets)
@@ -163,3 +172,71 @@ class QueryLoader(AstVisitor):
             if root in c:
                 return True
         return False
+
+
+class InstFreq:
+    def __init__(self, rid):
+        self.rid = rid
+        self.group = dict()
+        self.__finalized = False
+        self.total_count = 0
+        self.root_count = 0
+
+    def __getitem__(self, qid):
+        return self.group[qid]
+
+    def __setitem__(self, qid, count):
+        self.group[qid] = count
+
+    def __iter__(self):
+        assert self.__finalized
+        return iter(self.group)
+
+    def is_singleton(self):
+        return len(self.group) == 1
+
+    def finalize(self):
+        assert not self.__finalized
+        self.__finalized = True
+        self.total_count = sum(self.group.values())
+        self.root_count = self.group[self.rid]
+
+    def is_user_only(self):
+        if self.is_singleton():
+            return self.rid.startswith("user_")
+
+        for qid in self.group:
+            if qid != self.rid and not qid.startswith("user_"):
+                return False
+        return True
+
+
+class QueryInstFreq:
+    # group a flat frequency map by root qids
+    def __init__(self, loader: QueryLoader, freq: Dict[str, int]):
+        res = dict()
+        for qid in loader.all_qids:
+            if qid not in freq:
+                freq[qid] = 0
+            rid = loader.get_root(qid)
+            if rid not in res:
+                res[rid] = InstFreq(rid)
+            res[rid][qid] = freq[qid]
+
+        for f in res.values():
+            f.finalize()
+
+        self.total_count = sum(freq.values())
+        self.freqs: Dict[str, InstFreq] = res
+
+    def __getitem__(self, qid):
+        return self.freqs[qid]
+    
+    def __contains__(self, qid):
+        return qid in self.freqs
+    
+    def order_by_freq(self):
+        s = sorted(
+            self.freqs.values(), key=lambda x: x.total_count, reverse=True
+        )
+        return map(lambda x: x.rid, s)

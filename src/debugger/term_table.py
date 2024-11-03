@@ -6,6 +6,7 @@ from typing import Set, Tuple
 from tqdm import tqdm
 
 from debugger.query_loader import SkolemFinder
+from debugger.z3_utils import quote_name
 from z3 import ExprRef, is_const, is_var, is_app, is_quantifier
 
 def hack_find_hcf_id(s: str):
@@ -18,6 +19,7 @@ def hack_find_hcf_id(s: str):
 class TermTable(SkolemFinder):
     def __init__(self):
         super().__init__()
+
         self._defs = dict()
 
         self.defs = dict()
@@ -32,51 +34,46 @@ class TermTable(SkolemFinder):
         return self.__fun_prefix + str(len(self._defs))
 
     def process_expr(self, e):
-        self.visit(e)
+        return self._create_defs(e)
 
-    def create_defs(self):
-        for e in tqdm(self.visited()):
-            if not is_app(e):
-                continue
-            self._create_defs(e)
+    def _create_defs(self, e: ExprRef) -> str:
+        if not is_app(e):
+            assert not is_var(e)
+            assert not is_quantifier(e)
+            assert is_const(e)
+            return quote_name(str(e))
 
-    def _create_defs(self, e: ExprRef) -> Tuple[str, Set[str]]:
-        if is_var(e) or is_quantifier(e):
-            assert False
-
-        if is_const(e):
-            return (str(e), set())
-
-        if e in self._defs:
+        if self.visit(e):
+            assert e in self._defs
             name = self._defs[e][0]
-            return (name, {name})
+            return name
 
-        res = [e.decl().name()]
+        res = [quote_name(e.decl().name())]
         deps = set()
 
         for c in e.children():
-            r, d = self._create_defs(c)
+            r = self._create_defs(c)
             res.append(r)
-            deps.update(d)
+            if hack_find_hcf_id(r) is not None:
+                deps.add(r)
 
         res = "(" + " ".join(res) + ")"
 
-        assert e not in self._defs
         new_name = self.__get_fresh_name()
+
         self.depends[new_name] = deps
-        # print(new_name, res)
         self._defs[e] = (new_name, res, str(e.sort()))
-        return (new_name, {new_name})
+        return new_name
 
-    def rewrite_expr(self, e: ExprRef):
-        if is_const(e) or is_var(e):
-            return str(e)
+    # def rewrite_expr(self, e: ExprRef):
+    #     if is_const(e) or is_var(e):
+    #         return quote_name(str(e))
 
-        if e in self._defs:
-            return self._defs[e][0]
+    #     if e in self._defs:
+    #         return self._defs[e][0]
 
-        args = [self.rewrite_expr(c) for c in e.children()]
-        return f"({e.decl().name()} {' '.join(args)})"
+    #     args = [self.rewrite_expr(c) for c in e.children()]
+    #     return f"({quote_name(e.decl().name())} {' '.join(args)})"
 
     def finalize(self):
         for (_, v) in self._defs.items():
