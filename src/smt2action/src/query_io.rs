@@ -6,7 +6,7 @@ use std::{collections::HashSet, fs::File};
 
 use crate::term_match::{self, get_attr_cid, get_attr_qid, remove_attr_qid_skolemid};
 
-const QID_PREFIX: &str = "mariposa_qid_";
+const QID_PREFIX: &str = "mariposa_qid";
 const CID_PREFIX: &str = "mariposa_cid_";
 
 fn should_remove_command(command: &concrete::Command) -> bool {

@@ -166,7 +166,7 @@ def find_verus_procedure_name(file):
         ):
             return line[23:-3] + "\n" + prev[23:].split(" ")[0][:-3]
         prev = line
-    return None
+    return "no procedure found"
 
 
 class Mutation(str, Enum):

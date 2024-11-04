@@ -470,31 +470,29 @@ class Debugger3:
         if tmi is None:
             tmi = self.get_candidate_trace()
 
-        # traced = QueryInstFreq(self.orig_path, tmi.get_qids())
-
         # for qid in traced.order_by_freq():
         #     print(qid, traced[qid].total_count)
-        
+
         idr = InstDiffer(self.orig_path, self.pis[0], tmi.get_qids())
 
-        # report = self.analyzer.get_report(traced, table_limit)
-        # verus_proc = find_verus_procedure_name(self.orig_path)
+        report = idr.get_report(table_limit)
+        verus_proc = find_verus_procedure_name(self.orig_path)
         # verus_proc = "unknown"
 
-        # if report_file is not None:
-        #     with open(report_file, "w+") as f:
-        #         f.write("base name:\n")
-        #         f.write(self.base_name + "\n\n")
-        #         f.write("query path:\n")
-        #         f.write(self.orig_path + "\n\n")
-        #         f.write("trace path:\n")
-        #         f.write(tmi.trace_path + "\n\n")
-        #         f.write(f"{tmi.trace_time} {tmi.trace_rcode}\n\n")
-        #         f.write("verus procedure:\n")
-        #         f.write(verus_proc + "\n\n")
-        #         f.write(report)
-        # else:
-        #     print(report)
+        if report_file is not None:
+            with open(report_file, "w+") as f:
+                f.write("base name:\n")
+                f.write(self.base_name + "\n\n")
+                f.write("query path:\n")
+                f.write(self.orig_path + "\n\n")
+                f.write("trace path:\n")
+                f.write(tmi.trace_path + "\n\n")
+                f.write(f"{tmi.trace_time} {tmi.trace_rcode}\n\n")
+                f.write("verus procedure:\n")
+                f.write(verus_proc + "\n\n")
+                f.write(report)
+        else:
+            print(report)
 
     # def select_suppress_qids(self, tmi: MutantInfo, version):
     #     log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")

@@ -38,9 +38,11 @@ class TermTable(SkolemFinder):
 
     def _create_defs(self, e: ExprRef) -> str:
         if not is_app(e):
-            assert not is_var(e)
-            assert not is_quantifier(e)
-            assert is_const(e)
+            assert False
+            # assert not is_var(e)
+            # assert not is_quantifier(e)
+
+        if is_const(e):
             return quote_name(str(e))
 
         if self.visit(e):
@@ -58,22 +60,11 @@ class TermTable(SkolemFinder):
                 deps.add(r)
 
         res = "(" + " ".join(res) + ")"
-
         new_name = self.__get_fresh_name()
 
         self.depends[new_name] = deps
         self._defs[e] = (new_name, res, str(e.sort()))
         return new_name
-
-    # def rewrite_expr(self, e: ExprRef):
-    #     if is_const(e) or is_var(e):
-    #         return quote_name(str(e))
-
-    #     if e in self._defs:
-    #         return self._defs[e][0]
-
-    #     args = [self.rewrite_expr(c) for c in e.children()]
-    #     return f"({quote_name(e.decl().name())} {' '.join(args)})"
 
     def finalize(self):
         for (_, v) in self._defs.items():
@@ -132,3 +123,5 @@ class TermTable(SkolemFinder):
         print("depends")
         for k, v in self.depends.items():
             print(k, v)
+
+    # def expand_defs(self, names):

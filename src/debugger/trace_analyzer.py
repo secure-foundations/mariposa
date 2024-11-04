@@ -286,6 +286,9 @@ class ProofAnalyzer(QueryLoader):
 
     def list_nodes(self):
         return [(n, self._qid_2_nid[n]) for n in self.G.nodes]
+    
+    def list_self_loops(self):
+        return [self._qid_2_nid[n] for n in self._self_loops]
 
 
 class EditAction(Enum):
@@ -303,24 +306,10 @@ class InstDiffer(ProofAnalyzer):
         self.trace = QueryInstFreq(self, trace_freq)
         self.proof = QueryInstFreq(self, pi.as_frequency())
         self.sources = self.list_sources()
-
-        for qid in pi.qi_infos:
-            qi = pi.qi_infos[qid]
-            if qid not in {
-                "internal_ens__lib!delegation_map_v.impl&__3.mind_the_gap._definition",
-                "user_lib__delegation_map_v__StrictlyOrderedMap__mind_the_gap_135",
-            }:
-                continue
-
-            for binding in qi.bindings:
-                print(qid)
-                for k, v in binding.items():
-                    print(k, v)
+        self.sloop = self.list_self_loops()
 
         # for qid in self.trace.order_by_freq():
         #     print(qid, self.trace[qid].total_count, self.proof[qid].total_count)
-
-        # self.get_report()
 
     def get_available_action(self, qid):
         if qid not in self.all_qids:
@@ -338,12 +327,12 @@ class InstDiffer(ProofAnalyzer):
             # not instantiated, but skolemized
             return EditAction.SKOLEMIZE
 
-        if qid in self.sources:
+        if qid in self.sources and qid not in self.sloop:
             return EditAction.INSTANTIATE
 
         return EditAction.NONE
 
-    def get_report(self):
+    def get_report(self, table_limit=None):
         table = []
 
         for rid in self.trace.order_by_freq():
@@ -364,7 +353,7 @@ class InstDiffer(ProofAnalyzer):
                     row = ["- " + shorten_qid(qid), t[qid], p[qid], ""]
                     table.append(row)
 
-        print(tabulate(table, headers=["qid", "trace", "proof", "action"]))
+        return tabulate(table, headers=["qid", "trace", "proof", "action"])
 
     # def get_proof_inst_counts(self, rid, qid=None):
     #     res = []

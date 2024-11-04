@@ -154,8 +154,8 @@ def is_quantifier_free(e):
 
 
 def extract_sk_qid_from_name(name):
-    assert "$!skolem_" in name
-    s = name.find("$!skolem_") + 9
+    assert "!skolem_" in name
+    s = name.find("!skolem_") + len("!skolem_")
     e = name.rfind("!")
     return name[s:e]
 

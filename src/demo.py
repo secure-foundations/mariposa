@@ -53,27 +53,18 @@ def demo1():
     w = dbg.get_editor()
     w.instantiate_qids(
         {
-            # "prelude_unbox_box_int",
-            # "prelude_u_clip",
-            # "user_vstd__set__axiom_set_ext_equal_101",
+            "prelude_unbox_box_int",
+            # "internal_core__option__Option_unbox_axiom_definition",
+            # "internal_vstd__set__Set<int.>_box_axiom_definition",
+            "internal_vstd!set.impl&__0.subset_of.?_definition",
         }
     )
-    w.banish_qids(
+    w.erase_qids(
         {
-            "internal_core__option__Option_unbox_axiom_definition",
-            "internal_vstd__set__Set<int.>_box_axiom_definition",
-            "internal_vstd!cell.PointsToData./PointsToData_constructor_definition",
+            # "prelude_u_clip",
         }
     )
     w.write(temp_prefix + "v1.smt2")
-
-    # w = BasicQueryWriter(temp_prefix + "v1.smt2")
-    # w.skolemize_qids({"user_vstd__set__axiom_set_ext_equal_100"})
-    # w.write(temp_prefix + "v2.smt2")
-
-    # w = BasicQueryWriter(temp_prefix + "v2.smt2")
-    # w.erase_qids({"user_vstd__set__axiom_set_ext_equal_100"})
-    # w.write(temp_prefix + "v3.smt2")
 
     # verus procedure:
     # Function-Def lib::segment::span_queue_delete
@@ -129,16 +120,33 @@ def demo2():
 
 
 def demo3():
-    # query = "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.paths__compose.smt2"
-    # temp_prefix = make_iteration_dir(query)
-
-    # dbg = Debugger3(query, False, True, True)
-    # dbg.debug_trace(temp_prefix + "report.v0.txt")
-
-    query = "data/projs/v_systems/base.z3/ironsht--delegation_map_v.35.smt2"
+    query = "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.paths__compose.smt2"
     temp_prefix = make_iteration_dir(query)
-    dbg = Debugger3(query, False, from_core=False, ids_available=False)
+
+    dbg = Debugger3(query, False, True, False)
     dbg.debug_trace(temp_prefix + "report.v0.txt")
+
+    # p0 = dbg.pis[0]
+    # for qid in ["mariposa_qid_127", "mariposa_qid_126"]:
+    #     for binding in p0.qi_infos[qid].bindings:
+    #         print(f"qid: {qid}")
+    #         for k, v in binding.items():
+    #             if v in p0.tt.defs:
+    #                 print("(define-fun", v,  p0.tt.defs[v][1], p0.tt.expand_def(v) + ")")
+    #             else:
+    #                 print(v)
+
+    # w = dbg.get_editor()
+    # w.instantiate_qids({
+    #     # "mariposa_qid_126",
+    # })
+    
+    # w.erase_qids({
+    #     "mariposa_qid_361",
+    #     "mariposa_qid_134",
+    # })
+    
+    # w.write(temp_prefix + "v1.smt2")
 
 if __name__ == "__main__":
     set_param(proof=True)
