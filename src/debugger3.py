@@ -466,42 +466,29 @@ class Debugger3:
 
         return max(self.traces, key=lambda tmi: tmi.trace_time)
 
-    def debug_trace(self, report_file=None, table_limit=None, tmi: MutantInfo=None):
+    def get_differ(self, report_file=None, table_limit=None, tmi: MutantInfo=None):
         if tmi is None:
             tmi = self.get_candidate_trace()
+        return InstDiffer(self.orig_path, self.pis[0], tmi.get_qids())
 
-        # for qid in traced.order_by_freq():
-        #     print(qid, traced[qid].total_count)
+        # report = idr.get_report(table_limit)
+        # verus_proc = find_verus_procedure_name(self.orig_path)
+        # # verus_proc = "unknown"
 
-        idr = InstDiffer(self.orig_path, self.pis[0], tmi.get_qids())
-
-        report = idr.get_report(table_limit)
-        verus_proc = find_verus_procedure_name(self.orig_path)
-        # verus_proc = "unknown"
-
-        if report_file is not None:
-            with open(report_file, "w+") as f:
-                f.write("base name:\n")
-                f.write(self.base_name + "\n\n")
-                f.write("query path:\n")
-                f.write(self.orig_path + "\n\n")
-                f.write("trace path:\n")
-                f.write(tmi.trace_path + "\n\n")
-                f.write(f"{tmi.trace_time} {tmi.trace_rcode}\n\n")
-                f.write("verus procedure:\n")
-                f.write(verus_proc + "\n\n")
-                f.write(report)
-        else:
-            print(report)
-
-    # def select_suppress_qids(self, tmi: MutantInfo, version):
-    #     log_info(f"debugging trace {tmi.mut_path} {tmi.trace_time} {tmi.trace_rcode}")
-    #     traced = tmi.get_qids()
-    #     if version == 1:
-    #         return self.analyzer.select_qids_v1(traced, 5)
-    #     elif version == 2:
-    #         return self.analyzer.select_qids_v2(traced, 5)
-    #     assert False
+        # if report_file is not None:
+        #     with open(report_file, "w+") as f:
+        #         f.write("base name:\n")
+        #         f.write(self.base_name + "\n\n")
+        #         f.write("query path:\n")
+        #         f.write(self.orig_path + "\n\n")
+        #         f.write("trace path:\n")
+        #         f.write(tmi.trace_path + "\n\n")
+        #         f.write(f"{tmi.trace_time} {tmi.trace_rcode}\n\n")
+        #         f.write("verus procedure:\n")
+        #         f.write(verus_proc + "\n\n")
+        #         f.write(report)
+        # else:
+        #     print(report)
 
     def print_status(self):
         table = []
@@ -524,7 +511,7 @@ class Debugger3:
 
     def get_editor(self) -> QueryEditor:
         log_check(len(self.proofs) != 0, "no proofs")
-        return QueryEditor(self.orig_path, self.proofs[0].proof_info)
+        return QueryEditor(self.orig_path, self.pis[0])
 
 if __name__ == "__main__":
     set_param(proof=True)

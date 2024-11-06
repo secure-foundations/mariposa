@@ -24,6 +24,7 @@ class BasicQueryWriter(QueryLoader):
         self._new_commands = []
 
         self._erase_ids = set()
+        self._modified_lines = dict()
         self._banish_ids = set()
 
     def _basic_check(self, target_ids: Set[str]):
@@ -47,7 +48,7 @@ class BasicQueryWriter(QueryLoader):
                     self._new_commands = [
                         f'(set-info :comment "[erase] {qid}")'
                     ] + self._new_commands
-                self.__in_commands[i] = line
+                self._modified_lines[i] = line
             target_ids -= removed
 
         if len(target_ids) > 0:
@@ -60,7 +61,7 @@ class BasicQueryWriter(QueryLoader):
             removed = set()
             for qid in target_ids:
                 if hack_contains_qid(line, qid):
-                    self.__in_commands[i] = ""
+                    self._modified_lines[i] = ""
                     removed.add(qid)
                     log_info(f"[banish] assertion:")
                     print(line, end="")
@@ -127,8 +128,11 @@ class BasicQueryWriter(QueryLoader):
         self.banish_qids(self._banish_ids)
 
         out_file = open(out_file_path, "w+")
-        for line in self.__in_commands[:-1]:
-            out_file.write(line)
+        for i, line in enumerate(self.__in_commands[:-1]):
+            if i in self._modified_lines:
+                out_file.write(self._modified_lines[i])
+            else:
+                out_file.write(line)
         assert self.__in_commands[-1] == "(check-sat)\n"
         for line in self._fun_decls:
             out_file.write(line + "\n")
@@ -140,6 +144,14 @@ class BasicQueryWriter(QueryLoader):
         out_file.write("(check-sat)\n")
         out_file.close()
         print(f"written to {out_file_path}")
+
+        self._fun_decls = []
+        self._fun_asserts = []
+        self._new_commands = []
+        self._modified_lines = dict()
+        self._erase_ids = set()
+        self._banish_ids = set()
+
         add_qids_to_query(out_file_path)
 
 
@@ -150,9 +162,9 @@ class QueryEditor(BasicQueryWriter):
 
         self.__enabled_symbols = set()
 
-    def enable_symbol(self, symbols):
-        for s in symbols:
-            self.__enabled_symbols.add(s)
+    # def enable_symbol(self, symbols):
+    #     for s in symbols:
+    #         self.__enabled_symbols.add(s)
 
     def instantiate_qids(self, target_ids):
         target_ids = self._basic_check(target_ids)
@@ -190,18 +202,21 @@ class QueryEditor(BasicQueryWriter):
                 for i, b in bindings.items():
                     # TODO: do we always expect a hash cons?
                     if b.startswith("hcf_"):
-                        self.enable_symbol({b})
-                    subs[i] = self.pi.tt.expand_def(b)
+                        self.__enabled_symbols.add(b)
+                    subs[i] = b
                 self._new_commands.append(quant.rewrite_as_let(subs))
 
             # TODO: we erase the original quantifier
             self._erase_ids.add(qid)
 
-        # for name in self.__enabled_symbols:
-        #     log_check(name in self.pi.tt.defs, f"symbol {name} not found in proof")
-        #     decl, defi = self.pi.tt.defs[name]
-        #     self._fun_decls.append(decl)
-        #     self._fun_asserts.append(defi)
+    def write(self, out_file_path):
+        # symbols = self.pi.tt.get_trans_deps(self.__enabled_symbols)
+        defs = self.pi.tt.compress_defs(self.__enabled_symbols)
+        # defs = self.pi.tt.as_define_funs(symbols)
+
+        self._fun_asserts.extend(defs)
+        super().write(out_file_path)
+        self.__enabled_symbols = set()
 
 if __name__ == "__main__":
     set_param(proof=True)

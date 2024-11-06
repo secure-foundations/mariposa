@@ -92,6 +92,14 @@ class ProofInfo:
     def finalize(self):
         log_info(f"[proof] finalizing proof info")
 
+        for qi in self.qi_infos.values():
+            if len(qi.errors) > 0:
+                continue
+            # adjust inst count, certain instantiations may be duplicated
+            if len(qi.bindings) != qi.inst_count:
+                assert len(qi.bindings) != 0
+                qi.inst_count = len(qi.bindings)
+
         for decl in self.tt.sk_funs.values():
             qid = extract_sk_qid_from_decl(decl)
             self.new_sk_qids.add(qid)
@@ -200,10 +208,10 @@ if __name__ == "__main__":
     query_file = sys.argv[1]
     pb = ProofBuilder(query_file)
     pi = pb.try_prove()
-    pi.save("cyclic.pickle")
-    pi = ProofInfo.load("cyclic.pickle")
+    pi.save("temp/cyclic.pickle")
+    pi = ProofInfo.load("temp/cyclic.pickle")
 
-    # pi.tt.debug()
+    pi.tt.debug()
 
     for qid in pi.qi_infos:
         bindings = pi.qi_infos[qid].bindings
@@ -215,4 +223,5 @@ if __name__ == "__main__":
                     symbols.add(v)
                 else:
                     esize += len(v)
+                print(f"{qid} {i} {k} {v}")
         esize += pi.tt.estimate_size(symbols)

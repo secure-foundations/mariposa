@@ -2,12 +2,14 @@ import binascii
 import os
 import re
 from typing import Set, Tuple
+from collections import Counter
 
 from tqdm import tqdm
 
 from debugger.query_loader import SkolemFinder
-from debugger.z3_utils import quote_name
-from z3 import ExprRef, is_const, is_var, is_app, is_quantifier
+from debugger.z3_utils import collapse_sexpr, quote_name
+from z3 import ExprRef, is_const, is_var, is_app, is_quantifier, Z3_OP_DT_IS
+
 
 def hack_find_hcf_id(s: str):
     res = re.search("(hcf_[^( |\))]+)", s)
@@ -15,6 +17,7 @@ def hack_find_hcf_id(s: str):
         return None
     name = res.group(1)
     return name
+
 
 class TermTable(SkolemFinder):
     def __init__(self):
@@ -39,8 +42,6 @@ class TermTable(SkolemFinder):
     def _create_defs(self, e: ExprRef) -> str:
         if not is_app(e):
             assert False
-            # assert not is_var(e)
-            # assert not is_quantifier(e)
 
         if is_const(e):
             return quote_name(str(e))
@@ -50,7 +51,17 @@ class TermTable(SkolemFinder):
             name = self._defs[e][0]
             return name
 
-        res = [quote_name(e.decl().name())]
+        if e.decl().kind() == Z3_OP_DT_IS:
+            assert e.decl().name() == "is"
+            params = e.decl().params()
+            assert len(params) == 1
+            # print(e.decl().params())
+            # print(collapse_sexpr(e.sexpr()))
+            # print(e.decl())
+            res = [f"(_ is {quote_name(params[0].name())})"]
+        else:
+            res = [quote_name(e.decl().name())]
+
         deps = set()
 
         for c in e.children():
@@ -67,7 +78,7 @@ class TermTable(SkolemFinder):
         return new_name
 
     def finalize(self):
-        for (_, v) in self._defs.items():
+        for _, v in self._defs.items():
             self.defs[v[0]] = v[1:]
         self.reset_visit()
         self._defs.clear()
@@ -90,21 +101,28 @@ class TermTable(SkolemFinder):
             res.update(self.get_trans_deps(d))
         return res
 
-    def expand_def(self, name):
-        return self._expand_def(name)
+    def order_symbols(self, symbols):
+        if isinstance(symbols, str):
+            symbols = [symbols]
+        order = []
+        for d in symbols:
+            order.append((int(d.split("_")[-1]), d))
+            assert d in self.defs
+        return [d[1] for d in sorted(order)]
 
-    def _expand_def(self, body):
+    def as_define_funs(self, symbols):
+        if isinstance(symbols, str):
+            symbols = [symbols]
         res = []
-        items = body.split(" ")
-        for item in items:
-            name = hack_find_hcf_id(item)
-            if name is not None:
-                body = self.defs[name][0]
-                body = self._expand_def(body)
-                res.append(item.replace(name, body))
-            else:
-                res.append(item)
-        return " ".join(res)
+        for s in self.order_symbols(symbols):
+            res.append(self.as_define_fun(s))
+        return res
+    
+    def as_define_fun(self, symbol, alt_def=None):
+        d, sort = self.defs[symbol]
+        if alt_def is not None:
+            d = alt_def
+        return f"(define-fun {symbol} () {sort} {d})"
 
     def estimate_size(self, symbols):
         if isinstance(symbols, str):
@@ -124,4 +142,74 @@ class TermTable(SkolemFinder):
         for k, v in self.depends.items():
             print(k, v)
 
-    # def expand_defs(self, names):
+    def expand_def(self, name):
+        return self._expand_def(name)
+
+    def _expand_def(self, body):
+        res = []
+        items = body.split(" ")
+        for item in items:
+            name = hack_find_hcf_id(item)
+            if name is not None:
+                body = self.defs[name][0]
+                body = self._expand_def(body)
+                res.append(item.replace(name, body))
+            else:
+                res.append(item)
+        return " ".join(res)
+
+    def get_ref_count(self, symbols):
+        if isinstance(symbols, str):
+            symbols = [symbols]
+
+        counts = Counter()
+        for s in symbols:
+            body = self.defs[s][0]
+            self._get_ref_count(body, counts)
+
+        return counts
+
+    def _get_ref_count(self, body, counts):
+        items = body.split(" ")
+        for item in items:
+            name = hack_find_hcf_id(item)
+            if name is None:
+                continue
+            body = self.defs[name][0]
+            if name not in counts:
+                self._get_ref_count(body, counts)
+            counts[name] += 1
+
+    def compress_defs(self, symbols):
+        refs = self.get_ref_count(symbols)
+        tc_symbols = self.get_trans_deps(symbols)
+        assert tc_symbols == set(refs.keys()) | set(symbols)
+        tc_symbols = self.order_symbols(tc_symbols)
+
+        defs = dict()
+
+        for s in tc_symbols:
+            old_def = self.defs[s][0]
+            defs[s] = self._expand_def_limited(old_def, refs, defs)
+
+        res = []
+        for s in defs:
+            if refs[s] == 1 and s not in symbols:
+                continue
+            res.append(self.as_define_fun(s, defs[s]))
+        return res
+
+    def _expand_def_limited(self, body, refs, defs):
+        res = []
+        items = body.split(" ")
+        for item in items:
+            name = hack_find_hcf_id(item)
+            if name is not None and refs[name] == 1:
+                if len(self.depends[name]) == 0:
+                    res.append(item.replace(name, self.defs[name][0]))
+                else:
+                    assert name in defs
+                    res.append(item.replace(name, defs[name]))
+            else:
+                res.append(item)
+        return " ".join(res)
