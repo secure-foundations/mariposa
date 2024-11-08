@@ -110,15 +110,15 @@ class TermTable(SkolemFinder):
             assert d in self.defs
         return [d[1] for d in sorted(order)]
 
-    def as_define_funs(self, symbols):
+    def export_define_funs(self, symbols):
         if isinstance(symbols, str):
             symbols = [symbols]
         res = []
         for s in self.order_symbols(symbols):
-            res.append(self.as_define_fun(s))
+            res.append(self.export_define_fun(s))
         return res
     
-    def as_define_fun(self, symbol, alt_def=None):
+    def export_define_fun(self, symbol, alt_def=None):
         d, sort = self.defs[symbol]
         if alt_def is not None:
             d = alt_def
@@ -186,20 +186,23 @@ class TermTable(SkolemFinder):
         assert tc_symbols == set(refs.keys()) | set(symbols)
         tc_symbols = self.order_symbols(tc_symbols)
 
-        defs = dict()
+        new_defs = dict()
 
         for s in tc_symbols:
             old_def = self.defs[s][0]
-            defs[s] = self._expand_def_limited(old_def, refs, defs)
+            nd = self._compress_defs(old_def, refs, new_defs)
+            nd = nd.replace("False", "false")
+            new_defs[s] = nd
 
         res = []
-        for s in defs:
+        for s in new_defs:
             if refs[s] == 1 and s not in symbols:
                 continue
-            res.append(self.as_define_fun(s, defs[s]))
+            res.append(self.export_define_fun(s, new_defs[s]))
+    
         return res
 
-    def _expand_def_limited(self, body, refs, defs):
+    def _compress_defs(self, body, refs, defs):
         res = []
         items = body.split(" ")
         for item in items:
@@ -208,7 +211,7 @@ class TermTable(SkolemFinder):
                 if len(self.depends[name]) == 0:
                     res.append(item.replace(name, self.defs[name][0]))
                 else:
-                    assert name in defs
+                    # assert name in defs
                     res.append(item.replace(name, defs[name]))
             else:
                 res.append(item)

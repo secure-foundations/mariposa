@@ -4,6 +4,7 @@ import binascii
 from typing import Dict, Set
 from z3 import *
 from debugger.query_loader import QueryLoader, SkolemFinder
+from debugger.trace_analyzer import EditAction
 from debugger.z3_utils import collapse_sexpr, hack_contains_qid, hack_quantifier_removal
 from proof_builder import ProofInfo, ProofBuilder, QunatInstInfo, InstError
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
@@ -123,7 +124,7 @@ class BasicQueryWriter(QueryLoader):
                 decls.append(decl)
         return asserts, decls
 
-    def write(self, out_file_path):
+    def save(self, out_file_path):
         self.erase_qids(self._erase_ids)
         self.banish_qids(self._banish_ids)
 
@@ -159,12 +160,7 @@ class QueryEditor(BasicQueryWriter):
     def __init__(self, in_file_path, pi: ProofInfo):
         super().__init__(in_file_path)
         self.pi = pi
-
         self.__enabled_symbols = set()
-
-    # def enable_symbol(self, symbols):
-    #     for s in symbols:
-    #         self.__enabled_symbols.add(s)
 
     def instantiate_qids(self, target_ids):
         target_ids = self._basic_check(target_ids)
@@ -209,13 +205,27 @@ class QueryEditor(BasicQueryWriter):
             # TODO: we erase the original quantifier
             self._erase_ids.add(qid)
 
-    def write(self, out_file_path):
+    def do_edits(self, target_ids: Dict[str, EditAction]):
+        erase_qids = set()
+        inst_qids = set()
+        for qid in target_ids:
+            if target_ids[qid] == EditAction.ERASE:
+                erase_qids.add(qid)
+            elif target_ids[qid] == EditAction.INSTANTIATE:
+                inst_qids.add(qid)
+            else:
+                assert False
+
+        self.erase_qids(erase_qids)
+        self.instantiate_qids(inst_qids)
+
+    def save(self, out_file_path):
         # symbols = self.pi.tt.get_trans_deps(self.__enabled_symbols)
         defs = self.pi.tt.compress_defs(self.__enabled_symbols)
         # defs = self.pi.tt.as_define_funs(symbols)
 
         self._fun_asserts.extend(defs)
-        super().write(out_file_path)
+        super().save(out_file_path)
         self.__enabled_symbols = set()
 
 if __name__ == "__main__":
@@ -241,7 +251,7 @@ if __name__ == "__main__":
         "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
         # "prelude_u_clip",
     }) 
-    w.write("v1.smt2")
+    w.save("v1.smt2")
 
     # for qid, qi in pi.qi_infos.items():
     #     if qid != "prelude_add":

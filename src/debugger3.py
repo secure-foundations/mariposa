@@ -47,6 +47,7 @@ MUTANTS = "mutants"
 INSTS = "insts"
 CORES = "cores"
 
+
 class MutantInfo:
     def __init__(self, sub_root, mutation, seed):
         self.seed = seed
@@ -202,6 +203,15 @@ def create_mut_table(cur):
     )
 
 
+class EditInfo:
+    def __init__(self, path, edits, r, e, t):
+        self.path = path
+        self.edits = edits
+        self.std_out = r
+        self.error = e
+        self.time = t
+
+
 class Debugger3:
     def __init__(self, query_path, clear, from_core, ids_available=False):
         self.base_name = os.path.basename(query_path)
@@ -212,7 +222,12 @@ class Debugger3:
         self.muts_dir = f"{self.sub_root}/{MUTANTS}"
         self.insts_dir = f"{self.sub_root}/{INSTS}"
         self.cores_dir = f"{self.sub_root}/{CORES}"
+        self.edit_dir = f"{self.sub_root}/edits"
+
+        self.report_path = f"{self.sub_root}/report.txt"
         self.db_path = f"{self.sub_root}/db.sqlite"
+        self.edit_report_path = f"{self.sub_root}/edit_report"
+        self.__edit_infos = []
         self.__build_proof_from_core = from_core
 
         self.__init_dirs(query_path, clear, ids_available)
@@ -220,6 +235,7 @@ class Debugger3:
         self.traces: List[MutantInfo] = []
         self.proofs: List[MutantInfo] = []
         self.cores: List[MutantInfo] = []
+        self.version = 0
 
         log_info(f"[init] {self.orig_path}")
 
@@ -228,9 +244,14 @@ class Debugger3:
         self.__init_cores()
         self.refresh_status()
         self.__init_proofs()
+        self.__init_edits()
         self.refresh_status()
 
         self.pis = [p.proof_info for p in self.proofs]
+
+        tmi = self.get_candidate_trace()
+        self.differ = InstDiffer(self.orig_path, self.pis[0], tmi.get_qids())
+        self.editor = QueryEditor(self.orig_path, self.pis[0])
 
     def __init_dirs(self, query_path, clear, ids_available):
         if clear and os.path.exists(self.sub_root):
@@ -242,15 +263,14 @@ class Debugger3:
             self.muts_dir,
             self.insts_dir,
             self.cores_dir,
+            self.edit_dir,
         ]:
             if not os.path.exists(dir):
                 os.makedirs(dir)
 
         if not os.path.exists(self.orig_path):
             if ids_available:
-                subprocess_run(
-                    ["cp", query_path, self.orig_path]
-                )
+                subprocess_run(["cp", query_path, self.orig_path])
             else:
                 subprocess_run(
                     [
@@ -423,6 +443,20 @@ class Debugger3:
             )
         self.con.commit()
 
+    def __init_edits(self):
+        for file in os.listdir(self.edit_dir):
+            if not file.endswith(".smt2"):
+                continue
+            file = file.split(".")[0]
+            assert file.startswith("v")
+            self.version = max(self.version, int(file[1:]))
+
+        if not os.path.exists(self.edit_report_path):
+            return
+
+        with open(self.edit_report_path, "rb") as f:
+            self.__edit_infos = pickle.load(f)
+
     def refresh_status(self):
         self.traces: List[MutantInfo] = []
         self.proofs: List[MutantInfo] = []
@@ -466,11 +500,6 @@ class Debugger3:
 
         return max(self.traces, key=lambda tmi: tmi.trace_time)
 
-    def get_differ(self, report_file=None, table_limit=None, tmi: MutantInfo=None):
-        if tmi is None:
-            tmi = self.get_candidate_trace()
-        return InstDiffer(self.orig_path, self.pis[0], tmi.get_qids())
-
         # report = idr.get_report(table_limit)
         # verus_proc = find_verus_procedure_name(self.orig_path)
         # # verus_proc = "unknown"
@@ -509,9 +538,51 @@ class Debugger3:
         log_info(f"listing {len(table)} proof mutants:")
         print(tabulate(table, headers=["mutation", "seed", "time"]))
 
-    def get_editor(self) -> QueryEditor:
-        log_check(len(self.proofs) != 0, "no proofs")
-        return QueryEditor(self.orig_path, self.pis[0])
+    def save_report(self):
+        report = self.differ.get_report()
+        with open(self.report_path, "w+") as f:
+            f.write(report)
+        log_info(f"[report] written to {self.report_path}")
+
+    def get_edit_path(self, v=None):
+        v = v if v else self.version + 1
+        return f"{self.edit_dir}/v{v}.smt2"
+
+    def save_edit(self, edit_qids):
+        self.editor.do_edits(edit_qids)
+        edit_path = self.get_edit_path()
+        self.version += 1
+        self.editor.save(edit_path)
+        return edit_path
+
+    def run_query(self, query_path):
+        # query_path = self.get_edit_path(v)
+        r, e, t = subprocess_run(["./bin/z3-4.13.0", "-T:10", query_path])
+        # print(f"{r} {e} in {(t/1000):.2f}s")
+        return (r, e, round(t / 1000, 2))
+
+    def try_random_edits(self):
+        actions = self.differ.get_actions()
+
+        for _ in range(30):
+            edit_qids = random.sample(actions.keys(), 3)
+            edit_qids = {qid: actions[qid] for qid in edit_qids}
+            edit_path = self.save_edit(edit_qids)
+            r, e, t = self.run_query(edit_path)
+            self.__edit_infos.append(EditInfo(edit_path, edit_qids, r, e, t))
+
+        with open(self.edit_report_path, "wb") as f:
+            pickle.dump(self.__edit_infos, f)
+
+    def print_edit_report(self):
+        for ei in self.__edit_infos:
+            print(f"{ei.path} {ei.std_out} {ei.error} {ei.time}")
+
+    # def do_edits(self, edit_qids):
+    #     edit_path = self.save_edit(edit_qids)
+    #     r, e, t = self.run_query(edit_path)
+    #     self.__edit_infos.append(EditInfo(edit_path, edit_qids, r, e, t))
+
 
 if __name__ == "__main__":
     set_param(proof=True)
@@ -550,4 +621,3 @@ if __name__ == "__main__":
     #     sys.exit(0)
 
     # version = int(args.version)
-    
