@@ -144,7 +144,6 @@ class BasicQueryWriter(QueryLoader):
         out_file.write("(assert true)\n")
         out_file.write("(check-sat)\n")
         out_file.close()
-        print(f"written to {out_file_path}")
 
         self._fun_decls = []
         self._fun_asserts = []
@@ -154,6 +153,7 @@ class BasicQueryWriter(QueryLoader):
         self._banish_ids = set()
 
         add_qids_to_query(out_file_path)
+        log_info(f"[edit] written to {out_file_path}")
 
 
 class QueryEditor(BasicQueryWriter):
@@ -208,14 +208,19 @@ class QueryEditor(BasicQueryWriter):
     def do_edits(self, target_ids: Dict[str, EditAction]):
         erase_qids = set()
         inst_qids = set()
+        skol_qids = set()
+
         for qid in target_ids:
-            if target_ids[qid] == EditAction.ERASE:
+            action = target_ids[qid]
+            if action == EditAction.ERASE:
                 erase_qids.add(qid)
-            elif target_ids[qid] == EditAction.INSTANTIATE:
+            elif action == EditAction.INSTANTIATE:
                 inst_qids.add(qid)
             else:
-                assert False
+                assert action == EditAction.SKOLEMIZE
+                skol_qids.add(qid)
 
+        self.skolemize_qids(skol_qids)
         self.erase_qids(erase_qids)
         self.instantiate_qids(inst_qids)
 

@@ -27,6 +27,7 @@ from utils.query_utils import (
 )
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from tabulate import tabulate
+# from pprint import pprint
 
 PROC_COUNT = 4
 MUTANT_COUNT = 8
@@ -227,7 +228,7 @@ class Debugger3:
         self.report_path = f"{self.sub_root}/report.txt"
         self.db_path = f"{self.sub_root}/db.sqlite"
         self.edit_report_path = f"{self.sub_root}/edit_report"
-        self.__edit_infos = []
+        self.__edit_infos: List[EditInfo] = []
         self.__build_proof_from_core = from_core
 
         self.__init_dirs(query_path, clear, ids_available)
@@ -249,9 +250,11 @@ class Debugger3:
 
         self.pis = [p.proof_info for p in self.proofs]
 
-        tmi = self.get_candidate_trace()
-        self.differ = InstDiffer(self.orig_path, self.pis[0], tmi.get_qids())
+        self.tmi = self.get_candidate_trace()
+        # self.pis[0].print_report()
+        self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi.get_qids())
         self.editor = QueryEditor(self.orig_path, self.pis[0])
+        self.actions = self.differ.get_actions()
 
     def __init_dirs(self, query_path, clear, ids_available):
         if clear and os.path.exists(self.sub_root):
@@ -444,18 +447,25 @@ class Debugger3:
         self.con.commit()
 
     def __init_edits(self):
-        for file in os.listdir(self.edit_dir):
-            if not file.endswith(".smt2"):
-                continue
-            file = file.split(".")[0]
-            assert file.startswith("v")
-            self.version = max(self.version, int(file[1:]))
-
         if not os.path.exists(self.edit_report_path):
             return
 
         with open(self.edit_report_path, "rb") as f:
             self.__edit_infos = pickle.load(f)
+
+        for ei in self.__edit_infos:
+            if not os.path.exists(ei.path):
+                log_warn(f"[edit] {ei.path} not found")
+                continue
+            v = int(ei.path.split("/")[-1].split(".")[0][1:])
+            self.version = max(self.version, v)
+
+        # for file in os.listdir(self.edit_dir):
+        #     if not file.endswith(".smt2"):
+        #         continue
+        #     file = file.split(".")[0]
+        #     assert file.startswith("v")
+        #     self.version = max(self.version, int(file[1:]))
 
     def refresh_status(self):
         self.traces: List[MutantInfo] = []
@@ -500,25 +510,6 @@ class Debugger3:
 
         return max(self.traces, key=lambda tmi: tmi.trace_time)
 
-        # report = idr.get_report(table_limit)
-        # verus_proc = find_verus_procedure_name(self.orig_path)
-        # # verus_proc = "unknown"
-
-        # if report_file is not None:
-        #     with open(report_file, "w+") as f:
-        #         f.write("base name:\n")
-        #         f.write(self.base_name + "\n\n")
-        #         f.write("query path:\n")
-        #         f.write(self.orig_path + "\n\n")
-        #         f.write("trace path:\n")
-        #         f.write(tmi.trace_path + "\n\n")
-        #         f.write(f"{tmi.trace_time} {tmi.trace_rcode}\n\n")
-        #         f.write("verus procedure:\n")
-        #         f.write(verus_proc + "\n\n")
-        #         f.write(report)
-        # else:
-        #     print(report)
-
     def print_status(self):
         table = []
         for v in self.traces:
@@ -540,8 +531,20 @@ class Debugger3:
 
     def save_report(self):
         report = self.differ.get_report()
+        verus_proc = find_verus_procedure_name(self.orig_path)
+
         with open(self.report_path, "w+") as f:
+            f.write("base name:\n")
+            f.write(self.base_name + "\n\n")
+            f.write("query path:\n")
+            f.write(self.orig_path + "\n\n")
+            f.write("trace path:\n")
+            f.write(self.tmi.trace_path + "\n\n")
+            f.write(f"{self.tmi.trace_time} {self.tmi.trace_rcode}\n\n")
+            f.write("verus procedure:\n")
+            f.write(verus_proc + "\n\n")
             f.write(report)
+
         log_info(f"[report] written to {self.report_path}")
 
     def get_edit_path(self, v=None):
@@ -549,24 +552,46 @@ class Debugger3:
         return f"{self.edit_dir}/v{v}.smt2"
 
     def save_edit(self, edit_qids):
+        edit_qids = {qid: self.actions[qid] for qid in edit_qids}
         self.editor.do_edits(edit_qids)
         edit_path = self.get_edit_path()
         self.version += 1
         self.editor.save(edit_path)
         return edit_path
 
+    def do_specific_edits(self, edit_qids):
+        if self.look_up_edits(edit_qids, True) != []:
+            log_info("[edit] specified edit already exists")
+            return
+
+        edit_path = self.save_edit(edit_qids)
+        r, e, t = self.run_query(edit_path)
+        self.__edit_infos.append(EditInfo(edit_path, edit_qids, r, e, t))
+
+        with open(self.edit_report_path, "wb") as f:
+            pickle.dump(self.__edit_infos, f)
+
+    def look_up_edits(self, edit_qids, exact=False):
+        res = []
+        for ei in self.__edit_infos:
+            if exact and set(ei.edits) == set(edit_qids):
+                res.append(ei)
+            elif not exact and set(ei.edits).intersection(edit_qids) != set():
+                # print(ei.path)
+                res.append(ei)
+        return res
+
     def run_query(self, query_path):
         # query_path = self.get_edit_path(v)
         r, e, t = subprocess_run(["./bin/z3-4.13.0", "-T:10", query_path])
-        # print(f"{r} {e} in {(t/1000):.2f}s")
+        # print(f"{r} in {(t/1000):.2f}s")
+        r = output_as_rcode(r)
+        log_info(f"[run] {query_path} {r} {e} {t}")
         return (r, e, round(t / 1000, 2))
 
     def try_random_edits(self):
-        actions = self.differ.get_actions()
-
         for _ in range(30):
-            edit_qids = random.sample(actions.keys(), 3)
-            edit_qids = {qid: actions[qid] for qid in edit_qids}
+            edit_qids = random.sample(self.actions.keys(), 3)
             edit_path = self.save_edit(edit_qids)
             r, e, t = self.run_query(edit_path)
             self.__edit_infos.append(EditInfo(edit_path, edit_qids, r, e, t))
@@ -574,14 +599,37 @@ class Debugger3:
         with open(self.edit_report_path, "wb") as f:
             pickle.dump(self.__edit_infos, f)
 
-    def print_edit_report(self):
-        for ei in self.__edit_infos:
-            print(f"{ei.path} {ei.std_out} {ei.error} {ei.time}")
+    def try_ranked_edits(self):
+        ranked = self.differ.get_actions_v1()
+        # for (qid, c, rr) in ranked[:10]:
+        for (qid, c, rr) in ranked[:30]:
+            if self.look_up_edits({qid}, True) != []:
+                log_info("[edit] specified edit already exists")
+                continue
+            edit_path = self.save_edit({qid})
+            r, e, t = self.run_query(edit_path)
+            self.__edit_infos.append(EditInfo(edit_path, {qid}, r, e, t))
+            print(qid, c, rr)
 
-    # def do_edits(self, edit_qids):
-    #     edit_path = self.save_edit(edit_qids)
-    #     r, e, t = self.run_query(edit_path)
-    #     self.__edit_infos.append(EditInfo(edit_path, edit_qids, r, e, t))
+        with open(self.edit_report_path, "wb") as f:
+            pickle.dump(self.__edit_infos, f)
+
+    def print_edit_report(self):
+        usats = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
+        print("")
+        count = 0
+        for ei in sorted(usats, key=lambda ei: ei.time):
+            if count >= 10:
+                break
+            print(f"edit_ids = {ei.edits}")
+            print(f"# time to unsat: {ei.time}")
+            print("#", ei.path)
+            print("")
+            count += 1
+
+        # for ei in self.__edit_infos:
+        #     print(list(ei.edits))
+        #     print(f"{ei.path} | {ei.std_out} | {ei.error} | {ei.time}")
 
 
 if __name__ == "__main__":

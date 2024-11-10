@@ -302,4 +302,4 @@ def add_qids_to_query(query_path):
         "-o",
         query_path,
     ]
-    subprocess_run(args, check=True, debug=True)
+    subprocess_run(args, check=True, debug=False)

@@ -100,7 +100,7 @@ class ProofInfo:
                 assert len(qi.bindings) != 0
                 qi.inst_count = len(qi.bindings)
 
-        for decl in self.tt.sk_funs.values():
+        for decl in self.new_skolem_funs.values():
             qid = extract_sk_qid_from_decl(decl)
             self.new_sk_qids.add(qid)
             if qid not in self.qi_infos:

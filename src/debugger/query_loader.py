@@ -23,6 +23,7 @@ class SkolemFinder(AstVisitor):
         if is_const(e):
             name = str(e)
             if "!skolem_" in name:
+                # print(name)
                 self.sk_funs[name] = collapse_sexpr(e.decl().sexpr())
             return
 
@@ -35,6 +36,7 @@ class SkolemFinder(AstVisitor):
             return
 
         if "!skolem_" in name:
+            # print(name)
             self.sk_funs[name] = collapse_sexpr(e.decl().sexpr())
             return
 

@@ -286,7 +286,7 @@ class ProofAnalyzer(QueryLoader):
 
     def list_nodes(self):
         return [(n, self._qid_2_nid[n]) for n in self.G.nodes]
-    
+
     def list_self_loops(self):
         return [self._qid_2_nid[n] for n in self._self_loops]
 
@@ -350,8 +350,11 @@ class InstDiffer(ProofAnalyzer):
         for rid in qids:
             t = self.trace_freq[rid]
             p = self.proof_freq[rid]
-
-            if t.total_count == 0 and p.total_count == 0:
+            if (
+                t.total_count == 0
+                and p.total_count == 0
+                and not self.pi.is_skolemized(rid)
+            ):
                 # skip qids not instantiated at all
                 continue
 
@@ -360,12 +363,11 @@ class InstDiffer(ProofAnalyzer):
                 actions[rid] = action
 
         return actions
-    
+
     def get_actions_v1(self):
         qids = self.proof_freq.freqs
-        
-        erase_qids = dict()
-        inst_qids = dict()
+
+        res = []
 
         for rid in qids:
             t = self.trace_freq[rid]
@@ -374,7 +376,11 @@ class InstDiffer(ProofAnalyzer):
             t = self.trace_freq[rid]
             p = self.proof_freq[rid]
 
-            if t.total_count == 0 and p.total_count == 0:
+            if (
+                t.total_count == 0
+                and p.total_count == 0
+                and not self.pi.is_skolemized(rid)
+            ):
                 # skip qids not instantiated at all
                 continue
 
@@ -382,15 +388,13 @@ class InstDiffer(ProofAnalyzer):
             if action in {EditAction.NONE, EditAction.ERROR}:
                 continue
             if action == EditAction.ERASE:
-                erase_qids[rid] = t.total_count
+                res.append((t.total_count, 0, rid))
             elif action == EditAction.INSTANTIATE:
-                inst_qids[rid] = t.total_count / p.total_count
+                res.append((t.total_count, t.total_count / p.total_count, rid))
 
-        erase_qids = sorted(erase_qids.items(), key=lambda x: x[1], reverse=True)
-        inst_qids = sorted(inst_qids.items(), key=lambda x: x[1], reverse=True)
-
-        return erase_qids, inst_qids
-    
+        res = sorted(res, reverse=True)
+        res = [(rid, c, r) for c, r, rid in res]
+        return res
 
     def get_report(self, table_limit=None):
         table = []
@@ -413,7 +417,9 @@ class InstDiffer(ProofAnalyzer):
                     row = ["- " + shorten_qid(qid), t[qid], p[qid], ""]
                     table.append(row)
 
-        table.append(["total", self.trace_freq.total_count, self.proof_freq.total_count, ""])
+        table.append(
+            ["total", self.trace_freq.total_count, self.proof_freq.total_count, ""]
+        )
 
         return tabulate(table, headers=["qid", "trace", "proof", "action"])
 
