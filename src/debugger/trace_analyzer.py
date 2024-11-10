@@ -295,6 +295,7 @@ class EditAction(Enum):
     NONE = "-"
     ERASE = "erase"
     SKOLEMIZE = "skolemize"
+    DSPLIT = "dsplit"
     INSTANTIATE = "instantiate"
     ERROR = "error"
 
@@ -319,9 +320,15 @@ class InstDiffer(ProofAnalyzer):
             log_warn(f"qid {qid} not found in query")
             return EditAction.NONE
 
-        if qid in self.pi.qi_infos and len(self.pi.qi_infos[qid].errors) != 0:
-            # print(qid, self.pi.qi_infos[qid].errors)
-            return EditAction.ERROR
+        if qid in self.pi.qi_infos:
+            errors = self.pi.qi_infos[qid].errors
+
+            if errors == {InstError.SKOLEM_SELF}:
+                return EditAction.DSPLIT
+    
+            if len(errors) != 0:
+                # print(qid, self.pi.qi_infos[qid].errors)
+                return EditAction.ERROR
 
         if qid not in self.proof_freq:
             log_warn(f"qid {qid} is not a root")
@@ -331,6 +338,9 @@ class InstDiffer(ProofAnalyzer):
             return EditAction.NONE
 
         if self.proof_freq[qid].total_count == 0:
+            if self.quants[qid].dual:
+                return EditAction.DSPLIT
+
             # not instantiated or skolemized
             if not self.pi.is_skolemized(qid):
                 return EditAction.ERASE
@@ -370,9 +380,6 @@ class InstDiffer(ProofAnalyzer):
         res = []
 
         for rid in qids:
-            t = self.trace_freq[rid]
-            p = self.proof_freq[rid]
-
             t = self.trace_freq[rid]
             p = self.proof_freq[rid]
 

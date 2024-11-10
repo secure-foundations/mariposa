@@ -10,7 +10,7 @@ from z3 import set_param
 from analysis.inst_analyzer import InstAnalyzer
 from base.solver import RCode
 from debugger.query_loader import QueryInstFreq
-from debugger.trace_analyzer import InstDiffer
+from debugger.trace_analyzer import EditAction, InstDiffer
 from query_editor import BasicQueryWriter, QueryEditor
 from proof_builder import ProofInfo, ProofBuilder
 from utils.database_utils import table_exists
@@ -40,8 +40,8 @@ CORE_TOTAL_TIME_LIMIT_SEC = 120
 PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 TRACE_GOAL_COUNT = 4
-PROOF_GOAL_COUNT = 2
 CORE_GOAL_COUNT = 2
+PROOF_GOAL_COUNT = 1
 
 TRACES = "traces"
 MUTANTS = "mutants"
@@ -317,6 +317,17 @@ class Debugger3:
         else:
             self.refresh_status()
 
+    def clear_edits(self):
+        if os.path.exists(self.edit_report_path):
+            os.remove(self.edit_report_path)
+
+        if os.path.exists(self.edit_dir):
+            os.system(f"rm {self.edit_dir}/*")
+
+        self.__edit_infos = []
+        self.version = 0
+        log_info("[edit] cleared")
+
     def create_mutants_info(self, mutations: List[Mutation]):
         args = []
 
@@ -553,6 +564,7 @@ class Debugger3:
 
     def save_edit(self, edit_qids):
         edit_qids = {qid: self.actions[qid] for qid in edit_qids}
+        print(edit_qids)
         self.editor.do_edits(edit_qids)
         edit_path = self.get_edit_path()
         self.version += 1
@@ -560,9 +572,10 @@ class Debugger3:
         return edit_path
 
     def do_specific_edits(self, edit_qids):
-        if self.look_up_edits(edit_qids, True) != []:
+        eis = self.look_up_edits(edit_qids, True)
+        if eis != []:
             log_info("[edit] specified edit already exists")
-            return
+            return eis[0].path
 
         edit_path = self.save_edit(edit_qids)
         r, e, t = self.run_query(edit_path)
@@ -570,6 +583,19 @@ class Debugger3:
 
         with open(self.edit_report_path, "wb") as f:
             pickle.dump(self.__edit_infos, f)
+
+        return edit_path
+
+    def dual_split_qids(self, edit_qids):
+        edit_qids = {qid: EditAction.DSPLIT for qid in edit_qids}
+        edit_path = self.save_edit(edit_qids)
+        r, e, t = self.run_query(edit_path)
+        self.__edit_infos.append(EditInfo(edit_path, edit_qids, r, e, t))
+        
+        with open(self.edit_report_path, "wb") as f:
+            pickle.dump(self.__edit_infos, f)
+            
+        return edit_path
 
     def look_up_edits(self, edit_qids, exact=False):
         res = []

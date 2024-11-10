@@ -110,19 +110,26 @@ class TermTable(SkolemFinder):
             assert d in self.defs
         return [d[1] for d in sorted(order)]
 
-    def export_define_funs(self, symbols):
-        if isinstance(symbols, str):
-            symbols = [symbols]
-        res = []
-        for s in self.order_symbols(symbols):
-            res.append(self.export_define_fun(s))
-        return res
+    # def export_define_funs(self, symbols):
+    #     if isinstance(symbols, str):
+    #         symbols = [symbols]
+    #     res = []
+    #     for s in self.order_symbols(symbols):
+    #         res.append(self.export_define_fun(s))
+    #     return res
     
-    def export_define_fun(self, symbol, alt_def=None):
+    # def export_define_fun(self, symbol, alt_def=None):
+    #     d, sort = self.defs[symbol]
+    #     if alt_def is not None:
+    #         d = alt_def
+    #     return f"(define-fun {symbol} () {sort} {d})"
+
+    def export_declare_fun(self, symbol, alt_def=None):
         d, sort = self.defs[symbol]
         if alt_def is not None:
             d = alt_def
-        return f"(define-fun {symbol} () {sort} {d})"
+        return [f"(declare-fun {symbol} () {sort})",
+                f"(assert (= {symbol} {d}))"]
 
     def estimate_size(self, symbols):
         if isinstance(symbols, str):
@@ -198,7 +205,7 @@ class TermTable(SkolemFinder):
         for s in new_defs:
             if refs[s] == 1 and s not in symbols:
                 continue
-            res.append(self.export_define_fun(s, new_defs[s]))
+            res += self.export_declare_fun(s, new_defs[s])
     
         return res
 

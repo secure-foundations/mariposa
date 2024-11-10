@@ -12,7 +12,7 @@ def format_expr(e, depth=0, offset=0):
         if depth == 0:
             v_count = e.num_vars()
             vars = [f"qv{str(offset+i)} {e.var_sort(offset+i)}" for i in range(v_count)]
-            vars = "(" + " ".join(vars) + ") "
+            vars = "((" + " ".join(vars) + ")) "
             if e.is_forall():
                 return (
                     "(forall "
@@ -42,6 +42,49 @@ def format_expr(e, depth=0, offset=0):
     else:
         items = "(" + name + " " + " ".join(items) + ")"
     return items
+
+
+def format_expr_flat(e, offset=0):
+    if is_const(e):
+        r = str(e)
+        if r == "True": return "true"
+        if r == "False": return "false"
+        return r
+
+    if is_var(e):
+        idx = offset - get_var_index(e) - 1
+        return "qv" + str(idx)
+
+    if is_quantifier(e):
+        v_count = e.num_vars()
+        vars = [f"(qv{i+offset} {e.var_sort(i)})" for i in range(v_count)]
+        vars = "(" + " ".join(vars) + ") "
+        attributes = [f":skolemid {e.skolem_id()}", f":qid {e.qid()}"]
+
+        for i in range(e.num_patterns()):
+            assert e.pattern(i).decl().name() == "pattern"
+            p = e.pattern(i).children()[0]
+            attributes.append(f":pattern ({format_expr_flat(p, offset + v_count)})")
+    
+        attributes = " ".join(attributes)
+
+        if e.is_forall():
+            return f"(forall {vars} (! {format_expr_flat(e.body(), offset + v_count)} {attributes}))"
+        else:
+            return f"(exists {vars} (! {format_expr_flat(e.body(), offset + v_count)} {attributes}))"
+    
+    if e.decl().kind() == Z3_OP_DT_IS:
+        assert e.decl().name() == "is"
+        params = e.decl().params()
+        assert len(params) == 1
+        res = [f"(_ is {quote_name(params[0].name())})"]
+    else:
+        res = [quote_name(e.decl().name())]
+
+    # name = e.decl().name()
+    for i in e.children():
+        res += [format_expr_flat(i, offset)]
+    return "(" + " ".join(res) + ")"
 
 
 def find_matching_brackets(s):

@@ -9,9 +9,24 @@ from proof_builder import QunatInstInfo
 from query_editor import BasicQueryWriter
 from random import sample
 
-from utils.system_utils import subprocess_run
+from utils.system_utils import log_info, subprocess_run
 
-TEMP = "temp"
+ITER = "dbg/iters"
+
+
+def copy_to_iter_dir(src_path):
+    items = src_path.split("/")
+    assert items[2] == "edits"
+    base = items[1]
+    assert base.endswith(".smt2")
+    new_name = f"{base[:-5]}.{items[3]}"
+    new_path = f"{ITER}/{new_name}"
+    # print(new_path)
+    if not os.path.exists(ITER):
+        os.mkdir(ITER)
+    subprocess_run(["cp", src_path, new_path])
+    log_info(f"[iter] copied to {new_path}")
+    return new_path
 
 
 def test0():
@@ -59,7 +74,7 @@ def demo1():
     # rename           61          0          0  8.25 /  --           0.21
     # reseed           61          0          0  8.39 /  --           0.49
 
-    edit_ids = {'prelude_unbox_box_int'}
+    edit_ids = {"prelude_unbox_box_int"}
     # time to unsat: 3.88
     # dbg/mimalloc--segment__span_queue_delete.smt2/edits/v3.smt2
 
@@ -103,6 +118,7 @@ def demo2():
     q = "data/projs/v_systems/base.z3/mimalloc--segment__segment_span_free.smt2"
     dbg = Debugger3(q, False, True)
     dbg.save_report()
+    dbg.clear_edits()
     # dbg.try_random_edits()
     # dbg.try_ranked_edits()
 
@@ -112,12 +128,9 @@ def demo2():
     # rename            0          0         61  --  / 10.00          0
     # reseed            0          0         61  --  / 10.00          0
 
-    edit_ids = {'internal_vstd__set__Set<int.>_unbox_axiom_definition'}
-    # time to unsat: 4.72
-    # dbg/mimalloc--segment__segment_span_free.smt2/edits/v14.smt2
-
-
     edit_ids = {"internal_vstd!set.impl&__0.subset_of.?_definition"}
+    # time to unsat: 6.38
+    # dbg/mimalloc--segment__segment_span_free.smt2/edits/v1.smt2
 
     # mutation      unsat    unknown    timeout  mean (pass/fail)      std
     # ----------  -------  ---------  ---------  ------------------  -----
@@ -127,21 +140,47 @@ def demo2():
 
     dbg.do_specific_edits(edit_ids)
 
-    edit_ids = {
-        "internal_vstd!set.impl&__0.subset_of.?_definition",
-        "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-    }
+    edit_ids = {"user_vstd__set__axiom_set_ext_equal_101"}
+    # time to unsat: 5.07
+    # dbg/mimalloc--segment__segment_span_free.smt2/edits/v2.smt2
 
     # mutation      unsat    unknown    timeout  mean (pass/fail)      std
     # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle          46          6          9  8.41 / 6.17          2.68
-    # rename           61          0          0  6.62 /  --           0.17
-    # reseed           61          0          0  6.77 /  --           0.36
+    # shuffle          44          8          9  8.38 / 5.50          2.91
+    # rename           61          0          0  9.35 /  --           0.2
+    # reseed           61          0          0  8.30 /  --           0.62
 
+    copy_to_iter_dir(dbg.do_specific_edits(edit_ids))
+    # dbg.print_edit_report()
+
+
+def demo2_1():
+    # q = "dbg/iters/mimalloc--segment__segment_span_free.v2.smt2"
+    # dbg = Debugger3(q, False, True)
+    # # dbg.save_report()
+    # dbg.clear_edits()
+
+    # edit_ids = {
+    #     "user_vstd__set__axiom_set_ext_equal_100",
+    #     "user_vstd__set__axiom_set_ext_equal_100_1",
+    #     "user_vstd__set__axiom_set_ext_equal_100_2",
+    #     "user_vstd__set__axiom_set_ext_equal_100_3",
+    #     "user_vstd__set__axiom_set_ext_equal_100_4",
+    # }
+    # copy_to_iter_dir(dbg.dual_split_qids(edit_ids))
+    
+    q = "dbg/iters/mimalloc--segment__segment_span_free.v2.v1.smt2"
+    dbg = Debugger3(q, False, True)
+    # dbg.save_report()
+    
+    edit_ids = {
+        "user_vstd__set__axiom_set_ext_equal_100_1",
+        "user_vstd__set__axiom_set_ext_equal_100_3",
+        "user_vstd__set__axiom_set_ext_equal_100_4",
+        "internal_vstd!set.impl&__0.subset_of.?_definition",
+    }
+    
     dbg.do_specific_edits(edit_ids)
-
-    dbg.print_edit_report()
-
 
 def demo3():
     q = "data/projs/v_systems/base.z3/mimalloc--segment.1.smt2"
@@ -156,7 +195,6 @@ def demo3():
     }
 
     dbg.do_specific_edits(edit_qids)
-
     dbg.print_edit_report()
 
 
@@ -254,7 +292,8 @@ if __name__ == "__main__":
     # test0()
     # demo0()
     # demo1()
-    demo2()
+    # demo2()
+    demo2_1()
     # demo3()
     # demo4()
     # demo5()

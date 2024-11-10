@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-import binascii
 from typing import Dict, Set
 from z3 import *
 from debugger.query_loader import QueryLoader, SkolemFinder
 from debugger.trace_analyzer import EditAction
-from debugger.z3_utils import collapse_sexpr, hack_contains_qid, hack_quantifier_removal
+from debugger.z3_utils import collapse_sexpr, format_expr_flat, hack_contains_qid, hack_quantifier_removal
 from proof_builder import ProofInfo, ProofBuilder, QunatInstInfo, InstError
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from utils.query_utils import add_qids_to_query
@@ -162,6 +161,15 @@ class QueryEditor(BasicQueryWriter):
         self.pi = pi
         self.__enabled_symbols = set()
 
+    def split_dual_qids(self, target_ids):
+        target_ids = self._basic_check(target_ids)
+
+        for qid in target_ids:
+            quant = self.quants[qid]
+            pq, qp = quant.split_dual()
+            self._banish_ids.add(qid)
+            self._new_commands += [pq, qp]
+
     def instantiate_qids(self, target_ids):
         target_ids = self._basic_check(target_ids)
         filtered = set()
@@ -209,6 +217,7 @@ class QueryEditor(BasicQueryWriter):
         erase_qids = set()
         inst_qids = set()
         skol_qids = set()
+        dual_qids = set()
 
         for qid in target_ids:
             action = target_ids[qid]
@@ -216,13 +225,16 @@ class QueryEditor(BasicQueryWriter):
                 erase_qids.add(qid)
             elif action == EditAction.INSTANTIATE:
                 inst_qids.add(qid)
-            else:
-                assert action == EditAction.SKOLEMIZE
+            elif action == EditAction.SKOLEMIZE:
                 skol_qids.add(qid)
+            else:
+                assert action == EditAction.DSPLIT
+                dual_qids.add(qid)
 
         self.skolemize_qids(skol_qids)
         self.erase_qids(erase_qids)
         self.instantiate_qids(inst_qids)
+        self.split_dual_qids(dual_qids)
 
     def save(self, out_file_path):
         # symbols = self.pi.tt.get_trans_deps(self.__enabled_symbols)
@@ -235,52 +247,16 @@ class QueryEditor(BasicQueryWriter):
 
 if __name__ == "__main__":
     set_param(proof=True)
-
-    # i = ProofBuilder("orig.smt2")
-    # pi = i.try_prove()
-    # pi.save("cyclic.pickle")
-    # pi.tt.debug()
-
-    pi = ProofInfo.load("cyclic.pickle")
-    # pi.tt.debug()
-    w = QueryEditor("orig.smt2", pi)
-    w.instantiate_qids({
-        # "prelude_u_inv",
-        # "prelude_box_unbox_int",
-        # "prelude_sub",
-        # "internal_core__option__Option_unbox_axiom_definition",
-        "user_vstd__set__axiom_set_ext_equal_101",
-        # "internal_lib!types.Local./Local/page_organization_accessor_definition",
-    })
-    w.erase_qids({
-        "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-        # "prelude_u_clip",
-    }) 
-    w.save("v1.smt2")
-
-    # for qid, qi in pi.qi_infos.items():
-    #     if qid != "prelude_add":
-    #         continue
-    #     for b in qi.bindings:
-    #         for i, v in b.items():
-    #             print(pi.tt.expand_def(v))
-
-    # i = ProofReader("core.1.smt2")
-    # pi = i.try_prove()
-    # pi.save("core.1.pickle")
-    # pi = ProofInfo.load("core.1.pickle")
-
-    # w = QueryEditor("orig.smt2", pi)
-    # w.instantiate_qids(
-    #     {
-    #         "user_vstd__set__axiom_set_ext_equal_101",
-    #         "prelude_add",
-    #         "internal_vstd!set.impl&__0.subset_of.?_definition",
-    #     }
-    # )
-    # w.erase_qids({
-    #     "user_vstd__std_specs__bits__axiom_u64_leading_zeros_44",
-    # })
-    # w.write("v1.smt2")
-
     
+    w = BasicQueryWriter("dbg/mimalloc--segment__segment_span_free.smt2/orig.smt2")
+    
+    qt = w.quants["internal_lib!types.impl&__21.wf_main.?_definition"]
+    print(collapse_sexpr(qt.assertion.sexpr()))
+    print("(assert " + format_expr_flat(qt.assertion) + ")")
+
+    # pi = ProofInfo.load("dbg/mimalloc--segment__segment_span_free.v2.smt2/insts/shuffle.11874912365756099194")
+    # w = QueryEditor("dbg/mimalloc--segment__segment_span_free.v2.smt2/orig.smt2", pi)
+    # w.split_dual_qids({
+    #     "user_vstd__set__axiom_set_ext_equal_100",
+    # })
+    # w.save("test.smt2")
