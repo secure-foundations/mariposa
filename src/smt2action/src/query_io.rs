@@ -370,14 +370,21 @@ impl QidAdder {
         } else {
             qid.clone()
         };
-        let new_id = if let Some(count) = self.prefix_count.get_mut(&qid) {
+        let mut new_id = if let Some(count) = self.prefix_count.get_mut(&qid) {
             *count += 1;
             format!("{}_{}", qid, count)
         } else {
             self.prefix_count.insert(qid.clone(), 0);
             format!("{}", qid)
         };
-        assert!(!self.used.contains(&new_id));
+        while self.used.contains(&new_id) {
+            if let Some(count) = self.prefix_count.get_mut(&qid) {
+                *count += 1;
+                new_id = format!("{}_{}", qid, count);
+            } else {
+                assert!(false);
+            }
+        }
         self.used.insert(new_id.clone());
         new_id
     }

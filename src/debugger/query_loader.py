@@ -4,7 +4,6 @@ from z3 import *
 from debugger.z3_utils import (
     AstVisitor,
     collapse_sexpr,
-    format_expr,
     format_expr_flat,
     hack_quantifier_body,
     quote_name,
@@ -57,7 +56,7 @@ class Quant(AstVisitor):
         self.__vars = None
 
         self.__eq = None
-        self.dual = False
+        self.dual = None
 
     def get_vars(self):
         if self.__vars is None:
@@ -90,13 +89,13 @@ class Quant(AstVisitor):
         lets = []
         vs = self.get_vars()
         for idx in range(len(vs)):
-            lets.append(f"(qv{idx} {subs[idx]})")
+            lets.append(f"({self.quant.var_name(idx)} {subs[idx]})")
         return " ".join(lets)
 
     def __setup_rewrite(self):
         if self.__qbody_str is not None:
             return
-        self.__qbody_str = format_expr_flat(self.quant.body(), self.quant.num_vars())
+        self.__qbody_str = format_expr_flat(self.quant, True)
         self.__quant_str = format_expr_flat(self.quant)
         self.__assert_str = "(assert " + format_expr_flat(self.assertion) + ")"
         assert self.__quant_str in self.__assert_str
@@ -109,30 +108,39 @@ class Quant(AstVisitor):
     def split_dual(self):
         # assert self.__eq is not None
         self.__setup_rewrite()
-        self.__find_dual(self.assertion)
+        self.find_dual()
 
         assert self.__eq is not None
         assert self.__eq in self.__assert_str
 
         pq = f"(=> {self.__p} {self.__q})"
         qp = f"(=> {self.__q} {self.__p})"
-        
-        # print(f"pq: {pq}")
-        # print(f"qp: {qp}")
 
         return [
             f"{self.__assert_str.replace(self.__eq, pq)}",
             f"{self.__assert_str.replace(self.__eq, qp)}",
         ]
+        
+    def get_skolem_dual(self):
+        l, r = self.split_dual()
+        if self.left_dual:
+            return l
+        return r
+
+    def find_dual(self):
+        if self.dual is not None:
+            return self.dual
+
+        self.__find_dual(self.assertion)
+        self.reset_visit()
+
+        if self.dual is None:
+            self.dual = False
+
+        return self.dual
 
     def __find_dual(self, exp):
         if self.visit(exp) or is_const(exp) or is_var(exp):
-            return
-
-        if exp.get_id() == self.quant.get_id():
-            return
-
-        if exp.get_id() == self.quant.get_id():
             return
 
         if is_quantifier(exp):
@@ -147,14 +155,20 @@ class Quant(AstVisitor):
             if p.sort().kind() != Z3_BOOL_SORT:
                 return
 
-            if self.__eq is not None:
-                log_warn(f"multiple equalities found in qid: {self.quant.qid()}")
-                return
+            target = self.quant.get_id()
 
-            self.__eq = format_expr_flat(exp)
-            self.__p = format_expr_flat(p)
-            self.__q = format_expr_flat(q)
-            return
+            if p.get_id() == target or q.get_id() == target:
+                if self.__eq is not None:
+                    log_warn(f"multiple equalities found in qid: {self.quant.qid()}")
+                    return
+
+                self.left_dual = p.get_id() == target
+                self.__eq = format_expr_flat(exp)
+                self.__p = format_expr_flat(p)
+                self.__q = format_expr_flat(q)
+                self.dual = True
+
+                return
 
         for c in exp.children():
             self.__find_dual(c)

@@ -312,9 +312,6 @@ class InstDiffer(ProofAnalyzer):
         self.sources = self.list_sources()
         self.sloop = self.list_self_loops()
 
-        # for qid in self.trace.order_by_freq():
-        #     print(qid, self.trace[qid].total_count, self.proof[qid].total_count)
-
     def get_available_action(self, qid):
         if qid not in self.all_qids:
             log_warn(f"qid {qid} not found in query")
@@ -337,15 +334,16 @@ class InstDiffer(ProofAnalyzer):
                 return EditAction.ERASE
             return EditAction.NONE
 
-        if self.proof_freq[qid].total_count == 0:
-            if self.quants[qid].dual:
+        if self.pi.is_skolemized(qid):
+            if self.proof_freq[qid].total_count == 0:
+                # not instantiated but skolemized
+                return EditAction.SKOLEMIZE
+            else:
+                # instantiated and skolemized
                 return EditAction.DSPLIT
 
-            # not instantiated or skolemized
-            if not self.pi.is_skolemized(qid):
-                return EditAction.ERASE
-            # not instantiated, but skolemized
-            return EditAction.SKOLEMIZE
+        if self.proof_freq[qid].total_count == 0:
+            return EditAction.ERASE
 
         # self loop cannot be easily instantiated
         if qid in self.sources and qid not in self.sloop:
@@ -435,3 +433,14 @@ class InstDiffer(ProofAnalyzer):
             if qid in pi.new_skolem_funs:
                 return True
         return False
+    
+    def debug_quantifier(self, qid):
+        if qid not in self.pi.qi_infos:
+            log_warn(f"qid {qid} not found in proof")
+            return
+        qi = self.pi.qi_infos[qid]
+
+        for bind in qi.bindings:
+            for b in bind.values():
+                print(self.pi.tt.expand_def(b))
+

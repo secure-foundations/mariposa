@@ -4,7 +4,12 @@ from typing import Dict, Set
 from z3 import *
 from debugger.query_loader import QueryLoader, SkolemFinder
 from debugger.trace_analyzer import EditAction
-from debugger.z3_utils import collapse_sexpr, format_expr_flat, hack_contains_qid, hack_quantifier_removal
+from debugger.z3_utils import (
+    collapse_sexpr,
+    format_expr_flat,
+    hack_contains_qid,
+    hack_quantifier_removal,
+)
 from proof_builder import ProofInfo, ProofBuilder, QunatInstInfo, InstError
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from utils.query_utils import add_qids_to_query
@@ -74,38 +79,40 @@ class BasicQueryWriter(QueryLoader):
             log_warn(f"failed to banish the following qids:")
             print("\t".join(target_ids))
 
-    def skolemize_qids(self, target_ids: Set[str], erase: bool = False):
+    def skolemize_qids(self, target_ids: Set[str]):
         # reduce to qids
         target_ids = {q[7:] if q.startswith("skolem_") else q for q in target_ids}
-        # target_ids = self.__basic_check(target_ids)
 
         targets = dict()
+
         for qid in target_ids:
-            assertion = self.quants[qid].assertion
-            if assertion in targets:
+            quant = self.quants[qid]
+            exp = quant.assertion
+
+            if exp.get_id() in targets:
                 log_warn(f"[skolem] duplicated match on assertion, skipping: {qid}")
                 continue
-            targets[assertion] = qid
+
+            dual = self.quants[qid].find_dual()
+            targets[exp.get_id()] = (qid, dual, exp)
             # TODO: this is not very robust
             self._banish_ids.add(qid)
 
-        for exp, qid in targets.items():
-            commands, decls = self.__skolemize_assertion(exp)
-            if erase:
-                for i, line in enumerate(commands):
-                    for qid in target_ids:
-                        if hack_contains_qid(line, qid):
-                            line = hack_quantifier_removal(line, qid)
-                    commands[i] = line
-            log_info(f"[skolem] qid: {qid}")
-            log_info(f"[skolem] {len(decls)} skolem funs {len(commands)} asserts added")
+        for qid, dual, exp in targets.values():
+            commands, decls = self.__skolemize_assertion(exp, dual, target_ids)
+
+            log_info(f"[skolem] {qid}")
+            log_info(
+                f"[skolem] {len(decls)} skolem funs, {len(commands)} asserts added"
+            )
+
             commands = [
                 f'(set-info :comment "[skolem] {len(commands)} asserts for {qid}")'
             ] + commands
             self._fun_decls += decls
             self._new_commands += commands
 
-    def __skolemize_assertion(self, exp):
+    def __skolemize_assertion(self, exp, dual, remove_ids):
         g = Goal()
         g.add(exp)
         t = Tactic("snf")
@@ -121,7 +128,33 @@ class BasicQueryWriter(QueryLoader):
                 if name in self.cur_skolem_funs:
                     continue
                 decls.append(decl)
+
+        if dual:
+            for i, line in enumerate(asserts):
+                for qid in remove_ids:
+                    if hack_contains_qid(line, qid):
+                        line = hack_quantifier_removal(line, qid)
+                asserts[i] = line
+            log_info(f"[skolem] [dual] {qid}")
         return asserts, decls
+
+    def split_dual_qids(self, target_ids):
+        target_ids = self._basic_check(target_ids)
+
+        for qid in target_ids:
+            quant = self.quants[qid]
+            pq, qp = quant.split_dual()
+            self._banish_ids.add(qid)
+            commands, decls = self.__skolemize_assertion(
+                quant.assertion, True, target_ids
+            )
+            self._fun_decls += decls
+            self._new_commands += commands
+            if quant.left_dual:
+                self._new_commands += [pq]
+            else:
+                self._new_commands += [qp]
+            print(f"[dual] {qid}")
 
     def save(self, out_file_path):
         self.erase_qids(self._erase_ids)
@@ -150,9 +183,9 @@ class BasicQueryWriter(QueryLoader):
         self._modified_lines = dict()
         self._erase_ids = set()
         self._banish_ids = set()
-
-        add_qids_to_query(out_file_path)
         log_info(f"[edit] written to {out_file_path}")
+        add_qids_to_query(out_file_path)
+        # log_info(f"[edit] written to {out_file_path}")
 
 
 class QueryEditor(BasicQueryWriter):
@@ -160,15 +193,6 @@ class QueryEditor(BasicQueryWriter):
         super().__init__(in_file_path)
         self.pi = pi
         self.__enabled_symbols = set()
-
-    def split_dual_qids(self, target_ids):
-        target_ids = self._basic_check(target_ids)
-
-        for qid in target_ids:
-            quant = self.quants[qid]
-            pq, qp = quant.split_dual()
-            self._banish_ids.add(qid)
-            self._new_commands += [pq, qp]
 
     def instantiate_qids(self, target_ids):
         target_ids = self._basic_check(target_ids)
@@ -205,7 +229,7 @@ class QueryEditor(BasicQueryWriter):
                 )
                 for i, b in bindings.items():
                     # TODO: do we always expect a hash cons?
-                    if b.startswith("hcf_"):
+                    if self.pi.tt.has_def(b):
                         self.__enabled_symbols.add(b)
                     subs[i] = b
                 self._new_commands.append(quant.rewrite_as_let(subs))
@@ -219,8 +243,7 @@ class QueryEditor(BasicQueryWriter):
         skol_qids = set()
         dual_qids = set()
 
-        for qid in target_ids:
-            action = target_ids[qid]
+        for qid, action in target_ids.items():
             if action == EditAction.ERASE:
                 erase_qids.add(qid)
             elif action == EditAction.INSTANTIATE:
@@ -240,16 +263,15 @@ class QueryEditor(BasicQueryWriter):
         # symbols = self.pi.tt.get_trans_deps(self.__enabled_symbols)
         defs = self.pi.tt.compress_defs(self.__enabled_symbols)
         # defs = self.pi.tt.as_define_funs(symbols)
-
         self._fun_asserts.extend(defs)
         super().save(out_file_path)
         self.__enabled_symbols = set()
 
 if __name__ == "__main__":
     set_param(proof=True)
-    
+
     w = BasicQueryWriter("dbg/mimalloc--segment__segment_span_free.smt2/orig.smt2")
-    
+
     qt = w.quants["internal_lib!types.impl&__21.wf_main.?_definition"]
     print(collapse_sexpr(qt.assertion.sexpr()))
     print("(assert " + format_expr_flat(qt.assertion) + ")")

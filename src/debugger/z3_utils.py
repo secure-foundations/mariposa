@@ -1,91 +1,120 @@
 from z3 import *
 
 
-def format_expr(e, depth=0, offset=0):
-    if is_const(e):
-        return str(e)
+# def format_expr(e, depth=0, offset=0):
+#     if is_const(e):
+#         return str(e)
 
-    if is_var(e):
-        return "qv" + str(get_var_index(e))
+#     if is_var(e):
+#         return "qv" + str(get_var_index(e))
 
-    if is_quantifier(e):
-        if depth == 0:
+#     if is_quantifier(e):
+#         if depth == 0:
+#             v_count = e.num_vars()
+#             vars = [f"qv{str(offset+i)} {e.var_sort(offset+i)}" for i in range(v_count)]
+#             vars = "((" + " ".join(vars) + ")) "
+#             if e.is_forall():
+#                 return (
+#                     "(forall "
+#                     + vars
+#                     + format_expr(e.body(), depth + 1, offset + v_count)
+#                     + ")"
+#                 )
+#             else:
+#                 return (
+#                     "(exists "
+#                     + vars
+#                     + format_expr(e.body(), depth + 1, offset + v_count)
+#                     + ")"
+#                 )
+
+#         return "[QID: " + str(e.qid()) + "]"
+
+#     name = e.decl().name()
+#     items = []
+#     prefix = " " * (depth + 1)
+#     for i in e.children():
+#         items += [format_expr(i, depth + 1)]
+#     length = sum([len(i) for i in items]) + len(name)
+#     if length > 80:
+#         items = [prefix + i for i in items]
+#         items = "(" + name + "\n" + "\n".join(items) + ")"
+#     else:
+#         items = "(" + name + " " + " ".join(items) + ")"
+#     return items
+
+
+class AstPrinter:
+    def __init__(self, parent=None):
+        self.__vars = dict()
+        
+        if parent is None:
+            return
+
+        assert is_quantifier(parent)
+
+        for i in range(parent.num_vars()):
+            self.__vars[i] = parent.var_name(i)
+
+    def _format_expr(self, e, offset):
+        if is_const(e):
+            r = str(e)
+            if r == "True": return "true"
+            if r == "False": return "false"
+            return r
+
+        if is_var(e):
+            idx = offset - get_var_index(e) - 1
+            return self.__vars[idx]
+
+        if is_quantifier(e):
             v_count = e.num_vars()
-            vars = [f"qv{str(offset+i)} {e.var_sort(offset+i)}" for i in range(v_count)]
-            vars = "((" + " ".join(vars) + ")) "
+            vars = []
+
+            for i in range(v_count):
+                var_name = e.var_name(i)
+                self.__vars[offset + i] = var_name
+                vars += [f"({var_name} {e.var_sort(i)})"]
+
+            vars = "(" + " ".join(vars) + ") "
+            attributes = [f":skolemid {e.skolem_id()}", f":qid {e.qid()}"]
+
+            for i in range(e.num_patterns()):
+                assert e.pattern(i).decl().name() == "pattern"
+                p = e.pattern(i).children()[0]
+                attributes.append(f":pattern ({self._format_expr(p, offset + v_count)})")
+        
+            attributes = " ".join(attributes)
+            body = self._format_expr(e.body(), offset + v_count)
+            
+            for i in range(v_count):
+                del self.__vars[offset + i]
+
             if e.is_forall():
-                return (
-                    "(forall "
-                    + vars
-                    + format_expr(e.body(), depth + 1, offset + v_count)
-                    + ")"
-                )
-            else:
-                return (
-                    "(exists "
-                    + vars
-                    + format_expr(e.body(), depth + 1, offset + v_count)
-                    + ")"
-                )
+                return f"(forall {vars} (! {body} {attributes}))"
 
-        return "[QID: " + str(e.qid()) + "]"
-
-    name = e.decl().name()
-    items = []
-    prefix = " " * (depth + 1)
-    for i in e.children():
-        items += [format_expr(i, depth + 1)]
-    length = sum([len(i) for i in items]) + len(name)
-    if length > 80:
-        items = [prefix + i for i in items]
-        items = "(" + name + "\n" + "\n".join(items) + ")"
-    else:
-        items = "(" + name + " " + " ".join(items) + ")"
-    return items
-
-
-def format_expr_flat(e, offset=0):
-    if is_const(e):
-        r = str(e)
-        if r == "True": return "true"
-        if r == "False": return "false"
-        return r
-
-    if is_var(e):
-        idx = offset - get_var_index(e) - 1
-        return "qv" + str(idx)
-
-    if is_quantifier(e):
-        v_count = e.num_vars()
-        vars = [f"(qv{i+offset} {e.var_sort(i)})" for i in range(v_count)]
-        vars = "(" + " ".join(vars) + ") "
-        attributes = [f":skolemid {e.skolem_id()}", f":qid {e.qid()}"]
-
-        for i in range(e.num_patterns()):
-            assert e.pattern(i).decl().name() == "pattern"
-            p = e.pattern(i).children()[0]
-            attributes.append(f":pattern ({format_expr_flat(p, offset + v_count)})")
-    
-        attributes = " ".join(attributes)
-
-        if e.is_forall():
-            return f"(forall {vars} (! {format_expr_flat(e.body(), offset + v_count)} {attributes}))"
+            return f"(exists {vars} (! {body} {attributes}))"
+        
+        if e.decl().kind() == Z3_OP_DT_IS:
+            assert e.decl().name() == "is"
+            params = e.decl().params()
+            assert len(params) == 1
+            res = [f"(_ is {quote_name(params[0].name())})"]
         else:
-            return f"(exists {vars} (! {format_expr_flat(e.body(), offset + v_count)} {attributes}))"
+            res = [quote_name(e.decl().name())]
+
+        # name = e.decl().name()
+        for i in e.children():
+            res += [self._format_expr(i, offset)]
+        return "(" + " ".join(res) + ")"
     
-    if e.decl().kind() == Z3_OP_DT_IS:
-        assert e.decl().name() == "is"
-        params = e.decl().params()
-        assert len(params) == 1
-        res = [f"(_ is {quote_name(params[0].name())})"]
-    else:
-        res = [quote_name(e.decl().name())]
 
-    # name = e.decl().name()
-    for i in e.children():
-        res += [format_expr_flat(i, offset)]
-    return "(" + " ".join(res) + ")"
-
+def format_expr_flat(e, body_only=False):
+    if body_only:
+        p = AstPrinter(e)
+        return p._format_expr(e.body(), e.num_vars())
+    p = AstPrinter()
+    return p._format_expr(e, 0)
 
 def find_matching_brackets(s):
     results = []

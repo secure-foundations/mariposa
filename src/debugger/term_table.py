@@ -67,7 +67,7 @@ class TermTable(SkolemFinder):
         for c in e.children():
             r = self._create_defs(c)
             res.append(r)
-            if hack_find_hcf_id(r) is not None:
+            if hack_find_hcf_id(r) is not None and r in self.depends:
                 deps.add(r)
 
         res = "(" + " ".join(res) + ")"
@@ -92,6 +92,9 @@ class TermTable(SkolemFinder):
         return res
 
     def _get_trans_deps(self, symbol):
+        if symbol not in self.depends:
+            return {}
+
         deps = self.depends[symbol]
         res = {symbol}
         if len(deps) == 0:
@@ -180,7 +183,7 @@ class TermTable(SkolemFinder):
         items = body.split(" ")
         for item in items:
             name = hack_find_hcf_id(item)
-            if name is None:
+            if name is None or name not in self.defs:
                 continue
             body = self.defs[name][0]
             if name not in counts:
@@ -209,12 +212,15 @@ class TermTable(SkolemFinder):
     
         return res
 
+    def has_def(self, name):
+        return name in self.defs
+
     def _compress_defs(self, body, refs, defs):
         res = []
         items = body.split(" ")
         for item in items:
             name = hack_find_hcf_id(item)
-            if name is not None and refs[name] == 1:
+            if name is not None and name in self.defs and refs[name] == 1:
                 if len(self.depends[name]) == 0:
                     res.append(item.replace(name, self.defs[name][0]))
                 else:
