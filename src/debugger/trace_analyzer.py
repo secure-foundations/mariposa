@@ -365,8 +365,8 @@ class InstDiffer(ProofAnalyzer):
             ):
                 # skip qids not instantiated at all
                 continue
-
             action = self.get_available_action(rid)
+
             if action not in {EditAction.NONE, EditAction.ERROR}:
                 actions[rid] = action
 

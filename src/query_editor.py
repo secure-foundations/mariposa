@@ -49,7 +49,7 @@ class BasicQueryWriter(QueryLoader):
                 if hack_contains_qid(line, qid):
                     line = hack_quantifier_removal(line, qid)
                     removed.add(qid)
-                    log_info(f"[erase] erasing qid: {qid}")
+                    log_info(f"[erase] erasing {qid}")
                     self._new_commands = [
                         f'(set-info :comment "[erase] {qid}")'
                     ] + self._new_commands
@@ -220,12 +220,12 @@ class QueryEditor(BasicQueryWriter):
 
             _ = quant.get_vars()
 
-            log_info(f"[inst] qid {qid} with {len(qi.bindings)} bindings")
+            log_info(f"[inst] {qid} with {len(qi.bindings)} bindings")
 
             for j, bindings in enumerate(qi.bindings):
                 subs = dict()
                 self._new_commands.append(
-                    f'(set-info :comment "[inst] qid {qid} {j+1}/{len(qi.bindings)} bindings")'
+                    f'(set-info :comment "[inst] {qid} {j+1}/{len(qi.bindings)} bindings")'
                 )
                 for i, b in bindings.items():
                     # TODO: do we always expect a hash cons?

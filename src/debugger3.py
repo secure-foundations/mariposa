@@ -214,11 +214,11 @@ class EditInfo:
         self.time = t
 
     def as_report(self):
-        edits = ",\n".join([f"\t'{qid}': {e}" for qid, e in self.edits.items()])
+        edits = ",\n".join([f"    '{qid}': {e}" for qid, e in self.edits.items()])
         edits = f"edits = {{\n{edits}\n}}"
         lines = [
             "# " + "-" * 80,
-            f"edit_path = '{self.path}'",
+            f"# {self.path}",
             f"# rcode: {self.std_out}",
             f"# time: {self.time}" ,
             edits,
@@ -269,7 +269,7 @@ class Debugger3:
         # self.pis[0].print_report()
         self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi.get_qids())
         self.editor = QueryEditor(self.orig_path, self.pis[0])
-        self.actions = self.differ.get_actions()
+        self.actions = self.differ.get_actions(root_only=True)
 
     def __del__(self):
         with open(self.edits_pickle, "wb") as f:
@@ -553,6 +553,10 @@ class Debugger3:
         report = self.differ.get_report()
         verus_proc = find_verus_procedure_name(self.orig_path)
 
+        if os.path.exists(self.report_path):
+            log_warn(f"[report] {self.report_path} already exists")
+            return 
+
         with open(self.report_path, "w+") as f:
             f.write("base name:\n")
             f.write(self.base_name + "\n\n")
@@ -613,13 +617,18 @@ class Debugger3:
             edit_qids = random.sample(self.actions.keys(), 3)
             self.do_edits(set(edit_qids))
 
-    def try_ranked_edits(self):
+    def try_aggressive_edits(self):
+        valid = dict()
+        for qid, action in self.actions.items():
+            if action == EditAction.ERASE:
+                valid[qid] = action
+        self.do_edits(valid)
+
+    def try_ranked_edits(self, start={}):
         ranked = self.differ.get_actions_v1()
-        for qid, c, rr in ranked[:30]:
-            if self.look_up_edits({qid}, True) != []:
-                log_info("[edit] specified edit already exists")
-                continue
-            self.do_edits({qid})
+        for qid, c, rr in ranked[:20]:
+            qids = set([qid]) | set(start.keys())
+            self.do_edits(qids)
 
     def save_edit_report(self):
         passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
