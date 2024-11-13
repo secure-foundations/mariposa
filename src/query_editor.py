@@ -53,7 +53,7 @@ class BasicQueryWriter(QueryLoader):
                     self._new_commands = [
                         f'(set-info :comment "[erase] {qid}")'
                     ] + self._new_commands
-                self._modified_lines[i] = line
+                    self._modified_lines[i] = line
             target_ids -= removed
 
         if len(target_ids) > 0:

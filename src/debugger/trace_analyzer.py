@@ -381,13 +381,13 @@ class InstDiffer(ProofAnalyzer):
             t = self.trace_freq[rid]
             p = self.proof_freq[rid]
 
-            if (
-                t.total_count == 0
-                and p.total_count == 0
-                and not self.pi.is_skolemized(rid)
-            ):
-                # skip qids not instantiated at all
-                continue
+            # # skip qids not instantiated at all
+            # if (
+            #     t.total_count == 0
+            #     and p.total_count == 0
+            #     and not self.pi.is_skolemized(rid)
+            # ):
+            #     continue
 
             action = self.get_available_action(rid)
             if action in {EditAction.NONE, EditAction.ERROR}:
@@ -407,10 +407,6 @@ class InstDiffer(ProofAnalyzer):
         for rid in self.trace_freq.order_by_freq():
             t = self.trace_freq[rid]
             p = self.proof_freq[rid]
-
-            if t.total_count == 0 and p.total_count == 0:
-                # skip qids not instantiated at all
-                continue
 
             action = self.get_available_action(rid)
             table.append([shorten_qid(rid), t.total_count, p.total_count, action.value])

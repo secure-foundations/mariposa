@@ -192,6 +192,13 @@ def _build_proof(mi: MutantInfo):
     return None
 
 
+def _run_query(query_path):
+    r, e, t = subprocess_run(["./bin/z3-4.13.0", "-T:10", query_path])
+    r = output_as_rcode(r)
+    log_info(f"[run] {query_path} {r} {e} {t}")
+    return (query_path, r, e, round(t / 1000, 2))
+
+
 def create_mut_table(cur):
     cur.execute(
         f"""CREATE TABLE mutants (
@@ -206,26 +213,27 @@ def create_mut_table(cur):
 
 
 class EditInfo:
-    def __init__(self, path, edits, r, e, t):
+    def __init__(self, path, edit, r, e, t):
         self.path = path
-        self.edits = edits
+        self.edit = edit
         self.std_out = r
         self.error = e
         self.time = t
 
     def as_report(self):
-        edits = ",\n".join([f"    '{qid}': {e}" for qid, e in self.edits.items()])
-        edits = f"edits = {{\n{edits}\n}}"
+        edit = ",\n".join([f"    '{qid}': {e}" for qid, e in self.edit.items()])
+        edit = f"edit = {{\n{edit}\n}}"
         lines = [
             "# " + "-" * 80,
             f"# {self.path}",
             f"# rcode: {self.std_out}",
-            f"# time: {self.time}" ,
-            edits,
-            "dbg.do_edits(edits)",
+            f"# time: {self.time}\n\n",
+            edit,
+            "dbg.do_edits(edit)",
             "# " + "-" * 80 + "\n",
         ]
         return "\n".join(lines)
+
 
 class Debugger3:
     def __init__(self, query_path, clear, from_core, ids_available=False):
@@ -271,9 +279,12 @@ class Debugger3:
         self.editor = QueryEditor(self.orig_path, self.pis[0])
         self.actions = self.differ.get_actions(root_only=True)
 
+        self.save_report()
+
     def __del__(self):
         with open(self.edits_pickle, "wb") as f:
             pickle.dump(self.__edit_infos, f)
+        self.save_edit_report()
 
     def __init_dirs(self, query_path, clear, ids_available):
         if clear and os.path.exists(self.sub_root):
@@ -553,9 +564,9 @@ class Debugger3:
         report = self.differ.get_report()
         verus_proc = find_verus_procedure_name(self.orig_path)
 
-        if os.path.exists(self.report_path):
-            log_warn(f"[report] {self.report_path} already exists")
-            return 
+        # if os.path.exists(self.report_path):
+        #     log_warn(f"[report] already exists: {self.report_path}")
+        #     return
 
         with open(self.report_path, "w+") as f:
             f.write("base name:\n")
@@ -568,67 +579,87 @@ class Debugger3:
             f.write("verus procedure:\n")
             f.write(verus_proc + "\n\n")
             f.write(report)
-        log_info(f"[report] written to {self.report_path}")
+        log_info(f"[report] written: {self.report_path}")
 
     def get_edit_path(self, v=None):
         v = v if v else self.version + 1
         return f"{self.edit_dir}/v{v}.smt2"
 
-    def save_edits(self, edits: Dict[str, EditAction]):
-        assert isinstance(edits, dict)
-        self.editor.do_edits(edits)
+    def save_edit(self, edit: Dict[str, EditAction]):
+        assert isinstance(edit, dict)
+        self.editor.do_edits(edit)
         edit_path = self.get_edit_path()
         self.version += 1
         self.editor.save(edit_path)
         return edit_path
 
-    def do_edits(self, edits):
-        if isinstance(edits, set):
-            edits = {qid: self.actions[qid] for qid in edits}
-        eis = self.look_up_edits(edits, True)
+    def test_edit(self, edit):
+        (eis, edit) = self.look_up_edit(edit, True)
 
         if eis != []:
             log_info("[edit] specified edit already exists")
-            return eis[0].path
+            return eis[0]
 
-        edit_path = self.save_edits(edits)
-        r, e, t = self.run_query(edit_path)
-        self.__edit_infos.append(EditInfo(edit_path, edits, r, e, t))
+        edit_path = self.save_edit(edit)
+        _, r, e, t = _run_query(edit_path)
+        ei = EditInfo(edit_path, edit, r, e, t)
+        self.__edit_infos.append(ei)
 
-        return edit_path
+        return ei
 
-    def look_up_edits(self, edits, exact=False):
+    def look_up_edit(self, edit, exact=False):
         res = []
+
+        if isinstance(edit, set):
+            edit = {qid: self.actions[qid] for qid in edit}
+        else:
+            assert isinstance(edit, dict)
+
         for ei in self.__edit_infos:
-            if exact and ei.edits == edits:
+            if exact and ei.edit == edit:
                 res.append(ei)
-            elif not exact and set(ei.edits.keys()) & edits.keys() != set():
+            elif not exact and set(ei.edit.keys()) & edit.keys() != set():
                 res.append(ei)
-        return res
 
-    def run_query(self, query_path):
-        r, e, t = subprocess_run(["./bin/z3-4.13.0", "-T:10", query_path])
-        r = output_as_rcode(r)
-        log_info(f"[run] {query_path} {r} {e} {t}")
-        return (r, e, round(t / 1000, 2))
+        assert isinstance(edit, dict)
+        return (res, edit)
 
-    def try_random_edits(self):
-        for _ in range(30):
-            edit_qids = random.sample(self.actions.keys(), 3)
-            self.do_edits(set(edit_qids))
-
-    def try_aggressive_edits(self):
+    def try_aggressive_edit(self):
         valid = dict()
         for qid, action in self.actions.items():
             if action == EditAction.ERASE:
                 valid[qid] = action
-        self.do_edits(valid)
+        self.test_edit(valid)
+
+    def _try_edits(self, targets):
+        args, edits = [], dict()
+
+        for edit in targets:
+            (eis, edit) = self.look_up_edit(edit, True)
+            if eis != []:
+                continue
+            edit_path = self.save_edit(edit)
+            args.append(edit_path)
+            edits[edit_path] = edit
+
+        time_bound = int((10 * len(edits) + 1) / PROC_COUNT)
+        run_res = self.__run_with_pool(_run_query, args, time_bound=time_bound)
+
+        for path, r, e, t in run_res:
+            ei = EditInfo(path, edits[path], r, e, t)
+            self.__edit_infos.append(ei)
+
+    def try_random_edits(self):
+        NUM_TRIES = 30
+        edits = [set(random.sample(self.actions.keys(), 2)) for _ in range(NUM_TRIES)]
+        self._try_edits(edits)
 
     def try_ranked_edits(self, start={}):
         ranked = self.differ.get_actions_v1()
+        edits = dict()
         for qid, c, rr in ranked[:20]:
-            qids = set([qid]) | set(start.keys())
-            self.do_edits(qids)
+            edits[qid] = {qid: self.actions[qid]}.update(start)
+        self._try_edits(edits)
 
     def save_edit_report(self):
         passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
