@@ -66,6 +66,9 @@ class Quant(AstVisitor):
             ]
         return self.__vars
 
+    def get_size(self):
+        return len(self.quant.sexpr())
+
     # def _build_lets(self, subs):
     #     lets = []
     #     for idx, (v, s) in enumerate(self.get_vars()):

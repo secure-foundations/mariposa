@@ -229,14 +229,22 @@ class EditInfo:
             f"# rcode: {self.std_out}",
             f"# time: {self.time}\n\n",
             edit,
-            "dbg.do_edits(edit)",
+            "dbg.test_edit(edit)",
             "# " + "-" * 80 + "\n",
         ]
         return "\n".join(lines)
 
 
 class Debugger3:
-    def __init__(self, query_path, clear, from_core, ids_available=False):
+    def __init__(
+        self,
+        query_path,
+        reset=False,
+        clear_edits=False,
+        proof_from_core=True,
+        ids_available=False,
+        overwrite_reports=False,
+    ):
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.base_name}"
         self.orig_path = f"{self.sub_root}/orig.smt2"
@@ -247,47 +255,44 @@ class Debugger3:
         self.cores_dir = f"{self.sub_root}/{CORES}"
         self.edit_dir = f"{self.sub_root}/edits"
 
-        self.report_path = f"{self.sub_root}/report.txt"
         self.db_path = f"{self.sub_root}/db.sqlite"
         self.edits_pickle = f"{self.sub_root}/edits/pickle"
         self.edits_report = f"{self.sub_root}/edit_report.py"
         self.__edit_infos: List[EditInfo] = []
-        self.__build_proof_from_core = from_core
+        self.__build_proof_from_core = proof_from_core
 
-        self.__init_dirs(query_path, clear, ids_available)
+        self.__init_dirs(query_path, reset, ids_available)
 
         self.traces: List[MutantInfo] = []
         self.proofs: List[MutantInfo] = []
         self.cores: List[MutantInfo] = []
         self.version = 0
 
-        log_info(f"[init] {self.orig_path}")
-
         self.__init_db()
         self.__init_traces()
         self.__init_cores()
         self.refresh_status()
         self.__init_proofs()
-        self.__init_edits()
+        self.__init_edits(clear_edits)
         self.refresh_status()
 
         self.pis = [p.proof_info for p in self.proofs]
 
         self.tmi = self.get_candidate_trace()
-        # self.pis[0].print_report()
         self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi.get_qids())
         self.editor = QueryEditor(self.orig_path, self.pis[0])
         self.actions = self.differ.get_actions(root_only=True)
 
-        self.save_report()
+        for i in range(1, 3):
+            self.save_report(version=i, overwrite=overwrite_reports)
 
     def __del__(self):
         with open(self.edits_pickle, "wb") as f:
             pickle.dump(self.__edit_infos, f)
-        self.save_edit_report()
+        # self.save_edit_report()
 
-    def __init_dirs(self, query_path, clear, ids_available):
-        if clear and os.path.exists(self.sub_root):
+    def __init_dirs(self, query_path, reset, ids_available):
+        if reset and os.path.exists(self.sub_root):
             os.system(f"rm -rf {self.sub_root}")
 
         for dir in [
@@ -404,9 +409,10 @@ class Debugger3:
     def __init_traces(self):
         count = len(self.traces)
 
-        if count > 0:
-            log_info(f"[init] currently {count} traces")
+        if count >= TRACE_GOAL_COUNT:
             return
+
+        log_info(f"[init] currently {count} traces")
 
         for f in [_build_any_trace, _build_fail_trace]:
             args = self.create_mutants_info(
@@ -428,10 +434,10 @@ class Debugger3:
     def __init_cores(self):
         count = len(self.cores)
 
-        log_info(f"[init] currently {count} cores")
-
-        if count >= CORE_GOAL_COUNT:
+        if count >= CORE_GOAL_COUNT or not self.__build_proof_from_core:
             return
+
+        log_info(f"[init] currently {count} cores")
 
         goal = CORE_GOAL_COUNT - count
 
@@ -447,10 +453,10 @@ class Debugger3:
     def __init_proofs(self):
         count = len(self.proofs)
 
-        log_info(f"[init] currently {count} proofs")
-
         if count >= PROOF_GOAL_COUNT:
             return
+
+        log_info(f"[init] currently {count} proofs")
 
         goal = PROOF_GOAL_COUNT - count
         res = []
@@ -484,8 +490,12 @@ class Debugger3:
             )
         self.con.commit()
 
-    def __init_edits(self):
+    def __init_edits(self, clear_edits):
         if not os.path.exists(self.edits_pickle):
+            return
+
+        if clear_edits:
+            self.clear_edits()
             return
 
         with open(self.edits_pickle, "rb") as f:
@@ -560,15 +570,28 @@ class Debugger3:
         log_info(f"listing {len(table)} proof mutants:")
         print(tabulate(table, headers=["mutation", "seed", "time"]))
 
-    def save_report(self):
-        report = self.differ.get_report()
+        log_info("orig path: ")
+        log_info(self.orig_path)
+
+        log_info("report path: ")
+
+        for i in range(1, 3):
+            log_info(self.get_report_path(i))
+
+    def get_report_path(self, version=1):
+        # the version is not the same as the edit version
+        return f"{self.sub_root}/report_v{version}.txt"
+
+    def save_report(self, version, overwrite=False):
+        report_path = self.get_report_path(version)
+        if os.path.exists(report_path) and not overwrite:
+            log_warn(f"[report] already exists: {report_path}")
+            return
+
+        report = self.differ.get_report(version)
         verus_proc = find_verus_procedure_name(self.orig_path)
 
-        # if os.path.exists(self.report_path):
-        #     log_warn(f"[report] already exists: {self.report_path}")
-        #     return
-
-        with open(self.report_path, "w+") as f:
+        with open(report_path, "w+") as f:
             f.write("base name:\n")
             f.write(self.base_name + "\n\n")
             f.write("query path:\n")
@@ -579,7 +602,8 @@ class Debugger3:
             f.write("verus procedure:\n")
             f.write(verus_proc + "\n\n")
             f.write(report)
-        log_info(f"[report] written: {self.report_path}")
+
+        log_info(f"[report] written: {report_path}")
 
     def get_edit_path(self, v=None):
         v = v if v else self.version + 1
@@ -637,6 +661,7 @@ class Debugger3:
         for edit in targets:
             (eis, edit) = self.look_up_edit(edit, True)
             if eis != []:
+                log_warn("[edit] specified edit already exists")
                 continue
             edit_path = self.save_edit(edit)
             args.append(edit_path)
@@ -649,9 +674,26 @@ class Debugger3:
             ei = EditInfo(path, edits[path], r, e, t)
             self.__edit_infos.append(ei)
 
-    def try_random_edits(self):
+    def try_random_edits(self, size=2):
         NUM_TRIES = 30
-        edits = [set(random.sample(self.actions.keys(), 2)) for _ in range(NUM_TRIES)]
+        edits = []
+
+        for _ in range(NUM_TRIES):
+            edit = set(random.sample(self.actions.keys(), size))
+            edits.append({qid: self.actions[qid] for qid in edit})
+
+        self._try_edits(edits)
+
+    def try_less_random_edits(self, size=2):
+        NUM_TRIES = 30
+        edits = []
+
+        for _ in range(NUM_TRIES):
+            edit = set(random.sample(self.actions.keys(), size))
+            if all(self.actions[qid] != EditAction.INSTANTIATE for qid in edit):
+                continue
+            edits.append({qid: self.actions[qid] for qid in edit})
+
         self._try_edits(edits)
 
     def try_ranked_edits(self, start={}):
@@ -676,7 +718,7 @@ class Debugger3:
             for l in lines:
                 f.write(l + "\n")
 
-        log_info(f"[edit] report written to {self.edits_report}")
+        # log_info(f"[edit] report written to {self.edits_report}")
 
 
 if __name__ == "__main__":
@@ -687,13 +729,7 @@ if __name__ == "__main__":
         "-i", "--input-query-path", required=True, help="the input query path"
     )
     parser.add_argument(
-        "-o", "--output-query-path", required=False, help="the output query path"
-    )
-    parser.add_argument(
-        "-r", "--report-path", required=False, help="the output report path"
-    )
-    parser.add_argument(
-        "--from-core",
+        "--proof-from-core",
         default=False,
         action="store_true",
         help="build proofs from cores",
@@ -704,13 +740,21 @@ if __name__ == "__main__":
         action="store_true",
         help="clear the existing experiment",
     )
-    parser.add_argument("--version", default=1, help="suppressor version")
+    parser.add_argument(
+        "--overwrite-reports",
+        default=False,
+        action="store_true",
+        help="overwrite the existing report(s)",
+    )
+    # parser.add_argument("--version", default=1, help="")
 
     args = parser.parse_args()
-    dbg = Debugger3(args.input_query_path, args.clear, args.from_core)
-
-    if args.report_path is not None:
-        dbg.debug_trace(args.report_path)
+    dbg = Debugger3(
+        args.input_query_path,
+        clear=args.clear,
+        proof_from_core=args.proof_from_core,
+        overwrite_reports=args.overwrite_reports,
+    )
 
     # if args.output_query_path is None:
     #     sys.exit(0)
