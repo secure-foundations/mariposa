@@ -204,6 +204,8 @@ class InstDiffer(ProofAnalyzer):
             return self.get_report_v1()
         elif version == 2:
             return self.get_report_v2()
+        elif version == 3:
+            return self.get_report_v3()
         else:
             log_warn(f"[report] unknown report version {version}")
 
@@ -273,6 +275,43 @@ class InstDiffer(ProofAnalyzer):
             table.append([shorten_qid(rid), impact, singleton, action, pi_count])
 
         return tabulate(table, headers=["qid", "size", "singleton", "action", "pi count"])
+
+    def get_report_v3(self):
+        qids = self.proof_freq.freqs
+
+        res = dict()
+        
+        weights = dict()
+
+        for line in open("report").readlines():
+            qid, weight = line.strip().split(":")
+            weights[qid] = int(weight)
+
+        for rid in qids:
+            t = self.trace_freq[rid]
+            p = self.proof_freq[rid]
+
+            # skip qids not instantiated at all
+            if (
+                t.total_count == 0
+                and p.total_count == 0
+                and not self.pi.is_skolemized(rid)
+            ):
+                continue
+
+            action = self.get_available_action(rid)
+
+            impact = (t.root_count - p.root_count) * weights[rid]
+            res[rid] = (impact, t.is_singleton(), action.value, p.root_count)
+
+        res = sorted(res.items(), key=lambda x: x[1], reverse=True)
+        table = []
+
+        for rid, (impact, singleton, action, pi_count) in res:
+            table.append([shorten_qid(rid), impact, singleton, action, pi_count])
+
+        return tabulate(table, headers=["qid", "size", "singleton", "action", "pi count"])
+
 
     def needed_for_skolem(self, qid):
         for pi in self.proofs:

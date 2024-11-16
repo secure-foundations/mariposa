@@ -327,7 +327,7 @@ def unsolvable3():
     # rename           14          0         47  9.90 / 10.00         0.05
     # reseed            2          0         59  9.86 / 10.00         0.03
 
-    dbg.clear_edits()
+    # dbg.clear_edits()
 
     # --------------------------------------------------------------------------------
     # dbg/mimalloc--queues__page_queue_push_back.smt2/edits/v1.smt2
@@ -345,6 +345,12 @@ def unsolvable3():
     }
     dbg.test_edit(edits)
     # --------------------------------------------------------------------------------
+
+
+    # edits = {
+    #     "internal_vstd__set__Set<int.>_unbox_axiom_definition": EditAction.ERASE,
+    # }
+    # dbg.test_edit(edits)
 
     # dbg.try_random_edits()
 

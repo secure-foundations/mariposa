@@ -16,6 +16,7 @@ mod query_io;
 mod query_mutate;
 mod term_match;
 mod tree_rewrite;
+mod tree_shake_graph;
 
 mod inst_z3;
 mod term_inst_cvc5;
@@ -87,6 +88,12 @@ enum Action {
         message = "prune the query using the shake algorithm"
     )]
     ShakeNaive,
+
+    #[strum(
+        serialize = "shake-graph",
+        message = "build a graph using shake"
+    )]
+    ShakeGraph,
 
     #[strum(
         serialize = "inst-cvc5",
@@ -376,6 +383,10 @@ fn main() {
             if args.out_query_path.is_none() {
                 return;
             }
+        }
+        Action::ShakeGraph => {
+            tree_shake_graph::tree_shake_graph(commands);
+            return;
         }
         Action::InstCVC5 => {
             if args.cvc5_inst_log_path.is_none() {

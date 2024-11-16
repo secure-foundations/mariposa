@@ -283,7 +283,7 @@ class Debugger3:
         self.editor = QueryEditor(self.orig_path, self.pis[0])
         self.actions = self.differ.get_actions(root_only=True)
 
-        for i in range(1, 3):
+        for i in range(1, 4):
             self.save_report(version=i, overwrite=overwrite_reports)
 
     def __del__(self):

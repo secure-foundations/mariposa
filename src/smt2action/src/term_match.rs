@@ -128,6 +128,19 @@ pub fn get_identifier_symbols(identifier: &concrete::Identifier) -> Symbol {
 
 pub type SymbolSet = HashSet<Symbol>;
 
+pub fn pprint_symbol_set(symbols: &SymbolSet) -> String {
+    let mut s = String::new();
+    s.push_str("{");
+    let joined = symbols
+        .iter()
+        .map(|x| x.0.clone())
+        .collect::<Vec<String>>()
+        .join(",\n\t");
+    s.push_str(&joined);
+    s.push_str("}");
+    return s;
+}
+
 pub fn get_sexpr_symbols(e: &concrete::SExpr) -> SymbolSet {
     let mut symbols = HashSet::new();
     match e {
