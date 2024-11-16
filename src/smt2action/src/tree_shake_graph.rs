@@ -25,8 +25,8 @@ impl NonQuantState {
                 }
                 return false;
             }
-            FormalState::NonQuant(NonQuantState { live_symbols, .. }) => {
-                if self.live_symbols.is_disjoint(live_symbols) {
+            FormalState::NonQuant(qs) => {
+                if self.live_symbols.is_disjoint(&qs.live_symbols) {
                     return false;
                 }
                 return true;
@@ -156,8 +156,8 @@ impl QuantiState {
                     }
                 }
             }
-            FormalState::NonQuant(NonQuantState { live_symbols, .. }) => {
-                if self.hidden_context.is_disjoint(live_symbols) {
+            FormalState::NonQuant(qs) => {
+                if self.hidden_context.is_disjoint(&qs.live_symbols) {
                     return false;
                 }
                 return true;
@@ -338,16 +338,11 @@ impl TermExpander {
     }
 }
 
-// fn get_unbounded_symbols(defined_symbols: Arc<SymbolSet>, term: &concrete::Term) -> SymbolSet {
-//     let mut tp = TermExpander::new(defined_symbols.clone());
-//     tp.expand_to_quantifiers(term);
-//     let mut res = SymbolSet::new();
-
-// }
-
 struct GraphBuilder {
     defined_symbols: Arc<SymbolSet>,
     formals: HashMap<String, FormalState>,
+    qf_scores: HashMap<String, usize>,
+    qt_scores: HashMap<String, usize>,
 }
 
 impl GraphBuilder {
@@ -361,6 +356,8 @@ impl GraphBuilder {
         let mut gb = GraphBuilder {
             defined_symbols,
             formals: HashMap::new(),
+            qf_scores: HashMap::new(),
+            qt_scores: HashMap::new(),
         };
 
         for command in commands.iter() {
@@ -394,6 +391,38 @@ impl GraphBuilder {
     fn get_formal(&self, id: &str) -> Option<&FormalState> {
         self.formals.get(id)
     }
+
+    fn compute_scores(&mut self) {
+        for (k, v) in self.formals.iter() {
+            // let mut qf_score = 0;
+            // let mut qt_score = 0;
+            for (k2, v2) in self.formals.iter() {
+                if k == k2 {
+                    continue;
+                }
+                if v.is_relevant(v2) {
+                    println!("{}->{}", k, k2);
+                    // match v2 {
+                    //     FormalState::Quant(_) => {
+                    //         qt_score += 1;
+                    //     }
+                    //     FormalState::NonQuant(_) => {
+                    //         qf_score += 1;
+                    //     }
+                    // }
+                }
+            }
+            // self.qf_scores.insert(k.clone(), qf_score);
+            // self.qt_scores.insert(k.clone(), qt_score);
+        }
+
+        // let mut scores: Vec<(&String, &usize)> = self.qt_scores.iter().collect();
+        // scores.sort_by(|a, b| b.1.cmp(a.1));
+
+        // for (k, v) in scores {
+        //     println!("{}:{},{}", k, v, self.qf_scores.get(k).unwrap());
+        // }
+    }
 }
 
 impl Debug for GraphBuilder {
@@ -406,32 +435,21 @@ impl Debug for GraphBuilder {
 
 pub fn tree_shake_graph(mut commands: Vec<concrete::Command>) {
     // print!("defs {:?}", defs);
-    let gb = GraphBuilder::new(&commands);
-    println!("{:?}", gb);
+    let mut gb = GraphBuilder::new(&commands);
+    gb.compute_scores();
 
-    for (k, v) in gb.formals.iter() {
-        // println!("{}:", k);
-        v.debug();
-    }
+    // println!("{:?}", gb);
+
+    // for (k, v) in gb.formals.iter() {
+    //     // println!("{}:", k);
+    //     v.debug();
+    // }
 
     // let fs = gb
     //     .get_formal("internal_lib!page_organization.valid_ll.?_definition")
     //     .unwrap();
 
     // fs.debug();
-
-    // // for command in commands.iter() {
-    // //     if format!("{:?}", command).contains(
-    // //         "internal_lib!page_organization.PageOrg.impl&__4.valid_used_page.?_definition",
-    // //     ) {
-    // //         let res = build_command_formal_states(command, defs.clone());
-
-    // //         for qi in res.iter() {
-    // //             qi.debug();
-    // //         }
-    // //         // println!("command {:?}", command);
-    // //     }
-    // // }
 
     // let mut scores: HashMap<String, usize> = HashMap::new();
 
@@ -442,44 +460,5 @@ pub fn tree_shake_graph(mut commands: Vec<concrete::Command>) {
     //         FormalState::Quant(qs) => qs.live_symbols.iter().cloned(),
     //         FormalState::NonQuant(NonQuantState { symbols, .. }) => symbols.iter().cloned(),
     //     });
-    // }
-
-    // for qi in formal_states.iter_mut() {
-    //     match qi {
-    //         FormalState::Quant(qs) => {
-    //             qs.live_symbols.extend(general.clone());
-    //         }
-    //         _ => (),
-    //         // FormalState::NonQuant(NonQuantState { symbols, .. }) => {
-    //         //     *symbols = general.clone();
-    //         // }
-    //     }
-    // }
-
-    // for qi in formal_states.iter() {
-    //     for qj in formal_states.iter() {
-    //         if let FormalState::NonQuant(_) = qj {
-    //             continue;
-    //         }
-    //         if let FormalState::NonQuant(_) = qi {
-    //             continue;
-    //         }
-    //         if qi.is_relevant(qj) {
-    //             // if qi.get_id() == "internal_lib!page_organization.PageOrg.impl&__4.valid_used_page.?_definition" {
-    //             //     qj.debug();
-    //             // }
-    //             scores
-    //                 .entry(qi.get_id())
-    //                 .and_modify(|e| *e += 1)
-    //                 .or_insert(1);
-    //         }
-    //     }
-    // }
-
-    // let mut scores: Vec<(&String, &usize)> = scores.iter().collect();
-    // scores.sort_by(|a, b| b.1.cmp(a.1));
-
-    // for (k, v) in scores {
-    //     println!("{}:{}", k, v);
     // }
 }

@@ -313,6 +313,11 @@ def unsolvable1():
     #     "internal_lib!page_organization.valid_ll.?_definition": EditAction.INSTANTIATE,
     # }
     # dbg.test_edit(edits)
+    
+    edits = {
+        "internal_lib!page_organization.PageOrg.impl&__4.free_to_unused_queue_strong.?_definition": EditAction.INSTANTIATE,
+    }
+    dbg.test_edit(edits)
 
     # dbg.differ.get_actions_v2()
 
@@ -409,18 +414,9 @@ def unsolvable6():
     # rename           14          0         47  9.90 / 10.00         0.05
     # reseed            2          0         59  9.86 / 10.00         0.03
 
-    # dbg.clear_edits()
+    dbg.clear_edits()
     # dbg.try_random_edits()
-
-    edits = {
-        # "internal_lib!page_organization.PageData./PageData_constructor_definition": EditAction.INSTANTIATE,
-        "internal_lib!atomic_ghost_modified.impl&__4.well_formed.?_definition": EditAction.ERASE,
-        # "internal_core!option.Option./Some_constructor_definition": EditAction.INSTANTIATE,
-        "internal_lib!os_mem_util.mem_chunk_good1.?_definition": EditAction.ERASE,
-        "internal_vstd!set.impl&__0.subset_of.?_definition": EditAction.ERASE,
-        "internal_core__option__Option_unbox_axiom_definition": EditAction.ERASE,
-    }
-    dbg.test_edit(edits)
+    dbg.try_all_single_edits()
 
     # dbg.print_status()
 
@@ -442,54 +438,6 @@ def unsolvable6():
     # }
     # dbg.test_edit(edits)
     # # --------------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------------
-    # dbg/mimalloc--queues__page_queue_remove.smt2/edits/v105.smt2
-    # rcode: unsat
-    # time: 5.15
-
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle           7          0         54  9.41 / 10.00         0.21
-    # rename           61          0          0  9.27 /  --           0.11
-    # reseed           61          0          0  9.43 /  --           0.14
-
-    # edits = {
-    #     "internal_lib!types.SegmentLocalAccess./SegmentLocalAccess/main2_accessor_definition": EditAction.ERASE,
-    #     "internal_vstd__seq__Seq<lib!tokens.PageId.>_unbox_axiom_definition": EditAction.INSTANTIATE,
-    #     "internal_lib!linked_    # edits = {
-    #     "internal_tuple__4./tuple__4_constructor_definition": EditAction.ERASE,
-    #     "internal_lib!types.SegmentHeader./SegmentHeader_constructor_definition": EditAction.ERASE,
-    #     "internal_lib!layout.page_header_start.?_definition": EditAction.ERASE,
-    #     "internal_lib!tokens.Mim.thread_local_state_token_data./thread_local_state_token_data/key_accessor_definition": EditAction.INSTANTIATE,
-    #     "internal_vstd!seq.Seq.index.?_pre_post_definition": EditAction.INSTANTIATE,
-    # }
-    # dbg.test_edit(edits)
-    # # -----------------eapPtr./HeapPtr_constructor_definition": EditAction.ERASE,
-    # }
-    # dbg.test_edit(edits)
-    # # --------------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------------
-    # dbg/mimalloc--queues__page_queue_remove.smt2/edits/v126.smt2
-    # rcode: unsat
-    # time: 3.95
-
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle          39          0         22  8.66 / 10.00         0.87
-    # rename           61          0          0  7.48 /  --           0.12
-    # reseed           61          0          0  8.23 /  --           0.36
-
-    # edits = {
-    #     "internal_tuple__4./tuple__4_constructor_definition": EditAction.ERASE,
-    #     "internal_lib!types.SegmentHeader./SegmentHeader_constructor_definition": EditAction.ERASE,
-    #     "internal_lib!layout.page_header_start.?_definition": EditAction.ERASE,
-    #     "internal_lib!tokens.Mim.thread_local_state_token_data./thread_local_state_token_data/key_accessor_definition": EditAction.INSTANTIATE,
-    #     "internal_vstd!seq.Seq.index.?_pre_post_definition": EditAction.INSTANTIATE,
-    # }
-    # dbg.test_edit(edits)
-    # --------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":

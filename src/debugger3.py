@@ -283,7 +283,7 @@ class Debugger3:
         self.editor = QueryEditor(self.orig_path, self.pis[0])
         self.actions = self.differ.get_actions(root_only=True)
 
-        for i in range(1, 4):
+        for i in range(1, 3):
             self.save_report(version=i, overwrite=overwrite_reports)
 
     def __del__(self):
@@ -655,7 +655,7 @@ class Debugger3:
                 valid[qid] = action
         self.test_edit(valid)
 
-    def _try_edits(self, targets):
+    def _try_edits(self, targets, skip_run=False):
         args, edits = [], dict()
 
         for edit in targets:
@@ -666,6 +666,10 @@ class Debugger3:
             edit_path = self.save_edit(edit)
             args.append(edit_path)
             edits[edit_path] = edit
+            
+        if skip_run:
+            log_info("[edit] skipped running, queries saved in", self.edit_dir)
+            return
 
         time_bound = int((10 * len(edits) + 1) / PROC_COUNT)
         run_res = self.__run_with_pool(_run_query, args, time_bound=time_bound)
@@ -674,7 +678,7 @@ class Debugger3:
             ei = EditInfo(path, edits[path], r, e, t)
             self.__edit_infos.append(ei)
 
-    def try_random_edits(self, size=2):
+    def try_random_edits(self, size=1):
         NUM_TRIES = 30
         edits = []
 
@@ -695,6 +699,12 @@ class Debugger3:
             edits.append({qid: self.actions[qid] for qid in edit})
 
         self._try_edits(edits)
+
+    def try_all_single_edits(self):
+        edits = []
+        for qid, action in self.actions.items():
+            edits.append({qid: action})
+        self._try_edits(edits, skip_run=True)
 
     def try_ranked_edits(self, start={}):
         ranked = self.differ.get_actions_v1()

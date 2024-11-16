@@ -48,6 +48,11 @@
         "num_mutants": 60,
         "exp_timeout": 10
     },
+    "verus_verify": {
+        "num_mutants": 0,
+        "num_procs": 7,
+        "exp_timeout": 10
+    },
     "verify": {
         "num_mutants": 0,
         "num_procs": 8
