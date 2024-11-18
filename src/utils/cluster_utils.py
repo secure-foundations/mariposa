@@ -101,10 +101,13 @@ def handle_manager(args, wargs):
 def handle_worker(args):
     from multiprocessing.managers import BaseManager
     import os.path
+    from binascii import hexlify
+
+    authkey = hexlify(os.urandom(24)).decode('utf-8')
 
     BaseManager.register('get_job_queue')
     BaseManager.register('get_res_queue')
-    m = BaseManager(address=(args.manager_addr, 50000), authkey=args.authkey.encode('utf-8'))
+    m = BaseManager(address=(args.manager_addr, 50000), authkey=authkey)
     m.connect()
 
     queue = m.get_job_queue()

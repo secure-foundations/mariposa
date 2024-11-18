@@ -28,7 +28,7 @@ def set_up_manager(subparsers):
     p = subparsers.add_parser('manager', help='sever pool manager mode.')
     add_input_dir_option(p)
     add_experiment_options(p)
-    add_authkey_option(p)
+    # add_authkey_option(p)
     p.add_argument("--total-parts", type=int, required=True, help="number of parts to split the project into")
 
 def set_up_worker(subparsers):
