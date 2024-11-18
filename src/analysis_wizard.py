@@ -30,6 +30,12 @@ def set_up_basic(subparsers):
     add_analysis_options(p)
 
 
+def set_up_veri_verus(subparsers):
+    p = subparsers.add_parser("veri-verus", help="analyze verus verification results")
+    add_input_dir_option(p)
+    add_analysis_options(p)
+
+
 def handle_basic(args):
     exp = args.experiment
     log_check(exp.is_done(), "experiment results do not exist")
@@ -125,8 +131,16 @@ def valid_max(scores):
 def handle_debug():
     analyze_debug()
 
+
 def handle_special():
     pass
+
+
+def handle_veri_verus(args):
+    exp = args.experiment
+    log_check(exp.is_done(), "experiment results do not exist")
+    ba = ExperAnalyzer(exp, args.analyzer)
+    ba.print_plain_status()
 
 
 if __name__ == "__main__":
@@ -139,6 +153,7 @@ if __name__ == "__main__":
 
     set_up_basic(subparsers)
     set_up_verify(subparsers)
+    set_up_veri_verus(subparsers)
     set_up_cvc5_perf(subparsers)
     set_up_cvc5_inst(subparsers)
     set_up_unstable(subparsers)
@@ -156,6 +171,8 @@ if __name__ == "__main__":
         handle_basic(args)
     elif args.sub_command == "verify":
         handle_verify(args)
+    elif args.sub_command == "veri-verus":
+        handle_veri_verus(args)
     elif args.sub_command == "perf":
         PrefAnalyzer(args.input_group, args.analyzer)
     elif args.sub_command == "inst":

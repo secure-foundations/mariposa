@@ -25,7 +25,7 @@ from utils.query_utils import (
     find_verus_procedure_name,
     parse_trace,
 )
-from utils.system_utils import log_check, log_info, log_warn, subprocess_run
+from utils.system_utils import confirm_input, log_check, log_info, log_warn, subprocess_run
 from tabulate import tabulate
 
 # from pprint import pprint
@@ -354,6 +354,9 @@ class Debugger3:
 
     def clear_edits(self):
         if os.path.exists(self.edit_dir):
+            count = len(os.listdir(self.edit_dir))
+            if count > 100:
+                confirm_input(f"clear {count} edits?")
             os.system(f"rm {self.edit_dir}/*")
 
         self.__edit_infos = []
@@ -668,7 +671,7 @@ class Debugger3:
             edits[edit_path] = edit
             
         if skip_run:
-            log_info("[edit] skipped running, queries saved in", self.edit_dir)
+            log_info(f"[edit] skipped running, queries saved in {self.edit_dir}")
             return
 
         time_bound = int((10 * len(edits) + 1) / PROC_COUNT)
@@ -704,7 +707,7 @@ class Debugger3:
         edits = []
         for qid, action in self.actions.items():
             edits.append({qid: action})
-        self._try_edits(edits, skip_run=True)
+        self._try_edits(edits)
 
     def try_ranked_edits(self, start={}):
         ranked = self.differ.get_actions_v1()
@@ -712,6 +715,10 @@ class Debugger3:
         for qid, c, rr in ranked[:20]:
             edits[qid] = {qid: self.actions[qid]}.update(start)
         self._try_edits(edits)
+
+    def get_passing_edits(self):
+        passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
+        return sorted(passed, key=lambda ei: ei.time)
 
     def save_edit_report(self):
         passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]

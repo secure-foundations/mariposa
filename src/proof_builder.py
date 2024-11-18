@@ -174,10 +174,9 @@ class ProofBuilder(QueryLoader):
         pi = ProofInfo(self.cur_skolem_funs)
         log_info(f"[proof] adding instantiations to proof ")
         for qid, insts in tqdm(self.instantiations.items()):
-            # if qid != "internal_vstd!seq_lib.impl&__0.no_duplicates.?_definition":
-            #     continue
-            # print(qid)
-            # print(collapse_sexpr(self.quants[qid].quant.sexpr()))
+            if qid not in self.quants:
+                log_warn(f"quantifier {qid} not found in query!")
+                continue
             m = SubsMapper(self.quants[qid].quant)
             pi.add_qi(qid, m, insts)
         pi.finalize()

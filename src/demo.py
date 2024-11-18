@@ -4,10 +4,11 @@ import os, sys
 from z3 import set_param
 from base.solver import RCode
 from debugger.trace_analyzer import EditAction
-from debugger3 import Debugger3
+from debugger.debugger3 import Debugger3
 from proof_builder import QunatInstInfo
 from query_editor import BasicQueryWriter
 from random import sample
+from demos.unstable7 import unstable7
 
 from utils.system_utils import log_info, subprocess_run
 
@@ -40,7 +41,7 @@ def unstable1():
     # this is an example where z3 gives up too early
 
     q = "data/projs/v_systems/base.z3/noderep--spec__cyclicbuffer.3.smt2"
-    dbg = Debugger3(q, False, True)
+    dbg = Debugger3(q)
 
     # dbg.try_random_edits()
     # dbg.try_ranked_edits()
@@ -71,7 +72,7 @@ def unstable2():
     # rename            0          0         61  --  / 10.00          0
     # reseed           23          0         38  8.40 / 10.00         0.99
 
-    dbg = Debugger3(q, False, True)
+    dbg = Debugger3(q)
 
     # dbg.clear_edits()
     # dbg.try_random_edits()
@@ -148,7 +149,7 @@ def unstable4():
     # rename            0          0         61  --  / 10.00          0
     # reseed           16          0         45  7.71 / 10.00         1.12
 
-    dbg = Debugger3(q, False, True)
+    dbg = Debugger3(q)
     # dbg.save_report()
     # dbg.clear_edits()
     dbg.try_aggressive_edit()
@@ -218,58 +219,6 @@ def unstable6():
     dbg.try_ranked_edits()
 
 
-def unstable7():
-    q = "data/projs/v_systems/base.z3/mimalloc--segment__span_queue_delete.smt2"
-
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle          38          0         23  8.68 / 10.00         0.93
-    # rename           61          0          0  8.25 /  --           0.21
-    # reseed           61          0          0  8.39 /  --           0.49
-
-    dbg = Debugger3(q, False, True)
-    dbg.clear_edits()
-    # dbg.try_less_random_edits(size=3)
-    # dbg.try_ranked_edits()
-
-    # --------------------------------------------------------------------------------
-    # dbg/mimalloc--segment__span_queue_delete.smt2/edits/v1.smt2
-    # rcode: unsat
-    # time: 4.62
-    
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle          61          0          0  6.16 /  --           0.46
-    # rename           61          0          0  6.30 /  --           0.12
-    # reseed           61          0          0  6.36 /  --           0.1
-
-    edit = {
-        'user_vstd__std_specs__bits__axiom_u64_leading_zeros_44': EditAction.ERASE,
-        'internal_lib!atomic_ghost_modified.impl&__4.well_formed.?_definition': EditAction.ERASE,
-        'internal_lib!page_organization.PageOrg.impl&__4.count_is_right.?_definition': EditAction.ERASE,
-        'internal_lib!page_organization.PageOrg.impl&__4.attached_ranges.?_definition': EditAction.ERASE,
-    }
-    
-    dbg.test_edit(edit)
-    # --------------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------------
-    # dbg/mimalloc--segment__span_queue_delete.smt2/edits/v2.smt2
-    # rcode: unsat
-    # time: 3.83
-
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle          61          0          0  8.07 /  --           0.73
-    # rename           61          0          0  6.18 /  --           0.13
-    # reseed           61          0          0  6.37 /  --           0.27
-
-    # edit = {
-    #     'prelude_unbox_box_int': EditAction.INSTANTIATE
-    # }
-    # dbg.test_edit(edit)
-    # --------------------------------------------------------------------------------
-
 
 def unsolvable1():
     q = "data/projs/v_systems/base.z3/mimalloc--segment__segment_span_free.smt2"
@@ -280,10 +229,28 @@ def unsolvable1():
     # rename            0          0         61  --  / 10.00          0
     # reseed            0          0         61  --  / 10.00          0
 
-    dbg = Debugger3(q, False, True)
+    dbg = Debugger3(q)
     # dbg.clear_edits()
     # dbg.try_random_edits()
     # dbg.try_aggressive_edits()
+
+    # --------------------------------------------------------------------------------
+    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
+    # ----------  -------  ---------  ---------  ------------------  -----
+    # shuffle          61          0          0  8.03 /  --           0.65
+    # rename           61          0          0  8.50 /  --           0.18
+    # reseed           61          0          0  8.49 /  --           0.12
+
+    edits = {
+        "internal_lib!page_organization.valid_ll.?_definition": EditAction.INSTANTIATE,
+    }
+    dbg.test_edit(edits)
+    # --------------------------------------------------------------------------------
+
+    edits = {
+        "internal_lib!page_organization.PageOrg.impl&__4.free_to_unused_queue_strong.?_definition": EditAction.INSTANTIATE,
+    }
+    dbg.test_edit(edits)
 
     # --------------------------------------------------------------------------------
     # dbg/mimalloc--segment__segment_span_free.smt2/edits/v1.smt2
@@ -296,35 +263,20 @@ def unsolvable1():
     # rename           61          0          0  8.40 /  --           0.13
     # reseed           61          0          0  8.37 /  --           0.18
 
-    # edits = {
-    #     "internal_lib!page_organization.valid_ll.?_definition": EditAction.INSTANTIATE,
-    #     "internal_vstd__seq__Seq<lib!types.PageQueue.>_box_axiom_definition": EditAction.ERASE,
-    # }
-    # dbg.test_edit(edits)
-    # # -------------------------
-
-    # # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # # ----------  -------  ---------  ---------  ------------------  -----
-    # # shuffle          61          0          0  8.03 /  --           0.65
-    # # rename           61          0          0  8.50 /  --           0.18
-    # # reseed           61          0          0  8.49 /  --           0.12
-
-    # edits = {
-    #     "internal_lib!page_organization.valid_ll.?_definition": EditAction.INSTANTIATE,
-    # }
-    # dbg.test_edit(edits)
-    
     edits = {
-        "internal_lib!page_organization.PageOrg.impl&__4.free_to_unused_queue_strong.?_definition": EditAction.INSTANTIATE,
+        "internal_lib!page_organization.valid_ll.?_definition": EditAction.INSTANTIATE,
+        "internal_vstd__seq__Seq<lib!types.PageQueue.>_box_axiom_definition": EditAction.ERASE,
     }
     dbg.test_edit(edits)
+    # --------------------------------------------------------------------------------
 
-    # dbg.differ.get_actions_v2()
+    for ei in dbg.get_passing_edits()[:20]:
+        print(ei.time, ei.path, ei.edit)
 
 
 def unsolvable3():
     q = "data/projs/v_systems/base.z3/mimalloc--queues__page_queue_push_back.smt2"
-    dbg = Debugger3(q, overwrite_reports=True)
+    dbg = Debugger3(q)
 
     # mutation      unsat    unknown    timeout  mean (pass/fail)      std
     # ----------  -------  ---------  ---------  ------------------  -----
@@ -333,6 +285,7 @@ def unsolvable3():
     # reseed            2          0         59  9.86 / 10.00         0.03
 
     # dbg.clear_edits()
+    # dbg.try_all_single_edits()
 
     # --------------------------------------------------------------------------------
     # dbg/mimalloc--queues__page_queue_push_back.smt2/edits/v1.smt2
@@ -345,18 +298,11 @@ def unsolvable3():
     # rename           61          0          0  6.35 /  --           0.12
     # reseed           61          0          0  6.43 /  --           0.07
 
-    edits = {
-        "internal_lib!page_organization.PageOrg.impl&__4.valid_used_page.?_definition": EditAction.INSTANTIATE,
-    }
-    dbg.test_edit(edits)
-    # --------------------------------------------------------------------------------
-
-
     # edits = {
-    #     "internal_vstd__set__Set<int.>_unbox_axiom_definition": EditAction.ERASE,
+    #     "internal_lib!page_organization.PageOrg.impl&__4.valid_used_page.?_definition": EditAction.INSTANTIATE,
     # }
     # dbg.test_edit(edits)
-
+    # --------------------------------------------------------------------------------
     # dbg.try_random_edits()
 
 
@@ -371,37 +317,28 @@ def unsolvable5():
 
     dbg = Debugger3(q)
     # dbg.clear_edits()
+    # dbg.try_all_single_edits()
+
+    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
+    # ----------  -------  ---------  ---------  ------------------  -----
+    # shuffle          61          0          0  7.07 /  --           1.08
+    # rename           61          0          0  6.49 /  --           0.16
+    # reseed           61          0          0  6.71 /  --           0.8
+
+    edits = {
+        "internal_lib!page_organization.valid_ll.?_definition": EditAction.ERASE,
+        "internal_lib__types__Local_box_axiom_definition": EditAction.INSTANTIATE,
+        'internal_vstd!map.impl&__0.dom.?_pre_post_definition': EditAction.INSTANTIATE,
+        'internal_vstd!seq.Seq.index.?_pre_post_definition': EditAction.INSTANTIATE,
+    }
+
+    dbg.test_edit(edits)
 
     # dbg.try_aggressive_edits()
     # dbg.try_random_edits()
 
-    # --------------------------------------------------------------------------------
-    # dbg/mimalloc--segment.1.smt2/edits/v18.smt2
-    # rcode: unsat
-    # time: 4.15
-
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle           4          0         57  8.82 / 10.00         0.34
-    # rename           61          0          0  7.77 /  --           0.13
-    # reseed           49          0         12  8.12 / 10.00         0.81
-
-    edits = {
-        "internal_vstd!map.impl&__0.dom.?_pre_post_definition": EditAction.INSTANTIATE
-    }
-    dbg.test_edit(edits)
-    # --------------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------------
-    # dbg/mimalloc--segment.1.smt2/edits/v54.smt2
-    # rcode: unsat
-    # time: 4.15
-    edits = {
-        "internal_vstd!map.impl&__0.dom.?_pre_post_definition": EditAction.INSTANTIATE,
-        "internal_vstd__cell__PointsTo<vstd!ptr.PPtr<lib!types.Page.>.>_box_axiom_definition": EditAction.INSTANTIATE,
-    }
-    dbg.test_edit(edits)
-    # --------------------------------------------------------------------------------
+    for ei in dbg.get_passing_edits()[:20]:
+        print(ei.as_report())
 
 
 def unsolvable6():
@@ -414,9 +351,9 @@ def unsolvable6():
     # rename           14          0         47  9.90 / 10.00         0.05
     # reseed            2          0         59  9.86 / 10.00         0.03
 
-    dbg.clear_edits()
+    # dbg.clear_edits()
     # dbg.try_random_edits()
-    dbg.try_all_single_edits()
+    # dbg.try_all_single_edits()
 
     # dbg.print_status()
 
@@ -438,7 +375,16 @@ def unsolvable6():
     # }
     # dbg.test_edit(edits)
     # # --------------------------------------------------------------------------------
+    for ei in dbg.get_passing_edits()[:20]:
+        print(ei.time, ei.path, ei.edit)
 
+def anvil1():
+    q = "data/projs/anvil/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__validation__lemma_always_stateful_set_in_create_request_msg_satisfies_unchangeable.smt2"
+    dbg = Debugger3(q, overwrite_reports=False)
+
+    # dbg.test_edit({
+    #     "internal_rabbitmq_controller!kubernetes_api_objects.spec.dynamic.DynamicObjectView./DynamicObjectView_constructor_definition": EditAction.INSTANTIATE,
+    # })
 
 if __name__ == "__main__":
     set_param(proof=True)

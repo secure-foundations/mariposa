@@ -117,6 +117,24 @@ class ExperAnalyzer:
         cats.finalize()
         cats.print_status()
 
+        unsats = []
+        for cat in [RCode.UNSAT]:
+            qids = cats[cat]
+            if len(qids) == 0:
+                continue
+
+            # print_banner(f"{cat} ({len(qids)})")
+            for qid in qids:
+                qr = self[qid]
+                unsats.append(qr)
+                
+        unsats.sort(key=lambda qr: qr.get_mean_time())
+
+        for qr in unsats:
+            print(qr.query_path)
+            print(f"{round(qr.get_original_status()[1]/1000, 2)}")
+                # print(round(qr.get_original_status()[1]/1000, 2))
+
     def print_status(self, category_verbosity=0, query_verbosity=0, is_verus=False):
         print_banner("Overall Report")
         print("")
@@ -187,19 +205,10 @@ class ExperAnalyzer:
         for m_path, (mutation, seed, rc, et) in failed.items():
             print(f"{m_path} - {rc} - {et}")
 
-    # def get_unstable_query_mutants(self):
-    #     res = []
+    # def print_verification_status(self):
     #     for qid in self.qids:
     #         qr = self[qid]
-
-    #         if self.get_stability(qid) != Stability.UNSTABLE:
+    #         if qr.failure_type == FailureType.NONE:
     #             continue
-
-    #         s, f = self.get_mutant_details(qr)
-
-    #         if len(s) == 0 or len(f) == 0:
-    #             log_warn(f"only quake was effective, skipping {qid}")
-    #             continue
-
-    #         res.append((qr, s, f))
-    #     return res
+    #         print_banner(f"{qid} ({qr.failure_type})")
+    #         qr.print_status(verbosity=2)

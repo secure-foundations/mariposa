@@ -10,9 +10,9 @@ import networkx as nx
 
 
 def shorten_qid(qid):
-    if len(qid) <= 75:
+    if len(qid) <= 100:
         return qid
-    return qid[:75] + "..."
+    return qid[:100] + "..."
 
 
 def is_prelude_qid(qid):
