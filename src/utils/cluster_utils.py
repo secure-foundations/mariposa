@@ -42,10 +42,16 @@ def __spinoff_server(args):
         os.system(remote_cmd)
 
 def handle_manager(args, wargs):
+    from binascii import hexlify
     branch = subprocess_run("git rev-parse --abbrev-ref HEAD", shell=True)[0]
 
     if branch != "master":
         confirm_input(f"manager is not on master branch, continue?")
+
+    authkey = hexlify(os.urandom(24)).decode('utf-8')
+    # TODO: I forgot why we need to pass wargs
+    wargs.authkey = authkey.encode('utf-8')
+    args.authkey = authkey
 
     exp = args.experiment
     exp.create_db(clear=args.clear_existing)
@@ -101,13 +107,10 @@ def handle_manager(args, wargs):
 def handle_worker(args):
     from multiprocessing.managers import BaseManager
     import os.path
-    from binascii import hexlify
-
-    authkey = hexlify(os.urandom(24)).decode('utf-8')
 
     BaseManager.register('get_job_queue')
     BaseManager.register('get_res_queue')
-    m = BaseManager(address=(args.manager_addr, 50000), authkey=authkey)
+    m = BaseManager(address=(args.manager_addr, 50000), authkey=args.authkey.encode('utf-8'))
     m.connect()
 
     queue = m.get_job_queue()

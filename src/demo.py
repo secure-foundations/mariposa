@@ -110,8 +110,11 @@ def foo():
     # eval(name)(q)
     dbg = Debugger3(q, clear_edits=False)
     pname = dbg.get_project_name("single_edits")
-    # print("./src/exper_wizard.py manager -e verus_verify --total-parts 12 -s z3_4_13_0 --clear-existing -i data/projs/{pname}/base.z3")
+
+    print(f"./src/exper_wizard.py manager -e verus_verify --total-parts 12 -s z3_4_13_0 --clear-existing -i data/projs/{pname}/base.z3")
     print(f"./src/analysis_wizard.py veri-verus -e verus_verify -s z3_4_13_0 -i data/projs/{pname}/base.z3")
+    print(f"./src/exper_wizard.py data-sync -i data/projs/{pname}_filtered/base.z3 --clear")
+    print(f"./src/exper_wizard.py manager -e verus_quick --total-parts 12 -s z3_4_13_0 --clear-existing -i data/projs/{pname}_filtered/base.z3")
     print(f"./src/analysis_wizard.py basic -e verus_quick -s z3_4_13_0 -i data/projs/{pname}_filtered/base.z3")
 
     # for q in queries.values():
