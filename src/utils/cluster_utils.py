@@ -39,6 +39,7 @@ def __spinoff_server(args):
             continue
         remote_cmd = f"""ssh {host} "(cd mariposa; python3 src/exper_wizard.py worker --manager-addr {addr} --authkey {args.authkey}) &> mariposa.log &" """
         print(remote_cmd)
+        os.system(remote_cmd)
 
 def handle_manager(args, wargs):
     branch = subprocess_run("git rev-parse --abbrev-ref HEAD", shell=True)[0]
@@ -253,6 +254,6 @@ def handle_stop():
     for host in S190X_HOSTS:
         if host == "s1904":
             continue
-        remote_cmd = f"""ssh {host} "{cmd}" """
+        remote_cmd = f"""ssh -t {host} "({cmd})" """
         log_info("running " + remote_cmd)
         os.system(remote_cmd)

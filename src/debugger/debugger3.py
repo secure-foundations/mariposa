@@ -2,6 +2,7 @@
 
 import argparse
 import binascii, random
+import hashlib
 import sqlite3
 import pickle
 import subprocess
@@ -16,7 +17,7 @@ from proof_builder import ProofInfo, ProofBuilder
 from utils.database_utils import table_exists
 import multiprocessing
 import os, sys
-from typing import Dict, List
+from typing import Dict, List, Set
 from base.defs import DEBUG_ROOT, MARIPOSA
 from base.solver import output_as_rcode
 from utils.query_utils import (
@@ -25,7 +26,13 @@ from utils.query_utils import (
     find_verus_procedure_name,
     parse_trace,
 )
-from utils.system_utils import confirm_input, log_check, log_info, log_warn, subprocess_run
+from utils.system_utils import (
+    confirm_input,
+    log_check,
+    log_info,
+    log_warn,
+    subprocess_run,
+)
 from tabulate import tabulate
 
 # from pprint import pprint
@@ -234,6 +241,30 @@ class EditInfo:
         ]
         return "\n".join(lines)
 
+    def path_exists(self):
+        return os.path.exists(self.path)
+
+    # def __hash__(self) -> int:
+    #     edit = tuple(edit)
+    #     return hash(edit)
+
+    # def __eq__(self, o: object) -> bool:
+    #     if not isinstance(o, EditInfo):
+    #         return False
+    #     return self.edit == o.edit
+
+    # def __ne__(self, o: object) -> bool:
+    #     return not self.__eq__(o)
+
+    def has_data(self):
+        return self.std_out != -1
+
+    def get_id(self):
+        m = hashlib.md5()
+        edit = [(qid, self.edit[qid]) for qid in sorted(self.edit)]
+        m.update(str(self.edit).encode())
+        return m.hexdigest()
+
 
 class Debugger3:
     def __init__(
@@ -258,7 +289,7 @@ class Debugger3:
         self.db_path = f"{self.sub_root}/db.sqlite"
         self.edits_pickle = f"{self.sub_root}/edits/pickle"
         self.edits_report = f"{self.sub_root}/edit_report.py"
-        self.__edit_infos: List[EditInfo] = []
+        self.__edit_infos: Dict[int, EditInfo] = dict()
         self.__build_proof_from_core = proof_from_core
 
         self.__init_dirs(query_path, reset, ids_available)
@@ -266,7 +297,6 @@ class Debugger3:
         self.traces: List[MutantInfo] = []
         self.proofs: List[MutantInfo] = []
         self.cores: List[MutantInfo] = []
-        self.version = 0
 
         self.__init_db()
         self.__init_traces()
@@ -355,12 +385,11 @@ class Debugger3:
     def clear_edits(self):
         if os.path.exists(self.edit_dir):
             count = len(os.listdir(self.edit_dir))
-            if count > 100:
-                confirm_input(f"clear {count} edits?")
+            # if count > 100:
+            #     confirm_input(f"clear {count} edits?")
             os.system(f"rm {self.edit_dir}/*")
 
-        self.__edit_infos = []
-        self.version = 0
+        self.__edit_infos = dict()
         log_info("[edit] cleared")
 
     def create_mutants_info(self, mutations: List[Mutation]):
@@ -504,12 +533,10 @@ class Debugger3:
         with open(self.edits_pickle, "rb") as f:
             self.__edit_infos = pickle.load(f)
 
-        for ei in self.__edit_infos:
+        for ei in self.__edit_infos.values():
             if not os.path.exists(ei.path):
                 log_warn(f"[edit] {ei.path} not found")
                 continue
-            v = int(ei.path.split("/")[-1].split(".")[0][1:])
-            self.version = max(self.version, v)
 
     def refresh_status(self):
         self.traces: List[MutantInfo] = []
@@ -608,48 +635,66 @@ class Debugger3:
 
         log_info(f"[report] written: {report_path}")
 
-    def get_edit_path(self, v=None):
-        v = v if v else self.version + 1
-        return f"{self.edit_dir}/v{v}.smt2"
-
-    def save_edit(self, edit: Dict[str, EditAction]):
-        assert isinstance(edit, dict)
-        self.editor.do_edits(edit)
-        edit_path = self.get_edit_path()
-        self.version += 1
-        self.editor.save(edit_path)
-        return edit_path
+    def _save_edit(self, ei: EditInfo):
+        assert isinstance(ei, EditInfo)
+        self.editor.do_edits(ei.edit)
+        self.editor.save(ei.path)
+        return
 
     def test_edit(self, edit):
-        (eis, edit) = self.look_up_edit(edit, True)
-
-        if eis != []:
-            log_info("[edit] specified edit already exists")
-            return eis[0]
-
-        edit_path = self.save_edit(edit)
-        _, r, e, t = _run_query(edit_path)
-        ei = EditInfo(edit_path, edit, r, e, t)
-        self.__edit_infos.append(ei)
-
+        ei = self.init_edit_info(edit)
+        if ei.has_data():
+            log_warn("[edit] specified edit already exists")
+            return ei
+        _, r, e, t = _run_query(ei.path)
+        ei = EditInfo(ei.path, edit, r, e, t)
+        self.__edit_infos[ei.get_id()] = ei
         return ei
 
-    def look_up_edit(self, edit, exact=False):
-        res = []
+    def test_edit_with_id(self, edit_id):
+        path = f"{self.edit_dir}/{edit_id}.smt2"
+        if not os.path.exists(path):
+            log_warn(f"[edit] {path} not found")
+            return None
+        assert edit_id in self.__edit_infos
+        ei = self.__edit_infos[edit_id]
+        if ei.has_data():
+            return ei
+        _, r, e, t = _run_query(path)
+        ei.std_out = r
+        ei.error = e
+        ei.time = t
+        return ei
 
+    def get_edit_path(self, edit):
+        return f"{self.edit_dir}/{edit.get_id()}.smt2"
+
+    def init_edit_info(self, edit):
         if isinstance(edit, set):
             edit = {qid: self.actions[qid] for qid in edit}
         else:
             assert isinstance(edit, dict)
+        ei = EditInfo("", edit, -1, -1, -1)
+        path = self.get_edit_path(ei)
+        ei.path = path
+        eid = ei.get_id()
+
+        if ei in self.__edit_infos:
+            return self.__edit_infos[eid]
+
+        if not os.path.exists(path):
+            self._save_edit(ei)
+
+        return ei
+
+    def look_up_edit(self, edit):
+        res = []
 
         for ei in self.__edit_infos:
-            if exact and ei.edit == edit:
-                res.append(ei)
-            elif not exact and set(ei.edit.keys()) & edit.keys() != set():
+            if set(ei.edit.keys()) & edit.keys() != set():
                 res.append(ei)
 
-        assert isinstance(edit, dict)
-        return (res, edit)
+        return res
 
     def try_aggressive_edit(self):
         valid = dict()
@@ -662,14 +707,17 @@ class Debugger3:
         args, edits = [], dict()
 
         for edit in targets:
-            (eis, edit) = self.look_up_edit(edit, True)
-            if eis != []:
+            ei = self.init_edit_info(edit)
+
+            if ei.has_data():
                 log_warn("[edit] specified edit already exists")
                 continue
-            edit_path = self.save_edit(edit)
-            args.append(edit_path)
-            edits[edit_path] = edit
-            
+            # self._save_edit(eis)
+            args.append(ei.path)
+            edits[ei.get_id()] = edit
+            # this is a bit redundant, but it's fine
+            self.__edit_infos[ei.get_id()] = ei
+
         if skip_run:
             log_info(f"[edit] skipped running, queries saved in {self.edit_dir}")
             return
@@ -679,7 +727,7 @@ class Debugger3:
 
         for path, r, e, t in run_res:
             ei = EditInfo(path, edits[path], r, e, t)
-            self.__edit_infos.append(ei)
+            self.__edit_infos[ei.get_id()] = ei
 
     def try_random_edits(self, size=1):
         NUM_TRIES = 30
@@ -708,6 +756,32 @@ class Debugger3:
         for qid, action in self.actions.items():
             edits.append({qid: action})
         self._try_edits(edits)
+
+    def make_single_edits_project(self):
+        edits = []
+        for qid, action in self.actions.items():
+            edits.append({qid: action})
+        self._try_edits(edits, skip_run=True)
+        self.make_project("single_edits")
+
+    def get_project_name(self, suffix):
+        prefix = self.base_name.replace("-", "_").replace(".", "_")
+        return f"{prefix}_{suffix}"
+
+    def make_project(self, suffix):
+        name = self.get_project_name(suffix)
+        subprocess_run(
+            [
+                "./src/proj_wizard.py",
+                "create",
+                "-i",
+                self.edit_dir,
+                "--new-project-name",
+                name,
+            ],
+            check=True,
+            debug=True,
+        )
 
     def try_ranked_edits(self, start={}):
         ranked = self.differ.get_actions_v1()

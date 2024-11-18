@@ -111,7 +111,7 @@ def scrub(name):
 
 def is_simple_id(name):
     import re
-    return re.match("^[a-z0-9_]*$", name)
+    return re.match("^[a-z0-9_A-Z]*$", name)
 
 def line_count(filename):
     with open(filename) as f:

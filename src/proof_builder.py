@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import binascii
 import time, pickle
 from tqdm import tqdm
 from z3 import *

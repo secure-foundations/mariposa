@@ -60,7 +60,7 @@ class ExperAnalyzer:
             for qid in path_exists_qids:
                 if qid not in qers:
                     log_warn(f"query {qid} has no experiment results")
-            log_check(path_exists_qids == set(qers.keys()), 
+            log_check(path_exists_qids.issubset(set(qers.keys())), 
                         "there are queries with files, but no experiments done")
 
         if group_qids is None:
@@ -115,25 +115,28 @@ class ExperAnalyzer:
             rc, et = qr.get_original_status()
             cats.add_item(RCode(rc), qid)
         cats.finalize()
-        cats.print_status()
+        # cats.print_status()
 
         unsats = []
         for cat in [RCode.UNSAT]:
             qids = cats[cat]
             if len(qids) == 0:
                 continue
-
             # print_banner(f"{cat} ({len(qids)})")
             for qid in qids:
                 qr = self[qid]
                 unsats.append(qr)
-                
-        unsats.sort(key=lambda qr: qr.get_mean_time())
 
+        unsats.sort(key=lambda qr: qr.get_original_status()[1])
+
+        filtered_dir = self.exp.proj.sub_root.replace("smt2_single_edits", "smt2_single_edits_filtered")
+        os.makedirs(filtered_dir, exist_ok=True)
         for qr in unsats:
+            # if qr.get_original_status()[1] > 8000:
+            #     continue
+            os.system(f"cp {qr.query_path} {filtered_dir}")
             print(qr.query_path)
-            print(f"{round(qr.get_original_status()[1]/1000, 2)}")
-                # print(round(qr.get_original_status()[1]/1000, 2))
+            # print(f"{round(qr.get_original_status()[1]/1000, 2)}")
 
     def print_status(self, category_verbosity=0, query_verbosity=0, is_verus=False):
         print_banner("Overall Report")
