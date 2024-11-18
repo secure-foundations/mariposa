@@ -7,7 +7,10 @@ from debugger.trace_analyzer import EditAction
 from debugger.debugger3 import Debugger3
 from random import sample
 from demos.unstable2 import *
+from demos.unstable4 import *
 from demos.unstable7 import *
+from demos.unsolvable1 import *
+from demos.unsolvable2 import *
 from demos.unsolvable3 import *
 from demos.unsolvable6 import *
 
@@ -78,13 +81,13 @@ def unstable6(q):
     dbg.try_ranked_edits()
 
 
-def anvil1():
-    q = "data/projs/anvil/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__validation__lemma_always_stateful_set_in_create_request_msg_satisfies_unchangeable.smt2"
-    dbg = Debugger3(q, overwrite_reports=False)
+# def anvil1():
+#     q = "data/projs/anvil/base.z3/rabbitmq-log-rabbitmq_controller__proof__helper_invariants__validation__lemma_always_stateful_set_in_create_request_msg_satisfies_unchangeable.smt2"
+#     dbg = Debugger3(q, overwrite_reports=False)
 
-    # dbg.test_edit({
-    #     "internal_rabbitmq_controller!kubernetes_api_objects.spec.dynamic.DynamicObjectView./DynamicObjectView_constructor_definition": EditAction.INSTANTIATE,
-    # })
+#     # dbg.test_edit({
+#     #     "internal_rabbitmq_controller!kubernetes_api_objects.spec.dynamic.DynamicObjectView./DynamicObjectView_constructor_definition": EditAction.INSTANTIATE,
+#     # })
 
 
 def foo():
@@ -92,6 +95,7 @@ def foo():
 
     queries = {
         # "test0": "data/projs/v_systems/base.z3/ironsht--delegation_map_v.35.smt2",
+
         # "unstable1": "data/projs/v_systems/base.z3/noderep--spec__cyclicbuffer.3.smt2",
         "unstable2": "data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2",
         # "unstable3": "data/projs/v_systems/base.z3/mimalloc--commit_segment.1.smt2",
@@ -99,8 +103,11 @@ def foo():
         # "unstable5": "data/projs/v_systems/base.z3/noderep--spec__cyclicbuffer.5.smt2",
         # "unstable6": "data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__merge_with_before_ll_inv_valid_unused.smt2",
         "unstable7": "data/projs/v_systems/base.z3/mimalloc--segment__span_queue_delete.smt2",
+
         "unsolvable1": "data/projs/v_systems/base.z3/mimalloc--segment__segment_span_free.smt2",
+        "unsolvable2": "data/projs/v_systems/base.z3/mimalloc--segment__segment_span_free_coalesce_before.smt2",
         "unsolvable3": "data/projs/v_systems/base.z3/mimalloc--queues__page_queue_push_back.smt2",
+
         "unsolvable5": "data/projs/v_systems/base.z3/mimalloc--segment.1.smt2",
         "unsolvable6": "data/projs/v_systems/base.z3/mimalloc--queues__page_queue_remove.smt2",
     }
@@ -108,14 +115,15 @@ def foo():
     name = sys.argv[1]
     q = queries[name]
     # eval(name)(q)
-    dbg = Debugger3(q, clear_edits=False)
-    pname = dbg.get_project_name("single_edits")
 
-    print(f"./src/exper_wizard.py manager -e verus_verify --total-parts 12 -s z3_4_13_0 --clear-existing -i data/projs/{pname}/base.z3")
-    print(f"./src/analysis_wizard.py veri-verus -e verus_verify -s z3_4_13_0 -i data/projs/{pname}/base.z3")
-    print(f"./src/exper_wizard.py data-sync -i data/projs/{pname}_filtered/base.z3 --clear")
-    print(f"./src/exper_wizard.py manager -e verus_quick --total-parts 12 -s z3_4_13_0 --clear-existing -i data/projs/{pname}_filtered/base.z3")
-    print(f"./src/analysis_wizard.py basic -e verus_quick -s z3_4_13_0 -i data/projs/{pname}_filtered/base.z3")
+    dbg = Debugger3(q, clear_edits=False)
+    name = dbg.get_project_name("single_edits")
+
+    print(f"./src/exper_wizard.py manager -e verus_verify --total-parts 10 -s z3_4_13_0 --clear-existing -i data/projs/{name}/base.z3")
+    print(f"./src/analysis_wizard.py veri-verus -e verus_verify -s z3_4_13_0 -i data/projs/{name}/base.z3")
+    print(f"./src/exper_wizard.py data-sync -i data/projs/{name}_filtered/base.z3 --clear")
+    print(f"./src/exper_wizard.py manager -e verus_quick --total-parts 10 -s z3_4_13_0 --clear-existing -i data/projs/{name}_filtered/base.z3")
+    print(f"./src/analysis_wizard.py basic -e verus_quick -s z3_4_13_0 -i data/projs/{name}_filtered/base.z3")
 
     # for q in queries.values():
     #     dbg = Debugger3(q)

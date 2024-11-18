@@ -131,12 +131,16 @@ class ExperAnalyzer:
 
         filtered_dir = self.exp.proj.sub_root.replace("smt2_single_edits", "smt2_single_edits_filtered")
         os.makedirs(filtered_dir, exist_ok=True)
-        for qr in unsats[:30]:
-            # if qr.get_original_status()[1] > 8000:
-            #     continue
-            os.system(f"cp {qr.query_path} {filtered_dir}")
+        count = 0
+
+        for qr in unsats:
+            t = qr.get_original_status()[1]/1000
+            # if not (count < 30 or t < 8): continue
+            if t >= 9: continue
+            # os.system(f"cp {qr.query_path} {filtered_dir}")
             print(qr.query_path)
-            print(f"{round(qr.get_original_status()[1]/1000, 2)}")
+            print(f"{round(t, 2)}")
+            count += 1
 
     def print_status(self, category_verbosity=0, query_verbosity=0, is_verus=False):
         print_banner("Overall Report")

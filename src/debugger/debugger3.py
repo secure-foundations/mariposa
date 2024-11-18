@@ -385,8 +385,8 @@ class Debugger3:
     def clear_edits(self):
         if os.path.exists(self.edit_dir):
             count = len(os.listdir(self.edit_dir))
-            # if count > 100:
-            #     confirm_input(f"clear {count} edits?")
+            if count > 10:
+                confirm_input(f"clear {count} edits?")
             os.system(f"rm {self.edit_dir}/*")
 
         self.__edit_infos = dict()
@@ -651,7 +651,7 @@ class Debugger3:
         self.__edit_infos[ei.get_id()] = ei
         return ei
 
-    def test_edit_with_id(self, edit_id):
+    def test_edit_with_id(self, edit_id) -> EditInfo:
         path = f"{self.edit_dir}/{edit_id}.smt2"
         if not os.path.exists(path):
             log_warn(f"[edit] {path} not found")
@@ -762,7 +762,7 @@ class Debugger3:
         for qid, action in self.actions.items():
             edits.append({qid: action})
         self._try_edits(edits, skip_run=True)
-        self.make_project("single_edits")
+        # self.make_project("single_edits")
 
     def get_project_name(self, suffix):
         prefix = self.base_name.replace("-", "_").replace(".", "_")

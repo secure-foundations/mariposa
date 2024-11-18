@@ -14,8 +14,6 @@ def unsolvable3(q):
     # dbg.clear_edits()
     # dbg.try_all_single_edits()
 
-    # ./src/analysis_wizard.py basic -e verus_quick -s z3_4_13_0 -i data/projs/mimalloc__segment__segment_span_free_smt2_single_edits_filtered/base.z3
-
     for hid in [
         "31aea110cc8b02635c0b36e32ab6525b",
         "a02023e8e438808d0283121f667ff7d5",

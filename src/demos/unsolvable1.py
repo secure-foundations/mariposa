@@ -17,41 +17,12 @@ def unsolvable1(q):
     # dbg.try_random_edits()
     # dbg.try_aggressive_edits()
 
-    # --------------------------------------------------------------------------------
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle          61          0          0  8.03 /  --           0.65
-    # rename           61          0          0  8.50 /  --           0.18
-    # reseed           61          0          0  8.49 /  --           0.12
+    hids = {
+        # "8a6096aa54667bcaefb0afeb4ad09a53", # TODO: non-solution
+        "cecde024a96e1c70930f5bbdc2a26ee4",
+        "d916eb1e9c434023973994225f45a2e5",
+    }
 
-    # edits = {
-    #     "internal_lib!page_organization.valid_ll.?_definition": EditAction.INSTANTIATE,
-    # }
-    # dbg.test_edit(edits)
-    # # --------------------------------------------------------------------------------
-
-    # edits = {
-    #     "internal_lib!page_organization.PageOrg.impl&__4.free_to_unused_queue_strong.?_definition": EditAction.INSTANTIATE,
-    # }
-    # dbg.test_edit(edits)
-
-    # # --------------------------------------------------------------------------------
-    # # dbg/mimalloc--segment__segment_span_free.smt2/edits/v1.smt2
-    # # rcode: unsat
-    # # time: 4.68
-
-    # # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # # ----------  -------  ---------  ---------  ------------------  -----
-    # # shuffle          61          0          0  7.63 /  --           0.82
-    # # rename           61          0          0  8.40 /  --           0.13
-    # # reseed           61          0          0  8.37 /  --           0.18
-
-    # edits = {
-    #     "internal_lib!page_organization.valid_ll.?_definition": EditAction.INSTANTIATE,
-    #     "internal_vstd__seq__Seq<lib!types.PageQueue.>_box_axiom_definition": EditAction.ERASE,
-    # }
-    # dbg.test_edit(edits)
-    # # --------------------------------------------------------------------------------
-
-    # for ei in dbg.get_passing_edits()[:20]:
-    #     print(ei.time, ei.path, ei.edit)
+    for hid in hids:
+        ei = dbg.test_edit_with_id(hid)
+        print(ei.as_report())

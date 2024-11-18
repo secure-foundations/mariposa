@@ -12,58 +12,29 @@ def unstable2(q):
     # reseed           23          0         38  8.40 / 10.00         0.99
 
     dbg = Debugger3(q)
+    # dbg.clear_edits()
+    # dbg.make_single_edits_project()
 
-    # dbg.try_random_edits()
-    # dbg.try_ranked_edits()
+    hids = [
+        "c8c0276b48013cbff3271be126250102",
+        "2eaa4e7679b785205d1bf65aa347caeb",
+        "69a33a04bfd4129b45b4ae4ac2ebd5db",
+        "55767902edf633817b5bf27d807dd38b",
+        "cecde024a96e1c70930f5bbdc2a26ee4",
+        "14c9d9646647f3244dbfcf067485b893",
+        "a68f3b186032f568a24c37ba401b650b",
+        "616aa4efd392b6fa7abe747081b4cac4",
+        "f54a5adabdb1a13fb4897ffbc8bc2325",
+        "db05d58ee70c3c5ad5d92e558547e42d",
+        "47d95ab7bc327ea87e010a452fbefb84",
+        "f46e50cb7e4fef1a166c05de13072562",
+        "c9ddded21d9bf651e16923f2aade07b8",
+        "5d2ff894f9f0c527b40172bbfff1fbc3",
+        "21fc2638c622257b0f3f2ddbd0e063f8",
+    ]
 
-    # --------------------------------------------------------------------------------
-    # dbg/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2/edits/v2.smt2
-    # rcode: unsat
-    # time: 1.86
-
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle          61          0          0  3.63 /  --           1.01
-    # rename           61          0          0  3.17 /  --           0.05
-    # reseed           61          0          0  3.36 /  --           0.22
-
-    edits = {"prelude_u_clip": EditAction.ERASE}
-    dbg.test_edit(edits)
-    # --------------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------------
-    # dbg/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2/edits/v9.smt2
-    # rcode: unsat
-    # time: 3.08
-
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle          60          0          1  6.07 / 10.00         1.54
-    # rename           61          0          0  5.21 /  --           0.12
-    # reseed           60          0          1  6.01 / 10.00         1.39
-
-    edits = {
-        "internal_lib!page_organization.PageData./PageData/dlist_entry_accessor_definition": EditAction.INSTANTIATE
-    }
-    dbg.test_edit(edits)
-    # --------------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------------
-    # dbg/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2/edits/v1.smt2
-    # rcode: unsat
-    # time: 3.69
-
-    # mutation      unsat    unknown    timeout  mean (pass/fail)      std
-    # ----------  -------  ---------  ---------  ------------------  -----
-    # shuffle          61          0          0  4.16 /  --           1.1
-    # rename           61          0          0  6.23 /  --           0.14
-    # reseed           61          0          0  4.38 /  --           1.04
-
-    edits = {
-        "internal_lib!page_organization.PageOrg.impl&__4.good_range0.?_definition": EditAction.ERASE
-    }
-    dbg.test_edit(edits)
-    # --------------------------------------------------------------------------------
-
-    for ei in dbg.get_passing_edits()[:20]:
+    for hid in hids:
+        ei = dbg.test_edit_with_id(hid)
         print(ei.as_report())
+
+
