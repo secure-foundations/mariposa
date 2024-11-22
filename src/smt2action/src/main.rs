@@ -16,7 +16,7 @@ mod query_io;
 mod query_mutate;
 mod term_match;
 mod tree_rewrite;
-mod tree_shake_graph;
+mod tree_shake_graph_v2;
 
 mod inst_z3;
 mod term_inst_cvc5;
@@ -385,7 +385,7 @@ fn main() {
             }
         }
         Action::ShakeGraph => {
-            tree_shake_graph::tree_shake_graph(commands);
+            tree_shake_graph_v2::tree_shake_graph(commands);
             return;
         }
         Action::InstCVC5 => {

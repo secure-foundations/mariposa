@@ -314,7 +314,7 @@ class Debugger3:
         self.actions = self.differ.get_actions(root_only=True)
 
         for i in range(1, 3):
-            self.save_report(version=i, overwrite=overwrite_reports)
+            self.save_report(version=i, overwrite=True)
 
     def __del__(self):
         with open(self.edits_pickle, "wb") as f:
@@ -679,7 +679,7 @@ class Debugger3:
         ei.path = path
         eid = ei.get_id()
 
-        if ei in self.__edit_infos:
+        if eid in self.__edit_infos:
             return self.__edit_infos[eid]
 
         if not os.path.exists(path):
@@ -762,7 +762,7 @@ class Debugger3:
         for qid, action in self.actions.items():
             edits.append({qid: action})
         self._try_edits(edits, skip_run=True)
-        # self.make_project("single_edits")
+        self.make_project("single_edits")
 
     def get_project_name(self, suffix):
         prefix = self.base_name.replace("-", "_").replace(".", "_")
@@ -810,7 +810,7 @@ class Debugger3:
                 f.write(l + "\n")
 
         # log_info(f"[edit] report written to {self.edits_report}")
-
+           
 
 if __name__ == "__main__":
     set_param(proof=True)

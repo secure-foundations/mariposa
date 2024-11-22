@@ -50,3 +50,31 @@ def unsolvable6(q):
     # }
     # dbg.test_edit(edits)
     # # --------------------------------------------------------------------------------
+
+def unsolvable6_34(q):
+    dbg = Debugger3(q)
+    # dbg.clear_edits()
+    # dbg.make_single_edits_project()
+
+    hids = [
+        "6cf7ec7c0ee246b71aec858053e45ea3",
+        "084393290a77576b0c0ab3eb8417081f",
+        "3ec2c9e9cfc5e34ddb4b00e3281b897e",
+        "e70928854d2f7167d339c013d74a3852",
+        "267a842dba755c448c31b7d7670aafdb",
+        "19a52949cc3eb8bc1a48cb58e98d61c5",
+        "d76b04092e4780308b5db84cca51f90a",
+        "ad244932e26204073792eac0793d2460",
+        "129a8d1ca37402bfc1ca3d70c8f07005",
+        "e8e4e0ea0ce05aae17c33073a694ed02",
+        "08618956326bebdf6274a91c9488d354",
+        "cecde024a96e1c70930f5bbdc2a26ee4",
+        "20e24a1ddead377dc8f8ec9ef731bc71",
+        "5bfd00d2a337c0c3b3ee8e71b8afb89a",
+        "ca57d5de3515444b571e38b43a211dcd",
+        "159f4f6fd13f6791e0e0aa3c47056384",
+    ]
+    
+    for hid in hids:
+        ei = dbg.test_edit_with_id(hid)
+        print(ei.as_report())

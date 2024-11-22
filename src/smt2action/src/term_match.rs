@@ -128,16 +128,16 @@ pub fn get_identifier_symbols(identifier: &concrete::Identifier) -> Symbol {
 
 pub type SymbolSet = HashSet<Symbol>;
 
-pub fn pprint_symbol_set(symbols: &SymbolSet) -> String {
+pub fn format_symbol_set(symbols: &SymbolSet) -> String {
     let mut s = String::new();
-    s.push_str("{");
+    s.push_str("{\n\t");
     let joined = symbols
         .iter()
         .map(|x| x.0.clone())
         .collect::<Vec<String>>()
-        .join(",\n\t");
+        .join("\n\t");
     s.push_str(&joined);
-    s.push_str("}");
+    s.push_str("\n}");
     return s;
 }
 

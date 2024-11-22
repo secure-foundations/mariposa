@@ -65,7 +65,6 @@ impl QuantiState {
                 defined_symbols: defined_symbols.clone(),
                 local_symbols: local_symbols.clone(),
                 live_symbols,
-                // quant_body: *term,
                 patterns: Vec::new(),
                 hidden_context: SymbolSet::new(),
             };
@@ -91,15 +90,15 @@ impl QuantiState {
                 }
             });
 
-            let exp = TermExpander {
-                defined_symbols: defined_symbols.clone(),
-                local_symbols: local_symbols.clone(),
-                formals: Vec::new(),
-                live_symbols: SymbolSet::new(),
-            };
+            // let exp = TermExpander {
+            //     defined_symbols: defined_symbols.clone(),
+            //     local_symbols: local_symbols.clone(),
+            //     formals: Vec::new(),
+            //     live_symbols: SymbolSet::new(),
+            // };
 
-            let hidden = exp.expand_to_symbols(&term);
-            qis.hidden_context = hidden;
+            // let hidden = exp.expand_to_symbols(&term);
+            // qis.hidden_context = hidden;
             qis
         } else {
             panic!("expected attributes in quant body");
@@ -241,7 +240,7 @@ impl TermExpander {
         self.local_symbols.remove(symbol);
     }
 
-    fn _expand_to_formulas(&mut self, term: &concrete::Term) {
+    fn _expand_to_formula_states(&mut self, term: &concrete::Term) {
         match term {
             Term::Constant(..) => (),
             Term::QualIdentifier(qual_identifier) => {
@@ -252,7 +251,7 @@ impl TermExpander {
                 arguments,
             } => {
                 self.add_live_symbol(qual_identifier);
-                arguments.iter().for_each(|x| self._expand_to_formulas(x));
+                arguments.iter().for_each(|x| self._expand_to_formula_states(x));
             }
             Term::Let {
                 var_bindings: vars,
@@ -260,19 +259,24 @@ impl TermExpander {
             } => {
                 vars.iter().for_each(|x| {
                     self.add_local_binding(&x.0);
-                    self._expand_to_formulas(&x.1)
+                    self._expand_to_formula_states(&x.1)
                 });
-                self._expand_to_formulas(term);
+                self._expand_to_formula_states(term);
                 vars.iter().for_each(|x| self.remove_local_binding(&x.0));
             }
             Term::Forall { vars, term } | Term::Exists { vars, term } => {
                 vars.iter().for_each(|x| self.add_local_binding(&x.0));
-                self.formals.push(FormalState::Quant(QuantiState::new(
-                    self.defined_symbols.clone(),
-                    self.local_symbols.clone(),
-                    self.live_symbols.clone(),
-                    *term.clone(),
-                )));
+                if let Term::Attributes { term, attributes } = quant_body {
+                    let qid = get_attr_qid(&attributes).unwrap();
+                    self.formals.push(FormalState::Quant(QuantiState::new(
+                        self.defined_symbols.clone(),
+                        self.local_symbols.clone(),
+                        self.live_symbols.clone(),
+                        *term.clone(),
+                    )));
+                } else {
+                    panic!("expected attributes in quant body");
+                }
                 vars.iter().for_each(|x| self.remove_local_binding(&x.0));
             }
             _ => {
@@ -286,7 +290,7 @@ impl TermExpander {
         term: &concrete::Term,
         cid: Option<String>,
     ) -> Vec<FormalState> {
-        self._expand_to_formulas(term);
+        self._expand_to_formula_states(term);
         if !self.live_symbols.is_empty() {
             for qi in self.formals.iter_mut() {
                 match qi {
@@ -308,7 +312,7 @@ impl TermExpander {
     }
 
     fn expand_to_symbols(mut self, term: &concrete::Term) -> SymbolSet {
-        self._expand_to_formulas(term);
+        self._expand_to_formula_states(term);
         let mut res = SymbolSet::new();
         res.extend(self.live_symbols.into_iter());
         for qi in self.formals.into_iter() {
