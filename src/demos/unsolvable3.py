@@ -2,9 +2,7 @@ from debugger.trace_analyzer import EditAction
 from debugger.debugger3 import Debugger3
 
 
-def unsolvable3(q):
-    dbg = Debugger3(q)
-
+def unsolvable3():
     # mutation      unsat    unknown    timeout  mean (pass/fail)      std
     # ----------  -------  ---------  ---------  ------------------  -----
     # shuffle           6          0         55  9.92 / 10.00         0.03
@@ -14,10 +12,8 @@ def unsolvable3(q):
     # dbg.clear_edits()
     # dbg.try_all_single_edits()
 
-    for hid in [
+    return [
         "31aea110cc8b02635c0b36e32ab6525b",
         "a02023e8e438808d0283121f667ff7d5",
         "7e71d6b8df68b2873510a96c541e743c",
-    ]:
-        ei = dbg.test_edit_with_id(hid)
-        print(ei.as_report())
+    ]

@@ -1,9 +1,5 @@
-from debugger.trace_analyzer import EditAction
-from debugger.debugger3 import Debugger3
-
-
-def unsolvable6(q):
-    dbg = Debugger3(q, clear_edits=False)
+def unsolvable6():
+    # dbg = Debugger3(q, clear_edits=False)
 
     # mutation      unsat    unknown    timeout  mean (pass/fail)      std
     # ----------  -------  ---------  ---------  ------------------  -----
@@ -23,14 +19,14 @@ def unsolvable6(q):
     # rename           61          0          0  8.03 /  --           0.2
     # reseed           61          0          0  7.77 /  --           0.53
 
-    hids = [
-        "cecde024a96e1c70930f5bbdc2a26ee4", # FIXME: non-solution
-        "e70928854d2f7167d339c013d74a3852",
-    ]
+    # hids = [
+    #     "cecde024a96e1c70930f5bbdc2a26ee4", # FIXME: non-solution
+    #     "e70928854d2f7167d339c013d74a3852",
+    # ]
 
-    for hid in hids:
-        ei = dbg.test_edit_with_id(hid)
-        print(ei.as_report())
+    # for hid in hids:
+    #     ei = dbg.test_edit_with_id(hid)
+    #     print(ei.as_report())
 
     # # --------------------------------------------------------------------------------
     # # dbg/mimalloc--queues__page_queue_remove.smt2/edits/v27.smt2
@@ -50,13 +46,10 @@ def unsolvable6(q):
     # }
     # dbg.test_edit(edits)
     # # --------------------------------------------------------------------------------
+    pass
 
-def unsolvable6_34(q):
-    dbg = Debugger3(q)
-    # dbg.clear_edits()
-    # dbg.make_single_edits_project()
-
-    hids = [
+def unsolvable6_34():
+    return [
         "6cf7ec7c0ee246b71aec858053e45ea3",
         "084393290a77576b0c0ab3eb8417081f",
         "3ec2c9e9cfc5e34ddb4b00e3281b897e",
@@ -75,6 +68,3 @@ def unsolvable6_34(q):
         "159f4f6fd13f6791e0e0aa3c47056384",
     ]
     
-    for hid in hids:
-        ei = dbg.test_edit_with_id(hid)
-        print(ei.as_report())

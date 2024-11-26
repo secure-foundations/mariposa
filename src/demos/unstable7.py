@@ -1,15 +1,10 @@
 
-from debugger.trace_analyzer import EditAction
-from debugger.debugger3 import Debugger3
-
-def unstable7(q):
+def unstable7():
     # mutation      unsat    unknown    timeout  mean (pass/fail)      std
     # ----------  -------  ---------  ---------  ------------------  -----
     # shuffle          38          0         23  8.68 / 10.00         0.93
     # rename           61          0          0  8.25 /  --           0.21
     # reseed           61          0          0  8.39 /  --           0.49
-
-    dbg = Debugger3(q)
 
     hids = [
         "5f4e1cfe6fc8b8b7f0189a7889c5db1d",
@@ -22,6 +17,4 @@ def unstable7(q):
         "53b4d3a10c289f47a1fbe69e0a8e8b45",
     ]
     
-    for hid in hids:
-        ei = dbg.test_edit_with_id(hid)
-        print(ei.as_report())
+    return hids

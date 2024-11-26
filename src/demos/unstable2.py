@@ -1,8 +1,4 @@
-from debugger.trace_analyzer import EditAction
-from debugger.debugger3 import Debugger3
-
-
-def unstable2(q):
+def unstable2():
     # this is an example which is easy to fix
 
     # mutation      unsat    unknown    timeout  mean (pass/fail)      std
@@ -11,7 +7,6 @@ def unstable2(q):
     # rename            0          0         61  --  / 10.00          0
     # reseed           23          0         38  8.40 / 10.00         0.99
 
-    dbg = Debugger3(q)
     # dbg.clear_edits()
     # dbg.make_single_edits_project()
 
@@ -33,8 +28,4 @@ def unstable2(q):
         "21fc2638c622257b0f3f2ddbd0e063f8",
     ]
 
-    for hid in hids:
-        ei = dbg.test_edit_with_id(hid)
-        print(ei.as_report())
-
-
+    return hids

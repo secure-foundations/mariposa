@@ -19,9 +19,9 @@ def load_cache(name):
     with open(path, 'rb') as f:
         return pickle.load(f)
 
-def load_cache_or(name, func):
+def load_cache_or(name, func, clear=False):
     obj = load_cache(name)
-    if obj is None:
+    if obj is None or clear:
         obj = func()
         save_cache(name, obj)
     return obj

@@ -8,23 +8,17 @@ import pickle
 import subprocess
 import time
 from z3 import set_param
-from analysis.inst_analyzer import InstAnalyzer
+from base.defs import DEBUG_ROOT
 from base.solver import RCode
-from debugger.query_loader import QueryInstFreq
 from debugger.trace_analyzer import EditAction, InstDiffer
-from query_editor import BasicQueryWriter, QueryEditor
-from proof_builder import ProofInfo, ProofBuilder
+from query_editor import QueryEditor
 from utils.database_utils import table_exists
 import multiprocessing
 import os, sys
-from typing import Dict, List, Set
-from base.defs import DEBUG_ROOT, MARIPOSA
-from base.solver import output_as_rcode
+from typing import Dict, List
 from utils.query_utils import (
     Mutation,
-    emit_mutant_query,
     find_verus_procedure_name,
-    parse_trace,
 )
 from utils.system_utils import (
     confirm_input,
@@ -34,125 +28,15 @@ from utils.system_utils import (
     subprocess_run,
 )
 from tabulate import tabulate
+from debugger.mutant_info import *
 
-# from pprint import pprint
 
 PROC_COUNT = 4
 MUTANT_COUNT = 8
 
-TRACE_TIME_LIMIT_SEC = 10
-CORE_TIME_LIMIT_SEC = 60
-
 TRACE_TOTAL_TIME_LIMIT_SEC = 120
 CORE_TOTAL_TIME_LIMIT_SEC = 120
 PROOF_TOTAL_TIME_LIMIT_SEC = 120
-
-TRACE_GOAL_COUNT = 4
-CORE_GOAL_COUNT = 2
-PROOF_GOAL_COUNT = 1
-
-TRACES = "traces"
-MUTANTS = "mutants"
-INSTS = "insts"
-CORES = "cores"
-
-
-class MutantInfo:
-    def __init__(self, sub_root, mutation, seed):
-        self.seed = seed
-        self.orig_path = f"{sub_root}/orig.smt2"
-        self.lbl_path = f"{sub_root}/lbl.smt2"
-        self.mutation = mutation
-        self.mut_path = f"{sub_root}/{MUTANTS}/{mutation}.{seed}.smt2"
-        self.trace_path = f"{sub_root}/{TRACES}/{mutation}.{seed}"
-        self.insts_path = f"{sub_root}/{INSTS}/{mutation}.{seed}"
-        self.core_path = f"{sub_root}/{CORES}/{mutation}.{seed}.smt2"
-        self.core_log = f"{sub_root}/{CORES}/{mutation}.{seed}.log"
-
-        self.trace_rcode = -1
-        self.trace_time = -1
-        self.proof_time = -1
-
-    def __hash__(self) -> int:
-        return hash((self.mutation, self.seed))
-
-    def create_mutant(self, source=None):
-        if source is None:
-            source = self.orig_path
-
-        if os.path.exists(self.mut_path):
-            return
-
-        emit_mutant_query(source, self.mut_path, self.mutation, self.seed)
-
-    def build_trace(self):
-        self.create_mutant()
-
-        solver_args = [
-            "./bin/z3-4.13.0",
-            f"-t:{TRACE_TIME_LIMIT_SEC*1000}",
-            self.mut_path,
-            "trace=true",
-            f"trace_file_name={self.trace_path}",
-        ]
-
-        stdout, stderr, elapsed = subprocess_run(solver_args, check=True, debug=False)
-        res = output_as_rcode(stdout)
-        return (res, elapsed)
-
-    def get_qids(self):
-        return parse_trace(self.orig_path, self.trace_path)
-
-    def load_insts(self):
-        with open(self.insts_path, "rb") as f:
-            self.proof_info: ProofInfo = pickle.load(f)
-
-    def build_core(self):
-        self.create_mutant(self.lbl_path)
-
-        with open(self.mut_path, "a") as f:
-            f.write("(get-unsat-core)\n")
-
-        log_info(f"[core] attempt {self.mut_path}")
-
-        cf = open(self.core_log, "w+")
-        subprocess.run(
-            [
-                "./bin/z3-4.13.0",
-                self.mut_path,
-                f"-t:{CORE_TIME_LIMIT_SEC*1000}",
-            ],
-            stdout=cf,
-        )
-        cf.close()
-        cf = open(self.core_log, "r")
-        lines = cf.readlines()
-        cf.close()
-
-        if len(lines) == 0 or "unsat\n" not in lines:
-            return None
-
-        args = [
-            MARIPOSA,
-            "-i",
-            self.lbl_path,
-            "--action=reduce-core",
-            f"--core-log-path={self.core_log}",
-            f"-o",
-            self.core_path,
-        ]
-
-        # if self.keep_quantified:
-        #     args.append("--core-keep-quantified")
-
-        subprocess_run(args, check=True, debug=True)
-
-        log_check(
-            os.path.exists(self.core_path),
-            f"failed to create core query {self.core_path}",
-        )
-
-        return True
 
 
 def _build_fail_trace(mi: MutantInfo):
@@ -244,18 +128,6 @@ class EditInfo:
     def path_exists(self):
         return os.path.exists(self.path)
 
-    # def __hash__(self) -> int:
-    #     edit = tuple(edit)
-    #     return hash(edit)
-
-    # def __eq__(self, o: object) -> bool:
-    #     if not isinstance(o, EditInfo):
-    #         return False
-    #     return self.edit == o.edit
-
-    # def __ne__(self, o: object) -> bool:
-    #     return not self.__eq__(o)
-
     def has_data(self):
         return self.std_out != -1
 
@@ -285,6 +157,7 @@ class Debugger3:
         self.insts_dir = f"{self.sub_root}/{INSTS}"
         self.cores_dir = f"{self.sub_root}/{CORES}"
         self.edit_dir = f"{self.sub_root}/edits"
+        self.graph_dir = f"{self.sub_root}/graphs"
 
         self.db_path = f"{self.sub_root}/db.sqlite"
         self.edits_pickle = f"{self.sub_root}/edits/pickle"
@@ -309,12 +182,11 @@ class Debugger3:
         self.pis = [p.proof_info for p in self.proofs]
 
         self.tmi = self.get_candidate_trace()
-        self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi.get_qids())
+        self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi)
         self.editor = QueryEditor(self.orig_path, self.pis[0])
-        self.actions = self.differ.get_actions(root_only=True)
 
         for i in range(1, 3):
-            self.save_report(version=i, overwrite=True)
+            self.save_report(version=i, overwrite=overwrite_reports)
 
     def __del__(self):
         with open(self.edits_pickle, "wb") as f:
@@ -446,7 +318,7 @@ class Debugger3:
 
         log_info(f"[init] currently {count} traces")
 
-        for f in [_build_any_trace, _build_fail_trace]:
+        for f in [build_any_trace, _build_fail_trace]:
             args = self.create_mutants_info(
                 [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
             )
@@ -576,6 +448,9 @@ class Debugger3:
             tmi for tmi in self.traces if tmi.trace_time >= TRACE_TIME_LIMIT_SEC * 1000
         ]
 
+        # TODO: not fix the seed maybe
+        random.seed(43)
+
         if len(tomis) >= 1:
             return random.choice(tomis)
 
@@ -671,7 +546,7 @@ class Debugger3:
 
     def init_edit_info(self, edit):
         if isinstance(edit, set):
-            edit = {qid: self.actions[qid] for qid in edit}
+            edit = {qid: self.differ.actions[qid] for qid in edit}
         else:
             assert isinstance(edit, dict)
         ei = EditInfo("", edit, -1, -1, -1)
@@ -698,7 +573,7 @@ class Debugger3:
 
     def try_aggressive_edit(self):
         valid = dict()
-        for qid, action in self.actions.items():
+        for qid, action in self.differ.actions.items():
             if action == EditAction.ERASE:
                 valid[qid] = action
         self.test_edit(valid)
@@ -734,8 +609,8 @@ class Debugger3:
         edits = []
 
         for _ in range(NUM_TRIES):
-            edit = set(random.sample(self.actions.keys(), size))
-            edits.append({qid: self.actions[qid] for qid in edit})
+            edit = set(random.sample(self.differ.actions.keys(), size))
+            edits.append({qid: self.differ.actions[qid] for qid in edit})
 
         self._try_edits(edits)
 
@@ -744,22 +619,22 @@ class Debugger3:
         edits = []
 
         for _ in range(NUM_TRIES):
-            edit = set(random.sample(self.actions.keys(), size))
-            if all(self.actions[qid] != EditAction.INSTANTIATE for qid in edit):
+            edit = set(random.sample(self.differ.actions.keys(), size))
+            if all(self.differ.actions[qid] != EditAction.INSTANTIATE for qid in edit):
                 continue
-            edits.append({qid: self.actions[qid] for qid in edit})
+            edits.append({qid: self.differ.actions[qid] for qid in edit})
 
         self._try_edits(edits)
 
     def try_all_single_edits(self):
         edits = []
-        for qid, action in self.actions.items():
+        for qid, action in self.differ.actions.items():
             edits.append({qid: action})
         self._try_edits(edits)
 
     def make_single_edits_project(self):
         edits = []
-        for qid, action in self.actions.items():
+        for qid, action in self.differ.actions.items():
             edits.append({qid: action})
         self._try_edits(edits, skip_run=True)
         self.make_project("single_edits")
@@ -787,7 +662,7 @@ class Debugger3:
         ranked = self.differ.get_actions_v1()
         edits = dict()
         for qid, c, rr in ranked[:20]:
-            edits[qid] = {qid: self.actions[qid]}.update(start)
+            edits[qid] = {qid: self.differ.actions[qid]}.update(start)
         self._try_edits(edits)
 
     def get_passing_edits(self):
@@ -810,7 +685,8 @@ class Debugger3:
                 f.write(l + "\n")
 
         # log_info(f"[edit] report written to {self.edits_report}")
-           
+
+
 
 if __name__ == "__main__":
     set_param(proof=True)

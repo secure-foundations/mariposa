@@ -2,6 +2,8 @@ from enum import Enum
 from typing import Dict, List
 
 from tabulate import tabulate
+from debugger.mutant_info import MutantInfo
+from debugger.quant_graph import QuantGraph
 from debugger.query_loader import QueryInstFreq
 from debugger.z3_utils import extract_sk_qid_from_name
 from proof_builder import InstError, ProofInfo, QueryLoader, QunatInstInfo
@@ -128,16 +130,21 @@ class EditAction(Enum):
 
 
 class InstDiffer(ProofAnalyzer):
-    def __init__(self, query_path, pi: ProofInfo, trace_freq: Dict[str, int]):
+    def __init__(self, query_path, pi: ProofInfo, ti: MutantInfo):
         super().__init__(query_path, pi)
 
         # TODO: this seems odd?
         self.pi = pi
+        self.ti = ti
 
-        self.trace_freq = QueryInstFreq(self, trace_freq)
+        self.trace_freq = QueryInstFreq(self, ti.get_qids())
         self.proof_freq = QueryInstFreq(self, pi.as_frequency())
         self.sources = self.list_sources()
         self.sloop = self.list_self_loops()
+
+        ti.build_graph()
+        self.graph2 = QuantGraph(ti.graph_path)
+        self.actions = self.get_actions(root_only=True)
 
     def get_available_action(self, qid):
         if qid not in self.all_qids:
@@ -332,3 +339,46 @@ class InstDiffer(ProofAnalyzer):
         for bind in qi.bindings:
             for b in bind.values():
                 print(self.pi.tt.expand_def(b))
+
+    def get_useless_counts(self):
+        res = dict()
+        for rid in self.proof_freq:
+            for qid in self.trace_freq[rid]:
+                res[qid] = (self.trace_freq[rid][qid], self.proof_freq[rid][qid])
+        return res
+
+    def do_stuff(self, qids):
+        # import scipy.stats as ss
+        ress = dict()
+
+        self.graph2.useless = self.get_useless_counts()
+        self.graph2.trace_freq = self.trace_freq
+
+        # self.graph2.debug_qid("user_lib__page_organization__PageOrg__State__ll_inv_valid_unused_151")
+        # self.graph2.debug_qid("internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_unused.?_definition")
+
+        for qid in qids:
+            ress[qid] = []
+
+        for cost_fun in [
+            self.graph2.estimate_cost_v0,
+            self.graph2.estimate_cost_v1,
+            self.graph2.estimate_cost_v2,
+            self.graph2.estimate_cost_v3,
+            self.graph2.estimate_cost_v4,
+            self.graph2.estimate_cost_v5,
+        ]:
+            costs = self.graph2.estimate_all_costs(cost_fun)
+            filtered = {qid: cost for qid, cost in costs.items() if qid in self.actions}
+            sorted_keys = sorted(filtered, key=filtered.get, reverse=True)
+
+            ranks = {key: rank + 1 for rank, key in enumerate(sorted_keys)}
+            for qid in qids:
+                ress[qid].append(ranks[qid])
+
+        table = []
+
+        for qid in qids:
+            table.append([qid, *ress[qid]])
+
+        print(tabulate(table, headers=["qid", "v0", "v1", "v2", "v3", "v4", "v5"]))

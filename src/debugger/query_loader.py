@@ -315,6 +315,9 @@ class QueryInstFreq:
 
     def __contains__(self, qid):
         return qid in self.freqs
+    
+    def __iter__(self):
+        return iter(self.freqs)
 
     def order_by_freq(self):
         s = sorted(self.freqs.values(), key=lambda x: x.total_count, reverse=True)
