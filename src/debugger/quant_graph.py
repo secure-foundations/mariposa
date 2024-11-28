@@ -179,30 +179,6 @@ class QuantGraph:
             ratio_cache, lambda: self.compute_all_sub_ratios(), clear
         )
 
-    def build_graph(self, clear=False):
-        if not os.path.exists(self.graph_dir):
-            os.mkdir(self.graph_dir)
-        trace_path = self.tmi.trace_path
-
-        if os.path.exists(self.tmi.graph_path):
-            log_info(f"[graph] found {self.tmi.graph_path}")
-            if clear:
-                os.remove(self.tmi.graph_path)
-            else:
-                return self.tmi.graph_path
-
-        with open(self.tmi.graph_path, "w") as outfile:
-            log_info(f"[graph] building {self.tmi.graph_path}")
-            subprocess.run(
-                [
-                    "/home/yizhou7/axiom-profiler-2/target/release/smt-log-parser",
-                    "dependencies",
-                    trace_path,
-                ],
-                stdout=outfile,
-            )
-        assert os.path.exists(self.tmi.graph_path)
-        return self.tmi.graph_path
 
     def __init_graph(self):
         for qid, qc in self.blames.items():

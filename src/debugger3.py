@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import binascii, random
 import hashlib
 import sqlite3
-import pickle
+# import pickle
 import subprocess
 import time
 from z3 import set_param
@@ -104,12 +105,13 @@ def create_mut_table(cur):
 
 
 class EditInfo:
-    def __init__(self, path, edit, r, e, t):
+    def __init__(self, path, edit):
         self.path = path
         self.edit = edit
-        self.std_out = r
-        self.error = e
-        self.time = t
+
+        self.rcode = None
+        self.time = None
+        self.error = None
 
     def as_report(self):
         edit = ",\n".join([f"    '{qid}': {e}" for qid, e in self.edit.items()])
@@ -117,7 +119,7 @@ class EditInfo:
         lines = [
             "# " + "-" * 80,
             f"# {self.path}",
-            f"# rcode: {self.std_out}",
+            f"# rcode: {self.rcode}",
             f"# time: {self.time}\n\n",
             edit,
             "dbg.test_edit(edit)",
@@ -125,18 +127,43 @@ class EditInfo:
         ]
         return "\n".join(lines)
 
-    def path_exists(self):
+    def query_exists(self):
         return os.path.exists(self.path)
 
     def has_data(self):
-        return self.std_out != -1
+        return self.rcode != None
 
     def get_id(self):
         m = hashlib.md5()
-        edit = [(qid, self.edit[qid]) for qid in sorted(self.edit)]
+        # edit = [(qid, self.edit[qid]) for qid in sorted(self.edit)]
         m.update(str(self.edit).encode())
         return m.hexdigest()
+    
+    def run_query(self):
+        if self.has_data():
+            return
+        _, self.rcode, self.error, self.time = _run_query(self.path)
 
+    @staticmethod
+    def from_dict(d):
+        edit =  d["edit"]
+        edit = {qid: EditAction(e) for qid, e in edit.items()}
+        ei = EditInfo(d["path"], edit)
+        ei.rcode = RCode(d["rcode"]) if d["rcode"] is not None else None
+        ei.time = d["time"]
+        ei.error = d["error"]
+        return ei
+
+    def to_dict(self):
+        edit = {qid: self.edit[qid].value for qid in self.edit}
+        rcode = self.rcode.value if self.rcode is not None else None
+        return {
+            "path": self.path,
+            "edit": edit,
+            "rcode": rcode,
+            "time": self.time,
+            "error": self.error,
+        }
 
 class Debugger3:
     def __init__(
@@ -158,10 +185,9 @@ class Debugger3:
         self.cores_dir = f"{self.sub_root}/{CORES}"
         self.edit_dir = f"{self.sub_root}/edits"
         self.graph_dir = f"{self.sub_root}/graphs"
+        self.edits_meta = f"{self.sub_root}/edits.json"
 
         self.db_path = f"{self.sub_root}/db.sqlite"
-        self.edits_pickle = f"{self.sub_root}/edits/pickle"
-        self.edits_report = f"{self.sub_root}/edit_report.py"
         self.__edit_infos: Dict[int, EditInfo] = dict()
         self.__build_proof_from_core = proof_from_core
 
@@ -189,9 +215,8 @@ class Debugger3:
             self.save_report(version=i, overwrite=overwrite_reports)
 
     def __del__(self):
-        with open(self.edits_pickle, "wb") as f:
-            pickle.dump(self.__edit_infos, f)
-        # self.save_edit_report()
+        infos = [ei.to_dict() for ei in self.__edit_infos.values()]
+        json.dump(infos, open(self.edits_meta, "w+"))
 
     def __init_dirs(self, query_path, reset, ids_available):
         if reset and os.path.exists(self.sub_root):
@@ -318,7 +343,7 @@ class Debugger3:
 
         log_info(f"[init] currently {count} traces")
 
-        for f in [build_any_trace, _build_fail_trace]:
+        for f in [_build_any_trace, _build_fail_trace]:
             args = self.create_mutants_info(
                 [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
             )
@@ -395,20 +420,18 @@ class Debugger3:
         self.con.commit()
 
     def __init_edits(self, clear_edits):
-        if not os.path.exists(self.edits_pickle):
-            return
-
         if clear_edits:
-            self.clear_edits()
+            return self.clear_edits()
+
+        if not os.path.exists(self.edits_meta):
             return
+        
+        infos = json.load(open(self.edits_meta, "r"))
+        self.__edit_infos = dict()
 
-        with open(self.edits_pickle, "rb") as f:
-            self.__edit_infos = pickle.load(f)
-
-        for ei in self.__edit_infos.values():
-            if not os.path.exists(ei.path):
-                log_warn(f"[edit] {ei.path} not found")
-                continue
+        for ei in infos:
+            ei = EditInfo.from_dict(ei)
+            self.__edit_infos[ei.get_id()] = ei
 
     def refresh_status(self):
         self.traces: List[MutantInfo] = []
@@ -514,51 +537,44 @@ class Debugger3:
         assert isinstance(ei, EditInfo)
         self.editor.do_edits(ei.edit)
         self.editor.save(ei.path)
-        return
 
     def test_edit(self, edit):
         ei = self.init_edit_info(edit)
         if ei.has_data():
             log_warn("[edit] specified edit already exists")
             return ei
-        _, r, e, t = _run_query(ei.path)
-        ei = EditInfo(ei.path, edit, r, e, t)
+        ei = EditInfo(ei.path, edit)
+        ei.run_query()
         self.__edit_infos[ei.get_id()] = ei
         return ei
 
     def test_edit_with_id(self, edit_id) -> EditInfo:
         path = f"{self.edit_dir}/{edit_id}.smt2"
-        if not os.path.exists(path):
-            log_warn(f"[edit] {path} not found")
-            return None
         assert edit_id in self.__edit_infos
         ei = self.__edit_infos[edit_id]
-        if ei.has_data():
-            return ei
-        _, r, e, t = _run_query(path)
-        ei.std_out = r
-        ei.error = e
-        ei.time = t
+        if not ei.query_exists():
+            self._save_edit(ei)
+        if not ei.has_data():
+            ei.run_query()
         return ei
 
     def get_edit_path(self, edit):
         return f"{self.edit_dir}/{edit.get_id()}.smt2"
 
-    def init_edit_info(self, edit):
+    def register_edit_info(self, edit):
         if isinstance(edit, set):
             edit = {qid: self.differ.actions[qid] for qid in edit}
         else:
             assert isinstance(edit, dict)
-        ei = EditInfo("", edit, -1, -1, -1)
+        ei = EditInfo("", edit)
         path = self.get_edit_path(ei)
         ei.path = path
         eid = ei.get_id()
 
         if eid in self.__edit_infos:
             return self.__edit_infos[eid]
-
-        if not os.path.exists(path):
-            self._save_edit(ei)
+        else:
+            self.__edit_infos[eid] = ei
 
         return ei
 
@@ -578,22 +594,27 @@ class Debugger3:
                 valid[qid] = action
         self.test_edit(valid)
 
-    def _try_edits(self, targets, skip_run=False):
+    def _try_edits(self, targets, create_query, run_query):
         args, edits = [], dict()
 
         for edit in targets:
-            ei = self.init_edit_info(edit)
+            ei = self.init_edit_info(edit, create_query)
 
             if ei.has_data():
                 log_warn("[edit] specified edit already exists")
                 continue
-            # self._save_edit(eis)
+
+            if not ei.query_exists():
+                if not create_query:
+                    log_warn("[edit] not creating query")
+                    continue
+                self._save_edit(ei)
+
             args.append(ei.path)
-            edits[ei.get_id()] = edit
             # this is a bit redundant, but it's fine
             self.__edit_infos[ei.get_id()] = ei
 
-        if skip_run:
+        if not run_query:
             log_info(f"[edit] skipped running, queries saved in {self.edit_dir}")
             return
 
@@ -612,7 +633,7 @@ class Debugger3:
             edit = set(random.sample(self.differ.actions.keys(), size))
             edits.append({qid: self.differ.actions[qid] for qid in edit})
 
-        self._try_edits(edits)
+        self._try_edits(edits, create_query=True, run_query=True)
 
     def try_less_random_edits(self, size=2):
         NUM_TRIES = 30
@@ -624,20 +645,32 @@ class Debugger3:
                 continue
             edits.append({qid: self.differ.actions[qid] for qid in edit})
 
-        self._try_edits(edits)
+        self._try_edits(edits, create_query=True, run_query=True)
 
-    def try_all_single_edits(self):
-        edits = []
-        for qid, action in self.differ.actions.items():
-            edits.append({qid: action})
-        self._try_edits(edits)
+    def register_single_edits(self):
+        for qid in self.differ.actions:
+            self.register_edit_info({qid})
+        log_info(f"[edit] {len(self.__edit_infos)} edits registered")
 
     def make_single_edits_project(self):
-        edits = []
-        for qid, action in self.differ.actions.items():
-            edits.append({qid: action})
-        self._try_edits(edits, skip_run=True)
-        self.make_project("single_edits")
+        name = self.make_project("single_edits")
+
+        print(f"./src/exper_wizard.py data-sync -i data/projs/{name}/base.z3 --clear")
+        print(
+            f"./src/exper_wizard.py manager -e verus_verify --total-parts 10 -s z3_4_13_0 --clear-existing -i data/projs/{name}/base.z3"
+        )
+        print(
+            f"./src/analysis_wizard.py veri-verus -e verus_verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
+        )
+        print(
+            f"./src/exper_wizard.py data-sync -i data/projs/{name}_filtered/base.z3 --clear"
+        )
+        print(
+            f"./src/exper_wizard.py manager -e verus_quick --total-parts 10 -s z3_4_13_0 --clear-existing -i data/projs/{name}_filtered/base.z3"
+        )
+        print(
+            f"./src/analysis_wizard.py basic -e verus_quick -s z3_4_13_0 -i data/projs/{name}_filtered/base.z3"
+        )
 
     def get_project_name(self, suffix):
         prefix = self.base_name.replace("-", "_").replace(".", "_")
@@ -645,6 +678,11 @@ class Debugger3:
 
     def make_project(self, suffix):
         name = self.get_project_name(suffix)
+
+        if os.path.exists(f"data/projs/{name}"):
+            log_warn(f"[proj] {name} already exists")
+            return name
+
         subprocess_run(
             [
                 "./src/proj_wizard.py",
@@ -657,38 +695,29 @@ class Debugger3:
             check=True,
             debug=True,
         )
-
-    def try_ranked_edits(self, start={}):
-        ranked = self.differ.get_actions_v1()
-        edits = dict()
-        for qid, c, rr in ranked[:20]:
-            edits[qid] = {qid: self.differ.actions[qid]}.update(start)
-        self._try_edits(edits)
+        return name
 
     def get_passing_edits(self):
         passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
         return sorted(passed, key=lambda ei: ei.time)
 
-    def save_edit_report(self):
-        passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
-        lines = [f"# Passed Edits: {len(passed)}"]
+    # def save_edit_report(self):
+    #     passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
+    #     lines = [f"# Passed Edits: {len(passed)}"]
 
-        for ei in sorted(passed, key=lambda ei: ei.time):
-            lines.append(ei.as_report())
+    #     for ei in sorted(passed, key=lambda ei: ei.time):
+    #         lines.append(ei.as_report())
 
-        lines += [f"# Failed Edits: {len(self.__edit_infos) - len(passed)}"]
-        for ei in [ei for ei in self.__edit_infos if ei.std_out != RCode.UNSAT]:
-            lines.append(ei.as_report())
+    #     lines += [f"# Failed Edits: {len(self.__edit_infos) - len(passed)}"]
+    #     for ei in [ei for ei in self.__edit_infos if ei.std_out != RCode.UNSAT]:
+    #         lines.append(ei.as_report())
 
-        with open(self.edits_report, "w+") as f:
-            for l in lines:
-                f.write(l + "\n")
-
-        # log_info(f"[edit] report written to {self.edits_report}")
+    #     with open(self.edits_report, "w+") as f:
+    #         for l in lines:
+    #             f.write(l + "\n")
 
 
-
-if __name__ == "__main__":
+def main():
     set_param(proof=True)
 
     parser = argparse.ArgumentParser(description="Mariposa Debugger. ")
@@ -716,14 +745,17 @@ if __name__ == "__main__":
     # parser.add_argument("--version", default=1, help="")
 
     args = parser.parse_args()
+
     dbg = Debugger3(
         args.input_query_path,
-        clear=args.clear,
+        # clear=args.clear,
         proof_from_core=args.proof_from_core,
         overwrite_reports=args.overwrite_reports,
     )
 
-    # if args.output_query_path is None:
-    #     sys.exit(0)
+    dbg.register_single_edits()
+    # dbg.make_single_edits_project()
 
-    # version = int(args.version)
+
+if __name__ == "__main__":
+    main()

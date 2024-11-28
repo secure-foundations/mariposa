@@ -2,11 +2,7 @@
 
 import os, sys
 from z3 import set_param
-from base.solver import RCode
-from debugger.quant_graph import QuantGraph
-from debugger.trace_analyzer import EditAction
-from debugger.debugger3 import Debugger3
-from random import sample
+from debugger3 import Debugger3
 from demos.unstable2 import *
 from demos.unstable4 import *
 from demos.unstable7 import *
@@ -93,7 +89,7 @@ def unstable6(q):
 
 
 QUERIES = {
-    "test0": "data/projs/v_systems/base.z3/ironsht--delegation_map_v.35.smt2",
+    # "test0": "data/projs/v_systems/base.z3/ironsht--delegation_map_v.35.smt2",
 
     # "unstable1": "data/projs/v_systems/base.z3/noderep--spec__cyclicbuffer.3.smt2",
     "unstable2": "data/projs/v_systems/base.z3/mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2",
@@ -114,25 +110,15 @@ QUERIES = {
     "unsolvable6_34": "test_34.smt2",
 }
 
-    # q = queries[name]
-    # eval(name)(q)
-
-    # dbg = Debugger3("test_30.smt2", clear_edits=False)
-    # dbg.make_single_edits_project()
-    # name = dbg.get_project_name("single_edits")
-
-    # print(f"./src/exper_wizard.py manager -e verus_verify --total-parts 10 -s z3_4_13_0 --clear-existing -i data/projs/{name}/base.z3")
-    # print(f"./src/analysis_wizard.py veri-verus -e verus_verify -s z3_4_13_0 -i data/projs/{name}/base.z3")
-    # print(f"./src/exper_wizard.py data-sync -i data/projs/{name}_filtered/base.z3 --clear")
-    # print(f"./src/exper_wizard.py manager -e verus_quick --total-parts 10 -s z3_4_13_0 --clear-existing -i data/projs/{name}_filtered/base.z3")
-    # print(f"./src/analysis_wizard.py basic -e verus_quick -s z3_4_13_0 -i data/projs/{name}_filtered/base.z3")
-
-def foo():
+# the main is separated so that we don't get a weird error
+def main():
     set_param(proof=True)
     name = sys.argv[1]
+    # print(name)
     query = QUERIES[name]
-    dbg = Debugger3(query)
-    
+    dbg = Debugger3(query, clear_edits=False)
+    dbg.register_single_edits()
+
     qids = []
 
     for hid in eval(name + "()"):
@@ -140,34 +126,9 @@ def foo():
         assert len(ei.edit) == 1
         qid = list(ei.edit.keys())[0]
         qids.append(qid)
-    
+
     dbg.differ.do_stuff(qids)
 
-    #     if not dbg.differ.is_root(qid):
-    #         rid = dbg.differ.get_root(qid)
-    #     else:
-    #         rid = qid
-
-    #     group_total = 0
-
-    #     for qid in dbg.differ.trace_freq[rid]:
-    #         if qid not in dbg.rank:
-    #             continue
-
-    #         group_total += dbg.rank[qid][1]
-
-    #     rk = 0
-
-    #     for k, (_, v) in dbg.rank.items():
-    #         # print(k, v)
-    #         if group_total >= v:
-    #             break
-    #         rk += 1
-
-    #     print(f"{rid}")
-    #     print(rk, round(group_total))
-
-        # print(f"{qid} {dbg.rank[qid][0]}/{total}")
 
 if __name__ == "__main__":
-    foo()
+    main()

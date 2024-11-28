@@ -68,6 +68,7 @@ class ProofInfo:
 
         for inst in insts:
             bind = m.map_inst(inst)
+            inst_error = False
 
             if bind is None:
                 qi.add_error(InstError.BIND_ERROR)
@@ -75,8 +76,18 @@ class ProofInfo:
                 continue
 
             for i, b in bind.items():
-                bind[i] = self.tt.process_expr(b)
+                try:
+                    bind[i] = self.tt.process_expr(b)
+                except ValueError:
+                    inst_error = True
+                    qi.add_error(InstError.BIND_ERROR)
+                    log_warn("failed to bind variables in " + qid)
+                    log_warn("expression: " + collapse_sexpr(b.sexpr()))
+                    break
                 skf.find_sk_fun(b)
+
+            if inst_error:
+                continue
 
             qi.add_binding(bind)
 

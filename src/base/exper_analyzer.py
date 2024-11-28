@@ -135,11 +135,9 @@ class ExperAnalyzer:
 
         for qr in unsats:
             t = qr.get_original_status()[1]/1000
-            # if not (count < 30 or t < 8): continue
-            if t >= 6: continue
-            # os.system(f"cp {qr.query_path} {filtered_dir}")
-            print(qr.query_path)
-            print(f"{round(t, 2)}")
+            if count > 30 or t > 8: break
+            os.system(f"cp {qr.query_path} {filtered_dir}")
+            # print(qr.query_path, round(t, 2))
             count += 1
 
     def print_status(self, category_verbosity=0, query_verbosity=0, is_verus=False):

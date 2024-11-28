@@ -46,7 +46,7 @@ def unsolvable6():
     # }
     # dbg.test_edit(edits)
     # # --------------------------------------------------------------------------------
-    pass
+    return []
 
 def unsolvable6_34():
     return [

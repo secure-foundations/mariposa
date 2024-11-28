@@ -10,7 +10,6 @@ from proof_builder import InstError, ProofInfo, QueryLoader, QunatInstInfo
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 import networkx as nx
 
-
 def shorten_qid(qid):
     if len(qid) <= 100:
         return qid
@@ -127,7 +126,6 @@ class EditAction(Enum):
     DSPLIT = "dsplit"
     INSTANTIATE = "instantiate"
     ERROR = "error"
-
 
 class InstDiffer(ProofAnalyzer):
     def __init__(self, query_path, pi: ProofInfo, ti: MutantInfo):

@@ -1,10 +1,11 @@
-# def unsolvable5():
+def unsolvable5():
 #     # mutation      unsat    unknown    timeout  mean (pass/fail)      std
 #     # ----------  -------  ---------  ---------  ------------------  -----
 #     # shuffle           5          0         56  9.61 / 10.00         0.12
 #     # rename            1          0         60  10.00 / 10.00        0
 #     # reseed            5          0         56  9.35 / 10.00         0.21
 #     pass
+    return []
 
 
 def unsolvable5_30():

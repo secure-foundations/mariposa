@@ -1,7 +1,3 @@
-from debugger.trace_analyzer import EditAction
-from debugger.debugger3 import Debugger3
-
-
 def unsolvable3():
     # mutation      unsat    unknown    timeout  mean (pass/fail)      std
     # ----------  -------  ---------  ---------  ------------------  -----

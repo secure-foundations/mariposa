@@ -36,7 +36,7 @@ def log_check(cond, msg):
 
 def confirm_input(msg):
     log_info(f"{msg} [Y]", end="")
-    log_check(input() == "Y", f"aborting")
+    log_check(input() == "Y", f"operation aborted")
 
 def subprocess_run(command, timeout=None, debug=False, cwd=None, shell=False, check=False):
     if shell:

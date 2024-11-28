@@ -5,11 +5,10 @@ from debugger.z3_utils import (
     AstVisitor,
     collapse_sexpr,
     format_expr_flat,
-    hack_quantifier_body,
     quote_name,
+    quote_sort,
 )
 from utils.system_utils import log_warn
-import networkx as nx
 
 
 class SkolemFinder(AstVisitor):
@@ -61,7 +60,7 @@ class Quant(AstVisitor):
     def get_vars(self):
         if self.__vars is None:
             self.__vars = [
-                (self.quant.var_name(idx), self.quant.var_sort(idx))
+                (quote_name(self.quant.var_name(idx)), quote_sort(self.quant.var_sort(idx)))
                 for idx in range(self.quant.num_vars())
             ]
         return self.__vars
@@ -91,8 +90,8 @@ class Quant(AstVisitor):
     def _build_lets(self, subs):
         lets = []
         vs = self.get_vars()
-        for idx in range(len(vs)):
-            lets.append(f"({self.quant.var_name(idx)} {subs[idx]})")
+        for i in range(len(vs)):
+            lets.append(f"({vs[i][0]} {subs[i]})")
         return " ".join(lets)
 
     def __setup_rewrite(self):
@@ -147,7 +146,9 @@ class Quant(AstVisitor):
             return
 
         if is_quantifier(exp):
-            assert False
+            # assert False
+            log_warn(f"nested quantifiers found in dual search {self.quant.qid()}")
+            return
 
         if exp.sort().kind() != Z3_BOOL_SORT:
             return

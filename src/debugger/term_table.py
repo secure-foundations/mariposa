@@ -41,7 +41,8 @@ class TermTable(SkolemFinder):
 
     def _create_defs(self, e: ExprRef) -> str:
         if not is_app(e):
-            assert False
+            e = collapse_sexpr(e.sexpr())
+            raise ValueError(f"unsupported expression: {e} when creating defs")
 
         if is_const(e):
             return quote_name(str(e))
@@ -55,9 +56,6 @@ class TermTable(SkolemFinder):
             assert e.decl().name() == "is"
             params = e.decl().params()
             assert len(params) == 1
-            # print(e.decl().params())
-            # print(collapse_sexpr(e.sexpr()))
-            # print(e.decl())
             res = [f"(_ is {quote_name(params[0].name())})"]
         else:
             res = [quote_name(e.decl().name())]

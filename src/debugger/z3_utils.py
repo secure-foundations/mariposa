@@ -1,48 +1,19 @@
 from z3 import *
 
 
-# def format_expr(e, depth=0, offset=0):
-#     if is_const(e):
-#         return str(e)
+def quote_name(name):
+    if "#" in name or "'" in name:
+        if name[0] == "|":
+            assert name[-1] == "|"
+            return name
+        return f"|{name}|"
+    return name
 
-#     if is_var(e):
-#         return "qv" + str(get_var_index(e))
-
-#     if is_quantifier(e):
-#         if depth == 0:
-#             v_count = e.num_vars()
-#             vars = [f"qv{str(offset+i)} {e.var_sort(offset+i)}" for i in range(v_count)]
-#             vars = "((" + " ".join(vars) + ")) "
-#             if e.is_forall():
-#                 return (
-#                     "(forall "
-#                     + vars
-#                     + format_expr(e.body(), depth + 1, offset + v_count)
-#                     + ")"
-#                 )
-#             else:
-#                 return (
-#                     "(exists "
-#                     + vars
-#                     + format_expr(e.body(), depth + 1, offset + v_count)
-#                     + ")"
-#                 )
-
-#         return "[QID: " + str(e.qid()) + "]"
-
-#     name = e.decl().name()
-#     items = []
-#     prefix = " " * (depth + 1)
-#     for i in e.children():
-#         items += [format_expr(i, depth + 1)]
-#     length = sum([len(i) for i in items]) + len(name)
-#     if length > 80:
-#         items = [prefix + i for i in items]
-#         items = "(" + name + "\n" + "\n".join(items) + ")"
-#     else:
-#         items = "(" + name + " " + " ".join(items) + ")"
-#     return items
-
+def quote_sort(sort):
+    ss = str(sort)
+    if sort.kind() == Z3_RE_SORT:
+        return ss.replace("ReSort(", "(RegEx ")
+    return ss
 
 class AstPrinter:
     def __init__(self, parent=None):
@@ -61,20 +32,20 @@ class AstPrinter:
             r = str(e)
             if r == "True": return "true"
             if r == "False": return "false"
-            return r
+            return quote_name(r)
 
         if is_var(e):
             idx = offset - get_var_index(e) - 1
-            return self.__vars[idx]
+            return quote_name(self.__vars[idx])
 
         if is_quantifier(e):
             v_count = e.num_vars()
             vars = []
 
             for i in range(v_count):
-                var_name = e.var_name(i)
+                var_name = quote_name(e.var_name(i))
                 self.__vars[offset + i] = var_name
-                vars += [f"({var_name} {e.var_sort(i)})"]
+                vars += [f"({var_name} {quote_sort(e.var_sort(i))})"]
 
             vars = "(" + " ".join(vars) + ") "
             attributes = [f":skolemid {e.skolem_id()}", f":qid {e.qid()}"]
@@ -107,13 +78,13 @@ class AstPrinter:
         for i in e.children():
             res += [self._format_expr(i, offset)]
         return "(" + " ".join(res) + ")"
-    
+
 
 def format_expr_flat(e, body_only=False):
     if body_only:
         p = AstPrinter(e)
         return p._format_expr(e.body(), e.num_vars())
-    p = AstPrinter()
+    p = AstPrinter()    
     return p._format_expr(e, 0)
 
 def find_matching_brackets(s):
@@ -143,30 +114,6 @@ def collapse_sexpr(s):
             index += 1
         res += c
     return res
-
-
-# TODO: this is a very hacky way to do it
-def hack_quantifier_body(quant):
-    args = []
-    for i in range(quant.num_vars()):
-        var = quant.var_name(i)
-        if "'" in var or "#" in var:
-            var = "|" + var + "|"
-        arg = f"({var} {quant.var_sort(i)})"
-        if "ReSort(" in arg:
-            arg = arg.replace("ReSort(", "(RegEx ")
-        args += [arg]
-    # sanity check
-    quant = collapse_sexpr(quant.sexpr())
-    args = " ".join(args)
-    expected = "(forall (" + args + ")"
-    assert quant.startswith(expected)
-    func_body = quant[len(expected) : -1].strip()
-    assert func_body.startswith("(!")
-    assert func_body.endswith(")")
-    brackets = find_matching_brackets(func_body)
-    s, e, _ = brackets[1]
-    return func_body[s:e].strip(), quant
 
 
 def hack_quantifier_removal(expr, qid):
@@ -236,12 +183,6 @@ def extract_sk_qid_from_decl(sk_fun):
     assert sk_fun.startswith("(declare-fun ")
     sk_fun = sk_fun.split(" ")[1]
     return extract_sk_qid_from_name(sk_fun)
-
-
-def quote_name(name):
-    if "#" in name:
-        return f"|{name}|"
-    return name
 
 
 class AstVisitor:
