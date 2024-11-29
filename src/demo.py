@@ -103,10 +103,10 @@ QUERIES = {
     "unsolvable2": "data/projs/v_systems/base.z3/mimalloc--segment__segment_span_free_coalesce_before.smt2",
     "unsolvable3": "data/projs/v_systems/base.z3/mimalloc--queues__page_queue_push_back.smt2",
 
-    "unsolvable5": "data/projs/v_systems/base.z3/mimalloc--segment.1.smt2",
+    # "unsolvable5": "data/projs/v_systems/base.z3/mimalloc--segment.1.smt2",
     "unsolvable5_30": "test_30.smt2",
 
-    "unsolvable6": "data/projs/v_systems/base.z3/mimalloc--queues__page_queue_remove.smt2",
+    # "unsolvable6": "data/projs/v_systems/base.z3/mimalloc--queues__page_queue_remove.smt2",
     "unsolvable6_34": "test_34.smt2",
 }
 
@@ -119,15 +119,14 @@ def main():
     dbg = Debugger3(query, clear_edits=False)
     dbg.register_single_edits()
 
-    qids = []
+    eis = []
 
     for hid in eval(name + "()"):
         ei = dbg.test_edit_with_id(hid)
-        assert len(ei.edit) == 1
-        qid = list(ei.edit.keys())[0]
-        qids.append(qid)
+        # print(ei.as_report())
+        eis.append(ei)
 
-    dbg.differ.do_stuff(qids)
+    dbg.differ.do_stuff(eis)
 
 
 if __name__ == "__main__":

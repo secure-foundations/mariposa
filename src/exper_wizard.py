@@ -10,6 +10,7 @@ from proj_wizard import *
 def set_up_single(subparsers):
     p = subparsers.add_parser('single', help='single query mode. run mariposa on a single query with ".smt2" file extension, which will be split into multiple ".smt2" files based on check-sat(s), the split queries will be stored under the "gen/" directory and tested using the specified solver.')
     add_input_query_option(p)
+    p.add_argument("--keep-mutants", default=False, help="keep the mutants after the experiment")
     add_experiment_options(p)
 
 def set_up_multi(subparsers):

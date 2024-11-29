@@ -17,6 +17,7 @@ from query.proof_builder import ProofBuilder, check_lfsc_proof
 from utils.query_utils import (
     convert_smtlib,
     diff_queries,
+    emit_mutant_query,
     emit_quake_query,
     is_assertion_subset,
 )
@@ -98,7 +99,9 @@ def setup_trace_z3(subparsers):
         action="store_true",
         help="search for a (shuffled) mutant that would produce unsat, output the trace of the mutant, otherwise, output the trace of the original query, regardless of unsat or not",
     )
-    p.add_argument("--seed", required=False, default=MAGIC_IGNORE_SEED, help="the seed to use")
+    p.add_argument(
+        "--seed", required=False, default=MAGIC_IGNORE_SEED, help="the seed to use"
+    )
     add_restart_option(p)
     add_output_log_option(p)
     add_timeout_option(p)
@@ -181,10 +184,21 @@ def setup_trace_debug(subparsers):
     p.add_argument("--core-query-path", default=None, help="the core query")
     add_output_query_option(p)
 
+
 def setup_debug2(subparsers):
     p = subparsers.add_parser("debug2", help="debug2")
     add_input_query_option(p)
-    p.add_argument("--clear", default=False, action="store_true", help="clear the debug directory")
+    p.add_argument(
+        "--clear", default=False, action="store_true", help="clear the debug directory"
+    )
+
+def setup_emit_mutant(subparsers):
+    p = subparsers.add_parser("mutate", help="emit mutant query")
+    add_input_query_option(p)
+    add_output_query_option(p)
+    p.add_argument("--mutation", required=True, help="the mutation to perform")
+    p.add_argument("--seed", required=False, default=MAGIC_IGNORE_SEED, help="the seed to use")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -210,6 +224,7 @@ if __name__ == "__main__":
     setup_wombo_combo(subparsers)
     setup_trace_debug(subparsers)
     setup_debug2(subparsers)
+    setup_emit_mutant(subparsers)
 
     args = parser.parse_args()
     args = deep_parse_args(args)
@@ -309,8 +324,18 @@ if __name__ == "__main__":
         cb = ComboBuilder(args.input_query_path, args.output_query_path)
         cb.run()
     elif args.sub_command == "debug-trace":
-        TraceDebugger(args.input_query_path, args.input_log_path, args.core_query_path, args.output_query_path)
+        TraceDebugger(
+            args.input_query_path,
+            args.input_log_path,
+            args.core_query_path,
+            args.output_query_path,
+        )
     elif args.sub_command == "debug2":
         TraceDebugger2(args.input_query_path, args.clear)
+    elif args.sub_command == "mutate":
+        mutation = Mutation(args.mutation)
+        emit_mutant_query(
+            args.input_query_path, args.output_query_path, mutation, args.seed
+        )
     else:
         parser.print_help()

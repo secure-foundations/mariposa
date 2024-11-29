@@ -65,6 +65,12 @@ class MutantInfo:
         res = output_as_rcode(stdout)
         return (res, elapsed)
 
+    def get_trace_size(self):
+        if not os.path.exists(self.trace_path):
+            return 0
+        size = os.path.getsize(self.trace_path)
+        return size
+
     def get_qids(self):
         return parse_trace(self.orig_path, self.trace_path)
 

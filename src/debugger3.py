@@ -3,15 +3,13 @@
 import argparse
 import json
 import binascii, random
-import hashlib
 import sqlite3
-# import pickle
-import subprocess
 import time
 from z3 import set_param
 from base.defs import DEBUG_ROOT
 from base.solver import RCode
-from debugger.trace_analyzer import EditAction, InstDiffer
+from debugger.trace_analyzer import InstDiffer
+from debugger.edit_info import EditInfo, EditAction
 from query_editor import QueryEditor
 from utils.database_utils import table_exists
 import multiprocessing
@@ -35,16 +33,17 @@ from debugger.mutant_info import *
 PROC_COUNT = 4
 MUTANT_COUNT = 8
 
-TRACE_TOTAL_TIME_LIMIT_SEC = 120
+TRACE_TOTAL_TIME_LIMIT_SEC = 480
 CORE_TOTAL_TIME_LIMIT_SEC = 120
 PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 
 def _build_fail_trace(mi: MutantInfo):
     res = mi.build_trace()
-    log_info(f"[trace-fail] {mi.trace_path}, {res[0]}, {res[1]}")
-    if res[0] == RCode.UNSAT:
+    if res[0] == RCode.UNSAT and res[1] < TRACE_TIME_LIMIT_SEC * 1000:
+        log_info(f"[trace-fail] ignored: {mi.trace_path}, {res[0]}, {res[1]}")
         return None
+    log_info(f"[trace-fail] {mi.trace_path}, {res[0]}, {res[1]}")
     return res
 
 
@@ -84,13 +83,6 @@ def _build_proof(mi: MutantInfo):
     return None
 
 
-def _run_query(query_path):
-    r, e, t = subprocess_run(["./bin/z3-4.13.0", "-T:10", query_path])
-    r = output_as_rcode(r)
-    log_info(f"[run] {query_path} {r} {e} {t}")
-    return (query_path, r, e, round(t / 1000, 2))
-
-
 def create_mut_table(cur):
     cur.execute(
         f"""CREATE TABLE mutants (
@@ -103,67 +95,6 @@ def create_mut_table(cur):
         PRIMARY KEY (mutation, seed))"""
     )
 
-
-class EditInfo:
-    def __init__(self, path, edit):
-        self.path = path
-        self.edit = edit
-
-        self.rcode = None
-        self.time = None
-        self.error = None
-
-    def as_report(self):
-        edit = ",\n".join([f"    '{qid}': {e}" for qid, e in self.edit.items()])
-        edit = f"edit = {{\n{edit}\n}}"
-        lines = [
-            "# " + "-" * 80,
-            f"# {self.path}",
-            f"# rcode: {self.rcode}",
-            f"# time: {self.time}\n\n",
-            edit,
-            "dbg.test_edit(edit)",
-            "# " + "-" * 80 + "\n",
-        ]
-        return "\n".join(lines)
-
-    def query_exists(self):
-        return os.path.exists(self.path)
-
-    def has_data(self):
-        return self.rcode != None
-
-    def get_id(self):
-        m = hashlib.md5()
-        # edit = [(qid, self.edit[qid]) for qid in sorted(self.edit)]
-        m.update(str(self.edit).encode())
-        return m.hexdigest()
-    
-    def run_query(self):
-        if self.has_data():
-            return
-        _, self.rcode, self.error, self.time = _run_query(self.path)
-
-    @staticmethod
-    def from_dict(d):
-        edit =  d["edit"]
-        edit = {qid: EditAction(e) for qid, e in edit.items()}
-        ei = EditInfo(d["path"], edit)
-        ei.rcode = RCode(d["rcode"]) if d["rcode"] is not None else None
-        ei.time = d["time"]
-        ei.error = d["error"]
-        return ei
-
-    def to_dict(self):
-        edit = {qid: self.edit[qid].value for qid in self.edit}
-        rcode = self.rcode.value if self.rcode is not None else None
-        return {
-            "path": self.path,
-            "edit": edit,
-            "rcode": rcode,
-            "time": self.time,
-            "error": self.error,
-        }
 
 class Debugger3:
     def __init__(
@@ -358,6 +289,7 @@ class Debugger3:
                     VALUES (?, ?, ?, ?)""",
                     (args[i].mutation, str(args[i].seed), r[0].value, r[1]),
                 )
+                print(f"inserted {args[i].mutation} {args[i].seed}", r[0], r[1])
             self.con.commit()
 
     def __init_cores(self):
@@ -467,17 +399,7 @@ class Debugger3:
             if tmi.trace_rcode != RCode.UNSAT and tmi.trace_time < 200:
                 return tmi
 
-        tomis = [
-            tmi for tmi in self.traces if tmi.trace_time >= TRACE_TIME_LIMIT_SEC * 1000
-        ]
-
-        # TODO: not fix the seed maybe
-        random.seed(43)
-
-        if len(tomis) >= 1:
-            return random.choice(tomis)
-
-        return max(self.traces, key=lambda tmi: tmi.trace_time)
+        return max(self.traces, key=lambda tmi: tmi.get_trace_size())
 
     def print_status(self):
         table = []
@@ -752,8 +674,13 @@ def main():
         proof_from_core=args.proof_from_core,
         overwrite_reports=args.overwrite_reports,
     )
+    
+    g = dbg.differ.graph2
+    ranked = g.estimate_all_costs(g.estimate_cost_v1)
+    for qid in ranked:
+        print(qid, ranked[qid])
 
-    dbg.register_single_edits()
+    # dbg.register_single_edits()
     # dbg.make_single_edits_project()
 
 

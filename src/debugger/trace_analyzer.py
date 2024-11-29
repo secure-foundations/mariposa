@@ -5,6 +5,7 @@ from tabulate import tabulate
 from debugger.mutant_info import MutantInfo
 from debugger.quant_graph import QuantGraph
 from debugger.query_loader import QueryInstFreq
+from debugger.edit_info import EditAction, EditInfo
 from debugger.z3_utils import extract_sk_qid_from_name
 from proof_builder import InstError, ProofInfo, QueryLoader, QunatInstInfo
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
@@ -119,13 +120,6 @@ class ProofAnalyzer(QueryLoader):
         return [self._qid_2_nid[n] for n in self._self_loops]
 
 
-class EditAction(Enum):
-    NONE = "-"
-    ERASE = "erase"
-    SKOLEMIZE = "skolemize"
-    DSPLIT = "dsplit"
-    INSTANTIATE = "instantiate"
-    ERROR = "error"
 
 class InstDiffer(ProofAnalyzer):
     def __init__(self, query_path, pi: ProofInfo, ti: MutantInfo):
@@ -345,7 +339,7 @@ class InstDiffer(ProofAnalyzer):
                 res[qid] = (self.trace_freq[rid][qid], self.proof_freq[rid][qid])
         return res
 
-    def do_stuff(self, qids):
+    def do_stuff(self, eis: List[EditInfo]):
         # import scipy.stats as ss
         ress = dict()
 
@@ -353,9 +347,9 @@ class InstDiffer(ProofAnalyzer):
         self.graph2.trace_freq = self.trace_freq
 
         # self.graph2.debug_qid("user_lib__page_organization__PageOrg__State__ll_inv_valid_unused_151")
-        # self.graph2.debug_qid("internal_lib!page_organization.PageOrg.impl&__4.ll_inv_valid_unused.?_definition")
 
-        for qid in qids:
+        for ei in eis:
+            qid, _ = ei.get_singleton_edit()
             ress[qid] = []
 
         for cost_fun in [
@@ -371,12 +365,15 @@ class InstDiffer(ProofAnalyzer):
             sorted_keys = sorted(filtered, key=filtered.get, reverse=True)
 
             ranks = {key: rank + 1 for rank, key in enumerate(sorted_keys)}
-            for qid in qids:
+
+            for qid in ress:
                 ress[qid].append(ranks[qid])
 
         table = []
 
-        for qid in qids:
-            table.append([qid, *ress[qid]])
+        for ei in eis:
+            qid, action = ei.get_singleton_edit()
+            table.append([qid, action.value, ei.get_id()[:5], *ress[qid], ei.time])
+            # print(qid, ress[qid], ei.time)
 
-        print(tabulate(table, headers=["qid", "v0", "v1", "v2", "v3", "v4", "v5"]))
+        print(tabulate(table, headers=["qid", "action", "hash", "v0", "v1", "v2", "v3", "v4", "v5", "time"]))

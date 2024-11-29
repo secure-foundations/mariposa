@@ -3,15 +3,15 @@
 from typing import Dict, Set
 from z3 import *
 from debugger.query_loader import QueryLoader, SkolemFinder
-from debugger.trace_analyzer import EditAction
+from debugger.edit_info import EditAction
 from debugger.z3_utils import (
     collapse_sexpr,
     format_expr_flat,
     hack_contains_qid,
     hack_quantifier_removal,
 )
-from proof_builder import ProofInfo, ProofBuilder, QunatInstInfo, InstError
-from utils.system_utils import log_check, log_info, log_warn, subprocess_run
+from proof_builder import ProofInfo
+from utils.system_utils import log_check, log_info, log_warn
 from utils.query_utils import add_qids_to_query
 
 
