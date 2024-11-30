@@ -178,6 +178,57 @@ class Quant(AstVisitor):
             self.__find_dual(c)
 
 
+class InstCost:
+    def __init__(self, rid):
+        self.rid = rid
+        self.group = dict()
+        self.__finalized = False
+        self.subtotal = 0
+
+    def __getitem__(self, qid):
+        return self.group[qid]
+
+    def __setitem__(self, qid, count):
+        self.group[qid] = count
+
+    def __iter__(self):
+        assert self.__finalized
+        return iter(self.group)
+
+    def is_singleton(self):
+        assert self.__finalized
+        return len(self.group) == 1
+
+    def finalize(self):
+        assert not self.__finalized
+        assert self.rid in self.group
+        self.__finalized = True
+        self.subtotal = sum(self.group.values())
+        # self.root_cost = self.group[self.rid]
+
+class GroupedCost:
+    def __init__(self, fgs: Dict[str, InstCost]):
+        self._groups = fgs
+        self.total = 0
+        self._root_qids = dict()
+
+        for fg in fgs.values():
+            for qid in fg:
+                self._root_qids[qid] = fg.rid
+            self.total += fg.subtotal
+
+    def get_count(self, qid):
+        return self._groups[self._root_qids[qid]][qid]
+
+    def __getitem__(self, qid):
+        return self._groups[qid]
+
+    def __contains__(self, qid):
+        return qid in self._groups
+
+    def __iter__(self):
+        return iter(self._groups)
+
 class QueryLoader(AstVisitor):
     def __init__(self, in_file_path):
         super().__init__()
@@ -232,7 +283,7 @@ class QueryLoader(AstVisitor):
 
     def get_parent(self, qid):
         if qid not in self.parent_id:
-            log_warn(f"parent (?) qid {qid} not found")
+            log_warn(f"parent of qid {qid} is not found!")
             return qid
         return self.parent_id[qid]
 
@@ -255,71 +306,16 @@ class QueryLoader(AstVisitor):
                 return True
         return False
 
+    def group_costs(self, costs: Dict[str, int]) -> GroupedCost:
+        fgs = dict()
+        for qid in self.all_qids:
+            rid = self.get_root(qid)
+            if rid not in fgs:
+                fgs[rid] = InstCost(rid)
+            fg = fgs[rid]
+            fg[qid] = costs.get(qid, 0)
 
-class InstFreq:
-    def __init__(self, rid):
-        self.rid = rid
-        self.group = dict()
-        self.__finalized = False
-        self.total_count = 0
-        self.root_count = 0
+        for fg in fgs.values():
+            fg.finalize()
 
-    def __getitem__(self, qid):
-        return self.group[qid]
-
-    def __setitem__(self, qid, count):
-        self.group[qid] = count
-
-    def __iter__(self):
-        assert self.__finalized
-        return iter(self.group)
-
-    def is_singleton(self):
-        return len(self.group) == 1
-
-    def finalize(self):
-        assert not self.__finalized
-        self.__finalized = True
-        self.total_count = sum(self.group.values())
-        self.root_count = self.group[self.rid]
-
-    def is_user_only(self):
-        if self.is_singleton():
-            return self.rid.startswith("user_")
-
-        for qid in self.group:
-            if qid != self.rid and not qid.startswith("user_"):
-                return False
-        return True
-
-
-class QueryInstFreq:
-    # group a flat frequency map by root qids
-    def __init__(self, loader: QueryLoader, freq: Dict[str, int]):
-        res = dict()
-        for qid in loader.all_qids:
-            if qid not in freq:
-                freq[qid] = 0
-            rid = loader.get_root(qid)
-            if rid not in res:
-                res[rid] = InstFreq(rid)
-            res[rid][qid] = freq[qid]
-
-        for f in res.values():
-            f.finalize()
-
-        self.total_count = sum(freq.values())
-        self.freqs: Dict[str, InstFreq] = res
-
-    def __getitem__(self, qid):
-        return self.freqs[qid]
-
-    def __contains__(self, qid):
-        return qid in self.freqs
-    
-    def __iter__(self):
-        return iter(self.freqs)
-
-    def order_by_freq(self):
-        s = sorted(self.freqs.values(), key=lambda x: x.total_count, reverse=True)
-        return map(lambda x: x.rid, s)
+        return GroupedCost(fgs)

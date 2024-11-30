@@ -117,16 +117,16 @@ def main():
     # print(name)
     query = QUERIES[name]
     dbg = Debugger3(query, clear_edits=False)
-    dbg.register_single_edits()
+    # dbg.register_single_edits()
 
-    eis = []
+    # eis = []
 
-    for hid in eval(name + "()"):
-        ei = dbg.test_edit_with_id(hid)
-        # print(ei.as_report())
-        eis.append(ei)
+    # for hid in eval(name + "()"):
+    #     ei = dbg.test_edit_with_id(hid)
+    #     # print(ei.as_report())
+    #     eis.append(ei)
 
-    dbg.differ.do_stuff(eis)
+    # dbg.differ.do_stuff(eis)
 
 
 if __name__ == "__main__":

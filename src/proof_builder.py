@@ -127,7 +127,7 @@ class ProofInfo:
     def has_qid(self, qid):
         return qid in self.qi_infos
 
-    def as_frequency(self):
+    def as_flat_inst_counts(self):
         res = dict()
         for qid in self.qi_infos:
             res[qid] = self.qi_infos[qid].inst_count

@@ -71,7 +71,7 @@ class MutantInfo:
         size = os.path.getsize(self.trace_path)
         return size
 
-    def get_qids(self):
+    def as_flat_inst_counts(self):
         return parse_trace(self.orig_path, self.trace_path)
 
     def load_insts(self):

@@ -139,11 +139,10 @@ class Debugger3:
         self.pis = [p.proof_info for p in self.proofs]
 
         self.tmi = self.get_candidate_trace()
+
         self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi)
         self.editor = QueryEditor(self.orig_path, self.pis[0])
-
-        for i in range(1, 3):
-            self.save_report(version=i, overwrite=overwrite_reports)
+        self.save_report(overwrite=overwrite_reports)
 
     def __del__(self):
         infos = [ei.to_dict() for ei in self.__edit_infos.values()]
@@ -432,13 +431,13 @@ class Debugger3:
         # the version is not the same as the edit version
         return f"{self.sub_root}/report_v{version}.txt"
 
-    def save_report(self, version, overwrite=False):
-        report_path = self.get_report_path(version)
+    def save_report(self, overwrite=False):
+        report_path = self.get_report_path()
         if os.path.exists(report_path) and not overwrite:
             log_warn(f"[report] already exists: {report_path}")
             return
 
-        report = self.differ.get_report(version)
+        report = self.differ.get_report()
         verus_proc = find_verus_procedure_name(self.orig_path)
 
         with open(report_path, "w+") as f:
@@ -623,22 +622,6 @@ class Debugger3:
         passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
         return sorted(passed, key=lambda ei: ei.time)
 
-    # def save_edit_report(self):
-    #     passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
-    #     lines = [f"# Passed Edits: {len(passed)}"]
-
-    #     for ei in sorted(passed, key=lambda ei: ei.time):
-    #         lines.append(ei.as_report())
-
-    #     lines += [f"# Failed Edits: {len(self.__edit_infos) - len(passed)}"]
-    #     for ei in [ei for ei in self.__edit_infos if ei.std_out != RCode.UNSAT]:
-    #         lines.append(ei.as_report())
-
-    #     with open(self.edits_report, "w+") as f:
-    #         for l in lines:
-    #             f.write(l + "\n")
-
-
 def main():
     set_param(proof=True)
 
@@ -675,10 +658,10 @@ def main():
         overwrite_reports=args.overwrite_reports,
     )
     
-    g = dbg.differ.graph2
-    ranked = g.estimate_all_costs(g.estimate_cost_v1)
-    for qid in ranked:
-        print(qid, ranked[qid])
+    # g = dbg.differ.graph2
+    # ranked = g.estimate_all_costs(g.estimate_cost_v1)
+    # for qid in ranked:
+    #     print(qid, ranked[qid])
 
     # dbg.register_single_edits()
     # dbg.make_single_edits_project()
