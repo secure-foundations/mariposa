@@ -41,7 +41,7 @@ def handle_basic(args):
     log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
     ba.print_status(
-        args.category_verbosity, args.query_verbosity, "verus" in exp.exp_name
+        args.category_verbosity, args.query_verbosity
     )
 
 

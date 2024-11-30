@@ -263,14 +263,17 @@ def handle_data_sync(input_dir, clear):
         log_info(f"no sync required")
         return
 
-    os.system(f"zip -r {SYNC_ZIP} {input_dir}")
+    log_info(f"compressing {input_dir}")
+
+    os.system(f"zip -r {SYNC_ZIP} {input_dir} > /dev/null")
 
     with open("sync.sh", "w") as f:
         f.write("#!/bin/bash\n")
         f.write("\n".join(lines))
         f.close()
 
-    # confirm_input("run `cat sync.sh | parallel`?")
+    log_info(f"syncing {input_dir}")
+
     os.system("cat sync.sh | parallel > /dev/null")
 
     # confirm_input("remove temp files?")

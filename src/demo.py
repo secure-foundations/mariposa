@@ -12,24 +12,24 @@ from demos.unsolvable3 import *
 from demos.unsolvable5 import *
 from demos.unsolvable6 import *
 
-from utils.system_utils import log_info, subprocess_run
+# from utils.system_utils import log_info, subprocess_run
 
-ITER = "dbg/iters"
+# ITER = "dbg/iters"
 
 
-def copy_to_iter_dir(src_path):
-    items = src_path.split("/")
-    assert items[2] == "edits"
-    base = items[1]
-    assert base.endswith(".smt2")
-    new_name = f"{base[:-5]}.{items[3]}"
-    new_path = f"{ITER}/{new_name}"
-    # print(new_path)
-    if not os.path.exists(ITER):
-        os.mkdir(ITER)
-    subprocess_run(["cp", src_path, new_path])
-    log_info(f"[iter] copied to {new_path}")
-    return new_path
+# def copy_to_iter_dir(src_path):
+#     items = src_path.split("/")
+#     assert items[2] == "edits"
+#     base = items[1]
+#     assert base.endswith(".smt2")
+#     new_name = f"{base[:-5]}.{items[3]}"
+#     new_path = f"{ITER}/{new_name}"
+#     # print(new_path)
+#     if not os.path.exists(ITER):
+#         os.mkdir(ITER)
+#     subprocess_run(["cp", src_path, new_path])
+#     log_info(f"[iter] copied to {new_path}")
+#     return new_path
 
 
 def test0(q):

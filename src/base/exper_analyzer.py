@@ -154,17 +154,14 @@ class ExperAnalyzer:
         if category_verbosity == 0:
             print_banner("Report End")
             return
+        
+        cats = [Stability.UNSTABLE, Stability.UNSOLVABLE, Stability.INCONCLUSIVE, Stability.STABLE][:category_verbosity]
 
-        for cat, cs in self.stability_categories.items():
-            if category_verbosity <= 1 and cat != Stability.UNSTABLE:
+        for cat in cats:
+            if cat not in self.stability_categories:
                 continue
 
-            if category_verbosity <= 2 and cat == Stability.UNSOLVABLE:
-                continue
-
-            if category_verbosity <= 3 and cat == Stability.STABLE:
-                continue
-
+            cs = self.stability_categories[cat]
             ccount = len(cs)
 
             if ccount == 0:
@@ -176,6 +173,7 @@ class ExperAnalyzer:
 
                 if query_verbosity >= 2:
                     self.print_mutant_details(self[qid])
+
             print("")
         print_banner("Report End")
 
