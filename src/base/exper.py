@@ -222,7 +222,6 @@ class Experiment(ExpConfig):
         print(f"solver path:\t{self.solver.path}")
 
     def create_db(self, clear):
-
         con, cur = get_cursor(self.db_path)
 
         for table_name in [self.exp_table_name, self.sum_table_name]:
@@ -330,26 +329,31 @@ class Experiment(ExpConfig):
                 blob[i][0][j + 1] = row[0]
                 blob[i][1][j + 1] = row[1]
 
-        cur.execute(f"""INSERT INTO {self.sum_table_name}
+        res = cur.execute(f"""INSERT INTO {self.sum_table_name}
         VALUES(?, ?);""", (v_path, blob))
+        # log_debug(f"inserted {res.rowcount} rows into {self.sum_table_name}")
 
-    def populate_sum_table(self):
+    def populate_sum_table(self, updating_paths=None):
         con, cur = get_cursor(self.db_path)
 
         vanilla_rows = get_vanilla_paths(cur, self.exp_table_name)
 
-        cur.execute(f"""DROP TABLE IF EXISTS {self.sum_table_name}""")
-        create_sum_table(cur, self.sum_table_name)
+        if updating_paths is None:
+            cur.execute(f"""DROP TABLE IF EXISTS {self.sum_table_name}""")
+            create_sum_table(cur, self.sum_table_name)
 
         processed = set()
 
         for (v_path, v_rcode, v_time) in vanilla_rows:
             if v_path in processed:
                 continue
+            if updating_paths is not None and v_path not in updating_paths:
+                continue
             processed.add(v_path)
+            # log_info(f"processing {v_path}")
             self.insert_sum_row(cur, v_path, v_rcode, v_time)
-        conclude(con)
 
+        conclude(con)
         log_info("done post processing exp data")
 
     def is_done(self):
@@ -397,25 +401,6 @@ class Experiment(ExpConfig):
         log_info(f"missing {len(missing)} experiments in {self.sum_table_name}")
         return missing
 
-    # def _sanity_check_summary(self, expected, actual):
-    #     missing = actual - expected
-
-    #     if missing != set():
-    #         log_warn(f"{len(missing)} queries files are missing in {self.sum_table_name}")
-
-    #     missing = expected - actual
-
-    #     if missing != set():
-    #         log_error(f"{len(missing)} experiments are missing in {self.sum_table_name}")
-    #         for i, q in enumerate(missing):
-    #             if i <= 10:
-    #                 print(f"missing: {q}.smt2")
-    #             else:
-    #                 break
-    #         if len(missing) > 10:
-    #             exit_with(f"eliding {len(missing) - 10} more")
-    #         sys.exit(1)
-
     def import_partition_tables(self, other_db_path, part):
         log_check(self.proj.is_whole(), "importing into a partial project does not make sense")
         con, cur = get_cursor(self.db_path)
@@ -453,3 +438,11 @@ class Experiment(ExpConfig):
         con.close()
         return rows
 
+    def drop_query_results(self, qid):
+        v_path = self.get_path(qid)
+        con, cur = get_cursor(self.db_path)
+        res = cur.execute(f"""DELETE FROM {self.exp_table_name} WHERE vanilla_path = ?""", (v_path,))
+        log_info(f"deleted {res.rowcount} rows from {self.exp_table_name}")
+        res = cur.execute(f"""DELETE FROM {self.sum_table_name} WHERE vanilla_path = ?""", (v_path,))
+        log_info(f"deleted {res.rowcount} rows from {self.sum_table_name}")
+        conclude(con)

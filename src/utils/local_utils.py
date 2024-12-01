@@ -56,7 +56,7 @@ def handle_update(args):
     log_check(qid in proj.qids, f"query {qid} does not exist in the project")
 
     Runner(exp).update_experiment([qid])
-    ExperAnalyzer(exp, args.analyzer).print_status(args.category_verbosity)
+    # ExperAnalyzer(exp, args.analyzer).print_status(args.category_verbosity)
 
 
 def test_stability(input_query, exp_config):

@@ -7,7 +7,6 @@ from base.defs import delegate
 from utils.query_utils import Mutation, find_verus_procedure_name
 from utils.system_utils import *
 from utils.analysis_utils import *
-from utils.cache_utils import *
 
 @delegate('qer', 'get_mean_time', 'get_original_status')
 class QueryAnaResult:
@@ -60,8 +59,9 @@ class ExperAnalyzer:
             for qid in path_exists_qids:
                 if qid not in qers:
                     log_warn(f"query {qid} has no experiment results")
-            log_check(path_exists_qids.issubset(set(qers.keys())), 
-                        "there are queries with files, but no experiments done")
+            missing = path_exists_qids - set(qers.keys())
+            log_check(missing == set(), 
+                        f"there are {len(missing)} queries with files, but no experiments done")
 
         if group_qids is None:
             group_qids = path_exists_qids

@@ -4,28 +4,26 @@ import multiprocessing as mp
 from base.exper import *
 from utils.query_utils import Mutation, emit_mutant_query, emit_quake_query
 
+
 class Worker:
     def __init__(self, exp: Experiment, worker_id):
         self.worker_id = worker_id
         self._exp = exp
-        
+
     def __generate_mutant(self, task):
         if task.perturb == Mutation.QUAKE:
-            emit_quake_query(task.origin_path, 
-                task.mutant_path, 
-                self._exp.num_mutant)
+            emit_quake_query(task.origin_path, task.mutant_path, self._exp.num_mutant)
             return
 
-        emit_mutant_query(task.origin_path, 
-            task.mutant_path, 
-            task.perturb, 
-            task.mut_seed)
+        emit_mutant_query(
+            task.origin_path, task.mutant_path, task.perturb, task.mut_seed
+        )
 
     def run_quake_task(self, task):
         self._exp.solver.start_process(task.mutant_path, self._exp.timeout)
 
         for i in range(self._exp.num_mutant):
-            rcode, elapsed = self._exp.solver.run_quake_iteration(self._exp.timeout)    
+            rcode, elapsed = self._exp.solver.run_quake_iteration(self._exp.timeout)
             mutant_path = task.mutant_path + "." + str(i)
             self._exp.insert_exp_row(task, mutant_path, rcode.value, elapsed)
 
@@ -51,18 +49,22 @@ class Worker:
         if not self._exp.keep_mutants and actual_path != task.origin_path:
             os.system(f"rm '{actual_path}'")
 
+
 def print_eta(elapsed, cur_size, init_size):
     from datetime import timedelta
     from datetime import datetime
 
-    elapsed = round(elapsed/3600, 2)
+    elapsed = round(elapsed / 3600, 2)
     if init_size is not None and cur_size is not None:
         done_size = init_size - cur_size
         estimated = round(cur_size * (elapsed / done_size), 2)
         estimated = datetime.now() + timedelta(hours=estimated)
-        log_debug(f"finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {estimated.strftime('%m-%d %H:%M')}")
+        log_debug(
+            f"finished: {done_size}/{init_size}, elapsed: {elapsed} hours, estimated: {estimated.strftime('%m-%d %H:%M')}"
+        )
     else:
         log_debug(f"elapsed: {elapsed} hours")
+
 
 def try_get_size(q):
     try:
@@ -70,6 +72,7 @@ def try_get_size(q):
     except NotImplementedError:
         size = None
     return size
+
 
 def run_tasks(worker, queue):
     start_time = time.time()
@@ -93,6 +96,7 @@ def run_tasks(worker, queue):
     elapsed = round((time.time() - start_time) / 3600, 2)
     log_debug(f"worker {worker.worker_id} finished in {elapsed} hours")
 
+
 class Runner:
     def __init__(self, epart: Experiment):
         self.task_queue = mp.Queue()
@@ -105,14 +109,14 @@ class Runner:
 
     def update_experiment(self, qids):
         tasks = []
+        updated_v_paths = set()
         for qid in qids:
             path = self.exp.proj.get_path(qid)
-            # TODO: handle overwrite
-            log_check(self.exp.get_mutants(qid) == [], 
-                      f"experiment already exists for {path}")
+            self.exp.drop_query_results(qid)
             tasks.extend(self.exp.create_query_tasks(path))
+            updated_v_paths.add(path)
         self.__run(tasks)
-        self.exp.populate_sum_table()
+        self.exp.populate_sum_table(updated_v_paths)
 
     def fix_missing(self):
         mqids = self.exp.get_missing_qids()
@@ -130,8 +134,13 @@ class Runner:
 
         for i in range(self.exp.num_procs):
             worker = Worker(self.exp, i)
-            p = mp.Process(target=run_tasks, 
-                           args=(worker, self.task_queue,))
+            p = mp.Process(
+                target=run_tasks,
+                args=(
+                    worker,
+                    self.task_queue,
+                ),
+            )
             p.start()
             processes.append(p)
             self.task_queue.put(None)
