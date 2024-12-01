@@ -1,0 +1,1826 @@
+=== Overall Report ===
+
+project dir:	data/projs/human_eval/base.z3
+exper config:	default
+solver path:	bin/z3-4.13.0
+analyzer:	10sec
+
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |     151 | 100.0 %      |
+| total      |     151 | 100.00 %     |
+
+=== stable (1/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_009..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (2/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_060..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (3/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..11.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (4/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_031..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (5/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_005..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (6/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_052..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (7/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_060..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (8/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_000..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (9/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_026..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (10/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_063..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (11/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_018..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (12/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_066..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (13/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_055a..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (14/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (15/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (16/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_018..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (17/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_005..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.06 /  --              0
+rename           61          0          0  0.06 /  --              0
+reseed           61          0          0  0.06 /  --              0
+
+=== stable (18/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (19/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_001..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.20 /  --           0.01
+rename           61          0          0  0.24 /  --           0.01
+reseed           61          0          0  0.35 /  --           0.09
+
+=== stable (20/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_024..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (21/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003b..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.06 /  --              0
+rename           61          0          0  0.06 /  --              0
+reseed           61          0          0  0.06 /  --              0
+
+=== stable (22/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..9.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (23/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_066..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.06 /  --              0
+rename           61          0          0  0.06 /  --              0
+reseed           61          0          0  0.06 /  --              0
+
+=== stable (24/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_042..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (25/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_015..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (26/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (27/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_061..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (28/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003a..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (29/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..12.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.06 /  --              0
+rename           61          0          0  0.06 /  --              0
+reseed           61          0          0  0.06 /  --              0
+
+=== stable (30/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_026..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (31/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_059..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (32/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_048..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --           0
+rename           61          0          0  0.04 /  --           0
+reseed           61          0          0  0.04 /  --           0.01
+
+=== stable (33/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..7.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (34/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_008..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (35/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_051..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (36/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_018..7.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (37/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_024..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (38/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_062..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (39/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_005..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (40/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_026..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.06 /  --              0
+reseed           61          0          0  0.06 /  --              0
+
+=== stable (41/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_024..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (42/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_030..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (43/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_082..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (44/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_000..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (45/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (46/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_018..6.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (47/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (48/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_008..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.08 /  --           0.01
+rename           61          0          0  0.08 /  --           0
+reseed           61          0          0  0.08 /  --           0
+
+=== stable (49/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_139..7.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (50/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_056..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (51/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_026..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (52/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_051..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (53/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_015..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (54/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_055b..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (55/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..10.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (56/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_051..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (57/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_001..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (58/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_063..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (59/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_059..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (60/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..13.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (61/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..8.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (62/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_028..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (63/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003a..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (64/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_062..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (65/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_055b..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (66/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_005..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (67/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_059..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (68/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_028..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (69/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_033..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (70/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_015..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (71/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003a..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (72/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_056..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (73/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_033..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (74/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_139..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --           0
+rename           61          0          0  0.02 /  --           0
+reseed           61          0          0  0.02 /  --           0.01
+
+=== stable (75/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (76/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_045..smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (77/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_018..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (78/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_028..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (79/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..9.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (80/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..12.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.08 /  --              0
+rename           61          0          0  0.07 /  --              0
+reseed           61          0          0  0.07 /  --              0
+
+=== stable (81/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003a..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.06 /  --              0
+rename           61          0          0  0.06 /  --              0
+reseed           61          0          0  0.06 /  --              0
+
+=== stable (82/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_057..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (83/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..11.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.10 /  --              0
+rename           61          0          0  0.10 /  --              0
+reseed           61          0          0  0.10 /  --              0
+
+=== stable (84/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003c..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.09 /  --           0.01
+rename           61          0          0  0.09 /  --           0
+reseed           61          0          0  0.09 /  --           0
+
+=== stable (85/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_060..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (86/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_033..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --           0
+rename           61          0          0  0.07 /  --           0
+reseed           61          0          0  0.05 /  --           0.01
+
+=== stable (87/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_023..smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (88/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_000..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (89/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_030..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (90/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_052..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (91/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_033..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (92/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_031..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (93/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_139..6.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (94/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_055a..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (95/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_055b..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (96/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003c..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (97/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..7.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (98/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_005..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (99/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_015..6.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (100/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_028..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (101/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_018..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (102/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_059..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (103/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_139..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (104/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_057..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (105/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_053..smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (106/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003c..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (107/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_139..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (108/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_025..6.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (109/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..6.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (110/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..8.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.07 /  --              0
+rename           61          0          0  0.08 /  --              0
+reseed           61          0          0  0.07 /  --              0
+
+=== stable (111/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_024..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (112/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_015..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (113/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_027..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (114/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003c..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (115/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..10.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (116/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_064..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (117/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003c..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (118/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_008..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (119/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_082..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (120/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003b..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (121/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_063..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (122/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_033..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (123/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_139..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (124/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_139..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (125/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_055a..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (126/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_066..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (127/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_061..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (128/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (129/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_033..6.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (130/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (131/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_055b..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (132/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_042..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (133/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_015..7.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (134/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003a..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (135/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_001..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (136/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_060..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (137/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_018..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.07 /  --           0.01
+rename           61          0          0  0.08 /  --           0
+reseed           61          0          0  0.08 /  --           0
+
+=== stable (138/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_048..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (139/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_009..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (140/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_026..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (141/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_011..smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (142/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_015..8.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (143/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_024..5.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (144/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_003b..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (145/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_001..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (146/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_009..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (147/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_027..2.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (148/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_060..4.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (149/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_004..3.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (150/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_015..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (151/151) ===
+query path:
+data/projs/human_eval/base.z3/human_eval_064..1.smt2
+
+
+alternative timeout: 10.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.07 /  --              0
+rename           61          0          0  0.07 /  --              0
+reseed           61          0          0  0.07 /  --              0
+
+
+=== Report End ===
