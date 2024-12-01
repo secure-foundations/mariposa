@@ -1,0 +1,362 @@
+=== Overall Report ===
+
+project dir:	data/projs/flowcert/base.z3
+exper config:	default
+solver path:	bin/z3-4.13.0
+analyzer:	60sec
+
+| category   |   count | percentage   |
+|------------|---------|--------------|
+| stable     |      29 | 100.0 %      |
+| total      |      29 | 100.00 %     |
+
+=== stable (1/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.13.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.99 /  --           0.33
+rename           61          0          0  0.89 /  --           0.03
+reseed           61          0          0  0.82 /  --           0.07
+
+=== stable (2/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.9.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  2.36 /  --           0.5
+rename           61          0          0  2.82 /  --           0.1
+reseed           61          0          0  2.75 /  --           0.51
+
+=== stable (3/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.10.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --           0
+rename           61          0          0  0.03 /  --           0
+reseed           61          0          0  0.03 /  --           0.01
+
+=== stable (4/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.11.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.17 /  --              0
+rename           61          0          0  0.17 /  --              0
+reseed           61          0          0  0.17 /  --              0
+
+=== stable (5/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.10.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  1.26 /  --           0.12
+rename           61          0          0  1.35 /  --           0.02
+reseed           61          0          0  1.27 /  --           0.15
+
+=== stable (6/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.6.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.07 /  --              0
+rename           61          0          0  0.07 /  --              0
+reseed           61          0          0  0.07 /  --              0
+
+=== stable (7/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.3.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (8/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.8.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.07 /  --              0
+rename           61          0          0  0.07 /  --              0
+reseed           61          0          0  0.08 /  --              0
+
+=== stable (9/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.2.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (10/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.4.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (11/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.2.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (12/29) ===
+query path:
+data/projs/flowcert/base.z3/semantics.2.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.21 /  --           0.01
+rename           61          0          0  0.21 /  --           0.01
+reseed           61          0          0  0.21 /  --           0
+
+=== stable (13/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.14.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  7.91 /  --           4.96
+rename           61          0          0  3.38 /  --           0.05
+reseed           61          0          0  4.83 /  --           3.4
+
+=== stable (14/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.7.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (15/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.6.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.02 /  --              0
+reseed           61          0          0  0.02 /  --              0
+
+=== stable (16/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.3.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (17/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.15.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.33 /  --           0.12
+rename           61          0          0  0.22 /  --           0.01
+reseed           61          0          0  0.22 /  --           0.01
+
+=== stable (18/29) ===
+query path:
+data/projs/flowcert/base.z3/semantics.3.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.24 /  --           0
+rename           61          0          0  0.24 /  --           0
+reseed           61          0          0  0.24 /  --           0.01
+
+=== stable (19/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.4.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.05 /  --              0
+rename           61          0          0  0.05 /  --              0
+reseed           61          0          0  0.05 /  --              0
+
+=== stable (20/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.5.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --           0
+rename           61          0          0  0.03 /  --           0
+reseed           61          0          0  0.03 /  --           0.01
+
+=== stable (21/29) ===
+query path:
+data/projs/flowcert/base.z3/semantics.1.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.08 /  --              0
+rename           61          0          0  0.08 /  --              0
+reseed           61          0          0  0.08 /  --              0
+
+=== stable (22/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.12.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.13 /  --           0.02
+rename           61          0          0  0.12 /  --           0
+reseed           61          0          0  0.12 /  --           0
+
+=== stable (23/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.1.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.02 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (24/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.9.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --              0
+rename           61          0          0  0.04 /  --              0
+reseed           61          0          0  0.04 /  --              0
+
+=== stable (25/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.1.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.04 /  --           0
+rename           61          0          0  0.04 /  --           0
+reseed           61          0          0  0.05 /  --           0.01
+
+=== stable (26/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.11.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (27/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.5.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.07 /  --              0
+rename           61          0          0  0.07 /  --              0
+reseed           61          0          0  0.07 /  --              0
+
+=== stable (28/29) ===
+query path:
+data/projs/flowcert/base.z3/multiset.7.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  0.03 /  --              0
+rename           61          0          0  0.03 /  --              0
+reseed           61          0          0  0.03 /  --              0
+
+=== stable (29/29) ===
+query path:
+data/projs/flowcert/base.z3/permission.8.smt2
+
+
+alternative timeout: 60.0s
+mutation      unsat    unknown    timeout  mean (pass/fail)      std
+----------  -------  ---------  ---------  ------------------  -----
+shuffle          61          0          0  2.35 /  --           0.77
+rename           61          0          0  5.10 /  --           0.25
+reseed           61          0          0  3.64 /  --           1.59
+
+
+=== Report End ===
