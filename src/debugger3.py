@@ -117,6 +117,7 @@ class Debugger3:
         self.edit_dir = f"{self.sub_root}/edits"
         self.graph_dir = f"{self.sub_root}/graphs"
         self.edits_meta = f"{self.sub_root}/edits.json"
+        self.report_path = f"{self.sub_root}/report.csv"
 
         self.db_path = f"{self.sub_root}/db.sqlite"
         self.__edit_infos: Dict[int, EditInfo] = dict()
@@ -288,7 +289,6 @@ class Debugger3:
                     VALUES (?, ?, ?, ?)""",
                     (args[i].mutation, str(args[i].seed), r[0].value, r[1]),
                 )
-                print(f"inserted {args[i].mutation} {args[i].seed}", r[0], r[1])
             self.con.commit()
 
     def __init_cores(self):
@@ -393,12 +393,26 @@ class Debugger3:
                 )
                 self.cores.append(mi)
 
-    def get_candidate_trace(self):
+    def get_fast_unknown_trace(self):
         for tmi in self.traces:
-            if tmi.trace_rcode != RCode.UNSAT and tmi.trace_time < 200:
+            if tmi.trace_rcode == RCode.UNKNOWN and tmi.trace_time < 200:
                 return tmi
+        return None
+    
+    def get_large_trace(self):
+        for tmi in self.traces:
+            if tmi.get_trace_size() > 1000000:
+                return tmi
+        return None
 
-        return max(self.traces, key=lambda tmi: tmi.get_trace_size())
+    def get_slow_trace(self):
+        tomis = [
+            tmi for tmi in self.traces if tmi.trace_time >= TRACE_TIME_LIMIT_SEC * 1000
+        ]
+        return max(tomis, key=lambda tmi: tmi.trace_time)
+
+    def get_candidate_trace(self):
+        return self.get_slow_trace()
 
     def print_status(self):
         table = []
@@ -423,36 +437,29 @@ class Debugger3:
         log_info(self.orig_path)
 
         log_info("report path: ")
-
-        for i in range(1, 3):
-            log_info(self.get_report_path(i))
-
-    def get_report_path(self, version=1):
-        # the version is not the same as the edit version
-        return f"{self.sub_root}/report_v{version}.txt"
+        log_info(self.report_path)
 
     def save_report(self, overwrite=False):
-        report_path = self.get_report_path()
-        if os.path.exists(report_path) and not overwrite:
-            log_warn(f"[report] already exists: {report_path}")
+        if os.path.exists(self.report_path) and not overwrite:
+            log_warn(f"[report] already exists: {self.report_path}")
             return
 
         report = self.differ.get_report()
-        verus_proc = find_verus_procedure_name(self.orig_path)
+        # verus_proc = find_verus_procedure_name(self.orig_path)
 
-        with open(report_path, "w+") as f:
-            f.write("base name:\n")
-            f.write(self.base_name + "\n\n")
-            f.write("query path:\n")
-            f.write(self.orig_path + "\n\n")
-            f.write("trace path:\n")
-            f.write(self.tmi.trace_path + "\n\n")
-            f.write(f"{self.tmi.trace_time} {self.tmi.trace_rcode}\n\n")
-            f.write("verus procedure:\n")
-            f.write(verus_proc + "\n\n")
+        with open(self.report_path, "w+") as f:
+            # f.write("base name:\n")
+            # f.write(self.base_name + "\n\n")
+            # f.write("query path:\n")
+            # f.write(self.orig_path + "\n\n")
+            # f.write("trace path:\n")
+            # f.write(self.tmi.trace_path + "\n\n")
+            # f.write(f"{self.tmi.trace_time} {self.tmi.trace_rcode}\n\n")
+            # f.write("verus procedure:\n")
+            # f.write(verus_proc + "\n\n")
             f.write(report)
 
-        log_info(f"[report] written: {report_path}")
+        log_info(f"[report] written: {self.report_path}")
 
     def _save_edit(self, ei: EditInfo):
         assert isinstance(ei, EditInfo)

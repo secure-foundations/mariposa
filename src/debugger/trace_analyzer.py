@@ -4,11 +4,12 @@ from typing import Dict, List
 from tabulate import tabulate
 from debugger.mutant_info import MutantInfo
 from debugger.quant_graph import QuantGraph
-from debugger.query_loader import GroupedCost
+from debugger.query_loader import GroupedCost, InstCost
 from debugger.edit_info import EditAction, EditInfo
 from debugger.z3_utils import extract_sk_qid_from_name
 from proof_builder import InstError, ProofInfo, QueryLoader, QunatInstInfo
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
+from tqdm import tqdm
 import networkx as nx
 
 
@@ -205,18 +206,34 @@ class InstDiffer(ProofAnalyzer):
         return filtered
 
     def get_report(self):
-        contents = []
+        self.graph2.useless = self.get_useless_counts()
+        self.graph2.trace_freq = self.trace_count
 
-        for qid in self.filter_root_qids():
-            t = self.trace_count[qid]
-            p = self.proof_count[qid]
+        lines = ["qid, action, trace count, proof count, v0, v1, v2, v3, v4, v5"]
+
+        for qid in tqdm(self.filter_root_qids()):
+            t: InstCost = self.trace_count[qid]
+            p: InstCost = self.proof_count[qid]
             action = self.get_available_action(qid)
-            contents.append([qid, action.value, t, p])
-        # lines = []
-        # for c in contents:
-        #     lines.append(",".join(c[0], c[1], c[2].subtotal, c[3].subtotal))
-        # return "\n".join(lines)
-        return ""
+            line = [qid, action.value, str(t.subtotal), str(p.subtotal)]
+
+            for cost_fun in [
+                self.graph2.estimate_cost_v0,
+                self.graph2.estimate_cost_v1,
+                self.graph2.estimate_cost_v2,
+                self.graph2.estimate_cost_v3,
+                self.graph2.estimate_cost_v4,
+                self.graph2.estimate_cost_v5,
+            ]:
+                try:
+                    line.append(str(cost_fun(qid)))
+                except KeyError:
+                    line.append("nan")
+            
+            line = ", ".join(line)
+            lines.append(line)
+
+        return "\n".join(lines)
 
     def needed_for_skolem(self, qid):
         for pi in self.proofs:
@@ -241,57 +258,40 @@ class InstDiffer(ProofAnalyzer):
                 res[qid] = (self.trace_count[rid][qid], self.proof_count[rid][qid])
         return res
 
-    def do_stuff(self, eis: List[EditInfo]):
-        # import scipy.stats as ss
-        ress = dict()
+    # def do_stuff(self, eis: List[EditInfo]):
+    #     # import scipy.stats as ss
+    #     ress = dict()
 
-        self.graph2.useless = self.get_useless_counts()
-        self.graph2.trace_freq = self.trace_count
 
-        # self.graph2.debug_qid("user_lib__page_organization__PageOrg__State__ll_inv_valid_unused_151")
+    #         filtered = {qid: cost for qid, cost in costs.items() if qid in self.actions}
+    #         sorted_keys = sorted(filtered, key=filtered.get, reverse=True)
 
-        for ei in eis:
-            qid, _ = ei.get_singleton_edit()
-            ress[qid] = []
+    #         ranks = {key: rank + 1 for rank, key in enumerate(sorted_keys)}
 
-        for cost_fun in [
-            self.graph2.estimate_cost_v0,
-            self.graph2.estimate_cost_v1,
-            self.graph2.estimate_cost_v2,
-            self.graph2.estimate_cost_v3,
-            self.graph2.estimate_cost_v4,
-            self.graph2.estimate_cost_v5,
-        ]:
-            costs = self.graph2.estimate_all_costs(cost_fun)
-            filtered = {qid: cost for qid, cost in costs.items() if qid in self.actions}
-            sorted_keys = sorted(filtered, key=filtered.get, reverse=True)
+    #         for qid in ress:
+    #             ress[qid].append(ranks[qid])
 
-            ranks = {key: rank + 1 for rank, key in enumerate(sorted_keys)}
+    #     table = []
 
-            for qid in ress:
-                ress[qid].append(ranks[qid])
+    #     for ei in eis:
+    #         qid, action = ei.get_singleton_edit()
+    #         table.append([qid, action.value, ei.get_id()[:5], *ress[qid], ei.time])
+    #         # print(qid, ress[qid], ei.time)
 
-        table = []
-
-        for ei in eis:
-            qid, action = ei.get_singleton_edit()
-            table.append([qid, action.value, ei.get_id()[:5], *ress[qid], ei.time])
-            # print(qid, ress[qid], ei.time)
-
-        print(
-            tabulate(
-                table,
-                headers=[
-                    "qid",
-                    "action",
-                    "hash",
-                    "v0",
-                    "v1",
-                    "v2",
-                    "v3",
-                    "v4",
-                    "v5",
-                    "time",
-                ],
-            )
-        )
+    #     print(
+    #         tabulate(
+    #             table,
+    #             headers=[
+    #                 "qid",
+    #                 "action",
+    #                 "hash",
+    #                 "v0",
+    #                 "v1",
+    #                 "v2",
+    #                 "v3",
+    #                 "v4",
+    #                 "v5",
+    #                 "time",
+    #             ],
+    #         )
+    #     )

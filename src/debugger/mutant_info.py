@@ -53,6 +53,7 @@ class MutantInfo:
     def build_trace(self):
         self.create_mutant()
 
+        # soft timeout is used, otherwise the log might be malformed
         solver_args = [
             "./bin/z3-4.13.0",
             f"-t:{TRACE_TIME_LIMIT_SEC*1000}",
