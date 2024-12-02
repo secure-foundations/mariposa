@@ -18,12 +18,15 @@ SYNC_ZIP = "sync.zip"
 S190X_HOSTS = [
     "s1901",
     "s1902",
-    "s1904",
+    # "s1904",
     # "s1905",
     "s1906",
     "s1907",
     "s1908",
 ]
+
+def get_worker_hosts():
+    return " ".join(S190X_HOSTS)
 
 CTRL_HOST = "s1904"
 

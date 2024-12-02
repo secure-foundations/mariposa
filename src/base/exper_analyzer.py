@@ -37,7 +37,7 @@ class QueryAnaResult:
             proc = find_verus_procedure_name(self.query_path)
             if proc != None:
                 print(f"verus procedure:\n{proc}\n")
-        print(f"query path:\n{self.query_path}\n")
+        print(f"query path: {self.query_path}\n")
         if self.failure_type != FailureType.NONE:
             print(f"main failure type:\t{self.failure_type}")
         print("")
@@ -107,38 +107,6 @@ class ExperAnalyzer:
     @property
     def qids(self):
         return self.__qr_keys
-
-    def print_plain_status(self):
-        cats = Categorizer()
-        for qid in self.qids:
-            qr = self[qid]
-            rc, et = qr.get_original_status()
-            cats.add_item(RCode(rc), qid)
-        cats.finalize()
-        # cats.print_status()
-
-        unsats = []
-        for cat in [RCode.UNSAT]:
-            qids = cats[cat]
-            if len(qids) == 0:
-                continue
-            # print_banner(f"{cat} ({len(qids)})")
-            for qid in qids:
-                qr = self[qid]
-                unsats.append(qr)
-
-        unsats.sort(key=lambda qr: qr.get_original_status()[1])
-
-        filtered_dir = self.exp.proj.sub_root.replace("smt2_single_edits", "smt2_single_edits_filtered")
-        os.makedirs(filtered_dir, exist_ok=True)
-        count = 0
-
-        for qr in unsats:
-            t = qr.get_original_status()[1]/1000
-            if count > 30 or t > 8: break
-            os.system(f"cp {qr.query_path} {filtered_dir}")
-            # print(qr.query_path, round(t, 2))
-            count += 1
 
     def print_status(self, category_verbosity=0, query_verbosity=0, is_verus=False):
         print_banner("Overall Report")
@@ -215,3 +183,34 @@ class ExperAnalyzer:
     #             continue
     #         print_banner(f"{qid} ({qr.failure_type})")
     #         qr.print_status(verbosity=2)
+    
+    def get_passing_plain(self, max_time=1e10):
+        passing = dict()
+
+        for qid in self.qids:
+            qr = self[qid]
+            rc, et = qr.get_original_status()
+            if rc != RCode.UNSAT.value:
+                continue
+            if et > max_time:
+                continue
+            passing[qid] = et
+
+        return sorted(passing.items(), key=lambda x: x[1])
+    
+    def print_verification_status(self):
+        pass
+
+    def create_filtered_project(self):
+        filtered_dir = self.exp.proj.sub_root.replace("/base", ".filtered/base")
+        os.makedirs(filtered_dir, exist_ok=True)
+
+        passing = self.get_passing_plain(max_time=8e3)
+        print(f"passing queries: {len(passing)}")
+        selected = 0
+        for qid, et in passing[:50]:
+            print(f"selected {qid}, {round(et/1e3, 2)}")
+            shutil.copy(self[qid].query_path, filtered_dir) 
+            selected += 1
+        print(f"selected {selected} queries")
+        print(f"copied to {filtered_dir}")

@@ -31,7 +31,7 @@ def set_up_basic(subparsers):
 
 
 def set_up_veri_verus(subparsers):
-    p = subparsers.add_parser("veri-verus", help="analyze verus verification results")
+    p = subparsers.add_parser("verus_verify", help="analyze verus verification results")
     add_input_dir_option(p)
     add_analysis_options(p)
 
@@ -140,7 +140,7 @@ def handle_veri_verus(args):
     exp = args.experiment
     log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
-    ba.print_plain_status()
+    ba.create_filtered_project()
 
 
 if __name__ == "__main__":
@@ -161,6 +161,7 @@ if __name__ == "__main__":
     set_up_shake(subparsers)
     set_up_wombo(subparsers)
     set_up_trace(subparsers)
+
     p = subparsers.add_parser("debug", help="no help is coming")
     p = subparsers.add_parser("special", help="placeholder for special analysis")
 
@@ -171,7 +172,7 @@ if __name__ == "__main__":
         handle_basic(args)
     elif args.sub_command == "verify":
         handle_verify(args)
-    elif args.sub_command == "veri-verus":
+    elif args.sub_command == "verus_verify":
         handle_veri_verus(args)
     elif args.sub_command == "perf":
         PrefAnalyzer(args.input_group, args.analyzer)

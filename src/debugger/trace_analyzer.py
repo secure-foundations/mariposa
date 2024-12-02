@@ -215,7 +215,7 @@ class InstDiffer(ProofAnalyzer):
             t: InstCost = self.trace_count[qid]
             p: InstCost = self.proof_count[qid]
             action = self.get_available_action(qid)
-            line = [qid, action.value, str(t.subtotal), str(p.subtotal)]
+            line = ['"' + qid + '"', action.value, str(t.subtotal), str(p.subtotal)]
 
             for cost_fun in [
                 self.graph2.estimate_cost_v0,
@@ -228,7 +228,7 @@ class InstDiffer(ProofAnalyzer):
                 try:
                     line.append(str(cost_fun(qid)))
                 except KeyError:
-                    line.append("nan")
+                    line.append("-1")
             
             line = ", ".join(line)
             lines.append(line)

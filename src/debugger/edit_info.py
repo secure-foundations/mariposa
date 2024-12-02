@@ -1,15 +1,17 @@
 from enum import Enum
 import hashlib
 import os
-from base.solver import RCode
+from base.solver import RCode, output_as_rcode
 from utils.system_utils import log_info, subprocess_run
 
 
-def run_query(query_path):
+# in theory we can be using the factory...
+def run_z3(query_path):
     r, e, t = subprocess_run(["./bin/z3-4.13.0", "-T:10", query_path])
     r = output_as_rcode(r)
     log_info(f"[run] {query_path} {r} {e} {t}")
     return (query_path, r, e, round(t / 1000, 2))
+
 
 class EditAction(Enum):
     NONE = "-"
@@ -51,14 +53,14 @@ class EditInfo:
 
     def get_id(self):
         m = hashlib.md5()
-        # edit = [(qid, self.edit[qid]) for qid in sorted(self.edit)]
-        m.update(str(self.edit).encode())
-        return m.hexdigest()
+        qids = [qid for qid in sorted(self.edit)]
+        m.update(str(qids).encode())
+        return m.hexdigest()[0:8]
 
     def run_query(self):
         if self.has_data():
             return
-        _, self.rcode, self.error, self.time = _run_query(self.path)
+        _, self.rcode, self.error, self.time = run_z3(self.path)
 
     def get_singleton_edit(self):
         assert len(self.edit) == 1

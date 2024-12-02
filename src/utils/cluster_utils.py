@@ -1,6 +1,6 @@
 import copy
 import os, subprocess, time
-from base.defs import CTRL_HOST, S190X_HOSTS, SYNC_ZIP
+from base.defs import CTRL_HOST, S190X_HOSTS, SYNC_ZIP, get_worker_hosts
 from base.exper import Experiment
 
 from base.project import Partition
@@ -37,6 +37,13 @@ def start_server(args):
     s.serve_forever()
 
 
+def run_on_workers(cmd):
+    hosts = get_worker_hosts()
+    command = f'parallel-ssh -i -H "{hosts}" "{cmd}"'
+    log_info(f"running {command} on workers")
+    os.system(command)
+
+
 def __spinoff_server(args):
     import threading
 
@@ -50,7 +57,8 @@ def __spinoff_server(args):
     for host in S190X_HOSTS:
         if host == "s1904":
             continue
-        remote_cmd = f"""ssh {host} "(cd mariposa; python3 src/exper_wizard.py worker --manager-addr {addr} --authkey {args.authkey}) &> mariposa.log &" """
+        # this seems to work, so I am not using parallel-ssh
+        remote_cmd = f"""ssh {host} "(cd mariposa; python3 src/exper_wizard.py worker --manager-addr {addr} --authkey {args.authkey}) &> log_mariposa &" """
         print(remote_cmd)
         os.system(remote_cmd)
 
@@ -64,8 +72,8 @@ def handle_manager(args, wargs):
         confirm_input(f"manager is not on master branch, continue?")
 
     log_info(f"running data sync on {args.input_dir}")
-    # manual sync is required if the input_dir needs to be cleared
-    handle_data_sync(args.input_dir, False)
+    # TODO: we might not need to force sync
+    handle_data_sync(args.input_dir, args.clear_existing)
 
     authkey = hexlify(os.urandom(24)).decode("utf-8")
     # TODO: I forgot why we need to pass wargs
@@ -225,8 +233,6 @@ def run_command_over_ssh(host, cmd):
 
 
 def handle_data_sync(input_dir, clear):
-    # log_check(is_flat_dir(input_dir),
-    #           f"{input_dir} is not a flat directory")
     file_count = get_file_count(input_dir)
 
     if os.path.exists(SYNC_ZIP):
@@ -282,23 +288,12 @@ def handle_data_sync(input_dir, clear):
 
 
 def handle_code_sync():
-    print("run the following to update mariposa on all workers")
-    for host in S190X_HOSTS:
-        if host == "s1904":
-            continue
-        remote_cmd = f"""ssh -t {host} "(cd mariposa; rm -r data/dbs/ ; rm -r gen/ ; git checkout master; git pull; cd src/smt2action/; cargo build --release)" """
-        # log_info("running " + remote_cmd)
-        print(remote_cmd)
-        os.system(remote_cmd)
+    log_info("syncing code")
+    cmd = f"(cd mariposa; rm -r data/dbs/ ; rm -r gen/ ; git checkout master; git pull; cd src/smt2action/; cargo build --release)"
+    run_on_workers(cmd)
 
 
 def handle_stop():
-    print("run the following to stop all workers")
-    cmd = "ps -aux | grep 'python3 src/exper_wizard.py' | awk  {'print $2'} | xargs kill -9"
-
-    for host in S190X_HOSTS:
-        if host == "s1904":
-            continue
-        remote_cmd = f"""ssh -t {host} "({cmd})" """
-        log_info("running " + remote_cmd)
-        os.system(remote_cmd)
+    log_info("stopping workers")
+    cmd = "ps -aux | grep 'python3 src/exper_wizard.py' | awk  {'print \\$2'} | xargs kill -9"
+    run_on_workers(cmd)

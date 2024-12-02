@@ -121,7 +121,8 @@ def line_count(filename):
 
 def get_name_hash(filename):
     import hashlib
-    return hashlib.sha256(filename.encode()).hexdigest()
+    # TODO: this should probably do fine?
+    return hashlib.sha256(filename.encode()).hexdigest()[0:10]
 
 def read_last_line(filename):
     with open(filename, 'rb') as f:
@@ -156,6 +157,7 @@ def reset_dir(path, overwrite):
 def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
+    log_check(os.path.isdir(path), f"{path} exists but is not a directory!")
 
 def file_exists(path):
     return os.path.exists(path) and os.path.isfile(path)
