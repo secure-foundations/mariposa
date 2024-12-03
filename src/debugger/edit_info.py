@@ -9,7 +9,7 @@ from utils.system_utils import log_info, subprocess_run
 def run_z3(query_path):
     r, e, t = subprocess_run(["./bin/z3-4.13.0", "-T:10", query_path])
     r = output_as_rcode(r)
-    log_info(f"[run] {query_path} {r} {e} {t}")
+    log_info(f"[run] {query_path} {r} {e} {round(t / 1000, 2)}")
     return (query_path, r, e, round(t / 1000, 2))
 
 

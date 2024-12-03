@@ -62,7 +62,7 @@ class MutantInfo:
             f"trace_file_name={self.trace_path}",
         ]
 
-        stdout, stderr, elapsed = subprocess_run(solver_args, check=True, debug=False)
+        stdout, _, elapsed = subprocess_run(solver_args, check=True, debug=False)
         res = output_as_rcode(stdout)
         return (res, elapsed)
 

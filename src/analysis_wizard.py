@@ -36,13 +36,17 @@ def set_up_veri_verus(subparsers):
     add_analysis_options(p)
 
 
+def set_up_stable(subparsers):
+    p = subparsers.add_parser("stable", help="analyze the stable queries")
+    add_input_dir_option(p)
+    add_analysis_options(p)
+
+
 def handle_basic(args):
     exp = args.experiment
     log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
-    ba.print_status(
-        args.category_verbosity, args.query_verbosity
-    )
+    ba.print_status(args.category_verbosity, args.query_verbosity)
 
 
 def set_up_verify(subparsers):
@@ -143,6 +147,11 @@ def handle_veri_verus(args):
     ba.create_filtered_project()
 
 
+def handle_stable():
+    ba = ExperAnalyzer(args.experiment, args.analyzer)
+    ba.print_stabilized_queries()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Mariposa Analysis Wizard is a tool to analyze Mariposa experiment results. "
@@ -161,6 +170,7 @@ if __name__ == "__main__":
     set_up_shake(subparsers)
     set_up_wombo(subparsers)
     set_up_trace(subparsers)
+    set_up_stable(subparsers)
 
     p = subparsers.add_parser("debug", help="no help is coming")
     p = subparsers.add_parser("special", help="placeholder for special analysis")
@@ -191,6 +201,8 @@ if __name__ == "__main__":
         TraceAnalyzer(args.input_group)
     elif args.sub_command == "debug":
         handle_debug()
+    elif args.sub_command == "stable":
+        handle_stable()
     elif args.sub_command == "special":
         handle_special()
     else:

@@ -4,18 +4,17 @@ import argparse
 import json
 import binascii, random
 import sqlite3
-import time
+import pandas as pd
 from tqdm import tqdm
 from z3 import set_param
 from base.defs import DEBUG_ROOT
 from base.solver import RCode
 from debugger.pool_utils import run_with_pool
-from debugger.trace_analyzer import InstDiffer
+from debugger.trace_analyzer import InstDiffer, shorten_qid
 from debugger.edit_info import EditInfo, EditAction
 from query_editor import QueryEditor
 from utils.database_utils import table_exists
-import multiprocessing
-import os, sys
+import os
 from typing import Dict, List
 from utils.query_utils import (
     Mutation,
@@ -43,16 +42,18 @@ PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 def _build_fail_trace(mi: MutantInfo):
     res = mi.build_trace()
+    et = round(res[1] / 1000, 2)
     if res[0] == RCode.UNSAT and res[1] < TRACE_TIME_LIMIT_SEC * 1000:
-        log_info(f"[trace-fail] ignored: {mi.trace_path}, {res[0]}, {res[1]}")
+        log_info(f"[trace-fail] ignored: {mi.trace_path}, {res[0]}, {et}")
         return None
-    log_info(f"[trace-fail] {mi.trace_path}, {res[0]}, {res[1]}")
+    log_info(f"[trace-fail] {mi.trace_path}, {res[0]}, {et}")
     return res
 
 
 def _build_any_trace(mi: MutantInfo):
     res = mi.build_trace()
-    log_info(f"[trace-any] {mi.trace_path}, {res[0]}, {res[1]}")
+    et = round(res[1] / 1000, 2)
+    log_info(f"[trace-any] {mi.trace_path}, {res[0]}, {et}")
     return res
 
 
@@ -110,7 +111,7 @@ class Debugger3:
         query_path,
         reset=False,
         clear_edits=False,
-        proof_from_core=True,
+        skip_core=False,
         ids_available=False,
         overwrite_reports=False,
     ):
@@ -129,13 +130,11 @@ class Debugger3:
         self.db_path = f"{self.sub_root}/db.sqlite"
 
         self.report_path = f"{self.sub_root}/report.csv"
-        
+
         self.__edit_infos: Dict[int, EditInfo] = dict()
         self.edits_meta = f"{self.sub_root}/edits.json"
         self.edit_dir = f"{self.sub_root}/edits"
         self.graph_dir = f"{self.sub_root}/graphs"
-
-        self.__build_proof_from_core = proof_from_core
 
         self.singleton_edit_project = "singleton_" + self.name_hash
 
@@ -148,9 +147,9 @@ class Debugger3:
 
         self.__init_db()
         self.__init_traces()
-        self.__init_cores()
+        self.__init_cores(skip_core)
         self.refresh_status()
-        self.__init_proofs()
+        self.__init_proofs(skip_core)
         self.__init_edits(clear_edits)
         self.refresh_status()
 
@@ -160,6 +159,7 @@ class Debugger3:
         self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi)
         self.editor = QueryEditor(self.orig_path, self.pis[0])
         self.save_report(overwrite=overwrite_reports)
+        self.load_report()
 
     def __del__(self):
         infos = [ei.to_dict() for ei in self.__edit_infos.values()]
@@ -224,7 +224,7 @@ class Debugger3:
                     "verus_proc": verus_proc,
                     "sub_root": self.sub_root,
                 },
-                open(self.query_meta, "w+")
+                open(self.query_meta, "w+"),
             )
             log_info(f"[init] basic meta data written to {self.query_meta}")
 
@@ -284,10 +284,10 @@ class Debugger3:
                 )
             self.con.commit()
 
-    def __init_cores(self):
+    def __init_cores(self, skip_core):
         count = len(self.cores)
 
-        if count >= CORE_GOAL_COUNT or not self.__build_proof_from_core:
+        if count >= CORE_GOAL_COUNT or skip_core:
             return
 
         log_info(f"[init] currently {count} cores")
@@ -301,9 +301,9 @@ class Debugger3:
         res = run_with_pool(
             _build_core, args, goal=goal, time_bound=CORE_TOTAL_TIME_LIMIT_SEC
         )
-        log_check(len(res) != 0, "no core built")
+        # log_check(len(res) != 0, "no core built")
 
-    def __init_proofs(self):
+    def __init_proofs(self, skip_core):
         count = len(self.proofs)
 
         if count >= PROOF_GOAL_COUNT:
@@ -314,7 +314,7 @@ class Debugger3:
         goal = PROOF_GOAL_COUNT - count
         res = []
 
-        if len(self.cores) != 0 and self.__build_proof_from_core:
+        if len(self.cores) != 0 and not skip_core:
             skip = set([(mi.mutation, mi.seed) for mi in self.proofs])
             args = [mi for mi in self.cores if (mi.mutation, mi.seed) not in skip]
             log_info(
@@ -326,13 +326,17 @@ class Debugger3:
                 goal=goal,
                 time_bound=PROOF_TOTAL_TIME_LIMIT_SEC,
             )
-        else:
+
+        log_info(f"[proof] from core (!) yields {len(res)} proofs")
+
+        if len(res) < goal:
+            log_info(f"[proof] from scratch, currently {len(res)} proofs")
             args = self.create_mutants_info([Mutation.SHUFFLE, Mutation.RESEED])
             res = run_with_pool(
                 _build_proof, args, goal=goal, time_bound=PROOF_TOTAL_TIME_LIMIT_SEC
             )
-            log_check(len(res) != 0, "no proof found")
 
+        log_check(len(res) != 0, "no proof found")
         cur = self.con.cursor()
 
         for r in res:
@@ -443,12 +447,38 @@ class Debugger3:
             log_warn(f"[report] already exists: {self.report_path}")
             return
 
-        report = self.differ.get_report()
+        report = self.differ.get_simple_report()
 
         with open(self.report_path, "w+") as f:
             f.write(report)
 
         log_info(f"[report] written: {self.report_path}")
+
+    def load_report(self):
+        if not os.path.exists(self.report_path):
+            return
+
+        # self.scores = pd.read_csv(self.report_path, sep=",")
+        # # print(self.scores.columns)
+
+        # self.v0_rank = self.scores["v0"].rank(ascending=False)
+        # self.v1_rank = self.scores["v1"].rank(ascending=False)
+        # self.v2_rank = self.scores["v2"].rank(ascending=False)
+        # self.v3_rank = self.scores["v3"].rank(ascending=False)
+        # self.v4_rank = self.scores["v4"].rank(ascending=False)
+        # self.v5_rank = self.scores["v5"].rank(ascending=False)
+
+    def get_rankings(self, qid):
+        index = self.scores[self.scores["qid"] == qid].index
+        ranks = [
+            self.v0_rank[index],
+            self.v1_rank[index],
+            self.v2_rank[index],
+            self.v3_rank[index],
+            self.v4_rank[index],
+            self.v5_rank[index],
+        ]
+        return [int(r) for r in ranks]
 
     def _save_edit(self, ei: EditInfo):
         assert isinstance(ei, EditInfo)
@@ -569,23 +599,54 @@ class Debugger3:
         log_info(f"[proj] edit dir: {self.edit_dir} {len(qids)} files")
 
         if os.path.exists(f"data/projs/{name}"):
-            log_warn(f"[proj] {name} already exists")
+            log_info(f"[proj] {name} already exists")
         else:
-            print(
+            os.system(
                 f"./src/proj_wizard.py create -i {self.edit_dir} --new-project-name {name}"
             )
-            print(
-                f"./src/exper_wizard.py manager -e verus_verify --total-parts 20 -s z3_4_13_0 --clear-existing -i data/projs/{name}/base.z3"
+            os.system(
+                f"./src/exper_wizard.py manager -e verus_verify --total-parts 20 -s z3_4_13_0 -i data/projs/{name}/base.z3"
             )
-        print(
-            f"./src/analysis_wizard.py verus_verify -e verus_verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
-        )
-        print(
-            f"./src/exper_wizard.py manager -e verus_quick --total-parts 20 -s z3_4_13_0 --clear-existing -i data/projs/{name}.filtered/base.z3"
-        )
-        print(
-            f"./src/analysis_wizard.py basic -e verus_quick -s z3_4_13_0 -i data/projs/{name}.filtered/base.z3"
-        )
+
+        filtered_dir = f"data/projs/{name}.filtered/base.z3"
+
+        if os.path.exists(filtered_dir):
+            log_info(f"[proj] {name}.filtered already exists")
+        else:
+            os.system(
+                f"./src/analysis_wizard.py verus_verify -e verus_verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
+            )
+            if len(os.listdir(filtered_dir)) == 0:
+                return log_warn(f"[proj] {name} has no filtered queries")
+            os.system(
+                f"./src/exper_wizard.py manager -e verus_quick --total-parts 20 -s z3_4_13_0 -i {filtered_dir}"
+            )
+
+    def analyze_singleton_project(self):
+        name = self.singleton_edit_project
+        filtered_dir = f"data/projs/{name}.filtered/base.z3"
+
+        if not os.path.exists(filtered_dir):
+            return log_warn(f"[proj] {name} has no filtered queries")
+
+        stdout, _, _ = subprocess_run(
+            [
+                "./src/analysis_wizard.py",
+                "stable",
+                "-e",
+                "verus_quick",
+                "-s",
+                "z3_4_13_0",
+                "-i",
+                filtered_dir,
+            ])
+        
+        edit_ids = []
+        for line in stdout.split("\n"):
+            if line.startswith("edit_id:"):
+                edit_id = line.split(": ")[1].strip()
+                edit_ids.append(edit_id)
+        return edit_ids
 
     def get_passing_edits(self):
         passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
@@ -600,10 +661,10 @@ def main():
         "-i", "--input-query-path", required=True, help="the input query path"
     )
     parser.add_argument(
-        "--proof-from-core",
+        "--skip-core",
         default=False,
         action="store_true",
-        help="build proofs from cores",
+        help="skip building cores",
     )
     parser.add_argument(
         "--clear",
@@ -617,17 +678,31 @@ def main():
         action="store_true",
         help="overwrite the existing report(s)",
     )
+    parser.add_argument(
+        "--create-singleton",
+        default=False,
+        action="store_true",
+        help="create singleton edit project",
+    )
 
     args = parser.parse_args()
 
     dbg = Debugger3(
         args.input_query_path,
-        # clear=args.clear,
-        proof_from_core=args.proof_from_core,
+        skip_core=args.skip_core,
         overwrite_reports=args.overwrite_reports,
     )
 
-    dbg.create_singleton_edit_project()
+    if args.create_singleton:
+        dbg.create_singleton_edit_project()
+
+    eids = dbg.analyze_singleton_project()
+    log_info(f"fond {len(eids)} stabilizing edits")
+
+    for eid in eids:
+        ei = dbg.test_edit_with_id(eid)
+        qid, action = ei.get_singleton_edit()
+        print(qid, action.value, ei.time)
 
 if __name__ == "__main__":
     main()

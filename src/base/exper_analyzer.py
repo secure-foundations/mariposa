@@ -208,9 +208,22 @@ class ExperAnalyzer:
         passing = self.get_passing_plain(max_time=8e3)
         print(f"passing queries: {len(passing)}")
         selected = 0
+
         for qid, et in passing[:50]:
             print(f"selected {qid}, {round(et/1e3, 2)}")
             shutil.copy(self[qid].query_path, filtered_dir) 
             selected += 1
+
         print(f"selected {selected} queries")
         print(f"copied to {filtered_dir}")
+
+    def print_stabilized_queries(self):
+        for qid in self.qids:
+            qr = self[qid]
+            if qr.stability != Stability.STABLE:
+                continue
+            if qr.failure_type != FailureType.NONE:
+                continue
+            print(f"edit_id: {qid}")
+            qr.print_status(verbosity=1)
+

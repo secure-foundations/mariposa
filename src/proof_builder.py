@@ -166,7 +166,7 @@ class ProofBuilder(QueryLoader):
 
     def try_prove(self) -> Optional[ProofInfo]:
         start = time.time()
-        self.proc_solver.set("timeout", 30000)
+        self.proc_solver.set("timeout", 60000)
         res = self.proc_solver.check()
         self.proof_time = int((time.time() - start))
 
