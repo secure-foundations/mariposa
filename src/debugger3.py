@@ -700,12 +700,18 @@ def main():
         dbg.create_singleton_edit_project()
 
     eids = dbg.analyze_singleton_project()
-    log_info(f"found {len(eids)} stabilizing edits")
+    valid_edit_count = 0
 
     for eid in eids:
         ei = dbg.test_edit_with_id(eid)
         qid, action = ei.get_singleton_edit()
         print(qid, action.value, ei.time)
+        print(ei.path)
+        if qid == "prelude_fuel_defaults":
+            continue
+        valid_edit_count += 1
+
+    log_info(f"found {valid_edit_count} stabilizing edits (excluding prelude_fuel_defaults)")
 
 if __name__ == "__main__":
     main()
