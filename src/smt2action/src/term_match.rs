@@ -237,3 +237,82 @@ pub fn get_attr_cid(
     });
     cid
 }
+
+fn dedup_patterns_rec(cur_term: &mut concrete::Term, enable: bool) {
+    match cur_term {
+        concrete::Term::Application {
+            qual_identifier: _,
+            arguments,
+        } => {
+            for argument in arguments.iter_mut() {
+                dedup_patterns_rec(argument, false)
+            }
+        }
+        concrete::Term::Let { var_bindings, term } => {
+            for var_binding in var_bindings.iter_mut() {
+                dedup_patterns_rec(&mut var_binding.1, false)
+            }
+            dedup_patterns_rec(&mut *term, false)
+        }
+        concrete::Term::Forall { vars: _, term } | concrete::Term::Exists { vars: _, term } => {
+            let mut enable = true;
+            if !matches!(&**term, concrete::Term::Attributes { .. }) {
+                // this is for the case where the quantified term has no attributes
+                enable = false;
+            }
+            dedup_patterns_rec(&mut *term, enable)
+        }
+        concrete::Term::Attributes { term, attributes } => {
+            dedup_patterns_rec(term, false);
+
+            if !enable {
+                return;
+            }
+
+            attributes.iter_mut().for_each(|x| {
+                if x.0 != concrete::Keyword("pattern".to_owned()) {
+                    return;
+                }
+                let mut seen_patterns = HashSet::new();
+
+                match &mut x.1 {
+                    concrete::AttributeValue::Terms(terms) => {
+                        terms.retain(|term| {
+                            let pattern = format!("{}", term.clone());
+                            if seen_patterns.contains(&pattern) {
+                                return false;
+                            }
+                            seen_patterns.insert(pattern);
+                            return true;
+                        });
+                        // for term in terms.iter() {
+                        //     let pattern = format!("{}", term.clone());
+                        //     if seen_patterns.contains(&pattern) {
+                        //         println!("removing pattern: {}", pattern);
+                        //     }
+                        //     seen_patterns.insert(pattern);
+                        // }
+                    },
+                    _ => {}
+                    // _ => panic!("unexpected pattern value: {:?}", x.1),
+                }
+            });
+        }
+        concrete::Term::Constant(_) => (),
+        concrete::Term::QualIdentifier(_) => (),
+        concrete::Term::Match { term, cases: _ } => {
+            panic!("unsupported term: {:?}", term)
+        }
+    }
+}
+
+
+pub fn dedup_patterns(commands: &mut Vec<concrete::Command>) {
+    commands.iter_mut().for_each(|c| match c {
+        concrete::Command::Assert { term } => {
+            dedup_patterns_rec(term, false);
+        }
+        concrete::Command::MariposaArbitrary(_) => panic!("unexpected mariposa-arbitrary"),
+        _ => {}
+    });
+}

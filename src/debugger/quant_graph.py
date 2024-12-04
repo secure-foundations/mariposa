@@ -168,7 +168,6 @@ def parse_freq_log(log_path):
 
 class QuantGraph:
     def __init__(self, dep_log_path, clear=False):
-        print(dep_log_path)
         self.graph: nx.DiGraph = nx.DiGraph()
         blames, merged = parse_profiler_log_merged(dep_log_path)
         self.blames: Dict[str, InstBlames] = blames

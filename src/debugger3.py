@@ -118,6 +118,7 @@ class Debugger3:
         self.name_hash = get_name_hash(query_path)
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
+        log_info(f"[init] analyzing {query_path} in {self.sub_root}")
 
         self.query_meta = f"{self.sub_root}/meta.json"
 
@@ -625,9 +626,11 @@ class Debugger3:
     def analyze_singleton_project(self):
         name = self.singleton_edit_project
         filtered_dir = f"data/projs/{name}.filtered/base.z3"
+        edit_ids = []
 
         if not os.path.exists(filtered_dir):
-            return log_warn(f"[proj] {name} has no filtered queries")
+            log_warn(f"[proj] {name} has no filtered queries")
+            return edit_ids
 
         stdout, _, _ = subprocess_run(
             [
@@ -640,12 +643,12 @@ class Debugger3:
                 "-i",
                 filtered_dir,
             ])
-        
-        edit_ids = []
+
         for line in stdout.split("\n"):
             if line.startswith("edit_id:"):
                 edit_id = line.split(": ")[1].strip()
                 edit_ids.append(edit_id)
+            # print(line)
         return edit_ids
 
     def get_passing_edits(self):
@@ -697,7 +700,7 @@ def main():
         dbg.create_singleton_edit_project()
 
     eids = dbg.analyze_singleton_project()
-    log_info(f"fond {len(eids)} stabilizing edits")
+    log_info(f"found {len(eids)} stabilizing edits")
 
     for eid in eids:
         ei = dbg.test_edit_with_id(eid)

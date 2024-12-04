@@ -196,6 +196,7 @@ class InstDiffer(ProofAnalyzer):
         for rid in self.trace_count:
             t = self.trace_count[rid]
             p = self.proof_count[rid]
+            # print(rid, t.subtotal, p.subtotal, self.pi.is_skolemized(rid))
     
             if (t.subtotal == 0 
                 and p.subtotal == 0 

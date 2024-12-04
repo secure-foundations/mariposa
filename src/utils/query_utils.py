@@ -265,6 +265,7 @@ def diff_queries(this, that):
 
 
 def parse_trace(orig_path, trace_path):
+    print(f"parsing trace: {trace_path}")
     lines = subprocess_run(
         [
             MARIPOSA,
@@ -286,6 +287,8 @@ def parse_trace(orig_path, trace_path):
             continue
         line = line.split(": ")
         qid, count = line[0], int(line[1])
+        # if qid == "user_verismo__global__axiom_global_auto_205":
+        #     print(f"count: {count}")
         qids[qid] = count
     
     if len(qids) == 0:

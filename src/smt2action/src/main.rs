@@ -158,6 +158,12 @@ enum Action {
     )]
     ReplaceQuant,
 
+    #[strum(
+        serialize = "dedup-pattern",
+        message = "deduplicate patterns in quantifiers"
+    )]
+    DedupPattern,
+
     #[strum(serialize = "help", message = "get help on the allowed actions")]
     Help,
 }
@@ -461,6 +467,9 @@ fn main() {
         Action::Stat => {
             query_io::print_stats(&commands, &args.stat_log_path.unwrap());
             return;
+        }
+        Action::DedupPattern => {
+            term_match::dedup_patterns(&mut commands);
         }
         _ => {
             panic!("unimplemented action: {}", action);
