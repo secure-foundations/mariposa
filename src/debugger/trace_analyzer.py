@@ -207,18 +207,18 @@ class InstDiffer(ProofAnalyzer):
         return filtered
 
     def get_simple_report(self):
-        lines = ["qid, action, trace count, proof count"]
+        lines = ["qid,action,trace count,proof count"]
 
         line = ["all", "-", str(self.trace_count.total), str(self.proof_count.total)]
 
-        lines.append(", ".join(line))
+        lines.append(",".join(line))
 
         for qid in self.filter_root_qids():
             t: InstCost = self.trace_count[qid]
             p: InstCost = self.proof_count[qid]
             action = self.get_available_action(qid)
             line = ['"' + qid + '"', action.value, str(t.subtotal), str(p.subtotal)]
-            lines.append(", ".join(line))
+            lines.append(",".join(line))
 
         return "\n".join(lines)
 
@@ -226,10 +226,10 @@ class InstDiffer(ProofAnalyzer):
         self.graph2.useless = self.get_useless_counts()
         self.graph2.trace_freq = self.trace_count
 
-        lines = ["qid, action, trace count, proof count, v0, v1, v2, v3, v4, v5"]
+        lines = ["qid,action,trace count,proof count,v0,v1,v2,v3,v4,v5"]
 
         line = ["all", "-", str(self.trace_count.total), str(self.proof_count.total)]
-        lines.append(", ".join(line))
+        lines.append(",".join(line))
 
         for qid in tqdm(self.filter_root_qids()):
             t: InstCost = self.trace_count[qid]
@@ -249,8 +249,8 @@ class InstDiffer(ProofAnalyzer):
                     line.append(str(cost_fun(qid)))
                 except KeyError:
                     line.append("-1")
-            
-            line = ", ".join(line)
+
+            line = ",".join(line)
             lines.append(line)
 
         return "\n".join(lines)

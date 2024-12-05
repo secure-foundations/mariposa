@@ -448,7 +448,7 @@ class Debugger3:
             log_warn(f"[report] already exists: {self.report_path}")
             return
 
-        report = self.differ.get_simple_report()
+        report = self.differ.get_report()
 
         with open(self.report_path, "w+") as f:
             f.write(report)
@@ -459,15 +459,16 @@ class Debugger3:
         if not os.path.exists(self.report_path):
             return
 
-        # self.scores = pd.read_csv(self.report_path, sep=",")
-        # # print(self.scores.columns)
+        self.scores = pd.read_csv(self.report_path, sep=",")
+        # print(self.scores.columns)
 
-        # self.v0_rank = self.scores["v0"].rank(ascending=False)
-        # self.v1_rank = self.scores["v1"].rank(ascending=False)
-        # self.v2_rank = self.scores["v2"].rank(ascending=False)
-        # self.v3_rank = self.scores["v3"].rank(ascending=False)
-        # self.v4_rank = self.scores["v4"].rank(ascending=False)
-        # self.v5_rank = self.scores["v5"].rank(ascending=False)
+        # self.v0_rank = self.scores["trace count"].rank(ascending=False)
+        self.v0_rank = self.scores["v0"].rank(ascending=False)
+        self.v1_rank = self.scores["v1"].rank(ascending=False)
+        self.v2_rank = self.scores["v2"].rank(ascending=False)
+        self.v3_rank = self.scores["v3"].rank(ascending=False)
+        self.v4_rank = self.scores["v4"].rank(ascending=False)
+        self.v5_rank = self.scores["v5"].rank(ascending=False)
 
     def get_rankings(self, qid):
         index = self.scores[self.scores["qid"] == qid].index
@@ -642,7 +643,8 @@ class Debugger3:
                 "z3_4_13_0",
                 "-i",
                 filtered_dir,
-            ])
+            ]
+        )
 
         for line in stdout.split("\n"):
             if line.startswith("edit_id:"):
@@ -700,18 +702,53 @@ def main():
         dbg.create_singleton_edit_project()
 
     eids = dbg.analyze_singleton_project()
+
     valid_edit_count = 0
+
+    table = []
+
+    versions = ["v0", "v1", "v2", "v3", "v4", "v5"]
+    scores = [0, 0, 0, 0, 0, 0]
 
     for eid in eids:
         ei = dbg.test_edit_with_id(eid)
         qid, action = ei.get_singleton_edit()
-        print(qid, action.value, ei.time)
-        print(ei.path)
+
         if qid == "prelude_fuel_defaults":
             continue
+
+        ranks = dbg.get_rankings(qid)
         valid_edit_count += 1
 
-    log_info(f"found {valid_edit_count} stabilizing edits (excluding prelude_fuel_defaults)")
+        for i in range(6):
+            if ranks[i] < 10:
+                scores[i] += 1
+
+        table += [[shorten_qid(qid), eid, action.value, ei.time] + ranks]
+
+    log_info(
+        f"found {valid_edit_count} stabilizing edits (excluding prelude_fuel_defaults)"
+    )
+
+    if valid_edit_count == 0:
+        return
+    
+    print(
+        tabulate(
+            table,
+            headers=[
+                "qid",
+                "eid",
+                "action",
+                "time",
+                *versions,
+            ],
+        )
+    )
+
+    with open("scores.csv", "a") as f:
+        f.write(",".join([str(s) for s in scores]) + "\n")
+
 
 if __name__ == "__main__":
     main()

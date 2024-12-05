@@ -331,7 +331,9 @@ class QuantGraph:
         total = 0
 
         for (qid, ratio) in self.sub_ratios[start].items():
-            assert ratio <= 1
+            if ratio > 1:
+                assert np.isclose(ratio, 1)
+                ratio = 1
             total += ratio * self.blames[qid].cost
 
         return total
@@ -340,7 +342,9 @@ class QuantGraph:
         total = 0
 
         for (qid, ratio) in self.sub_ratios[start].items():
-            assert ratio <= 1
+            if ratio > 1:
+                assert np.isclose(ratio, 1)
+                ratio = 1
             if qid not in self.useless:
                 # print("not logged", qid)
                 discount = 1
@@ -358,8 +362,9 @@ class QuantGraph:
         total = 0
 
         for (qid, ratio) in self.compute_sub_root_ratios(start).items():
-            # print(start, qid, ratio)
-            assert ratio <= 1 or np.isclose(ratio, 1)
+            if ratio > 1:
+                assert np.isclose(ratio, 1)
+                ratio = 1
             if qid not in self.useless:
                 # print("not logged", qid)
                 discount = 1
@@ -377,16 +382,3 @@ class QuantGraph:
             costs[qid] = cost_func(qid)
         # ranked = sorted(costs.items(), key=lambda x: x[1], reverse=True)
         return costs
-
-if __name__ == "__main__":
-    # g = QuantGraph("/home/yizhou7/mariposa/dbg/mimalloc--queues__page_queue_push_back.smt2/graphs/rename.13176650426009283355.txt", "freq")
-
-    g = QuantGraph(
-        "dbg/mimalloc--segment__segment_span_free_coalesce_before.smt2/graphs/rename.3245445615577937346.txt"
-    )
-    qid = "internal_lib!page_organization.valid_ll.?_definition"
-    g.debug_qid(qid)
-    print(g.estimate_cost_v3(qid, debug=True))
-
-    # for qid, c in g.rank_by_cost(g.estimate_cost_v3).items():
-    #     print(qid, c)
