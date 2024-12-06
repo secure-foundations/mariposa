@@ -30,8 +30,8 @@ def set_up_basic(subparsers):
     add_analysis_options(p)
 
 
-def set_up_veri_verus(subparsers):
-    p = subparsers.add_parser("verus_verify", help="analyze verus verification results")
+def set_up_filter_edits(subparsers):
+    p = subparsers.add_parser("filter_edits", help="analyze verus verification results")
     add_input_dir_option(p)
     add_analysis_options(p)
 
@@ -46,7 +46,7 @@ def handle_basic(args):
     exp = args.experiment
     log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
-    ba.print_status(args.category_verbosity, args.query_verbosity)
+    ba.print_status(category_verbosity=args.category_verbosity, query_verbosity=args.query_verbosity, category=args.category)
 
 
 def set_up_verify(subparsers):
@@ -140,7 +140,7 @@ def handle_special():
     pass
 
 
-def handle_veri_verus(args):
+def handle_filter_edits(args):
     exp = args.experiment
     log_check(exp.is_done(), "experiment results do not exist")
     ba = ExperAnalyzer(exp, args.analyzer)
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
     set_up_basic(subparsers)
     set_up_verify(subparsers)
-    set_up_veri_verus(subparsers)
+    set_up_filter_edits(subparsers)
     set_up_cvc5_perf(subparsers)
     set_up_cvc5_inst(subparsers)
     set_up_unstable(subparsers)
@@ -182,8 +182,8 @@ if __name__ == "__main__":
         handle_basic(args)
     elif args.sub_command == "verify":
         handle_verify(args)
-    elif args.sub_command == "verus_verify":
-        handle_veri_verus(args)
+    elif args.sub_command == "filter_edits":
+        handle_filter_edits(args)
     elif args.sub_command == "perf":
         PrefAnalyzer(args.input_group, args.analyzer)
     elif args.sub_command == "inst":

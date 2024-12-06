@@ -607,7 +607,7 @@ class Debugger3:
                 f"./src/proj_wizard.py create -i {self.edit_dir} --new-project-name {name}"
             )
             os.system(
-                f"./src/exper_wizard.py manager -e verus_verify --total-parts 20 -s z3_4_13_0 -i data/projs/{name}/base.z3"
+                f"./src/exper_wizard.py manager -e verify --total-parts 30 -s z3_4_13_0 -i data/projs/{name}/base.z3"
             )
 
         filtered_dir = f"data/projs/{name}.filtered/base.z3"
@@ -616,12 +616,12 @@ class Debugger3:
             log_info(f"[proj] {name}.filtered already exists")
         else:
             os.system(
-                f"./src/analysis_wizard.py verus_verify -e verus_verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
+                f"./src/analysis_wizard.py filter_edit -e verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
             )
             if len(os.listdir(filtered_dir)) == 0:
                 return log_warn(f"[proj] {name} has no filtered queries")
             os.system(
-                f"./src/exper_wizard.py manager -e verus_quick --total-parts 20 -s z3_4_13_0 -i {filtered_dir}"
+                f"./src/exper_wizard.py manager -e default --total-parts 30 -s z3_4_13_0 -i {filtered_dir}"
             )
 
     def analyze_singleton_project(self):
@@ -638,7 +638,7 @@ class Debugger3:
                 "./src/analysis_wizard.py",
                 "stable",
                 "-e",
-                "verus_quick",
+                "default",
                 "-s",
                 "z3_4_13_0",
                 "-i",
@@ -650,7 +650,7 @@ class Debugger3:
             if line.startswith("edit_id:"):
                 edit_id = line.split(": ")[1].strip()
                 edit_ids.append(edit_id)
-            # print(line)
+            print(line)
         return edit_ids
 
     def get_passing_edits(self):
@@ -700,6 +700,7 @@ def main():
 
     if args.create_singleton:
         dbg.create_singleton_edit_project()
+    return
 
     eids = dbg.analyze_singleton_project()
 
@@ -708,7 +709,7 @@ def main():
     table = []
 
     versions = ["v0", "v1", "v2", "v3", "v4", "v5"]
-    scores = [0, 0, 0, 0, 0, 0]
+    scores = [0] * 12
 
     for eid in eids:
         ei = dbg.test_edit_with_id(eid)
@@ -722,7 +723,8 @@ def main():
 
         for i in range(6):
             if ranks[i] < 10:
-                scores[i] += 1
+                scores[2*i] += 1
+                scores[2*i+1] = 1
 
         table += [[shorten_qid(qid), eid, action.value, ei.time] + ranks]
 
@@ -747,7 +749,8 @@ def main():
     )
 
     with open("scores.csv", "a") as f:
-        f.write(",".join([str(s) for s in scores]) + "\n")
+        line = [args.input_query_path] + [str(s) for s in scores]
+        f.write(",".join(line) + "\n")
 
 
 if __name__ == "__main__":

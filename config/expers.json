@@ -55,7 +55,7 @@
     },
     "verify": {
         "num_mutants": 0,
-        "num_procs": 8
+        "num_procs": 4
     },
     "debug": {
         "mutations": [

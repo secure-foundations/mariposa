@@ -108,7 +108,17 @@ class ExperAnalyzer:
     def qids(self):
         return self.__qr_keys
 
-    def print_status(self, category_verbosity=0, query_verbosity=0, is_verus=False):
+    def print_status(self, category_verbosity=0, query_verbosity=0, is_verus=False, category=None):
+        if category is not None:
+            if category not in self.stability_categories:
+                print(f"no queries in category {category}")
+                return
+            cs = self.stability_categories[category]
+            print_banner(f"{category.value} ({len(cs)})")
+            for qid in cs:
+                self[qid].print_status(query_verbosity, is_verus)
+            return
+
         print_banner("Overall Report")
         print("")
 
@@ -205,7 +215,7 @@ class ExperAnalyzer:
         filtered_dir = self.exp.proj.sub_root.replace("/base", ".filtered/base")
         os.makedirs(filtered_dir, exist_ok=True)
 
-        passing = self.get_passing_plain(max_time=8e3)
+        passing = self.get_passing_plain()
         print(f"passing queries: {len(passing)}")
         selected = 0
 

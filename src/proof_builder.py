@@ -193,23 +193,26 @@ class ProofBuilder(QueryLoader):
         return pi
 
     def __collect_instantiations(self, p):
-        if self.visit(p) or is_const(p) or is_var(p):
-            return
+        stack = [p]
+        while len(stack) > 0:
+            p = stack.pop()
 
-        if is_quantifier(p):
-            p = p.body()
+            if self.visit(p) or is_const(p) or is_var(p):
+                continue
 
-        res = match_qi(p)
+            if is_quantifier(p):
+                p = p.body()
 
-        if res is not None:
-            qid, qi = res
-            if qid not in self.instantiations:
-                self.instantiations[qid] = set()
-            self.instantiations[qid].add(qi)
+            res = match_qi(p)
 
-        for c in p.children():
-            self.__collect_instantiations(c)
+            if res is not None:
+                qid, qi = res
+                if qid not in self.instantiations:
+                    self.instantiations[qid] = set()
+                self.instantiations[qid].add(qi)
 
+            for c in p.children():
+                stack.append(c)
 
 if __name__ == "__main__":
     set_param(proof=True)

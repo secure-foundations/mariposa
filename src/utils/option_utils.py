@@ -1,6 +1,7 @@
 import os
 from base.defs import MAGIC_IGNORE_SEED
 from base.project import Partition
+from base.query_analyzer import Stability
 from utils.query_utils import Mutation
 from utils.system_utils import file_exists, log_check
 
@@ -30,6 +31,7 @@ def add_analysis_options(parser):
     add_solver_option(parser)
     parser.add_argument("--analyzer", default="default", help="the analyzer name (from config/expers.json) to use")
     parser.add_argument("-cv", "--category-verbosity", type=int, default=0, help="level of verbosity for categories in the analysis")
+    parser.add_argument("--category", type=str, default="none", help="if specified, only analyze the specified category")
     parser.add_argument("-qv", "--query-verbosity", type=int, default=0, help="level of verbosity for each query in the analysis")
 
 def add_experiment_options(parser):
@@ -74,6 +76,12 @@ def deep_parse_args(args):
         args.part = Partition.from_str(args.part)
     else:
         args.part = Partition(1, 1)
+
+    if hasattr(args, "category"):
+        if args.category == "none":
+            args.category = None
+        else:
+            args.category = Stability(args.category)
 
     if hasattr(args, "analyzer"):
         args.analyzer = FACT.get_analyzer(args.analyzer)
