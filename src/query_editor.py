@@ -257,7 +257,10 @@ class QueryEditor(BasicQueryWriter):
         self.skolemize_qids(skol_qids)
         self.erase_qids(erase_qids)
         self.instantiate_qids(inst_qids)
-        self.split_dual_qids(dual_qids)
+
+        if len(dual_qids) > 0:
+            log_warn("dual split not implemented yet")
+        # self.split_dual_qids(dual_qids)
 
     def save(self, out_file_path):
         # symbols = self.pi.tt.get_trans_deps(self.__enabled_symbols)
@@ -270,11 +273,14 @@ class QueryEditor(BasicQueryWriter):
 if __name__ == "__main__":
     set_param(proof=True)
 
-    w = BasicQueryWriter("dbg/mimalloc--segment__segment_span_free.smt2/orig.smt2")
+    w = BasicQueryWriter("woot.smt2")
+    qid = "user_lib__multilog__setup_v__write_setup_metadata_to_single_region_43"
+    w.skolemize_qids({qid})
+    w.save("woot.v1.smt2")
 
-    qt = w.quants["internal_lib!types.impl&__21.wf_main.?_definition"]
-    print(collapse_sexpr(qt.assertion.sexpr()))
-    print("(assert " + format_expr_flat(qt.assertion) + ")")
+    # qt = w.quants["internal_lib!types.impl&__21.wf_main.?_definition"]
+    # print(collapse_sexpr(qt.assertion.sexpr()))
+    # print("(assert " + format_expr_flat(qt.assertion) + ")")
 
     # pi = ProofInfo.load("dbg/mimalloc--segment__segment_span_free.v2.smt2/insts/shuffle.11874912365756099194")
     # w = QueryEditor("dbg/mimalloc--segment__segment_span_free.v2.smt2/orig.smt2", pi)

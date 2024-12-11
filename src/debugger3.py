@@ -27,6 +27,7 @@ from utils.system_utils import (
     log_check,
     log_info,
     log_warn,
+    remove_dir,
     subprocess_run,
 )
 from tabulate import tabulate
@@ -109,12 +110,17 @@ class Debugger3:
     def __init__(
         self,
         query_path,
-        reset=False,
+        reset_all=False,
+        retry_failed=False,
         clear_edits=False,
         skip_core=False,
         ids_available=False,
         overwrite_reports=False,
     ):
+        if not os.path.exists(query_path):
+            log_warn(f"[init] query path {query_path} not found")
+            return
+
         self.name_hash = get_name_hash(query_path)
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
@@ -139,19 +145,21 @@ class Debugger3:
 
         self.singleton_edit_project = "singleton_" + self.name_hash
 
-        self.__init_dirs(reset)
+        self.__init_dirs(reset_all)
         self.__init_query_files(query_path, ids_available)
-
-        self.traces: List[MutantInfo] = []
-        self.proofs: List[MutantInfo] = []
-        self.cores: List[MutantInfo] = []
-
         self.__init_db()
+        self.__init_edits(clear_edits)
+
+        if len(self.traces) != 0 and len(self.proofs) == 0 and not retry_failed:
+            log_warn(
+                "[init] previous debugging attempt has failed, run with --retry-failed if needed!"
+            )
+            return
+
         self.__init_traces()
         self.__init_cores(skip_core)
         self.refresh_status()
         self.__init_proofs(skip_core)
-        self.__init_edits(clear_edits)
         self.refresh_status()
 
         self.pis = [p.proof_info for p in self.proofs]
@@ -169,6 +177,13 @@ class Debugger3:
     def __init_dirs(self, reset):
         if reset and os.path.exists(self.sub_root):
             os.system(f"rm -rf {self.sub_root}")
+
+        if reset:
+            log_info(f"[init] removing singleton project {self.singleton_edit_project}")
+            remove_dir("data/projs/" + self.singleton_edit_project)
+            remove_dir("data/projs/" + self.singleton_edit_project + ".filtered")
+            remove_dir("data/dbs/" + self.singleton_edit_project)
+            remove_dir("data/dbs/" + self.singleton_edit_project + ".filtered")
 
         for dir in [
             self.sub_root,
@@ -236,8 +251,7 @@ class Debugger3:
         if not table_exists(cur, "mutants"):
             create_mut_table(cur)
             self.con.commit()
-        else:
-            self.refresh_status()
+        self.refresh_status()
 
     def clear_edits(self):
         if os.path.exists(self.edit_dir):
@@ -348,6 +362,8 @@ class Debugger3:
         self.con.commit()
 
     def __init_edits(self, clear_edits):
+        self.__edit_infos = dict()
+
         if clear_edits:
             return self.clear_edits()
 
@@ -355,7 +371,6 @@ class Debugger3:
             return
 
         infos = json.load(open(self.edits_meta, "r"))
-        self.__edit_infos = dict()
 
         for ei in infos:
             ei = EditInfo.from_dict(ei)
@@ -391,10 +406,10 @@ class Debugger3:
                 self.cores.append(mi)
 
     def get_fast_unknown_trace(self):
-        for tmi in self.traces:
-            if tmi.trace_rcode == RCode.UNKNOWN and tmi.trace_time < 200:
-                return tmi
-        return None
+        ukmis = [mi for mi in self.traces if mi.trace_rcode == RCode.UNKNOWN]
+        if len(ukmis) == 0:
+            return None
+        return min(ukmis, key=lambda tmi: tmi.trace_time)
 
     def get_large_trace(self):
         for tmi in self.traces:
@@ -412,6 +427,12 @@ class Debugger3:
 
     def get_candidate_trace(self):
         r = self.get_slow_trace()
+
+        if r is not None:
+            return r
+
+        r = self.get_fast_unknown_trace()
+
         if r is not None:
             return r
 
@@ -499,7 +520,6 @@ class Debugger3:
         return ei
 
     def test_edit_with_id(self, edit_id) -> EditInfo:
-        path = f"{self.edit_dir}/{edit_id}.smt2"
         assert edit_id in self.__edit_infos
         ei = self.__edit_infos[edit_id]
         if not ei.query_exists():
@@ -616,7 +636,7 @@ class Debugger3:
             log_info(f"[proj] {name}.filtered already exists")
         else:
             os.system(
-                f"./src/analysis_wizard.py filter_edit -e verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
+                f"./src/analysis_wizard.py filter_edits -e verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
             )
             if len(os.listdir(filtered_dir)) == 0:
                 return log_warn(f"[proj] {name} has no filtered queries")
@@ -633,29 +653,81 @@ class Debugger3:
             log_warn(f"[proj] {name} has no filtered queries")
             return edit_ids
 
-        stdout, _, _ = subprocess_run(
-            [
-                "./src/analysis_wizard.py",
-                "stable",
-                "-e",
-                "default",
-                "-s",
-                "z3_4_13_0",
-                "-i",
-                filtered_dir,
-            ]
+        for config in ["default", "verus_quick"]:
+            stdout, stderr, _ = subprocess_run(
+                [
+                    "./src/analysis_wizard.py",
+                    "stable",
+                    "-e",
+                    config,
+                    "-s",
+                    "z3_4_13_0",
+                    "-i",
+                    filtered_dir,
+                ],
+                debug=True,
+            )
+
+            # TODO: this is a hacky... I should have used the same exp config...
+            if stderr:
+                log_warn("skip due to encountered: " + stderr)
+                continue
+
+            for line in stdout.split("\n"):
+                if line.startswith("edit_id:"):
+                    edit_id = line.split(": ")[1].strip()
+                    edit_ids.append(edit_id)
+
+            return edit_ids
+
+    def evaluate_rankings(self):
+        valid_edit_count = 0
+
+        table = []
+
+        versions = ["v0", "v1", "v2", "v3", "v4", "v5"]
+        scores = [0] * 12
+
+        eids = self.analyze_singleton_project()
+        self.register_singleton_edits()
+
+        for eid in eids:
+            ei = self.test_edit_with_id(eid)
+            qid, action = ei.get_singleton_edit()
+
+            if qid == "prelude_fuel_defaults":
+                continue
+
+            ranks = self.get_rankings(qid)
+            valid_edit_count += 1
+
+            # self.differ.debug_quantifier(qid)
+
+            for i in range(6):
+                if ranks[i] < 10:
+                    scores[2 * i] += 1
+                    scores[2 * i + 1] = 1
+
+            table += [[shorten_qid(qid), ei.get_id(), action.value, ei.time] + ranks]
+
+        log_info(
+            f"found {valid_edit_count} stabilizing edits (excluding prelude_fuel_defaults)"
         )
 
-        for line in stdout.split("\n"):
-            if line.startswith("edit_id:"):
-                edit_id = line.split(": ")[1].strip()
-                edit_ids.append(edit_id)
-            print(line)
-        return edit_ids
+        print(
+            tabulate(
+                table,
+                headers=[
+                    "qid",
+                    "eid",
+                    "action",
+                    "time",
+                    *versions,
+                ],
+            )
+        )
 
-    def get_passing_edits(self):
-        passed = [ei for ei in self.__edit_infos if ei.std_out == RCode.UNSAT]
-        return sorted(passed, key=lambda ei: ei.time)
+        return [valid_edit_count] + scores
 
 
 def main():
@@ -672,10 +744,16 @@ def main():
         help="skip building cores",
     )
     parser.add_argument(
-        "--clear",
+        "--retry-failed",
         default=False,
         action="store_true",
-        help="clear the existing experiment",
+        help="retry failed experiments",
+    )
+    parser.add_argument(
+        "--reset-all",
+        default=False,
+        action="store_true",
+        help="reset all existing data",
     )
     parser.add_argument(
         "--overwrite-reports",
@@ -689,68 +767,32 @@ def main():
         action="store_true",
         help="create singleton edit project",
     )
+    parser.add_argument(
+        "--eval-rankings",
+        default=False,
+        action="store_true",
+        help="evaluate different rankings",
+    )
 
     args = parser.parse_args()
 
     dbg = Debugger3(
         args.input_query_path,
+        reset_all=args.reset_all,
+        retry_failed=args.retry_failed,
         skip_core=args.skip_core,
         overwrite_reports=args.overwrite_reports,
     )
 
     if args.create_singleton:
         dbg.create_singleton_edit_project()
-    return
 
-    eids = dbg.analyze_singleton_project()
+    if args.eval_rankings:
+        dbg.evaluate_rankings()
 
-    valid_edit_count = 0
-
-    table = []
-
-    versions = ["v0", "v1", "v2", "v3", "v4", "v5"]
-    scores = [0] * 12
-
-    for eid in eids:
-        ei = dbg.test_edit_with_id(eid)
-        qid, action = ei.get_singleton_edit()
-
-        if qid == "prelude_fuel_defaults":
-            continue
-
-        ranks = dbg.get_rankings(qid)
-        valid_edit_count += 1
-
-        for i in range(6):
-            if ranks[i] < 10:
-                scores[2*i] += 1
-                scores[2*i+1] = 1
-
-        table += [[shorten_qid(qid), eid, action.value, ei.time] + ranks]
-
-    log_info(
-        f"found {valid_edit_count} stabilizing edits (excluding prelude_fuel_defaults)"
-    )
-
-    if valid_edit_count == 0:
-        return
-    
-    print(
-        tabulate(
-            table,
-            headers=[
-                "qid",
-                "eid",
-                "action",
-                "time",
-                *versions,
-            ],
-        )
-    )
-
-    with open("scores.csv", "a") as f:
-        line = [args.input_query_path] + [str(s) for s in scores]
-        f.write(",".join(line) + "\n")
+    # with open("scores.csv", "a") as f:
+    #     line = [args.input_query_path] + [str(s) for s in scores]
+    #     f.write(",".join(line) + "\n")
 
 
 if __name__ == "__main__":

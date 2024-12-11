@@ -1,4 +1,5 @@
 import copy
+import random
 import os, subprocess, time
 from base.defs import CTRL_HOST, S190X_HOSTS, SYNC_ZIP, get_worker_hosts
 from base.exper import Experiment
@@ -73,7 +74,7 @@ def handle_manager(args, wargs):
 
     log_info(f"running data sync on {args.input_dir}")
     # TODO: we might not need to force sync
-    handle_data_sync(args.input_dir, args.clear_existing)
+    handle_data_sync(args.input_dir, True)
 
     authkey = hexlify(os.urandom(24)).decode("utf-8")
     # TODO: I forgot why we need to pass wargs
@@ -297,3 +298,15 @@ def handle_stop():
     log_info("stopping workers")
     cmd = "ps -aux | grep 'python3 src/exper_wizard.py' | awk  {'print \\$2'} | xargs kill -9"
     run_on_workers(cmd)
+
+
+def handle_offload_single(args):
+    log_check(os.path.exists(args.input_query_path), "input query does not exist")
+    realpath = os.path.realpath(args.input_query_path)
+    base_name = os.path.basename(realpath)
+    server = random.choice(S190X_HOSTS)
+    log_info(f"offloading to {server}")
+    cmd = f"scp {realpath} {server}:~/mariposa/"
+    os.system(cmd)
+    cmd = f"ssh {server} 'cd mariposa; python3 src/exper_wizard.py single --input-query-path {base_name} -qv 1 -cv 4 -s {args.solver} -e {args.exp_config.exp_name} --clear-existing'"
+    os.system(cmd)

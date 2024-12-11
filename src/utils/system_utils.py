@@ -17,7 +17,7 @@ def log_warn(msg):
     print(f"{BColors.WARNING}[WARN] {msg} {BColors.ENDC}")
 
 def log_error(msg):
-    print(f"{BColors.ERROR}[ERROR] {msg} {BColors.ENDC}")
+    print(f"{BColors.ERROR}[ERROR] {msg} {BColors.ENDC}", file=sys.stderr)
 
 def log_debug(msg, end="\n"):
     if DEBUG_ENABLE:

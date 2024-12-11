@@ -218,8 +218,12 @@ class ExperAnalyzer:
         passing = self.get_passing_plain()
         print(f"passing queries: {len(passing)}")
         selected = 0
+        budget = 500
 
-        for qid, et in passing[:50]:
+        for qid, et in passing:
+            if budget <= 0:
+                break
+            budget += et/1e3
             print(f"selected {qid}, {round(et/1e3, 2)}")
             shutil.copy(self[qid].query_path, filtered_dir) 
             selected += 1

@@ -2,7 +2,7 @@
 
 import argparse
 import copy
-from utils.cluster_utils import handle_code_sync, handle_data_sync, handle_manager, handle_recovery, handle_code_sync, handle_stop, handle_worker
+from utils.cluster_utils import handle_code_sync, handle_data_sync, handle_manager, handle_offload_single, handle_recovery, handle_code_sync, handle_stop, handle_worker
 from utils.local_utils import handle_single, handle_multiple, handle_info, handle_update
 from utils.option_utils import *
 from proj_wizard import *
@@ -53,8 +53,10 @@ def set_up_info(subparsers):
 def set_up_code_sync(subparsers):
     p = subparsers.add_parser('code-sync', help='update the cluster')
 
-def set_up_stop_all(subparsers):
-    p = subparsers.add_parser('stop-all', help='stop all workers and manager on the cluster')
+def set_up_offload_single(subparsers):
+    p = subparsers.add_parser('offload-single', help='offload a single query to the cluster')
+    add_input_query_option(p)
+    add_experiment_options(p)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mariposa Experiment Wizard is a tool for testing SMT proof stability. this is the main tool to run experiments.")
@@ -70,7 +72,8 @@ if __name__ == '__main__':
     set_up_code_sync(subparsers)
     set_up_recovery(subparsers)
     set_up_update(subparsers)
-    set_up_stop_all(subparsers)
+    subparsers.add_parser('stop-all', help='stop all workers and manager on the cluster')
+    set_up_offload_single(subparsers)
 
     args = parser.parse_args()
     wargs = copy.deepcopy(args)
@@ -96,5 +99,7 @@ if __name__ == '__main__':
         handle_recovery(args)
     elif args.sub_command == "stop-all":
         handle_stop()
+    elif args.sub_command == "offload-single":
+        handle_offload_single(args)
     else:
         parser.print_help()

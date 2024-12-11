@@ -6,7 +6,7 @@ from debugger.mutant_info import MutantInfo
 from debugger.quant_graph import QuantGraph
 from debugger.query_loader import GroupedCost, InstCost
 from debugger.edit_info import EditAction, EditInfo
-from debugger.z3_utils import extract_sk_qid_from_name
+from debugger.z3_utils import extract_sk_qid_from_name, format_expr_flat
 from proof_builder import InstError, ProofInfo, QueryLoader, QunatInstInfo
 from utils.system_utils import log_check, log_info, log_warn, subprocess_run
 from tqdm import tqdm
@@ -14,9 +14,9 @@ import networkx as nx
 
 
 def shorten_qid(qid):
-    if len(qid) <= 100:
+    if len(qid) <= 80:
         return qid
-    return qid[:100] + "..."
+    return qid[:80] + "..."
 
 
 def is_prelude_qid(qid):
@@ -262,14 +262,18 @@ class InstDiffer(ProofAnalyzer):
         return False
 
     def debug_quantifier(self, qid):
-        if qid not in self.pi.qi_infos:
-            log_warn(f"qid {qid} not found in proof")
-            return
-        qi = self.pi.qi_infos[qid]
+        print("qid:", qid)
+        q = self.quants[qid]
+        print(format_expr_flat(q.assertion))    
+    
+        # if qid not in self.pi.qi_infos:
+        #     log_warn(f"qid {qid} not found in proof")
+        #     return
+        # qi = self.pi.qi_infos[qid]
 
-        for bind in qi.bindings:
-            for b in bind.values():
-                print(self.pi.tt.expand_def(b))
+        # for bind in qi.bindings:
+        #     for b in bind.values():
+        #         print(self.pi.tt.expand_def(b))
 
     def get_useless_counts(self):
         res = dict()

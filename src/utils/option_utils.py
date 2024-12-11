@@ -111,6 +111,9 @@ def deep_parse_args(args):
     if hasattr(args, "exp_config") and not args.is_group:
         args.exp_config = FACT.get_config(args.exp_config)
 
+        if args.sub_command == "offload-single":
+            return args
+
         if single:
             args.experiment = FACT.get_single_exper(
                 args.input_query_path, args.exp_config, args.solver, clear=args.clear_existing)

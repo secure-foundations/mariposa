@@ -148,6 +148,8 @@ def handle_filter_edits(args):
 
 
 def handle_stable():
+    args.analyzer = FACT.get_analyzer("10sec")
+    log_info("overriding the analyzer to 10sec")
     ba = ExperAnalyzer(args.experiment, args.analyzer)
     ba.print_stabilized_queries()
 
