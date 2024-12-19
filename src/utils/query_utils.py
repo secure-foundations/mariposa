@@ -185,7 +185,7 @@ class Mutation(str, Enum):
         return {Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED}
 
 
-def emit_mutant_query(query_path, output_path, mutation, seed):
+def emit_mutant_query(query_path, output_path, mutation, seed, keep_core=False):
     log_check(query_path != output_path, "query and output should not be the same")
     # log_check(mutation in {Mutation.SHUFFLE, Mutation.RENAME, Mutation.COMPOSE},
     #           f"{mutation} is not a valid mutation here")
@@ -205,6 +205,9 @@ def emit_mutant_query(query_path, output_path, mutation, seed):
         return
 
     command = f"{MARIPOSA} -i '{query_path}' -a {mutation} -o '{output_path}' -s {seed}"
+
+    if keep_core:
+        command += " --keep-core"
 
     # if mutation == Mutation.COMPOSE:
     #     command += " --lower-asserts"
@@ -264,37 +267,67 @@ def diff_queries(this, that):
             print(that[key])
 
 
-def parse_trace(orig_path, trace_path):
-    print(f"parsing trace: {trace_path}")
+# def parse_trace(orig_path, trace_path):
+#     print(f"parsing trace: {trace_path}")
+#     lines = subprocess_run(
+#         [
+#             MARIPOSA,
+#             "-a",
+#             "parse-inst-z3",
+#             "-i",
+#             orig_path,
+#             "--z3-trace-log-path",
+#             trace_path,
+#         ], 
+#     )[0]
+
+#     lines = lines.split("\n")
+
+#     qids = dict()
+
+#     for line in lines:
+#         if line == "":
+#             continue
+#         line = line.split(": ")
+#         qid, count = line[0], int(line[1])
+#         qids[qid] = count
+    
+#     if len(qids) == 0:
+#         log_warn(f"no insts found in trace: {trace_path}")
+
+#     return qids
+
+def get_trace_stats_axiom_profiler(trace_path):
+    log_info(f"parsing trace: {trace_path}")
     lines = subprocess_run(
         [
-            MARIPOSA,
-            "-a",
-            "parse-inst-z3",
-            "-i",
-            orig_path,
-            "--z3-trace-log-path",
+            "/home/yizhou7/axiom-profiler-2/target/release/smt-log-parser",
+            "stats",
             trace_path,
         ], 
     )[0]
 
-    lines = lines.split("\n")
-
-    qids = dict()
+    start = False
+    processed = set()
+    counts = dict()
 
     for line in lines:
-        if line == "":
+        if line == "top-instantiations=\n":
+            start = True
             continue
-        line = line.split(": ")
-        qid, count = line[0], int(line[1])
-        # if qid == "user_verismo__global__axiom_global_auto_205":
-        #     print(f"count: {count}")
-        qids[qid] = count
-    
-    if len(qids) == 0:
-        log_warn(f"no insts found in trace: {trace_path}")
 
-    return qids
+        if not start:
+            continue
+
+        line = line.strip().split(" ")
+        name, qidx, count = line[0], int(line[1]), int(line[2])
+        assert qidx not in processed
+        if name not in counts:
+            counts[name] = 0
+        counts[name] += count
+        processed.add(qidx)
+
+    return counts
 
 def add_qids_to_query(query_path):
     args = [

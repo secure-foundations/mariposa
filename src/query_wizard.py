@@ -2,14 +2,11 @@
 
 import argparse, os
 
-from query.trace_debugger import TraceDebugger
 from base.exper_analyzer import ExperAnalyzer
 from base.exper_runner import Runner
 from query.combo_builder import handle_inst_z3, handle_trace_z3
 from query.core_completer import CoreCompleter
 from query.inst_builder import InstBuilder
-from query.trace_debugger import TraceDebugger
-from query.trace_debugger2 import TraceDebugger2
 from utils.option_utils import *
 from query.core_builder import CompleteCoreBuilder, MutCoreBuilder
 from query.combo_builder import ComboBuilder
@@ -323,15 +320,6 @@ if __name__ == "__main__":
     elif args.sub_command == "wombo-combo":
         cb = ComboBuilder(args.input_query_path, args.output_query_path)
         cb.run()
-    elif args.sub_command == "debug-trace":
-        TraceDebugger(
-            args.input_query_path,
-            args.input_log_path,
-            args.core_query_path,
-            args.output_query_path,
-        )
-    elif args.sub_command == "debug2":
-        TraceDebugger2(args.input_query_path, args.clear)
     elif args.sub_command == "mutate":
         mutation = Mutation(args.mutation)
         emit_mutant_query(

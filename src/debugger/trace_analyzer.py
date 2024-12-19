@@ -2,8 +2,8 @@ from enum import Enum
 from typing import Dict, List
 
 from tabulate import tabulate
-from debugger.mutant_info import MutantInfo
-from debugger.quant_graph import QuantGraph
+from debugger.mut_info import MutantInfo
+from debugger.quant_graph import TheirAnalysis
 from debugger.query_loader import GroupedCost, InstCost
 from debugger.edit_info import EditAction, EditInfo
 from debugger.z3_utils import extract_sk_qid_from_name, format_expr_flat
@@ -128,15 +128,13 @@ class InstDiffer(ProofAnalyzer):
 
         self.pi = pi
         self.ti = ti
+        ti.run_analysis()
 
         self.trace_count = self.group_costs(ti.as_flat_inst_counts())
         self.proof_count = self.group_costs(pi.as_flat_inst_counts())
 
         self.sources = self.list_sources()
         self.sloop = self.list_self_loops()
-
-        ti.build_graph()
-        self.graph2 = QuantGraph(ti.graph_path)
         self.actions = self.get_actions()
 
     def get_available_action(self, qid):

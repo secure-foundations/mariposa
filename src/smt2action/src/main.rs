@@ -205,6 +205,10 @@ struct Args {
     #[arg(long, default_value_t = false)]
     convert_comments: bool,
 
+    /// keep the get-unsat-core command in the query
+    #[arg(long, default_value_t = false)]
+    keep_core: bool,
+
     // /// remove debug commands (limited support)
     // #[arg(long, default_value_t = true)]
     // remove_debug: bool,
@@ -270,7 +274,7 @@ fn parse_action(args: &Args) -> Action {
 
 fn parse_query(args: &Args) -> (Vec<concrete::Command>, usize) {
     let (commands, plain_total) =
-        query_io::parse_commands_from_file(&args.in_query_path, args.convert_comments);
+        query_io::parse_commands_from_file(&args.in_query_path, args.convert_comments, args.keep_core);
 
     if plain_total == usize::MAX {
         println!("error: no such query file {}", args.in_query_path);

@@ -3,10 +3,13 @@ from z3 import *
 
 def quote_name(name):
     if "#" in name or "'" in name:
-        if name[0] == "|":
-            assert name[-1] == "|"
-            return name
-        return f"|{name}|"
+        if name[0] != "|":
+            return f"|{name}|"
+        # already quoted
+        assert name[-1] == "|"
+        return name
+    if name == "False":
+        return "false"
     return name
 
 def quote_sort(sort):

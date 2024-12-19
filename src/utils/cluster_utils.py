@@ -73,7 +73,6 @@ def handle_manager(args, wargs):
         confirm_input(f"manager is not on master branch, continue?")
 
     log_info(f"running data sync on {args.input_dir}")
-    # TODO: we might not need to force sync
     handle_data_sync(args.input_dir, True)
 
     authkey = hexlify(os.urandom(24)).decode("utf-8")
@@ -241,12 +240,13 @@ def handle_data_sync(input_dir, clear):
 
     cur_host = subprocess_run(["hostname"])[0]
     lines = []
+    clear_on_match = None
 
     for host in S190X_HOSTS:
         if host == cur_host:
             continue
 
-        # very basic check if file count matches
+        # a very basic check if file count matches
         r_std, r_err, _ = run_command_over_ssh(host, f"ls mariposa/{input_dir} | wc -l")
         if "No such file or directory" in r_err:
             lines.append(
@@ -254,7 +254,21 @@ def handle_data_sync(input_dir, clear):
             )
             continue
 
+        count_match = int(r_std) == file_count
+
         if clear:
+            if count_match and clear_on_match is None:
+                choice = input(f"file count matches {host} {file_count} are you sure you want to clear?")
+                if choice != "y":
+                    clear_on_match = False
+                else:
+                    clear_on_match = True
+                log_info(f"clear_on_match is set to: {clear_on_match}, will apply to all")
+
+            if clear_on_match is False:
+                log_warn(f"skipping {host} due to clear_on_match")
+                continue
+
             log_warn(f"force syncing on {host}")
             run_command_over_ssh(host, f"rm -r ~/mariposa/{input_dir}")
             lines.append(
@@ -267,7 +281,7 @@ def handle_data_sync(input_dir, clear):
             )
 
     if len(lines) == 0:
-        log_info(f"no sync required")
+        log_info(f"no sync is required")
         return
 
     log_info(f"compressing {input_dir}")

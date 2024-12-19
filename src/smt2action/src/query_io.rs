@@ -9,7 +9,7 @@ use crate::term_match::{self, get_attr_cid, get_attr_qid, remove_attr_qid_skolem
 const QID_PREFIX: &str = "mariposa_qid";
 const CID_PREFIX: &str = "mariposa_cid_";
 
-fn should_remove_command(command: &concrete::Command) -> bool {
+fn should_remove_command(command: &concrete::Command, keep_core: bool) -> bool {
     match command {
         concrete::Command::Assert { .. }
         | concrete::Command::CheckSat
@@ -21,8 +21,8 @@ fn should_remove_command(command: &concrete::Command) -> bool {
         | concrete::Command::DefineFun { .. }
         | concrete::Command::Push { .. }
         | concrete::Command::Pop { .. } => false,
-        concrete::Command::GetModel
-        | concrete::Command::GetUnsatCore
+        | concrete::Command::GetUnsatCore => !keep_core,
+        | concrete::Command::GetModel
         | concrete::Command::Echo { .. }
         | concrete::Command::Exit
         | concrete::Command::GetInfo { .. }
@@ -122,6 +122,7 @@ where
 pub fn parse_commands_from_file(
     file_path: &String,
     keep_comments: bool,
+    keep_core: bool,
 ) -> (Vec<concrete::Command>, usize) {
     if !std::path::Path::new(file_path).exists() {
         return (vec![], usize::MAX);
@@ -138,7 +139,7 @@ pub fn parse_commands_from_file(
     };
 
     let plain_total = commands.len();
-    commands.retain(|command| !should_remove_command(command));
+    commands.retain(|command| !should_remove_command(command, keep_core));
     (commands, plain_total)
 }
 

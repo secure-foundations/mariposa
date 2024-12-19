@@ -7,7 +7,7 @@ from collections import Counter
 from tqdm import tqdm
 
 from debugger.query_loader import SkolemFinder
-from debugger.z3_utils import collapse_sexpr, quote_name
+from debugger.z3_utils import AstVisitor, collapse_sexpr, quote_name
 from z3 import ExprRef, is_const, is_var, is_app, is_quantifier, Z3_OP_DT_IS
 
 
@@ -19,11 +19,11 @@ def hack_find_hcf_id(s: str):
     return name
 
 
-class TermTable(SkolemFinder):
+class TermTable(AstVisitor):
     def __init__(self):
         super().__init__()
 
-        self._defs = dict()
+        self.__defs = dict()
 
         self.defs = dict()
         self.depends = dict()
@@ -34,7 +34,7 @@ class TermTable(SkolemFinder):
         )
 
     def __get_fresh_name(self):
-        return self.__fun_prefix + str(len(self._defs))
+        return self.__fun_prefix + str(len(self.__defs))
 
     def process_expr(self, e):
         return self._create_defs(e)
@@ -48,8 +48,8 @@ class TermTable(SkolemFinder):
             return quote_name(str(e))
 
         if self.visit(e):
-            assert e in self._defs
-            name = self._defs[e][0]
+            assert e in self.__defs
+            name = self.__defs[e][0]
             return name
 
         if e.decl().kind() == Z3_OP_DT_IS:
@@ -72,14 +72,14 @@ class TermTable(SkolemFinder):
         new_name = self.__get_fresh_name()
 
         self.depends[new_name] = deps
-        self._defs[e] = (new_name, res, str(e.sort()))
+        self.__defs[e] = (new_name, res, str(e.sort()))
         return new_name
 
     def finalize(self):
-        for _, v in self._defs.items():
+        for _, v in self.__defs.items():
             self.defs[v[0]] = v[1:]
         self.reset_visit()
-        self._defs.clear()
+        self.__defs.clear()
 
     def get_trans_deps(self, symbols):
         res = set()

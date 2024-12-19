@@ -26,7 +26,7 @@ def count_insts(query_path):
     return quanti_count, inst_count
 
 def handle_trace_z3(input_query, output_trace, search, timeout, restarts, seed=None):
-    solver: Z3Solver = FACT.get_solver("z3_4_12_5")
+    solver: Z3Solver = FACT.get_solver("z3_4_13_0")
     if seed is not None:
         log_check(not search, "seed is not valid in search mode")
 

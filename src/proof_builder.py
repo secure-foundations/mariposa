@@ -214,26 +214,3 @@ class ProofBuilder(QueryLoader):
             for c in p.children():
                 stack.append(c)
 
-if __name__ == "__main__":
-    set_param(proof=True)
-
-    query_file = sys.argv[1]
-    pb = ProofBuilder(query_file)
-    pi = pb.try_prove()
-    pi.save("temp/cyclic.pickle")
-    pi = ProofInfo.load("temp/cyclic.pickle")
-
-    pi.tt.debug()
-
-    for qid in pi.qi_infos:
-        bindings = pi.qi_infos[qid].bindings
-        symbols = set()
-        esize = 0
-        for i, bind in enumerate(bindings):
-            for k, v in bind.items():
-                if v.startswith("hcf_"):
-                    symbols.add(v)
-                else:
-                    esize += len(v)
-                print(f"{qid} {i} {k} {v}")
-        esize += pi.tt.estimate_size(symbols)

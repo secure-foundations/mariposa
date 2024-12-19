@@ -9,376 +9,307 @@ def sort_by_value(d):
     return {k: v for k, v in sorted(d.items(), key=lambda item: item[1], reverse=True)}
 
 
-def parse_item(item, is_int=False):
-    item = item.split(" ")
-    qid = item[0]
-    inst = item[1]
-    assert inst.startswith("(")
-    # assert inst.endswith("%)")
-    assert inst.endswith(")")
-    frac = inst[1:-1].split("/")
-    if is_int:
-        return qid, int(frac[0]), int(frac[1])
-    return qid, float(frac[0]), float(frac[1])
-
-
-class InstBlames:
-    def __init__(self, qid, cost):
-        self.qid = qid
+class InstBlame:
+    def __init__(self, qidx, cost):
+        self.qidx = qidx
         self.reasons = dict()
         self.cost = cost
-        self.count = 0
-        self._q = 0
+        self.blamed_count = 0
+        self.stat_count = None
 
-    def add_reason(self, qid, p, q):
-        if self.count == 0:
-            assert not np.isclose(q, 0)
-            self.count = q
-        assert self.count == q
-        if qid not in self.reasons:
-            self.reasons[qid] = p
+    def add_reason(self, reason_qidx, count):
+        if reason_qidx not in self.reasons:
+            self.reasons[reason_qidx] = 0
+        self.reasons[reason_qidx] += count
+        self.blamed_count += count
+
+def read_file_into_list(file_name):
+    lines = open(file_name, "r").read().split("\n")
+    if lines[-1] == "":
+        lines = lines[:-1]
+    return lines
+
+class TheirParser:
+    def __init__(self, graph_path, stats_path):
+        self.qidx_to_name = dict()
+        blames = self.__parse_into_blames(graph_path)
+        self.__deduplicate_blames(blames)
+        self.__parse_stats(stats_path)
+
+    def __parse_into_blames(self, graph_path):
+        lines = read_file_into_list(graph_path)
+        line_no = 0
+        assert lines[line_no] == "Z3 4.13.0"
+        line_no += 1
+
+        cur = None
+        
+        blames = []
+
+        while line_no < len(lines):
+            line = lines[line_no]
+            if line[0] == "\t":
+                items = line[1:].split(" ")
+                name, qidx, count = items[0], int(items[1]), int(items[2])
+                self.__register_name(qidx, name)
+                cur.add_reason(qidx, count)
+            else:
+                items = line.split(" ")
+                name, qidx, cost = items[0], int(items[1]), float(items[2])
+                self.__register_name(qidx, name)
+                cur = InstBlame(qidx, cost)
+                blames.append(cur)
+            line_no += 1
+
+        return blames
+
+    def __register_name(self, qidx, name):
+        if qidx not in self.qidx_to_name:
+            self.qidx_to_name[qidx] = name
         else:
-            self.reasons[qid] += p
-        self._q += p
-        assert self._q < self.count or np.isclose(self._q, self.count)
+            assert self.qidx_to_name[qidx] == name
 
-    def merge(self, other: "InstBlames"):
-        self.cost += other.cost
-        self.count += other.count
-        # self._q += other._q
+    def __deduplicate_blames(self, blames):
+        grouped = dict()
+        for blame in blames:
+            if blame.qidx not in grouped:
+                grouped[blame.qidx] = []
+            grouped[blame.qidx].append(blame)
 
-        for qid, p in other.reasons.items():
-            if qid not in self.reasons:
-                self.reasons[qid] = p
-            else:
-                self.reasons[qid] += p
-            self._q += p
-        assert np.isclose(self._q, self.count)
+        kept = dict()
 
-    def debug(self):
-        print(self.qid)
-        print(f"\tcount: {self.count}")
-        print(f"\tcost: {self.cost}")
-        for parent in self.reasons:
-            print(f"\t{parent} ({self.reasons[parent]}/{self.count})")
+        for qidx, group in grouped.items():
+            non_zero_items = [b for b in group if b.cost != 0]
+            assert len(non_zero_items) <= 1
+            if len(non_zero_items) == 1:
+                kept[qidx] = non_zero_items[0]
 
+        self.blames = kept
+        kept = set(kept.keys())
 
-def merge_causes(causes):
-    start = causes[0]
-    for profile in causes[1:]:
-        start.merge(profile)
-    return start
+        for qidx in set(self.qidx_to_name.keys()) - kept:
+            del self.qidx_to_name[qidx]
 
-
-def parse_profiler_log_merged(log_path):
-    collected = dict()
-
-    for line in open(log_path, "r").readlines():
-        if line == "Z3 4.13.0\n":
-            continue
-
-        line = line.strip().split(" -> ")
-        qid, cost, to = parse_item(line[0])
-
-        if cost == 0:
-            # TODO: skipping zero cost?
-            assert len(line) == 1
-            continue
-
-        if qid not in collected:
-            collected[qid] = []
-
-        ib = InstBlames(qid, cost)
-
-        if len(line) == 2:
-            items = line[1].split(", ")
-            for item in items:
-                p_qid, p, q = parse_item(item, is_int=True)
-                ib.add_reason(p_qid, p, q)
-
-        collected[qid].append(ib)
-
-    merged = dict()
-    merged_qids = set()
-
-    for qid, profiles in collected.items():
-        if len(profiles) == 0:
-            continue
-        if len(profiles) == 1:
-            merged[qid] = profiles[0]
-            continue
-        cause = merge_causes(profiles)
-        merged[qid] = cause
-        merged_qids.add(qid)
-
-    return merged, merged_qids
-
-
-# def parse_profiler_log(log_path):
-#     collected = dict()
-#     blames = dict()
-
-#     for line in open(log_path, "r").readlines():
-#         if line == "Z3 4.13.0\n":
-#             continue
-
-#         line = line.strip().split(" -> ")
-#         qid, cost, to = parse_item(line[0])
-
-#         if qid not in collected:
-#             collected[qid] = 0
-#         else:
-#             collected[qid] += 1
-#             qid = f"{qid}_vv{collected[qid]}"
-
-#         ic = InstBlames(qid, cost)
-
-#         if len(line) == 2:
-#             items = line[1].split(", ")
-#             for item in items:
-#                 p_qid, p, q = parse_item(item, is_int=True)
-#                 ic.add_reason(p_qid, p, q)
-#             blames[qid] = ic
-
-#     return blames
-
-
-def parse_freq_log(log_path):
-    start = False
-    counts = dict()
-
-    for line in open(log_path, "r").readlines():
-        if line == "top-instantiations=\n":
-            start = True
-            continue
-
-        if not start:
-            continue
-
-        line = line.strip().split(" = ")
-        qid, count = line[1], int(line[0])
-        if qid not in counts:
-            counts[qid] = 0
-        counts[qid] += count
-
-    counts = {k: v for k, v in counts.items() if v != 0}
-
-    return counts
-
-
-class QuantGraph:
-    def __init__(self, dep_log_path, clear=False):
-        self.graph: nx.DiGraph = nx.DiGraph()
-        blames, merged = parse_profiler_log_merged(dep_log_path)
-        self.blames: Dict[str, InstBlames] = blames
-        self.__init_graph()
-        ratio_cache = dep_log_path + ".ratios.pickle"
-
-        self.sub_ratios = load_cache_or(
-            ratio_cache, lambda: self.compute_all_sub_ratios(), clear
-        )
-
-
-    def __init_graph(self):
-        for qid, qc in self.blames.items():
-            self.graph.add_node(qid, count=qc.count, cost=qc.cost)
-
-        for qid, qc in self.blames.items():
-            for pid in qc.reasons:
-                self.graph.add_edge(pid, qid, ratio=qc.reasons[pid] / qc.count)
-
-    def get_sources(self):
-        sources = []
-        for qid in self.blames:
-            if len(list(self.graph.predecessors(qid))) == 0:
-                sources.append(qid)
-        return sources
-
-    def debug_qid(self, qid):
-        print("qid:", qid)
-        print("count:", self.blames[qid].count)
-        print("cost:", self.blames[qid].cost)
-        print("parents:")
-        for pred in self.graph.predecessors(qid):
-            print(f"\t{pred} ({self.graph[pred][qid]['ratio']})")
-        print("children:")
-        for succ in self.graph.successors(qid):
-            print(f"\t{succ} ({self.graph[qid][succ]['ratio']})")
-
-    def estimate_cost_v0(self, qid):
-        return self.blames[qid].count
-
-    def estimate_cost_v1(self, qid):
-        return self.blames[qid].cost
-
-    def estimate_cost_v2(self, qid):
-        icount = self.blames[qid].count
-
-        for succ in self.graph.successors(qid):
-            icount += self.graph[qid][succ]["ratio"] * self.blames[succ].count
-
-        return icount
-
-    def compute_sub_ratios(self, start, debug=False):
-        reached = nx.dfs_tree(self.graph, start).nodes
-
-        sub_ratios = {start: 1}
-        iterations = 0
-        last = dict()
-        converged = {start}
-
-        while len(converged) < len(reached):
-            for qid in reached:
-                if qid in converged:
-                    continue
-
-                res = None
-
-                for pred in self.graph.predecessors(qid):
-                    if pred not in sub_ratios:
-                        continue
-
-                    if res is None:
-                        res = 0
-
-                    res += self.graph[pred][qid]["ratio"] * sub_ratios[pred]
-
-                if res is None:
-                    continue
-
-                sub_ratios[qid] = res
-
-                if qid in last and np.isclose(res, last[qid]):
-                    converged.add(qid)
-                else:
-                    last[qid] = res
-
-            iterations += 1
-
-        if not debug:
-            return sub_ratios
-
-        assert set(sub_ratios.keys()) == set(reached)
-        print(iterations)
-
-        for qid in sub_ratios:
-            upper_bound = 0
-            for pred in self.graph.predecessors(qid):
-                if pred not in sub_ratios:
-                    continue
-                upper_bound += self.graph[pred][qid]["ratio"]
-            if qid != start:
-                assert sub_ratios[qid] <= upper_bound
-                print(qid, sub_ratios[qid], upper_bound, self.blames[qid].cost)
-
-        return sub_ratios
-
-    def compute_all_sub_ratios(self):
-        res = dict()
-        for qid in tqdm(self.blames):
-            res[qid] = self.compute_sub_ratios(qid)
-        return res
-
-    def compute_sub_root_ratios(self, root, debug=False):
-        assert root in self.trace_freq
-        if self.trace_freq[root].is_singleton():
-            return self.sub_ratios[root]
-    
-        reached = set(nx.dfs_tree(self.graph, root).nodes)
-        sub_ratios = {root: 1}
-        converged = {root}
-        for qid in self.trace_freq[root]:
-            if qid not in self.blames:
+    def __parse_stats(self, stats_path):
+        lines = read_file_into_list(stats_path)
+        line_no = 0
+        start = False
+        for line in lines:
+            if line == "top-instantiations=":
+                start = True
                 continue
-            reached.update(set(nx.dfs_tree(self.graph, qid).nodes))
-            sub_ratios[qid] = 1
-            converged.add(qid)
+            if not start:
+                continue
+            items = line.split(" ")
+            name, qidx, count = items[0], int(items[1]), int(items[2])
+            if qidx not in self.blames:
+                assert count == 0
+                continue
+            self.blames[qidx].stat_count = count
 
-        iterations = 0
-        last = dict()
+class TheirAnalysis:
+    def __init__(self, parser: TheirParser):
+        self.qidx_to_name = parser.qidx_to_name
+        self.name_to_qidxs = dict()
 
-        while len(converged) < len(reached):
-            for qid in reached:
-                if qid in converged:
-                    continue
+        for qidx, name in self.qidx_to_name.items():
+            if name not in self.name_to_qidxs:
+                self.name_to_qidxs[name] = set()
+            self.name_to_qidxs[name].add(qidx)
 
-                res = None
+        self.blames = parser.blames
+        self.graph = nx.DiGraph()
 
-                for pred in self.graph.predecessors(qid):
-                    if pred not in sub_ratios:
-                        continue
+        for qidx, blame in self.blames.items():
+            self.graph.add_node(qidx, name=self.qidx_to_name[qidx])
 
-                    if res is None:
-                        res = 0
+            for reason_qidx, count in blame.reasons.items():
+                self.graph.add_edge(reason_qidx, qidx, weight=count)
 
-                    res += self.graph[pred][qid]["ratio"] * sub_ratios[pred]
+    def get_qidx_checked(self, name):
+        qidxs = self.name_to_qidxs[name]
+        assert len(qidxs) == 1
+        return list(qidxs)[0]
+    
+    def debug_name(self, name):
+        qidx = self.get_qidx_checked(name)
+        print(f"{name} [{qidx}]:")
+        print(f"cost: {self.blames[qidx].cost}")
+        print(f"stat_count: {self.blames[qidx].stat_count}")
+        print(f"blamed_count: {self.blames[qidx].blamed_count}")
+        print("predecessors:")
+        for reason_qidx, count in self.blames[qidx].reasons.items():
+            print(f"\t{self.qidx_to_name[reason_qidx]}: {count}")
+        print("successors:")
+        for child in self.graph.successors(qidx):
+            print(f"\t{self.qidx_to_name[child]}: {self.graph[qidx][child]['weight']}")
 
-                if res is None:
-                    continue
+    def get_inst_count(self, name):
+        count = 0
+        for qidx in self.name_to_qidxs[name]:
+            count += self.blames[qidx].stat_count
+        return count
 
-                sub_ratios[qid] = res
+    # def compute_sub_ratios(self, start, debug=False):
+    #     reached = nx.dfs_tree(self.graph, start).nodes
 
-                if qid in last and np.isclose(res, last[qid]):
-                    converged.add(qid)
-                else:
-                    last[qid] = res
+    #     sub_ratios = {start: 1}
+    #     iterations = 0
+    #     last = dict()
+    #     converged = {start}
 
-            iterations += 1
+    #     while len(converged) < len(reached):
+    #         for qid in reached:
+    #             if qid in converged:
+    #                 continue
 
-        return sub_ratios
+    #             res = None
 
-    def estimate_cost_v3(self, start):
-        total = 0
+    #             for pred in self.graph.predecessors(qid):
+    #                 if pred not in sub_ratios:
+    #                     continue
 
-        for (qid, ratio) in self.sub_ratios[start].items():
-            if ratio > 1:
-                assert np.isclose(ratio, 1)
-                ratio = 1
-            total += ratio * self.blames[qid].cost
+    #                 if res is None:
+    #                     res = 0
 
-        return total
+    #                 res += self.graph[pred][qid]["ratio"] * sub_ratios[pred]
 
-    def estimate_cost_v4(self, start):
-        total = 0
+    #             if res is None:
+    #                 continue
 
-        for (qid, ratio) in self.sub_ratios[start].items():
-            if ratio > 1:
-                assert np.isclose(ratio, 1)
-                ratio = 1
-            if qid not in self.useless:
-                # print("not logged", qid)
-                discount = 1
-            else:
-                t, p = self.useless[qid]
-                discount = (t - p) / t
-            total += ratio * self.blames[qid].cost * discount
+    #             sub_ratios[qid] = res
 
-        return total
+    #             if qid in last and np.isclose(res, last[qid]):
+    #                 converged.add(qid)
+    #             else:
+    #                 last[qid] = res
 
-    def estimate_cost_v5(self, start):
-        if start not in self.trace_freq:
-            return 0
+    #         iterations += 1
 
-        total = 0
+    #     if not debug:
+    #         return sub_ratios
 
-        for (qid, ratio) in self.compute_sub_root_ratios(start).items():
-            if ratio > 1:
-                assert np.isclose(ratio, 1)
-                ratio = 1
-            if qid not in self.useless:
-                # print("not logged", qid)
-                discount = 1
-            else:
-                t, p = self.useless[qid]
-                discount = (t - p) / t
-            total += ratio * self.blames[qid].cost * discount
+    #     assert set(sub_ratios.keys()) == set(reached)
+    #     print(iterations)
 
-        return total
+    #     for qid in sub_ratios:
+    #         upper_bound = 0
+    #         for pred in self.graph.predecessors(qid):
+    #             if pred not in sub_ratios:
+    #                 continue
+    #             upper_bound += self.graph[pred][qid]["ratio"]
+    #         if qid != start:
+    #             assert sub_ratios[qid] <= upper_bound
+    #             print(qid, sub_ratios[qid], upper_bound, self.blames[qid].cost)
 
-    def estimate_all_costs(self, cost_func):
-        costs = dict()
-        for qid in tqdm(self.blames):
-            # print(qid)
-            costs[qid] = cost_func(qid)
-        # ranked = sorted(costs.items(), key=lambda x: x[1], reverse=True)
-        return costs
+    #     return sub_ratios
+
+    # def compute_all_sub_ratios(self):
+    #     res = dict()
+    #     for qid in tqdm(self.blames):
+    #         res[qid] = self.compute_sub_ratios(qid)
+    #     return res
+
+    # def compute_sub_root_ratios(self, root, debug=False):
+    #     assert root in self.trace_freq
+    #     if self.trace_freq[root].is_singleton():
+    #         return self.sub_ratios[root]
+    
+    #     reached = set(nx.dfs_tree(self.graph, root).nodes)
+    #     sub_ratios = {root: 1}
+    #     converged = {root}
+    #     for qid in self.trace_freq[root]:
+    #         if qid not in self.blames:
+    #             continue
+    #         reached.update(set(nx.dfs_tree(self.graph, qid).nodes))
+    #         sub_ratios[qid] = 1
+    #         converged.add(qid)
+
+    #     iterations = 0
+    #     last = dict()
+
+    #     while len(converged) < len(reached):
+    #         for qid in reached:
+    #             if qid in converged:
+    #                 continue
+
+    #             res = None
+
+    #             for pred in self.graph.predecessors(qid):
+    #                 if pred not in sub_ratios:
+    #                     continue
+
+    #                 if res is None:
+    #                     res = 0
+
+    #                 res += self.graph[pred][qid]["ratio"] * sub_ratios[pred]
+
+    #             if res is None:
+    #                 continue
+
+    #             sub_ratios[qid] = res
+
+    #             if qid in last and np.isclose(res, last[qid]):
+    #                 converged.add(qid)
+    #             else:
+    #                 last[qid] = res
+
+    #         iterations += 1
+
+    #     return sub_ratios
+
+    # def estimate_cost_v3(self, start):
+    #     total = 0
+
+    #     for (qid, ratio) in self.sub_ratios[start].items():
+    #         if ratio > 1:
+    #             assert np.isclose(ratio, 1)
+    #             ratio = 1
+    #         total += ratio * self.blames[qid].cost
+
+    #     return total
+
+    # def estimate_cost_v4(self, start):
+    #     total = 0
+
+    #     for (qid, ratio) in self.sub_ratios[start].items():
+    #         if ratio > 1:
+    #             assert np.isclose(ratio, 1)
+    #             ratio = 1
+    #         if qid not in self.useless:
+    #             # print("not logged", qid)
+    #             discount = 1
+    #         else:
+    #             t, p = self.useless[qid]
+    #             discount = (t - p) / t
+    #         total += ratio * self.blames[qid].cost * discount
+
+    #     return total
+
+    # def estimate_cost_v5(self, start):
+    #     if start not in self.trace_freq:
+    #         return 0
+
+    #     total = 0
+
+    #     for (qid, ratio) in self.compute_sub_root_ratios(start).items():
+    #         if ratio > 1:
+    #             assert np.isclose(ratio, 1)
+    #             ratio = 1
+    #         if qid not in self.useless:
+    #             # print("not logged", qid)
+    #             discount = 1
+    #         else:
+    #             t, p = self.useless[qid]
+    #             discount = (t - p) / t
+    #         total += ratio * self.blames[qid].cost * discount
+
+    #     return total
+
+    # def estimate_all_costs(self, cost_func):
+    #     costs = dict()
+    #     for qid in tqdm(self.blames):
+    #         # print(qid)
+    #         costs[qid] = cost_func(qid)
+    #     # ranked = sorted(costs.items(), key=lambda x: x[1], reverse=True)
+    #     return costs

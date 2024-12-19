@@ -3,8 +3,8 @@
 import argparse
 import json
 import binascii, random
-import sqlite3
 import pandas as pd
+import os
 from tqdm import tqdm
 from z3 import set_param
 from base.defs import DEBUG_ROOT
@@ -13,8 +13,6 @@ from debugger.pool_utils import run_with_pool
 from debugger.trace_analyzer import InstDiffer, shorten_qid
 from debugger.edit_info import EditInfo, EditAction
 from query_editor import QueryEditor
-from utils.database_utils import table_exists
-import os
 from typing import Dict, List
 from utils.query_utils import (
     Mutation,
@@ -24,6 +22,7 @@ from utils.system_utils import (
     confirm_input,
     create_dir,
     get_name_hash,
+    list_files_ext,
     log_check,
     log_info,
     log_warn,
@@ -31,10 +30,10 @@ from utils.system_utils import (
     subprocess_run,
 )
 from tabulate import tabulate
-from debugger.mutant_info import *
+from debugger.mut_info import *
 
 
-MUTANT_COUNT = 8
+MUTANT_COUNT = 30
 
 TRACE_TOTAL_TIME_LIMIT_SEC = 480
 CORE_TOTAL_TIME_LIMIT_SEC = 120
@@ -42,29 +41,32 @@ PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 
 def _build_fail_trace(mi: MutantInfo):
-    res = mi.build_trace()
-    et = round(res[1] / 1000, 2)
-    if res[0] == RCode.UNSAT and res[1] < TRACE_TIME_LIMIT_SEC * 1000:
-        log_info(f"[trace-fail] ignored: {mi.trace_path}, {res[0]}, {et}")
-        return None
-    log_info(f"[trace-fail] {mi.trace_path}, {res[0]}, {et}")
-    return res
+    mi.build_trace_log()
+    et = round(mi.trace_time / 1000, 2)
+    rc = mi.trace_rcode
+    if rc != RCode.UNSAT or et > TRACE_TIME_LIMIT_SEC:
+        log_info(f"[trace-fail] {mi.trace_path}, {rc}, {et}")
+        return mi
+    mi.discard = True
+    log_warn(f"[trace-fail] discarded: {mi.trace_path}, {rc}, {et}")
+    return None
 
 
 def _build_any_trace(mi: MutantInfo):
-    res = mi.build_trace()
-    et = round(res[1] / 1000, 2)
-    log_info(f"[trace-any] {mi.trace_path}, {res[0]}, {et}")
-    return res
+    mi.build_trace_log()
+    et = round(mi.trace_time / 1000, 2)
+    log_info(f"[trace-any] {mi.trace_path}, {mi.trace_rcode}, {et}")
+    return mi
 
 
 def _build_core(mi: MutantInfo):
-    res = mi.build_core()
+    res = mi.build_core_query()
     if res:
-        log_info(f"[core] success {mi.core_path}")
-    else:
-        log_warn(f"[core] failure {mi.core_path}")
-    return res
+        log_info(f"[core] {mi.core_path}")
+        return mi
+
+    log_warn(f"[core] failure: {mi.core_path}")
+    return None
 
 
 def _build_proof(mi: MutantInfo):
@@ -73,16 +75,17 @@ def _build_proof(mi: MutantInfo):
         log_info(f"[proof] from core (!) {mi.core_path}")
         target = mi.core_path
     else:
-        mi.create_mutant()
+        mi.build_mutant_query()
 
     log_info(f"[proof] attempt {target}")
+
     pr = ProofBuilder(target)
     pi = pr.try_prove()
 
     if pi is not None:
         pi.save(mi.insts_path)
         log_info(f"[proof] success {target}")
-        return (mi.mutation, mi.seed, pr.proof_time)
+        return mi
 
     log_warn(f"[proof] failure {mi.mut_path}")
     return None
@@ -93,19 +96,6 @@ def _run_edit(ei: EditInfo):
     return ei
 
 
-def create_mut_table(cur):
-    cur.execute(
-        f"""CREATE TABLE mutants (
-        mutation varchar(10),
-        seed varchar(20),
-        trace_rcode INTEGER DEFAULT -1,
-        trace_time INTEGER DEFAULT -1,
-        proof_time INTEGER DEFAULT -1,
-        from_core BOOLEAN DEFAULT FALSE,
-        PRIMARY KEY (mutation, seed))"""
-    )
-
-
 class Debugger3:
     def __init__(
         self,
@@ -113,6 +103,7 @@ class Debugger3:
         reset_all=False,
         retry_failed=False,
         clear_edits=False,
+        clear_mut_info=False,
         skip_core=False,
         ids_available=False,
         overwrite_reports=False,
@@ -124,30 +115,34 @@ class Debugger3:
         self.name_hash = get_name_hash(query_path)
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
+
         log_info(f"[init] analyzing {query_path} in {self.sub_root}")
 
         self.query_meta = f"{self.sub_root}/meta.json"
-
         self.orig_path = f"{self.sub_root}/orig.smt2"
         self.lbl_path = f"{self.sub_root}/lbl.smt2"
+        self.edits_meta = f"{self.sub_root}/edits.json"
+
         self.trace_dir = f"{self.sub_root}/{TRACES}"
         self.muts_dir = f"{self.sub_root}/{MUTANTS}"
         self.insts_dir = f"{self.sub_root}/{INSTS}"
         self.cores_dir = f"{self.sub_root}/{CORES}"
-        self.db_path = f"{self.sub_root}/db.sqlite"
+        self.meta_dir = f"{self.sub_root}/meta"
+        self.edit_dir = f"{self.sub_root}/edits"
 
-        self.report_path = f"{self.sub_root}/report.csv"
+        # self.basic_report_path = f"{self.sub_root}/report.csv"
+
+        self.traces: List[MutantInfo] = []
+        self.proofs: List[MutantInfo] = []
+        self.cores: List[MutantInfo] = []
 
         self.__edit_infos: Dict[int, EditInfo] = dict()
-        self.edits_meta = f"{self.sub_root}/edits.json"
-        self.edit_dir = f"{self.sub_root}/edits"
-        self.graph_dir = f"{self.sub_root}/graphs"
 
         self.singleton_edit_project = "singleton_" + self.name_hash
 
         self.__init_dirs(reset_all)
         self.__init_query_files(query_path, ids_available)
-        self.__init_db()
+        self.__init_mutant_infos(clear_mut_info)
         self.__init_edits(clear_edits)
 
         if len(self.traces) != 0 and len(self.proofs) == 0 and not retry_failed:
@@ -156,19 +151,17 @@ class Debugger3:
             )
             return
 
-        self.__init_traces()
-        self.__init_cores(skip_core)
-        self.refresh_status()
-        self.__init_proofs(skip_core)
-        self.refresh_status()
+        self.__build_traces()
+        self.__build_cores(skip_core)
+        self.__build_proofs(skip_core)
 
-        self.pis = [p.proof_info for p in self.proofs]
-        self.tmi = self.get_candidate_trace()
+        # self.pis = [p.proof_info for p in self.proofs]
+        # self.tmi = self.get_candidate_trace()
 
-        self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi)
-        self.editor = QueryEditor(self.orig_path, self.pis[0])
-        self.save_report(overwrite=overwrite_reports)
-        self.load_report()
+        # self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi)
+        # self.editor = QueryEditor(self.orig_path, self.pis[0])
+        # self.save_report(overwrite=overwrite_reports)
+        # self.load_report()
 
     def __del__(self):
         infos = [ei.to_dict() for ei in self.__edit_infos.values()]
@@ -244,14 +237,38 @@ class Debugger3:
             )
             log_info(f"[init] basic meta data written to {self.query_meta}")
 
-    def __init_db(self):
-        self.con = sqlite3.connect(self.db_path, timeout=10)
-        cur = self.con.cursor()
+    def __init_mutant_infos(self, clear):
+        if not os.path.exists(self.meta_dir):
+            os.makedirs(self.meta_dir)
+            return
 
-        if not table_exists(cur, "mutants"):
-            create_mut_table(cur)
-            self.con.commit()
-        self.refresh_status()
+        for mut_meta in list_files_ext(self.meta_dir, ".json"):
+            d = json.load(open(mut_meta, "r"))
+            mi = MutantInfo.from_dict(d)
+            if clear:
+                mi.discard = True
+                continue
+            if mi.has_trace():
+                self.traces.append(mi)
+            if mi.has_core():
+                self.cores.append(mi)
+            if mi.has_proof():
+                self.proofs.append(mi)
+
+    def __init_edits(self, clear_edits):
+        self.__edit_infos = dict()
+
+        if clear_edits:
+            return self.clear_edits()
+
+        if not os.path.exists(self.edits_meta):
+            return
+
+        infos = json.load(open(self.edits_meta, "r"))
+
+        for ei in infos:
+            ei = EditInfo.from_dict(ei)
+            self.__edit_infos[ei.get_id()] = ei
 
     def clear_edits(self):
         if os.path.exists(self.edit_dir):
@@ -263,7 +280,7 @@ class Debugger3:
         self.__edit_infos = dict()
         log_info("[edit] cleared")
 
-    def create_mutants_info(self, mutations: List[Mutation]):
+    def __create_tasks(self, mutations: List[Mutation]):
         args = []
 
         for m in mutations:
@@ -274,7 +291,7 @@ class Debugger3:
         random.shuffle(args)
         return args
 
-    def __init_traces(self):
+    def __build_traces(self):
         count = len(self.traces)
 
         if count >= TRACE_GOAL_COUNT:
@@ -283,23 +300,16 @@ class Debugger3:
         log_info(f"[init] currently {count} traces")
 
         for f in [_build_any_trace, _build_fail_trace]:
-            args = self.create_mutants_info(
+            args = self.__create_tasks(
                 [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
             )
 
-            res = run_with_pool(
+            mis = run_with_pool(
                 f, args, goal=TRACE_GOAL_COUNT, time_bound=TRACE_TOTAL_TIME_LIMIT_SEC
             )
-            cur = self.con.cursor()
-            for i, r in enumerate(res):
-                cur.execute(
-                    f"""INSERT INTO mutants (mutation, seed, trace_rcode, trace_time)
-                    VALUES (?, ?, ?, ?)""",
-                    (args[i].mutation, str(args[i].seed), r[0].value, r[1]),
-                )
-            self.con.commit()
+            self.traces += mis
 
-    def __init_cores(self, skip_core):
+    def __build_cores(self, skip_core):
         count = len(self.cores)
 
         if count >= CORE_GOAL_COUNT or skip_core:
@@ -309,16 +319,15 @@ class Debugger3:
 
         goal = CORE_GOAL_COUNT - count
 
-        args = self.create_mutants_info(
-            [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
-        )
+        args = self.__create_tasks([Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED])
 
         res = run_with_pool(
             _build_core, args, goal=goal, time_bound=CORE_TOTAL_TIME_LIMIT_SEC
         )
-        # log_check(len(res) != 0, "no core built")
 
-    def __init_proofs(self, skip_core):
+        self.cores += res
+
+    def __build_proofs(self, skip_core):
         count = len(self.proofs)
 
         if count >= PROOF_GOAL_COUNT:
@@ -346,70 +355,19 @@ class Debugger3:
 
         if len(res) < goal:
             log_info(f"[proof] from scratch, currently {len(res)} proofs")
-            args = self.create_mutants_info([Mutation.SHUFFLE, Mutation.RESEED])
-            res = run_with_pool(
+            args = self.__create_tasks([Mutation.SHUFFLE, Mutation.RESEED])
+            res += run_with_pool(
                 _build_proof, args, goal=goal, time_bound=PROOF_TOTAL_TIME_LIMIT_SEC
             )
 
         log_check(len(res) != 0, "no proof found")
-        cur = self.con.cursor()
-
-        for r in res:
-            cur.execute(
-                "INSERT INTO mutants (mutation, seed, proof_time) VALUES (?, ?, ?)",
-                (r[0], str(r[1]), r[2]),
-            )
-        self.con.commit()
-
-    def __init_edits(self, clear_edits):
-        self.__edit_infos = dict()
-
-        if clear_edits:
-            return self.clear_edits()
-
-        if not os.path.exists(self.edits_meta):
-            return
-
-        infos = json.load(open(self.edits_meta, "r"))
-
-        for ei in infos:
-            ei = EditInfo.from_dict(ei)
-            self.__edit_infos[ei.get_id()] = ei
-
-    def refresh_status(self):
-        self.traces: List[MutantInfo] = []
-        self.proofs: List[MutantInfo] = []
-        self.cores: List[MutantInfo] = []
-
-        cur = self.con.cursor()
-        cur.execute("SELECT * FROM mutants")
-        mutants = cur.fetchall()
-        cur.close()
-
-        for r in mutants:
-            if r[2] != -1:
-                mi = MutantInfo(self.sub_root, r[0], int(r[1]))
-                mi.trace_rcode = RCode(r[2])
-                mi.trace_time = r[3]
-                self.traces.append(mi)
-            elif r[4] != -1:
-                mi = MutantInfo(self.sub_root, r[0], int(r[1]))
-                mi.proof_time = r[4]
-                mi.load_insts()
-                self.proofs.append(mi)
-
-        for file in os.listdir(self.cores_dir):
-            if file.endswith(".smt2"):
-                mi = MutantInfo(
-                    self.sub_root, file.split(".")[0], int(file.split(".")[1])
-                )
-                self.cores.append(mi)
+        self.proofs += res
 
     def get_fast_unknown_trace(self):
-        ukmis = [mi for mi in self.traces if mi.trace_rcode == RCode.UNKNOWN]
-        if len(ukmis) == 0:
+        uk_mis = [mi for mi in self.traces if mi.trace_rcode == RCode.UNKNOWN]
+        if len(uk_mis) == 0:
             return None
-        return min(ukmis, key=lambda tmi: tmi.trace_time)
+        return min(uk_mis, key=lambda tmi: tmi.trace_time)
 
     def get_large_trace(self):
         for tmi in self.traces:
@@ -463,45 +421,6 @@ class Debugger3:
 
         log_info("report path: ")
         log_info(self.report_path)
-
-    def save_report(self, overwrite=False):
-        if os.path.exists(self.report_path) and not overwrite:
-            log_warn(f"[report] already exists: {self.report_path}")
-            return
-
-        report = self.differ.get_report()
-
-        with open(self.report_path, "w+") as f:
-            f.write(report)
-
-        log_info(f"[report] written: {self.report_path}")
-
-    def load_report(self):
-        if not os.path.exists(self.report_path):
-            return
-
-        self.scores = pd.read_csv(self.report_path, sep=",")
-        # print(self.scores.columns)
-
-        # self.v0_rank = self.scores["trace count"].rank(ascending=False)
-        self.v0_rank = self.scores["v0"].rank(ascending=False)
-        self.v1_rank = self.scores["v1"].rank(ascending=False)
-        self.v2_rank = self.scores["v2"].rank(ascending=False)
-        self.v3_rank = self.scores["v3"].rank(ascending=False)
-        self.v4_rank = self.scores["v4"].rank(ascending=False)
-        self.v5_rank = self.scores["v5"].rank(ascending=False)
-
-    def get_rankings(self, qid):
-        index = self.scores[self.scores["qid"] == qid].index
-        ranks = [
-            self.v0_rank[index],
-            self.v1_rank[index],
-            self.v2_rank[index],
-            self.v3_rank[index],
-            self.v4_rank[index],
-            self.v5_rank[index],
-        ]
-        return [int(r) for r in ranks]
 
     def _save_edit(self, ei: EditInfo):
         assert isinstance(ei, EditInfo)
@@ -606,6 +525,45 @@ class Debugger3:
             edits.append({qid: self.differ.actions[qid] for qid in edit})
 
         self._try_edits(edits, run_query=True)
+
+    def save_report(self, overwrite=False):
+        if os.path.exists(self.report_path) and not overwrite:
+            log_warn(f"[report] already exists: {self.report_path}")
+            return
+
+        report = self.differ.get_report()
+
+        with open(self.report_path, "w+") as f:
+            f.write(report)
+
+        log_info(f"[report] written: {self.report_path}")
+
+    def load_report(self):
+        if not os.path.exists(self.report_path):
+            return
+
+        self.scores = pd.read_csv(self.report_path, sep=",")
+        # print(self.scores.columns)
+
+        # self.v0_rank = self.scores["trace count"].rank(ascending=False)
+        self.v0_rank = self.scores["v0"].rank(ascending=False)
+        self.v1_rank = self.scores["v1"].rank(ascending=False)
+        self.v2_rank = self.scores["v2"].rank(ascending=False)
+        self.v3_rank = self.scores["v3"].rank(ascending=False)
+        self.v4_rank = self.scores["v4"].rank(ascending=False)
+        self.v5_rank = self.scores["v5"].rank(ascending=False)
+
+    def get_rankings(self, qid):
+        index = self.scores[self.scores["qid"] == qid].index
+        ranks = [
+            self.v0_rank[index],
+            self.v1_rank[index],
+            self.v2_rank[index],
+            self.v3_rank[index],
+            self.v4_rank[index],
+            self.v5_rank[index],
+        ]
+        return [int(r) for r in ranks]
 
     def register_singleton_edits(self):
         for qid in self.differ.actions:
