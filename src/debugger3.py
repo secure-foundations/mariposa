@@ -5,12 +5,13 @@ import json
 import binascii, random
 import pandas as pd
 import os
-from tqdm import tqdm
 from z3 import set_param
+from tqdm import tqdm
 from base.defs import DEBUG_ROOT
 from base.solver import RCode
 from debugger.pool_utils import run_with_pool
-from debugger.trace_analyzer import InstDiffer, shorten_qid
+
+# from debugger.trace_analyzer import InstDiffer, shorten_qid
 from debugger.edit_info import EditInfo, EditAction
 from query_editor import QueryEditor
 from typing import Dict, List
@@ -41,7 +42,7 @@ PROOF_TOTAL_TIME_LIMIT_SEC = 120
 
 
 def _build_fail_trace(mi: MutantInfo):
-    mi.build_trace_log()
+    mi.build_trace()
     et = round(mi.trace_time / 1000, 2)
     rc = mi.trace_rcode
     if rc != RCode.UNSAT or et > TRACE_TIME_LIMIT_SEC:
@@ -53,41 +54,23 @@ def _build_fail_trace(mi: MutantInfo):
 
 
 def _build_any_trace(mi: MutantInfo):
-    mi.build_trace_log()
+    mi.build_trace()
     et = round(mi.trace_time / 1000, 2)
     log_info(f"[trace-any] {mi.trace_path}, {mi.trace_rcode}, {et}")
     return mi
 
 
 def _build_core(mi: MutantInfo):
-    res = mi.build_core_query()
-    if res:
-        log_info(f"[core] {mi.core_path}")
+    if mi.build_core_query():
+        log_info(f"[core]: {mi.core_path}")
         return mi
-
     log_warn(f"[core] failure: {mi.core_path}")
     return None
 
 
 def _build_proof(mi: MutantInfo):
-    target = mi.mut_path
-    if os.path.exists(mi.core_path):
-        log_info(f"[proof] from core (!) {mi.core_path}")
-        target = mi.core_path
-    else:
-        mi.build_mutant_query()
-
-    log_info(f"[proof] attempt {target}")
-
-    pr = ProofBuilder(target)
-    pi = pr.try_prove()
-
-    if pi is not None:
-        pi.save(mi.insts_path)
-        log_info(f"[proof] success {target}")
+    if mi.build_proof():
         return mi
-
-    log_warn(f"[proof] failure {mi.mut_path}")
     return None
 
 
@@ -100,10 +83,12 @@ class Debugger3:
     def __init__(
         self,
         query_path,
-        reset_all=False,
         retry_failed=False,
+        clear_all=False,
         clear_edits=False,
-        clear_mut_info=False,
+        clear_traces=False,
+        clear_cores=False,
+        clear_proofs=False,
         skip_core=False,
         ids_available=False,
         overwrite_reports=False,
@@ -125,8 +110,8 @@ class Debugger3:
 
         self.trace_dir = f"{self.sub_root}/{TRACES}"
         self.muts_dir = f"{self.sub_root}/{MUTANTS}"
-        self.insts_dir = f"{self.sub_root}/{INSTS}"
         self.cores_dir = f"{self.sub_root}/{CORES}"
+        self.proofs_dir = f"{self.sub_root}/proofs"
         self.meta_dir = f"{self.sub_root}/meta"
         self.edit_dir = f"{self.sub_root}/edits"
 
@@ -140,9 +125,9 @@ class Debugger3:
 
         self.singleton_edit_project = "singleton_" + self.name_hash
 
-        self.__init_dirs(reset_all)
+        self.__init_dirs(clear_all)
         self.__init_query_files(query_path, ids_available)
-        self.__init_mutant_infos(clear_mut_info)
+        self.__init_mutant_infos(clear_traces, clear_cores, clear_proofs)
         self.__init_edits(clear_edits)
 
         if len(self.traces) != 0 and len(self.proofs) == 0 and not retry_failed:
@@ -180,10 +165,10 @@ class Debugger3:
 
         for dir in [
             self.sub_root,
-            self.trace_dir,
             self.muts_dir,
-            self.insts_dir,
+            self.trace_dir,
             self.cores_dir,
+            self.proofs_dir,
             self.edit_dir,
         ]:
             create_dir(dir)
@@ -237,7 +222,7 @@ class Debugger3:
             )
             log_info(f"[init] basic meta data written to {self.query_meta}")
 
-    def __init_mutant_infos(self, clear):
+    def __init_mutant_infos(self, clear_traces, clear_cores, clear_proofs):
         if not os.path.exists(self.meta_dir):
             os.makedirs(self.meta_dir)
             return
@@ -245,15 +230,24 @@ class Debugger3:
         for mut_meta in list_files_ext(self.meta_dir, ".json"):
             d = json.load(open(mut_meta, "r"))
             mi = MutantInfo.from_dict(d)
-            if clear:
-                mi.discard = True
-                continue
+
             if mi.has_trace():
-                self.traces.append(mi)
+                if clear_traces:
+                    mi.discard = True
+                else:
+                    self.traces.append(mi)
+
             if mi.has_core():
-                self.cores.append(mi)
+                if clear_cores:
+                    mi.discard = True
+                else:
+                    self.cores.append(mi)
+
             if mi.has_proof():
-                self.proofs.append(mi)
+                if clear_proofs:
+                    mi.discard = True
+                else:
+                    self.proofs.append(mi)
 
     def __init_edits(self, clear_edits):
         self.__edit_infos = dict()
@@ -526,171 +520,170 @@ class Debugger3:
 
         self._try_edits(edits, run_query=True)
 
-    def save_report(self, overwrite=False):
-        if os.path.exists(self.report_path) and not overwrite:
-            log_warn(f"[report] already exists: {self.report_path}")
-            return
+    # def save_report(self, overwrite=False):
+    #     if os.path.exists(self.report_path) and not overwrite:
+    #         log_warn(f"[report] already exists: {self.report_path}")
+    #         return
 
-        report = self.differ.get_report()
+    #     report = self.differ.get_report()
 
-        with open(self.report_path, "w+") as f:
-            f.write(report)
+    #     with open(self.report_path, "w+") as f:
+    #         f.write(report)
 
-        log_info(f"[report] written: {self.report_path}")
+    #     log_info(f"[report] written: {self.report_path}")
 
-    def load_report(self):
-        if not os.path.exists(self.report_path):
-            return
+    # def load_report(self):
+    #     if not os.path.exists(self.report_path):
+    #         return
 
-        self.scores = pd.read_csv(self.report_path, sep=",")
-        # print(self.scores.columns)
+    #     self.scores = pd.read_csv(self.report_path, sep=",")
+    #     # print(self.scores.columns)
 
-        # self.v0_rank = self.scores["trace count"].rank(ascending=False)
-        self.v0_rank = self.scores["v0"].rank(ascending=False)
-        self.v1_rank = self.scores["v1"].rank(ascending=False)
-        self.v2_rank = self.scores["v2"].rank(ascending=False)
-        self.v3_rank = self.scores["v3"].rank(ascending=False)
-        self.v4_rank = self.scores["v4"].rank(ascending=False)
-        self.v5_rank = self.scores["v5"].rank(ascending=False)
+    #     # self.v0_rank = self.scores["trace count"].rank(ascending=False)
+    #     self.v0_rank = self.scores["v0"].rank(ascending=False)
+    #     self.v1_rank = self.scores["v1"].rank(ascending=False)
+    #     self.v2_rank = self.scores["v2"].rank(ascending=False)
+    #     self.v3_rank = self.scores["v3"].rank(ascending=False)
+    #     self.v4_rank = self.scores["v4"].rank(ascending=False)
+    #     self.v5_rank = self.scores["v5"].rank(ascending=False)
 
-    def get_rankings(self, qid):
-        index = self.scores[self.scores["qid"] == qid].index
-        ranks = [
-            self.v0_rank[index],
-            self.v1_rank[index],
-            self.v2_rank[index],
-            self.v3_rank[index],
-            self.v4_rank[index],
-            self.v5_rank[index],
-        ]
-        return [int(r) for r in ranks]
+    # def get_rankings(self, qid):
+    #     index = self.scores[self.scores["qid"] == qid].index
+    #     ranks = [
+    #         self.v0_rank[index],
+    #         self.v1_rank[index],
+    #         self.v2_rank[index],
+    #         self.v3_rank[index],
+    #         self.v4_rank[index],
+    #         self.v5_rank[index],
+    #     ]
+    #     return [int(r) for r in ranks]
 
-    def register_singleton_edits(self):
-        for qid in self.differ.actions:
-            self.register_edit_info({qid})
-        log_info(f"[edit] {len(self.__edit_infos)} edits registered")
+    # def register_singleton_edits(self):
+    #     for qid in self.differ.actions:
+    #         self.register_edit_info({qid})
+    #     log_info(f"[edit] {len(self.__edit_infos)} edits registered")
 
-    def create_singleton_edit_project(self):
-        name = self.singleton_edit_project
-        qids = self.differ.actions.keys()
-        self._try_edits([{qid} for qid in qids], run_query=False)
+    # def create_singleton_edit_project(self):
+    #     name = self.singleton_edit_project
+    #     qids = self.differ.actions.keys()
+    #     self._try_edits([{qid} for qid in qids], run_query=False)
 
-        assert os.path.exists(self.edit_dir)
-        log_info(f"[proj] edit dir: {self.edit_dir} {len(qids)} files")
+    #     assert os.path.exists(self.edit_dir)
+    #     log_info(f"[proj] edit dir: {self.edit_dir} {len(qids)} files")
 
-        if os.path.exists(f"data/projs/{name}"):
-            log_info(f"[proj] {name} already exists")
-        else:
-            os.system(
-                f"./src/proj_wizard.py create -i {self.edit_dir} --new-project-name {name}"
-            )
-            os.system(
-                f"./src/exper_wizard.py manager -e verify --total-parts 30 -s z3_4_13_0 -i data/projs/{name}/base.z3"
-            )
+    #     if os.path.exists(f"data/projs/{name}"):
+    #         log_info(f"[proj] {name} already exists")
+    #     else:
+    #         os.system(
+    #             f"./src/proj_wizard.py create -i {self.edit_dir} --new-project-name {name}"
+    #         )
+    #         os.system(
+    #             f"./src/exper_wizard.py manager -e verify --total-parts 30 -s z3_4_13_0 -i data/projs/{name}/base.z3"
+    #         )
 
-        filtered_dir = f"data/projs/{name}.filtered/base.z3"
+    #     filtered_dir = f"data/projs/{name}.filtered/base.z3"
 
-        if os.path.exists(filtered_dir):
-            log_info(f"[proj] {name}.filtered already exists")
-        else:
-            os.system(
-                f"./src/analysis_wizard.py filter_edits -e verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
-            )
-            if len(os.listdir(filtered_dir)) == 0:
-                return log_warn(f"[proj] {name} has no filtered queries")
-            os.system(
-                f"./src/exper_wizard.py manager -e default --total-parts 30 -s z3_4_13_0 -i {filtered_dir}"
-            )
+    #     if os.path.exists(filtered_dir):
+    #         log_info(f"[proj] {name}.filtered already exists")
+    #     else:
+    #         os.system(
+    #             f"./src/analysis_wizard.py filter_edits -e verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
+    #         )
+    #         if len(os.listdir(filtered_dir)) == 0:
+    #             return log_warn(f"[proj] {name} has no filtered queries")
+    #         os.system(
+    #             f"./src/exper_wizard.py manager -e default --total-parts 30 -s z3_4_13_0 -i {filtered_dir}"
+    #         )
 
-    def analyze_singleton_project(self):
-        name = self.singleton_edit_project
-        filtered_dir = f"data/projs/{name}.filtered/base.z3"
-        edit_ids = []
+    # def analyze_singleton_project(self):
+    #     name = self.singleton_edit_project
+    #     filtered_dir = f"data/projs/{name}.filtered/base.z3"
+    #     edit_ids = []
 
-        if not os.path.exists(filtered_dir):
-            log_warn(f"[proj] {name} has no filtered queries")
-            return edit_ids
+    #     if not os.path.exists(filtered_dir):
+    #         log_warn(f"[proj] {name} has no filtered queries")
+    #         return edit_ids
 
-        for config in ["default", "verus_quick"]:
-            stdout, stderr, _ = subprocess_run(
-                [
-                    "./src/analysis_wizard.py",
-                    "stable",
-                    "-e",
-                    config,
-                    "-s",
-                    "z3_4_13_0",
-                    "-i",
-                    filtered_dir,
-                ],
-                debug=True,
-            )
+    #     for config in ["default", "verus_quick"]:
+    #         stdout, stderr, _ = subprocess_run(
+    #             [
+    #                 "./src/analysis_wizard.py",
+    #                 "stable",
+    #                 "-e",
+    #                 config,
+    #                 "-s",
+    #                 "z3_4_13_0",
+    #                 "-i",
+    #                 filtered_dir,
+    #             ],
+    #             debug=True,
+    #         )
 
-            # TODO: this is a hacky... I should have used the same exp config...
-            if stderr:
-                log_warn("skip due to encountered: " + stderr)
-                continue
+    #         # TODO: this is a hacky... I should have used the same exp config...
+    #         if stderr:
+    #             log_warn("skip due to encountered: " + stderr)
+    #             continue
 
-            for line in stdout.split("\n"):
-                if line.startswith("edit_id:"):
-                    edit_id = line.split(": ")[1].strip()
-                    edit_ids.append(edit_id)
+    #         for line in stdout.split("\n"):
+    #             if line.startswith("edit_id:"):
+    #                 edit_id = line.split(": ")[1].strip()
+    #                 edit_ids.append(edit_id)
 
-            return edit_ids
+    #         return edit_ids
 
-    def evaluate_rankings(self):
-        valid_edit_count = 0
+    # def evaluate_rankings(self):
+    #     valid_edit_count = 0
 
-        table = []
+    #     table = []
 
-        versions = ["v0", "v1", "v2", "v3", "v4", "v5"]
-        scores = [0] * 12
+    #     versions = ["v0", "v1", "v2", "v3", "v4", "v5"]
+    #     scores = [0] * 12
 
-        eids = self.analyze_singleton_project()
-        self.register_singleton_edits()
+    #     eids = self.analyze_singleton_project()
+    #     self.register_singleton_edits()
 
-        for eid in eids:
-            ei = self.test_edit_with_id(eid)
-            qid, action = ei.get_singleton_edit()
+    #     for eid in eids:
+    #         ei = self.test_edit_with_id(eid)
+    #         qid, action = ei.get_singleton_edit()
 
-            if qid == "prelude_fuel_defaults":
-                continue
+    #         if qid == "prelude_fuel_defaults":
+    #             continue
 
-            ranks = self.get_rankings(qid)
-            valid_edit_count += 1
+    #         ranks = self.get_rankings(qid)
+    #         valid_edit_count += 1
 
-            # self.differ.debug_quantifier(qid)
+    #         # self.differ.debug_quantifier(qid)
 
-            for i in range(6):
-                if ranks[i] < 10:
-                    scores[2 * i] += 1
-                    scores[2 * i + 1] = 1
+    #         for i in range(6):
+    #             if ranks[i] < 10:
+    #                 scores[2 * i] += 1
+    #                 scores[2 * i + 1] = 1
 
-            table += [[shorten_qid(qid), ei.get_id(), action.value, ei.time] + ranks]
+    #         table += [[shorten_qid(qid), ei.get_id(), action.value, ei.time] + ranks]
 
-        log_info(
-            f"found {valid_edit_count} stabilizing edits (excluding prelude_fuel_defaults)"
-        )
+    #     log_info(
+    #         f"found {valid_edit_count} stabilizing edits (excluding prelude_fuel_defaults)"
+    #     )
 
-        print(
-            tabulate(
-                table,
-                headers=[
-                    "qid",
-                    "eid",
-                    "action",
-                    "time",
-                    *versions,
-                ],
-            )
-        )
+    #     print(
+    #         tabulate(
+    #             table,
+    #             headers=[
+    #                 "qid",
+    #                 "eid",
+    #                 "action",
+    #                 "time",
+    #                 *versions,
+    #             ],
+    #         )
+    #     )
 
-        return [valid_edit_count] + scores
+    #     return [valid_edit_count] + scores
 
 
 def main():
     set_param(proof=True)
-
     parser = argparse.ArgumentParser(description="Mariposa Debugger. ")
     parser.add_argument(
         "-i", "--input-query-path", required=True, help="the input query path"
@@ -708,10 +701,34 @@ def main():
         help="retry failed experiments",
     )
     parser.add_argument(
-        "--reset-all",
+        "--clear-all",
         default=False,
         action="store_true",
-        help="reset all existing data",
+        help="clear all existing data",
+    )
+    parser.add_argument(
+        "--clear-traces",
+        default=False,
+        action="store_true",
+        help="clear existing traces",
+    )
+    parser.add_argument(
+        "--clear-cores",
+        default=False,
+        action="store_true",
+        help="clear existing cores",
+    )
+    parser.add_argument(
+        "--clear-edits",
+        default=False,
+        action="store_true",
+        help="clear existing edits",
+    )
+    parser.add_argument(
+        "--clear-proofs",
+        default=False,
+        action="store_true",
+        help="clear existing proofs",
     )
     parser.add_argument(
         "--overwrite-reports",
@@ -736,7 +753,11 @@ def main():
 
     dbg = Debugger3(
         args.input_query_path,
-        reset_all=args.reset_all,
+        clear_all=args.clear_all,
+        clear_edits=args.clear_edits,
+        clear_traces=args.clear_traces,
+        clear_cores=args.clear_cores,
+        clear_proofs=args.clear_proofs,
         retry_failed=args.retry_failed,
         skip_core=args.skip_core,
         overwrite_reports=args.overwrite_reports,
@@ -747,10 +768,6 @@ def main():
 
     if args.eval_rankings:
         dbg.evaluate_rankings()
-
-    # with open("scores.csv", "a") as f:
-    #     line = [args.input_query_path] + [str(s) for s in scores]
-    #     f.write(",".join(line) + "\n")
 
 
 if __name__ == "__main__":

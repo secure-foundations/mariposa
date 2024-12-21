@@ -1,4 +1,7 @@
+import time
 from z3 import *
+
+from utils.system_utils import log_debug, log_info, log_warn
 
 
 def quote_name(name):
@@ -12,16 +15,18 @@ def quote_name(name):
         return "false"
     return name
 
+
 def quote_sort(sort):
     ss = str(sort)
     if sort.kind() == Z3_RE_SORT:
         return ss.replace("ReSort(", "(RegEx ")
     return ss
 
+
 class AstPrinter:
     def __init__(self, parent=None):
         self.__vars = dict()
-        
+
         if parent is None:
             return
 
@@ -33,8 +38,10 @@ class AstPrinter:
     def _format_expr(self, e, offset):
         if is_const(e):
             r = str(e)
-            if r == "True": return "true"
-            if r == "False": return "false"
+            if r == "True":
+                return "true"
+            if r == "False":
+                return "false"
             return quote_name(r)
 
         if is_var(e):
@@ -56,11 +63,13 @@ class AstPrinter:
             for i in range(e.num_patterns()):
                 assert e.pattern(i).decl().name() == "pattern"
                 p = e.pattern(i).children()[0]
-                attributes.append(f":pattern ({self._format_expr(p, offset + v_count)})")
-        
+                attributes.append(
+                    f":pattern ({self._format_expr(p, offset + v_count)})"
+                )
+
             attributes = " ".join(attributes)
             body = self._format_expr(e.body(), offset + v_count)
-            
+
             for i in range(v_count):
                 del self.__vars[offset + i]
 
@@ -68,7 +77,7 @@ class AstPrinter:
                 return f"(forall {vars} (! {body} {attributes}))"
 
             return f"(exists {vars} (! {body} {attributes}))"
-        
+
         if e.decl().kind() == Z3_OP_DT_IS:
             assert e.decl().name() == "is"
             params = e.decl().params()
@@ -87,8 +96,9 @@ def format_expr_flat(e, body_only=False):
     if body_only:
         p = AstPrinter(e)
         return p._format_expr(e.body(), e.num_vars())
-    p = AstPrinter()    
+    p = AstPrinter()
     return p._format_expr(e, 0)
+
 
 def find_matching_brackets(s):
     results = []
@@ -207,3 +217,30 @@ class AstVisitor:
 
     def visited(self):
         return self.__visited
+
+
+def dump_z3_proof(query_path, proof_path) -> bool:
+    set_param(proof=True)
+    timeout = 60000
+    start = time.time()
+
+    solver = Solver()
+    solver.set("timeout", timeout)
+    solver.from_file(query_path)
+    log_debug(f"[proof] z3 version {get_version_string()}")
+    log_info(f"[proof] attempt {query_path}, timeout: {int( timeout/1000)}(s)")
+
+    res = solver.check()
+    proof_time = int((time.time() - start))
+
+    if res != unsat:
+        log_warn(f"failure [proof] {query_path} result {res}")
+        return False
+    log_info(f"[proof] finished in {proof_time}(s) {proof_path}")
+
+    p = solver.proof()
+
+    with open(proof_path, "w+") as f:
+        f.write(p.sexpr())
+
+    return True

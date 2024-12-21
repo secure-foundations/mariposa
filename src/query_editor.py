@@ -10,7 +10,6 @@ from debugger.z3_utils import (
     hack_contains_qid,
     hack_quantifier_removal,
 )
-from proof_builder import ProofInfo
 from utils.system_utils import log_check, log_info, log_warn
 from utils.query_utils import add_qids_to_query
 
@@ -189,7 +188,7 @@ class BasicQueryWriter(QueryLoader):
 
 
 class QueryEditor(BasicQueryWriter):
-    def __init__(self, in_file_path, pi: ProofInfo):
+    def __init__(self, in_file_path, pi):
         super().__init__(in_file_path)
         self.pi = pi
         self.__enabled_symbols = set()

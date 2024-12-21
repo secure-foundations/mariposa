@@ -45,47 +45,31 @@ class SkolemFinder(AstVisitor):
 
 
 class Quant(AstVisitor):
-    def __init__(self, quant, assertion):
+    def __init__(self, quant, assertion, parent):
         super().__init__()
         self.quant: QuantifierRef = quant
         self.assertion = assertion
-        self.qid = quant.qid()
+
+        self.name = quant.qid()
+        self.parent_name = parent
 
         self.__qbody_str = None
         self.__vars = None
 
-        self.__eq = None
-        self.dual = None
+        # self.__eq = None
+        # self.dual = None
+
+    def is_root(self):
+        return self.parent_name is None
 
     def get_vars(self):
-        if self.__vars is None:
-            self.__vars = [
-                (quote_name(self.quant.var_name(idx)), quote_sort(self.quant.var_sort(idx)))
-                for idx in range(self.quant.num_vars())
-            ]
+        if self.__vars is not None:
+            return self.__vars
+        self.__vars = [
+            (quote_name(self.quant.var_name(idx)), quote_sort(self.quant.var_sort(idx)))
+            for idx in range(self.quant.num_vars())
+        ]
         return self.__vars
-
-    def get_size(self):
-        return len(self.quant.sexpr())
-
-    # def _build_lets(self, subs):
-    #     lets = []
-    #     for idx, (v, s) in enumerate(self.get_vars()):
-    #         v = quote_name(v)
-    #         lets.append(f"({v} {subs[idx]})")
-    #     return " ".join(lets)
-
-    # def rewrite_as_let(self, subs):
-    #     if self.__qbody_str is None:
-    #         res = hack_quantifier_body(self.quant)
-    #         self.__qbody_str = res[0]
-    #         self.__quant_str = res[1]
-    #         self.__assert_str = (
-    #             "(assert " + collapse_sexpr(self.assertion.sexpr()) + ")"
-    #         )
-    #     lets = f"(let ({self._build_lets(subs)}) {self.__qbody_str})"
-    #     assert self.__quant_str in self.__assert_str
-    #     return self.__assert_str.replace(self.__quant_str, lets)
 
     def _build_lets(self, subs):
         lets = []
@@ -107,75 +91,75 @@ class Quant(AstVisitor):
         lets = f"(let ({self._build_lets(subs)}) {self.__qbody_str})"
         return self.__assert_str.replace(self.__quant_str, lets)
 
-    def split_dual(self):
-        # assert self.__eq is not None
-        self.__setup_rewrite()
-        self.find_dual()
+    # def split_dual(self):
+    #     # assert self.__eq is not None
+    #     self.__setup_rewrite()
+    #     self.find_dual()
 
-        assert self.__eq is not None
-        assert self.__eq in self.__assert_str
+    #     assert self.__eq is not None
+    #     assert self.__eq in self.__assert_str
 
-        pq = f"(=> {self.__p} {self.__q})"
-        qp = f"(=> {self.__q} {self.__p})"
+    #     pq = f"(=> {self.__p} {self.__q})"
+    #     qp = f"(=> {self.__q} {self.__p})"
 
-        return [
-            f"{self.__assert_str.replace(self.__eq, pq)}",
-            f"{self.__assert_str.replace(self.__eq, qp)}",
-        ]
+    #     return [
+    #         f"{self.__assert_str.replace(self.__eq, pq)}",
+    #         f"{self.__assert_str.replace(self.__eq, qp)}",
+    #     ]
         
-    def get_skolem_dual(self):
-        l, r = self.split_dual()
-        if self.left_dual:
-            return l
-        return r
+    # def get_skolem_dual(self):
+    #     l, r = self.split_dual()
+    #     if self.left_dual:
+    #         return l
+    #     return r
 
-    def find_dual(self):
-        if self.dual is not None:
-            return self.dual
+    # def find_dual(self):
+    #     if self.dual is not None:
+    #         return self.dual
 
-        self.__find_dual(self.assertion)
-        self.reset_visit()
+    #     self.__find_dual(self.assertion)
+    #     self.reset_visit()
 
-        if self.dual is None:
-            self.dual = False
+    #     if self.dual is None:
+    #         self.dual = False
 
-        return self.dual
+    #     return self.dual
 
-    def __find_dual(self, exp):
-        if self.visit(exp) or is_const(exp) or is_var(exp):
-            return
+    # def __find_dual(self, exp):
+    #     if self.visit(exp) or is_const(exp) or is_var(exp):
+    #         return
 
-        if is_quantifier(exp):
-            # assert False
-            log_warn(f"nested quantifiers found in dual search {self.quant.qid()}")
-            return
+    #     if is_quantifier(exp):
+    #         # assert False
+    #         log_warn(f"nested quantifiers found in dual search {self.quant.qid()}")
+    #         return
 
-        if exp.sort().kind() != Z3_BOOL_SORT:
-            return
+    #     if exp.sort().kind() != Z3_BOOL_SORT:
+    #         return
 
-        if exp.decl().name() == "=":
-            p, q = exp.children()
+    #     if exp.decl().name() == "=":
+    #         p, q = exp.children()
 
-            if p.sort().kind() != Z3_BOOL_SORT:
-                return
+    #         if p.sort().kind() != Z3_BOOL_SORT:
+    #             return
 
-            target = self.quant.get_id()
+    #         target = self.quant.get_id()
 
-            if p.get_id() == target or q.get_id() == target:
-                if self.__eq is not None:
-                    log_warn(f"multiple equalities found in qid: {self.quant.qid()}")
-                    return
+    #         if p.get_id() == target or q.get_id() == target:
+    #             if self.__eq is not None:
+    #                 log_warn(f"multiple equalities found in qid: {self.quant.qid()}")
+    #                 return
 
-                self.left_dual = p.get_id() == target
-                self.__eq = format_expr_flat(exp)
-                self.__p = format_expr_flat(p)
-                self.__q = format_expr_flat(q)
-                self.dual = True
+    #             self.left_dual = p.get_id() == target
+    #             self.__eq = format_expr_flat(exp)
+    #             self.__p = format_expr_flat(p)
+    #             self.__q = format_expr_flat(q)
+    #             self.dual = True
 
-                return
+    #             return
 
-        for c in exp.children():
-            self.__find_dual(c)
+    #     for c in exp.children():
+    #         self.__find_dual(c)
 
 
 class InstCost:
@@ -233,14 +217,13 @@ class QueryLoader(AstVisitor):
     def __init__(self, in_file_path):
         super().__init__()
         self.proc_solver = Solver()
-        self.proc_solver.set("timeout", 30000)
+        self.proc_solver.set("timeout", 60000)
 
         self.in_file_path = in_file_path
         self.proc_solver.from_file(in_file_path)
         # map qid to its quantifier
         self.quants: Dict[str, Quant] = dict()
-        # root qids with nested quantifiers
-        self.parent_id = dict()
+
         # self.existing_skolem_funs = dict()
         finder = SkolemFinder()
 
@@ -258,41 +241,27 @@ class QueryLoader(AstVisitor):
             return
 
         if is_quantifier(exp):
-            qid = exp.qid()
-            qt = Quant(exp, assertion)
-            self.parent_id[qid] = parent
-            self.quants[qid] = qt
-            parent = qid
+            quant = Quant(exp, assertion, parent)
+            assert quant.name not in self.quants
+            self.quants[quant.name] = quant
+            parent = quant.name
 
         for c in exp.children():
             self.__load_quantifiers(c, parent, assertion)
 
-    def is_root(self, qid):
-        if qid not in self.parent_id:
-            log_warn(f"root (?) qid {qid} not found")
-            return False
-        return self.parent_id[qid] is None
-
-    def get_root(self, qid):
-        while qid in self.parent_id:
-            pid = self.parent_id[qid]
-            if pid is None:
-                return qid
-            qid = pid
-        return qid
-
-    def get_parent(self, qid):
-        if qid not in self.parent_id:
-            log_warn(f"parent of qid {qid} is not found!")
-            return qid
-        return self.parent_id[qid]
+    def get_root(self, name):
+        quant = self.quants[name]
+        while not quant.is_root():
+            name = self.quants[name].parent_name
+            quant = self.quants[name]
+        return name
 
     def __load_root_conflicts(self):
         constraints = dict()
-        for qid, qt in self.quants.items():
-            if not self.is_root(qid):
+        for qid, quant in self.quants.items():
+            if not quant.is_root():
                 continue
-            a = qt.assertion
+            a = quant.assertion
             if a in constraints:
                 constraints[a].add(qid)
             else:

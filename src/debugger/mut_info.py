@@ -1,10 +1,9 @@
 import json
 import os
-import pickle
 import subprocess
 from base.defs import MARIPOSA
 from base.solver import RCode, output_as_rcode
-from proof_builder import ProofBuilder, ProofInfo
+from debugger.z3_utils import dump_z3_proof
 from utils.query_utils import Mutation, emit_mutant_query
 from debugger.quant_graph import *
 from utils.system_utils import log_check, log_debug, log_info, log_warn, subprocess_run
@@ -19,7 +18,6 @@ PROOF_GOAL_COUNT = 1
 
 TRACES = "traces"
 MUTANTS = "mutants"
-INSTS = "insts"
 CORES = "cores"
 
 
@@ -38,7 +36,7 @@ class MutantInfo:
         self.mut_lbl_path = f"{sub_root}/{MUTANTS}/{mutation}.{seed}.lbl.smt2"
 
         self.trace_path = f"{sub_root}/{TRACES}/{mutation}.{seed}"
-        self.insts_path = f"{sub_root}/{INSTS}/{mutation}.{seed}"
+        self.proof_path = f"{sub_root}/proofs/{mutation}.{seed}.proof"
 
         self.core_path = f"{sub_root}/{CORES}/{mutation}.{seed}.smt2"
         self.core_log = f"{sub_root}/{CORES}/{mutation}.{seed}.log"
@@ -76,7 +74,7 @@ class MutantInfo:
             for path in [
                 self.mut_path,
                 self.trace_path,
-                self.insts_path,
+                self.proof_path,
                 self.core_path,
                 self.core_log,
                 self.graph_path,
@@ -123,16 +121,16 @@ class MutantInfo:
 
     def has_trace(self):
         return os.path.exists(self.trace_path)
-    
+
     def get_trace_size(self):
         if not self.has_trace():
             return 0
         return os.path.getsize(self.trace_path)
 
-    def build_trace_log(self, clear=False):
+    def build_trace(self, clear=False) -> bool:
         if not self.__should_build(self.trace_path, clear):
             log_info(f"[trace] found {self.trace_path}")
-            return
+            return True
         self.build_mutant_query()
 
         # soft timeout (-t) is used, otherwise the log might be malformed
@@ -148,11 +146,12 @@ class MutantInfo:
         res = output_as_rcode(stdout)
         self.trace_rcode = res
         self.trace_time = elapsed
+        return True
 
     def has_core(self):
         return os.path.exists(self.core_path)
 
-    def build_core_query(self, clear=False):
+    def build_core_query(self, clear=False) -> bool:
         if not self.__should_build(self.core_path, clear):
             return True
         self.build_mutant_query(use_lbl=True)
@@ -176,7 +175,7 @@ class MutantInfo:
         if len(lines) <= 1 or "unsat\n" not in lines:
             output = "".join(lines)
             log_debug(f"[core] failed {self.core_log} {output}")
-            return None
+            return False
 
         args = [
             MARIPOSA,
@@ -198,12 +197,24 @@ class MutantInfo:
         return True
 
     def has_proof(self):
-        return os.path.exists(self.insts_path)
+        return os.path.exists(self.proof_path)
 
-    def build_graph_log(self, clear=False):
+    def build_proof(self, clear=False) -> bool:
+        if not self.__should_build(self.proof_path, clear):
+            return True
+
+        if os.path.exists(self.core_path):
+            log_info(f"[proof] attempt from core (!) {self.core_path}")
+            return dump_z3_proof(self.core_path, self.proof_path)
+
+        self.build_mutant_query()
+        log_info(f"[proof] attempt from mutant {self.mut_path}")
+        return dump_z3_proof(self.mut_path, self.proof_path)
+
+    def build_graph_log(self, clear=False) -> bool:
         if not self.__should_build(self.graph_path, clear):
             log_info(f"[graph] found {self.graph_path}")
-            return self.graph_path
+            return True
 
         with open(self.graph_path, "w") as outfile:
             log_info(f"[graph] building {self.graph_path}")
@@ -216,12 +227,12 @@ class MutantInfo:
                 stdout=outfile,
             )
         assert os.path.exists(self.graph_path)
-        return self.graph_path
+        return True
 
-    def build_stats_log(self, clear=False):
+    def build_stats_log(self, clear=False) -> bool:
         if not self.__should_build(self.stats_path, clear):
             log_info(f"[stats] found {self.stats_path}")
-            return self.stats_path
+            return True
 
         with open(self.stats_path, "w") as outfile:
             log_info(f"[stats] building {self.stats_path}")
@@ -234,4 +245,4 @@ class MutantInfo:
                 stdout=outfile,
             )
         assert os.path.exists(self.stats_path)
-        return self.stats_path
+        return True

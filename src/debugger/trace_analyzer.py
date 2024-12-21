@@ -81,46 +81,16 @@ class ProofAnalyzer(QueryLoader):
 
         # remove self loop edges
         for n, _ in list(nx.selfloop_edges(self.G)):
-            node_colors[n] = "red"
             self._self_loops.add(n)
             self.G.remove_edge(n, n)
 
-        nx.set_node_attributes(self.G, node_colors, name="color")
+        # nx.set_node_attributes(self.G, node_colors, name="color")
 
         if not nx.is_directed_acyclic_graph(self.G):
             log_warn("proof QI graph is cyclic!")
             return
 
         log_info("proof QI graph is acyclic")
-
-    def save_graph(self, dot_path):
-        nx.drawing.nx_agraph.write_dot(self.G, dot_path)
-        # dot -Tpdf test.dot -o test.pdf  -Grankdir=TB -Granksep=0.5
-        subprocess_run(
-            [
-                "dot",
-                "-Tpdf",
-                dot_path,
-                "-o",
-                dot_path + ".pdf",
-                "-Grankdir=TB",
-                "-Granksep=0.5",
-            ],
-            debug=True,
-            check=True,
-        )
-
-    def list_sources(self):
-        nids = [n for n in self.G.nodes if self.G.in_degree(n) == 0]
-        qids = {self._qid_2_nid[n]: n for n in nids}
-        return qids
-
-    def list_nodes(self):
-        return [(n, self._qid_2_nid[n]) for n in self.G.nodes]
-
-    def list_self_loops(self):
-        return [self._qid_2_nid[n] for n in self._self_loops]
-
 
 class InstDiffer(ProofAnalyzer):
     def __init__(self, query_path, pi: ProofInfo, ti: MutantInfo):
@@ -194,7 +164,6 @@ class InstDiffer(ProofAnalyzer):
         for rid in self.trace_count:
             t = self.trace_count[rid]
             p = self.proof_count[rid]
-            # print(rid, t.subtotal, p.subtotal, self.pi.is_skolemized(rid))
     
             if (t.subtotal == 0 
                 and p.subtotal == 0 
@@ -280,40 +249,3 @@ class InstDiffer(ProofAnalyzer):
                 res[qid] = (self.trace_count[rid][qid], self.proof_count[rid][qid])
         return res
 
-    # def do_stuff(self, eis: List[EditInfo]):
-    #     # import scipy.stats as ss
-    #     ress = dict()
-
-
-    #         filtered = {qid: cost for qid, cost in costs.items() if qid in self.actions}
-    #         sorted_keys = sorted(filtered, key=filtered.get, reverse=True)
-
-    #         ranks = {key: rank + 1 for rank, key in enumerate(sorted_keys)}
-
-    #         for qid in ress:
-    #             ress[qid].append(ranks[qid])
-
-    #     table = []
-
-    #     for ei in eis:
-    #         qid, action = ei.get_singleton_edit()
-    #         table.append([qid, action.value, ei.get_id()[:5], *ress[qid], ei.time])
-    #         # print(qid, ress[qid], ei.time)
-
-    #     print(
-    #         tabulate(
-    #             table,
-    #             headers=[
-    #                 "qid",
-    #                 "action",
-    #                 "hash",
-    #                 "v0",
-    #                 "v1",
-    #                 "v2",
-    #                 "v3",
-    #                 "v4",
-    #                 "v5",
-    #                 "time",
-    #             ],
-    #         )
-    #     )
