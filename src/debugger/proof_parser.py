@@ -65,17 +65,35 @@ def try_get_symbol(data):
         return data.value()
     return None
 
+class BaseNode:
+    global_id = 0
+    def __init__(self):
+        self.node_id = BaseNode.global_id
+        BaseNode.global_id += 1
+    
+    def __str__(self):
+        raise NotImplementedError
 
-class LeafNode:
-    def __init__(self, value):
+    def shallow_hash(self):
+        # we don't need to recurse into children
+        # since hash-consing is already recursive
+        return hash(str(self))
+
+class LeafNode(BaseNode):
+    def __init__(self, value, is_int=False):
+        super().__init__()
         self.value = value
+        self.is_int = is_int
 
     def __str__(self):
+        if self.is_int:
+            return str(self.value)
         return self.value
 
 
-class ProofNode:
+class ProofNode(BaseNode):
     def __init__(self, name, children):
+        super().__init__()
         self.name = name
         self.children = children
 
@@ -86,8 +104,9 @@ class ProofNode:
         return " ".join(items) + ")"
 
 
-class QuantNode:
+class QuantNode(BaseNode):
     def __init__(self, quant_type, bindings, _body, attrs):
+        super().__init__()
         self.quant_type = quant_type
         self.bindings = bindings
         self._body = _body
@@ -100,8 +119,9 @@ class QuantNode:
         return f"(QUANT {self.qid})"
 
 
-class LetNode:
+class LetNode(BaseNode):
     def __init__(self, bindings, body):
+        super().__init__()
         self.bindings = bindings
         self.body = body
 
@@ -113,8 +133,9 @@ class LetNode:
         return "\n".join(items)
 
 
-class AppNode:
+class AppNode(BaseNode):
     def __init__(self, name, children):
+        super().__init__()
         self.name = name
         self.children = children
 
@@ -213,7 +234,7 @@ def parse_into_node(data):
     if isinstance(data, sexp.Symbol):
         return LeafNode(data.value())
     if isinstance(data, int):
-        return LeafNode(str(data))
+        return LeafNode(data, is_int=True)
 
     assert isinstance(data, list)
     assert len(data) > 0

@@ -1,31 +1,31 @@
 from debugger.proof_parser import *
 
-class SymbolTable:
-    def __init__(self):
-        self.nodes = dict()
-        self._counter = 0
-
-    def process_node(self, node):
-        if isinstance(node, LeafNode):
-            return
-        # if isinstance(node, LetNode):
-        #     for var, val in node.bindings:
-        #         self.process_node(val)
-        #     self.process_node(node.body)
-        #     return
-        # if isinstance(node, AppNode) or isinstance(node, ProofNode):
-        #     for child in node.children:
-        #         self.process_node(child)
-        #     return
-        # assert isinstance(node, QuantNode)
-        # self.process_node(node._body)
-        # return
-
 class ProofAnalyzer:
     def __init__(self, file_path):
-        proof = parse_proof_log(file_path)
+        root = parse_proof_log(file_path)
+
+        # first get rid of LetNodes
         self.__global_defs = dict()
-        self.proof = self.__rebind_let(proof)
+        root = self.__rebind_let(root)
+
+        # then hash-cons the nodes
+        self._hashed = dict()
+        self.__replaced = dict()
+        self.__ref_counts = dict()
+
+        for name, node in self.__global_defs.items():
+            new_node = self.__hash_cons_node(node)
+            if new_node.node_id != node.node_id:
+                self.__replaced[name] = new_node
+        root = self.__hash_cons_node(root)
+
+        self.__check_reachable(root)
+        # print(len(self.__ref_counts), len(self.__global_defs))
+        sorted_refs = sorted(
+            self.__ref_counts.items(), key=lambda x: x[1], reverse=True
+        )
+        for name, count in sorted_refs:
+            print(name, count, self.__global_defs[name])
 
     def add_def(self, name, val):
         if name not in self.__global_defs:
@@ -52,6 +52,30 @@ class ProofAnalyzer:
 
         # rebind does happen in quantifiers
         # currently we don't use them ...
+        assert isinstance(node, QuantNode)
+        return node
+
+    def __add_node(self, node):
+        s_hash = node.shallow_hash()
+        if s_hash in self._hashed:
+            return self._hashed[s_hash]
+        self._hashed[s_hash] = node
+        return node
+
+    def __hash_cons_node(self, node):
+        assert not isinstance(node, LetNode)
+
+        if isinstance(node, LeafNode):
+            symbol = node.value
+            if symbol in self.__replaced:
+                return self.__replaced[symbol]
+            return self.__add_node(node)
+
+        if isinstance(node, AppNode) or isinstance(node, ProofNode):
+            children = [self.__hash_cons_node(child) for child in node.children]
+            node.children = children
+            return self.__add_node(node)
+
         assert isinstance(node, QuantNode)
         return node
 
@@ -103,6 +127,44 @@ class ProofAnalyzer:
             nodes.extend(self.__filter_proof_nodes(node, name))
         return nodes
 
-proof_file = "dbg/815f69b161/proofs/shuffle.13565831226465156427.proof"
-a = ProofAnalyzer(proof_file)
-# lemmas = a.filter_proof_nodes("unit-resolution")
+    def __check_undefined_symbols(self, node):
+        if isinstance(node, LeafNode):
+            symbol = node.value
+            if (
+                not node.is_int
+                and symbol not in self.__global_defs
+                and symbol.startswith("a!")
+            ):
+                print(f"??? undefined symbol: {symbol}")
+            return
+
+        if isinstance(node, AppNode) or isinstance(node, ProofNode):
+            for child in node.children:
+                self.__check_undefined_symbols(child)
+            return
+
+        assert isinstance(node, QuantNode)
+        return
+
+    def check_undefined_symbols(self):
+        for node in self.__global_defs.values():
+            self.__check_undefined_symbols(node)
+
+    def __check_reachable(self, node):
+        if isinstance(node, LeafNode):
+            symbol = node.value
+            if symbol in self.__ref_counts:
+                self.__ref_counts[symbol] += 1
+                return
+            if symbol in self.__global_defs:
+                self.__ref_counts[symbol] = 1
+                self.__check_reachable(self.__global_defs[node.value])
+            return
+
+        if isinstance(node, AppNode) or isinstance(node, ProofNode):
+            for child in node.children:
+                self.__check_reachable(child)
+            return
+
+        assert isinstance(node, QuantNode)
+        return
