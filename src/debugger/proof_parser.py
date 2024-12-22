@@ -77,13 +77,16 @@ class TODONode:
         self.children = children
 
     def __str__(self):
-        return f"(TODO {self.name})"
+        items = ["(TODO " + self.name]
+        for child in self.children:
+            items.append(str(child))
+        return " ".join(items) + ")"
 
 
 class LeafNode:
     def __init__(self, value):
         self.value = value
-    
+
     def __str__(self):
         return self.value
 
@@ -93,10 +96,18 @@ class ProofNode(TODONode):
         super().__init__(name, children)
 
 
-class QuantNode(TODONode):
-    def __init__(self, name, children):
-        super().__init__(name, children)
+class QuantNode:
+    def __init__(self, quant_type, bindings, _body, attrs):
+        self.quant_type = quant_type
+        self.bindings = bindings
+        self._body = _body
 
+        self.attrs = attrs
+        self.qid = attrs.get(":qid", None)
+        self.skolemid = attrs.get(":skolemid", None)
+
+    def __str__(self):
+        return f"(QUANT {self.qid})"
 
 class LetNode:
     def __init__(self, bindings, body):
@@ -120,8 +131,7 @@ class AppNode:
         items = [f"({self.name}"]
         for child in self.children:
             items.append(str(child))
-        items.append(")")
-        return " ".join(items)
+        return " ".join(items) + ")"
 
 
 class DatatypeAppNode(AppNode):
@@ -130,21 +140,52 @@ class DatatypeAppNode(AppNode):
         super().__init__(name, children)
 
 
-def parse_quant_bindings(bindings):
-    assert isinstance(bindings, list)
-    result = []
-    # print(bindings)
-    for binding in bindings:
-        assert isinstance(binding, list)
-        assert len(binding) == 2
-        if binding[0] == True:
+def parse_attributes(_attrs):
+    index = 0
+    attrs = dict()
+    while index < len(_attrs):
+        attr_name = get_symbol(_attrs[index])
+        if attr_name in {":pattern"}:
+            # TODO: parse pattern if needed
+            # attrs[attr_name] = _attrs[index + 1]
+            pass
+        elif attr_name in {":qid", ":skolemid"}:
+            attrs[attr_name] = get_symbol(_attrs[index + 1])
+        else:
+            print(attr_name)
+            assert False
+        index += 2
+    return attrs
+
+
+def parse_into_quant_node(items) -> QuantNode:
+    assert len(items) == 3
+    quant_type, _bindings, _body = get_symbol(items[0]), items[1], items[2]
+    assert isinstance(_bindings, list)
+
+    # parse bindings
+    bindings = []
+    for _binding in _bindings:
+        assert isinstance(_binding, list)
+        assert len(_binding) == 2
+        if _binding[0] == True:
             # this seems to be a bug in the sexp parser
             var = "t"
         else:
-            var = get_symbol(binding[0])
-        sort = get_symbol(binding[1])
-        result.append((var, sort))
-    return result
+            var = get_symbol(_binding[0])
+        sort = get_symbol(_binding[1])
+        bindings.append((var, sort))
+
+    # parse attributes
+    if quant_type != "lambda":
+        assert get_symbol(_body[0]) == "!"
+        _body, _attrs = _body[1], _body[2:]
+        attrs = parse_attributes(_attrs)
+    else:
+        _body, attrs = _body[1], dict()
+    # TODO: parse quant body if needed?
+    # body = parse_into_node(_body)
+    return QuantNode(quant_type, bindings, _body, attrs)
 
 
 def parse_into_let_node(items) -> LetNode:
@@ -176,6 +217,7 @@ def try_parse_into_datatype_node(items) -> DatatypeAppNode:
     params = [parse_into_node(c) for c in items[1:]]
     return DatatypeAppNode(name, params)
 
+
 def parse_into_node(data):
     if isinstance(data, sexp.Symbol):
         return LeafNode(data.value())
@@ -204,34 +246,46 @@ def parse_into_node(data):
         return ProofNode(name, children)
 
     if name == "forall" or name == "exists" or name == "lambda":
-        assert len(data) == 3
+        # assert len(data) == 3
         # TODO: parse quant body
-        return QuantNode(name, data[1:])
+        return parse_into_quant_node(data)
 
     children = [parse_into_node(c) for c in data[1:]]
     return AppNode(name, children)
 
+class SymbolTable:
+    def __init__(self):
+        self.table = dict()
+        self.__var_prefix = "h!"
+
+    # def process(self, node):
+    #     if isinstance(node, LeafNode):
+    #         return node
+
+    #     if isinstance(node, LetNode):
+    #         for var, val in node.bindings:
+    #             self.table[var] = val
+    #         return self.process(node.body)
+
+    #     if isinstance(node, AppNode) or isinstance(node, ProofNode):
+    #         node.children = [self.process(c) for c in node.children]
+    #         return node
+
+    #     return node 
 
 class ProofAnalyzer:
     def __init__(self, data):
-        self.proof = parse_into_node(data)
-        self.__global_bindings = dict()
-        self.__local_bindings = dict()
-        self.__realloc_stack = dict()
-        self.proof = self.__rebind_let(self.proof)
-        print(self.proof)
+        self.__global_defs = dict()
 
-    def add_local_binding(self, name, val):
-        if name not in self.__local_bindings:
-            self.__local_bindings[name] = val
-            self.__global_bindings[name] = val
+        proof = parse_into_node(data)
+        self.proof = self.__rebind_let(proof)
+
+    def add_def(self, name, val):
+        if name not in self.__global_defs:
+            self.__global_defs[name] = val
             return name
         print("needs rebinding!", name)
         assert False
-
-    def remove_local_binding(self, name):
-        assert name in self.__local_bindings
-        del self.__local_bindings[name]
 
     def __rebind_let(self, node):
         if isinstance(node, LeafNode):
@@ -239,24 +293,69 @@ class ProofAnalyzer:
 
         if isinstance(node, LetNode):
             for var, val in node.bindings:
-                self.add_local_binding(var, val)
-
+                self.add_def(var, val)
+            # we haven't ran into any rebinds yet
             body = self.__rebind_let(node.body)
-
-            for var, _ in node.bindings:
-                self.remove_local_binding(var)
-
+            # remove the LetNode
             return body
 
-        if isinstance(node, AppNode):
+        if isinstance(node, AppNode) or isinstance(node, ProofNode):
             node.children = [self.__rebind_let(c) for c in node.children]
             return node
 
-        if isinstance(node, ProofNode):
-            node.children = [self.__rebind_let(c) for c in node.children]
-            return node
-
-        print("NYI for", node)
         return node
 
-ProofAnalyzer(data)
+    def format_node(self, node):
+        if isinstance(node, LeafNode):
+            value = node.value
+            if value in self.__global_defs:
+                return self.format_node(self.__global_defs[value])
+            return value
+        assert not isinstance(node, LetNode)
+
+        if isinstance(node, QuantNode):
+            return f"(QUANT {node.quant_type} {node.qid})"
+
+        items = [f"({node.name}"]
+        for child in node.children:
+            items.append(self.format_node(child))
+
+        return " ".join(items) + ")"
+
+    def print_global_def(self, name):
+        node = self.__global_defs[name]
+        print(self.format_node(node))
+
+    # def __find_theory_lemmas(self, node):
+    #     if isinstance(node, LeafNode):
+    #         return []
+
+    #     if isinstance(node, AppNode):
+    #         lemmas = []
+    #         for child in node.children:
+    #             lemmas.extend(self.__find_theory_lemmas(child))
+    #         return lemmas
+
+    #     if isinstance(node, ProofNode):
+    #         lemmas = []
+    #         if node.name == "th-lemma":
+    #             lemmas.append(node)
+    #         for child in node.children:
+    #             lemmas.extend(self.__find_theory_lemmas(child))
+    #         return lemmas
+
+    #     return []
+
+    # def find_theory_lemmas(self):
+    #     theory_lemmas = []
+    #     for node in self.__global_bindings.values():
+    #         theory_lemmas.extend(self.__find_theory_lemmas(node))
+    #     return theory_lemmas
+
+
+a = ProofAnalyzer(data)
+# lemmas = a.find_theory_lemmas()
+# for lemma in lemmas:
+#     print(lemma)
+
+a.print_global_def("a!6790")
