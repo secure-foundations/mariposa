@@ -1,10 +1,5 @@
 import sexpdata as sexp
 
-proof_file = "dbg/815f69b161/proofs/shuffle.13565831226465156427.proof"
-
-with open(proof_file) as f:
-    data = sexp.load(f)
-
 PROOF_RULES = {
     "true",
     "der",
@@ -71,7 +66,15 @@ def try_get_symbol(data):
     return None
 
 
-class TODONode:
+class LeafNode:
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return self.value
+
+
+class ProofNode:
     def __init__(self, name, children):
         self.name = name
         self.children = children
@@ -81,19 +84,6 @@ class TODONode:
         for child in self.children:
             items.append(str(child))
         return " ".join(items) + ")"
-
-
-class LeafNode:
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return self.value
-
-
-class ProofNode(TODONode):
-    def __init__(self, name, children):
-        super().__init__(name, children)
 
 
 class QuantNode:
@@ -108,6 +98,7 @@ class QuantNode:
 
     def __str__(self):
         return f"(QUANT {self.qid})"
+
 
 class LetNode:
     def __init__(self, bindings, body):
@@ -253,109 +244,8 @@ def parse_into_node(data):
     children = [parse_into_node(c) for c in data[1:]]
     return AppNode(name, children)
 
-class SymbolTable:
-    def __init__(self):
-        self.table = dict()
-        self.__var_prefix = "h!"
 
-    # def process(self, node):
-    #     if isinstance(node, LeafNode):
-    #         return node
-
-    #     if isinstance(node, LetNode):
-    #         for var, val in node.bindings:
-    #             self.table[var] = val
-    #         return self.process(node.body)
-
-    #     if isinstance(node, AppNode) or isinstance(node, ProofNode):
-    #         node.children = [self.process(c) for c in node.children]
-    #         return node
-
-    #     return node 
-
-class ProofAnalyzer:
-    def __init__(self, data):
-        self.__global_defs = dict()
-
-        proof = parse_into_node(data)
-        self.proof = self.__rebind_let(proof)
-
-    def add_def(self, name, val):
-        if name not in self.__global_defs:
-            self.__global_defs[name] = val
-            return name
-        print("needs rebinding!", name)
-        assert False
-
-    def __rebind_let(self, node):
-        if isinstance(node, LeafNode):
-            return node
-
-        if isinstance(node, LetNode):
-            for var, val in node.bindings:
-                self.add_def(var, val)
-            # we haven't ran into any rebinds yet
-            body = self.__rebind_let(node.body)
-            # remove the LetNode
-            return body
-
-        if isinstance(node, AppNode) or isinstance(node, ProofNode):
-            node.children = [self.__rebind_let(c) for c in node.children]
-            return node
-
-        return node
-
-    def format_node(self, node):
-        if isinstance(node, LeafNode):
-            value = node.value
-            if value in self.__global_defs:
-                return self.format_node(self.__global_defs[value])
-            return value
-        assert not isinstance(node, LetNode)
-
-        if isinstance(node, QuantNode):
-            return f"(QUANT {node.quant_type} {node.qid})"
-
-        items = [f"({node.name}"]
-        for child in node.children:
-            items.append(self.format_node(child))
-
-        return " ".join(items) + ")"
-
-    def print_global_def(self, name):
-        node = self.__global_defs[name]
-        print(self.format_node(node))
-
-    # def __find_theory_lemmas(self, node):
-    #     if isinstance(node, LeafNode):
-    #         return []
-
-    #     if isinstance(node, AppNode):
-    #         lemmas = []
-    #         for child in node.children:
-    #             lemmas.extend(self.__find_theory_lemmas(child))
-    #         return lemmas
-
-    #     if isinstance(node, ProofNode):
-    #         lemmas = []
-    #         if node.name == "th-lemma":
-    #             lemmas.append(node)
-    #         for child in node.children:
-    #             lemmas.extend(self.__find_theory_lemmas(child))
-    #         return lemmas
-
-    #     return []
-
-    # def find_theory_lemmas(self):
-    #     theory_lemmas = []
-    #     for node in self.__global_bindings.values():
-    #         theory_lemmas.extend(self.__find_theory_lemmas(node))
-    #     return theory_lemmas
-
-
-a = ProofAnalyzer(data)
-# lemmas = a.find_theory_lemmas()
-# for lemma in lemmas:
-#     print(lemma)
-
-a.print_global_def("a!6790")
+def parse_proof_log(file_path):
+    with open(file_path) as f:
+        data = sexp.load(f)
+    return parse_into_node(data)
