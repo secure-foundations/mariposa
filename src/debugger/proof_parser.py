@@ -1,4 +1,5 @@
 import sexpdata as sexp
+import hashlib
 
 PROOF_RULES = {
     "true",
@@ -65,30 +66,51 @@ def try_get_symbol(data):
         return data.value()
     return None
 
+
 class BaseNode:
-    global_id = 0
+    # global_id = 0
     def __init__(self):
-        self.node_id = BaseNode.global_id
-        BaseNode.global_id += 1
-    
+        pass
+        # self.id = BaseNode.global_id
+        # BaseNode.global_id += 1
+
     def __str__(self):
         raise NotImplementedError
 
-    def shallow_hash(self):
+    def hash_id(self):
+        digest = hashlib.sha1(str(self).encode("utf-8")).hexdigest()
         # we don't need to recurse into children
         # since hash-consing is already recursive
-        return hash(str(self))
+        return "h!" + digest[:8]
+
 
 class LeafNode(BaseNode):
-    def __init__(self, value, is_int=False):
+    def __init__(self, value):
         super().__init__()
         self.value = value
-        self.is_int = is_int
 
     def __str__(self):
-        if self.is_int:
-            return str(self.value)
         return self.value
+
+
+class LeafIntNode(LeafNode):
+    def __init__(self, value):
+        super().__init__(value)
+
+    def __str__(self):
+        return str(self.value)
+
+
+class LeafRefNode(LeafNode):
+    def __init__(self, value):
+        assert value.startswith("h!")
+        super().__init__(value)
+
+    def __str__(self):
+        return f"{self.value}"
+
+    def hash_id(self):
+        raise Exception("LeafRefNode should not be hashed")
 
 
 class ProofNode(BaseNode):
@@ -234,7 +256,7 @@ def parse_into_node(data):
     if isinstance(data, sexp.Symbol):
         return LeafNode(data.value())
     if isinstance(data, int):
-        return LeafNode(data, is_int=True)
+        return LeafIntNode(data)
 
     assert isinstance(data, list)
     assert len(data) > 0
