@@ -1,40 +1,40 @@
 import sexpdata as sexp
 import hashlib
 
-PROOF_RULES = {
-    "true",
-    "der",
-    "asserted",
-    "quant-inst",
-    "goal",
-    "hypothesis",
-    "mp",
-    "mp~",
-    "lemma",
-    "unit-resolution",
-    "refl",
-    "iff-true",
-    "symm",
-    "iff-false",
-    "trans",
-    "commutativity",
-    "monotonicity",
-    "def-axiom",
-    "quant-intro",
-    "def-intro",
-    "distributivity",
-    "apply-def",
-    "and-elim",
-    "iff~",
-    "not-or-elim",
-    "nnf-pos",
-    "rewrite",
-    "nnf-neg",
-    "pull-quant",
-    "sk",
-    "push-quant",
-    "elim-unused-vars",
-    "th-lemma",
+PROOF_GRAPH_RULES = {
+    "true": False,
+    "der": False,
+    "asserted": False,
+    "quant-inst": True,
+    "goal": False,
+    "hypothesis": False,
+    "mp": False,
+    "mp~": False,
+    "lemma": True,
+    "unit-resolution": False,
+    "refl": False,
+    "iff-true": False,
+    "symm": False,
+    "iff-false": False,
+    "trans": False,
+    "commutativity": False,
+    "monotonicity": False,
+    "def-axiom": False,
+    "quant-intro": False,
+    "def-intro": False,
+    "distributivity": False,
+    "apply-def": False,
+    "and-elim": False,
+    "iff~": False,
+    "not-or-elim": False,
+    "nnf-pos": False,
+    "rewrite": True,
+    "nnf-neg": False,
+    "pull-quant": False,
+    "sk": True,
+    "push-quant": False,
+    "elim-unused-vars": False,
+    "th-lemma": True,
 }
 
 Z3_BUILTIN = {
@@ -74,9 +74,6 @@ class NodeRef:
     def __str__(self):
         return f"{self.index}"
 
-    def hash_id(self):
-        raise Exception("NodeRef should not be hashed!")
-
     def __hash__(self):
         return hash(self.value)
     
@@ -87,21 +84,25 @@ class NodeRef:
 class TreeNode:
     # global_id = 0
     def __init__(self):
-        pass
+        self.index = None
         # self.id = BaseNode.global_id
         # BaseNode.global_id += 1
 
     def __str__(self):
         raise NotImplementedError
 
-    def hash_id(self):
+    def hash_index(self):
+        if self.index is not None:
+            return self.index
+
         digest = hashlib.sha1(str(self).encode("utf-8")).hexdigest()
+        self.index = "h!" + digest[:8]
         # we don't need to recurse into children
         # since hash-consing is already recursive
-        return "h!" + digest[:8]
+        return self.index
 
     def make_ref(self):
-        return NodeRef(self.hash_id())
+        return NodeRef(self.hash_index())
 
 class LeafNode(TreeNode):
     def __init__(self, value):
@@ -147,7 +148,7 @@ class LetNode(TreeNode):
         items.append(str(self.body) + ")")
         return "\n".join(items)
 
-    def hash_id(self):
+    def hash_index(self):
         raise Exception("LetNode should not be hashed!")
 
 class AppNode(TreeNode):
@@ -162,11 +163,11 @@ class AppNode(TreeNode):
             items.append(str(child))
         return " ".join(items) + ")"
     
-    def hash_id(self):
+    def hash_index(self):
         for child in self.children:
             if not isinstance(child, NodeRef):
                 raise Exception("AppNode children should be NodeRef!")
-        return super().hash_id()
+        return super().hash_index()
 
 
 class DatatypeAppNode(AppNode):
@@ -281,7 +282,7 @@ def parse_into_node(data):
     if name == "let":
         return parse_into_let_node(data)
 
-    if name in PROOF_RULES:
+    if name in PROOF_GRAPH_RULES:
         children = [parse_into_node(c) for c in data[1:]]
         return ProofNode(name, children)
 

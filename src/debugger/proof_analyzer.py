@@ -2,6 +2,8 @@ from typing import Dict
 from debugger.proof_parser import *
 import networkx as nx
 
+from utils.system_utils import log_debug
+
 
 class ProofAnalyzer(nx.DiGraph):
     def __init__(self, file_path):
@@ -9,10 +11,17 @@ class ProofAnalyzer(nx.DiGraph):
         root = parse_proof_log(file_path)
 
         # hash-cons the nodes
-        self.__flattened: Dict[NodeRef, TreeNode] = dict()
-        self.__flatten_tree_nodes(root)
+        self.__build_term_graph(root)
 
-        self.__build_term_graph()
+        self.rewrites = []
+        self.trivial_rewrite_count = 0
+        self.lemmas = []
+        self.th_lemmas = []
+        self.quant_insts = []
+        
+        self.__ignored_proofs = dict()
+        self.__proof_node_count = 0
+        self.__analyze_proof_nodes()
 
     def debug(self):
         for nid in self.nodes:
@@ -32,13 +41,13 @@ class ProofAnalyzer(nx.DiGraph):
             node = self.__global_defs[name]
             new_node = self.__hash_cons_node_rec(node)
             assert not isinstance(new_node, NodeRef)
-            new_hash = new_node.hash_id()
+            new_hash = new_node.hash_index()
             if new_hash not in self.__flattened:
                 self.__flattened[new_hash] = new_node
             self.__redirected[name] = new_hash
 
         root = self.__hash_cons_node_rec(root)
-        self.root_id = root.hash_id()
+        self.root_id = root.hash_index()
         self.__flattened[self.root_id] = root
 
         del self.__redirected
@@ -73,7 +82,7 @@ class ProofAnalyzer(nx.DiGraph):
         return node
 
     def __add_hash_node(self, node: TreeNode) -> TreeNode:
-        nid = node.hash_id()
+        nid = node.hash_index()
         if nid in self.__flattened:
             return self.__flattened[nid]
         self.__flattened[nid] = node
@@ -104,18 +113,21 @@ class ProofAnalyzer(nx.DiGraph):
         assert isinstance(node, QuantNode)
         return node
 
-    def __build_term_graph(self):
+    def __build_term_graph(self, root: TreeNode):
+        self.__flattened: Dict[NodeRef, TreeNode] = dict()
+        self.__flatten_tree_nodes(root)
+
         for cur_index, node in self.__flattened.items():
-            assert cur_index == node.hash_id()
+            assert cur_index == node.hash_index()
             self.add_node(cur_index, tree_node=node)
             if isinstance(node, LeafNode):
                 continue
             if isinstance(node, QuantNode):
                 continue
-            for child in node.children:
+            for i, child in enumerate(node.children):
                 assert isinstance(child, NodeRef)
                 assert child.index in self.__flattened
-                self.add_edge(cur_index, child.index)
+                self.add_edge(cur_index, child.index, index=i)
 
         assert nx.is_directed_acyclic_graph(self)
         reachable = nx.descendants(self, self.root_id)
@@ -126,7 +138,7 @@ class ProofAnalyzer(nx.DiGraph):
     def __pprint_node_rec(self, index, indent, depth):
         assert isinstance(index, str)
         node = self.nodes[index]["tree_node"]
-        prefix = " " * indent
+        prefix = "  " * indent
 
         if isinstance(node, LeafNode):
             print(f"{prefix}{str(node.value)}", end="")
@@ -159,103 +171,133 @@ class ProofAnalyzer(nx.DiGraph):
         self.__pprint_node_rec(index, 0, depth)
         print("")
 
-    def __add_proof_successors(self, proof_graph, nid):
-        queue = [nid]
-        visited = set()
-        while queue:
-            current = queue.pop()
-            if current in visited:
-                continue
-            visited.add(current)
-            for child_id in self.successors(current):
-                # assert isinstance(child, LeafRefNode)
-                if proof_graph.has_node(child_id):
-                    proof_graph.add_edge(nid, child_id)
-                else:
-                    queue.append(child_id)
+    # def __add_proof_successors(self, proof_graph, nid):
+    #     queue = [nid]
+    #     visited = set()
+    #     while queue:
+    #         current = queue.pop()
+    #         if current in visited:
+    #             continue
+    #         visited.add(current)
+    #         for child_id in self.successors(current):
+    #             # assert isinstance(child, LeafRefNode)
+    #             if proof_graph.has_node(child_id):
+    #                 proof_graph.add_edge(nid, child_id)
+    #             else:
+    #                 queue.append(child_id)
 
-    def build_proof_graph(self):
-        graph = nx.DiGraph()
-        for (index, node) in self.nodes(data="tree_node"):
-            if isinstance(node, ProofNode):
-                if node.name in {
-                    "refl",
-                    "iff-true",
-                    "unit-resolution",
-                    "commutativity",
-                    "distributivity",
-                    "symm",
-                    "mp",
-                    "mp~",
-                    "monotonicity",
-                    "trans",
-                    "and-elim",
-                    "asserted",
-                    "hyp",
-                    "def-axiom",
-                    "hypothesis",
-                }:
-                    continue
-                if self.__is_non_trivial_rewrite(node):
-                    graph.add_node(index)
-                    continue
-                # print(node.name)
-                assert index == node.hash_id()
-                graph.add_node(index)
+    # def build_proof_graph(self):
+    #     graph = nx.DiGraph()
+    #     for (index, node) in self.nodes(data="tree_node"):
+    #         if isinstance(node, ProofNode) and PROOF_GRAPH_RULES[node.name]:
+    #             if self.__is_non_trivial_rewrite(node):
+    #                 graph.add_node(index)
+    #                 continue
+    #             # print(node.name)
+    #             assert index == node.hash_id()
+    #             graph.add_node(index)
 
-        graph.add_node(self.root_id)
+    #     graph.add_node(self.root_id)
 
-        for nid in graph.nodes:
-            self.__add_proof_successors(graph, nid)
+    #     for nid in graph.nodes:
+    #         self.__add_proof_successors(graph, nid)
 
-        reachable = nx.descendants(graph, self.root_id)
-        reachable.add(self.root_id)
-        assert set(graph.nodes) == reachable
+    #     reachable = nx.descendants(graph, self.root_id)
+    #     reachable.add(self.root_id)
+    #     assert set(graph.nodes) == reachable
+    #     log_debug(f"{len(graph.nodes)} nodes, {len(graph.edges)} edges")
+    #     return graph
 
-        return graph
-
-    def __is_non_trivial_rewrite(self, node: ProofNode):
-        if node.name != "rewrite":
-            return False
-        assert len(node.children) == 1
-        eq_idx = node.children[0].index
-        eq_node = self.nodes[eq_idx]["tree_node"]
-        assert isinstance(eq_node, AppNode)
-        assert eq_node.name == "="
-        left, right = eq_node.children
-        return left != right
-
-    def __process_rewrite(self, node: ProofNode):
-        assert len(node.children) == 1
-
-    def sanity_check_proof_nodes(self):
-        arg_counts = dict()
+    def __analyze_proof_nodes(self):
         for nid, node in self.nodes(data="tree_node"):
             if not isinstance(node, ProofNode):
                 continue
-
+            self.__proof_node_count += 1
             name = node.name
-            assert name in PROOF_RULES
+            assert name in PROOF_GRAPH_RULES
 
-            if name in {"lemma", "iff-true", "iff-false"}:
+            if (self.__collect_lemma(nid)
+                or self.__collect_rewrite(nid)
+                or self.__collect_th_lemma(nid)
+                or self.__collect_quant_inst(nid)):
+                continue
+
+            if name in {"iff-true", "iff-false", "and-elim", "not-or-elim", "symm", "nnf-pos"}:
                 assert len(node.children) == 2
-            elif name in {"quant-inst", "refl", "asserted", }:
+            elif name in {"refl", "asserted", "hypothesis", "commutativity", "def-axiom"}:
                 assert len(node.children) == 1
-            elif name == "th-lemma":
-                # self.__sanity_check_theory_node(node)
-                pass
-            elif name == "rewrite":
-                self.__process_rewrite(nid)
-            elif name in {"mp~", "mp"}:
+            elif name in {"mp~", "mp", "trans"}:
                 assert len(node.children) == 3
-            else:
-                if name not in arg_counts:
-                    arg_counts[name] = dict()
-                arg_counts[name][len(node.children)] = (
-                    arg_counts[name].get(len(node.children), 0) + 1
-                )
+            if name not in self.__ignored_proofs:
+                self.__ignored_proofs[name] = 0
+            self.__ignored_proofs[name] += 1
 
-        # for name in arg_counts:
-        #     print(name)
-        #     for arg_count in sorted(arg_counts[name]):
-        #         print("\t", arg_count, arg_counts[name][arg_count])
+    def print_stats(self):
+        print("total node count:", len(self.nodes))
+        print("proof node count:", self.__proof_node_count)
+        print("\nhandled proof node count:")
+        rewrite_count = len(self.rewrites) + self.trivial_rewrite_count
+        print(f"\trewrites (non-trivial): {len(self.rewrites)}/{rewrite_count}")
+        print(f"\tlemmas: {len(self.lemmas)}")
+        print(f"\tth-lemmas: {len(self.th_lemmas)}")
+        print(f"\tquant-insts: {len(self.quant_insts)}")
+        print("\nignored proof node count:")
+        for name, count in self.__ignored_proofs.items():
+            print(f"\t{name}: {count}")
+
+    def get_tree_node(self, nid):
+        return self.nodes[nid]["tree_node"]
+
+    def unwrap_single_successor(self, nid):
+        successors = list(self.successors(nid))
+        assert len(successors) == 1
+        cid = successors[0]
+        return self.get_tree_node(cid)
+
+    def unwrap_successors(self, nid, expected=None):
+        # successors = list(self.successors(nid))
+        node = self.get_tree_node(nid)
+        successors = []
+        for i, child in enumerate(node.children):
+            assert isinstance(child, NodeRef)
+            successors.append(self.get_tree_node(child.index))
+        if expected is not None:
+            assert len(successors) == expected
+        return successors
+
+    def __collect_rewrite(self, nid) -> bool:
+        node = self.get_tree_node(nid)
+        if node.name != "rewrite":
+            return False
+        assert len(node.children) == 1
+        eq_node = self.unwrap_single_successor(nid)
+        assert isinstance(eq_node, AppNode)
+        assert eq_node.name == "="
+        left, right = self.unwrap_successors(eq_node.index, 2)
+        if left != right:
+            self.rewrites.append((left, right))
+        else:
+            self.trivial_rewrite_count += 1
+        return True
+
+    def __collect_lemma(self, nid) -> bool:
+        node = self.get_tree_node(nid)
+        if node.name != "lemma":
+            return False
+        left, right = self.unwrap_successors(nid, 2)
+        self.lemmas.append((left, right))
+        return True
+
+    def __collect_th_lemma(self, nid) -> bool:
+        node = self.get_tree_node(nid)
+        if node.name != "th-lemma":
+            return False
+        self.th_lemmas.append(node)
+        return True
+    
+    def __collect_quant_inst(self, nid) -> bool:
+        node = self.get_tree_node(nid)
+        if node.name != "quant-inst":
+            return False
+        self.quant_insts.append(node)
+        return True
