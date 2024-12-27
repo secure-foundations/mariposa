@@ -67,7 +67,7 @@ def try_get_symbol(data):
     return None
 
 
-class BaseNode:
+class TreeNode:
     # global_id = 0
     def __init__(self):
         pass
@@ -84,7 +84,7 @@ class BaseNode:
         return "h!" + digest[:8]
 
 
-class LeafNode(BaseNode):
+class LeafNode(TreeNode):
     def __init__(self, value):
         super().__init__()
         self.value = value
@@ -113,20 +113,7 @@ class LeafRefNode(LeafNode):
         raise Exception("LeafRefNode should not be hashed")
 
 
-class ProofNode(BaseNode):
-    def __init__(self, name, children):
-        super().__init__()
-        self.name = name
-        self.children = children
-
-    def __str__(self):
-        items = ["(TODO " + self.name]
-        for child in self.children:
-            items.append(str(child))
-        return " ".join(items) + ")"
-
-
-class QuantNode(BaseNode):
+class QuantNode(TreeNode):
     def __init__(self, quant_type, bindings, _body, attrs):
         super().__init__()
         self.quant_type = quant_type
@@ -141,7 +128,7 @@ class QuantNode(BaseNode):
         return f"(QUANT {self.qid})"
 
 
-class LetNode(BaseNode):
+class LetNode(TreeNode):
     def __init__(self, bindings, body):
         super().__init__()
         self.bindings = bindings
@@ -155,7 +142,7 @@ class LetNode(BaseNode):
         return "\n".join(items)
 
 
-class AppNode(BaseNode):
+class AppNode(TreeNode):
     def __init__(self, name, children):
         super().__init__()
         self.name = name
@@ -171,6 +158,11 @@ class AppNode(BaseNode):
 class DatatypeAppNode(AppNode):
     def __init__(self, name, children):
         name = "(_ is " + name + ")"
+        super().__init__(name, children)
+
+
+class ProofNode(AppNode):
+    def __init__(self, name, children):
         super().__init__(name, children)
 
 
