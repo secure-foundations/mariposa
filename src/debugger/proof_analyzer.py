@@ -1,3 +1,4 @@
+from typing import Dict
 from debugger.proof_parser import *
 import networkx as nx
 
@@ -7,11 +8,17 @@ class ProofAnalyzer:
         root = parse_proof_log(file_path)
 
         # hash-cons the nodes
-        self.__flattened = dict()
+        self.__flattened: Dict[NodeRef, TreeNode] = dict()
         self.__flatten_tree_nodes(root)
 
         self.term_graph: nx.DiGraph = nx.DiGraph()
         self.__build_term_graph()
+
+    def debug(self):
+        for nid in self.term_graph.nodes:
+            print(nid, end=" ")
+            self.pprint_node(nid)
+            print("")
 
     def __flatten_tree_nodes(self, root: TreeNode):
         self.__global_defs = dict()
@@ -24,6 +31,7 @@ class ProofAnalyzer:
         for name in self.__global_defs:
             node = self.__global_defs[name]
             new_node = self.__hash_cons_node_rec(node)
+            assert not isinstance(new_node, NodeRef)
             new_hash = new_node.hash_id()
             if new_hash not in self.__flattened:
                 self.__flattened[new_hash] = new_node
@@ -67,24 +75,8 @@ class ProofAnalyzer:
         assert isinstance(node, QuantNode)
         return node
 
-    # def __is_flattened(self, node: TreeNode):
-    #     if node.hash_id() not in self.__flattened:
-    #         return False
-    #     if isinstance(node, AppNode):
-    #         return all(
-    #             isinstance(child, LeafRefNode) and child.value in self.__flattened
-    #             for child in node.children
-    #         )
-    #     return True
-
-    def __add_hash_node(self, node: TreeNode):
+    def __add_hash_node(self, node: TreeNode) -> TreeNode:
         nid = node.hash_id()
-        if isinstance(node, AppNode):
-            sanity_check = all(
-                isinstance(child, LeafRefNode) and child.value in self.__flattened
-                for child in node.children
-            )
-            assert sanity_check
         if nid in self.__flattened:
             return self.__flattened[nid]
         self.__flattened[nid] = node
@@ -96,17 +88,19 @@ class ProofAnalyzer:
         if isinstance(node, LeafNode):
             symbol = node.value
             if symbol in self.__global_defs:
-                if symbol in self.__redirected:
-                    return self.__flattened[self.__redirected[symbol]]
-                new_node = self.__hash_cons_node_rec(self.__global_defs[symbol])
-                return self.__add_hash_node(new_node)
+                assert symbol in self.__redirected
+                # topological order should ensure that any global def is already redirected
+                return self.__flattened[self.__redirected[symbol]]
+            else:
+                assert symbol not in self.__redirected
             return self.__add_hash_node(node)
 
         if isinstance(node, AppNode):
             children = []
             for child in node.children:
                 child = self.__hash_cons_node_rec(child)
-                children.append(LeafRefNode(child.hash_id()))
+                assert not isinstance(child, NodeRef)
+                children.append(child.make_ref())
             node.children = children
             return self.__add_hash_node(node)
 
@@ -114,17 +108,17 @@ class ProofAnalyzer:
         return node
 
     def __build_term_graph(self):
-        for nid, node in self.__flattened.items():
-            assert nid == node.hash_id()
-            self.term_graph.add_node(nid, tree_node=node)
+        for cur_index, node in self.__flattened.items():
+            assert cur_index == node.hash_id()
+            self.term_graph.add_node(cur_index, tree_node=node)
             if isinstance(node, LeafNode):
                 continue
             if isinstance(node, QuantNode):
                 continue
             for child in node.children:
-                assert isinstance(child, LeafRefNode)
-                assert child.value in self.__flattened
-                self.term_graph.add_edge(nid, child.value)
+                assert isinstance(child, NodeRef)
+                assert child.index in self.__flattened
+                self.term_graph.add_edge(cur_index, child.index)
 
         assert nx.is_directed_acyclic_graph(self.term_graph)
         reachable = nx.descendants(self.term_graph, self.root_id)
@@ -132,13 +126,12 @@ class ProofAnalyzer:
         assert set(self.__flattened.keys()) == reachable
         del self.__flattened
 
-    def pprint_node(self, nid, indent=0, limit=10):
-        assert isinstance(nid, str)
-        node = self.term_graph.nodes[nid]["tree_node"]
+    def __pprint_node_rec(self, index, indent, depth):
+        assert isinstance(index, str)
+        node = self.term_graph.nodes[index]["tree_node"]
         prefix = " " * indent
 
         if isinstance(node, LeafNode):
-            assert not isinstance(node, LeafRefNode)
             print(f"{prefix}{str(node.value)}", end="")
             return
 
@@ -146,76 +139,95 @@ class ProofAnalyzer:
             print(f"{prefix}(QUANT {node.quant_type} {node.qid})", end="")
             return
 
-        print(f"{prefix}({node.name}")
+        if depth == 0:
+            print(f"{prefix}({node.name}", end=" ")
+        else:
+            print(f"{prefix}({node.name}")
+
         last = len(node.children) - 1
         for i, child in enumerate(node.children):
-            assert isinstance(child, LeafRefNode)
-            child_ref_id = child.value
-            if limit == 0:
-                print(f"{prefix} {child_ref_id}", end="")
+            assert isinstance(child, NodeRef)
+            if depth == 0:
+                print(f"{child.index}", end="")
             else:
-                self.pprint_node(child_ref_id, indent + 1, limit - 1)
-            if i != last:
+                self.__pprint_node_rec(child.index, indent + 1, depth - 1)
+            if depth == 0:
+                if i == last: continue
+                print(" ", end="")
+            elif i != last:
                 print("")
         print(f")", end="")
+
+    def pprint_node(self, index, depth=0):
+        self.__pprint_node_rec(index, 0, depth)
 
     # def filter_proof_nodes(self, name):
     #     assert name in PROOF_RULES
     #     results = []
-    #     for node in self.__flattened.values():
+    #     for node in self.term_graph.nodes(data="tree_node"):
     #         if isinstance(node, ProofNode) and node.name == name:
     #             results.append(node)
     #     return results
 
-    # def __add_proof_successors(self, proof_graph, nid):
-    #     queue = [nid]
-    #     visited = set()
-    #     while queue:
-    #         current = queue.pop()
-    #         if current in visited:
-    #             continue
-    #         visited.add(current)
-    #         for child_id in self.term_graph.successors(current):
-    #             # assert isinstance(child, LeafRefNode)
-    #             if proof_graph.has_node(child_id):
-    #                 proof_graph.add_edge(nid, child_id)
-    #             else:
-    #                 queue.append(child_id)
+    def __add_proof_successors(self, proof_graph, nid):
+        queue = [nid]
+        visited = set()
+        while queue:
+            current = queue.pop()
+            if current in visited:
+                continue
+            visited.add(current)
+            for child_id in self.term_graph.successors(current):
+                # assert isinstance(child, LeafRefNode)
+                if proof_graph.has_node(child_id):
+                    proof_graph.add_edge(nid, child_id)
+                else:
+                    queue.append(child_id)
 
-    # def build_proof_graph(self):
-    #     graph = nx.DiGraph()
-    #     for node in self.__flattened.values():
-    #         if isinstance(node, ProofNode):
-    #             if node.name in {
-    #                 "refl",
-    #                 "iff-true",
-    #                 "unit-resolution",
-    #                 "commutativity",
-    #                 "distributivity",
-    #                 "symm",
-    #                 "mp",
-    #                 "mp~",
-    #                 "monotonicity",
-    #                 "trans",
-    #             } and node.hash_id() != self.root.hash_id():
-    #                 continue
-    #             graph.add_node(node.hash_id(), name=node.name)
-    #     for nid in graph.nodes:
-    #         self.__add_proof_successors(graph, nid)
+    def build_proof_graph(self):
+        graph = nx.DiGraph()
+        for (index, node) in self.term_graph.nodes(data="tree_node"):
+            if isinstance(node, ProofNode):
+                if node.name in {
+                    "refl",
+                    "iff-true",
+                    "unit-resolution",
+                    "commutativity",
+                    "distributivity",
+                    "symm",
+                    "mp",
+                    "mp~",
+                    "monotonicity",
+                    "trans",
+                }:
+                    continue
+                assert index == node.hash_id()
+                graph.add_node(index)
 
-    #     reachable = nx.descendants(graph, self.root.hash_id())
-    #     reachable.add(self.root.hash_id())
-    #     assert set(graph.nodes) == reachable
-    #     return graph
+        graph.add_node(self.root_id)
 
-    # def __sanity_check_theory_node(self, nid):
-    #     if not (isinstance(node, ProofNode) and node.name == "th-lemma"):
-    #         return
-    #     if len(node.children) != 1:
-    #         # TODO
-    #         return
-    #     self.pprint_node(node.children[0].value)
-    #     print("")
+        for nid in graph.nodes:
+            self.__add_proof_successors(graph, nid)
+
+        reachable = nx.descendants(graph, self.root_id)
+        reachable.add(self.root_id)
+        assert set(graph.nodes) == reachable
+
+        # for nid in graph.nodes:
+        #     print(nid, end=" ")
+        #     self.pprint_node(nid)
+        #     print("")
+
+        return graph
+
+    def __sanity_check_theory_node(self, node: ProofNode):
+        if not (isinstance(node, ProofNode) and node.name == "th-lemma"):
+            return
+        if len(node.children) != 1:
+            # TODO
+            return
+        # self.pprint_node(node.children[0].index, 100)
+        # print("")
 
     def sanity_check_proof_nodes(self):
         arg_counts = dict()
@@ -228,8 +240,8 @@ class ProofAnalyzer:
                 assert len(node.children) == 2
             elif name == "quant-inst":
                 assert len(node.children) == 1
-            # else:
-            #     self.__sanity_check_theory_node(nid)
+            else:
+                self.__sanity_check_theory_node(node)
         #     else:
         #         if name not in arg_counts:
         #             arg_counts[name] = dict()

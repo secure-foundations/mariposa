@@ -66,6 +66,20 @@ def try_get_symbol(data):
         return data.value()
     return None
 
+class NodeRef:
+    def __init__(self, index):
+        assert index.startswith("h!")
+        self.index = index
+
+    def __str__(self):
+        return f"{self.index}"
+
+    def hash_id(self):
+        raise Exception("NodeRef should not be hashed!")
+
+    def __hash__(self):
+        return hash(self.value)
+
 
 class TreeNode:
     # global_id = 0
@@ -83,6 +97,8 @@ class TreeNode:
         # since hash-consing is already recursive
         return "h!" + digest[:8]
 
+    def make_ref(self):
+        return NodeRef(self.hash_id())
 
 class LeafNode(TreeNode):
     def __init__(self, value):
@@ -99,19 +115,6 @@ class LeafIntNode(LeafNode):
 
     def __str__(self):
         return str(self.value)
-
-
-class LeafRefNode(LeafNode):
-    def __init__(self, value):
-        assert value.startswith("h!")
-        super().__init__(value)
-
-    def __str__(self):
-        return f"{self.value}"
-
-    def hash_id(self):
-        raise Exception("LeafRefNode should not be hashed")
-
 
 class QuantNode(TreeNode):
     def __init__(self, quant_type, bindings, _body, attrs):
@@ -141,6 +144,8 @@ class LetNode(TreeNode):
         items.append(str(self.body) + ")")
         return "\n".join(items)
 
+    def hash_id(self):
+        raise Exception("LetNode should not be hashed!")
 
 class AppNode(TreeNode):
     def __init__(self, name, children):
@@ -153,6 +158,12 @@ class AppNode(TreeNode):
         for child in self.children:
             items.append(str(child))
         return " ".join(items) + ")"
+    
+    def hash_id(self):
+        for child in self.children:
+            if not isinstance(child, NodeRef):
+                raise Exception("AppNode children should be NodeRef!")
+        return super().hash_id()
 
 
 class DatatypeAppNode(AppNode):
