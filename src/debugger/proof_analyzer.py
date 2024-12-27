@@ -3,19 +3,19 @@ from debugger.proof_parser import *
 import networkx as nx
 
 
-class ProofAnalyzer:
+class ProofAnalyzer(nx.DiGraph):
     def __init__(self, file_path):
+        super().__init__()
         root = parse_proof_log(file_path)
 
         # hash-cons the nodes
         self.__flattened: Dict[NodeRef, TreeNode] = dict()
         self.__flatten_tree_nodes(root)
 
-        self.term_graph: nx.DiGraph = nx.DiGraph()
         self.__build_term_graph()
 
     def debug(self):
-        for nid in self.term_graph.nodes:
+        for nid in self.nodes:
             print(nid, end=" ")
             self.pprint_node(nid)
             print("")
@@ -43,9 +43,6 @@ class ProofAnalyzer:
 
         del self.__redirected
         del self.__global_defs
-
-    def __getitem__(self, nid):
-        return self.term_graph.nodes()[nid]
 
     def __add_global_def(self, name, val):
         if name not in self.__global_defs:
@@ -110,7 +107,7 @@ class ProofAnalyzer:
     def __build_term_graph(self):
         for cur_index, node in self.__flattened.items():
             assert cur_index == node.hash_id()
-            self.term_graph.add_node(cur_index, tree_node=node)
+            self.add_node(cur_index, tree_node=node)
             if isinstance(node, LeafNode):
                 continue
             if isinstance(node, QuantNode):
@@ -118,17 +115,17 @@ class ProofAnalyzer:
             for child in node.children:
                 assert isinstance(child, NodeRef)
                 assert child.index in self.__flattened
-                self.term_graph.add_edge(cur_index, child.index)
+                self.add_edge(cur_index, child.index)
 
-        assert nx.is_directed_acyclic_graph(self.term_graph)
-        reachable = nx.descendants(self.term_graph, self.root_id)
+        assert nx.is_directed_acyclic_graph(self)
+        reachable = nx.descendants(self, self.root_id)
         reachable.add(self.root_id)
         assert set(self.__flattened.keys()) == reachable
         del self.__flattened
 
     def __pprint_node_rec(self, index, indent, depth):
         assert isinstance(index, str)
-        node = self.term_graph.nodes[index]["tree_node"]
+        node = self.nodes[index]["tree_node"]
         prefix = " " * indent
 
         if isinstance(node, LeafNode):
@@ -160,14 +157,7 @@ class ProofAnalyzer:
 
     def pprint_node(self, index, depth=0):
         self.__pprint_node_rec(index, 0, depth)
-
-    # def filter_proof_nodes(self, name):
-    #     assert name in PROOF_RULES
-    #     results = []
-    #     for node in self.term_graph.nodes(data="tree_node"):
-    #         if isinstance(node, ProofNode) and node.name == name:
-    #             results.append(node)
-    #     return results
+        print("")
 
     def __add_proof_successors(self, proof_graph, nid):
         queue = [nid]
@@ -177,7 +167,7 @@ class ProofAnalyzer:
             if current in visited:
                 continue
             visited.add(current)
-            for child_id in self.term_graph.successors(current):
+            for child_id in self.successors(current):
                 # assert isinstance(child, LeafRefNode)
                 if proof_graph.has_node(child_id):
                     proof_graph.add_edge(nid, child_id)
@@ -186,7 +176,7 @@ class ProofAnalyzer:
 
     def build_proof_graph(self):
         graph = nx.DiGraph()
-        for (index, node) in self.term_graph.nodes(data="tree_node"):
+        for (index, node) in self.nodes(data="tree_node"):
             if isinstance(node, ProofNode):
                 if node.name in {
                     "refl",
@@ -199,8 +189,17 @@ class ProofAnalyzer:
                     "mp~",
                     "monotonicity",
                     "trans",
+                    "and-elim",
+                    "asserted",
+                    "hyp",
+                    "def-axiom",
+                    "hypothesis",
                 }:
                     continue
+                if self.__is_non_trivial_rewrite(node):
+                    graph.add_node(index)
+                    continue
+                # print(node.name)
                 assert index == node.hash_id()
                 graph.add_node(index)
 
@@ -213,41 +212,48 @@ class ProofAnalyzer:
         reachable.add(self.root_id)
         assert set(graph.nodes) == reachable
 
-        # for nid in graph.nodes:
-        #     print(nid, end=" ")
-        #     self.pprint_node(nid)
-        #     print("")
-
         return graph
 
-    def __sanity_check_theory_node(self, node: ProofNode):
-        if not (isinstance(node, ProofNode) and node.name == "th-lemma"):
-            return
-        if len(node.children) != 1:
-            # TODO
-            return
-        # self.pprint_node(node.children[0].index, 100)
-        # print("")
+    def __is_non_trivial_rewrite(self, node: ProofNode):
+        if node.name != "rewrite":
+            return False
+        assert len(node.children) == 1
+        eq_idx = node.children[0].index
+        eq_node = self.nodes[eq_idx]["tree_node"]
+        assert isinstance(eq_node, AppNode)
+        assert eq_node.name == "="
+        left, right = eq_node.children
+        return left != right
+
+    def __process_rewrite(self, node: ProofNode):
+        assert len(node.children) == 1
 
     def sanity_check_proof_nodes(self):
         arg_counts = dict()
-        for nid, node in self.term_graph.nodes(data="tree_node"):
+        for nid, node in self.nodes(data="tree_node"):
             if not isinstance(node, ProofNode):
                 continue
+
             name = node.name
             assert name in PROOF_RULES
-            if name == "lemma":
+
+            if name in {"lemma", "iff-true", "iff-false"}:
                 assert len(node.children) == 2
-            elif name == "quant-inst":
+            elif name in {"quant-inst", "refl", "asserted", }:
                 assert len(node.children) == 1
+            elif name == "th-lemma":
+                # self.__sanity_check_theory_node(node)
+                pass
+            elif name == "rewrite":
+                self.__process_rewrite(nid)
+            elif name in {"mp~", "mp"}:
+                assert len(node.children) == 3
             else:
-                self.__sanity_check_theory_node(node)
-        #     else:
-        #         if name not in arg_counts:
-        #             arg_counts[name] = dict()
-        #         arg_counts[name][len(node.children)] = (
-        #             arg_counts[name].get(len(node.children), 0) + 1
-        #         )
+                if name not in arg_counts:
+                    arg_counts[name] = dict()
+                arg_counts[name][len(node.children)] = (
+                    arg_counts[name].get(len(node.children), 0) + 1
+                )
 
         # for name in arg_counts:
         #     print(name)
