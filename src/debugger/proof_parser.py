@@ -1,5 +1,4 @@
 import sexpdata as sexp
-import hashlib
 
 PROOF_GRAPH_RULES = {
     "true": False,
@@ -66,43 +65,32 @@ def try_get_symbol(data):
         return data.value()
     return None
 
+
 class NodeRef:
     def __init__(self, index):
         assert index.startswith("h!")
-        self.index = index
+        self.__index = index
 
     def __str__(self):
-        return f"{self.index}"
+        return f"&[{self.__index}]"
 
     def __hash__(self):
-        return hash(self.value)
-    
+        return hash(self.__index)
+
     def __eq__(self, other):
-        return self.index == other.index
+        return self.__index == other.__index
 
 
 class TreeNode:
     # global_id = 0
     def __init__(self):
-        self.index = None
+        self.__index = None
         # self.id = BaseNode.global_id
         # BaseNode.global_id += 1
 
     def __str__(self):
         raise NotImplementedError
 
-    def hash_index(self):
-        if self.index is not None:
-            return self.index
-
-        digest = hashlib.sha1(str(self).encode("utf-8")).hexdigest()
-        self.index = "h!" + digest[:8]
-        # we don't need to recurse into children
-        # since hash-consing is already recursive
-        return self.index
-
-    def make_ref(self):
-        return NodeRef(self.hash_index())
 
 class LeafNode(TreeNode):
     def __init__(self, value):
@@ -119,6 +107,7 @@ class LeafIntNode(LeafNode):
 
     def __str__(self):
         return str(self.value)
+
 
 class QuantNode(TreeNode):
     def __init__(self, quant_type, bindings, _body, attrs):
@@ -148,8 +137,6 @@ class LetNode(TreeNode):
         items.append(str(self.body) + ")")
         return "\n".join(items)
 
-    def hash_index(self):
-        raise Exception("LetNode should not be hashed!")
 
 class AppNode(TreeNode):
     def __init__(self, name, children):
@@ -162,12 +149,6 @@ class AppNode(TreeNode):
         for child in self.children:
             items.append(str(child))
         return " ".join(items) + ")"
-    
-    def hash_index(self):
-        for child in self.children:
-            if not isinstance(child, NodeRef):
-                raise Exception("AppNode children should be NodeRef!")
-        return super().hash_index()
 
 
 class DatatypeAppNode(AppNode):
