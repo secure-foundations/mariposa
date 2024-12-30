@@ -1,4 +1,5 @@
 import sexpdata as sexp
+from enum import Enum
 
 PROOF_GRAPH_RULES = {
     "true": False,
@@ -65,28 +66,42 @@ def try_get_symbol(data):
         return data.value()
     return None
 
+class QuantType(Enum):
+    FORALL = "forall"
+    EXISTS = "exists"
+    LAMBDA = "lambda"
 
 class NodeRef:
     def __init__(self, index):
-        assert index.startswith("h!")
-        self.__index = index
+        self._index = index
 
     def __str__(self):
-        return f"&[{self.__index}]"
+        return f"@[h!{self._index}]"
 
     def __hash__(self):
-        return hash(self.__index)
+        return hash(self._index)
 
     def __eq__(self, other):
-        return self.__index == other.__index
+        return self._index == other._index
+    
+    def index(self):
+        return self._index
 
+class QuantRef(NodeRef):
+    def __init__(self, index, quant_type: QuantType):
+        super().__init__(index)
+        assert isinstance(quant_type, QuantType)
+        self.__qt = quant_type
+
+    def __str__(self):
+        return f"@[{self.__qt.value[0]}!{self._index}]"
 
 class TreeNode:
     # global_id = 0
     def __init__(self):
-        self.__index = None
-        # self.id = BaseNode.global_id
-        # BaseNode.global_id += 1
+        pass
+        # self.id = TreeNode.global_id
+        # TreeNode.global_id += 1
 
     def __str__(self):
         raise NotImplementedError
@@ -110,18 +125,24 @@ class LeafIntNode(LeafNode):
 
 
 class QuantNode(TreeNode):
-    def __init__(self, quant_type, bindings, _body, attrs):
-        super().__init__()
-        self.quant_type = quant_type
-        self.bindings = bindings
-        self._body = _body
+    lambda_id = 0
 
+    def __init__(self, quant_type, args, body, attrs):
+        super().__init__()
+        assert isinstance(quant_type, QuantType)
+        self.quant_type = quant_type
+        self.args = args
+        self.body = body
         self.attrs = attrs
         self.qid = attrs.get(":qid", None)
+        if self.qid is None:
+            assert quant_type == QuantType.LAMBDA
+            self.qid = f"lambda_{QuantNode.lambda_id}"
+            QuantNode.lambda_id += 1
         self.skolemid = attrs.get(":skolemid", None)
 
     def __str__(self):
-        return f"(QUANT {self.qid})"
+        return f"({self.quant_type.value} ({' '.join([f'({var} {sort})' for var, sort in self.args])}) {self.body})"
 
 
 class LetNode(TreeNode):
@@ -135,7 +156,7 @@ class LetNode(TreeNode):
         for var, val in self.bindings:
             items.append(f"({var} {val})")
         items.append(str(self.body) + ")")
-        return "\n".join(items)
+        return " ".join(items)
 
 
 class AppNode(TreeNode):
@@ -199,15 +220,14 @@ def parse_into_quant_node(items) -> QuantNode:
         bindings.append((var, sort))
 
     # parse attributes
-    if quant_type != "lambda":
-        assert get_symbol(_body[0]) == "!"
-        _body, _attrs = _body[1], _body[2:]
-        attrs = parse_attributes(_attrs)
+    if quant_type == "lambda":
+        body, attrs = parse_into_node(_body), dict()
     else:
-        _body, attrs = _body[1], dict()
-    # TODO: parse quant body if needed?
-    # body = parse_into_node(_body)
-    return QuantNode(quant_type, bindings, _body, attrs)
+        assert get_symbol(_body[0]) == "!"
+        attrs = parse_attributes(_body[2:])
+        body = parse_into_node(_body[1])
+    qt = QuantType(quant_type)
+    return QuantNode(qt, bindings, body, attrs)
 
 
 def parse_into_let_node(items) -> LetNode:

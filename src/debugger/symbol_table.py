@@ -11,15 +11,22 @@ class TermTable(nx.DiGraph):
 
         # hash-cons the nodes
         self.__storage: Dict[NodeRef, TreeNode] = dict()
+
+        self.quant_refs = set()
         self.root_ref = self.__flatten_tree_nodes(root)
 
         self.__build_term_graph()
 
     def debug(self):
         for ref in self.nodes:
+            if ref in self.quant_refs:
+                continue
             print(ref, end=" ")
             self.pprint_node(ref)
-            print("")
+
+        for ref in self.quant_refs:
+            print(ref, end=" ")
+            self.pprint_node(ref)
 
     def __flatten_tree_nodes(self, root: TreeNode):
         self.__global_defs = dict()
@@ -74,12 +81,16 @@ class TermTable(nx.DiGraph):
                 (isinstance(c, NodeRef) and c in self.__storage) for c in node.children
             )
         digest = hashlib.sha1(str(node).encode("utf-8")).hexdigest()
-        return NodeRef("h!" + digest[:8])
+        if isinstance(node, QuantNode):
+            return QuantRef(digest[:8], node.quant_type)
+        return NodeRef(digest[:8])
 
     def __add_hash_node(self, node: TreeNode) -> NodeRef:
         ref = self.__make_ref(node)
         if ref in self.__storage:
             return ref
+        if isinstance(node, QuantNode):
+            self.quant_refs.add(ref)
         self.__storage[ref] = node
         return ref
 
@@ -122,6 +133,8 @@ class TermTable(nx.DiGraph):
         assert set(self.__storage.keys()) == reachable
 
     def lookup(self, nor) -> TreeNode:
+        if isinstance(nor, str):
+            nor = NodeRef(nor)
         if isinstance(nor, NodeRef):
             return self.__storage[nor]
         assert isinstance(nor, TreeNode)
@@ -142,7 +155,7 @@ class TermTable(nx.DiGraph):
             return
 
         if isinstance(node, QuantNode):
-            print(f"{prefix}(QUANT {node.quant_type} {node.qid})", end="")
+            print(f"{prefix}{node}", end="")
             return
 
         if depth == 0:
@@ -174,7 +187,7 @@ class TermTable(nx.DiGraph):
         if isinstance(node, LeafNode):
             return f"{node.value}"
         if isinstance(node, QuantNode):
-            return f"(QUANT {node.quant_type} {node.qid})"
+            return str(node)
         children = []
         for child in node.children:
             child = self.lookup(child)
@@ -214,3 +227,14 @@ class TermTable(nx.DiGraph):
         if isinstance(node, AppNode):
             return all(self.__is_proof_free_rec(c) for c in node.children)
         return True
+
+    def is_ground(self, ref):
+        node = self.lookup(ref)
+        return self.__is_ground_rec(node)
+    
+    def __is_ground_rec(self, node):
+        if isinstance(node, LeafNode):
+            return True
+        if isinstance(node, QuantNode):
+            return False
+        return all(self.__is_ground_rec(self.lookup(c)) for c in node.children)
