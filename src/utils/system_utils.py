@@ -21,7 +21,7 @@ def log_error(msg):
 
 def log_debug(msg, end="\n"):
     if DEBUG_ENABLE:
-        print(f"{BColors.DEBUG}[DEBUG] {msg} {BColors.ENDC}", end=end)
+        print(f"{BColors.DEBUG}[DEBUG] {msg} {BColors.ENDC}", end=end, file=sys.stderr)
 
 def print_banner(msg):
     print(f"=== {msg} ===")

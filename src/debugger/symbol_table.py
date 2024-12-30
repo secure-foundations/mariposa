@@ -18,13 +18,13 @@ class TermTable(nx.DiGraph):
         self.__build_term_graph()
 
     def debug(self):
-        for ref in self.nodes:
-            if ref in self.quant_refs:
-                continue
+        for ref in self.quant_refs:
             print(ref, end=" ")
             self.pprint_node(ref)
 
-        for ref in self.quant_refs:
+        for ref in self.nodes:
+            if ref in self.quant_refs:
+                continue
             print(ref, end=" ")
             self.pprint_node(ref)
 

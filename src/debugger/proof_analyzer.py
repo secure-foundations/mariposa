@@ -114,17 +114,15 @@ class ProofAnalyzer(TermTable):
                     self.proof_graph.add_edge(ref, child_ref)
             # self.__add_proof_successors(ref)
 
-        assert NodeRef("")
-
         reachable = nx.descendants(self.proof_graph, self.root_ref)
-        for reached in reachable:
-            if self.proof_graph.out_degree(reached) == 0:
-                print(reached)
+        # for reached in reachable:
+        #     if self.proof_graph.out_degree(reached) == 0:
+        #         print(reached)
 
         reachable.add(self.root_ref)
         assert set(self.proof_graph.nodes) == reachable
         log_debug(
-            f"{len(self.proof_graph.nodes)} nodes, {len(self.proof_graph.edges)} edges"
+            f"{len(self.proof_graph.nodes)} nodes, {len(self.proof_graph.edges)} edges, root {self.root_ref}"
         )
 
     def __collect_rewrite(self, ref) -> bool:
@@ -258,5 +256,5 @@ class ProofAnalyzer(TermTable):
             self.debug_quant_inst(ref)
         else:
             node = self.lookup(ref)
-            print("NYI", node.name)
+            print("NYI", ref, node.name)
         print()

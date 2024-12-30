@@ -17,6 +17,7 @@ PROOF_GRAPH_RULES = {
     "symm": False,
     "iff-false": False,
     "trans": False,
+    "trans*": False,
     "commutativity": False,
     "monotonicity": False,
     "def-axiom": False,
