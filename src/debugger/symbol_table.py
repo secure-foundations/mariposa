@@ -1,6 +1,6 @@
 import networkx as nx
 import hashlib
-from typing import Dict
+from typing import Dict, Set
 from debugger.proof_parser import *
 
 
@@ -9,10 +9,11 @@ class TermTable(nx.DiGraph):
         super().__init__()
         root = parse_proof_log(file_path)
 
-        # hash-cons the nodes
         self.__storage: Dict[NodeRef, TreeNode] = dict()
 
-        self.quant_refs = set()
+        self.quant_refs: Set[NodeRef] = set()
+        self.quant_names: Dict[str, Set[NodeRef]] = dict()
+
         self.root_ref = self.__flatten_tree_nodes(root)
 
         self.__build_term_graph()
@@ -85,14 +86,21 @@ class TermTable(nx.DiGraph):
             return QuantRef(digest[:8], node.quant_type)
         return NodeRef(digest[:8])
 
-    def __add_hash_node(self, node: TreeNode) -> NodeRef:
+    def __hash_node(self, node: TreeNode) -> NodeRef:
         ref = self.__make_ref(node)
         if ref in self.__storage:
             return ref
         if isinstance(node, QuantNode):
-            self.quant_refs.add(ref)
+            self.__add_quantifier(ref, node)
         self.__storage[ref] = node
         return ref
+
+    def __add_quantifier(self, ref, node: QuantNode):
+        if node.quant_type != QuantType.LAMBDA:
+            if node.qid not in self.quant_names:
+                self.quant_names[node.qid] = set()
+            self.quant_names[node.qid].add(ref)
+        self.quant_refs.add(ref)
 
     def __hash_cons_node_rec(self, node: TreeNode) -> NodeRef:
         assert not isinstance(node, LetNode)
@@ -113,7 +121,7 @@ class TermTable(nx.DiGraph):
             node.children = children
         else:
             assert isinstance(node, QuantNode)
-        return self.__add_hash_node(node)
+        return self.__hash_node(node)
 
     def __build_term_graph(self):
         for ref, node in self.__storage.items():

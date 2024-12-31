@@ -1,27 +1,39 @@
-from typing import Dict
+from typing import Dict, Set
 import networkx as nx
 from debugger.proof_parser import *
 from debugger.symbol_table import TermTable
 from utils.system_utils import log_debug
-
-class ProofTerm:
-    def __init__(self, rule_name, assumptions, conclusion):
-        self.rule_name = rule_name
-        self.assumptions = assumptions
-        self.conclusion = conclusion
-
-
-class LemmaTerm(ProofTerm):
-    def __init__(self, assumptions, conclusion):
-        super().__init__("lemma", assumptions, conclusion)
-
 
 class RewriteTerm:
     def __init__(self, left, right):
         assert left != right
         self.left = left
         self.right = right
+        
+class QuantInstInfo:
+    def __init__(self, qname):
+        self.qname = qname
+        self.insts: Dict[QuantRef, Set[NodeRef]] = dict()
+    
+    def add_inst(self, quant, inst):
+        assert isinstance(quant, QuantNode)
+        assert quant.qid == self.qname
+        assert isinstance(inst, NodeRef)
+        if quant not in self.insts:
+            self.insts[quant] = set()
+        self.insts[quant].add(inst)
 
+    def get_inst_count(self):
+        return sum(len(insts) for insts in self.insts.values())
+
+    def get_quant_count(self):
+        return len(self.insts)
+    
+    def get_insts(self):
+        res = []
+        for _, insts in self.insts.items():
+            res.extend(insts)
+        return res
 
 class ProofAnalyzer(TermTable):
     def __init__(self, file_path):
@@ -37,73 +49,18 @@ class ProofAnalyzer(TermTable):
         self.__proof_node_count = 0
 
         self.proof_graph = nx.DiGraph()
+        self.qi_infos: Dict[str, QuantInstInfo] = dict()
+
         self.__analyze_proof_nodes()
-
-    def __add_proof_successors(self, ref):
-        queue = [ref]
-        visited = set()
-
-        while queue:
-            current = queue.pop()
-            if current in visited:
-                continue
-            visited.add(current)
-            for child_ref in self.successors(current):
-                # assert isinstance(child, LeafRefNode)
-                if self.proof_graph.has_node(child_ref):
-                    self.proof_graph.add_edge(ref, child_ref)
-                else:
-                    queue.append(child_ref)
+        self.__analyze_quant_insts()
 
     def __analyze_proof_nodes(self):
         for ref in self.nodes():
             node = self.lookup(ref)
             if not isinstance(node, ProofNode):
                 continue
-            self.__proof_node_count += 1
-            name = node.name
-            assert name in PROOF_GRAPH_RULES
-
-            conclusion = node.children[-1]
-
-            if not self.is_proof_free(conclusion):
-                print("proof node conclusion is not grounded?:")
-                self.pprint_node(ref, 1)
-                assert False
             self.proof_graph.add_node(ref)
-
-            if (
-                self.__collect_lemma(ref)
-                or self.__collect_rewrite(ref)
-                or (ref in self.trivial_rewrites)
-                or self.__collect_th_lemma(ref)
-                or self.__collect_quant_inst(ref)
-            ):
-                continue
-
-            if name in {
-                "iff-true",
-                "iff-false",
-                "and-elim",
-                "not-or-elim",
-                "symm",
-                "nnf-pos",
-            }:
-                assert len(node.children) == 2
-            elif name in {
-                "refl",
-                "asserted",
-                "hypothesis",
-                "commutativity",
-                "def-axiom",
-            }:
-                assert len(node.children) == 1
-            elif name in {"mp~", "mp", "trans"}:
-                assert len(node.children) == 3
-
-            if name not in self.__ignored_proof_stats:
-                self.__ignored_proof_stats[name] = 0
-            self.__ignored_proof_stats[name] += 1
+            self.__analyze_proof_node(ref, node)
 
         # root will likely be unit-resolution...
         self.proof_graph.add_node(self.root_ref)
@@ -112,18 +69,58 @@ class ProofAnalyzer(TermTable):
             for child_ref in self.successors(ref):
                 if child_ref in self.proof_graph.nodes:
                     self.proof_graph.add_edge(ref, child_ref)
-            # self.__add_proof_successors(ref)
 
         reachable = nx.descendants(self.proof_graph, self.root_ref)
-        # for reached in reachable:
-        #     if self.proof_graph.out_degree(reached) == 0:
-        #         print(reached)
-
         reachable.add(self.root_ref)
         assert set(self.proof_graph.nodes) == reachable
         log_debug(
             f"{len(self.proof_graph.nodes)} nodes, {len(self.proof_graph.edges)} edges, root {self.root_ref}"
         )
+
+    def __analyze_proof_node(self, ref, node):
+        self.__proof_node_count += 1
+        name = node.name
+        assert name in PROOF_GRAPH_RULES
+
+        conclusion = node.children[-1]
+
+        if not self.is_proof_free(conclusion):
+            print("proof node conclusion is not grounded?:")
+            self.pprint_node(ref, 1)
+            assert False
+
+        if (
+            self.__collect_lemma(ref)
+            or self.__collect_rewrite(ref)
+            or (ref in self.trivial_rewrites)
+            or self.__collect_th_lemma(ref)
+            or self.__collect_quant_inst(ref)
+        ):
+            return
+
+        if name in {
+            "iff-true",
+            "iff-false",
+            "and-elim",
+            "not-or-elim",
+            "symm",
+            "nnf-pos",
+        }:
+            assert len(node.children) == 2
+        elif name in {
+            "refl",
+            "asserted",
+            "hypothesis",
+            "commutativity",
+            "def-axiom",
+        }:
+            assert len(node.children) == 1
+        elif name in {"mp~", "mp", "trans"}:
+            assert len(node.children) == 3
+
+        if name not in self.__ignored_proof_stats:
+            self.__ignored_proof_stats[name] = 0
+        self.__ignored_proof_stats[name] += 1
 
     def __collect_rewrite(self, ref) -> bool:
         node = self.lookup(ref)
@@ -172,23 +169,25 @@ class ProofAnalyzer(TermTable):
         children = self.resolve_children(node)
         l = children[0]
         inst = children[1:]
-        # for i in inst:
-        #     if not self.is_ground(i):
-        #         print(ref)
         assert isinstance(l, AppNode)
         assert l.name == "not"
         l = self.resolve_child(l)
         assert isinstance(l, QuantNode)
         self.quant_insts[ref] = (l, inst)
+    
+        if l.qid not in self.qi_infos:
+            self.qi_infos[l.qid] = QuantInstInfo(l.qid)
+        self.qi_infos[l.qid].add_inst(l, ref)
+
         return True
 
-    def debug_rewrite(self, ref):
+    def export_rewrite(self, ref):
         assert ref in self.rewrites
         rewrite = self.rewrites[ref]
-        print(f"rewrite: {ref}")
-        print(f"(define-fun foo () Bool (=\n\t{self.dump_node(rewrite.left)}\n\t{self.dump_node(rewrite.right)}))")
+        # print(f"rewrite: {ref}")
+        return f"(define-fun foo () Bool (=\n\t{self.dump_node(rewrite.left)}\n\t{self.dump_node(rewrite.right)}))"
 
-    def __debug_assumptions(self, assumptions):
+    def __export_assumptions(self, assumptions):
         items = []
         for assumption in assumptions:
             item = self.lookup(assumption)
@@ -196,11 +195,8 @@ class ProofAnalyzer(TermTable):
             items.append(self.dump_node(last))
         return items
 
-    def debug_lemma(self, ref):
-        assert ref in self.lemmas
-        assumptions, conclusion = self.lemmas[ref]
-        print(f"lemma: {ref}")
-        assumptions = self.__debug_assumptions(assumptions)
+    def __export_lemma(self, assumptions, conclusion):
+        assumptions = self.__export_assumptions(assumptions)
         if len(assumptions) == 0:
             assumptions = ""
         elif len(assumptions) == 1:
@@ -210,51 +206,48 @@ class ProofAnalyzer(TermTable):
             assumptions = f"(and\n\t\t{assumptions})"
         conclusion = self.dump_node(conclusion)
         if assumptions:
-            print(f"(define-fun foo () Bool (=> {assumptions}\n\t{conclusion}))")
-        else:
-            print(f"(define-fun foo () Bool {conclusion})")
+            conclusion = f"(=> {assumptions}\n\t{conclusion})"
+        return f"(define-fun foo () Bool {conclusion})"
 
-    def debug_th_lemma(self, ref):
+    def export_lemma(self, ref):
+        assert ref in self.lemmas
+        assumptions, conclusion = self.lemmas[ref]
+        return self.__export_lemma(assumptions, conclusion)
+
+    def export_th_lemma(self, ref):
         assert ref in self.th_lemmas
         assumptions, conclusion = self.th_lemmas[ref]
-        print(f"th-lemma: {ref}")
-        assumptions = self.__debug_assumptions(assumptions)
-        if len(assumptions) == 0:
-            assumptions = ""
-        elif len(assumptions) == 1:
-            assumptions = assumptions[0]
-        else:
-            assumptions = "\n\t".join(assumptions)
-            assumptions = f"(and \n\t{assumptions})"
-        conclusion = self.dump_node(conclusion)
-        if assumptions:
-            print(f"(define-fun foo () Bool (=> {assumptions} {conclusion}))")
-        else:
-            print(f"(define-fun foo () Bool {conclusion})")
+        return self.__export_lemma(assumptions, conclusion)
 
-    def debug_quant_inst(self, ref):
+    def export_quant_inst(self, ref):
         assert ref in self.quant_insts
         quant, insts = self.quant_insts[ref]
-        print(f"quant-inst: {ref} {quant.qid}")
-        quant = self.dump_node(quant)
         insts = [self.dump_node(inst) for inst in insts]
         if len(insts) == 1:
             insts = insts[0]
         else:
             insts = '\n\t'.join(insts)
             insts = f"(or \n\t{insts})"
-        print(f"(define-fun foo () Bool {insts})")
+        return f"; {ref} quant-inst: {quant.qid}\n(define-fun foo () Bool {insts})"
 
-    def debug_proof_node(self, ref):
+    def export_proof_node(self, ref):
         if ref in self.rewrites:
-            self.debug_rewrite(ref)
-        elif ref in self.lemmas:
-            self.debug_lemma(ref)
-        elif ref in self.th_lemmas:
-            self.debug_th_lemma(ref)
-        elif ref in self.quant_insts:
-            self.debug_quant_inst(ref)
-        else:
-            node = self.lookup(ref)
-            print("NYI", ref, node.name)
-        print()
+            return self.export_rewrite(ref)
+        if ref in self.lemmas:
+            return self.export_lemma(ref)
+        if ref in self.th_lemmas:
+            return self.export_th_lemma(ref)
+        if ref in self.quant_insts:
+            return self.export_quant_inst(ref)
+        # node = self.lookup(ref)
+        return f"NYI"
+
+    def __analyze_quant_insts(self):
+        for q_name in self.qi_infos:
+            qi_info = self.qi_infos[q_name]
+            print(f"{q_name}")
+            print(f"{qi_info.get_quant_count()} quantifiers")
+            print(f"{qi_info.get_inst_count()} instances\n")
+            for inst in qi_info.get_insts():
+                print(self.export_quant_inst(inst))
+            print()
