@@ -230,7 +230,7 @@ class ProofAnalyzer(TermTable):
             insts = f"(or \n\t{insts})"
         return f"; {ref} quant-inst: {quant.qid}\n(define-fun foo () Bool {insts})"
 
-    def export_proof_node(self, ref):
+    def export_proof_node(self, ref) -> str:
         if ref in self.rewrites:
             return self.export_rewrite(ref)
         if ref in self.lemmas:
@@ -239,7 +239,6 @@ class ProofAnalyzer(TermTable):
             return self.export_th_lemma(ref)
         if ref in self.quant_insts:
             return self.export_quant_inst(ref)
-        # node = self.lookup(ref)
         return f"NYI"
 
     def __analyze_quant_insts(self):
@@ -247,7 +246,6 @@ class ProofAnalyzer(TermTable):
             qi_info = self.qi_infos[q_name]
             print(f"{q_name}")
             print(f"{qi_info.get_quant_count()} quantifiers")
-            print(f"{qi_info.get_inst_count()} instances\n")
-            for inst in qi_info.get_insts():
-                print(self.export_quant_inst(inst))
-            print()
+            print(f"{qi_info.get_inst_count()} instances")
+            # for inst in qi_info.get_insts():
+            #     print(self.export_quant_inst(inst))

@@ -1,5 +1,6 @@
 import sexpdata as sexp
 from enum import Enum
+from functools import partial
 
 PROOF_GRAPH_RULES = {
     "true": False,
@@ -67,10 +68,12 @@ def try_get_symbol(data):
         return data.value()
     return None
 
+
 class QuantType(Enum):
     FORALL = "forall"
     EXISTS = "exists"
     LAMBDA = "lambda"
+
 
 class NodeRef:
     def __init__(self, index):
@@ -84,9 +87,10 @@ class NodeRef:
 
     def __eq__(self, other):
         return self._index == other._index
-    
+
     def index(self):
         return self._index
+
 
 class QuantRef(NodeRef):
     def __init__(self, index, quant_type: QuantType):
@@ -96,6 +100,7 @@ class QuantRef(NodeRef):
 
     def __str__(self):
         return f"@[{self.__qt.value[0]}!{self._index}]"
+
 
 class TreeNode:
     # global_id = 0
@@ -127,19 +132,24 @@ class LeafIntNode(LeafNode):
 
 class QuantNode(TreeNode):
     lambda_id = 0
+    unknown_id = 0
 
     def __init__(self, quant_type, args, body, attrs):
         super().__init__()
-        assert isinstance(quant_type, QuantType)
-        self.quant_type = quant_type
+        self.quant_type = QuantType(quant_type)
         self.args = args
         self.body = body
         self.attrs = attrs
         self.qid = attrs.get(":qid", None)
+
         if self.qid is None:
-            assert quant_type == QuantType.LAMBDA
-            self.qid = f"lambda_{QuantNode.lambda_id}"
-            QuantNode.lambda_id += 1
+            if quant_type == QuantType.LAMBDA:
+                self.qid = f"lambda_{QuantNode.lambda_id}"
+                QuantNode.lambda_id += 1
+            else:
+                self.qid = f"unknown_{QuantNode.unknown_id}"
+                QuantNode.unknown_id += 1
+
         self.skolemid = attrs.get(":skolemid", None)
 
     def __str__(self):
@@ -160,6 +170,21 @@ class LetNode(TreeNode):
         return " ".join(items)
 
 
+def set_let_body(node, body):
+    assert isinstance(node, LetNode)
+    node.body = body
+
+
+def set_quant_body(node, body):
+    assert isinstance(node, QuantNode)
+    node.body = body
+
+
+def add_let_binding(node, var, val):
+    assert isinstance(node, LetNode)
+    node.bindings.append((var, val))
+
+
 class AppNode(TreeNode):
     def __init__(self, name, children):
         super().__init__()
@@ -173,6 +198,10 @@ class AppNode(TreeNode):
         return " ".join(items) + ")"
 
 
+def add_app_child(self, child):
+    self.children.append(child)
+
+
 class DatatypeAppNode(AppNode):
     def __init__(self, name, children):
         name = "(_ is " + name + ")"
@@ -182,6 +211,12 @@ class DatatypeAppNode(AppNode):
 class ProofNode(AppNode):
     def __init__(self, name, children):
         super().__init__(name, children)
+
+
+def parse_proof_log(file_path):
+    with open(file_path) as f:
+        data = sexp.load(f)
+    return parse_into_node(data)
 
 
 def parse_attributes(_attrs):
@@ -202,9 +237,98 @@ def parse_attributes(_attrs):
     return attrs
 
 
-def parse_into_quant_node(items) -> QuantNode:
-    assert len(items) == 3
-    quant_type, _bindings, _body = get_symbol(items[0]), items[1], items[2]
+def parse_into_node(data):
+    root = AppNode("root", [])
+    tasks = [(data, partial(add_app_child, root))]
+
+    while tasks:
+        data, callback = tasks.pop()
+        node = __parse_node(data, tasks)
+        callback(node)
+
+    return root.children[0]
+
+def __parse_node(data, tasks):
+    if isinstance(data, sexp.Symbol):
+        return LeafNode(data.value())
+
+    if isinstance(data, int):
+        return LeafIntNode(data)
+
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+    if node := __parse_datatype_app(data, tasks):
+        return node
+
+    name = try_get_symbol(data[0])
+
+    if name is None:
+        print(data)
+        assert False
+
+    if node := __parse_let(name, data, tasks):
+        return node
+
+    if node := __parse_quant(name, data, tasks):
+        return node
+
+    if name in PROOF_GRAPH_RULES:
+        node = ProofNode(name, [])
+    else:
+        node = AppNode(name, [])
+
+    for c in reversed(data[1:]):
+        tasks.append((c, partial(add_app_child, node)))
+
+    return node
+
+def __parse_datatype_app(data, tasks):
+    _name = data[0]
+    if not (
+        isinstance(_name, list)
+        and len(_name) == 3
+        and try_get_symbol(_name[0]) == "_"
+        and try_get_symbol(_name[1]) == "is"
+    ):
+        return None
+
+    name = get_symbol(_name[2])
+    node = DatatypeAppNode(name, [])
+
+    for c in reversed(data[1:]):
+        tasks.append((c, partial(add_app_child, node)))
+
+    return node
+
+
+def __parse_let(name, data, tasks):
+    if name != "let":
+        return None
+    assert isinstance(data, list)
+    assert len(data) == 3
+    _bindings, _body = data[1], data[2]
+    assert isinstance(_bindings, list)
+    node = LetNode([], None)
+
+    for _binding in reversed(_bindings):
+        assert isinstance(_binding, list)
+        assert len(_binding) == 2
+        var = get_symbol(_binding[0])
+        cb = partial(add_let_binding, node, var)
+        tasks.append((_binding[1], cb))
+
+    cb = partial(set_let_body, node)
+    tasks.append((_body, cb))
+    return node
+
+
+def __parse_quant(name, data, tasks):
+    if name not in {"forall", "exists", "lambda"}:
+        return None
+
+    assert len(data) == 3
+    quant_type, _bindings, _body = get_symbol(data[0]), data[1], data[2]
     assert isinstance(_bindings, list)
 
     # parse bindings
@@ -222,82 +346,12 @@ def parse_into_quant_node(items) -> QuantNode:
 
     # parse attributes
     if quant_type == "lambda":
-        body, attrs = parse_into_node(_body), dict()
+        attrs = dict()
     else:
         assert get_symbol(_body[0]) == "!"
         attrs = parse_attributes(_body[2:])
-        body = parse_into_node(_body[1])
-    qt = QuantType(quant_type)
-    return QuantNode(qt, bindings, body, attrs)
+        _body = _body[1]
+    node = QuantNode(quant_type, bindings, None, attrs)
+    tasks.append((_body, partial(set_quant_body, node)))
 
-
-def parse_into_let_node(items) -> LetNode:
-    assert isinstance(items, list)
-    assert len(items) == 3
-    _bindings, _body = items[1], items[2]
-    assert isinstance(_bindings, list)
-    bindings = []
-    for _binding in _bindings:
-        assert isinstance(_binding, list)
-        assert len(_binding) == 2
-        var = get_symbol(_binding[0])
-        val = parse_into_node(_binding[1])
-        bindings.append((var, val))
-    body = parse_into_node(_body)
-    return LetNode(bindings, body)
-
-
-def try_parse_into_datatype_node(items) -> DatatypeAppNode:
-    _name = items[0]
-    if (
-        not isinstance(_name, list)
-        or len(_name) != 3
-        or try_get_symbol(_name[0]) != "_"
-        or try_get_symbol(_name[1]) != "is"
-    ):
-        return None
-    name = get_symbol(_name[2])
-    params = [parse_into_node(c) for c in items[1:]]
-    return DatatypeAppNode(name, params)
-
-
-def parse_into_node(data):
-    if isinstance(data, sexp.Symbol):
-        return LeafNode(data.value())
-    if isinstance(data, int):
-        return LeafIntNode(data)
-
-    assert isinstance(data, list)
-    assert len(data) > 0
-
-    node = try_parse_into_datatype_node(data)
-
-    if node is not None:
-        return node
-
-    name = try_get_symbol(data[0])
-
-    if name is None:
-        print(data)
-        assert False
-
-    if name == "let":
-        return parse_into_let_node(data)
-
-    if name in PROOF_GRAPH_RULES:
-        children = [parse_into_node(c) for c in data[1:]]
-        return ProofNode(name, children)
-
-    if name == "forall" or name == "exists" or name == "lambda":
-        # assert len(data) == 3
-        # TODO: parse quant body
-        return parse_into_quant_node(data)
-
-    children = [parse_into_node(c) for c in data[1:]]
-    return AppNode(name, children)
-
-
-def parse_proof_log(file_path):
-    with open(file_path) as f:
-        data = sexp.load(f)
-    return parse_into_node(data)
+    return node
