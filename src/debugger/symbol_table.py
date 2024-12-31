@@ -18,6 +18,41 @@ class TermTable(nx.DiGraph):
 
         self.__build_term_graph()
 
+    # def to_dict(self):
+    #     storage = dict()
+    #     quant_names = dict()
+
+    #     for ref, node in self.__storage.items():
+    #         storage[str(ref)] = node.to_dict()
+
+    #     quant_refs = [str(ref) for ref in self.quant_refs]
+
+    #     for qid, refs in self.quant_names.items():
+    #         quant_names[qid] = [str(ref) for ref in refs]
+
+    #     return {
+    #         "storage": storage,
+    #         "quant_refs": quant_refs,
+    #         "quant_names": quant_names,
+    #     }
+
+    # @staticmethod
+    # def from_dict(d):
+    #     tt = TermTable.__new__(TermTable)
+    #     storage = dict()
+    #     for ref, node in d["storage"].items():
+    #         storage[NodeRef.from_str(ref)] = TreeNode.from_dict(node)
+    #     tt.__storage = storage
+    #     quant_refs = set()
+    #     for ref in d["quant_refs"]:
+    #         quant_refs.add(NodeRef.from_str(ref))
+    #     tt.quant_refs = quant_refs
+    #     quant_names = d["quant_names"]
+    #     for qid, refs in quant_names.items():
+    #         quant_names[qid] = {NodeRef.from_str(ref) for ref in refs}
+    #     tt.__build_term_graph()
+    #     return tt
+
     def debug(self):
         for ref in self.nodes:
             if ref in self.quant_refs:
