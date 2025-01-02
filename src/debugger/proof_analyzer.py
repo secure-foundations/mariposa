@@ -1,6 +1,6 @@
 from typing import Dict, Set
 import networkx as nx
-from debugger.proof_parser import *
+from debugger.tree_parser import *
 from debugger.symbol_table import TermTable
 from utils.system_utils import log_debug
 
@@ -9,7 +9,7 @@ class RewriteTerm:
         assert left != right
         self.left = left
         self.right = right
-        
+
 class QuantInstInfo:
     def __init__(self, qname):
         self.qname = qname
@@ -51,12 +51,12 @@ class ProofAnalyzer(TermTable):
         self.proof_graph = nx.DiGraph()
         self.qi_infos: Dict[str, QuantInstInfo] = dict()
 
-        self.__analyze_proof_nodes()
-        self.__analyze_quant_insts()
+        # self.__analyze_proof_nodes()
+        # self.__analyze_quant_insts()
 
     def __analyze_proof_nodes(self):
         for ref in self.nodes():
-            node = self.lookup(ref)
+            node = self.lookup_node(ref)
             if not isinstance(node, ProofNode):
                 continue
             self.proof_graph.add_node(ref)
@@ -123,7 +123,7 @@ class ProofAnalyzer(TermTable):
         self.__ignored_proof_stats[name] += 1
 
     def __collect_rewrite(self, ref) -> bool:
-        node = self.lookup(ref)
+        node = self.lookup_node(ref)
         if node.name != "rewrite":
             return False
         assert len(node.children) == 1
@@ -138,7 +138,7 @@ class ProofAnalyzer(TermTable):
         return True
 
     def __collect_lemma(self, ref) -> bool:
-        node = self.lookup(ref)
+        node = self.lookup_node(ref)
         if node.name != "lemma":
             return False
         assumptions, conclusion = self.resolve_children(ref, 2)
@@ -150,7 +150,7 @@ class ProofAnalyzer(TermTable):
         return True
 
     def __collect_th_lemma(self, ref) -> bool:
-        node = self.lookup(ref)
+        node = self.lookup_node(ref)
         if node.name != "th-lemma":
             return False
         children = self.resolve_children(ref)
@@ -160,7 +160,7 @@ class ProofAnalyzer(TermTable):
         return True
 
     def __collect_quant_inst(self, ref) -> bool:
-        node = self.lookup(ref)
+        node = self.lookup_node(ref)
         if node.name != "quant-inst":
             return False
         node = self.resolve_child(ref)
@@ -190,7 +190,7 @@ class ProofAnalyzer(TermTable):
     def __export_assumptions(self, assumptions):
         items = []
         for assumption in assumptions:
-            item = self.lookup(assumption)
+            item = self.lookup_node(assumption)
             last = item.children[-1]
             items.append(self.dump_node(last))
         return items
@@ -247,5 +247,7 @@ class ProofAnalyzer(TermTable):
             print(f"{q_name}")
             print(f"{qi_info.get_quant_count()} quantifiers")
             print(f"{qi_info.get_inst_count()} instances")
-            # for inst in qi_info.get_insts():
-            #     print(self.export_quant_inst(inst))
+            for inst in qi_info.get_insts():
+                print(self.export_quant_inst(inst))
+            print()
+

@@ -406,15 +406,14 @@ class Debugger3:
 
         table = []
         for v in self.proofs:
-            table.append([v.mutation, v.seed, v.proof_time])
+            table.append([v.mutation, v.seed])
         log_info(f"listing {len(table)} proof mutants:")
-        print(tabulate(table, headers=["mutation", "seed", "time"]))
+        print(tabulate(table, headers=["mutation", "seed"]))
 
-        log_info("orig path: ")
-        log_info(self.orig_path)
+        log_info(f"orig path: {self.orig_path}")
 
-        log_info("report path: ")
-        log_info(self.report_path)
+        # log_info("report path: ")
+        # log_info(self.report_path)
 
     def _save_edit(self, ei: EditInfo):
         assert isinstance(ei, EditInfo)
@@ -748,6 +747,12 @@ def main():
         action="store_true",
         help="evaluate different rankings",
     )
+    parser.add_argument(
+        "--print-status",
+        default=False,
+        action="store_true",
+        help="print the current status",
+    )
 
     args = parser.parse_args()
 
@@ -765,10 +770,13 @@ def main():
 
     if args.create_singleton:
         dbg.create_singleton_edit_project()
+        return
 
     if args.eval_rankings:
         dbg.evaluate_rankings()
+        return
 
+    dbg.print_status()
 
 if __name__ == "__main__":
     main()

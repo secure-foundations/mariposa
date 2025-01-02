@@ -11,37 +11,37 @@ from debugger.z3_utils import (
 from utils.system_utils import log_warn
 
 
-class SkolemFinder(AstVisitor):
-    def __init__(self) -> None:
-        super().__init__()
-        self.sk_funs = dict()
+# class SkolemFinder(AstVisitor):
+#     def __init__(self) -> None:
+#         super().__init__()
+#         self.sk_funs = dict()
 
-    def find_sk_fun(self, e):
-        if self.visit(e) or is_var(e):
-            return
+#     def find_sk_fun(self, e):
+#         if self.visit(e) or is_var(e):
+#             return
 
-        if is_const(e):
-            name = str(e)
-            if "!skolem_" in name:
-                # print(name)
-                self.sk_funs[name] = collapse_sexpr(e.decl().sexpr())
-            return
+#         if is_const(e):
+#             name = str(e)
+#             if "!skolem_" in name:
+#                 # print(name)
+#                 self.sk_funs[name] = collapse_sexpr(e.decl().sexpr())
+#             return
 
-        if is_quantifier(e):
-            return self.find_sk_fun(e.body())
+#         if is_quantifier(e):
+#             return self.find_sk_fun(e.body())
 
-        name = e.decl().name()
+#         name = e.decl().name()
 
-        if name in self.sk_funs:
-            return
+#         if name in self.sk_funs:
+#             return
 
-        if "!skolem_" in name:
-            # print(name)
-            self.sk_funs[name] = collapse_sexpr(e.decl().sexpr())
-            return
+#         if "!skolem_" in name:
+#             # print(name)
+#             self.sk_funs[name] = collapse_sexpr(e.decl().sexpr())
+#             return
 
-        for c in e.children():
-            self.find_sk_fun(c)
+#         for c in e.children():
+#             self.find_sk_fun(c)
 
 
 class Quant(AstVisitor):
@@ -90,77 +90,6 @@ class Quant(AstVisitor):
         self.__setup_rewrite()
         lets = f"(let ({self._build_lets(subs)}) {self.__qbody_str})"
         return self.__assert_str.replace(self.__quant_str, lets)
-
-    # def split_dual(self):
-    #     # assert self.__eq is not None
-    #     self.__setup_rewrite()
-    #     self.find_dual()
-
-    #     assert self.__eq is not None
-    #     assert self.__eq in self.__assert_str
-
-    #     pq = f"(=> {self.__p} {self.__q})"
-    #     qp = f"(=> {self.__q} {self.__p})"
-
-    #     return [
-    #         f"{self.__assert_str.replace(self.__eq, pq)}",
-    #         f"{self.__assert_str.replace(self.__eq, qp)}",
-    #     ]
-        
-    # def get_skolem_dual(self):
-    #     l, r = self.split_dual()
-    #     if self.left_dual:
-    #         return l
-    #     return r
-
-    # def find_dual(self):
-    #     if self.dual is not None:
-    #         return self.dual
-
-    #     self.__find_dual(self.assertion)
-    #     self.reset_visit()
-
-    #     if self.dual is None:
-    #         self.dual = False
-
-    #     return self.dual
-
-    # def __find_dual(self, exp):
-    #     if self.visit(exp) or is_const(exp) or is_var(exp):
-    #         return
-
-    #     if is_quantifier(exp):
-    #         # assert False
-    #         log_warn(f"nested quantifiers found in dual search {self.quant.qid()}")
-    #         return
-
-    #     if exp.sort().kind() != Z3_BOOL_SORT:
-    #         return
-
-    #     if exp.decl().name() == "=":
-    #         p, q = exp.children()
-
-    #         if p.sort().kind() != Z3_BOOL_SORT:
-    #             return
-
-    #         target = self.quant.get_id()
-
-    #         if p.get_id() == target or q.get_id() == target:
-    #             if self.__eq is not None:
-    #                 log_warn(f"multiple equalities found in qid: {self.quant.qid()}")
-    #                 return
-
-    #             self.left_dual = p.get_id() == target
-    #             self.__eq = format_expr_flat(exp)
-    #             self.__p = format_expr_flat(p)
-    #             self.__q = format_expr_flat(q)
-    #             self.dual = True
-
-    #             return
-
-    #     for c in exp.children():
-    #         self.__find_dual(c)
-
 
 class InstCost:
     def __init__(self, rid):

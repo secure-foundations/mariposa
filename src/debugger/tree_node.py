@@ -1,4 +1,5 @@
 from enum import Enum
+import re
 
 PROOF_GRAPH_RULES = {
     "true": False,
@@ -61,6 +62,7 @@ class QuantType(Enum):
     EXISTS = "exists"
     LAMBDA = "lambda"
 
+SK_FUN_PAT = re.compile("\$\!skolem\_([^!]+)\![0-9]+")
 
 class NodeRef:
     def __init__(self, index):
@@ -75,20 +77,6 @@ class NodeRef:
     def __eq__(self, other):
         return self._index == other._index
 
-    @staticmethod
-    def from_str(repr):
-        if repr.startswith("@[h!"):
-            return NodeRef(int(repr[4:-1]))
-        qt = repr[4]
-        if qt == "f":
-            qt = QuantType.FORALL
-        elif qt == "e":
-            qt = QuantType.EXISTS
-        else:
-            assert qt == "l"
-            qt = QuantType.LAMBDA
-        return QuantRef(int(repr[4:-1]), qt)
-
 
 class QuantRef(NodeRef):
     def __init__(self, index, quant_type: QuantType):
@@ -98,7 +86,6 @@ class QuantRef(NodeRef):
 
     def __str__(self):
         return f"@[{self.__qt.value[0]}!{self._index}]"
-
 
 
 class TreeNode:
@@ -111,40 +98,9 @@ class TreeNode:
     def __str__(self):
         raise NotImplementedError
 
-    @staticmethod
-    def from_dict(d):
-        if d["cls"] == "leaf_int":
-            return LeafIntNode(d["value"])
+    def maybe_skolemized(self):
+        return None
 
-        if d["cls"] == "leaf":
-            return LeafNode(d["value"])
-        
-        if d["cls"] == "quant":
-            body = NodeRef.from_str(d["body"])
-            node = QuantNode(d["quant_type"], d["args"], body, d["attrs"])
-            node.qid = d["qid"]
-            node.skolemid = d["skolemid"]
-            return node
-
-        if d["cls"] == "let":
-            bindings = [(var, NodeRef.from_str(val)) for var, val in d["bindings"]]
-            body = NodeRef.from_str(d["body"])
-            return LetNode(bindings, body)
-
-        children = [NodeRef.from_str(child) for child in d["children"]]
-
-        if d["cls"] == "app":
-            return AppNode(d["name"], children)
-
-        if d["cls"] == "datatype_app":
-            return DatatypeAppNode(d["name"], children)
-
-        assert d["cls"] == "proof"
-        return ProofNode(d["name"], children)
-
-    def _load_children(self, children):
-        for child in children:
-            self.children.append(NodeRef.from_str(child))
 
 class LeafNode(TreeNode):
     def __init__(self, value):
@@ -154,12 +110,14 @@ class LeafNode(TreeNode):
     def __str__(self):
         return self.value
 
-    def to_dict(self):
-        assert isinstance(self.value, str)
-        return {
-            "cls": "leaf",
-            "value": self.value,
-        }
+    # def maybe_temp(self):
+    #     return self.value.startswith("a!")
+
+    def maybe_skolemized(self):
+        if m := re.match(SK_FUN_PAT, self.value):
+            return m.group(1)
+        return None
+
 
 class LeafIntNode(LeafNode):
     def __init__(self, value):
@@ -169,23 +127,23 @@ class LeafIntNode(LeafNode):
     def __str__(self):
         return str(self.value)
 
-    def to_dict(self):
-        return {
-            "cls": "leaf_int",
-            "value": self.value,
-        }
+    def maybe_skolemized(self):
+        return None
+
 
 class QuantNode(TreeNode):
     lambda_id = 0
     unknown_id = 0
 
-    def __init__(self, quant_type, args, body, attrs):
+    def __init__(self, quant_type, args, attrs):
         super().__init__()
         self.quant_type = QuantType(quant_type)
         self.args = args
-        self.body = body
+        self.body = None
         self.attrs = attrs
         self.qid = attrs.get(":qid", None)
+
+        # let bindings within the quantifier body
 
         if self.qid is None:
             if quant_type == QuantType.LAMBDA:
@@ -194,24 +152,43 @@ class QuantNode(TreeNode):
             else:
                 self.qid = f"unknown_{QuantNode.unknown_id}"
                 QuantNode.unknown_id += 1
-
         self.skolemid = attrs.get(":skolemid", None)
 
     def __str__(self):
-        args = {" ".join([f"({var} {sort})" for var, sort in self.args])}
+        args = " ".join([f"({var} {sort})" for var, sort in self.args])
         return f"({self.quant_type.value} ({args}) {self.body})"
 
-    def to_dict(self):
-        # assert isinstance(self.body, NodeRef)
-        return {
-            "cls": "quant",
-            "quant_type": self.quant_type.value,
-            "args": [(var, sort) for var, sort in self.args],
-            # "body": str(self.body),
-            "attrs": self.attrs,
-            "qid": self.qid,
-            "skolemid": self.skolemid,
-        }
+    # def remove_let(self):
+    #     self.body = self.__remove_let(self.body)
+    #     assert self.__local_binds == dict()
+
+    # def __remove_let(self, node) -> TreeNode:
+    #     if isinstance(node, LeafNode):
+    #         if node.maybe_temp():
+    #             assert node.value in self.__local_binds
+    #             return node
+    #         return node
+
+    #     if isinstance(node, QuantNode):
+    #         assert node.body is not None
+    #         return node
+
+    #     if isinstance(node, LetNode):
+    #         for var, val in node.bindings:
+    #             assert var not in self.__local_binds
+    #             assert var not in self.local_defs
+    #             val = self.__remove_let(val)
+    #             self.local_defs[var] = val
+    #             self.__local_binds[var] = val
+    #         result = self.__remove_let(node.body)
+    #         for var, _ in node.bindings:
+    #             # we don't pop the local defs
+    #             del self.__local_binds[var]
+    #         return result
+
+    #     assert isinstance(node, AppNode)
+    #     node.children = [self.__remove_let(c) for c in node.children]
+    #     return node
 
 
 class LetNode(TreeNode):
@@ -227,13 +204,6 @@ class LetNode(TreeNode):
         items.append(str(self.body) + ")")
         return " ".join(items)
 
-    def to_dict(self):
-        bindings = [(var, val.to_dict()) for var, val in self.bindings]
-        return {
-            "cls": "let",
-            "bindings": bindings,
-            "body": self.body,
-        }
 
 class AppNode(TreeNode):
     def __init__(self, name, children):
@@ -247,24 +217,11 @@ class AppNode(TreeNode):
             items.append(str(child))
         return " ".join(items) + ")"
 
-    def to_dict(self):
-        children = []
+    def maybe_skolemized(self):
+        if m := re.match(SK_FUN_PAT, self.name):
+            return m.group(1)
+        return None
 
-        for child in self.children:
-            children.append(child)
-
-        cls = "app"
-
-        if isinstance(self, ProofNode):
-            cls = "proof"
-        elif isinstance(self, DatatypeAppNode):
-            cls = "datatype_app"
-
-        return {
-            "cls": cls,
-            "name": self.name,
-            "children": children,
-        }
 
 class DatatypeAppNode(AppNode):
     def __init__(self, name, children):
