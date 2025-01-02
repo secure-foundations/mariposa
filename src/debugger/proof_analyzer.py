@@ -14,7 +14,8 @@ class QuantInstInfo:
     def __init__(self, qname):
         self.qname = qname
         self.insts: Dict[QuantRef, Set[NodeRef]] = dict()
-    
+        self.skolem_deps: Set[NodeRef] = set()
+
     def add_inst(self, quant, inst):
         assert isinstance(quant, QuantNode)
         assert quant.qid == self.qname
@@ -51,8 +52,8 @@ class ProofAnalyzer(TermTable):
         self.proof_graph = nx.DiGraph()
         self.qi_infos: Dict[str, QuantInstInfo] = dict()
 
-        # self.__analyze_proof_nodes()
-        # self.__analyze_quant_insts()
+        self.__analyze_proof_nodes()
+        self.__analyze_quant_insts()
 
     def __analyze_proof_nodes(self):
         for ref in self.nodes():
@@ -74,7 +75,7 @@ class ProofAnalyzer(TermTable):
         reachable.add(self.root_ref)
         assert set(self.proof_graph.nodes) == reachable
         log_debug(
-            f"{len(self.proof_graph.nodes)} nodes, {len(self.proof_graph.edges)} edges, root {self.root_ref}"
+            f"[proof graph] {len(self.proof_graph.nodes)} nodes, {len(self.proof_graph.edges)} edges, root {self.root_ref}"
         )
 
     def __analyze_proof_node(self, ref, node):
@@ -221,14 +222,14 @@ class ProofAnalyzer(TermTable):
 
     def export_quant_inst(self, ref):
         assert ref in self.quant_insts
-        quant, insts = self.quant_insts[ref]
-        insts = [self.dump_node(inst) for inst in insts]
-        if len(insts) == 1:
-            insts = insts[0]
+        quant, items = self.quant_insts[ref]
+        items = [self.dump_node(i) for i in items]
+        if len(items) == 1:
+            items = items[0]
         else:
-            insts = '\n\t'.join(insts)
-            insts = f"(or \n\t{insts})"
-        return f"; {ref} quant-inst: {quant.qid}\n(define-fun foo () Bool {insts})"
+            items = '\n\t'.join(items)
+            items = f"(or \n\t{items})"
+        return f"; {ref} quant-inst: {quant.qid}\n(define-fun foo () Bool {items})"
 
     def export_proof_node(self, ref) -> str:
         if ref in self.rewrites:
@@ -242,12 +243,18 @@ class ProofAnalyzer(TermTable):
         return f"NYI"
 
     def __analyze_quant_insts(self):
-        for q_name in self.qi_infos:
-            qi_info = self.qi_infos[q_name]
-            print(f"{q_name}")
-            print(f"{qi_info.get_quant_count()} quantifiers")
-            print(f"{qi_info.get_inst_count()} instances")
-            for inst in qi_info.get_insts():
-                print(self.export_quant_inst(inst))
-            print()
+        for q_name, qi_info in self.qi_infos.items():
+            # print(f"{q_name}")
+            # print(f"{qi_info.get_quant_count()} quantifiers")
+            # print(f"{qi_info.get_inst_count()} instances")
+            skolem_deps = set()
 
+            for inst in qi_info.get_insts():
+                skolem_deps |= self.get_skolem_deps(inst)
+
+            qi_info.skolem_deps = skolem_deps
+
+            if len(skolem_deps) > 0:
+                print(f"{q_name} has skolem dependencies")
+                for ref in skolem_deps:
+                    print(f"{ref} {self.skolem_refs[ref]}")

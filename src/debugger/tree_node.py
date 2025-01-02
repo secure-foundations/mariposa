@@ -62,6 +62,7 @@ class QuantType(Enum):
     EXISTS = "exists"
     LAMBDA = "lambda"
 
+# TODO: this is a hack!
 SK_FUN_PAT = re.compile("\$\!skolem\_([^!]+)\![0-9]+")
 
 class NodeRef:
@@ -110,11 +111,8 @@ class LeafNode(TreeNode):
     def __str__(self):
         return self.value
 
-    # def maybe_temp(self):
-    #     return self.value.startswith("a!")
-
     def maybe_skolemized(self):
-        if m := re.match(SK_FUN_PAT, self.value):
+        if m := re.search(SK_FUN_PAT, self.value):
             return m.group(1)
         return None
 
@@ -218,7 +216,7 @@ class AppNode(TreeNode):
         return " ".join(items) + ")"
 
     def maybe_skolemized(self):
-        if m := re.match(SK_FUN_PAT, self.name):
+        if m := re.search(SK_FUN_PAT, self.name):
             return m.group(1)
         return None
 

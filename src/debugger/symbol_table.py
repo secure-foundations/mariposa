@@ -69,6 +69,7 @@ class TermTable(nx.DiGraph):
         return ref
 
     def __make_ref(self, node: TreeNode) -> NodeRef:
+        assert isinstance(node, TreeNode)
         if isinstance(node, AppNode):
             assert all(
                 (isinstance(c, NodeRef) and c in self.__storage) for c in node.children
@@ -157,6 +158,7 @@ class TermTable(nx.DiGraph):
 
     def __build_term_graph(self):
         for ref, node in self.__storage.items():
+            assert ref == self.__make_ref(node)
             self.add_node(ref)
             if isinstance(node, LeafNode):
                 continue
@@ -175,6 +177,7 @@ class TermTable(nx.DiGraph):
         for ref in unreachable:
             assert ref in self.quant_refs 
 
+        log_debug(f"[term graph] {len(self)} nodes, {len(self.edges)} edges, root {self.root_ref}")
         log_debug(f"{len(unreachable)} quant nodes are not directly reachable")
 
     def lookup_node(self, nor) -> TreeNode:
@@ -284,8 +287,20 @@ class TermTable(nx.DiGraph):
         return True
 
     def __identify_skolem(self):
-        for _, node in self.__storage.items():
+        for ref, node in self.__storage.items():
             assert isinstance(node, TreeNode)
-            if qid := node.maybe_skolemized():
-                if qid not in self.quant_names:
-                    print(qid)
+            if name := node.maybe_skolemized():
+                assert name in self.quant_names
+                self.skolem_refs[ref] = name
+
+    def get_skolem_deps(self, ron):
+        refs = [self.__make_ref(self.lookup_node(ron))]
+        deps = set()
+        while refs:
+            ref = refs.pop()
+            node = self.lookup_node(ref)
+            if isinstance(node, AppNode):
+                refs.extend(node.children)
+            if ref in self.skolem_refs:
+                deps.add(ref)
+        return deps
