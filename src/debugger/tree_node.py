@@ -214,7 +214,7 @@ class AppNode(TreeNode):
         return " ".join(items) + ")"
 
     def maybe_skolemized(self):
-        return get_skolem_qname(self.value)
+        return get_skolem_qname(self.name)
 
 
 class DatatypeAppNode(AppNode):

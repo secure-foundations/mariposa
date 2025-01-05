@@ -18,9 +18,9 @@ class EditAction(Enum):
     ERASE = "erase"
     SKOLEMIZE = "skolemize"
     DSPLIT = "dsplit"
-    INST_ERASE = "inst_erase"
+    INST_REPLACE = "inst_replace"
     INST_KEEP = "inst_keep"
-    ERROR = "error"
+    ERROR = "ERROR"
 
 
 class EditInfo:

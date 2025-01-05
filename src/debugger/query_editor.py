@@ -21,7 +21,7 @@ class BaseQueryEditor(QueryLoader):
     def _basic_check(self, target_ids: Set[str]):
         filtered = set()
         for qid in target_ids:
-            if qid not in self.z3_quants:
+            if qid not in self.__z3_quants:
                 log_warn(f"target {qid} not found")
             else:
                 filtered.add(qid)
@@ -72,7 +72,7 @@ class BaseQueryEditor(QueryLoader):
         targets = dict()
 
         for qid in target_ids:
-            quant = self.z3_quants[qid]
+            quant = self.__z3_quants[qid]
             exp = quant.origin
 
             if exp.get_id() in targets:
@@ -86,7 +86,7 @@ class BaseQueryEditor(QueryLoader):
             self._banish_ids.add(qid)
 
         for qid, dual, exp in targets.values():
-            asserts, decls = self.__skolemize_assertion(exp, dual, target_ids)
+            asserts, decls = self.__skolemize_assertion(exp)
 
             log_info(f"[skolem] {qid}")
             log_info(
@@ -99,22 +99,19 @@ class BaseQueryEditor(QueryLoader):
             self._fun_decls += decls
             self._new_commands += asserts
 
-    def __skolemize_assertion(self, exp, dual, remove_ids):
+    def __skolemize_assertion(self, exp):
         g = z3.Goal()
         g.add(exp)
         res = z3.Tactic("snf")(g)
         assert len(res) == 1
-        asserts, decls, skf = [], [], Z3SkolemFinder()
+        asserts, decls = [], []
 
         for r in res[0]:
-            skf.process_expr(r)
-            # print(collapse_sexpr(r.sexpr()))
+            for name, decl in find_sk_decls(r, recursive=True):
+                if name in self.existing_sk_decls:
+                    continue
+                decls.append(decl)
             asserts.append("(assert " + collapse_sexpr(r.sexpr()) + ")")
-
-        for name, decl in skf.sk_decls.items():
-            # if name in self.cur_skolem_funs:
-            #     continue
-            decls.append(decl)
         return asserts, decls
 
     def save(self, out_file_path):

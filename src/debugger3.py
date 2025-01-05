@@ -519,45 +519,6 @@ class Debugger3:
 
         self._try_edits(edits, run_query=True)
 
-    # def save_report(self, overwrite=False):
-    #     if os.path.exists(self.report_path) and not overwrite:
-    #         log_warn(f"[report] already exists: {self.report_path}")
-    #         return
-
-    #     report = self.differ.get_report()
-
-    #     with open(self.report_path, "w+") as f:
-    #         f.write(report)
-
-    #     log_info(f"[report] written: {self.report_path}")
-
-    # def load_report(self):
-    #     if not os.path.exists(self.report_path):
-    #         return
-
-    #     self.scores = pd.read_csv(self.report_path, sep=",")
-    #     # print(self.scores.columns)
-
-    #     # self.v0_rank = self.scores["trace count"].rank(ascending=False)
-    #     self.v0_rank = self.scores["v0"].rank(ascending=False)
-    #     self.v1_rank = self.scores["v1"].rank(ascending=False)
-    #     self.v2_rank = self.scores["v2"].rank(ascending=False)
-    #     self.v3_rank = self.scores["v3"].rank(ascending=False)
-    #     self.v4_rank = self.scores["v4"].rank(ascending=False)
-    #     self.v5_rank = self.scores["v5"].rank(ascending=False)
-
-    # def get_rankings(self, qid):
-    #     index = self.scores[self.scores["qid"] == qid].index
-    #     ranks = [
-    #         self.v0_rank[index],
-    #         self.v1_rank[index],
-    #         self.v2_rank[index],
-    #         self.v3_rank[index],
-    #         self.v4_rank[index],
-    #         self.v5_rank[index],
-    #     ]
-    #     return [int(r) for r in ranks]
-
     # def register_singleton_edits(self):
     #     for qid in self.differ.actions:
     #         self.register_edit_info({qid})

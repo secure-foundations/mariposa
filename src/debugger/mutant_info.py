@@ -52,12 +52,14 @@ class MutantInfo:
         self.proof_time = -1
 
         self.discard = False
+        self._update = True
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d, update=True):
         mi = MutantInfo(d["sub_root"], Mutation(d["mutation"]), d["seed"])
         mi.trace_rcode = RCode(d["trace_rcode"])
         mi.trace_time = d["trace_time"]
+        mi._update = update
         return mi
 
     def to_dict(self):
@@ -83,6 +85,9 @@ class MutantInfo:
             ]:
                 if os.path.exists(path):
                     os.remove(path)
+            return
+
+        if not self._update:
             return
 
         self.__should_build(self.meta_path, clear=True)

@@ -213,21 +213,26 @@ class Z3AstVisitor:
     def visited(self):
         return self.__visited
 
-def find_sk_decl_non_rec(e):
+def find_sk_decls(e):
+    res = dict()
+    __find_sk_decl_rec(v, e, res)
+    return res
+
+def match_sk_decl(e):
     if is_app(e):
         if name := get_skolem_qname(e.decl().name()):
-            return (name, e.decl().sexpr())
+            return {name: e.decl().sexpr()}
     return None
 
-
-# class Z3SkolemFinder(Z3AstVisitor):
-#     def __init__(self) -> None:
-#         super().__init__()
-#         self.sk_decls = dict()
-
-#     def process_expr(self, e):
-
-
+def __find_sk_decl_rec(v, e, res):
+    if v.visit(e):
+        return
+    if is_quantifier(e):
+        return __find_sk_decl_rec(e.body())
+    if res := match_sk_decl(e):
+        res.update(res)
+    for c in e.children():
+        __find_sk_decl_rec(c)
 
 def dump_z3_proof(query_path, proof_path) -> bool:
     set_param(proof=True)

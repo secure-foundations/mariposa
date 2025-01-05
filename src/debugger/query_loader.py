@@ -1,28 +1,37 @@
-from typing import Dict
+from typing import Dict, Set
 from z3 import *
 
 from debugger.z3_utils import (
     Z3AstVisitor,
     collapse_sexpr,
-    find_sk_decl_non_rec,
     format_expr_flat,
+    match_sk_decl,
     quote_name,
     quote_sort,
 )
 from utils.system_utils import log_warn
 
 class Z3QuantWrapper:
-    def __init__(self, quant: z3.QuantifierRef, origin: z3.ExprRef, parent_name):
+    def __init__(self, quant: z3.QuantifierRef, parent, origin: z3.ExprRef):
         self.quant = quant
         self.origin = origin
         self.name = quant.qid()
-        self.parent_name = parent_name
-
-    def is_root(self):
-        return self.parent_name is None
+        self.parent: Z3QuantWrapper = parent
+        self.group_qnames: Set[str] = set()
 
     def __str__(self):
-        return f"{self.quant.name} "
+        return f"Z3Qref@{self.quant.name}"
+
+    def is_root(self):
+        return self.parent is None
+
+    def get_root_qname(self):
+        if self.is_root():
+            return self.name
+        return self.parent.get_root_qname()
+    
+    def is_singleton(self):
+        return len(self.group_qnames) == 1
 
 class QueryLoader(Z3AstVisitor):
     def __init__(self, in_file_path):
@@ -32,9 +41,8 @@ class QueryLoader(Z3AstVisitor):
 
         self.solver.from_file(in_file_path)
         # map qid to its quantifier
-        self.z3_quants: Dict[str, Z3QuantWrapper] = dict()
-
-        self.existing_sk_decls = dict()
+        self.__z3_quants: Dict[str, Z3QuantWrapper] = dict()
+        self.existing_sk_decls: Dict[str, str] = dict()
 
         in_cmds = open(in_file_path, "r").readlines()
         assert len(in_cmds) > 0
@@ -45,34 +53,68 @@ class QueryLoader(Z3AstVisitor):
 
         for a in self.solver.assertions():
             self.__load_quants(a, None, a)
-
-        self.all_qnames = set(self.z3_quants.keys())
         self.reset_visit()
-        # self.__load_root_conflicts()
+
+        root_qnames: Dict[str, Set[str]] = dict()
+
+        for name, quant in self.__z3_quants.items():
+            root_name = quant.get_root_qname()
+            if root_name in root_qnames:
+                root_qnames[root_name].add(name)
+            else:
+                root_qnames[root_name] = {name}
+
+        for name, quant in self.__z3_quants.items():
+            if not quant.is_root():
+                continue
+            quant.group_qnames = root_qnames[name]
+
+        self.__root_qnames: Set[str] = set(root_qnames.keys())
 
     def __load_quants(self, exp: z3.ExprRef, parent, origin: z3.ExprRef):
         if self.visit(exp) or is_var(exp):
             return
 
-        if sk := find_sk_decl_non_rec(exp):
+        if sk := match_sk_decl(exp):
             (qname, decl) = sk
             self.existing_sk_decls[qname] = decl
 
         if is_quantifier(exp):
-            quant = Z3QuantWrapper(exp, origin, parent)
-            assert quant.name not in self.z3_quants
-            self.z3_quants[quant.name] = quant
-            parent = quant.name
+            quant = Z3QuantWrapper(exp, parent, origin)
+            assert quant.name not in self.__z3_quants
+            self.__z3_quants[quant.name] = quant
+            parent = quant
 
         for c in exp.children():
             self.__load_quants(c, parent, origin)
 
-    # def get_root(self, name):
-    #     quant = self.quants[name]
-    #     while not quant.is_root():
-    #         name = self.quants[name].parent_name
-    #         quant = self.quants[name]
-    #     return name
+    def is_singleton(self, qname):
+        return len(self.__z3_quants[qname].group_qnames) == 1
+    
+    def is_root(self, qname):
+        return self.__z3_quants[qname].is_root()
+
+    def list_qnames(self, root_only=False):
+        if root_only:
+            return self.__root_qnames
+        return self.__z3_quants.keys()
+
+    def __getitem__(self, qname) -> Z3QuantWrapper:
+        return self.__z3_quants[qname]
+
+    def __contains__(self, qname):
+        return qname in self.__z3_quants
+
+    def __iter__(self):
+        for qname in self.__z3_quants:
+            yield self.__z3_quants[qname]
+
+    def items(self, root_only=False):
+        if root_only:
+            for qname in self.__root_qnames:
+                yield qname, self.__z3_quants[qname]
+        else:
+            return self.__z3_quants.items()
 
     # def __load_root_conflicts(self):
     #     constraints = dict()
