@@ -311,8 +311,8 @@ def get_trace_stats_axiom_profiler(trace_path):
     processed = set()
     counts = dict()
 
-    for line in lines:
-        if line == "top-instantiations=\n":
+    for line in lines.split("\n"):
+        if line == "top-instantiations=":
             start = True
             continue
 
@@ -326,7 +326,6 @@ def get_trace_stats_axiom_profiler(trace_path):
             counts[name] = 0
         counts[name] += count
         processed.add(qidx)
-
     return counts
 
 def add_qids_to_query(query_path):

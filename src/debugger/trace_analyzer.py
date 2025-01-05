@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict, List
 
 from tabulate import tabulate
-from debugger.mut_info import MutantInfo
+from debugger.mutant_info import MutantInfo
 from debugger.quant_graph import TheirAnalysis
 from debugger.query_loader import GroupedCost, InstCost
 from debugger.edit_info import EditAction, EditInfo

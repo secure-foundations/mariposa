@@ -4,7 +4,7 @@ import subprocess
 from base.defs import MARIPOSA
 from base.solver import RCode, output_as_rcode
 from debugger.z3_utils import dump_z3_proof
-from utils.query_utils import Mutation, emit_mutant_query
+from utils.query_utils import Mutation, emit_mutant_query, get_trace_stats_axiom_profiler
 from debugger.quant_graph import *
 from utils.system_utils import log_check, log_debug, log_info, log_warn, subprocess_run
 
@@ -246,3 +246,7 @@ class MutantInfo:
             )
         assert os.path.exists(self.stats_path)
         return True
+
+    def get_qi_counts(self):
+        assert self.has_trace()
+        return get_trace_stats_axiom_profiler(self.trace_path)

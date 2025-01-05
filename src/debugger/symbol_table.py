@@ -20,7 +20,8 @@ class TermTable(nx.DiGraph):
 
         self.__build_term_graph()
 
-        self.skolem_refs = dict()
+        # these nodes are skolemized
+        self.skolem_refs: Dict[NodeRef, str] = dict()
         self.__identify_skolem()
 
     def debug(self):
@@ -41,7 +42,7 @@ class TermTable(nx.DiGraph):
                 if node in self.__redirected_quant_nodes:
                     return self.__redirected_quant_nodes[node]
                 node.body = __collect_quants_rec(node.body)
-                ref = self.__add_node(node)
+                ref = self.__add_tree_node(node)
                 self.__redirected_quant_nodes[node] = ref
                 return ref
 
@@ -59,12 +60,21 @@ class TermTable(nx.DiGraph):
         for node in quant_nodes:
             __collect_quants_rec(node)
 
-    def __add_node(self, node: TreeNode) -> NodeRef:
+    def add_tree_node(self, node: TreeNode) -> NodeRef:
+        assert not isinstance(node, QuantNode)
+        assert isinstance(node, TreeNode)
+        return self.__add_tree_node(node)
+
+    def __add_tree_node(self, node: TreeNode) -> NodeRef:
         ref = self.__make_ref(node)
         if ref in self.__storage:
             return ref
         if isinstance(node, QuantNode):
-            self.__add_quantifier(ref, node)
+            if node.quant_type != QuantType.LAMBDA:
+                if node.qid not in self.quant_names:
+                    self.quant_names[node.qid] = set()
+                self.quant_names[node.qid].add(ref)
+            self.quant_refs.add(ref)           
         self.__storage[ref] = node
         return ref
 
@@ -78,13 +88,6 @@ class TermTable(nx.DiGraph):
         if isinstance(node, QuantNode):
             return QuantRef(digest[:8], node.quant_type)
         return NodeRef(digest[:8])
-
-    def __add_quantifier(self, ref, node: QuantNode):
-        if node.quant_type != QuantType.LAMBDA:
-            if node.qid not in self.quant_names:
-                self.quant_names[node.qid] = set()
-            self.quant_names[node.qid].add(ref)
-        self.quant_refs.add(ref)    
 
     def __flatten_tree_nodes(self, root: TreeNode):
         self.__global_defs = dict()
@@ -154,7 +157,7 @@ class TermTable(nx.DiGraph):
         else:
             assert isinstance(node, QuantNode)
             return self.__redirected_quant_nodes[node]
-        return self.__add_node(node)
+        return self.__add_tree_node(node)
 
     def __build_term_graph(self):
         for ref, node in self.__storage.items():
@@ -174,11 +177,13 @@ class TermTable(nx.DiGraph):
         reachable = nx.descendants(self, self.root_ref)
         reachable.add(self.root_ref)
         unreachable = set(self.__storage) - reachable
-        for ref in unreachable:
-            assert ref in self.quant_refs 
+
+        # for ref in unreachable:
+        #     print(ref, self.in_degree(ref), self.out_degree(ref))
+        #     self.pprint_node(ref, 3)
 
         log_debug(f"[term graph] {len(self)} nodes, {len(self.edges)} edges, root {self.root_ref}")
-        log_debug(f"{len(unreachable)} quant nodes are not directly reachable")
+        log_debug(f"{len(unreachable)} nodes are unreachable!")
 
     def lookup_node(self, nor) -> TreeNode:
         if isinstance(nor, str):
@@ -293,7 +298,7 @@ class TermTable(nx.DiGraph):
                 assert name in self.quant_names
                 self.skolem_refs[ref] = name
 
-    def get_skolem_deps(self, ron):
+    def get_skolem_deps(self, ron) -> Set[NodeRef]:
         refs = [self.__make_ref(self.lookup_node(ron))]
         deps = set()
         while refs:

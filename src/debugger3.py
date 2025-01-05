@@ -13,7 +13,7 @@ from debugger.pool_utils import run_with_pool
 
 # from debugger.trace_analyzer import InstDiffer, shorten_qid
 from debugger.edit_info import EditInfo, EditAction
-from query_editor import QueryEditor
+# from query_editor import QueryEditor
 from typing import Dict, List
 from utils.query_utils import (
     Mutation,
@@ -31,7 +31,7 @@ from utils.system_utils import (
     subprocess_run,
 )
 from tabulate import tabulate
-from debugger.mut_info import *
+from debugger.mutant_info import *
 
 
 MUTANT_COUNT = 30

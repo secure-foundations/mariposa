@@ -1,5 +1,5 @@
 from enum import Enum
-import re
+from debugger.z3_utils import get_skolem_qname
 
 PROOF_GRAPH_RULES = {
     "true": False,
@@ -62,15 +62,10 @@ class QuantType(Enum):
     EXISTS = "exists"
     LAMBDA = "lambda"
 
-# TODO: this is a hack!
-SK_FUN_PAT = re.compile("\$\!skolem\_([^!]+)\![0-9]+")
 
 class NodeRef:
     def __init__(self, index):
         self._index = index
-
-    def __str__(self):
-        return f"@[h!{self._index}]"
 
     def __hash__(self):
         return hash(self._index)
@@ -78,6 +73,11 @@ class NodeRef:
     def __eq__(self, other):
         return self._index == other._index
 
+    def export_symbol(self):
+        return f"h!{str(self._index)}"
+
+    def __str__(self):
+        return f"@[{self.export_symbol()}]"
 
 class QuantRef(NodeRef):
     def __init__(self, index, quant_type: QuantType):
@@ -85,8 +85,8 @@ class QuantRef(NodeRef):
         assert isinstance(quant_type, QuantType)
         self.__qt = quant_type
 
-    def __str__(self):
-        return f"@[{self.__qt.value[0]}!{self._index}]"
+    def export_symbol(self):
+        return f"{self.__qt.value[0]}!{self._index}"
 
 
 class TreeNode:
@@ -112,9 +112,7 @@ class LeafNode(TreeNode):
         return self.value
 
     def maybe_skolemized(self):
-        if m := re.search(SK_FUN_PAT, self.value):
-            return m.group(1)
-        return None
+        return get_skolem_qname(self.value)
 
 
 class LeafIntNode(LeafNode):
@@ -216,9 +214,7 @@ class AppNode(TreeNode):
         return " ".join(items) + ")"
 
     def maybe_skolemized(self):
-        if m := re.search(SK_FUN_PAT, self.name):
-            return m.group(1)
-        return None
+        return get_skolem_qname(self.value)
 
 
 class DatatypeAppNode(AppNode):

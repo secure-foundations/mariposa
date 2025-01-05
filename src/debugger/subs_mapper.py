@@ -1,9 +1,9 @@
 from z3 import *
-from debugger.z3_utils import AstVisitor
+from debugger.z3_utils import Z3AstVisitor
 from utils.system_utils import log_warn
 
 
-class SubsMapper(AstVisitor):
+class SubsMapper(Z3AstVisitor):
     def __init__(self, qref: QuantifierRef):
         super().__init__()
         self.app_map = dict()

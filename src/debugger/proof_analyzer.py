@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from typing import Dict, List, Set
 import networkx as nx
 from debugger.tree_parser import *
 from debugger.symbol_table import TermTable
@@ -13,27 +13,45 @@ class RewriteTerm:
 class QuantInstInfo:
     def __init__(self, qname):
         self.qname = qname
-        self.insts: Dict[QuantRef, Set[NodeRef]] = dict()
-        self.skolem_deps: Set[NodeRef] = set()
+        # self.__proof_refs: Dict[QuantRef, NodeRef] = dict()
+        self.__insts: Dict[QuantRef, Set[NodeRef]] = dict()
+        self.__skolem_deps: Dict[NodeRef, Set[NodeRef]] = dict()
 
-    def add_inst(self, quant, inst):
+    def add_inst(self, quant, inst, skolem_deps):
         assert isinstance(quant, QuantNode)
         assert quant.qid == self.qname
         assert isinstance(inst, NodeRef)
-        if quant not in self.insts:
-            self.insts[quant] = set()
-        self.insts[quant].add(inst)
+        # assert isinstance(proof_ref, NodeRef)
+        # self.__proof_refs[proof_ref] = inst
+        if quant not in self.__insts:
+            self.__insts[quant] = set()
+        self.__insts[quant].add(inst)
+        assert inst not in self.__skolem_deps
+        self.__skolem_deps[inst] = skolem_deps
 
     def get_inst_count(self):
-        return sum(len(insts) for insts in self.insts.values())
+        return len(self.get_all_insts())
 
     def get_quant_count(self):
-        return len(self.insts)
-    
-    def get_insts(self):
+        return len(self.__insts)
+
+    def get_all_insts(self):
         res = []
-        for _, insts in self.insts.items():
+        for insts in self.__insts.values():
             res.extend(insts)
+        return res
+
+    def get_usable_insts(self):
+        res = []
+        for inst in self.get_all_insts():
+            if len(self.__skolem_deps[inst]) == 0:
+                res.append(inst)
+        return res
+
+    def get_all_skolem_deps(self):
+        res = set()
+        for deps in self.__skolem_deps.values():
+            res |= deps
         return res
 
 class ProofAnalyzer(TermTable):
@@ -44,16 +62,17 @@ class ProofAnalyzer(TermTable):
         self.trivial_rewrites = set()
         self.lemmas = dict()
         self.th_lemmas = dict()
-        self.quant_insts = dict()
 
         self.__ignored_proof_stats = dict()
         self.__proof_node_count = 0
 
-        self.proof_graph = nx.DiGraph()
-        self.qi_infos: Dict[str, QuantInstInfo] = dict()
+        self.__qname_of_inst_ref: Dict[NodeRef, str] = dict()
+        self.__skolemized_qnames: Set[str] = set()
+        self.__insts_under_qname: Dict[str, QuantInstInfo] = dict()
 
+        self.proof_graph = nx.DiGraph()
         self.__analyze_proof_nodes()
-        self.__analyze_quant_insts()
+        # self.__analyze_quant_insts()
 
     def __analyze_proof_nodes(self):
         for ref in self.nodes():
@@ -169,16 +188,30 @@ class ProofAnalyzer(TermTable):
         assert node.name == "or"
         children = self.resolve_children(node)
         l = children[0]
-        inst = children[1:]
+        inst = node.children[1:]
         assert isinstance(l, AppNode)
         assert l.name == "not"
-        l = self.resolve_child(l)
-        assert isinstance(l, QuantNode)
-        self.quant_insts[ref] = (l, inst)
-    
-        if l.qid not in self.qi_infos:
-            self.qi_infos[l.qid] = QuantInstInfo(l.qid)
-        self.qi_infos[l.qid].add_inst(l, ref)
+        quant = self.resolve_child(l)
+        qname = quant.qid
+
+        assert isinstance(quant, QuantNode)
+        assert all(isinstance(i, NodeRef) for i in inst)
+
+        if len(inst) == 1:
+            actual_inst_ref = inst[0]
+        else:
+            instance = AppNode("or", inst)
+            actual_inst_ref = self.add_tree_node(instance)
+
+        self.__qname_of_inst_ref[ref] = qname
+        if qname not in self.__insts_under_qname:
+            self.__insts_under_qname[qname] = QuantInstInfo(qname)
+
+        skolem_deps = self.get_skolem_deps(actual_inst_ref)
+        self.__insts_under_qname[qname].add_inst(quant, actual_inst_ref, skolem_deps)
+
+        for dep in skolem_deps:
+            self.__skolemized_qnames.add(self.skolem_refs[dep])
 
         return True
 
@@ -220,16 +253,12 @@ class ProofAnalyzer(TermTable):
         assumptions, conclusion = self.th_lemmas[ref]
         return self.__export_lemma(assumptions, conclusion)
 
-    def export_quant_inst(self, ref):
-        assert ref in self.quant_insts
-        quant, items = self.quant_insts[ref]
-        items = [self.dump_node(i) for i in items]
-        if len(items) == 1:
-            items = items[0]
-        else:
-            items = '\n\t'.join(items)
-            items = f"(or \n\t{items})"
-        return f"; {ref} quant-inst: {quant.qid}\n(define-fun foo () Bool {items})"
+    # def export_quant_inst(self, ref):
+    #     assert ref in self.__qname_of_inst_ref
+    #     name = self.__qname_of_inst_ref[ref]
+    #     # items = self.dump_node(i)
+    #     symbol = ref.export_symbol()
+    #     return symbol, f"; {ref} quant-inst: {quant.qid}\n(define-fun {symbol} () Bool {items})"
 
     def export_proof_node(self, ref) -> str:
         if ref in self.rewrites:
@@ -238,23 +267,18 @@ class ProofAnalyzer(TermTable):
             return self.export_lemma(ref)
         if ref in self.th_lemmas:
             return self.export_th_lemma(ref)
-        if ref in self.quant_insts:
-            return self.export_quant_inst(ref)
+        # if ref in self.quant_insts:
+        #     return self.export_quant_inst(ref)
         return f"NYI"
 
-    def __analyze_quant_insts(self):
-        for q_name, qi_info in self.qi_infos.items():
-            # print(f"{q_name}")
-            # print(f"{qi_info.get_quant_count()} quantifiers")
-            # print(f"{qi_info.get_inst_count()} instances")
-            skolem_deps = set()
+    def get_qi_counts(self):
+        res = dict()
+        for qname, qi_info in self.__insts_under_qname.items():
+            res[qname] = qi_info.get_inst_count()
+        return res
 
-            for inst in qi_info.get_insts():
-                skolem_deps |= self.get_skolem_deps(inst)
+    def get_inst_info_under_qname(self, qname) -> QuantInstInfo:
+        return self.__insts_under_qname[qname]
 
-            qi_info.skolem_deps = skolem_deps
-
-            if len(skolem_deps) > 0:
-                print(f"{q_name} has skolem dependencies")
-                for ref in skolem_deps:
-                    print(f"{ref} {self.skolem_refs[ref]}")
+    def has_skolemized_qname(self, qname):
+        return qname in self.__skolemized_qnames

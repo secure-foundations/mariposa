@@ -1,3 +1,4 @@
+import re
 import time
 from z3 import *
 
@@ -184,21 +185,15 @@ def is_quantifier_free(e):
             return False
     return True
 
+# TODO: this is a hack!
+SK_FUN_PAT = re.compile("\$\!skolem\_([^!]+)\![0-9]+")
 
-def extract_sk_qid_from_name(name):
-    assert "!skolem_" in name
-    s = name.find("!skolem_") + len("!skolem_")
-    e = name.rfind("!")
-    return name[s:e]
+def get_skolem_qname(name):
+    if m := re.search(SK_FUN_PAT, name):
+        return m.group(1)
+    return None
 
-
-def extract_sk_qid_from_decl(sk_fun):
-    assert sk_fun.startswith("(declare-fun ")
-    sk_fun = sk_fun.split(" ")[1]
-    return extract_sk_qid_from_name(sk_fun)
-
-
-class AstVisitor:
+class Z3AstVisitor:
     def __init__(self):
         self.__visited = set()
 
@@ -217,6 +212,21 @@ class AstVisitor:
 
     def visited(self):
         return self.__visited
+
+def find_sk_decl_non_rec(e):
+    if is_app(e):
+        if name := get_skolem_qname(e.decl().name()):
+            return (name, e.decl().sexpr())
+    return None
+
+
+# class Z3SkolemFinder(Z3AstVisitor):
+#     def __init__(self) -> None:
+#         super().__init__()
+#         self.sk_decls = dict()
+
+#     def process_expr(self, e):
+
 
 
 def dump_z3_proof(query_path, proof_path) -> bool:
