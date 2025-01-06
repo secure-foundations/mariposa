@@ -82,8 +82,8 @@ class QueryInstDiffer(QueryLoader):
         self.proof = pa
         self.trace = ti
 
-        self.trace_stats = QueryInstStat(self.trace.get_qi_counts(), self)
-        self.proof_stats = QueryInstStat(self.proof.get_qi_counts(), self)
+        self.proof_stats = QueryInstStat(pa.get_qi_counts(), self)
+        self.trace_stats = QueryInstStat(ti.get_qi_counts(), self)
 
         # self.trace_missing = set()
         self.ignored = set()

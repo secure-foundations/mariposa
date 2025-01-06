@@ -54,8 +54,8 @@ class EditInfo:
 
     def get_id(self):
         m = hashlib.md5()
-        qids = [qid for qid in sorted(self.edit)]
-        m.update(str(qids).encode())
+        edits = [(qid, self.edit[qid]) for qid in sorted(self.edit)]
+        m.update(str(edits).encode())
         return m.hexdigest()[0:8]
 
     def run_query(self):

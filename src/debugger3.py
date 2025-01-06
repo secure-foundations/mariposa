@@ -106,7 +106,6 @@ class Debugger3:
         self.query_meta = f"{self.sub_root}/meta.json"
         self.orig_path = f"{self.sub_root}/orig.smt2"
         self.lbl_path = f"{self.sub_root}/lbl.smt2"
-        self.edits_meta = f"{self.sub_root}/edits.json"
 
         self.trace_dir = f"{self.sub_root}/{TRACES}"
         self.muts_dir = f"{self.sub_root}/{MUTANTS}"
@@ -123,7 +122,7 @@ class Debugger3:
 
         self.__edit_infos: Dict[int, EditInfo] = dict()
 
-        self.singleton_edit_project = "singleton_" + self.name_hash
+        # self.singleton_edit_project = "singleton_" + self.name_hash
 
         self.__init_dirs(clear_all)
         self.__init_query_files(query_path, ids_available)
@@ -169,7 +168,6 @@ class Debugger3:
             self.trace_dir,
             self.cores_dir,
             self.proofs_dir,
-            self.edit_dir,
         ]:
             create_dir(dir)
 
