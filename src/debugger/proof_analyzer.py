@@ -15,7 +15,7 @@ class QuantInstInfo:
         self.qname = qname
         # self.__proof_refs: Dict[QuantRef, NodeRef] = dict()
         self.__insts: Dict[QuantRef, Set[NodeRef]] = dict()
-        self.__skolem_deps: Dict[NodeRef, Set[NodeRef]] = dict()
+        self.__skolem_deps: Dict[NodeRef, Set[str]] = dict()
 
     def add_inst(self, quant, inst, skolem_deps):
         assert isinstance(quant, QuantNode)
@@ -208,10 +208,13 @@ class ProofAnalyzer(TermTable):
             self.__insts_under_qname[qname] = QuantInstInfo(qname)
 
         skolem_deps = self.get_skolem_deps(actual_inst_ref)
+        # if qname == "internal_crate__fun__1_constructor_definition":
+            # print(self.dump_node(actual_inst_ref))
+            # print(f"skolem deps: {skolem_deps}")
         self.__insts_under_qname[qname].add_inst(quant, actual_inst_ref, skolem_deps)
 
         for dep in skolem_deps:
-            self.__skolemized_qnames.add(self.skolem_refs[dep])
+            self.__skolemized_qnames.add(dep)
 
         return True
 

@@ -109,7 +109,7 @@ class QueryInstDiffer(QueryLoader):
             skolem_deps = qi_info.get_all_skolem_deps()
         except KeyError:
             skolem_deps = set()
-            
+
         should_be_skolemized = self.group_should_be_skolemized(qname)
 
         if p_stat.total_count == 0:
@@ -149,6 +149,17 @@ class QueryInstDiffer(QueryLoader):
             )
             for qname in self[group_qname].group_qnames
         )
+
+    def get_all_root_actions(self, skip_ignored=True):
+        actions = dict()
+        for qname, quant in self.items(root_only=True):
+            if skip_ignored and qname in self.ignored:
+                continue
+            action = self.get_root_action(qname)
+            if action in {EditAction.NONE, EditAction.ERROR}:
+                continue
+            actions[qname] = action
+        return actions
 
     def get_report(self, skip_ignored=True):
         table = []

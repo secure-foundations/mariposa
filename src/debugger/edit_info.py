@@ -6,8 +6,8 @@ from utils.system_utils import log_info, subprocess_run
 
 
 # in theory we can be using the factory...
-def run_z3(query_path):
-    r, e, t = subprocess_run(["./bin/z3-4.13.0", "-T:10", query_path])
+def run_z3(query_path, timeout=10):
+    r, e, t = subprocess_run(["./bin/z3-4.13.0", f"-T:{timeout}", query_path])
     r = output_as_rcode(r)
     log_info(f"[run] {query_path} {r} {e} {round(t / 1000, 2)}")
     return (query_path, r, e, round(t / 1000, 2))
@@ -25,7 +25,7 @@ class EditAction(Enum):
 
 class EditInfo:
     def __init__(self, path, edit):
-        self.path = path
+        self.query_path = path
         self.edit = edit
 
         self.rcode = None
@@ -37,7 +37,7 @@ class EditInfo:
         edit = f"edit = {{\n{edit}\n}}"
         lines = [
             "# " + "-" * 80,
-            f"# {self.path}",
+            f"# {self.query_path}",
             f"# rcode: {self.rcode}",
             f"# time: {self.time}\n\n",
             edit,
@@ -47,7 +47,7 @@ class EditInfo:
         return "\n".join(lines)
 
     def query_exists(self):
-        return os.path.exists(self.path)
+        return os.path.exists(self.query_path)
 
     def has_data(self):
         return self.rcode != None
@@ -61,7 +61,7 @@ class EditInfo:
     def run_query(self):
         if self.has_data():
             return
-        _, self.rcode, self.error, self.time = run_z3(self.path)
+        _, self.rcode, self.error, self.time = run_z3(self.query_path)
 
     def get_singleton_edit(self):
         assert len(self.edit) == 1
@@ -82,7 +82,7 @@ class EditInfo:
         edit = {qid: self.edit[qid].value for qid in self.edit}
         rcode = self.rcode.value if self.rcode is not None else None
         return {
-            "path": self.path,
+            "path": self.query_path,
             "edit": edit,
             "rcode": rcode,
             "time": self.time,

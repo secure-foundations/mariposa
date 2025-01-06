@@ -186,7 +186,7 @@ def is_quantifier_free(e):
     return True
 
 # TODO: this is a hack!
-SK_FUN_PAT = re.compile("\$\!skolem\_([^!]+)\![0-9]+")
+SK_FUN_PAT = re.compile("\!skolem\_([^!]+)\![0-9]+")
 
 def get_skolem_qname(name):
     if m := re.search(SK_FUN_PAT, name):

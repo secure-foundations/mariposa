@@ -1,9 +1,11 @@
 from typing import List, Set
+from debugger.edit_info import run_z3
 from debugger.proof_analyzer import QuantInstInfo
 from debugger.query_loader import QueryLoader
 from debugger.z3_utils import *
 from utils.query_utils import add_qids_to_query
 from utils.system_utils import log_error, log_info, log_warn
+from base.solver import EXPECTED_CODES
 import z3
 
 
@@ -153,3 +155,8 @@ class BaseQueryEditor(QueryLoader):
         for qid in self._banish_ids - removed:
             log_warn(f"failed to banish {qid}")
 
+    def save_and_test(self, out_file_path):
+        self.save(out_file_path)
+        _, r, e, _ = run_z3(out_file_path, 2)
+        assert e == ""
+        return r

@@ -20,9 +20,9 @@ class TermTable(nx.DiGraph):
 
         self.__build_term_graph()
 
-        # these nodes are skolemized
-        self.skolem_refs: Dict[NodeRef, str] = dict()
-        self.__identify_skolem()
+        # # these nodes are skolemized
+        # self.skolem_refs: Dict[NodeRef, str] = dict()
+        # self.__identify_skolem()
 
     def debug(self):
         for ref in self.__storage:
@@ -291,21 +291,14 @@ class TermTable(nx.DiGraph):
                 refs.extend(node.children)
         return True
 
-    def __identify_skolem(self):
-        for ref, node in self.__storage.items():
-            assert isinstance(node, TreeNode)
-            if name := node.maybe_skolemized():
-                assert name in self.quant_names
-                self.skolem_refs[ref] = name
-
-    def get_skolem_deps(self, ron) -> Set[NodeRef]:
+    def get_skolem_deps(self, ron) -> Set[str]:
         refs = [self.__make_ref(self.lookup_node(ron))]
         deps = set()
         while refs:
             ref = refs.pop()
             node = self.lookup_node(ref)
+            if name := node.maybe_skolemized():
+                deps.add(name)
             if isinstance(node, AppNode):
                 refs.extend(node.children)
-            if ref in self.skolem_refs:
-                deps.add(ref)
         return deps

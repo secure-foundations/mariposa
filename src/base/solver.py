@@ -28,6 +28,8 @@ class RCode(Enum):
 EXPECTED_CODES = [RCode.UNSAT, RCode.UNKNOWN, RCode.TIMEOUT]
 
 def output_as_rcode(output):
+    if "error" in output:
+        return RCode.ERROR
     if "unsat" in output:
         return RCode.UNSAT
     elif "sat" in output:

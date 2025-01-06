@@ -416,7 +416,7 @@ class Debugger3:
     def _save_edit(self, ei: EditInfo):
         assert isinstance(ei, EditInfo)
         self.editor.do_edits(ei.edit)
-        self.editor.save(ei.path)
+        self.editor.save(ei.query_path)
 
     def test_edit(self, edit):
         ei = self.register_edit_info(edit)
@@ -448,7 +448,7 @@ class Debugger3:
             assert isinstance(edit, dict)
         ei = EditInfo("", edit)
         path = self.get_edit_path(ei)
-        ei.path = path
+        ei.query_path = path
         eid = ei.get_id()
 
         if eid in self.__edit_infos:
