@@ -74,11 +74,6 @@ def _build_proof(mi: MutantInfo):
     return None
 
 
-def _run_edit(ei: EditInfo):
-    ei.run_query()
-    return ei
-
-
 class Debugger3:
     def __init__(
         self,
@@ -121,8 +116,6 @@ class Debugger3:
         self.cores: List[MutantInfo] = []
 
         self.__edit_infos: Dict[int, EditInfo] = dict()
-
-        # self.singleton_edit_project = "singleton_" + self.name_hash
 
         self.__init_dirs(clear_all)
         self.__init_query_files(query_path, ids_available)

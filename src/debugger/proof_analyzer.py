@@ -41,7 +41,7 @@ class QuantInstInfo:
             res.extend(insts)
         return res
 
-    def get_usable_insts(self):
+    def get_feasible_insts(self):
         res = []
         for inst in self.get_all_insts():
             if len(self.__skolem_deps[inst]) == 0:

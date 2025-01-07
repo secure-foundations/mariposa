@@ -213,26 +213,27 @@ class Z3AstVisitor:
     def visited(self):
         return self.__visited
 
-def find_sk_decls(e):
-    res = dict()
-    __find_sk_decl_rec(v, e, res)
-    return res
-
-def match_sk_decl(e):
+def match_sk_decl_used(e):
     if is_app(e):
         if name := get_skolem_qname(e.decl().name()):
-            return {name: e.decl().sexpr()}
+            return (name, e.decl().sexpr())
     return None
+
+def find_sk_decls_used(e):
+    res = []
+    v = Z3AstVisitor()
+    __find_sk_decl_rec(v, e, res)
+    return res
 
 def __find_sk_decl_rec(v, e, res):
     if v.visit(e):
         return
     if is_quantifier(e):
-        return __find_sk_decl_rec(e.body())
-    if res := match_sk_decl(e):
-        res.update(res)
+        return __find_sk_decl_rec(v, e.body(), res)
+    if r := match_sk_decl_used(e):
+        res.append(r)
     for c in e.children():
-        __find_sk_decl_rec(c)
+        __find_sk_decl_rec(v, c, res)
 
 def dump_z3_proof(query_path, proof_path) -> bool:
     set_param(proof=True)

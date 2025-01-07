@@ -1,6 +1,8 @@
+from typing import Dict
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.mutant_info import MutantInfo
 from debugger.edit_info import EditAction
+from debugger.query_editor import QueryEditor
 from debugger.query_loader import QueryLoader, Z3QuantWrapper
 from utils.system_utils import log_debug, log_warn
 from pandas import DataFrame as df
@@ -76,7 +78,7 @@ class QueryInstStat:
         return qname in self.loader
 
 
-class QueryInstDiffer(QueryLoader):
+class InformedEditor(QueryEditor):
     def __init__(self, query_path: str, pa: ProofAnalyzer, ti: MutantInfo):
         super().__init__(query_path)
         self.proof = pa
@@ -97,12 +99,13 @@ class QueryInstDiffer(QueryLoader):
                 and (not self.group_should_be_skolemized(root_name))
             ):
                 self.ignored.add(root_name)
-
-    def get_root_action(self, qname):
-        if qname not in self:
-            log_warn(f"[differ] qid {qname} not found in {self.query_path}")
-            return EditAction.NONE
-
+                
+        self.__root_actions = dict()
+        
+        for qname in self.list_qnames(root_only=True):
+            self.__root_actions[qname] = self.__get_root_action(qname)
+        
+    def __get_root_action(self, qname):
         p_stat = self.proof_stats.get_group_stat(qname)
         try:
             qi_info = self.proof.get_inst_info_under_qname(qname)
@@ -122,7 +125,7 @@ class QueryInstDiffer(QueryLoader):
             # does not depend on any skolem functions
             return EditAction.INST_REPLACE
 
-        usable_insts = qi_info.get_usable_insts()
+        usable_insts = qi_info.get_feasible_insts()
         if len(usable_insts) != 0:
             # cannot remove the quantifier,
             # but can use some instances ...
@@ -150,23 +153,28 @@ class QueryInstDiffer(QueryLoader):
             for qname in self[group_qname].group_qnames
         )
 
-    def get_all_root_actions(self, skip_ignored=True):
+    def get_all_feasible_actions(self, skip_ignored=True):
         actions = dict()
-        for qname, quant in self.items(root_only=True):
+        for qname, action in self.__root_actions.items():
             if skip_ignored and qname in self.ignored:
                 continue
-            action = self.get_root_action(qname)
             if action in {EditAction.NONE, EditAction.ERROR}:
                 continue
             actions[qname] = action
         return actions
+
+    def get_action(self, qname):
+        if qname not in self:
+            log_warn(f"[differ] qid {qname} not found in {self.query_path}")
+            return EditAction.NONE
+        return self.__root_actions[qname]
 
     def get_report(self, skip_ignored=True):
         table = []
         for qname, quant in self.items(root_only=True):
             if skip_ignored and qname in self.ignored:
                 continue
-            action = self.get_root_action(qname)
+            action = self.__get_root_action(qname)
             t_group = self.trace_stats.get_group_stat(qname)
             p_group = self.proof_stats.get_group_stat(qname)
 
@@ -190,3 +198,40 @@ class QueryInstDiffer(QueryLoader):
                     ]
                 )
         return df(table, columns=["name", "trace count", "proof count", "action"])
+
+    def edit_by_qname(self, qname, action=None, erase_when_possible=True):
+        if action is None:
+            action = self.__get_root_action(qname)
+
+        if action == EditAction.NONE:
+            log_warn(f"[edit] qid {qname} has no action")
+            return
+
+        if action == EditAction.ERROR:
+            log_warn(f"[edit] qid {qname} has error")
+            return
+
+        if action == EditAction.SKOLEMIZE:
+            self._skolemize_qid(qname)
+            return
+
+        if action == EditAction.ERASE:
+            self._erase_qid(qname)
+            return
+
+        if action == EditAction.INST_REPLACE or action == EditAction.INST_KEEP:
+            qii = self.proof.get_inst_info_under_qname(qname)
+            insts = []
+            for inst in qii.get_feasible_insts():
+                insts.append("(assert " + self.proof.dump_node(inst) + ")")
+            erase = action == EditAction.INST_REPLACE
+            if action == EditAction.INST_REPLACE and not erase_when_possible:
+                erase = False
+            self._instantiate_qid(qname, insts, erase)
+            return
+
+        log_warn(f"[edit] unhandled action {action} for qid {qname}")
+
+    def edit_specified(self, edits: Dict[str, EditAction]):
+        for qname, action in edits.items():
+            self.edit_by_qname(qname, action)

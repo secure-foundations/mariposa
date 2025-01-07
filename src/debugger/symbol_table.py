@@ -20,10 +20,6 @@ class TermTable(nx.DiGraph):
 
         self.__build_term_graph()
 
-        # # these nodes are skolemized
-        # self.skolem_refs: Dict[NodeRef, str] = dict()
-        # self.__identify_skolem()
-
     def debug(self):
         for ref in self.__storage:
             if ref in self.quant_refs:

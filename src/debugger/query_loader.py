@@ -5,7 +5,7 @@ from debugger.z3_utils import (
     Z3AstVisitor,
     collapse_sexpr,
     format_expr_flat,
-    match_sk_decl,
+    match_sk_decl_used,
     quote_name,
     quote_sort,
 )
@@ -75,7 +75,7 @@ class QueryLoader(Z3AstVisitor):
         if self.visit(exp) or is_var(exp):
             return
 
-        if sk := match_sk_decl(exp):
+        if sk := match_sk_decl_used(exp):
             (qname, decl) = sk
             self.existing_sk_decls[qname] = decl
 

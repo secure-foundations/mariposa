@@ -61,7 +61,8 @@ class EditInfo:
     def run_query(self):
         if self.has_data():
             return
-        _, self.rcode, self.error, self.time = run_z3(self.query_path)
+        _, self.rcode, error, self.time = run_z3(self.query_path)
+        assert error == ""
 
     def get_singleton_edit(self):
         assert len(self.edit) == 1

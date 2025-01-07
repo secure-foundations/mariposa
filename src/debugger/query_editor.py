@@ -1,6 +1,5 @@
 from typing import List, Set
-from debugger.edit_info import run_z3
-from debugger.proof_analyzer import QuantInstInfo
+from debugger.edit_info import EditAction, run_z3
 from debugger.query_loader import QueryLoader
 from debugger.z3_utils import *
 from utils.query_utils import add_qids_to_query
@@ -9,7 +8,7 @@ from base.solver import EXPECTED_CODES
 import z3
 
 
-class BaseQueryEditor(QueryLoader):
+class QueryEditor(QueryLoader):
     def __init__(self, in_file_path):
         super().__init__(in_file_path)
         self.__reset_state()
@@ -18,16 +17,16 @@ class BaseQueryEditor(QueryLoader):
         self._new_commands = []
         self._modified_commands = dict()
 
-        self._skolem_ids = set()
-        self._erase_ids = set()
-        self._banish_ids = set()
+        self._ids_to_skolemize = set()
+        self._ids_to_erase = set()
+        self._ids_to_banish = set()
 
-    def erase_qid(self, qid):
+    def _erase_qid(self, qid):
         if not self.check_qid(qid):
             return
-        self._erase_ids.add(qid)
+        self._ids_to_erase.add(qid)
 
-    def skolemize_qid(self, qid):
+    def _skolemize_qid(self, qid):
         # TODO: handle dual quantifiers if needed
         qid = qid[7:] if qid.startswith("skolem_") else qid
         if not self.check_qid(qid):
@@ -38,13 +37,13 @@ class BaseQueryEditor(QueryLoader):
         if qid in self.existing_sk_decls:
             log_warn(f"[skolem] {qid} has existing skolem function(s)")
             return
-        self._skolem_ids.add(qid)
+        self._ids_to_skolemize.add(qid)
 
-    def instantiate_qid(self, qid, insts: List[str], erase=True):
+    def _instantiate_qid(self, qid, insts: List[str], erase=True):
         if not self.check_qid(qid):
             return
         if erase:
-            self._erase_ids.add(qid)
+            self._ids_to_erase.add(qid)
 
         comment = f"[inst] {qid} {len(insts)} instances"
         self.__add_new_commands(comment, insts)
@@ -90,8 +89,8 @@ class BaseQueryEditor(QueryLoader):
     def __skolemize_assertions(self):
         targets = dict()
 
-        for qid in self._skolem_ids:
-            quant = self.__z3_quants[qid]
+        for qid in self._ids_to_skolemize:
+            quant = self[qid]
             exp = quant.origin
 
             if exp.get_id() in targets:
@@ -100,7 +99,7 @@ class BaseQueryEditor(QueryLoader):
 
             targets[exp.get_id()] = (qid, exp)
             # TODO: this is not very robust
-            self._banish_ids.add(qid)
+            self._ids_to_banish.add(qid)
 
         for qid, exp in targets.values():
             self.__skolemize_assertion(qid, exp)
@@ -114,7 +113,7 @@ class BaseQueryEditor(QueryLoader):
         asserts, decls = [], []
 
         for r in res[0]:
-            for name, decl in find_sk_decls(r, recursive=True):
+            for name, decl in find_sk_decls_used(r):
                 if name in self.existing_sk_decls:
                     continue
                 decls.append(decl)
@@ -126,7 +125,7 @@ class BaseQueryEditor(QueryLoader):
     def __erase_quantifiers(self):
         removed = set()
         for i, line in enumerate(self.in_cmds + [self.query_goal]):
-            for qid in self._erase_ids:
+            for qid in self._ids_to_erase:
                 if qid in removed:
                     continue
                 if not hack_contains_qid(line, qid):
@@ -137,13 +136,13 @@ class BaseQueryEditor(QueryLoader):
                 self.__add_new_commands(comment, [])
                 self._modified_commands[i] = line
 
-        for qid in self._erase_ids - removed:
+        for qid in self._ids_to_erase - removed:
             log_warn(f"[edit] [erase] failed on {qid}")
 
     def __banish_assertions(self):
         for i, line in enumerate(self.in_cmds + [self.query_goal]):
             removed = set()
-            for qid in self._banish_ids:
+            for qid in self._ids_to_banish:
                 if not hack_contains_qid(line, qid):
                     continue
                 self._modified_commands[i] = ""
@@ -152,7 +151,7 @@ class BaseQueryEditor(QueryLoader):
                 print(line, end="")
                 self.__add_new_commands(comment, [])
 
-        for qid in self._banish_ids - removed:
+        for qid in self._ids_to_banish - removed:
             log_warn(f"failed to banish {qid}")
 
     def save_and_test(self, out_file_path):
