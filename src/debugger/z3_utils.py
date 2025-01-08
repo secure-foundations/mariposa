@@ -244,7 +244,7 @@ def dump_z3_proof(query_path, proof_path) -> bool:
     solver.set("timeout", timeout)
     solver.from_file(query_path)
     log_debug(f"[proof] z3 version {get_version_string()}")
-    log_info(f"[proof] attempt {query_path}, timeout: {int( timeout/1000)}(s)")
+    log_debug(f"[proof] attempt {query_path}, timeout: {int( timeout/1000)}(s)")
 
     res = solver.check()
     proof_time = int((time.time() - start))
@@ -252,7 +252,7 @@ def dump_z3_proof(query_path, proof_path) -> bool:
     if res != unsat:
         log_warn(f"failure [proof] {query_path} result {res}")
         return False
-    log_info(f"[proof] finished in {proof_time}(s) {proof_path}")
+    log_debug(f"[proof] finished in {proof_time}(s) {proof_path}")
 
     p = solver.proof()
 

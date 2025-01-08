@@ -253,13 +253,12 @@ def handle_data_sync(input_dir, clear):
                 f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'"
             )
             continue
-
-        count_match = int(r_std) == file_count
+        host_file_count = int(r_std)
 
         if clear:
-            if count_match and clear_on_match is None:
-                choice = input(f"file count matches {host} {file_count} are you sure you want to clear?")
-                if choice != "y":
+            if host_file_count != file_count and clear_on_match is None:
+                choice = input(f"file count matches {host} {host_file_count} vs {file_count} are you sure you want to clear? [Y] ")
+                if choice != "Y":
                     clear_on_match = False
                 else:
                     clear_on_match = True

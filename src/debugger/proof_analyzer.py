@@ -92,7 +92,10 @@ class ProofAnalyzer(TermTable):
 
         reachable = nx.descendants(self.proof_graph, self.root_ref)
         reachable.add(self.root_ref)
-        assert set(self.proof_graph.nodes) == reachable
+
+        if set(self.proof_graph.nodes) != reachable:
+            log_debug(f"[proof graph] graph is not connected, reachable: {len(reachable)}, total: {len(self.proof_graph.nodes)}")
+
         log_debug(
             f"[proof graph] {len(self.proof_graph.nodes)} nodes, {len(self.proof_graph.edges)} edges, root {self.root_ref}"
         )
@@ -124,8 +127,9 @@ class ProofAnalyzer(TermTable):
             "and-elim",
             "not-or-elim",
             "symm",
-            "nnf-pos",
+            # "nnf-pos",
         }:
+            # print(name, len(node.children))
             assert len(node.children) == 2
         elif name in {
             "refl",

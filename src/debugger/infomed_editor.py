@@ -1,7 +1,7 @@
 from typing import Dict
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.mutant_info import MutantInfo
-from debugger.edit_info import EditAction
+from debugger.edit_info import EditAction, EditInfo
 from debugger.query_editor import QueryEditor
 from debugger.query_loader import QueryLoader, Z3QuantWrapper
 from utils.system_utils import log_debug, log_warn
@@ -81,7 +81,9 @@ class QueryInstStat:
 class InformedEditor(QueryEditor):
     def __init__(self, query_path: str, pa: ProofAnalyzer, ti: MutantInfo):
         super().__init__(query_path)
+        assert isinstance(pa, ProofAnalyzer)
         self.proof = pa
+        assert isinstance(ti, MutantInfo)
         self.trace = ti
 
         self.proof_stats = QueryInstStat(pa.get_qi_counts(), self)
@@ -232,6 +234,7 @@ class InformedEditor(QueryEditor):
 
         log_warn(f"[edit] unhandled action {action} for qid {qname}")
 
-    def edit_specified(self, edits: Dict[str, EditAction]):
-        for qname, action in edits.items():
+    def edit_by_info(self, ei: EditInfo):
+        for qname, action in ei.items():
             self.edit_by_qname(qname, action)
+        self.save(ei.query_path)

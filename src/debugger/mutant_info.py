@@ -3,6 +3,7 @@ import os
 import subprocess
 from base.defs import MARIPOSA
 from base.solver import RCode, output_as_rcode
+from debugger.proof_analyzer import ProofAnalyzer
 from debugger.z3_utils import dump_z3_proof
 from utils.query_utils import Mutation, emit_mutant_query, get_trace_stats_axiom_profiler
 from debugger.quant_graph import *
@@ -255,3 +256,7 @@ class MutantInfo:
     def get_qi_counts(self):
         assert self.has_trace()
         return get_trace_stats_axiom_profiler(self.trace_path)
+
+    def get_proof_analyzer(self):
+        assert self.has_proof()
+        return ProofAnalyzer(self.proof_path)

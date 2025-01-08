@@ -24,16 +24,27 @@ class EditAction(Enum):
 
 
 class EditInfo:
-    def __init__(self, path, edit):
-        self.query_path = path
-        self.edit = edit
+    def __init__(self, dir, actions):
+        assert os.path.isdir(dir)
+        self.edit_dir = dir
+        self.__actions = actions
+        self.__hash_id = EditInfo.hash_actions(actions)
+        self.query_path = os.path.join(self.edit_dir, self.__hash_id + ".smt2")
 
         self.rcode = None
         self.time = None
         self.error = None
+    
+    @staticmethod
+    def hash_actions(actions):
+        m = hashlib.md5()
+        assert isinstance(actions, dict)
+        actions = [(qid, actions[qid]) for qid in sorted(actions)]
+        m.update(str(actions).encode())
+        return m.hexdigest()[0:8]
 
     def as_report(self):
-        edit = ",\n".join([f"    '{qid}': {e}" for qid, e in self.edit.items()])
+        edit = ",\n".join([f"    '{qid}': {e}" for qid, e in self.__actions.items()])
         edit = f"edit = {{\n{edit}\n}}"
         lines = [
             "# " + "-" * 80,
@@ -53,10 +64,7 @@ class EditInfo:
         return self.rcode != None
 
     def get_id(self):
-        m = hashlib.md5()
-        edits = [(qid, self.edit[qid]) for qid in sorted(self.edit)]
-        m.update(str(edits).encode())
-        return m.hexdigest()[0:8]
+        return self.__hash_id
 
     def run_query(self):
         if self.has_data():
@@ -65,27 +73,41 @@ class EditInfo:
         assert error == ""
 
     def get_singleton_edit(self):
-        assert len(self.edit) == 1
-        qid = list(self.edit.keys())[0]
-        return (qid, self.edit[qid])
+        assert len(self.__actions) == 1
+        qid = list(self.__actions.keys())[0]
+        return (qid, self.__actions[qid])
 
     @staticmethod
     def from_dict(d):
-        edit = d["edit"]
-        edit = {qid: EditAction(e) for qid, e in edit.items()}
-        ei = EditInfo(d["path"], edit)
-        ei.rcode = RCode(d["rcode"]) if d["rcode"] is not None else None
+        actions = dict()
+        for qid, e in d["actions"].items():
+            actions[qid] = EditAction(e)
+        ei = EditInfo(d["edit_dir"], actions)
+        rc = d["rcode"]
+        if rc is not None:
+            ei.rcode = RCode(rc)
         ei.time = d["time"]
         ei.error = d["error"]
         return ei
-
+    
     def to_dict(self):
-        edit = {qid: self.edit[qid].value for qid in self.edit}
-        rcode = self.rcode.value if self.rcode is not None else None
+        edit = dict()
+        for qid, e in self.__actions.items():
+            edit[qid] = e.value
+        if self.rcode is not None:
+            rcode = self.rcode.value
+        else:
+            rcode = None
         return {
-            "path": self.query_path,
-            "edit": edit,
+            "edit_dir": self.edit_dir,
+            "actions": edit,
             "rcode": rcode,
             "time": self.time,
             "error": self.error,
         }
+
+    def items(self):
+        return self.__actions.items()
+
+    def actions(self):
+        return self.__actions

@@ -216,20 +216,24 @@ class ExperAnalyzer:
         os.makedirs(filtered_dir, exist_ok=True)
 
         passing = self.get_passing_plain()
-        print(f"passing queries: {len(passing)}")
-        selected = 0
-        budget = 500
+
+        log_info(f"{self.exp.proj.gid} has {len(passing)}/{len(self.qids)} passing queries")
+
+        budget, selected = 0, 0
 
         for qid, et in passing:
-            if budget <= 0:
+            if budget >= 360:
                 break
-            budget += et/1e3
-            print(f"selected {qid}, {round(et/1e3, 2)}")
-            shutil.copy(self[qid].query_path, filtered_dir) 
+            budget += et/1000
             selected += 1
+            dest = f"{filtered_dir}/{qid}.smt2"
+            if os.path.exists(dest):
+                continue
+            shutil.copy(self[qid].query_path, dest) 
 
-        print(f"selected {selected} queries")
-        print(f"copied to {filtered_dir}")
+        log_info(f"selected {selected} queries to {filtered_dir}")
+        eta = budget * 180 / 7 / 5 / 60 / 60
+        log_info(f"plain budget: {round(budget, 2)} seconds, eta: {round(eta, 2)} hours")
 
     def print_stabilized_queries(self):
         for qid in self.qids:

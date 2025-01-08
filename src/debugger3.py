@@ -9,11 +9,8 @@ from z3 import set_param
 from tqdm import tqdm
 from base.defs import DEBUG_ROOT
 from base.solver import RCode
+from debugger.edit_manager import EditManager
 from debugger.pool_utils import run_with_pool
-
-# from debugger.trace_analyzer import InstDiffer, shorten_qid
-from debugger.edit_info import EditInfo, EditAction
-# from query_editor import QueryEditor
 from typing import Dict, List
 from utils.query_utils import (
     Mutation,
@@ -46,17 +43,17 @@ def _build_fail_trace(mi: MutantInfo):
     et = round(mi.trace_time / 1000, 2)
     rc = mi.trace_rcode
     if rc != RCode.UNSAT or et > TRACE_TIME_LIMIT_SEC:
-        log_info(f"[trace-fail] {mi.trace_path}, {rc}, {et}")
+        log_debug(f"[trace-fail] {mi.trace_path}, {rc}, {et}")
         return mi
     mi.discard = True
-    log_warn(f"[trace-fail] discarded: {mi.trace_path}, {rc}, {et}")
+    log_debug(f"[trace-fail] discarded: {mi.trace_path}, {rc}, {et}")
     return None
 
 
 def _build_any_trace(mi: MutantInfo):
     mi.build_trace()
     et = round(mi.trace_time / 1000, 2)
-    log_info(f"[trace-any] {mi.trace_path}, {mi.trace_rcode}, {et}")
+    log_debug(f"[trace-any] {mi.trace_path}, {mi.trace_rcode}, {et}")
     return mi
 
 
@@ -109,18 +106,13 @@ class Debugger3:
         self.meta_dir = f"{self.sub_root}/meta"
         self.edit_dir = f"{self.sub_root}/edits"
 
-        # self.basic_report_path = f"{self.sub_root}/report.csv"
-
         self.traces: List[MutantInfo] = []
         self.proofs: List[MutantInfo] = []
         self.cores: List[MutantInfo] = []
 
-        self.__edit_infos: Dict[int, EditInfo] = dict()
-
         self.__init_dirs(clear_all)
         self.__init_query_files(query_path, ids_available)
         self.__init_mutant_infos(clear_traces, clear_cores, clear_proofs)
-        self.__init_edits(clear_edits)
 
         if len(self.traces) != 0 and len(self.proofs) == 0 and not retry_failed:
             log_warn(
@@ -132,28 +124,18 @@ class Debugger3:
         self.__build_cores(skip_core)
         self.__build_proofs(skip_core)
 
-        # self.pis = [p.proof_info for p in self.proofs]
-        # self.tmi = self.get_candidate_trace()
+        proof = self.proofs[0]
+        trace = self.get_candidate_trace()
 
-        # self.differ = InstDiffer(self.orig_path, self.pis[0], self.tmi)
-        # self.editor = QueryEditor(self.orig_path, self.pis[0])
-        # self.save_report(overwrite=overwrite_reports)
-        # self.load_report()
-
-    def __del__(self):
-        infos = [ei.to_dict() for ei in self.__edit_infos.values()]
-        json.dump(infos, open(self.edits_meta, "w+"))
+        log_info(f"[init] [edit] proof: {proof.proof_path}")
+        log_info(f"[init] [edit] trace: {trace.trace_path} ({trace.trace_rcode}, {trace.trace_time})")
+        assert trace.has_trace()
+        proof = proof.get_proof_analyzer()
+        self.editor = EditManager(self.name_hash, proof, trace, clear_edits=clear_edits)
 
     def __init_dirs(self, reset):
         if reset and os.path.exists(self.sub_root):
             os.system(f"rm -rf {self.sub_root}")
-
-        if reset:
-            log_info(f"[init] removing singleton project {self.singleton_edit_project}")
-            remove_dir("data/projs/" + self.singleton_edit_project)
-            remove_dir("data/projs/" + self.singleton_edit_project + ".filtered")
-            remove_dir("data/dbs/" + self.singleton_edit_project)
-            remove_dir("data/dbs/" + self.singleton_edit_project + ".filtered")
 
         for dir in [
             self.sub_root,
@@ -239,31 +221,6 @@ class Debugger3:
                     mi.discard = True
                 else:
                     self.proofs.append(mi)
-
-    def __init_edits(self, clear_edits):
-        self.__edit_infos = dict()
-
-        if clear_edits:
-            return self.clear_edits()
-
-        if not os.path.exists(self.edits_meta):
-            return
-
-        infos = json.load(open(self.edits_meta, "r"))
-
-        for ei in infos:
-            ei = EditInfo.from_dict(ei)
-            self.__edit_infos[ei.get_id()] = ei
-
-    def clear_edits(self):
-        if os.path.exists(self.edit_dir):
-            count = len(os.listdir(self.edit_dir))
-            if count > 10:
-                confirm_input(f"clear {count} edits?")
-            os.system(f"rm {self.edit_dir}/*")
-
-        self.__edit_infos = dict()
-        log_info("[edit] cleared")
 
     def __create_tasks(self, mutations: List[Mutation]):
         args = []
@@ -383,254 +340,22 @@ class Debugger3:
         return random.choice(self.traces)
 
     def print_status(self):
+        log_info(f"orig path: {self.orig_path}")
         table = []
         for v in self.traces:
-            table.append([v.mutation, v.seed, v.trace_time, v.trace_rcode])
-        log_info(f"listing {len(table)} trace mutants:")
-        print(tabulate(table, headers=["mutation", "seed", "time", "result"]))
+            table.append([v.trace_path, v.trace_time, v.trace_rcode])
+        log_info(f"listing {len(table)} traces:")
+        print(tabulate(table, headers=["path", "time", "result"]))
 
-        table = []
+        log_info(f"listing {len(self.cores)} cores:")
         for v in self.cores:
-            table.append([v.mutation, v.seed])
-        log_info(f"listing {len(table)} core mutants:")
-        print(tabulate(table, headers=["mutation", "seed"]))
+            print(v.core_path)
 
         table = []
+        log_info(f"listing {len(self.proofs)} proofs:")
+
         for v in self.proofs:
-            table.append([v.mutation, v.seed])
-        log_info(f"listing {len(table)} proof mutants:")
-        print(tabulate(table, headers=["mutation", "seed"]))
-
-        log_info(f"orig path: {self.orig_path}")
-
-        # log_info("report path: ")
-        # log_info(self.report_path)
-
-    def _save_edit(self, ei: EditInfo):
-        assert isinstance(ei, EditInfo)
-        self.editor.do_edits(ei.edit)
-        self.editor.save(ei.query_path)
-
-    def test_edit(self, edit):
-        ei = self.register_edit_info(edit)
-        if ei.has_data():
-            # log_warn("[edit] specified edit already exists")
-            return ei
-        if not ei.query_exists():
-            self._save_edit(ei)
-        ei.run_query()
-        self.__edit_infos[ei.get_id()] = ei
-        return ei
-
-    def test_edit_with_id(self, edit_id) -> EditInfo:
-        assert edit_id in self.__edit_infos
-        ei = self.__edit_infos[edit_id]
-        if not ei.query_exists():
-            self._save_edit(ei)
-        if not ei.has_data():
-            ei.run_query()
-        return ei
-
-    def get_edit_path(self, edit):
-        return f"{self.edit_dir}/{edit.get_id()}.smt2"
-
-    def register_edit_info(self, edit):
-        if isinstance(edit, set):
-            edit = {qid: self.differ.actions[qid] for qid in edit}
-        else:
-            assert isinstance(edit, dict)
-        ei = EditInfo("", edit)
-        path = self.get_edit_path(ei)
-        ei.query_path = path
-        eid = ei.get_id()
-
-        if eid in self.__edit_infos:
-            return self.__edit_infos[eid]
-        else:
-            self.__edit_infos[eid] = ei
-
-        return ei
-
-    def look_up_edit(self, edit):
-        res = []
-
-        for ei in self.__edit_infos:
-            if set(ei.edit.keys()) & edit.keys() != set():
-                res.append(ei)
-
-        return res
-
-    def try_aggressive_edit(self):
-        valid = dict()
-        for qid, action in self.differ.actions.items():
-            if action == EditAction.ERASE:
-                valid[qid] = action
-        self.test_edit(valid)
-
-    def _try_edits(self, targets, run_query):
-        args = []
-
-        for edit in tqdm(targets):
-            ei = self.register_edit_info(edit)
-            if ei.has_data():
-                continue
-            if not ei.query_exists():
-                self._save_edit(ei)
-            args.append(ei)
-
-        if not run_query:
-            log_info(f"[edit] skipped running, queries saved in {self.edit_dir}")
-            return
-
-        run_res = run_with_pool(_run_edit, args)
-
-        for ei in run_res:
-            assert ei.has_data()
-            self.__edit_infos[ei.get_id()] = ei
-
-    def try_random_edits(self, size=1):
-        NUM_TRIES = 30
-        edits = []
-
-        for _ in range(NUM_TRIES):
-            edit = set(random.sample(self.differ.actions.keys(), size))
-            edits.append({qid: self.differ.actions[qid] for qid in edit})
-
-        self._try_edits(edits, run_query=True)
-
-    def try_less_random_edits(self, size=2):
-        NUM_TRIES = 30
-        edits = []
-
-        for _ in range(NUM_TRIES):
-            edit = set(random.sample(self.differ.actions.keys(), size))
-            if all(self.differ.actions[qid] != EditAction.INSTANTIATE for qid in edit):
-                continue
-            edits.append({qid: self.differ.actions[qid] for qid in edit})
-
-        self._try_edits(edits, run_query=True)
-
-    # def register_singleton_edits(self):
-    #     for qid in self.differ.actions:
-    #         self.register_edit_info({qid})
-    #     log_info(f"[edit] {len(self.__edit_infos)} edits registered")
-
-    # def create_singleton_edit_project(self):
-    #     name = self.singleton_edit_project
-    #     qids = self.differ.actions.keys()
-    #     self._try_edits([{qid} for qid in qids], run_query=False)
-
-    #     assert os.path.exists(self.edit_dir)
-    #     log_info(f"[proj] edit dir: {self.edit_dir} {len(qids)} files")
-
-    #     if os.path.exists(f"data/projs/{name}"):
-    #         log_info(f"[proj] {name} already exists")
-    #     else:
-    #         os.system(
-    #             f"./src/proj_wizard.py create -i {self.edit_dir} --new-project-name {name}"
-    #         )
-    #         os.system(
-    #             f"./src/exper_wizard.py manager -e verify --total-parts 30 -s z3_4_13_0 -i data/projs/{name}/base.z3"
-    #         )
-
-    #     filtered_dir = f"data/projs/{name}.filtered/base.z3"
-
-    #     if os.path.exists(filtered_dir):
-    #         log_info(f"[proj] {name}.filtered already exists")
-    #     else:
-    #         os.system(
-    #             f"./src/analysis_wizard.py filter_edits -e verify -s z3_4_13_0 -i data/projs/{name}/base.z3"
-    #         )
-    #         if len(os.listdir(filtered_dir)) == 0:
-    #             return log_warn(f"[proj] {name} has no filtered queries")
-    #         os.system(
-    #             f"./src/exper_wizard.py manager -e default --total-parts 30 -s z3_4_13_0 -i {filtered_dir}"
-    #         )
-
-    # def analyze_singleton_project(self):
-    #     name = self.singleton_edit_project
-    #     filtered_dir = f"data/projs/{name}.filtered/base.z3"
-    #     edit_ids = []
-
-    #     if not os.path.exists(filtered_dir):
-    #         log_warn(f"[proj] {name} has no filtered queries")
-    #         return edit_ids
-
-    #     for config in ["default", "verus_quick"]:
-    #         stdout, stderr, _ = subprocess_run(
-    #             [
-    #                 "./src/analysis_wizard.py",
-    #                 "stable",
-    #                 "-e",
-    #                 config,
-    #                 "-s",
-    #                 "z3_4_13_0",
-    #                 "-i",
-    #                 filtered_dir,
-    #             ],
-    #             debug=True,
-    #         )
-
-    #         # TODO: this is a hacky... I should have used the same exp config...
-    #         if stderr:
-    #             log_warn("skip due to encountered: " + stderr)
-    #             continue
-
-    #         for line in stdout.split("\n"):
-    #             if line.startswith("edit_id:"):
-    #                 edit_id = line.split(": ")[1].strip()
-    #                 edit_ids.append(edit_id)
-
-    #         return edit_ids
-
-    # def evaluate_rankings(self):
-    #     valid_edit_count = 0
-
-    #     table = []
-
-    #     versions = ["v0", "v1", "v2", "v3", "v4", "v5"]
-    #     scores = [0] * 12
-
-    #     eids = self.analyze_singleton_project()
-    #     self.register_singleton_edits()
-
-    #     for eid in eids:
-    #         ei = self.test_edit_with_id(eid)
-    #         qid, action = ei.get_singleton_edit()
-
-    #         if qid == "prelude_fuel_defaults":
-    #             continue
-
-    #         ranks = self.get_rankings(qid)
-    #         valid_edit_count += 1
-
-    #         # self.differ.debug_quantifier(qid)
-
-    #         for i in range(6):
-    #             if ranks[i] < 10:
-    #                 scores[2 * i] += 1
-    #                 scores[2 * i + 1] = 1
-
-    #         table += [[shorten_qid(qid), ei.get_id(), action.value, ei.time] + ranks]
-
-    #     log_info(
-    #         f"found {valid_edit_count} stabilizing edits (excluding prelude_fuel_defaults)"
-    #     )
-
-    #     print(
-    #         tabulate(
-    #             table,
-    #             headers=[
-    #                 "qid",
-    #                 "eid",
-    #                 "action",
-    #                 "time",
-    #                 *versions,
-    #             ],
-    #         )
-    #     )
-
-    #     return [valid_edit_count] + scores
+            print(v.proof_path)
 
 
 def main():
@@ -694,11 +419,17 @@ def main():
         help="create singleton edit project",
     )
     parser.add_argument(
-        "--eval-rankings",
+        "--analyze-singleton",
         default=False,
         action="store_true",
-        help="evaluate different rankings",
+        help="analyze singleton edit project",
     )
+    # parser.add_argument(
+    #     "--eval-rankings",
+    #     default=False,
+    #     action="store_true",
+    #     help="evaluate different rankings",
+    # )
     parser.add_argument(
         "--print-status",
         default=False,
@@ -721,11 +452,11 @@ def main():
     )
 
     if args.create_singleton:
-        dbg.create_singleton_edit_project()
+        dbg.editor.create_singleton_edit_project()
         return
 
-    if args.eval_rankings:
-        dbg.evaluate_rankings()
+    if args.analyze_singleton:
+        dbg.editor.analyze_singleton_edit_project()
         return
 
     dbg.print_status()
