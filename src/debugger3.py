@@ -21,6 +21,7 @@ from utils.system_utils import (
     create_dir,
     get_name_hash,
     list_files_ext,
+    list_smt2_files,
     log_check,
     log_info,
     log_warn,
@@ -44,8 +45,8 @@ def _build_fail_trace(mi: MutantInfo):
     rc = mi.trace_rcode
     if rc != RCode.UNSAT or et > TRACE_TIME_LIMIT_SEC:
         log_debug(f"[trace-fail] {mi.trace_path}, {rc}, {et}")
+        mi.save()    
         return mi
-    mi.discard = True
     log_debug(f"[trace-fail] discarded: {mi.trace_path}, {rc}, {et}")
     return None
 
@@ -54,12 +55,14 @@ def _build_any_trace(mi: MutantInfo):
     mi.build_trace()
     et = round(mi.trace_time / 1000, 2)
     log_debug(f"[trace-any] {mi.trace_path}, {mi.trace_rcode}, {et}")
+    mi.save()    
     return mi
 
 
 def _build_core(mi: MutantInfo):
     if mi.build_core_query():
         log_info(f"[core]: {mi.core_path}")
+        mi.save()
         return mi
     log_warn(f"[core] failure: {mi.core_path}")
     return None
@@ -67,6 +70,7 @@ def _build_core(mi: MutantInfo):
 
 def _build_proof(mi: MutantInfo):
     if mi.build_proof():
+        mi.save()
         return mi
     return None
 
@@ -93,7 +97,7 @@ class Debugger3:
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
 
-        log_info(f"[init] analyzing {query_path} in {self.sub_root}")
+        log_info(f"analyzing {query_path} in {self.sub_root}")
 
         self.query_meta = f"{self.sub_root}/meta.json"
         self.orig_path = f"{self.sub_root}/orig.smt2"
@@ -110,6 +114,10 @@ class Debugger3:
         self.proofs: List[MutantInfo] = []
         self.cores: List[MutantInfo] = []
 
+        self.singleton_project = "singleton_" + self.name_hash
+        self.singleton_dir = f"data/projs/{self.singleton_project}/base.z3"
+        self.singleton_filtered_dir = self.singleton_dir.replace("/base.z3", ".filtered/base.z3")
+
         self.__init_dirs(clear_all)
         self.__init_query_files(query_path, ids_available)
         self.__init_mutant_infos(clear_traces, clear_cores, clear_proofs)
@@ -124,14 +132,20 @@ class Debugger3:
         self.__build_cores(skip_core)
         self.__build_proofs(skip_core)
 
+    def get_editor(self):
+        if len(self.proofs) == 0:
+            log_warn("[init] no proofs available")
+            return None
+
         proof = self.proofs[0]
         trace = self.get_candidate_trace()
 
-        log_info(f"[init] [edit] proof: {proof.proof_path}")
-        log_info(f"[init] [edit] trace: {trace.trace_path} ({trace.trace_rcode}, {trace.trace_time})")
+        log_info(f"[edit] proof: {proof.proof_path}")
+        log_info(f"[edit] trace: {trace.trace_path} ({trace.trace_rcode}, {trace.trace_time})")
+
         assert trace.has_trace()
         proof = proof.get_proof_analyzer()
-        self.editor = EditManager(self.name_hash, proof, trace, clear_edits=clear_edits)
+        return EditManager(self.name_hash, proof, trace)
 
     def __init_dirs(self, reset):
         if reset and os.path.exists(self.sub_root):
@@ -194,6 +208,8 @@ class Debugger3:
                 open(self.query_meta, "w+"),
             )
             log_info(f"[init] basic meta data written to {self.query_meta}")
+        else:
+            self.meta_data = json.load(open(self.query_meta, "r"))
 
     def __init_mutant_infos(self, clear_traces, clear_cores, clear_proofs):
         if not os.path.exists(self.meta_dir):
@@ -201,7 +217,12 @@ class Debugger3:
             return
 
         for mut_meta in list_files_ext(self.meta_dir, ".json"):
-            d = json.load(open(mut_meta, "r"))
+            try:
+                d = json.load(open(mut_meta, "r"))
+            except:
+                os.system(f"rm {mut_meta}")
+                log_warn(f"[init] failed to load {mut_meta}")
+                continue
             mi = MutantInfo.from_dict(d)
 
             if mi.has_trace():
@@ -357,6 +378,28 @@ class Debugger3:
         for v in self.proofs:
             print(v.proof_path)
 
+    def get_status(self):
+        singleton_count = None
+
+        if queries := list_smt2_files(self.singleton_dir):
+            singleton_count = len(queries)
+
+        filtered_count = None
+
+        if queries := list_smt2_files(self.singleton_filtered_dir):
+            filtered_count = len(queries)
+
+        return {
+            "given_query": self.meta_data["given_query"],
+            "verus_proc": self.meta_data["verus_proc"],
+            "sub_root": self.meta_data["sub_root"],
+            "traces": len(self.traces),
+            "cores": len(self.cores),
+            "proofs": len(self.proofs),
+            "singleton_count": singleton_count,
+            "filtered_count": filtered_count,
+        }
+
 
 def main():
     set_param(proof=True)
@@ -452,11 +495,11 @@ def main():
     )
 
     if args.create_singleton:
-        dbg.editor.create_singleton_edit_project()
+        dbg.get_editor().create_singleton_project()
         return
 
     if args.analyze_singleton:
-        dbg.editor.analyze_singleton_edit_project()
+        dbg.get_editor().analyze_singleton_project()
         return
 
     dbg.print_status()

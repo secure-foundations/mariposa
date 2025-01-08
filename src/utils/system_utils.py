@@ -64,7 +64,8 @@ def subprocess_run(command, timeout=None, debug=False, cwd=None, shell=False, ch
     return stdout, stderr, elapsed
 
 def list_files_ext(sub_root, ext):
-    log_check(os.path.isdir(sub_root), f"{sub_root} is not a directory")
+    if not os.path.isdir(sub_root):
+        return None
     file_paths = []
     for root, _, files in os.walk(sub_root):
         for file in files:

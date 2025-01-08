@@ -33,7 +33,7 @@ class EditManager(InformedEditor):
         self.edit_dir = f"{self.sub_root}/edits/"
 
         self.feasible_actions = self.get_all_feasible_actions()
-        self.singleton_edit_project = "singleton_" + name_hash
+        self.singleton_project = "singleton_" + name_hash
 
         self.__init_dirs(clear_edits)
         self.__init_edits(clear_edits)
@@ -48,11 +48,11 @@ class EditManager(InformedEditor):
         create_dir(self.edit_dir)
 
         if reset:
-            log_info(f"[init] removing singleton project {self.singleton_edit_project}")
-            remove_dir("data/projs/" + self.singleton_edit_project)
-            remove_dir("data/projs/" + self.singleton_edit_project + ".filtered")
-            remove_dir("data/dbs/" + self.singleton_edit_project)
-            remove_dir("data/dbs/" + self.singleton_edit_project + ".filtered")
+            log_info(f"[init] removing singleton project {self.singleton_project}")
+            remove_dir("data/projs/" + self.singleton_project)
+            remove_dir("data/projs/" + self.singleton_project + ".filtered")
+            remove_dir("data/dbs/" + self.singleton_project)
+            remove_dir("data/dbs/" + self.singleton_project + ".filtered")
 
     def __init_edits(self, clear_edits):
         self.__edit_infos = dict()
@@ -78,23 +78,34 @@ class EditManager(InformedEditor):
         self.__edit_infos = dict()
         log_info("[edit] cleared")
 
-    def create_singleton_edit_project(self):
-        project_dir = f"data/projs/{self.singleton_edit_project}/base.z3"
-        for qid, action in tqdm(self.feasible_actions.items()):
-            self.register_edit_info({qid: action}, project_dir)
-            if action == EditAction.INST_REPLACE:
-                # this is also feasible
-                self.register_edit_info({qid: EditAction.INST_KEEP}, project_dir)
-        query_count = len(list_smt2_files(project_dir))
-        log_info(f"[edit] [proj] {self.singleton_edit_project} has {query_count} queries")
-        self.__save_edits_meta()
-        os.system(f"./src/exper_wizard.py manager -e verify --total-parts 30 -s z3_4_13_0 -i {project_dir} --clear")
-        os.system(f"./src/analysis_wizard.py filter_edits -e verify -s z3_4_13_0 -i {project_dir}")
-        filtered_dir = f"data/projs/{self.singleton_edit_project}.filtered/base.z3"
-        os.system(f"./src/exper_wizard.py manager -e verus_quick --total-parts 30 -s z3_4_13_0 -i {filtered_dir} --clear")
+    def create_singleton_project(self):
+        project_dir = f"data/projs/{self.singleton_project}/base.z3"
+        filtered_dir = f"data/projs/{self.singleton_project}.filtered/base.z3"
 
-    def analyze_singleton_edit_project(self):
-        name = self.singleton_edit_project
+        create_dir(project_dir)
+        create_dir(filtered_dir)
+
+        if list_smt2_files(project_dir) == []:
+            for qid, action in tqdm(self.feasible_actions.items()):
+                self.register_edit_info({qid: action}, project_dir)
+                if action == EditAction.INST_REPLACE:
+                    # this is also feasible
+                    self.register_edit_info({qid: EditAction.INST_KEEP}, project_dir)
+            self.__save_edits_meta()
+        else:
+            log_warn(f"[proj] {self.singleton_project} already exists")
+
+        query_count = len(list_smt2_files(project_dir))
+        log_info(f"[edit] [proj] {self.singleton_project} has {query_count} queries")
+
+        # if list_smt2_files(filtered_dir) == []:
+        #     os.system(f"./src/analysis_wizard.py filter_edits -e verify -s z3_4_13_0 -i {project_dir}")
+        #     os.system(f"./src/exper_wizard.py manager -e verus_quick --total-parts 30 -s z3_4_13_0 -i {filtered_dir} --clear")
+        # else:
+        #     log_warn(f"[proj] {self.singleton_edit_project} already filtered")
+
+    def analyze_singleton_project(self):
+        name = self.singleton_project
         filtered_dir = f"data/projs/{name}.filtered/base.z3"
         edit_ids = []
 
@@ -130,10 +141,14 @@ class EditManager(InformedEditor):
         for edit_id in edit_ids:
             ei = self.test_edit_with_id(edit_id)
             qname, action = ei.get_singleton_edit()
-            feasible.append((edit_id, qname, action))
+            feasible.append((ei, qname, action))
 
         feasible = sorted(feasible, key=lambda x: x[1])
-        print(tabulate(feasible, headers=["edit_id", "qid", "action"]))
+
+        for ei, qid, action in feasible:
+            print(f"{qid} {action.value}")
+            print(f"{ei.query_path} {ei.time}s")
+            print()
 
         self.__save_edits_meta()
         return
@@ -142,8 +157,6 @@ class EditManager(InformedEditor):
         ei = self.register_edit_info(edit)
         if ei.has_data():
             return ei
-        if not ei.query_exists():
-            self._save_edit(ei)
         ei.run_query()
         self.__edit_infos[ei.get_id()] = ei
         return ei

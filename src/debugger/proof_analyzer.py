@@ -2,7 +2,7 @@ from typing import Dict, List, Set
 import networkx as nx
 from debugger.tree_parser import *
 from debugger.symbol_table import TermTable
-from utils.system_utils import log_debug
+from utils.system_utils import log_debug, log_warn
 
 class RewriteTerm:
     def __init__(self, left, right):
@@ -108,9 +108,8 @@ class ProofAnalyzer(TermTable):
         conclusion = node.children[-1]
 
         if not self.is_proof_free(conclusion):
-            print("proof node conclusion is not grounded?:")
-            self.pprint_node(ref, 1)
-            assert False
+            log_warn(f"proof node conclusion is not grounded: {ref}")
+            return
 
         if (
             self.__collect_lemma(ref)

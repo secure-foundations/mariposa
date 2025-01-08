@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import subprocess
@@ -5,9 +6,10 @@ from base.defs import MARIPOSA
 from base.solver import RCode, output_as_rcode
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.z3_utils import dump_z3_proof
-from utils.query_utils import Mutation, emit_mutant_query, get_trace_stats_axiom_profiler
 from debugger.quant_graph import *
+from utils.query_utils import Mutation, emit_mutant_query, get_trace_stats_axiom_profiler
 from utils.system_utils import log_check, log_debug, log_info, log_warn, subprocess_run
+from utils.cache_utils import *
 
 
 TRACE_TIME_LIMIT_SEC = 10
@@ -28,7 +30,6 @@ class MutantInfo:
         self.sub_root = sub_root
 
         self.orig_path = f"{sub_root}/orig.smt2"
-        
         self.lbl_path = f"{sub_root}/lbl.smt2"
 
         self.mutation = mutation
@@ -72,7 +73,7 @@ class MutantInfo:
             "trace_time": self.trace_time,
         }
 
-    def __del__(self):
+    def save(self):
         if self.discard:
             for path in [
                 self.mut_path,
@@ -258,5 +259,8 @@ class MutantInfo:
         return get_trace_stats_axiom_profiler(self.trace_path)
 
     def get_proof_analyzer(self):
-        assert self.has_proof()
-        return ProofAnalyzer(self.proof_path)
+        m = hashlib.md5()
+        # assert self.has_proof()
+        m.update(str(self.proof_path).encode())
+        pickle_name = m.hexdigest() + ".pickle"
+        return load_cache_or(pickle_name, lambda: ProofAnalyzer(self.proof_path))

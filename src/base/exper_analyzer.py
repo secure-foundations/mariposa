@@ -194,20 +194,17 @@ class ExperAnalyzer:
     #         print_banner(f"{qid} ({qr.failure_type})")
     #         qr.print_status(verbosity=2)
     
-    def get_passing_plain(self, max_time=1e10):
-        passing = dict()
-
+    def get_plain_statuses(self, max_time=1e10):
+        results = dict()
         for qid in self.qids:
             qr = self[qid]
             rc, et = qr.get_original_status()
-            if rc != RCode.UNSAT.value:
-                continue
+            rc = RCode(rc)
             if et > max_time:
-                continue
-            passing[qid] = et
+                rc = RCode.TIMEOUT
+            results[qid] = (rc, et)
+        return results
 
-        return sorted(passing.items(), key=lambda x: x[1])
-    
     def print_verification_status(self):
         pass
 
@@ -215,25 +212,49 @@ class ExperAnalyzer:
         filtered_dir = self.exp.proj.sub_root.replace("/base", ".filtered/base")
         os.makedirs(filtered_dir, exist_ok=True)
 
-        passing = self.get_passing_plain()
+        statues = self.get_plain_statuses()
+        passed = []
+        errored = []
 
-        log_info(f"{self.exp.proj.gid} has {len(passing)}/{len(self.qids)} passing queries")
+        for qid, (rc, et) in statues.items():
+            if rc == RCode.UNSAT:
+                passed.append((qid, et))
+            elif rc == RCode.ERROR:
+                errored.append(qid)
+
+        passed = sorted(passed, key=lambda x: x[1])
+
+        log_info(f"{self.exp.proj.gid} has {len(self.qids)} queries, {len(passed)} passed")
+
+        if len(errored) > 0:
+            log_error(f"{len(errored)} errors!")
+            for qid in errored:
+                query_path = self[qid].query_path
+                print(f"{query_path}")
+        
+        use_caution = len(list_smt2_files(filtered_dir)) != 0
 
         budget, selected = 0, 0
+        max_selected_et = 0
 
-        for qid, et in passing:
+        for qid, et in passed:
             if budget >= 360:
                 break
+
             budget += et/1000
             selected += 1
             dest = f"{filtered_dir}/{qid}.smt2"
+            max_selected_et = max(max_selected_et, et)
+
             if os.path.exists(dest):
                 continue
-            shutil.copy(self[qid].query_path, dest) 
+
+            if not use_caution:
+                shutil.copy(self[qid].query_path, dest)
 
         log_info(f"selected {selected} queries to {filtered_dir}")
         eta = budget * 180 / 7 / 5 / 60 / 60
-        log_info(f"plain budget: {round(budget, 2)} seconds, eta: {round(eta, 2)} hours")
+        log_info(f"plain budget: {round(budget, 2)}s, eta: {round(eta, 2)} hours, max selected et: {max_selected_et/1000}(s)")
 
     def print_stabilized_queries(self):
         for qid in self.qids:

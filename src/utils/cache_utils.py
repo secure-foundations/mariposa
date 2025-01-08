@@ -1,6 +1,8 @@
 import pickle, os
 import pandas as pd
 
+from utils.system_utils import log_debug
+
 def get_cache_path(name):
     return "cache/" + name
 
@@ -17,6 +19,7 @@ def load_cache(name):
         return None
     path = get_cache_path(name)
     with open(path, 'rb') as f:
+        log_debug(f"loading cache at {name}")
         return pickle.load(f)
 
 def load_cache_or(name, func, clear=False):

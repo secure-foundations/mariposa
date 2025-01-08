@@ -19,8 +19,6 @@ from utils.plot_utils import *
 from utils.shake_utils import parse_shake_log, load_query_cids
 from base.query_analyzer import Stability as STB
 
-# import matplotlib.pyplot as plt
-
 
 def set_up_basic(subparsers):
     p = subparsers.add_parser(
@@ -30,8 +28,8 @@ def set_up_basic(subparsers):
     add_analysis_options(p)
 
 
-def set_up_filter_edits(subparsers):
-    p = subparsers.add_parser("filter_edits", help="analyze verus verification results")
+def set_up_singleton(subparsers):
+    p = subparsers.add_parser("singleton", help="analyze verus verification results")
     add_input_dir_option(p)
     add_analysis_options(p)
 
@@ -140,9 +138,13 @@ def handle_special():
     pass
 
 
-def handle_filter_edits(args):
-    exp = args.experiment
-    log_check(exp.is_done(), "experiment results do not exist")
+def handle_singleton(args):
+    exp: Experiment = args.experiment
+    if not exp.is_done():
+        log_warn("experiment results do not exist, run the following command:")
+        print(f"./src/exper_wizard.py manager -e verify --total-parts 30 -s z3_4_13_0 -i {exp.proj.sub_root} --clear")
+        return
+
     ba = ExperAnalyzer(exp, args.analyzer)
     ba.create_filtered_project()
 
@@ -164,7 +166,7 @@ if __name__ == "__main__":
 
     set_up_basic(subparsers)
     set_up_verify(subparsers)
-    set_up_filter_edits(subparsers)
+    set_up_singleton(subparsers)
     set_up_cvc5_perf(subparsers)
     set_up_cvc5_inst(subparsers)
     set_up_unstable(subparsers)
@@ -176,16 +178,21 @@ if __name__ == "__main__":
 
     p = subparsers.add_parser("debug", help="no help is coming")
     p = subparsers.add_parser("special", help="placeholder for special analysis")
-
     args = parser.parse_args()
+
+    if args.sub_command == "singleton":
+        # override the exp_config
+        args.exp_config = "verify"
+        assert args.input_dir.startswith("data/projs/singleton_")
+
     args = deep_parse_args(args)
 
     if args.sub_command == "basic":
         handle_basic(args)
     elif args.sub_command == "verify":
         handle_verify(args)
-    elif args.sub_command == "filter_edits":
-        handle_filter_edits(args)
+    elif args.sub_command == "singleton":
+        handle_singleton(args)
     elif args.sub_command == "perf":
         PrefAnalyzer(args.input_group, args.analyzer)
     elif args.sub_command == "inst":
