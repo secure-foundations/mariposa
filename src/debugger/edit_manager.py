@@ -38,7 +38,7 @@ class EditManager(InformedEditor):
         self.__init_dirs(clear_edits)
         self.__init_edits(clear_edits)
 
-    def __save_edits_meta(self):
+    def save_edits_meta(self):
         infos = [ei.to_dict() for ei in self.__edit_infos.values()]
 
         with open(self.edits_meta, "w+") as f:
@@ -91,7 +91,7 @@ class EditManager(InformedEditor):
                 if action == EditAction.INST_REPLACE:
                     # this is also feasible
                     self.register_edit_info({qid: EditAction.INST_KEEP}, project_dir)
-            self.__save_edits_meta()
+            self.save_edits_meta()
         else:
             log_warn(f"[proj] {self.singleton_project} already exists")
 
@@ -150,7 +150,7 @@ class EditManager(InformedEditor):
             print(f"{ei.query_path} {ei.time}s")
             print()
 
-        self.__save_edits_meta()
+        self.save_edits_meta()
         return
 
     def test_edit(self, edit):

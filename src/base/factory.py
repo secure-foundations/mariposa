@@ -166,6 +166,14 @@ class Factory:
         if not build:
             log_check(exp.is_done(), "experiment results do not exist")
         return exp
+    
+    def try_get_exper(
+        self, proj: Project, cfg: ExpConfig, solver: Solver
+    ) -> Experiment:
+        exp = Experiment(proj, cfg, solver)
+        if not exp.is_done():
+            return None
+        return exp
 
     def get_available_expers(self, proj: Project) -> List[Experiment]:
         cfgs = self.all_configs.values()

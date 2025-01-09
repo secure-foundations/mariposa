@@ -234,6 +234,9 @@ class ExperAnalyzer:
         
         use_caution = len(list_smt2_files(filtered_dir)) != 0
 
+        if use_caution:
+            log_warn("filtered dir is not empty, proceeding with caution")
+
         budget, selected = 0, 0
         max_selected_et = 0
 
@@ -266,3 +269,5 @@ class ExperAnalyzer:
             print(f"edit_id: {qid}")
             qr.print_status(verbosity=1)
 
+    def get_stable_edit_ids(self):
+        return [qid for qid in self.qids if self[qid].stability == Stability.STABLE and qid != "prelude_fuel_defaults"]

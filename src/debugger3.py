@@ -97,7 +97,7 @@ class Debugger3:
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
 
-        log_info(f"analyzing {query_path} in {self.sub_root}")
+        # log_info(f"analyzing {query_path} in {self.sub_root}")
 
         self.query_meta = f"{self.sub_root}/meta.json"
         self.orig_path = f"{self.sub_root}/orig.smt2"
@@ -379,16 +379,6 @@ class Debugger3:
             print(v.proof_path)
 
     def get_status(self):
-        singleton_count = None
-
-        if queries := list_smt2_files(self.singleton_dir):
-            singleton_count = len(queries)
-
-        filtered_count = None
-
-        if queries := list_smt2_files(self.singleton_filtered_dir):
-            filtered_count = len(queries)
-
         return {
             "given_query": self.meta_data["given_query"],
             "verus_proc": self.meta_data["verus_proc"],
@@ -396,8 +386,6 @@ class Debugger3:
             "traces": len(self.traces),
             "cores": len(self.cores),
             "proofs": len(self.proofs),
-            "singleton_count": singleton_count,
-            "filtered_count": filtered_count,
         }
 
 
