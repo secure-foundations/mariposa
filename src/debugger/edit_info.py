@@ -27,7 +27,7 @@ class EditInfo:
     def __init__(self, dir, actions):
         assert os.path.isdir(dir)
         self.edit_dir = dir
-        self.__actions = actions
+        self._actions = actions
         self.__hash_id = EditInfo.hash_actions(actions)
         self.query_path = os.path.join(self.edit_dir, self.__hash_id + ".smt2")
 
@@ -44,7 +44,7 @@ class EditInfo:
         return m.hexdigest()[0:8]
 
     def as_report(self):
-        edit = ",\n".join([f"    '{qid}': {e}" for qid, e in self.__actions.items()])
+        edit = ",\n".join([f"    '{qid}': {e}" for qid, e in self._actions.items()])
         edit = f"edit = {{\n{edit}\n}}"
         lines = [
             "# " + "-" * 80,
@@ -73,9 +73,9 @@ class EditInfo:
         assert error == ""
 
     def get_singleton_edit(self):
-        assert len(self.__actions) == 1
-        qid = list(self.__actions.keys())[0]
-        return (qid, self.__actions[qid])
+        assert len(self._actions) == 1
+        qid = list(self._actions.keys())[0]
+        return (qid, self._actions[qid])
 
     @staticmethod
     def from_dict(d):
@@ -92,7 +92,7 @@ class EditInfo:
     
     def to_dict(self):
         edit = dict()
-        for qid, e in self.__actions.items():
+        for qid, e in self._actions.items():
             edit[qid] = e.value
         if self.rcode is not None:
             rcode = self.rcode.value
@@ -107,7 +107,8 @@ class EditInfo:
         }
 
     def items(self):
-        return self.__actions.items()
+        return self._actions.items()
 
+    @property
     def actions(self):
-        return self.__actions
+        return self._actions

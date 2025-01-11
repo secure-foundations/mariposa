@@ -103,19 +103,21 @@ class InformedEditor(QueryEditor):
                 self.ignored.add(root_name)
                 
         self.__root_actions = dict()
-        
+
         for qname in self.list_qnames(root_only=True):
             self.__root_actions[qname] = self.__get_root_action(qname)
-        
+
     def __get_root_action(self, qname):
         p_stat = self.proof_stats.get_group_stat(qname)
-        try:
-            qi_info = self.proof.get_inst_info_under_qname(qname)
-            skolem_deps = qi_info.get_all_skolem_deps()
-        except KeyError:
-            skolem_deps = set()
-
         should_be_skolemized = self.group_should_be_skolemized(qname)
+
+        if not self.proof.has_inst_info(qname):
+            if should_be_skolemized:
+                return EditAction.SKOLEMIZE
+            return EditAction.ERASE
+
+        qi_info = self.proof.get_inst_info_under_qname(qname)
+        skolem_deps = qi_info.get_all_skolem_deps()
 
         if p_stat.total_count == 0:
             if should_be_skolemized:
@@ -128,6 +130,7 @@ class InformedEditor(QueryEditor):
             return EditAction.INST_REPLACE
 
         usable_insts = qi_info.get_feasible_insts()
+
         if len(usable_insts) != 0:
             # cannot remove the quantifier,
             # but can use some instances ...
@@ -155,17 +158,17 @@ class InformedEditor(QueryEditor):
             for qname in self[group_qname].group_qnames
         )
 
-    def get_all_feasible_actions(self, skip_ignored=True):
+    def get_singleton_actions(self, skip_ignored=True, skip_infeasible=True):
         actions = dict()
         for qname, action in self.__root_actions.items():
             if skip_ignored and qname in self.ignored:
                 continue
-            if action in {EditAction.NONE, EditAction.ERROR}:
+            if skip_infeasible and action in {EditAction.NONE, EditAction.ERROR}:
                 continue
             actions[qname] = action
         return actions
 
-    def get_action(self, qname):
+    def get_quant_action(self, qname):
         if qname not in self:
             log_warn(f"[differ] qid {qname} not found in {self.query_path}")
             return EditAction.NONE
@@ -176,7 +179,7 @@ class InformedEditor(QueryEditor):
         for qname, quant in self.items(root_only=True):
             if skip_ignored and qname in self.ignored:
                 continue
-            action = self.__get_root_action(qname)
+            action = self.get_quant_action(qname)
             t_group = self.trace_stats.get_group_stat(qname)
             p_group = self.proof_stats.get_group_stat(qname)
 

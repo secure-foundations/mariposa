@@ -258,9 +258,3 @@ class MutantInfo:
         assert self.has_trace()
         return get_trace_stats_axiom_profiler(self.trace_path)
 
-    def get_proof_analyzer(self):
-        m = hashlib.md5()
-        # assert self.has_proof()
-        m.update(str(self.proof_path).encode())
-        pickle_name = m.hexdigest() + ".pickle"
-        return load_cache_or(pickle_name, lambda: ProofAnalyzer(self.proof_path))

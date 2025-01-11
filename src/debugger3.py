@@ -2,83 +2,45 @@
 
 import argparse
 import json
-import binascii, random
-import pandas as pd
 import os
 from z3 import set_param
-from tqdm import tqdm
-from base.defs import DEBUG_ROOT
-from base.solver import RCode
-from debugger.edit_manager import EditManager
-from debugger.pool_utils import run_with_pool
 from typing import Dict, List
-from utils.query_utils import (
-    Mutation,
-    find_verus_procedure_name,
-)
-from utils.system_utils import (
-    confirm_input,
-    create_dir,
-    get_name_hash,
-    list_files_ext,
-    list_smt2_files,
-    log_check,
-    log_info,
-    log_warn,
-    remove_dir,
-    subprocess_run,
-)
+from tqdm import tqdm
 from tabulate import tabulate
-from debugger.mutant_info import *
 
+from base.defs import DEBUG_ROOT, MARIPOSA
+from debugger.edit_info import EditAction, EditInfo
+from debugger.file_builder import FileBuilder
+from debugger.pool_utils import run_with_pool
+from debugger.proof_analyzer import ProofAnalyzer
+from debugger.infomed_editor import InformedEditor 
+from utils.query_utils import find_verus_procedure_name
+from utils.system_utils import *
 
-MUTANT_COUNT = 30
+# def get_editor(self):
+#     if len(self.proofs) == 0:
+#         log_warn("[init] no proofs available")
+#         return None
 
-TRACE_TOTAL_TIME_LIMIT_SEC = 480
-CORE_TOTAL_TIME_LIMIT_SEC = 120
-PROOF_TOTAL_TIME_LIMIT_SEC = 120
+#     proof = self.proofs[0]
+#     trace = self.get_candidate_trace()
 
+#     log_info(f"[edit] proof: {proof.proof_path}")
+#     log_info(f"[edit] trace: {trace.trace_path} ({trace.trace_rcode}, {trace.trace_time})")
 
-def _build_fail_trace(mi: MutantInfo):
-    mi.build_trace()
-    et = round(mi.trace_time / 1000, 2)
-    rc = mi.trace_rcode
-    if rc != RCode.UNSAT or et > TRACE_TIME_LIMIT_SEC:
-        log_debug(f"[trace-fail] {mi.trace_path}, {rc}, {et}")
-        mi.save()    
-        return mi
-    log_debug(f"[trace-fail] discarded: {mi.trace_path}, {rc}, {et}")
-    return None
+#     assert trace.has_trace()
+#     proof = proof.get_proof_analyzer()
+#     return EditManager(self.name_hash, proof, trace)
 
-
-def _build_any_trace(mi: MutantInfo):
-    mi.build_trace()
-    et = round(mi.trace_time / 1000, 2)
-    log_debug(f"[trace-any] {mi.trace_path}, {mi.trace_rcode}, {et}")
-    mi.save()    
-    return mi
-
-
-def _build_core(mi: MutantInfo):
-    if mi.build_core_query():
-        log_info(f"[core]: {mi.core_path}")
-        mi.save()
-        return mi
-    log_warn(f"[core] failure: {mi.core_path}")
-    return None
-
-
-def _build_proof(mi: MutantInfo):
-    if mi.build_proof():
-        mi.save()
-        return mi
-    return None
-
+def _run_edit(ei: EditInfo):
+    ei.run_query()
+    return ei
 
 class Debugger3:
     def __init__(
         self,
         query_path,
+        ids_available=False,
         retry_failed=False,
         clear_all=False,
         clear_edits=False,
@@ -86,308 +48,243 @@ class Debugger3:
         clear_cores=False,
         clear_proofs=False,
         skip_core=False,
-        ids_available=False,
         overwrite_reports=False,
     ):
         if not os.path.exists(query_path):
             log_warn(f"[init] query path {query_path} not found")
             return
 
+        self.given_query_path = query_path
         self.name_hash = get_name_hash(query_path)
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
-
-        # log_info(f"analyzing {query_path} in {self.sub_root}")
-
-        self.query_meta = f"{self.sub_root}/meta.json"
         self.orig_path = f"{self.sub_root}/orig.smt2"
-        self.lbl_path = f"{self.sub_root}/lbl.smt2"
+        self.query_meta = f"{self.sub_root}/meta.json"
 
-        self.trace_dir = f"{self.sub_root}/{TRACES}"
-        self.muts_dir = f"{self.sub_root}/{MUTANTS}"
-        self.cores_dir = f"{self.sub_root}/{CORES}"
-        self.proofs_dir = f"{self.sub_root}/proofs"
-        self.meta_dir = f"{self.sub_root}/meta"
-        self.edit_dir = f"{self.sub_root}/edits"
-
-        self.traces: List[MutantInfo] = []
-        self.proofs: List[MutantInfo] = []
-        self.cores: List[MutantInfo] = []
+        self.chosen_proof_path = None
+        self.chosen_trace_path = None
+        
+        self.__edit_infos: Dict[int, EditInfo] = dict()
+        self.edits_meta = f"{self.sub_root}/edits.json"
+        self.edit_dir = f"{self.sub_root}/edits/"
 
         self.singleton_project = "singleton_" + self.name_hash
         self.singleton_dir = f"data/projs/{self.singleton_project}/base.z3"
         self.singleton_filtered_dir = self.singleton_dir.replace("/base.z3", ".filtered/base.z3")
 
         self.__init_dirs(clear_all)
-        self.__init_query_files(query_path, ids_available)
-        self.__init_mutant_infos(clear_traces, clear_cores, clear_proofs)
+        self.__init_edits(clear_edits)
+        self.__init_meta()
 
-        if len(self.traces) != 0 and len(self.proofs) == 0 and not retry_failed:
-            log_warn(
-                "[init] previous debugging attempt has failed, run with --retry-failed if needed!"
-            )
-            return
+        self._builder = FileBuilder(
+            query_path,
+            self.sub_root,
+            ids_available=ids_available,
+            retry_failed=retry_failed,
+            clear_traces=clear_traces,
+            clear_cores=clear_cores,
+            clear_proofs=clear_proofs,
+            skip_core=skip_core,
+        )
 
-        self.__build_traces()
-        self.__build_cores(skip_core)
-        self.__build_proofs(skip_core)
+        if self.chosen_proof_path is None:
+            self.set_proof()
 
-    def get_editor(self):
-        if len(self.proofs) == 0:
-            log_warn("[init] no proofs available")
-            return None
+        # print(self.chosen_proof_path)
+        # print(self.chosen_trace_path)
+        self._editor = None
 
-        proof = self.proofs[0]
-        trace = self.get_candidate_trace()
-
-        log_info(f"[edit] proof: {proof.proof_path}")
-        log_info(f"[edit] trace: {trace.trace_path} ({trace.trace_rcode}, {trace.trace_time})")
-
-        assert trace.has_trace()
-        proof = proof.get_proof_analyzer()
-        return EditManager(self.name_hash, proof, trace)
+    def set_proof(self):
+        self.chosen_proof_path = self._builder.proofs[0].proof_path
+        self.chosen_trace_path = self._builder.get_candidate_trace().trace_path
+        self.__save_query_meta()
 
     def __init_dirs(self, reset):
         if reset and os.path.exists(self.sub_root):
             os.system(f"rm -rf {self.sub_root}")
 
-        for dir in [
-            self.sub_root,
-            self.muts_dir,
-            self.trace_dir,
-            self.cores_dir,
-            self.proofs_dir,
-        ]:
-            create_dir(dir)
+        create_dir(self.edit_dir)
 
-    def __init_query_files(self, query_path, ids_available):
-        if not os.path.exists(self.orig_path):
-            if ids_available:
-                subprocess_run(["cp", query_path, self.orig_path])
-            else:
-                subprocess_run(
-                    [
-                        MARIPOSA,
-                        "--action=add-qids",
-                        "-i",
-                        query_path,
-                        "-o",
-                        self.orig_path,
-                    ],
-                    check=True,
-                )
-                log_check(
-                    os.path.exists(self.orig_path), f"failed to create {self.orig_path}"
-                )
+        if not reset:
+            return
 
-        if not os.path.exists(self.lbl_path):
-            subprocess_run(
-                [
-                    MARIPOSA,
-                    "--action=label-core",
-                    "-i",
-                    self.orig_path,
-                    "-o",
-                    self.lbl_path,
-                    "--reassign-ids",
-                ],
-                check=True,
-            )
-            log_check(
-                os.path.exists(self.lbl_path), f"failed to create {self.lbl_path}"
-            )
+        log_info(f"[init] removing singleton project {self.singleton_project}")
+        remove_dir("data/projs/" + self.singleton_project)
+        remove_dir("data/projs/" + self.singleton_project + ".filtered")
+        remove_dir("data/dbs/" + self.singleton_project)
+        remove_dir("data/dbs/" + self.singleton_project + ".filtered")
 
+    def __init_edits(self, clear_edits):
+        self.__edit_infos = dict()
+
+        if clear_edits:
+            return self.clear_edits()
+
+        if not os.path.exists(self.edits_meta):
+            return
+
+        infos = json.load(open(self.edits_meta, "r"))
+
+        for ei in infos:
+            ei = EditInfo.from_dict(ei)
+            self.__edit_infos[ei.get_id()] = ei
+
+    def __init_meta(self):
         if not os.path.exists(self.query_meta):
-            verus_proc = find_verus_procedure_name(self.orig_path)
-            json.dump(
-                {
-                    "given_query": query_path,
-                    "verus_proc": verus_proc,
-                    "sub_root": self.sub_root,
-                },
-                open(self.query_meta, "w+"),
-            )
+            self.__save_query_meta()
             log_info(f"[init] basic meta data written to {self.query_meta}")
         else:
             self.meta_data = json.load(open(self.query_meta, "r"))
+            self.chosen_proof_path = self.meta_data["chosen_proof"]
+            self.chosen_trace_path = self.meta_data["chosen_trace"]
 
-    def __init_mutant_infos(self, clear_traces, clear_cores, clear_proofs):
-        if not os.path.exists(self.meta_dir):
-            os.makedirs(self.meta_dir)
-            return
+    def __save_query_meta(self):
+        verus_proc = find_verus_procedure_name(self.given_query_path)
 
-        for mut_meta in list_files_ext(self.meta_dir, ".json"):
-            try:
-                d = json.load(open(mut_meta, "r"))
-            except:
-                os.system(f"rm {mut_meta}")
-                log_warn(f"[init] failed to load {mut_meta}")
-                continue
-            mi = MutantInfo.from_dict(d)
-
-            if mi.has_trace():
-                if clear_traces:
-                    mi.discard = True
-                else:
-                    self.traces.append(mi)
-
-            if mi.has_core():
-                if clear_cores:
-                    mi.discard = True
-                else:
-                    self.cores.append(mi)
-
-            if mi.has_proof():
-                if clear_proofs:
-                    mi.discard = True
-                else:
-                    self.proofs.append(mi)
-
-    def __create_tasks(self, mutations: List[Mutation]):
-        args = []
-
-        for m in mutations:
-            for _ in range(MUTANT_COUNT):
-                s = int(binascii.hexlify(os.urandom(8)), 16)
-                args.append(MutantInfo(self.sub_root, m, s))
-
-        random.shuffle(args)
-        return args
-
-    def __build_traces(self):
-        count = len(self.traces)
-
-        if count >= TRACE_GOAL_COUNT:
-            return
-
-        log_info(f"[init] currently {count} traces")
-
-        for f in [_build_any_trace, _build_fail_trace]:
-            args = self.__create_tasks(
-                [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
-            )
-
-            mis = run_with_pool(
-                f, args, goal=TRACE_GOAL_COUNT, time_bound=TRACE_TOTAL_TIME_LIMIT_SEC
-            )
-            self.traces += mis
-
-    def __build_cores(self, skip_core):
-        count = len(self.cores)
-
-        if count >= CORE_GOAL_COUNT or skip_core:
-            return
-
-        log_info(f"[init] currently {count} cores")
-
-        goal = CORE_GOAL_COUNT - count
-
-        args = self.__create_tasks([Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED])
-
-        res = run_with_pool(
-            _build_core, args, goal=goal, time_bound=CORE_TOTAL_TIME_LIMIT_SEC
+        json.dump(
+            {
+                "given_query": self.given_query_path,
+                "verus_proc": verus_proc,
+                "sub_root": self.sub_root,
+                "chosen_proof": self.chosen_proof_path,
+                "chosen_trace": self.chosen_trace_path,
+            },
+            open(self.query_meta, "w+"),
         )
 
-        self.cores += res
+    @property
+    def editor(self) -> InformedEditor:
+        if self._editor is None:
+            proof = ProofAnalyzer.from_proof_file(self.chosen_proof_path)
+            trace = self._builder.get_trace_mutant_info(self.chosen_trace_path)
+            assert trace.has_trace()
+            self._editor = InformedEditor(
+                self.orig_path, proof, trace,
+            )
+        return self._editor
 
-    def __build_proofs(self, skip_core):
-        count = len(self.proofs)
+    def save_edits_meta(self):
+        infos = [ei.to_dict() for ei in self.__edit_infos.values()]
 
-        if count >= PROOF_GOAL_COUNT:
-            return
+        with open(self.edits_meta, "w+") as f:
+            json.dump(infos, f)
 
-        log_info(f"[init] currently {count} proofs")
+    def clear_edits(self):
+        if os.path.exists(self.edit_dir):
+            count = len(os.listdir(self.edit_dir))
+            if count > 10:
+                confirm_input(f"clear {count} edits?")
+            os.system(f"rm {self.edit_dir}/*")
+        self.__edit_infos = dict()
+        log_info("[edit] cleared")
 
-        goal = PROOF_GOAL_COUNT - count
+    def create_singleton_project(self):
+        singleton_dir = f"data/projs/{self.singleton_project}/base.z3"
+        filter_dir = f"data/projs/{self.singleton_project}.filtered/base.z3"
+
+        create_dir(singleton_dir)
+        create_dir(filter_dir)
+
+        if list_smt2_files(singleton_dir) == []:
+            feasible_edits = self.editor.get_singleton_actions()
+            for qid, action in tqdm(feasible_edits.items()):
+                self.register_edit_info({qid: action}, singleton_dir)
+                if action == EditAction.INST_REPLACE:
+                    # this is also feasible
+                    self.register_edit_info({qid: EditAction.INST_KEEP}, singleton_dir)
+            self.save_edits_meta()
+        else:
+            log_warn(f"[proj] {self.singleton_project} already exists")
+
+        query_count = len(list_smt2_files(singleton_dir))
+        log_info(f"[edit] [proj] {self.singleton_project} has {query_count} queries")
+
+    def test_edit(self, edit):
+        ei = self.register_edit_info(edit)
+        if ei.has_data():
+            return ei
+        ei.run_query()
+        self.__edit_infos[ei.get_id()] = ei
+        return ei
+
+    def test_edit_with_id(self, edit_id) -> EditInfo:
+        assert edit_id in self.__edit_infos
+        ei = self.__edit_infos[edit_id]
+        if not ei.query_exists():
+            self.editor.save_edit(ei)
+        if not ei.has_data():
+            ei.run_query()
+        return ei
+
+    def look_up_edit_with_id(self, eid) -> EditInfo:
+        return self.__edit_infos[eid]
+
+    def get_edited_qnames(self, eids):
+        res = set()
+        for eid in eids:
+            res |= self.__edit_infos[eid].actions.keys()
+        return res
+
+    def register_edit_info(self, actions, output_dir=None):
+        if isinstance(actions, set):
+            actions = {qid: self.get_action(qid) for qid in actions}
+        else:
+            assert isinstance(actions, dict)
+
+        if not output_dir:
+            output_dir = self.edit_dir
+
+        create_dir(output_dir)
+
+        ei = EditInfo(output_dir, actions)
+        eid = ei.get_id()
+
+        if not ei.query_exists():
+            self.editor.edit_by_info(ei)
+
+        if eid in self.__edit_infos:
+            return self.__edit_infos[eid]
+
+        self.__edit_infos[eid] = ei
+
+        return ei
+
+    def look_up_edit(self, edit):
         res = []
 
-        if len(self.cores) != 0 and not skip_core:
-            skip = set([(mi.mutation, mi.seed) for mi in self.proofs])
-            args = [mi for mi in self.cores if (mi.mutation, mi.seed) not in skip]
-            log_info(
-                f"[proof] from core (!) skipping {len(self.cores) - len(args)} cores"
-            )
-            res = run_with_pool(
-                _build_proof,
-                args,
-                goal=goal,
-                time_bound=PROOF_TOTAL_TIME_LIMIT_SEC,
-            )
+        for ei in self.__edit_infos:
+            if set(ei.edit.keys()) & edit.keys() != set():
+                res.append(ei)
 
-        log_info(f"[proof] from core (!) yields {len(res)} proofs")
+        return res
 
-        if len(res) < goal:
-            log_info(f"[proof] from scratch, currently {len(res)} proofs")
-            args = self.__create_tasks([Mutation.SHUFFLE, Mutation.RESEED])
-            res += run_with_pool(
-                _build_proof, args, goal=goal, time_bound=PROOF_TOTAL_TIME_LIMIT_SEC
-            )
+    def _try_edits(self, targets, run_query):
+        args = []
 
-        log_check(len(res) != 0, "no proof found")
-        self.proofs += res
+        for edit in tqdm(targets):
+            ei = self.register_edit_info(edit)
+            if ei.has_data():
+                continue
+            args.append(ei)
 
-    def get_fast_unknown_trace(self):
-        uk_mis = [mi for mi in self.traces if mi.trace_rcode == RCode.UNKNOWN]
-        if len(uk_mis) == 0:
-            return None
-        return min(uk_mis, key=lambda tmi: tmi.trace_time)
+        if not run_query:
+            log_info(f"[edit] skipped running, queries saved in {self.edit_dir}")
+            return
 
-    def get_large_trace(self):
-        for tmi in self.traces:
-            if tmi.get_trace_size() > 1000000:
-                return tmi
-        return None
+        run_res = run_with_pool(_run_edit, args)
 
-    def get_slow_trace(self):
-        tomis = [
-            tmi for tmi in self.traces if tmi.trace_time >= TRACE_TIME_LIMIT_SEC * 1000
-        ]
-        if len(tomis) == 0:
-            return None
-        return max(tomis, key=lambda tmi: tmi.trace_time)
-
-    def get_candidate_trace(self):
-        r = self.get_slow_trace()
-
-        if r is not None:
-            return r
-
-        r = self.get_fast_unknown_trace()
-
-        if r is not None:
-            return r
-
-        random.seed(43)
-        return random.choice(self.traces)
-
-    def print_status(self):
-        log_info(f"orig path: {self.orig_path}")
-        table = []
-        for v in self.traces:
-            table.append([v.trace_path, v.trace_time, v.trace_rcode])
-        log_info(f"listing {len(table)} traces:")
-        print(tabulate(table, headers=["path", "time", "result"]))
-
-        log_info(f"listing {len(self.cores)} cores:")
-        for v in self.cores:
-            print(v.core_path)
-
-        table = []
-        log_info(f"listing {len(self.proofs)} proofs:")
-
-        for v in self.proofs:
-            print(v.proof_path)
+        for ei in run_res:
+            assert ei.has_data()
+            self.__edit_infos[ei.get_id()] = ei
 
     def get_status(self):
         return {
-            "given_query": self.meta_data["given_query"],
             "verus_proc": self.meta_data["verus_proc"],
             "sub_root": self.meta_data["sub_root"],
-            "traces": len(self.traces),
-            "cores": len(self.cores),
-            "proofs": len(self.proofs),
+            "traces": len(self._builder.traces),
+            "cores": len(self._builder.cores),
+            "proofs": len(self._builder.proofs),
         }
-
 
 def main():
     set_param(proof=True)
@@ -467,30 +364,42 @@ def main():
         action="store_true",
         help="print the current status",
     )
+    parser.add_argument(
+        "--reroll",
+        default=False,
+        action="store_true",
+        help="change the proof and trace",
+    )
 
     args = parser.parse_args()
 
     dbg = Debugger3(
         args.input_query_path,
+        retry_failed=args.retry_failed,
         clear_all=args.clear_all,
         clear_edits=args.clear_edits,
         clear_traces=args.clear_traces,
         clear_cores=args.clear_cores,
         clear_proofs=args.clear_proofs,
-        retry_failed=args.retry_failed,
         skip_core=args.skip_core,
         overwrite_reports=args.overwrite_reports,
     )
 
     if args.create_singleton:
-        dbg.get_editor().create_singleton_project()
+        dbg.create_singleton_project()
         return
 
     if args.analyze_singleton:
-        dbg.get_editor().analyze_singleton_project()
+        dbg.analyze_singleton_project()
+        return
+    
+    if args.reroll:
+        dbg.set_proof()
         return
 
-    dbg.print_status()
+    report = dbg.editor.get_report()
+    print(tabulate(report, headers="keys"))
+    # dbg.print_status()
 
 if __name__ == "__main__":
     main()

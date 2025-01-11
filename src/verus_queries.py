@@ -71,8 +71,9 @@ UNSTABLE_10_SECS = {
     "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__start_v.2.smt2": "e16c5e8c0b",
 }
 
-NO_PROOFS = {
+SKIP_FOR_NOW = {
     "data/projs/verismo.dedup/base.z3/arch__ptram__ptram_p2.smt2",
     "data/projs/vsystemsnew/base.z3/mimalloc-smt-page_organization__PageOrg__impl_%4__merge_with_before_ll_inv_valid_unused.smt2",
     "data/projs/vsystemsnew/base.z3/page-table-smt-impl_u__l2_refinement.4.smt2",
+    "data/projs/atmosphere/base.z3/kernel__create_and_share_pages.5.smt2",
 }

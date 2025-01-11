@@ -4,6 +4,7 @@ import argparse
 import random
 from analysis.core_analyzer import CoreAnalyzer
 from analysis.debug_analyzer import analyze_debug
+from analysis.singleton_analyzer import SingletonAnalyzer
 from analysis.trace_analyzer import TraceAnalyzer
 from base.defs import MARIPOSA_GROUPS
 from base.exper_analyzer import ExperAnalyzer
@@ -140,13 +141,14 @@ def handle_special():
 
 def handle_singleton(args):
     exp: Experiment = args.experiment
+
     if not exp.is_done():
         log_warn("experiment results do not exist, run the following command:")
         print(f"./src/exper_wizard.py manager -e verify --total-parts 30 -s z3_4_13_0 -i {exp.proj.sub_root} --clear")
         return
 
-    ba = ExperAnalyzer(exp, args.analyzer)
-    ba.create_filtered_project()
+    ba = SingletonAnalyzer(exp, args.analyzer)
+    # ba.create_filtered_project()
 
 
 def handle_stable():

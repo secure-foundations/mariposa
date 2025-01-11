@@ -58,6 +58,7 @@ class ExperAnalyzer:
         if not allow_missing_exper:
             for qid in path_exists_qids:
                 if qid not in qers:
+                    os.system(f"rm {self.get_path(qid)}")
                     log_warn(f"query {qid} has no experiment results")
             missing = path_exists_qids - set(qers.keys())
             log_check(missing == set(), 
@@ -193,71 +194,17 @@ class ExperAnalyzer:
     #             continue
     #         print_banner(f"{qid} ({qr.failure_type})")
     #         qr.print_status(verbosity=2)
-    
-    def get_plain_statuses(self, max_time=1e10):
+
+    def get_plain_statuses(self):
         results = dict()
         for qid in self.qids:
             qr = self[qid]
             rc, et = qr.get_original_status()
             rc = RCode(rc)
-            if et > max_time:
+            if self.ana.is_timeout(et):
                 rc = RCode.TIMEOUT
             results[qid] = (rc, et)
         return results
-
-    def print_verification_status(self):
-        pass
-
-    def create_filtered_project(self):
-        filtered_dir = self.exp.proj.sub_root.replace("/base", ".filtered/base")
-        os.makedirs(filtered_dir, exist_ok=True)
-
-        statues = self.get_plain_statuses()
-        passed = []
-        errored = []
-
-        for qid, (rc, et) in statues.items():
-            if rc == RCode.UNSAT:
-                passed.append((qid, et))
-            elif rc == RCode.ERROR:
-                errored.append(qid)
-
-        passed = sorted(passed, key=lambda x: x[1])
-
-        log_info(f"{self.exp.proj.gid} has {len(self.qids)} queries, {len(passed)} passed")
-
-        if len(errored) > 0:
-            log_error(f"{len(errored)} errors!")
-            for qid in errored:
-                query_path = self[qid].query_path
-                print(f"{query_path}")
-        
-        use_caution = len(list_smt2_files(filtered_dir)) != 0
-
-        if use_caution:
-            log_warn("filtered dir is not empty, proceeding with caution")
-
-        budget, selected = 0, 0
-        max_selected_et = 0
-
-        for qid, et in passed:
-            if budget >= 360:
-                break
-
-            budget += et/1000
-            selected += 1
-            dest = f"{filtered_dir}/{qid}.smt2"
-            max_selected_et = max(max_selected_et, et)
-
-            if os.path.exists(dest):
-                continue
-
-            if not use_caution:
-                shutil.copy(self[qid].query_path, dest)
-
-        log_info(f"selected {selected} queries to {filtered_dir}")
-        eta = budget * 180 / 7 / 5 / 60 / 60
-        log_info(f"plain budget: {round(budget, 2)}s, eta: {round(eta, 2)} hours, max selected et: {max_selected_et/1000}(s)")
 
     def print_stabilized_queries(self):
         for qid in self.qids:
@@ -270,4 +217,4 @@ class ExperAnalyzer:
             qr.print_status(verbosity=1)
 
     def get_stable_edit_ids(self):
-        return [qid for qid in self.qids if self[qid].stability == Stability.STABLE and qid != "prelude_fuel_defaults"]
+        return [qid for qid in self.qids if self[qid].stability == Stability.STABLE]

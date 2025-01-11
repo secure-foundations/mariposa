@@ -1,7 +1,9 @@
+import hashlib
 from typing import Dict, List, Set
 import networkx as nx
 from debugger.tree_parser import *
 from debugger.symbol_table import TermTable
+from utils.cache_utils import load_cache_or
 from utils.system_utils import log_debug, log_warn
 
 class RewriteTerm:
@@ -286,5 +288,15 @@ class ProofAnalyzer(TermTable):
     def get_inst_info_under_qname(self, qname) -> QuantInstInfo:
         return self.__insts_under_qname[qname]
 
+    def has_inst_info(self, qname):
+        return qname in self.__insts_under_qname
+
     def has_skolemized_qname(self, qname):
         return qname in self.__skolemized_qnames
+
+    @staticmethod
+    def from_proof_file(proof_path, clear=False) -> "ProofAnalyzer":
+        m = hashlib.md5()
+        m.update(str(proof_path).encode())
+        pickle_name = m.hexdigest() + ".pickle"
+        return load_cache_or(pickle_name, lambda: ProofAnalyzer(proof_path), clear)

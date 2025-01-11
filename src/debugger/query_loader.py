@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from typing import Dict, List, Set
 from z3 import *
 
 from debugger.z3_utils import (
@@ -70,6 +70,8 @@ class QueryLoader(Z3AstVisitor):
             quant.group_qnames = root_qnames[name]
 
         self.__root_qnames: Set[str] = set(root_qnames.keys())
+        self.__colocated_roots: List[Set[str]] = []
+        self.__identify_colocated_roots()
 
     def __load_quants(self, exp: z3.ExprRef, parent, origin: z3.ExprRef):
         if self.visit(exp) or is_var(exp):
@@ -88,11 +90,32 @@ class QueryLoader(Z3AstVisitor):
         for c in exp.children():
             self.__load_quants(c, parent, origin)
 
+    def __identify_colocated_roots(self):
+        colocated_roots = dict()
+        for qname, quant in self.__z3_quants.items():
+            if not quant.is_root():
+                continue
+            origin = quant.origin
+            if origin not in colocated_roots:
+                colocated_roots[origin] = set()
+            colocated_roots[origin].add(qname)
+
+        for qnames in colocated_roots.values():
+            if len(qnames) <= 1:
+                continue
+            self.__colocated_roots.append(qnames)
+
     def is_singleton(self, qname):
         return len(self.__z3_quants[qname].group_qnames) == 1
     
     def is_root(self, qname):
         return self.__z3_quants[qname].is_root()
+
+    def is_colocated(self, qname):
+        for qnames in self.__colocated_roots:
+            if qname in qnames:
+                return True
+        return False
 
     def list_qnames(self, root_only=False):
         if root_only:
