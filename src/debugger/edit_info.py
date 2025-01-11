@@ -89,7 +89,7 @@ class EditInfo:
         ei.time = d["time"]
         ei.error = d["error"]
         return ei
-    
+
     def to_dict(self):
         edit = dict()
         for qid, e in self._actions.items():

@@ -46,7 +46,7 @@ class SingletonAnalyzer(ExperAnalyzer):
     def create_filtered_project(self):
         filtered_dir = self.exp.proj.sub_root.replace("/base", ".filtered/base")
         os.makedirs(filtered_dir, exist_ok=True)
-        
+
         use_caution = len(list_smt2_files(filtered_dir)) != 0
 
         if use_caution:
@@ -66,7 +66,7 @@ class SingletonAnalyzer(ExperAnalyzer):
 
             if os.path.exists(dest) or use_caution:
                 continue
-
+            # print(f"copying {self[eid].query_path} to {dest}")
             shutil.copy(self[eid].query_path, dest)
 
         log_info(f"selected {selected} queries to {filtered_dir}")

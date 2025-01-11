@@ -299,4 +299,5 @@ class ProofAnalyzer(TermTable):
         m = hashlib.md5()
         m.update(str(proof_path).encode())
         pickle_name = m.hexdigest() + ".pickle"
+        log_debug(f"loading proof: {proof_path}")
         return load_cache_or(pickle_name, lambda: ProofAnalyzer(proof_path), clear)

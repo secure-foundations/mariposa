@@ -148,7 +148,7 @@ def handle_singleton(args):
         return
 
     ba = SingletonAnalyzer(exp, args.analyzer)
-    # ba.create_filtered_project()
+    ba.create_filtered_project()
 
 
 def handle_stable():
