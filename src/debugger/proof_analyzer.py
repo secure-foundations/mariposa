@@ -1,6 +1,7 @@
 import hashlib
 from typing import Dict, List, Set
 import networkx as nx
+from collections import Counter
 from debugger.tree_parser import *
 from debugger.symbol_table import TermTable
 from utils.cache_utils import load_cache_or
@@ -69,11 +70,13 @@ class ProofAnalyzer(TermTable):
         self.__proof_node_count = 0
 
         self.__qname_of_inst_ref: Dict[NodeRef, str] = dict()
-        self.__skolemized_qnames: Set[str] = set()
+
+        self.__skolemization_consequences: Dict[str, Counter] = dict()
         self.__insts_under_qname: Dict[str, QuantInstInfo] = dict()
 
         self.proof_graph = nx.DiGraph()
         self.__analyze_proof_nodes()
+
         # self.__analyze_quant_insts()
 
     def __analyze_proof_nodes(self):
@@ -213,15 +216,19 @@ class ProofAnalyzer(TermTable):
             self.__insts_under_qname[qname] = QuantInstInfo(qname)
 
         skolem_deps = self.get_skolem_deps(actual_inst_ref)
-        # if qname == "internal_crate__fun__1_constructor_definition":
-            # print(self.dump_node(actual_inst_ref))
-            # print(f"skolem deps: {skolem_deps}")
         self.__insts_under_qname[qname].add_inst(quant, actual_inst_ref, skolem_deps)
-
-        for dep in skolem_deps:
-            self.__skolemized_qnames.add(dep)
-
+        self.__record_skolem_deps(qname, skolem_deps)
+        
         return True
+    
+    def __record_skolem_deps(self, qname, deps):
+        if len(deps) == 0:
+            return
+
+        for dep in deps:
+            if dep not in self.__skolemization_consequences:
+                self.__skolemization_consequences[dep] = Counter()
+            self.__skolemization_consequences[dep][qname] += 1
 
     def export_rewrite(self, ref):
         assert ref in self.rewrites
@@ -292,12 +299,14 @@ class ProofAnalyzer(TermTable):
         return qname in self.__insts_under_qname
 
     def has_skolemized_qname(self, qname):
-        return qname in self.__skolemized_qnames
+        return qname in self.__skolemization_consequences
+
+    def get_skolem_consequences(self):
+        return self.__skolemization_consequences
 
     @staticmethod
     def from_proof_file(proof_path, clear=False) -> "ProofAnalyzer":
         m = hashlib.md5()
         m.update(str(proof_path).encode())
         pickle_name = m.hexdigest() + ".pickle"
-        log_debug(f"loading proof: {proof_path}")
         return load_cache_or(pickle_name, lambda: ProofAnalyzer(proof_path), clear)

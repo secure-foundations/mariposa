@@ -176,7 +176,7 @@ class TermTable(nx.DiGraph):
 
         # for ref in unreachable:
         #     print(ref, self.in_degree(ref), self.out_degree(ref))
-        #     self.pprint_node(ref, 3)
+        #     self.pprint_node(ref, 0)
 
         log_debug(f"[term graph] {len(self)} nodes, {len(self.edges)} edges, root {self.root_ref}")
         log_debug(f"{len(unreachable)} nodes are unreachable!")

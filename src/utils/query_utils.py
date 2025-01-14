@@ -298,7 +298,7 @@ def diff_queries(this, that):
 #     return qids
 
 def get_trace_stats_axiom_profiler(trace_path):
-    log_info(f"parsing trace: {trace_path}")
+    # log_info(f"parsing trace: {trace_path}")
     lines = subprocess_run(
         [
             "/home/yizhou7/axiom-profiler-2/target/release/smt-log-parser",

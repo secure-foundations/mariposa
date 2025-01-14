@@ -13,28 +13,15 @@ from debugger.edit_info import EditAction, EditInfo
 from debugger.file_builder import FileBuilder
 from debugger.pool_utils import run_with_pool
 from debugger.proof_analyzer import ProofAnalyzer
-from debugger.infomed_editor import InformedEditor 
+from debugger.informed_editor import InformedEditor
 from utils.query_utils import find_verus_procedure_name
 from utils.system_utils import *
 
-# def get_editor(self):
-#     if len(self.proofs) == 0:
-#         log_warn("[init] no proofs available")
-#         return None
-
-#     proof = self.proofs[0]
-#     trace = self.get_candidate_trace()
-
-#     log_info(f"[edit] proof: {proof.proof_path}")
-#     log_info(f"[edit] trace: {trace.trace_path} ({trace.trace_rcode}, {trace.trace_time})")
-
-#     assert trace.has_trace()
-#     proof = proof.get_proof_analyzer()
-#     return EditManager(self.name_hash, proof, trace)
 
 def _run_edit(ei: EditInfo):
     ei.run_query()
     return ei
+
 
 class Debugger3:
     def __init__(
@@ -47,6 +34,7 @@ class Debugger3:
         clear_traces=False,
         clear_cores=False,
         clear_proofs=False,
+        clear_proof_cache=False,
         skip_core=False,
         overwrite_reports=False,
     ):
@@ -63,14 +51,21 @@ class Debugger3:
 
         self.chosen_proof_path = None
         self.chosen_trace_path = None
-        
+
+        if clear_all:
+            self.__clear_proof_cache = True
+        else:
+            self.__clear_proof_cache = clear_proof_cache
+
         self.__edit_infos: Dict[int, EditInfo] = dict()
         self.edits_meta = f"{self.sub_root}/edits.json"
         self.edit_dir = f"{self.sub_root}/edits/"
 
         self.singleton_project = "singleton_" + self.name_hash
         self.singleton_dir = f"data/projs/{self.singleton_project}/base.z3"
-        self.singleton_filtered_dir = self.singleton_dir.replace("/base.z3", ".filtered/base.z3")
+        self.singleton_filtered_dir = self.singleton_dir.replace(
+            "/base.z3", ".filtered/base.z3"
+        )
 
         self.__init_dirs(clear_all)
         self.__init_edits(clear_edits)
@@ -154,13 +149,20 @@ class Debugger3:
 
     @property
     def editor(self) -> InformedEditor:
-        if self._editor is None:
-            proof = ProofAnalyzer.from_proof_file(self.chosen_proof_path)
-            trace = self._builder.get_trace_mutant_info(self.chosen_trace_path)
-            assert trace.has_trace()
-            self._editor = InformedEditor(
-                self.orig_path, proof, trace,
-            )
+        if self._editor is not None:
+            return self._editor
+        log_debug(f"[edit] proof path: {self.chosen_proof_path}")
+        log_debug(f"[edit] trace path: {self.chosen_trace_path}")
+        proof = ProofAnalyzer.from_proof_file(
+            self.chosen_proof_path, clear=self.__clear_proof_cache
+        )
+        trace = self._builder.get_trace_mutant_info(self.chosen_trace_path)
+        assert trace.has_trace()
+        self._editor = InformedEditor(
+            self.orig_path,
+            proof,
+            trace,
+        )
         return self._editor
 
     def save_edits_meta(self):
@@ -193,6 +195,7 @@ class Debugger3:
                     # this is also feasible
                     self.register_edit_info({qid: EditAction.INST_KEEP}, singleton_dir)
             self.save_edits_meta()
+            log_info(f"[edit] {self.singleton_project} created")
         else:
             log_warn(f"[proj] {self.singleton_project} already exists")
 
@@ -227,7 +230,7 @@ class Debugger3:
 
     def register_edit_info(self, actions, output_dir=None):
         if isinstance(actions, set):
-            actions = {qid: self.get_action(qid) for qid in actions}
+            actions = {qid: self.editor.get_quant_action(qid) for qid in actions}
         else:
             assert isinstance(actions, dict)
 
@@ -285,6 +288,7 @@ class Debugger3:
             "cores": len(self._builder.cores),
             "proofs": len(self._builder.proofs),
         }
+
 
 def main():
     set_param(proof=True)
@@ -368,7 +372,13 @@ def main():
         "--reroll",
         default=False,
         action="store_true",
-        help="change the proof and trace",
+        help="(maybe) change the proof and trace",
+    )
+    parser.add_argument(
+        "--clear-proof-cache",
+        default=False,
+        action="store_true",
+        help="clear the proof analyzer CACHE",
     )
 
     args = parser.parse_args()
@@ -381,6 +391,7 @@ def main():
         clear_traces=args.clear_traces,
         clear_cores=args.clear_cores,
         clear_proofs=args.clear_proofs,
+        clear_proof_cache=args.clear_proof_cache,
         skip_core=args.skip_core,
         overwrite_reports=args.overwrite_reports,
     )
@@ -392,14 +403,11 @@ def main():
     if args.analyze_singleton:
         dbg.analyze_singleton_project()
         return
-    
+
     if args.reroll:
         dbg.set_proof()
         return
 
-    report = dbg.editor.get_report()
-    print(tabulate(report, headers="keys"))
-    # dbg.print_status()
 
 if __name__ == "__main__":
     main()

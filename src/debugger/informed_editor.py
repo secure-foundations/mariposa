@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Set
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.mutant_info import MutantInfo
 from debugger.edit_info import EditAction, EditInfo
@@ -82,9 +82,9 @@ class InformedEditor(QueryEditor):
     def __init__(self, query_path: str, pa: ProofAnalyzer, ti: MutantInfo):
         super().__init__(query_path)
         assert isinstance(pa, ProofAnalyzer)
-        self.proof = pa
+        self.proof: ProofAnalyzer = pa
         assert isinstance(ti, MutantInfo)
-        self.trace = ti
+        self.trace: MutantInfo = ti
 
         self.proof_stats = QueryInstStat(pa.get_qi_counts(), self)
         self.trace_stats = QueryInstStat(ti.get_qi_counts(), self)
@@ -101,7 +101,7 @@ class InformedEditor(QueryEditor):
                 and (not self.group_should_be_skolemized(root_name))
             ):
                 self.ignored.add(root_name)
-                
+
         self.__root_actions = dict()
 
         for qname in self.list_qnames(root_only=True):
@@ -191,18 +191,20 @@ class InformedEditor(QueryEditor):
                     action.value,
                 ]
             )
-            for dname in quant.group_qnames:
-                if dname == qname:
-                    continue
-                table.append(
-                    [
-                        "-- " + dname,
-                        t_group[dname],
-                        p_group[dname],
-                        "",
-                    ]
-                )
-        return df(table, columns=["name", "trace count", "proof count", "action"])
+            # for dname in quant.group_qnames:
+            #     if dname == qname:
+            #         continue
+            #     table.append(
+            #         [
+            #             "-- " + dname,
+            #             t_group[dname],
+            #             p_group[dname],
+            #             "",
+            #         ]
+            #     )
+            actions = {qid: self.editor.get_action(qid) for qid in actions}
+        table = sorted(table, key=lambda x: x[1], reverse=True)
+        return table
 
     def edit_by_qname(self, qname, action=None, erase_when_possible=True):
         if action is None:
@@ -241,3 +243,18 @@ class InformedEditor(QueryEditor):
         for qname, action in ei.items():
             self.edit_by_qname(qname, action)
         self.save(ei.query_path)
+
+    def debug_qanme(self, qname):
+        if qname not in self:
+            log_warn(f"[debug] qid {qname} not found in {self.query_path}")
+            return
+        if qname in self.ignored:
+            log_warn(f"[debug] qid {qname} is ignored")
+            return
+        qii = self.proof.get_inst_info_under_qname(qname)
+
+        for inst in qii.get_all_insts():
+            print(self.proof.dump_node(inst))
+
+        print(qii.get_all_skolem_deps())
+        print("")
