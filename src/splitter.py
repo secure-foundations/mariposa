@@ -1,24 +1,3 @@
-dir = "data/projs/v_systems/base.z3"
-# queries = ["noderep--spec__cyclicbuffer.3.smt2",
-#            "mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2",
-#            "mimalloc--commit_segment.1.smt2",
-#            "mimalloc--page_organization__PageOrg.69.smt2",
-#            "noderep--spec__cyclicbuffer.5.smt2",
-#            "mimalloc--page_organization__PageOrg__impl__4__merge_with_before_ll_inv_valid_unused.smt2",
-#            "mimalloc--segment__span_queue_delete.smt2"]
-
-# queries = [
-#     "mimalloc--segment__segment_span_free.smt2",
-#     "mimalloc--segment__segment_span_free_coalesce_before.smt2",
-#     "mimalloc--queues__page_queue_push_back.smt2",
-#     "mimalloc--linked_list.25.smt2",
-#     "mimalloc--segment.1.smt2",
-#     "mimalloc--queues__page_queue_remove.smt2",
-#     "mimalloc--page_organization__PageOrg__impl__4__ucount_sum_eq0_inverse.1.smt2"
-# ]
-
-queries = ["addr_e__range_interface.8.smt2"]
-
 import re
 import os
 import argparse
@@ -72,6 +51,8 @@ def split_query(input_file, output_folder):
     largest_number = find_largest_location_label_number(input_file)
     for i in range(largest_number + 1):
         add_assertions_to_new_file(input_file, output_folder, line_offset, i, largest_number)
+
+    return largest_number + 1
 
 
 
