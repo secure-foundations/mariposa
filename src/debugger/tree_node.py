@@ -194,10 +194,10 @@ class LetNode(TreeNode):
         self.body = body
 
     def __str__(self):
-        items = ["(let"]
+        items = ["(let ("]
         for var, val in self.bindings:
             items.append(f"({var} {val})")
-        items.append(str(self.body) + ")")
+        items.append(")" + str(self.body) + ")")
         return " ".join(items)
 
 

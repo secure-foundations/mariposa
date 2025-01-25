@@ -235,16 +235,14 @@ def __find_sk_decl_rec(v, e, res):
     for c in e.children():
         __find_sk_decl_rec(v, c, res)
 
-def dump_z3_proof(query_path, proof_path) -> bool:
+def dump_z3_proof(query_path, proof_path, timeout=60000) -> bool:
     set_param(proof=True)
-    timeout = 60000
     start = time.time()
 
     solver = Solver()
     solver.set("timeout", timeout)
     solver.from_file(query_path)
-    log_debug(f"[proof] z3 version {get_version_string()}")
-    log_debug(f"[proof] attempt {query_path}, timeout: {int( timeout/1000)}(s)")
+    log_debug(f"[proof] z3 version {get_version_string()} attempt {query_path}, timeout: {int(timeout/1000)}(s)")
 
     res = solver.check()
     proof_time = int((time.time() - start))
@@ -252,6 +250,7 @@ def dump_z3_proof(query_path, proof_path) -> bool:
     if res != unsat:
         log_warn(f"failure [proof] {query_path} result {res}")
         return False
+
     log_debug(f"[proof] finished in {proof_time}(s) {proof_path}")
 
     p = solver.proof()

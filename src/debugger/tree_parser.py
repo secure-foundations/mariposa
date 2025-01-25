@@ -35,6 +35,9 @@ class ProofParser:
 
         if node := self.__parse_datatype_app(data):
             return node
+        
+        if node := self.__parse_other_apps(data):
+            return node
 
         name = _try_get_symbol(data[0])
 
@@ -71,6 +74,29 @@ class ProofParser:
         name = _get_symbol(_name[2])
         node = DatatypeAppNode(name, [])
 
+        for c in reversed(data[1:]):
+            self.tasks.append((c, partial(cb_add_app_child, node)))
+
+        return node
+    
+    def __parse_other_apps(self, data):
+        _name = data[0]
+        if not (
+            isinstance(_name, list)
+            and _try_get_symbol(_name[0]) == "_"
+        ):
+            return None
+
+        name = []
+        for i in _name:
+            if isinstance(i, int):
+                name.append(str(i))
+            else:
+                name.append(_get_symbol(i))
+
+        name = "(" + " ".join(name) + ")"
+        node = AppNode(name, [])
+        
         for c in reversed(data[1:]):
             self.tasks.append((c, partial(cb_add_app_child, node)))
 
@@ -126,6 +152,19 @@ def _get_symbol(data):
     return data.value()
 
 
+def _get_sort(data):
+    if isinstance(data, sexp.Symbol):
+        return data.value()
+    res = []
+    for x in data:
+        if isinstance(x, sexp.Symbol):
+            res.append(x.value())
+        else:
+            assert isinstance(x, int)
+            res.append(str(x))
+    return " ".join(res)
+
+
 def _try_get_symbol(data):
     if isinstance(data, sexp.Symbol):
         return data.value()
@@ -142,7 +181,7 @@ def _parse_quant_vars(_bindings):
             var = "t"
         else:
             var = _get_symbol(_binding[0])
-        sort = _get_symbol(_binding[1])
+        sort = _get_sort(_binding[1])
         bindings.append((var, sort))
     return bindings
 
@@ -152,7 +191,7 @@ def _parse_attributes(_attrs):
     attrs = dict()
     while index < len(_attrs):
         attr_name = _get_symbol(_attrs[index])
-        if attr_name in {":pattern"}:
+        if attr_name in {":pattern", ":weight", ":no-pattern"}:
             # TODO: parse pattern if needed
             # attrs[attr_name] = _attrs[index + 1]
             pass
