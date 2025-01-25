@@ -202,7 +202,6 @@ class InformedEditor(QueryEditor):
             #             "",
             #         ]
             #     )
-            actions = {qid: self.editor.get_action(qid) for qid in actions}
         table = sorted(table, key=lambda x: x[1], reverse=True)
         return table
 
