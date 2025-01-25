@@ -14,6 +14,7 @@ from utils.system_utils import (
     confirm_input,
     create_dir,
     get_name_hash,
+    list_files,
     list_files_ext,
     list_smt2_files,
     log_check,
@@ -39,7 +40,7 @@ def _build_fail_trace(mi: MutantInfo):
     rc = mi.trace_rcode
     if rc != RCode.UNSAT or et > TRACE_TIME_LIMIT_SEC:
         log_debug(f"[trace-fail] {mi.trace_path}, {rc}, {et}")
-        mi.save()    
+        mi.save()
         return mi
     log_debug(f"[trace-fail] discarded: {mi.trace_path}, {rc}, {et}")
     return None
@@ -49,7 +50,7 @@ def _build_any_trace(mi: MutantInfo):
     mi.build_trace()
     et = round(mi.trace_time / 1000, 2)
     log_debug(f"[trace-any] {mi.trace_path}, {mi.trace_rcode}, {et}")
-    mi.save()    
+    mi.save()
     return mi
 
 
@@ -101,7 +102,11 @@ class FileBuilder:
         self.__init_query_files(query_path, ids_available)
         self.__init_mutant_infos(clear_traces, clear_cores, clear_proofs)
 
-        if len(self.traces) != 0 and len(self.proofs) == 0 and not retry_failed:
+        if (
+            (len(self.traces) != 0 or len(self.cores) != 0)
+            and len(self.proofs) == 0
+            and not retry_failed
+        ):
             log_warn(
                 "[init] previous debugging attempt has failed, run with --retry-failed if needed!"
             )
@@ -119,6 +124,25 @@ class FileBuilder:
             self.proofs_dir,
         ]:
             create_dir(dir)
+
+    def collect_garbage(self, keep_only_target=None):
+        print(keep_only_target)
+        for trace_file in list_files(self.trace_dir):
+            if trace_file == keep_only_target:
+                continue
+    
+            found, should_remove = False, False
+            if keep_only_target is not None:
+                should_remove = True
+
+            for mi in self.traces:
+                if mi.trace_path == trace_file:
+                    found = True
+                    break
+
+            if not found or should_remove:
+                log_info(f"[garbage] removing {trace_file}")
+                os.remove(trace_file)
 
     def __init_query_files(self, query_path, ids_available):
         if not os.path.exists(self.orig_path):
@@ -221,7 +245,7 @@ class FileBuilder:
     def __build_cores(self, skip_core):
         count = len(self.cores)
 
-        if count >= CORE_GOAL_COUNT or skip_core:
+        if count >= CORE_GOAL_COUNT or skip_core or len(self.proofs) >= PROOF_GOAL_COUNT:
             return
 
         log_info(f"[init] currently {count} cores")

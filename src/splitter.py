@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 dir = "data/projs/v_systems/base.z3"
 # queries = ["noderep--spec__cyclicbuffer.3.smt2",
 #            "mimalloc--page_organization__PageOrg__impl__4__take_page_from_unused_queue_ll_inv_valid_unused.smt2",
@@ -17,6 +18,8 @@ dir = "data/projs/v_systems/base.z3"
 #     "mimalloc--page_organization__PageOrg__impl__4__ucount_sum_eq0_inverse.1.smt2"
 # ]
 
+=======
+>>>>>>> 921536f60cfdb137eb4302d745dac1ca3216fe74
 import re
 import os
 import argparse
@@ -70,6 +73,8 @@ def split_query(input_file, output_folder):
     largest_number = find_largest_location_label_number(input_file)
     for i in range(largest_number + 1):
         add_assertions_to_new_file(input_file, output_folder, line_offset, i, largest_number)
+
+    return largest_number + 1
 
 
 

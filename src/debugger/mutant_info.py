@@ -14,8 +14,9 @@ from utils.cache_utils import *
 
 TRACE_TIME_LIMIT_SEC = 10
 CORE_TIME_LIMIT_SEC = 60
+PROOF_TIME_LIMIT_SEC = 150
 
-TRACE_GOAL_COUNT = 4
+TRACE_GOAL_COUNT = 1
 CORE_GOAL_COUNT = 2
 PROOF_GOAL_COUNT = 1
 
@@ -54,14 +55,12 @@ class MutantInfo:
         self.proof_time = -1
 
         self.discard = False
-        self._update = True
 
     @staticmethod
-    def from_dict(d, update=True):
+    def from_dict(d):
         mi = MutantInfo(d["sub_root"], Mutation(d["mutation"]), d["seed"])
         mi.trace_rcode = RCode(d["trace_rcode"])
         mi.trace_time = d["trace_time"]
-        mi._update = update
         return mi
 
     def to_dict(self):
@@ -87,9 +86,6 @@ class MutantInfo:
             ]:
                 if os.path.exists(path):
                     os.remove(path)
-            return
-
-        if not self._update:
             return
 
         self.__should_build(self.meta_path, clear=True)
@@ -210,13 +206,15 @@ class MutantInfo:
         if not self.__should_build(self.proof_path, clear):
             return True
 
+        query_path = self.mut_path
         if os.path.exists(self.core_path):
             log_info(f"[proof] attempt from core (!) {self.core_path}")
-            return dump_z3_proof(self.core_path, self.proof_path)
+            query_path = self.core_path
+        else:
+            self.build_mutant_query()
+            log_info(f"[proof] attempt from mutant {self.mut_path}")
 
-        self.build_mutant_query()
-        log_info(f"[proof] attempt from mutant {self.mut_path}")
-        return dump_z3_proof(self.mut_path, self.proof_path)
+        return dump_z3_proof(query_path, self.proof_path, timeout=PROOF_TIME_LIMIT_SEC*1000)
 
     def build_graph_log(self, clear=False) -> bool:
         if not self.__should_build(self.graph_path, clear):
@@ -227,7 +225,7 @@ class MutantInfo:
             log_info(f"[graph] building {self.graph_path}")
             subprocess.run(
                 [
-                    "/home/yizhou7/axiom-profiler-2/target/release/smt-log-parser",
+                    "/home/yizhou7/axiom-profiler-2.ours/target/release/smt-log-parser",
                     "dependencies",
                     self.trace_path,
                 ],
@@ -245,7 +243,7 @@ class MutantInfo:
             log_info(f"[stats] building {self.stats_path}")
             subprocess.run(
                 [
-                    "/home/yizhou7/axiom-profiler-2/target/release/smt-log-parser",
+                    "/home/yizhou7/axiom-profiler-2.ours/target/release/smt-log-parser",
                     "stats",
                     self.trace_path,
                 ],
