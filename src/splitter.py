@@ -17,8 +17,6 @@ dir = "data/projs/v_systems/base.z3"
 #     "mimalloc--page_organization__PageOrg__impl__4__ucount_sum_eq0_inverse.1.smt2"
 # ]
 
-queries = ["addr_e__range_interface.8.smt2"]
-
 import re
 import os
 import argparse
