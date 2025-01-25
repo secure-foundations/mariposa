@@ -125,15 +125,22 @@ class FileBuilder:
         ]:
             create_dir(dir)
 
-    def collect_garbage(self):
+    def collect_garbage(self, keep_only_target=None):
+        print(keep_only_target)
         for trace_file in list_files(self.trace_dir):
-            found = False
+            if trace_file == keep_only_target:
+                continue
+    
+            found, should_remove = False, False
+            if keep_only_target is not None:
+                should_remove = True
+
             for mi in self.traces:
                 if mi.trace_path == trace_file:
                     found = True
                     break
 
-            if not found:
+            if not found or should_remove:
                 log_info(f"[garbage] removing {trace_file}")
                 os.remove(trace_file)
 

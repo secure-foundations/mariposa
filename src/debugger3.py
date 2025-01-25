@@ -121,7 +121,8 @@ class Debugger3:
         self.__edit_infos = dict()
 
         if clear_edits:
-            return self.clear_edits()
+            self.clear_edits()
+            return
 
         if not os.path.exists(self.edits_meta):
             return
@@ -129,8 +130,12 @@ class Debugger3:
         infos = json.load(open(self.edits_meta, "r"))
 
         for ei in infos:
+            if not os.path.isdir(ei["edit_dir"]):
+                continue
             ei = EditInfo.from_dict(ei)
             self.__edit_infos[ei.get_id()] = ei
+
+        self.save_edits_meta()
 
     def __init_meta(self):
         if not os.path.exists(self.query_meta):
@@ -156,7 +161,7 @@ class Debugger3:
         )
 
     def collect_garbage(self):
-        self._builder.collect_garbage()
+        self._builder.collect_garbage(self.chosen_trace_path)
 
     @property
     def editor(self) -> InformedEditor:
@@ -187,8 +192,9 @@ class Debugger3:
             count = len(os.listdir(self.edit_dir))
             if count > 10:
                 confirm_input(f"clear {count} edits?")
-            os.system(f"rm {self.edit_dir}/*")
+            os.system(f"rm {self.edit_dir}*")
         self.__edit_infos = dict()
+        self.save_edits_meta()
         log_info("[edit] cleared")
 
     def create_singleton_project(self):
@@ -198,7 +204,7 @@ class Debugger3:
         create_dir(singleton_dir)
         create_dir(filter_dir)
 
-        if list_smt2_files(singleton_dir) == []:
+        if list_smt2_files(singleton_dir) == [] or True:
             feasible_edits = self.editor.get_singleton_actions()
             for qid, action in tqdm(feasible_edits.items()):
                 self.register_edit_info({qid: action}, singleton_dir)
