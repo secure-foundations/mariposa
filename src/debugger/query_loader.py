@@ -74,21 +74,26 @@ class QueryLoader(Z3AstVisitor):
         self.__identify_colocated_roots()
 
     def __load_quants(self, exp: z3.ExprRef, parent, origin: z3.ExprRef):
-        if self.visit(exp) or is_var(exp):
-            return
+        tasks = [(exp, parent, origin)]
 
-        if sk := match_sk_decl_used(exp):
-            (qname, decl) = sk
-            self.existing_sk_decls[qname] = decl
+        while len(tasks) > 0:
+            exp, parent, origin = tasks.pop()
+            
+            if self.visit(exp) or is_var(exp):
+                continue
 
-        if is_quantifier(exp):
-            quant = Z3QuantWrapper(exp, parent, origin)
-            assert quant.name not in self.__z3_quants
-            self.__z3_quants[quant.name] = quant
-            parent = quant
+            if sk := match_sk_decl_used(exp):
+                (qname, decl) = sk
+                self.existing_sk_decls[qname] = decl
 
-        for c in exp.children():
-            self.__load_quants(c, parent, origin)
+            if is_quantifier(exp):
+                quant = Z3QuantWrapper(exp, parent, origin)
+                assert quant.name not in self.__z3_quants
+                self.__z3_quants[quant.name] = quant
+                parent = quant
+
+            for c in exp.children():
+                tasks.append((c, parent, origin))
 
     def __identify_colocated_roots(self):
         colocated_roots = dict()

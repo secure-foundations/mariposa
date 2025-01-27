@@ -157,7 +157,10 @@ class ProofAnalyzer(TermTable):
         assert len(node.children) == 1
         eq_node = self.resolve_child(ref)
         assert isinstance(eq_node, AppNode)
-        assert eq_node.name == "="
+        if eq_node.name != "=":
+            log_warn(f"rewrite node is not an equality: {ref}")
+            self.pprint_node(eq_node, 10)
+            return False
         left, right = self.resolve_children(eq_node, 2)
         if left != right:
             self.rewrites[ref] = RewriteTerm(left, right)
@@ -193,7 +196,10 @@ class ProofAnalyzer(TermTable):
             return False
         node = self.resolve_child(ref)
         assert isinstance(node, AppNode)
-        assert node.name == "or"
+        if node.name != "or":
+            log_warn(f"quant-inst node is not an or: {ref}")
+            self.pprint_node(node, 10)
+            return False
         children = self.resolve_children(node)
         l = children[0]
         inst = node.children[1:]

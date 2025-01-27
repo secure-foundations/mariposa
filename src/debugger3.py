@@ -204,7 +204,7 @@ class Debugger3:
         create_dir(singleton_dir)
         create_dir(filter_dir)
 
-        if list_smt2_files(singleton_dir) == [] or True:
+        if list_smt2_files(singleton_dir) == []:
             feasible_edits = self.editor.get_singleton_actions()
             for qid, action in tqdm(feasible_edits.items()):
                 self.register_edit_info({qid: action}, singleton_dir)

@@ -71,4 +71,4 @@ class SingletonAnalyzer(ExperAnalyzer):
 
         log_info(f"selected {selected} queries to {filtered_dir}")
         eta = budget * 180 / 7 / 5 / 60 / 60
-        log_info(f"plain budget: {round(budget, 2)}s, eta: {round(eta, 2)} hours, max selected et: {max_selected_et/1000}(s)")
+        log_info(f"plain budget: {round(budget, 2)}s, best eta: {round(eta, 2)} hours, max selected time: {max_selected_et/1000}(s)")

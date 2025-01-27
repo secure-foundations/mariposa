@@ -10,6 +10,9 @@
         "exp_timeout": 60,
         "num_procs": 7
     },
+    "filter": {
+        "num_mutants": 3
+    },
     "quake": {
         "mutations": [
             "shuffle",
