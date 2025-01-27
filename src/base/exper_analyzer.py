@@ -218,3 +218,11 @@ class ExperAnalyzer:
 
     def get_stable_edit_ids(self):
         return [qid for qid in self.qids if self[qid].stability == Stability.STABLE]
+
+    def carve_non_stable_queries(self):
+        for qid in self.qids:
+            qr = self[qid]
+            if qr.stability == Stability.STABLE:
+                continue
+            self.print_mutant_details(qr)
+        

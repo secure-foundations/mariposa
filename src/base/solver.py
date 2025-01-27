@@ -127,7 +127,7 @@ class Z3Solver(Solver):
     def get_basic_command(self, query_path, time_limit, seeds=None):
         command = [self.path, 
                    query_path,
-                   f"-t:{time_limit*1000}"]
+                   f"-T:{time_limit}"]
         if seeds is not None:
             command += [f"sat.random_seed={seeds}",
                 f"smt.random_seed={seeds}"]

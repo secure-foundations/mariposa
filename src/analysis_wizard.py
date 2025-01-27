@@ -150,12 +150,10 @@ def handle_singleton(args):
     ba = SingletonAnalyzer(exp, args.analyzer)
     ba.create_filtered_project()
 
-
-def handle_stable():
-    args.analyzer = FACT.get_analyzer("10sec")
-    log_info("overriding the analyzer to 10sec")
-    ba = ExperAnalyzer(args.experiment, args.analyzer)
-    ba.print_stabilized_queries()
+def setup_carve(subparsers):
+    p = subparsers.add_parser("carve", help="carve to only stable queries")
+    add_input_dir_option(p)
+    add_analysis_options(p)
 
 
 if __name__ == "__main__":
@@ -177,6 +175,7 @@ if __name__ == "__main__":
     set_up_wombo(subparsers)
     set_up_trace(subparsers)
     set_up_stable(subparsers)
+    setup_carve(subparsers)
 
     p = subparsers.add_parser("debug", help="no help is coming")
     p = subparsers.add_parser("special", help="placeholder for special analysis")
@@ -213,7 +212,11 @@ if __name__ == "__main__":
     elif args.sub_command == "debug":
         handle_debug()
     elif args.sub_command == "stable":
-        handle_stable()
+        ba = ExperAnalyzer(args.experiment, args.analyzer)
+        ba.print_stabilized_queries()
+    elif args.sub_command == "carve":
+        ba = ExperAnalyzer(args.experiment, args.analyzer)
+        ba.carve_non_stable_queries()
     elif args.sub_command == "special":
         handle_special()
     else:

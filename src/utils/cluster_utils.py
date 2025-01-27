@@ -254,9 +254,10 @@ def handle_data_sync(input_dir, clear):
             )
             continue
         host_file_count = int(r_std)
+        count_match = host_file_count == file_count
 
         if clear:
-            if host_file_count != file_count and clear_on_match is None:
+            if not count_match and clear_on_match is None:
                 choice = input(f"file count matches {host} {host_file_count} vs {file_count} are you sure you want to clear? [Y] ")
                 if choice != "Y":
                     clear_on_match = False
@@ -268,11 +269,13 @@ def handle_data_sync(input_dir, clear):
                 log_warn(f"skipping {host} due to clear_on_match")
                 continue
 
-            log_warn(f"force syncing on {host}")
-            run_command_over_ssh(host, f"rm -r ~/mariposa/{input_dir}")
-            lines.append(
-                f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'"
-            )
+            if not count_match:
+                log_warn(f"force syncing on {host}")
+                run_command_over_ssh(host, f"rm -r ~/mariposa/{input_dir}")
+
+                lines.append(
+                    f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'"
+                )
         else:
             log_check(
                 int(r_std) == file_count,
