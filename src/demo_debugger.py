@@ -1,21 +1,24 @@
-import sys
-from debugger.demo_helper import *
+import json
+from debugger.mutant_info import MutantInfo
+from debugger3 import Debugger3
+from debugger.quant_graph import TheirAnalysis, TheirParser
 
-query = sys.argv[1]
+# query = "data/projs/vsystemsnew/base.z3/noderep-smt-spec__cyclicbuffer.3.smt2"
+query = "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__liveness__resource_match.1.smt2"
 
-dbg = Debugger3(query)
-st = dbg.get_status()
+# dbg = Debugger3(query)
+# assert dbg.editor is not None
 
-ba, fa = get_debug_status(dbg)
-print(ba)
+# mi = dbg.editor.trace
+m_json = "dbg/eccd7ce2d9/meta/rename.7278557073235958777.json"
+mi = MutantInfo.from_dict(json.load(open(m_json)))
+mi.build_graph_log()
+mi.build_stats_log()
+ta = TheirAnalysis(TheirParser(mi.graph_path, mi.stats_path))
 
-if isinstance(ba, SingletonAnalyzer):
-    assert dbg.editor is not None
-else:
-    sys.exit(0)
+qname = "internal_rabbitmq_controller!rabbitmq_controller.model.resource.stateful_set.make_rabbitmq_pod_spec.?_definition"
+scores = ta.compute_sub_ratios({qname})
+# print(ta.name_to_qidxs)
+for qname in scores:
+    print(qname, scores[qname])
 
-assert isinstance(fa, str) or fa is None
-
-tested, untested = check_tested(dbg, ba)
-
-print(tabulate(tested, headers=["qname", "action", "result", "time", "query_path"]))

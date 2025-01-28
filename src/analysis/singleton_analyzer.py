@@ -42,7 +42,7 @@ class SingletonAnalyzer(ExperAnalyzer):
 
     def get_query_result(self, eid):
         return self.edit_results[eid]
-    
+
     def create_filtered_project(self):
         filtered_dir = self.exp.proj.sub_root.replace("/base", ".filtered/base")
         os.makedirs(filtered_dir, exist_ok=True)
@@ -64,8 +64,11 @@ class SingletonAnalyzer(ExperAnalyzer):
             dest = f"{filtered_dir}/{eid}.smt2"
             max_selected_et = max(max_selected_et, et)
 
-            if os.path.exists(dest) or use_caution:
+            if os.path.exists(dest):
                 continue
+            if use_caution:
+                log_warn(f"filtered dir is not empty, skipping {dest}")
+                continue 
             # print(f"copying {self[eid].query_path} to {dest}")
             shutil.copy(self[eid].query_path, dest)
 

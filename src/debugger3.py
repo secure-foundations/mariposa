@@ -71,6 +71,8 @@ class Debugger3:
         self.singleton_filtered_dir = self.singleton_dir.replace(
             "/base.z3", ".filtered/base.z3"
         )
+        self.splitter_project = "splitter_" + self.name_hash
+        self.splitter_dir = f"data/projs/{self.splitter_project}/base.z3"
 
         self.__init_dirs(clear_all)
         self.__init_edits(clear_edits)

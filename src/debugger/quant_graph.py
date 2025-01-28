@@ -124,7 +124,8 @@ class TheirAnalysis:
             self.graph.add_node(qidx, name=self.qidx_to_name[qidx])
 
             for reason_qidx, count in blame.reasons.items():
-                self.graph.add_edge(reason_qidx, qidx, weight=count)
+                # assert blame.stat_count != 0 and blame.blamed_count >= count
+                self.graph.add_edge(reason_qidx, qidx, ratio=count/blame.blamed_count)
 
     def get_qidx_checked(self, name):
         qidxs = self.name_to_qidxs[name]
@@ -150,113 +151,69 @@ class TheirAnalysis:
             count += self.blames[qidx].stat_count
         return count
 
-    # def compute_sub_ratios(self, start, debug=False):
-    #     reached = nx.dfs_tree(self.graph, start).nodes
+    def compute_sub_ratios(self, starts, debug=False):
+        reached = set()
+        sub_ratios = dict()
+        converged = set()
 
-    #     sub_ratios = {start: 1}
-    #     iterations = 0
-    #     last = dict()
-    #     converged = {start}
-
-    #     while len(converged) < len(reached):
-    #         for qid in reached:
-    #             if qid in converged:
-    #                 continue
-
-    #             res = None
-
-    #             for pred in self.graph.predecessors(qid):
-    #                 if pred not in sub_ratios:
-    #                     continue
-
-    #                 if res is None:
-    #                     res = 0
-
-    #                 res += self.graph[pred][qid]["ratio"] * sub_ratios[pred]
-
-    #             if res is None:
-    #                 continue
-
-    #             sub_ratios[qid] = res
-
-    #             if qid in last and np.isclose(res, last[qid]):
-    #                 converged.add(qid)
-    #             else:
-    #                 last[qid] = res
-
-    #         iterations += 1
-
-    #     if not debug:
-    #         return sub_ratios
-
-    #     assert set(sub_ratios.keys()) == set(reached)
-    #     print(iterations)
-
-    #     for qid in sub_ratios:
-    #         upper_bound = 0
-    #         for pred in self.graph.predecessors(qid):
-    #             if pred not in sub_ratios:
-    #                 continue
-    #             upper_bound += self.graph[pred][qid]["ratio"]
-    #         if qid != start:
-    #             assert sub_ratios[qid] <= upper_bound
-    #             print(qid, sub_ratios[qid], upper_bound, self.blames[qid].cost)
-
-    #     return sub_ratios
-
-    # def compute_all_sub_ratios(self):
-    #     res = dict()
-    #     for qid in tqdm(self.blames):
-    #         res[qid] = self.compute_sub_ratios(qid)
-    #     return res
-
-    # def compute_sub_root_ratios(self, root, debug=False):
-    #     assert root in self.trace_freq
-    #     if self.trace_freq[root].is_singleton():
-    #         return self.sub_ratios[root]
+        for qname in starts:
+            if qname not in self.name_to_qidxs:
+                continue
+            for qidx in self.name_to_qidxs[qname]:
+                reached.add(qidx)
+                reached |= nx.dfs_tree(self.graph, qidx).nodes
+                sub_ratios[qidx] = 1
+                converged.add(qidx)
     
-    #     reached = set(nx.dfs_tree(self.graph, root).nodes)
-    #     sub_ratios = {root: 1}
-    #     converged = {root}
-    #     for qid in self.trace_freq[root]:
-    #         if qid not in self.blames:
-    #             continue
-    #         reached.update(set(nx.dfs_tree(self.graph, qid).nodes))
-    #         sub_ratios[qid] = 1
-    #         converged.add(qid)
+        iterations = 0
+        last = dict()
 
-    #     iterations = 0
-    #     last = dict()
+        print(converged)
+        print(reached)
 
-    #     while len(converged) < len(reached):
-    #         for qid in reached:
-    #             if qid in converged:
-    #                 continue
+        while len(converged) < len(reached):
+            for qid in reached:
+                if qid in converged:
+                    continue
 
-    #             res = None
+                res = None
 
-    #             for pred in self.graph.predecessors(qid):
-    #                 if pred not in sub_ratios:
-    #                     continue
+                for pred in self.graph.predecessors(qid):
+                    if pred not in sub_ratios:
+                        continue
 
-    #                 if res is None:
-    #                     res = 0
+                    if res is None:
+                        res = 0
+                    res += self.graph[pred][qid]["ratio"] * sub_ratios[pred]
 
-    #                 res += self.graph[pred][qid]["ratio"] * sub_ratios[pred]
+                if res is None:
+                    continue
 
-    #             if res is None:
-    #                 continue
+                sub_ratios[qid] = res
 
-    #             sub_ratios[qid] = res
+                if qid in last and np.isclose(res, last[qid]):
+                    converged.add(qid)
+                else:
+                    last[qid] = res
 
-    #             if qid in last and np.isclose(res, last[qid]):
-    #                 converged.add(qid)
-    #             else:
-    #                 last[qid] = res
+            iterations += 1
 
-    #         iterations += 1
+        if not debug:
+            return sub_ratios
 
-    #     return sub_ratios
+        assert set(sub_ratios.keys()) == set(reached)
+
+        for qid in sub_ratios:
+            upper_bound = 0
+            for pred in self.graph.predecessors(qid):
+                if pred not in sub_ratios:
+                    continue
+                upper_bound += self.graph[pred][qid]["ratio"]
+            if qid not in starts:
+                assert sub_ratios[qid] <= upper_bound
+                print(qid, sub_ratios[qid], upper_bound, self.blames[qid].cost)
+
+        return sub_ratios
 
     # def estimate_cost_v3(self, start):
     #     total = 0
@@ -286,25 +243,23 @@ class TheirAnalysis:
 
     #     return total
 
-    # def estimate_cost_v5(self, start):
-    #     if start not in self.trace_freq:
-    #         return 0
+    def estimate_cost_v5(self, start):
+        if start not in self.name_to_qidxs:
+            return 0
 
-    #     total = 0
+        total = 0
 
-    #     for (qid, ratio) in self.compute_sub_root_ratios(start).items():
-    #         if ratio > 1:
-    #             assert np.isclose(ratio, 1)
-    #             ratio = 1
-    #         if qid not in self.useless:
-    #             # print("not logged", qid)
-    #             discount = 1
-    #         else:
-    #             t, p = self.useless[qid]
-    #             discount = (t - p) / t
-    #         total += ratio * self.blames[qid].cost * discount
+        for (qid, ratio) in self.compute_sub_root_ratios(start).items():
+            if ratio > 1:
+                assert np.isclose(ratio, 1)
+                ratio = 1
+            # if qid not in self.useless:
+            #     # print("not logged", qid)
+            #     discount = 1
+            # else:
+            total += ratio * self.blames[qid].cost
 
-    #     return total
+        return total
 
     # def estimate_all_costs(self, cost_func):
     #     costs = dict()

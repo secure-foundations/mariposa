@@ -220,9 +220,21 @@ class ExperAnalyzer:
         return [qid for qid in self.qids if self[qid].stability == Stability.STABLE]
 
     def carve_non_stable_queries(self):
+        to_remove = set()
         for qid in self.qids:
             qr = self[qid]
             if qr.stability == Stability.STABLE:
                 continue
+            log_info(f"carving out query {qid}")
             self.print_mutant_details(qr)
-        
+            to_remove.add(qid)
+
+        remaining = len(self.qids) - len(to_remove)
+
+        for qid in to_remove:
+            os.system(f"rm {self.get_path(qid)}")
+
+        if remaining <= 10:
+            log_info("few queries left, run full stability test next?")
+
+        log_info(f"removed {len(to_remove)} queries, {remaining} remaining")

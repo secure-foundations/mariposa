@@ -45,7 +45,8 @@ def set_up_recovery(subparsers):
 def set_up_data_sync(subparsers):
     p = subparsers.add_parser('data-sync', help='sync a project to another server (only for serenity)')
     add_input_dir_option(p, is_known=False, is_group=False)
-    add_clear_option(p)
+    parser.add_argument("--sync-mismatch", default=True, action='store_true', help="sync the project on count mismatch")
+    parser.add_argument("--force-sync", default=False, action='store_true', help="sync regardless")
 
 def set_up_info(subparsers):
     p = subparsers.add_parser('info', help='list available projects and experiment results')
@@ -92,7 +93,7 @@ if __name__ == '__main__':
     elif args.sub_command == "worker":
         handle_worker(args)
     elif args.sub_command == "data-sync":
-        handle_data_sync(args.input_dir, args.clear_existing)
+        handle_data_sync(args.input_dir, args.sync_mismatch, args.force_sync)
     elif args.sub_command == "code-sync":
         handle_code_sync()
     elif args.sub_command == "recovery":

@@ -73,7 +73,7 @@ def handle_manager(args, wargs):
         confirm_input(f"manager is not on master branch, continue?")
 
     log_info(f"running data sync on {args.input_dir}")
-    handle_data_sync(args.input_dir, True)
+    handle_data_sync(args.input_dir, True, False)
 
     authkey = hexlify(os.urandom(24)).decode("utf-8")
     # TODO: I forgot why we need to pass wargs
@@ -232,7 +232,7 @@ def run_command_over_ssh(host, cmd):
     return subprocess_run(f"ssh {host} '{cmd}'", shell=True)
 
 
-def handle_data_sync(input_dir, clear):
+def handle_data_sync(input_dir, clear_on_mismatch, force_sync):
     file_count = get_file_count(input_dir)
 
     if os.path.exists(SYNC_ZIP):
@@ -240,7 +240,6 @@ def handle_data_sync(input_dir, clear):
 
     cur_host = subprocess_run(["hostname"])[0]
     lines = []
-    clear_on_match = None
 
     for host in S190X_HOSTS:
         if host == cur_host:
@@ -256,29 +255,28 @@ def handle_data_sync(input_dir, clear):
         host_file_count = int(r_std)
         count_match = host_file_count == file_count
 
-        if clear:
-            if not count_match and clear_on_match is None:
+        do_clear = force_sync or (clear_on_mismatch and not count_match)
+
+        if not count_match:
+            if not clear_on_mismatch:
                 choice = input(f"file count matches {host} {host_file_count} vs {file_count} are you sure you want to clear? [Y] ")
                 if choice != "Y":
-                    clear_on_match = False
-                else:
-                    clear_on_match = True
-                log_info(f"clear_on_match is set to: {clear_on_match}, will apply to all")
+                    exit_with("aborting")
+                clear_on_mismatch = True
+                log_info(f"clear_on_mismatch is set, will apply to all")
+            else:
+                log_warn(f"file count mismatch {host} {host_file_count} vs {file_count}, will clear")
 
-            if clear_on_match is False:
-                log_warn(f"skipping {host} due to clear_on_match")
-                continue
+        if do_clear:
+            log_warn(f"force syncing on {host}")
+            run_command_over_ssh(host, f"rm -r ~/mariposa/{input_dir}")
 
-            if not count_match:
-                log_warn(f"force syncing on {host}")
-                run_command_over_ssh(host, f"rm -r ~/mariposa/{input_dir}")
-
-                lines.append(
-                    f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'"
-                )
+            lines.append(
+                f"rcp {SYNC_ZIP} {host}:~/mariposa && ssh -t {host} 'cd mariposa && unzip {SYNC_ZIP} && rm {SYNC_ZIP}'"
+            )
         else:
             log_check(
-                int(r_std) == file_count,
+                count_match, 
                 f"file count mismatch {host}, run data-sync with --clear to force sync",
             )
 

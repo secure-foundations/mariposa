@@ -2,6 +2,7 @@ from typing import Dict, Set
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.mutant_info import MutantInfo
 from debugger.edit_info import EditAction, EditInfo
+from debugger.quant_graph import TheirAnalysis, TheirParser
 from debugger.query_editor import QueryEditor
 from debugger.query_loader import QueryLoader, Z3QuantWrapper
 from utils.system_utils import log_debug, log_warn
@@ -31,6 +32,14 @@ class InstGroupStat:
     def __iter__(self):
         assert self.__finalized
         return iter(self.__group_counts)
+    
+    def items(self):
+        assert self.__finalized
+        return self.__group_counts.items()
+    
+    def keys(self):
+        assert self.__finalized
+        return self.__group_counts.keys()
 
     def is_singleton(self):
         return len(self.__group_counts) == 1
@@ -175,7 +184,7 @@ class InformedEditor(QueryEditor):
         return self.__root_actions[qname]
 
     def get_report(self, skip_ignored=True):
-        table = []
+        table = dict()
         for qname, quant in self.items(root_only=True):
             if skip_ignored and qname in self.ignored:
                 continue
@@ -183,26 +192,11 @@ class InformedEditor(QueryEditor):
             t_group = self.trace_stats.get_group_stat(qname)
             p_group = self.proof_stats.get_group_stat(qname)
 
-            table.append(
-                [
-                    qname,
+            table[qname] = [
+                    action.value,
                     t_group.total_count,
                     p_group.total_count,
-                    action.value,
                 ]
-            )
-            # for dname in quant.group_qnames:
-            #     if dname == qname:
-            #         continue
-            #     table.append(
-            #         [
-            #             "-- " + dname,
-            #             t_group[dname],
-            #             p_group[dname],
-            #             "",
-            #         ]
-            #     )
-        table = sorted(table, key=lambda x: x[1], reverse=True)
         return table
 
     def edit_by_qname(self, qname, action=None, erase_when_possible=True):
@@ -257,3 +251,12 @@ class InformedEditor(QueryEditor):
 
         print(qii.get_all_skolem_deps())
         print("")
+        
+    def get_rankings(self):
+        self.trace.build_graph_log()
+        self.trace.build_stats_log()
+        ta = TheirAnalysis(TheirParser(self.trace.graph_path, self.trace.stats_path))
+        for qname, action in self.get_singleton_actions().items():
+            t_group = self.trace_stats.get_group_stat(qname)
+            ta.compute_sub_ratios(t_group.keys(), debug=True)
+            break
