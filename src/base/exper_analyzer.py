@@ -54,11 +54,13 @@ class ExperAnalyzer:
 
         # log_check(path_exists_qids.issuperset(set(qers.keys())), 
         #             "there are queries experimented, but no files exist for them")
+        self.has_missing_expr = False
 
         if not allow_missing_exper:
             for qid in path_exists_qids:
                 if qid not in qers:
-                    os.system(f"rm {self.get_path(qid)}")
+                    self.has_missing_expr = True
+                    # os.system(f"rm {self.get_path(qid)}")
                     log_warn(f"query {qid} has no experiment results")
             missing = path_exists_qids - set(qers.keys())
             log_check(missing == set(), 
@@ -220,6 +222,9 @@ class ExperAnalyzer:
         return [qid for qid in self.qids if self[qid].stability == Stability.STABLE]
 
     def carve_non_stable_queries(self):
+        if self.has_missing_expr:
+            log_warn("missing experiments, not carving!")
+            return
         to_remove = set()
         for qid in self.qids:
             qr = self[qid]

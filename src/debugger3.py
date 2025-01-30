@@ -205,8 +205,9 @@ class Debugger3:
 
         create_dir(singleton_dir)
         create_dir(filter_dir)
+        existing = list_smt2_files(singleton_dir)
 
-        if list_smt2_files(singleton_dir) == []:
+        if existing == []:
             feasible_edits = self.editor.get_singleton_actions()
             for qid, action in tqdm(feasible_edits.items()):
                 self.register_edit_info({qid: action}, singleton_dir)
@@ -216,6 +217,12 @@ class Debugger3:
             self.save_edits_meta()
             log_info(f"[edit] {self.singleton_project} created")
         else:
+            for query in existing:
+                basename = os.path.basename(query)
+                eid = basename.split(".smt2")[0]
+                if eid not in self.__edit_infos:
+                    log_error(f"[edit] {eid} not found in edit infos!")
+                    continue
             log_warn(f"[proj] {self.singleton_project} already exists")
 
         query_count = len(list_smt2_files(singleton_dir))

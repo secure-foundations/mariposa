@@ -71,7 +71,10 @@ def get_filtered_status(dbg: Debugger3):
     if e_filter is None:
         return "filtered but not ran"
 
-    fa = ExperAnalyzer(e_filter, qa)
+    try:
+        fa = ExperAnalyzer(e_filter, qa)
+    except:
+        return "filtered but not ran (probably)"
 
     return fa
 
