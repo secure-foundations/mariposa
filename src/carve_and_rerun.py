@@ -7,6 +7,7 @@ assert project_dir.endswith(".filtered/base.z3")
 
 for i in range(8):
     query_count = len(list_smt2_files(project_dir))
+
     # if last_count != query_count:
     #     last_count = query_count
     # else:

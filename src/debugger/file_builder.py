@@ -126,7 +126,6 @@ class FileBuilder:
             create_dir(dir)
 
     def collect_garbage(self, keep_only_target=None):
-        print(keep_only_target)
         for trace_file in list_files(self.trace_dir):
             if trace_file == keep_only_target:
                 continue
@@ -143,6 +142,9 @@ class FileBuilder:
             if not found or should_remove:
                 log_info(f"[garbage] removing {trace_file}")
                 os.remove(trace_file)
+
+        if list_smt2_files(self.muts_dir) != []:
+            os.system(f"rm {self.muts_dir}/*")
 
     def __init_query_files(self, query_path, ids_available):
         if not os.path.exists(self.orig_path):

@@ -174,7 +174,10 @@ class ProofAnalyzer(TermTable):
             return False
         assumptions, conclusion = self.resolve_children(ref, 2)
         left_last_children = assumptions.children[-1]
-        assert self.is_leaf(left_last_children, "false")
+        if not self.is_leaf(left_last_children, "false"):
+            log_warn(f"lemma node does not end with false: {ref}")
+            self.pprint_node(left_last_children, 10)
+            return False
         assumptions = assumptions.children[:-1]
         self.lemmas[ref] = (assumptions, conclusion)
         assert self.is_proof_free(conclusion)

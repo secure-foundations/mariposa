@@ -11,6 +11,7 @@ from utils.analysis_utils import Categorizer, fmt_percent
 from analysis.singleton_analyzer import SingletonAnalyzer
 from base.factory import FACT
 from utils.system_utils import list_smt2_files, log_info
+from enum import Enum
 
 SOLVER = FACT.get_solver("z3_4_13_0")
 VERI_CFG = FACT.get_config("verify")
@@ -35,49 +36,59 @@ def get_params(dbg: Debugger3):
         cfg = CFG_10
     return qa, cfg
 
-def get_singleton_status(dbg: Debugger3):
+class DebuggerStatus(Enum):
+    NO_PROOF = "no proof built"
+    SINGLETON_NOT_CREATED = "singleton not created"
+    SINGLETON_NOT_RAN = "singleton not ran"
+    SINGLETON_NOT_FILTERED = "singleton not filtered"
+    FILTERED_NOT_RAN = "filtered but not ran"
+    SPLITTER_NOT_CREATED = "splitter not created"
+    SPLITTER_NOT_RAN = "splitter not ran"
+    FINISHED = "finished"
+
+def try_get_singleton_analyzer(dbg: Debugger3):
     if dbg.get_status()["proofs"] == 0:
-        return "no proof built"
+        return DebuggerStatus.NO_PROOF
 
     try:
         p_singleton = FACT.get_project_by_path(dbg.singleton_dir)
     except:
-        return "singleton not created"
+        return DebuggerStatus.SINGLETON_NOT_CREATED
 
     if len(p_singleton.qids) == 0:
-        return "singleton not created"
+        return DebuggerStatus.SINGLETON_NOT_CREATED
 
     e_singleton = FACT.try_get_exper(p_singleton, VERI_CFG, SOLVER)
 
     if e_singleton is None:
-        return "singleton not ran"
+        return DebuggerStatus.SINGLETON_NOT_RAN
 
     qa, _ = get_params(dbg)
 
     try:
         ba = SingletonAnalyzer(e_singleton, qa)
     except:
-        return "singleton not ran (probably)"
+        return DebuggerStatus.SINGLETON_NOT_RAN
 
     return ba
 
-def get_filtered_status(dbg: Debugger3):
+def try_get_filter_analyzer(dbg: Debugger3):
     qa, filter_cfg = get_params(dbg)
 
     try:
         p_filter = FACT.get_project_by_path(dbg.singleton_filtered_dir)
     except:
-        return "singleton not filtered"
+        return DebuggerStatus.SINGLETON_NOT_FILTERED
 
     e_filter = FACT.try_get_exper(p_filter, filter_cfg, SOLVER)
 
     if e_filter is None:
-        return "filtered but not ran"
+        return DebuggerStatus.FILTERED_NOT_RAN
 
     try:
         fa = ExperAnalyzer(e_filter, qa)
     except:
-        return "filtered but not ran (probably)"
+        return DebuggerStatus.FILTERED_NOT_RAN
 
     return fa
 
@@ -122,25 +133,35 @@ def check_stabilized(dbg: Debugger3, fa: ExperAnalyzer):
 
     return stabilized
 
+def get_debugger_status(dbg: Debugger3):
+    ba = try_get_singleton_analyzer(dbg)
+
+    if isinstance(ba, DebuggerStatus):
+        return ba
+
+    fa = try_get_filter_analyzer(dbg)
+
+    if isinstance(fa, DebuggerStatus):
+        return fa
+
+    return (ba, fa)    
+
 def get_debugger_statuses(queries):
     statuses = Categorizer()
+    dbgs = dict()
+    eas = dict()
 
     for query in queries:
         dbg = Debugger3(query)
+        dbgs[query] = dbg
 
-        ba = get_singleton_status(dbg)
+        st = get_debugger_status(dbg)
 
-        if isinstance(ba, str):
-            statuses.add_item(ba, query)
-            continue
-
-        fa = get_filtered_status(dbg)
-
-        if isinstance(fa, str):
-            statuses.add_item(fa, query)
-            continue
-
-        statuses.add_item("finished", query)
+        if isinstance(st, DebuggerStatus):
+            statuses.add_item(st, query)
+        else:
+            eas[query] = st
+            statuses.add_item(DebuggerStatus.FINISHED, query)
 
     statuses.finalize()
-    return statuses
+    return (statuses, dbgs, eas)

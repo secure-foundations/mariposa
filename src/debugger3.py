@@ -163,6 +163,8 @@ class Debugger3:
         )
 
     def collect_garbage(self):
+        if not self.chosen_trace_path:
+            self.chosen_trace_path = self._builder.get_candidate_trace().trace_path
         self._builder.collect_garbage(self.chosen_trace_path)
 
     @property
