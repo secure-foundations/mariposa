@@ -14,7 +14,7 @@ from utils.cache_utils import *
 
 TRACE_TIME_LIMIT_SEC = 10
 CORE_TIME_LIMIT_SEC = 60
-PROOF_TIME_LIMIT_SEC = 150
+PROOF_TIME_LIMIT_SEC = 1000
 
 TRACE_GOAL_COUNT = 1
 CORE_GOAL_COUNT = 2
@@ -138,6 +138,9 @@ class MutantInfo:
 
         # soft timeout (-t) is used, otherwise the log might be malformed
         solver_args = [
+            "/jet/home/ashah12/glibc/glibc-2.29-install/lib/ld-2.29.so",
+            "--library-path", 
+            "/jet/home/ashah12/glibc/glibc-2.29-install/lib:/jet/home/ashah12/miniconda3/envs/my_env/lib",
             "./bin/z3-4.13.0",
             f"-t:{TRACE_TIME_LIMIT_SEC*1000}",
             self.mut_path,
@@ -164,6 +167,9 @@ class MutantInfo:
         cf = open(self.core_log, "w+")
         subprocess.run(
             [
+                "/jet/home/ashah12/glibc/glibc-2.29-install/lib/ld-2.29.so",
+                "--library-path", 
+                "/jet/home/ashah12/glibc/glibc-2.29-install/lib:/jet/home/ashah12/miniconda3/envs/my_env/lib",
                 "./bin/z3-4.13.0",
                 self.mut_lbl_path,
                 f"-t:{CORE_TIME_LIMIT_SEC*1000}",

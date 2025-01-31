@@ -1,5 +1,5 @@
 from typing import Dict, List, Set
-from z3 import *
+from z3.z3 import *
 
 from debugger.z3_utils import (
     Z3AstVisitor,

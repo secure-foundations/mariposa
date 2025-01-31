@@ -3,7 +3,7 @@
 import argparse
 import json
 import os
-from z3 import set_param
+from z3.z3 import set_param
 from typing import Dict, List
 from tqdm import tqdm
 from tabulate import tabulate
@@ -172,7 +172,7 @@ class Debugger3:
         log_debug(f"[edit] proof path: {self.chosen_proof_path}")
         log_debug(f"[edit] trace path: {self.chosen_trace_path}")
         proof = ProofAnalyzer.from_proof_file(
-            self.chosen_proof_path, clear=self.__clear_proof_cache
+            self.chosen_proof_path, clear=self.__clear_proof_cache, analyzer="high_timeout"
         )
         trace = self._builder.get_trace_mutant_info(self.chosen_trace_path)
         assert trace.has_trace()

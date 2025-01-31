@@ -8,7 +8,7 @@
 
 # from debugger.query_loader import SkolemFinder
 # from debugger.z3_utils import Z3AstVisitor, collapse_sexpr, quote_name
-# from z3 import ExprRef, is_const, is_var, is_app, is_quantifier, Z3_OP_DT_IS
+# from z3.z3 import ExprRef, is_const, is_var, is_app, is_quantifier, Z3_OP_DT_IS
 
 
 # def hack_find_hcf_id(s: str):

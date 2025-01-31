@@ -1,6 +1,6 @@
 import re
 import time
-from z3 import *
+from z3.z3 import *
 
 from utils.system_utils import log_debug, log_info, log_warn
 

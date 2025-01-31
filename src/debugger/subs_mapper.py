@@ -1,4 +1,4 @@
-from z3 import *
+from z3.z3 import *
 from debugger.z3_utils import Z3AstVisitor
 from utils.system_utils import log_warn
 
