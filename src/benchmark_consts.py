@@ -1,4 +1,4 @@
-UNSTABLE_10_SECS = {
+UNSTABLE_VERUS = {
     "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__helper_invariants__proof.9.smt2": "199ba4594c",
     "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__helper_invariants__validation.3.smt2": "a1b4b3fd4a",
     "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__liveness__daemon_set_match__lemma_from_after_get_daemon_set_step_to_after_update_daemon_set_step.smt2": "7a3bd28b48",
@@ -69,13 +69,6 @@ UNSTABLE_10_SECS = {
     "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__setup_v.5.smt2": "5a940edd1b",
     "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__setup_v.6.smt2": "568e167040",
     "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__start_v.2.smt2": "e16c5e8c0b",
-}
-
-SKIP_FOR_NOW = {
-    "data/projs/verismo.dedup/base.z3/arch__ptram__ptram_p2.smt2",
-    "data/projs/vsystemsnew/base.z3/mimalloc-smt-page_organization__PageOrg__impl_%4__merge_with_before_ll_inv_valid_unused.smt2",
-    "data/projs/vsystemsnew/base.z3/page-table-smt-impl_u__l2_refinement.4.smt2",
-    "data/projs/atmosphere/base.z3/kernel__create_and_share_pages.5.smt2",
 }
 
 UNSTABLE_MARIPOSA = {

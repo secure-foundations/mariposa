@@ -1,6 +1,31 @@
-import sexpdata as sexp
 from debugger.tree_node import *
 from functools import partial
+
+def parse_s_expression(s):
+    tokens = s.replace("(", " ( ").replace(")", " ) ").split()
+    stack = []
+    current = []
+
+    for token in tokens:
+        if token == "(":
+            stack.append(current)
+            current = []
+        elif token == ")":
+            if not stack:
+                raise SyntaxError("Unmatched closing parenthesis")
+            last = stack.pop()
+            last.append(current)
+            current = last
+        else:
+            current.append(token)
+
+    if stack:
+        raise SyntaxError("Unmatched opening parenthesis")
+
+    if len(current) == 1:
+        return current[0]  # Return the single parsed element instead of a list
+    return current
+
 
 class ProofParser:
     def __init__(self, file_path):
@@ -11,7 +36,7 @@ class ProofParser:
         temp = AppNode("temp", [])
 
         with open(file_path) as f:
-            data = sexp.load(f)
+            data = parse_s_expression(f.read())
 
         cb = partial(cb_add_app_child, temp)
         self.tasks = [(data, cb)]
@@ -24,8 +49,8 @@ class ProofParser:
         return temp.children[0]
 
     def __parse_node(self, data):
-        if isinstance(data, sexp.Symbol):
-            return LeafNode(data.value())
+        if isinstance(data, str):
+            return LeafNode(data)
 
         if isinstance(data, int):
             return LeafIntNode(data)
@@ -148,17 +173,17 @@ class ProofParser:
 
 
 def _get_symbol(data):
-    assert isinstance(data, sexp.Symbol)
-    return data.value()
+    assert isinstance(data, str)
+    return data
 
 
 def _get_sort(data):
-    if isinstance(data, sexp.Symbol):
-        return data.value()
+    if isinstance(data, str):
+        return data
     res = []
     for x in data:
-        if isinstance(x, sexp.Symbol):
-            res.append(x.value())
+        if isinstance(x, str):
+            res.append(x)
         else:
             assert isinstance(x, int)
             res.append(str(x))
@@ -166,8 +191,8 @@ def _get_sort(data):
 
 
 def _try_get_symbol(data):
-    if isinstance(data, sexp.Symbol):
-        return data.value()
+    if isinstance(data, str):
+        return data
     return None
 
 
@@ -176,11 +201,7 @@ def _parse_quant_vars(_bindings):
     for _binding in _bindings:
         assert isinstance(_binding, list)
         assert len(_binding) == 2
-        if _binding[0] == True:
-            # this seems to be a bug in the sexp parser
-            var = "t"
-        else:
-            var = _get_symbol(_binding[0])
+        var = _get_symbol(_binding[0])
         sort = _get_sort(_binding[1])
         bindings.append((var, sort))
     return bindings

@@ -107,24 +107,40 @@ class TermTable(nx.DiGraph):
         return root_ref
 
     def __rebind_let_rec(self, node: TreeNode):
-        if isinstance(node, LeafNode):
-            return node
+        temp = AppNode("temp", [])
+        cb = partial(cb_add_app_child, temp)
+        tasks = [(node, cb)]
 
-        if isinstance(node, LetNode):
-            for var, val in node.bindings:
-                self.__add_global_def(var, val)
-            # we haven't ran into any rebinds yet
-            body = self.__rebind_let_rec(node.body)
-            # remove the LetNode
-            return body
+        while tasks:
+            node, callback = tasks.pop()
 
-        if isinstance(node, AppNode):
-            node.children = [self.__rebind_let_rec(c) for c in node.children]
-            return node
+            if isinstance(node, LeafNode):
+                callback(node)
+                continue
 
-        assert isinstance(node, QuantNode)
-        assert node in self.__redirected_quant_nodes
-        return node
+            if isinstance(node, LetNode):
+                for var, val in node.bindings:
+                    self.__add_global_def(var, val)
+                tasks.append((node.body, callback))
+                continue
+
+            if isinstance(node, QuantNode):
+                assert node in self.__redirected_quant_nodes
+                callback(node)
+                continue
+
+            assert isinstance(node, AppNode)
+            cb = partial(cb_add_app_child, node)
+
+            children = node.children
+            node.children = []
+
+            for child in reversed(children):
+                tasks.append((child, cb))
+
+            callback(node)
+
+        return temp.children[0]
 
     def __add_global_def(self, name, val):
         if name not in self.__global_defs:

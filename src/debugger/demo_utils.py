@@ -7,7 +7,7 @@ from debugger3 import Debugger3
 from utils.system_utils import log_info
 from benchmark_consts import *
 from debugger.file_builder import FileBuilder
-from utils.analysis_utils import fmt_percent
+from utils.analysis_utils import Categorizer, fmt_percent
 from analysis.singleton_analyzer import SingletonAnalyzer
 from base.factory import FACT
 from utils.system_utils import list_smt2_files, log_info
@@ -54,7 +54,10 @@ def get_singleton_status(dbg: Debugger3):
 
     qa, _ = get_params(dbg)
 
-    ba = SingletonAnalyzer(e_singleton, qa)
+    try:
+        ba = SingletonAnalyzer(e_singleton, qa)
+    except:
+        return "singleton not ran (probably)"
 
     return ba
 
@@ -119,3 +122,25 @@ def check_stabilized(dbg: Debugger3, fa: ExperAnalyzer):
 
     return stabilized
 
+def get_debugger_statuses(queries):
+    statuses = Categorizer()
+
+    for query in queries:
+        dbg = Debugger3(query)
+
+        ba = get_singleton_status(dbg)
+
+        if isinstance(ba, str):
+            statuses.add_item(ba, query)
+            continue
+
+        fa = get_filtered_status(dbg)
+
+        if isinstance(fa, str):
+            statuses.add_item(fa, query)
+            continue
+
+        statuses.add_item("finished", query)
+
+    statuses.finalize()
+    return statuses

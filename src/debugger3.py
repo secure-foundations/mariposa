@@ -41,7 +41,7 @@ class Debugger3:
     ):
         if not os.path.exists(query_path):
             log_warn(f"[init] query path {query_path} not found")
-            return
+            sys.exit(1)
 
         self.given_query_path = query_path
         self.name_hash = get_name_hash(query_path)
