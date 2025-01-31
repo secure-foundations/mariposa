@@ -69,6 +69,7 @@ e_filter = FACT.try_get_exper(p_filter, FILTER_CFG, SOLVER)
 fa = ExperAnalyzer(e_filter, QA)
 
 df = pd.DataFrame(dbg.editor.get_report())
+dbg.create_singleton_project()
 df.to_csv("report.csv")
 # check_tested(dbg, ba)
-# check_stabilized(dbg, fa)
+check_stabilized(dbg, fa)
