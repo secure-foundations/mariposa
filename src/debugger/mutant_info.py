@@ -138,6 +138,9 @@ class MutantInfo:
 
         # soft timeout (-t) is used, otherwise the log might be malformed
         solver_args = [
+            "/jet/home/ashah12/glibc/glibc-2.29-install/lib/ld-2.29.so", 
+            "--library-path", 
+            "/jet/home/ashah12/glibc/glibc-2.29-install/lib:/jet/home/ashah12/miniconda3/envs/my_env/lib", 
             "./bin/z3-4.13.0",
             f"-t:{TRACE_TIME_LIMIT_SEC*1000}",
             self.mut_path,
@@ -163,7 +166,9 @@ class MutantInfo:
 
         cf = open(self.core_log, "w+")
         subprocess.run(
-            [
+            [   "/jet/home/ashah12/glibc/glibc-2.29-install/lib/ld-2.29.so", 
+                "--library-path", 
+                "/jet/home/ashah12/glibc/glibc-2.29-install/lib:/jet/home/ashah12/miniconda3/envs/my_env/lib", 
                 "./bin/z3-4.13.0",
                 self.mut_lbl_path,
                 f"-t:{CORE_TIME_LIMIT_SEC*1000}",
@@ -214,7 +219,44 @@ class MutantInfo:
             self.build_mutant_query()
             log_info(f"[proof] attempt from mutant {self.mut_path}")
 
-        return dump_z3_proof(query_path, self.proof_path, timeout=PROOF_TIME_LIMIT_SEC*1000)
+
+        # with open(query_path, "r") as f:
+        #     smt_query = f.read()
+
+        # # Ensure proof production is enabled and append (get-proof)
+        # smt_query = "(set-option :produce-proofs true)\n" + smt_query + "\n(get-proof)\n"
+
+        # smt_query_bytes = smt_query.encode('utf-8')
+
+        with open(query_path, "a") as f:  # Open the file in append mode
+            f.write("\n(get-proof)\n")
+
+
+        # amar : todo -> add the proof building here
+        with open(self.proof_path, "wb") as outfile:
+            proc = subprocess.run(
+                [
+                    "/jet/home/ashah12/glibc/glibc-2.29-install/lib/ld-2.29.so", 
+                    "--library-path", 
+                    "/jet/home/ashah12/glibc/glibc-2.29-install/lib:/jet/home/ashah12/miniconda3/envs/my_env/lib", 
+                    "./bin/z3-4.13.0",
+                    f"-t:{PROOF_TIME_LIMIT_SEC*1000}",
+                    query_path,
+                    "proof=true"
+                ],
+                # input=smt_query_bytes,
+                stdout = subprocess.PIPE
+            )
+
+            output = proc.stdout.splitlines()  # Split output into lines
+
+            if len(output) > 0 and output[0] == b'unsat':
+                outfile.write(b'\n'.join(output[1:]) + b'\n')
+                return True 
+            return False
+                
+
+        # return dump_z3_proof(query_path, self.proof_path, timeout=PROOF_TIME_LIMIT_SEC*1000)
 
     def build_graph_log(self, clear=False) -> bool:
         if not self.__should_build(self.graph_path, clear):

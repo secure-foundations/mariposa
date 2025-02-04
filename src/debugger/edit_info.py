@@ -7,7 +7,7 @@ from utils.system_utils import log_info, subprocess_run
 
 # in theory we can be using the factory...
 def run_z3(query_path, timeout=10):
-    r, e, t = subprocess_run(["./bin/z3-4.13.0", f"-T:{timeout}", query_path])
+    r, e, t = subprocess_run(["/jet/home/ashah12/glibc/glibc-2.29-install/lib/ld-2.29.so", "--library-path", "/jet/home/ashah12/glibc/glibc-2.29-install/lib:/jet/home/ashah12/miniconda3/envs/my_env/lib", "./bin/z3-4.13.0", f"-T:{timeout}", query_path])
     r = output_as_rcode(r)
     log_info(f"[run] {query_path} {r} {e} {round(t / 1000, 2)}")
     return (query_path, r, e, round(t / 1000, 2))
