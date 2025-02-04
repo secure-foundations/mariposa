@@ -6,7 +6,7 @@ from debugger.quant_graph import TheirAnalysis, TheirParser
 from debugger.query_editor import QueryEditor
 from debugger.query_loader import QueryLoader, Z3QuantWrapper
 from utils.system_utils import log_debug, log_warn
-from pandas import DataFrame as df
+from pandas import DataFrame
 
 
 class InstGroupStat:
@@ -32,11 +32,11 @@ class InstGroupStat:
     def __iter__(self):
         assert self.__finalized
         return iter(self.__group_counts)
-    
+
     def items(self):
         assert self.__finalized
         return self.__group_counts.items()
-    
+
     def keys(self):
         assert self.__finalized
         return self.__group_counts.keys()
@@ -183,22 +183,6 @@ class InformedEditor(QueryEditor):
             return EditAction.NONE
         return self.__root_actions[qname]
 
-    def get_report(self, skip_ignored=True):
-        table = dict()
-        for qname, quant in self.items(root_only=True):
-            if skip_ignored and qname in self.ignored:
-                continue
-            action = self.get_quant_action(qname)
-            t_group = self.trace_stats.get_group_stat(qname)
-            p_group = self.proof_stats.get_group_stat(qname)
-
-            table[qname] = [
-                    action.value,
-                    t_group.total_count,
-                    p_group.total_count,
-                ]
-        return table
-
     def edit_by_qname(self, qname, action=None, erase_when_possible=True):
         if action is None:
             action = self.__get_root_action(qname)
@@ -251,7 +235,7 @@ class InformedEditor(QueryEditor):
 
         print(qii.get_all_skolem_deps())
         print("")
-        
+
     def get_rankings(self):
         self.trace.build_graph_log()
         self.trace.build_stats_log()
@@ -260,3 +244,23 @@ class InformedEditor(QueryEditor):
             t_group = self.trace_stats.get_group_stat(qname)
             ta.compute_sub_ratios(t_group.keys(), debug=True)
             break
+
+    def get_inst_report(self, skip_ignored=True):
+        table = []
+        for qname, quant in self.items(root_only=True):
+            if skip_ignored and qname in self.ignored:
+                continue
+            # action = self.get_quant_action(qname)
+            t_group = self.trace_stats.get_group_stat(qname)
+            p_group = self.proof_stats.get_group_stat(qname)
+            skolem = self.group_should_be_skolemized(qname)
+
+            table.append(
+                [
+                    qname,
+                    t_group.total_count,
+                    p_group.total_count,
+                    skolem,
+                ]
+            )
+        return DataFrame(table, columns=["qname", "trace_count", "proof_count", "skolem"])

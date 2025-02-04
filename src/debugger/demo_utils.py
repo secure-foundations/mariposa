@@ -12,6 +12,8 @@ from analysis.singleton_analyzer import SingletonAnalyzer
 from base.factory import FACT
 from utils.system_utils import list_smt2_files, log_info
 from enum import Enum
+from pandas import DataFrame
+
 
 SOLVER = FACT.get_solver("z3_4_13_0")
 VERI_CFG = FACT.get_config("verify")
@@ -83,6 +85,8 @@ def try_get_filter_analyzer(dbg: Debugger3):
     e_filter = FACT.try_get_exper(p_filter, filter_cfg, SOLVER)
 
     if e_filter is None:
+        if len(p_filter.qids) == 0:
+            return DebuggerStatus.SINGLETON_NOT_FILTERED
         return DebuggerStatus.FILTERED_NOT_RAN
 
     try:
@@ -107,32 +111,6 @@ def get_split_status(dbg: Debugger3):
     sa = ExperAnalyzer(e, qa)
     return sa
 
-def check_tested(dbg: Debugger3, ba: SingletonAnalyzer):
-    tested = dict()
-    root_quants = dbg.editor.get_singleton_actions(skip_infeasible=False)
-    tested_qnames = set()
-
-    for eid in ba.qids:
-        ei = dbg.look_up_edit_with_id(eid)
-        qname, action = ei.get_singleton_edit()
-        rc, et = ba.get_query_result(eid)
-        tested[(qname, action.value)] = [str(rc), et, ei.query_path]
-        tested_qnames.add(qname)
-
-    untested = set(root_quants) - set(tested_qnames)
-    return tested, untested
-
-def check_stabilized(dbg: Debugger3, fa: ExperAnalyzer):
-    stabilized = []
-    for eid in fa.get_stable_edit_ids():
-        ei = dbg.look_up_edit_with_id(eid)
-        qname, action = ei.get_singleton_edit()
-        if qname == "prelude_fuel_defaults":
-            continue 
-        stabilized.append((qname, action.value, ei.query_path))
-
-    return stabilized
-
 def get_debugger_status(dbg: Debugger3):
     ba = try_get_singleton_analyzer(dbg)
 
@@ -146,22 +124,67 @@ def get_debugger_status(dbg: Debugger3):
 
     return (ba, fa)    
 
+class Reviewer2:
+    def __init__(self, query_path: str):
+        self.dbg = Debugger3(query_path)
+        status = get_debugger_status(self.dbg)
+
+        if isinstance(status, DebuggerStatus):
+            self.status = status
+            return
+
+        self.status = DebuggerStatus.FINISHED
+        self._ba, self._fa = status
+
+    def get_command_to_run(self):
+        if self.status == DebuggerStatus.SINGLETON_NOT_CREATED:
+            return "./src/debugger3 --create-singleton -i " + self.dbg.given_query_path 
+        if self.status == DebuggerStatus.SINGLETON_NOT_RAN:
+            return "./src/exper_wizard.py manager -e verify --total-parts 12 -i " + self.dbg.singleton_dir
+        if self.status == DebuggerStatus.SINGLETON_NOT_FILTERED:
+            return "./src/analysis_wizard.py singleton -e verify -s z3_4_13_0 -i " + self.dbg.singleton_dir
+        if self.status == DebuggerStatus.FILTERED_NOT_RAN:
+            return "python3 src/carve_and_rerun.py " + self.dbg.singleton_filtered_dir
+        assert False
+
+    def __check_tested(self):
+        tested = []
+        root_quants = self.dbg.editor.get_singleton_actions(skip_infeasible=False)
+        tested_qnames = set()
+
+        for eid in self._ba.qids:
+            ei = self.dbg.look_up_edit_with_id(eid)
+            qname, action = ei.get_singleton_edit()
+            rc, et = self._ba.get_query_result(eid)
+            tested.append((qname, action.value, str(rc), et/1000, ei.query_path))
+            tested_qnames.add(qname)
+
+        self.skipped = set(root_quants) - set(tested_qnames)
+        self.tested = DataFrame(tested, columns=["qname", "action", "result", "time", "edit_path"])
+
+    def __check_stabilized(self):
+        stabilized = []
+        for eid in self._fa.get_stable_edit_ids():
+            ei = self.dbg.look_up_edit_with_id(eid)
+            qname, action = ei.get_singleton_edit()
+            if qname == "prelude_fuel_defaults":
+                continue 
+            stabilized.append((qname, action.value, ei.query_path))
+        self.stabilized = DataFrame(stabilized, columns=["qname", "action", "edit_path"])
+
+    def save_reports(self):
+        self.freq = self.dbg.editor.get_inst_report()
+        self.__check_tested()
+        self.__check_stabilized()
+
 def get_debugger_statuses(queries):
     statuses = Categorizer()
-    dbgs = dict()
-    eas = dict()
+    revs = dict()
 
     for query in queries:
-        dbg = Debugger3(query)
-        dbgs[query] = dbg
-
-        st = get_debugger_status(dbg)
-
-        if isinstance(st, DebuggerStatus):
-            statuses.add_item(st, query)
-        else:
-            eas[query] = st
-            statuses.add_item(DebuggerStatus.FINISHED, query)
+        rev = Reviewer2(query)
+        statuses.add_item(rev.status, query)
+        revs[query] = rev
 
     statuses.finalize()
-    return (statuses, dbgs, eas)
+    return (statuses, revs)
