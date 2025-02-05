@@ -34,7 +34,6 @@ for file_name in files:
         "-i", input_file_path,  # Path to the input file
         "--retry-failed", 
         "--skip-core", 
-        "--collect-garbage"
     ]
     
     try:
@@ -45,3 +44,21 @@ for file_name in files:
     except subprocess.CalledProcessError as e:
         # Handle command failure
         print(f"Command failed for {file_name}. Error: {e}")
+
+    # cleaning up garbage
+    command = [
+        "python3", "src/debugger3.py", 
+        "-i", input_file_path,  # Path to the input file
+        "--collect-garbage"
+    ]
+    
+    try:
+        # Run the command
+        print(f"Cleaning garbage for {file_name}...")
+        subprocess.run(command, check=True)  # Run the command and raise an error if it fails
+        print(f"Successfully cleaned garbage for {file_name}")
+    except subprocess.CalledProcessError as e:
+        # Handle command failure
+        print(f"Could not clean garbage for {file_name}. Error: {e}")
+
+
