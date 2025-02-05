@@ -27,11 +27,11 @@ from tabulate import tabulate
 from debugger.mutant_info import *
 
 
-MUTANT_COUNT = 30
+MUTANT_COUNT = 64
 
-TRACE_TOTAL_TIME_LIMIT_SEC = 480
-CORE_TOTAL_TIME_LIMIT_SEC = 120
-PROOF_TOTAL_TIME_LIMIT_SEC = 120
+TRACE_TOTAL_TIME_LIMIT_SEC = 300
+CORE_TOTAL_TIME_LIMIT_SEC = 300
+PROOF_TOTAL_TIME_LIMIT_SEC = 300
 
 
 def _build_fail_trace(mi: MutantInfo):
@@ -234,7 +234,7 @@ class FileBuilder:
 
         log_info(f"[init] currently {count} traces")
 
-        for f in [_build_any_trace, _build_fail_trace]:
+        for f in [_build_fail_trace]: #_build_any_trace,
             args = self.__create_tasks(
                 [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
             )

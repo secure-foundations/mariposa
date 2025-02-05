@@ -12,12 +12,12 @@ from utils.system_utils import log_check, log_debug, log_info, log_warn, subproc
 from utils.cache_utils import *
 
 
-TRACE_TIME_LIMIT_SEC = 10
-CORE_TIME_LIMIT_SEC = 60
+TRACE_TIME_LIMIT_SEC = 150
+CORE_TIME_LIMIT_SEC = 150
 PROOF_TIME_LIMIT_SEC = 150
 
 TRACE_GOAL_COUNT = 1
-CORE_GOAL_COUNT = 2
+CORE_GOAL_COUNT = 1
 PROOF_GOAL_COUNT = 1
 
 TRACES = "traces"
@@ -253,7 +253,9 @@ class MutantInfo:
             if len(output) > 0 and output[0] == b'unsat':
                 outfile.write(b'\n'.join(output[1:]) + b'\n')
                 return True 
-            return False
+
+        os.remove(self.proof_path)
+        return False
                 
 
         # return dump_z3_proof(query_path, self.proof_path, timeout=PROOF_TIME_LIMIT_SEC*1000)
