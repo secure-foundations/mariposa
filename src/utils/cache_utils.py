@@ -9,8 +9,10 @@ def get_cache_path(name):
 def save_cache(name, obj):
     path = get_cache_path(name)
     parent = os.path.dirname(path)
+
     if not os.path.exists(parent):
         os.makedirs(parent)
+
     with open(path, 'wb+') as f:
         log_debug(f"saving cache at {name}")
         pickle.dump(obj, f)

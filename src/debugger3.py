@@ -56,6 +56,8 @@ class Debugger3:
         self.chosen_proof_path = None
         self.chosen_trace_path = None
 
+        self.__clear_proof_cache = False
+
         if clear_all:
             self.__clear_proof_cache = True
 
@@ -204,7 +206,7 @@ class Debugger3:
         self.save_edits_meta()
         log_info("[edit] cleared")
 
-    def create_singleton_project(self):
+    def create_singleton_project(self, overwrite=False):
         singleton_dir = f"data/projs/{self.singleton_project}/base.z3"
         filter_dir = f"data/projs/{self.singleton_project}.filtered/base.z3"
 
@@ -212,11 +214,9 @@ class Debugger3:
         create_dir(filter_dir)
         existing = list_smt2_files(singleton_dir)
 
-        if existing == [] or True:
+        if existing == [] or overwrite:
             feasible_edits = self.editor.get_singleton_actions()
             for qid, action in tqdm(feasible_edits.items()):
-                if action == EditAction.ERASE or action == EditAction.SKOLEMIZE:
-                    continue
                 self.register_edit_info({qid: action}, singleton_dir)
                 if action == EditAction.INST_REPLACE:
                     # this is also feasible

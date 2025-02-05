@@ -296,11 +296,16 @@ class TermTable(nx.DiGraph):
             if isinstance(node, AppNode):
                 refs.extend(node.children)
         return True
-
+    
     def is_ground(self, ron):
         refs = [self.__make_ref(self.lookup_node(ron))]
+        visited = set()
         while refs:
-            node = self.lookup_node(refs.pop())
+            ref = refs.pop()
+            if ref in visited:
+                continue
+            visited.add(ref)
+            node = self.lookup_node(ref)
             if isinstance(node, QuantNode):
                 return False
             if isinstance(node, ProofNode):
@@ -311,9 +316,13 @@ class TermTable(nx.DiGraph):
 
     def get_skolem_deps(self, ron) -> Set[str]:
         refs = [self.__make_ref(self.lookup_node(ron))]
+        visited = set()
         deps = set()
         while refs:
             ref = refs.pop()
+            if ref in visited:
+                continue
+            visited.add(ref)
             node = self.lookup_node(ref)
             if name := node.maybe_skolemized():
                 deps.add(name)

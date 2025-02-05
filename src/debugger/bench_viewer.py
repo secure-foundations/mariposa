@@ -2,16 +2,19 @@ from typing import Dict
 from debugger.demo_utils import DebuggerStatus, Reviewer2
 from utils.analysis_utils import Categorizer
 import numpy as np
+import multiprocessing
 
 class BenchViewer:
     def __init__(self, queries):
         sts = Categorizer()
         self.reviewers: Dict[str, Reviewer2] = dict()
+        pool = multiprocessing.Pool(4)
 
-        for query in queries:
-            r = Reviewer2(query)
-            sts.add_item(r.status, query)
-            self.reviewers[query] = r
+        reviewers = pool.map(Reviewer2, queries)
+
+        for r in reviewers:
+            self.reviewers[r.given_query_path] = r
+            sts.add_item(r.status, r.given_query_path)
 
         sts.finalize()
         self.status = sts

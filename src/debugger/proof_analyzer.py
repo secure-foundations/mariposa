@@ -5,7 +5,7 @@ from collections import Counter
 from debugger.tree_parser import *
 from debugger.symbol_table import TermTable
 from utils.cache_utils import load_cache_or
-from utils.system_utils import log_debug, log_warn
+from utils.system_utils import log_debug, log_error, log_warn
 
 class RewriteTerm:
     def __init__(self, left, right):
@@ -66,7 +66,7 @@ class ProofAnalyzer(TermTable):
         self.lemmas = dict()
         self.th_lemmas = dict()
 
-        self.__ignored_proof_stats = dict()
+        # self.__ignored_proof_stats = dict()
         self.__proof_node_count = 0
 
         self.__qname_of_inst_ref: Dict[NodeRef, str] = dict()
@@ -84,26 +84,26 @@ class ProofAnalyzer(TermTable):
             node = self.lookup_node(ref)
             if not isinstance(node, ProofNode):
                 continue
-            self.proof_graph.add_node(ref)
+            # self.proof_graph.add_node(ref)
             self.__analyze_proof_node(ref, node)
 
         # root will likely be unit-resolution...
-        self.proof_graph.add_node(self.root_ref)
+        # self.proof_graph.add_node(self.root_ref)
 
-        for ref in self.proof_graph.nodes:
-            for child_ref in self.successors(ref):
-                if child_ref in self.proof_graph.nodes:
-                    self.proof_graph.add_edge(ref, child_ref)
+        # for ref in self.proof_graph.nodes:
+        #     for child_ref in self.successors(ref):
+        #         if child_ref in self.proof_graph.nodes:
+        #             self.proof_graph.add_edge(ref, child_ref)
 
-        reachable = nx.descendants(self.proof_graph, self.root_ref)
-        reachable.add(self.root_ref)
+        # reachable = nx.descendants(self.proof_graph, self.root_ref)
+        # reachable.add(self.root_ref)
 
-        if set(self.proof_graph.nodes) != reachable:
-            log_debug(f"[proof graph] graph is not connected, reachable: {len(reachable)}, total: {len(self.proof_graph.nodes)}")
+        # if set(self.proof_graph.nodes) != reachable:
+        #     log_debug(f"[proof graph] graph is not connected, reachable: {len(reachable)}, total: {len(self.proof_graph.nodes)}")
 
-        log_debug(
-            f"[proof graph] {len(self.proof_graph.nodes)} nodes, {len(self.proof_graph.edges)} edges, root {self.root_ref}"
-        )
+        # log_debug(
+        #     f"[proof graph] {len(self.proof_graph.nodes)} nodes, {len(self.proof_graph.edges)} edges, root {self.root_ref}"
+        # )
 
     def __analyze_proof_node(self, ref, node):
         self.__proof_node_count += 1
@@ -125,30 +125,30 @@ class ProofAnalyzer(TermTable):
         ):
             return
 
-        if name in {
-            "iff-true",
-            "iff-false",
-            "and-elim",
-            "not-or-elim",
-            "symm",
-            # "nnf-pos",
-        }:
-            # print(name, len(node.children))
-            assert len(node.children) == 2
-        elif name in {
-            "refl",
-            "asserted",
-            "hypothesis",
-            "commutativity",
-            "def-axiom",
-        }:
-            assert len(node.children) == 1
-        elif name in {"mp~", "mp", "trans"}:
-            assert len(node.children) == 3
+        # if name in {
+        #     "iff-true",
+        #     "iff-false",
+        #     "and-elim",
+        #     "not-or-elim",
+        #     "symm",
+        #     # "nnf-pos",
+        # }:
+        #     # print(name, len(node.children))
+        #     assert len(node.children) == 2
+        # elif name in {
+        #     "refl",
+        #     "asserted",
+        #     "hypothesis",
+        #     "commutativity",
+        #     "def-axiom",
+        # }:
+        #     assert len(node.children) == 1
+        # elif name in {"mp~", "mp", "trans"}:
+        #     assert len(node.children) == 3
 
-        if name not in self.__ignored_proof_stats:
-            self.__ignored_proof_stats[name] = 0
-        self.__ignored_proof_stats[name] += 1
+        # if name not in self.__ignored_proof_stats:
+        #     self.__ignored_proof_stats[name] = 0
+        # self.__ignored_proof_stats[name] += 1
 
     def __collect_rewrite(self, ref) -> bool:
         node = self.lookup_node(ref)
@@ -177,7 +177,7 @@ class ProofAnalyzer(TermTable):
         if not self.is_leaf(left_last_children, "false"):
             log_warn(f"lemma node does not end with false: {ref}")
             self.pprint_node(left_last_children, 10)
-            return False
+            assert False
         assumptions = assumptions.children[:-1]
         self.lemmas[ref] = (assumptions, conclusion)
         assert self.is_proof_free(conclusion)
@@ -200,7 +200,7 @@ class ProofAnalyzer(TermTable):
         node = self.resolve_child(ref)
         assert isinstance(node, AppNode)
         if node.name != "or":
-            log_warn(f"quant-inst node is not an or: {ref}")
+            log_error(f"quant-inst node is not an or: {ref}")
             self.pprint_node(node, 5)
             assert False
         children = self.resolve_children(node)

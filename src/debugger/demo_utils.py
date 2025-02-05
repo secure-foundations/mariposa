@@ -142,9 +142,9 @@ class Report:
         self.skipped = None
 
 
-class Reviewer2:
+class Reviewer2(Debugger3):
     def __init__(self, query_path: str):
-        self.dbg = Debugger3(query_path)
+        super().__init__(query_path)
         status = get_debugger_status(self.dbg)
 
         if isinstance(status, DebuggerStatus):
