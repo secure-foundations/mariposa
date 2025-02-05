@@ -38,6 +38,22 @@ class ProofParser:
         with open(file_path) as f:
             data = parse_s_expression(f.read())
 
+        # getting rid of skolem functions in z3 terminal proof format
+        while (data[0][0] == "declare-fun"):
+            skolem_fun_declaration = data[0]
+            assert (len(skolem_fun_declaration) == 4)
+            assert isinstance(skolem_fun_declaration[1], str)
+            assert isinstance(skolem_fun_declaration[2], list)
+            assert isinstance(skolem_fun_declaration[1], str)
+            data = data[1:]
+
+        assert (len(data) > 0)
+
+        # getting rid of 
+        if data[0][0] == "proof":
+            assert len(data[0]) == 2
+            data = data[0][1]
+
         cb = partial(cb_add_app_child, temp)
         self.tasks = [(data, cb)]
 
