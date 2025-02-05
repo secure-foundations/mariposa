@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -t 8:00:00
+#SBATCH --ntasks-per-node=128
+
+# type 'man sbatch' for more information and options
+# this job will ask for 1 full RM node (128 cores) for 8 hours
+# this job would potentially charge 1024 RM SUs
+
+#echo commands to stdout
+set -x
+
+# move to working directory
+# this job assumes:
+# - all input data is stored in this directory
+# - all output should be stored in this directory
+# - please note that groupname should be replaced by your groupname
+# - PSC-username should be replaced by your PSC username
+# - path-to-directory should be replaced by the path to your directory where the executable is
+
+cd /ocean/projects/cis230065p/ashah12/mariposa
+
+source /jet/home/ashah12/miniconda3/etc/profile.d/conda.sh
+conda activate my_env
+python3 get_proofs.py

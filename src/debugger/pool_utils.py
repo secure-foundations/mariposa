@@ -4,7 +4,7 @@ import time
 from utils.system_utils import log_info
 
 
-PROC_COUNT = 64
+PROC_COUNT = 4
 
 def run_with_pool(func, args, goal=0, time_bound=600):
     success = []
