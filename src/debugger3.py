@@ -35,7 +35,6 @@ class Debugger3:
         clear_traces=False,
         clear_cores=False,
         clear_proofs=False,
-        clear_proof_cache=False,
         skip_core=False,
         overwrite_reports=False,
     ):
@@ -59,8 +58,6 @@ class Debugger3:
 
         if clear_all:
             self.__clear_proof_cache = True
-        else:
-            self.__clear_proof_cache = clear_proof_cache
 
         self.__edit_infos: Dict[int, EditInfo] = dict()
         self.edits_meta = f"{self.sub_root}/edits.json"
@@ -167,6 +164,12 @@ class Debugger3:
             self.chosen_trace_path = self._builder.get_candidate_trace().trace_path
         self._builder.collect_garbage(self.chosen_trace_path)
 
+    def reset_proof_cache(self):
+        if len(self._builder.proofs) == 0:
+            return
+        self.__clear_proof_cache = True
+        self.editor is not None
+
     @property
     def editor(self) -> InformedEditor:
         if self._editor is not None:
@@ -209,9 +212,11 @@ class Debugger3:
         create_dir(filter_dir)
         existing = list_smt2_files(singleton_dir)
 
-        if existing == []:
+        if existing == [] or True:
             feasible_edits = self.editor.get_singleton_actions()
             for qid, action in tqdm(feasible_edits.items()):
+                if action == EditAction.ERASE or action == EditAction.SKOLEMIZE:
+                    continue
                 self.register_edit_info({qid: action}, singleton_dir)
                 if action == EditAction.INST_REPLACE:
                     # this is also feasible
@@ -271,6 +276,9 @@ class Debugger3:
         eid = ei.get_id()
 
         if not ei.query_exists():
+            self.editor.edit_by_info(ei)
+        else:
+            log_debug(f"[edit] {eid} already exists")
             self.editor.edit_by_info(ei)
 
         if eid in self.__edit_infos:
@@ -416,10 +424,10 @@ def main():
         help="(maybe) change the proof and trace",
     )
     parser.add_argument(
-        "--clear-proof-cache",
+        "--reset-proof-cache",
         default=False,
         action="store_true",
-        help="clear the proof analyzer CACHE",
+        help="reset the proof analyzer CACHE",
     )
     parser.add_argument(
         "--collect-garbage",
@@ -437,7 +445,6 @@ def main():
         clear_traces=args.clear_traces,
         clear_cores=args.clear_cores,
         clear_proofs=args.clear_proofs,
-        clear_proof_cache=args.clear_proof_cache,
         skip_core=args.skip_core,
         overwrite_reports=args.overwrite_reports,
     )
@@ -460,6 +467,10 @@ def main():
 
     if args.collect_garbage:
         dbg.collect_garbage()
+        return
+
+    if args.reset_proof_cache:
+        dbg.reset_proof_cache()
         return
 
     dbg.print_status()

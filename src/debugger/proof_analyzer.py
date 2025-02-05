@@ -201,8 +201,8 @@ class ProofAnalyzer(TermTable):
         assert isinstance(node, AppNode)
         if node.name != "or":
             log_warn(f"quant-inst node is not an or: {ref}")
-            self.pprint_node(node, 10)
-            return False
+            self.pprint_node(node, 5)
+            assert False
         children = self.resolve_children(node)
         l = children[0]
         inst = node.children[1:]
@@ -221,13 +221,14 @@ class ProofAnalyzer(TermTable):
             actual_inst_ref = self.add_tree_node(instance)
 
         self.__qname_of_inst_ref[ref] = qname
+
         if qname not in self.__insts_under_qname:
             self.__insts_under_qname[qname] = QuantInstInfo(qname)
 
         skolem_deps = self.get_skolem_deps(actual_inst_ref)
         self.__insts_under_qname[qname].add_inst(quant, actual_inst_ref, skolem_deps)
         self.__record_skolem_deps(qname, skolem_deps)
-        
+
         return True
     
     def __record_skolem_deps(self, qname, deps):
@@ -283,6 +284,9 @@ class ProofAnalyzer(TermTable):
     #     # items = self.dump_node(i)
     #     symbol = ref.export_symbol()
     #     return symbol, f"; {ref} quant-inst: {quant.qid}\n(define-fun {symbol} () Bool {items})"
+
+    def get_qname_of_inst_ref(self, ref):
+        return self.__qname_of_inst_ref[ref]
 
     def export_proof_node(self, ref) -> str:
         if ref in self.rewrites:
