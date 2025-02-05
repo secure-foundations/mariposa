@@ -2,7 +2,7 @@ import networkx as nx
 import hashlib
 from typing import Dict, Set
 from debugger.tree_parser import *
-from utils.system_utils import log_debug
+from utils.system_utils import log_debug, log_error
 
 
 class TermTable(nx.DiGraph):
@@ -64,6 +64,9 @@ class TermTable(nx.DiGraph):
     def __add_tree_node(self, node: TreeNode) -> NodeRef:
         ref = self.__make_ref(node)
         if ref in self.__storage:
+            if str(self.__storage[ref]) != str(node):
+                print(node, self.__storage[ref])
+                log_error("hash collision!")
             return ref
         if isinstance(node, QuantNode):
             if node.quant_type != QuantType.LAMBDA:
@@ -82,23 +85,21 @@ class TermTable(nx.DiGraph):
             )
         digest = hashlib.sha1(str(node).encode("utf-8")).hexdigest()
         if isinstance(node, QuantNode):
-            return QuantRef(digest[:8], node.quant_type)
-        return NodeRef(digest[:8])
+            return QuantRef(digest[:16], node.quant_type)
+        return NodeRef(digest[:16])
 
     def __flatten_tree_nodes(self, root: TreeNode):
         self.__global_defs = dict()
         # get rid of let bindings
         # store them in global_defs (temporarily)
-        root = self.__rebind_let_rec(root)
-
+        root = self.__rebind_let(root)
+        
         self.__redirected_globals = dict()
         # TODO: this is assuming that global_defs are in topological order
         for name, node in self.__global_defs.items():
-            node = self.__global_defs[name]
             ref = self.__hash_cons_node_rec(node)
             assert isinstance(ref, NodeRef)
             self.__redirected_globals[name] = ref
-
         root_ref = self.__hash_cons_node_rec(root)
 
         del self.__redirected_globals
@@ -106,7 +107,7 @@ class TermTable(nx.DiGraph):
 
         return root_ref
 
-    def __rebind_let_rec(self, node: TreeNode):
+    def __rebind_let(self, node: TreeNode):
         temp = AppNode("temp", [])
         cb = partial(cb_add_app_child, temp)
         tasks = [(node, cb)]
@@ -295,11 +296,16 @@ class TermTable(nx.DiGraph):
             if isinstance(node, AppNode):
                 refs.extend(node.children)
         return True
-
+    
     def is_ground(self, ron):
         refs = [self.__make_ref(self.lookup_node(ron))]
+        visited = set()
         while refs:
-            node = self.lookup_node(refs.pop())
+            ref = refs.pop()
+            if ref in visited:
+                continue
+            visited.add(ref)
+            node = self.lookup_node(ref)
             if isinstance(node, QuantNode):
                 return False
             if isinstance(node, ProofNode):
@@ -310,9 +316,13 @@ class TermTable(nx.DiGraph):
 
     def get_skolem_deps(self, ron) -> Set[str]:
         refs = [self.__make_ref(self.lookup_node(ron))]
+        visited = set()
         deps = set()
         while refs:
             ref = refs.pop()
+            if ref in visited:
+                continue
+            visited.add(ref)
             node = self.lookup_node(ref)
             if name := node.maybe_skolemized():
                 deps.add(name)

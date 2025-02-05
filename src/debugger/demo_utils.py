@@ -1,9 +1,11 @@
+import os
 from tabulate import tabulate
 from base.exper_analyzer import ExperAnalyzer
 from debugger.edit_info import EditAction
 from debugger.informed_editor import InformedEditor
 from debugger.mutant_info import MutantInfo
 from debugger3 import Debugger3
+from utils.cache_utils import load_cache_or
 from utils.system_utils import log_info
 from benchmark_consts import *
 from debugger.file_builder import FileBuilder
@@ -12,6 +14,8 @@ from analysis.singleton_analyzer import SingletonAnalyzer
 from base.factory import FACT
 from utils.system_utils import list_smt2_files, log_info
 from enum import Enum
+import pandas as pd
+from pandas import DataFrame
 
 SOLVER = FACT.get_solver("z3_4_13_0")
 VERI_CFG = FACT.get_config("verify")
@@ -22,10 +26,12 @@ CFG_60 = FACT.get_config("default")
 QA_10 = FACT.get_analyzer("10sec")
 QA_60 = FACT.get_analyzer("60sec")
 
+
 def shorten_qname(qname: str):
     if len(qname) > 80:
         return qname[:80] + "..."
     return qname
+
 
 def get_params(dbg: Debugger3):
     if "/bench_unstable/" in dbg.given_query_path:
@@ -36,6 +42,7 @@ def get_params(dbg: Debugger3):
         cfg = CFG_10
     return qa, cfg
 
+
 class DebuggerStatus(Enum):
     NO_PROOF = "no proof built"
     SINGLETON_NOT_CREATED = "singleton not created"
@@ -45,6 +52,7 @@ class DebuggerStatus(Enum):
     SPLITTER_NOT_CREATED = "splitter not created"
     SPLITTER_NOT_RAN = "splitter not ran"
     FINISHED = "finished"
+
 
 def try_get_singleton_analyzer(dbg: Debugger3):
     if dbg.get_status()["proofs"] == 0:
@@ -72,6 +80,7 @@ def try_get_singleton_analyzer(dbg: Debugger3):
 
     return ba
 
+
 def try_get_filter_analyzer(dbg: Debugger3):
     qa, filter_cfg = get_params(dbg)
 
@@ -83,6 +92,8 @@ def try_get_filter_analyzer(dbg: Debugger3):
     e_filter = FACT.try_get_exper(p_filter, filter_cfg, SOLVER)
 
     if e_filter is None:
+        if len(p_filter.qids) == 0:
+            return DebuggerStatus.SINGLETON_NOT_FILTERED
         return DebuggerStatus.FILTERED_NOT_RAN
 
     try:
@@ -92,46 +103,22 @@ def try_get_filter_analyzer(dbg: Debugger3):
 
     return fa
 
+
 def get_split_status(dbg: Debugger3):
     qa, cfg = get_params(dbg)
     try:
         p = FACT.get_project_by_path(dbg.splitter_dir)
     except:
         return "splitter not created"
-    
+
     e = FACT.try_get_exper(p, cfg, SOLVER)
 
     if e is None:
         return "splitter not ran"
-    
+
     sa = ExperAnalyzer(e, qa)
     return sa
 
-def check_tested(dbg: Debugger3, ba: SingletonAnalyzer):
-    tested = dict()
-    root_quants = dbg.editor.get_singleton_actions(skip_infeasible=False)
-    tested_qnames = set()
-
-    for eid in ba.qids:
-        ei = dbg.look_up_edit_with_id(eid)
-        qname, action = ei.get_singleton_edit()
-        rc, et = ba.get_query_result(eid)
-        tested[(qname, action.value)] = [str(rc), et, ei.query_path]
-        tested_qnames.add(qname)
-
-    untested = set(root_quants) - set(tested_qnames)
-    return tested, untested
-
-def check_stabilized(dbg: Debugger3, fa: ExperAnalyzer):
-    stabilized = []
-    for eid in fa.get_stable_edit_ids():
-        ei = dbg.look_up_edit_with_id(eid)
-        qname, action = ei.get_singleton_edit()
-        if qname == "prelude_fuel_defaults":
-            continue 
-        stabilized.append((qname, action.value, ei.query_path))
-
-    return stabilized
 
 def get_debugger_status(dbg: Debugger3):
     ba = try_get_singleton_analyzer(dbg)
@@ -144,24 +131,85 @@ def get_debugger_status(dbg: Debugger3):
     if isinstance(fa, DebuggerStatus):
         return fa
 
-    return (ba, fa)    
+    return (ba, fa)
 
-def get_debugger_statuses(queries):
-    statuses = Categorizer()
-    dbgs = dict()
-    eas = dict()
 
-    for query in queries:
-        dbg = Debugger3(query)
-        dbgs[query] = dbg
+class Report:
+    def __init__(self):
+        self.tested = None
+        self.stabilized = None
+        self.freq = None
+        self.skipped = None
 
-        st = get_debugger_status(dbg)
 
-        if isinstance(st, DebuggerStatus):
-            statuses.add_item(st, query)
-        else:
-            eas[query] = st
-            statuses.add_item(DebuggerStatus.FINISHED, query)
+class Reviewer2(Debugger3):
+    def __init__(self, query_path: str):
+        super().__init__(query_path)
+        status = get_debugger_status(self.dbg)
 
-    statuses.finalize()
-    return (statuses, dbgs, eas)
+        if isinstance(status, DebuggerStatus):
+            self.status = status
+            return
+
+        self.status = DebuggerStatus.FINISHED
+        self._ba, self._fa = status
+        self._report_cache = self.dbg.name_hash + ".report"
+
+    def get_command_to_run(self):
+        if self.status == DebuggerStatus.SINGLETON_NOT_CREATED:
+            return "./src/debugger3 --create-singleton -i " + self.dbg.given_query_path
+        if self.status == DebuggerStatus.SINGLETON_NOT_RAN:
+            return (
+                "./src/exper_wizard.py manager -e verify --total-parts 12 -i "
+                + self.dbg.singleton_dir
+            )
+        if self.status == DebuggerStatus.SINGLETON_NOT_FILTERED:
+            return (
+                "./src/analysis_wizard.py singleton -e verify -s z3_4_13_0 -i "
+                + self.dbg.singleton_dir
+            )
+        if self.status == DebuggerStatus.FILTERED_NOT_RAN:
+            return "python3 src/carve_and_rerun.py " + self.dbg.singleton_filtered_dir
+
+        assert False
+
+    def get_tested(self):
+        tested = []
+        root_quants = self.dbg.editor.get_singleton_actions(skip_infeasible=False)
+        tested_qnames = set()
+
+        for eid in self._ba.qids:
+            ei = self.dbg.look_up_edit_with_id(eid)
+            qname, action = ei.get_singleton_edit()
+            rc, et = self._ba.get_query_result(eid)
+            tested.append((qname, action.value, str(rc), et / 1000, ei.query_path))
+            tested_qnames.add(qname)
+
+        skipped = set(root_quants) - set(tested_qnames)
+        tested = DataFrame(
+            tested, columns=["qname", "action", "result", "time", "edit_path"]
+        )
+        return tested, skipped
+
+    def get_stabilized(self):
+        stabilized = []
+        for eid in self._fa.get_stable_edit_ids():
+            ei = self.dbg.look_up_edit_with_id(eid)
+            qname, action = ei.get_singleton_edit()
+            if qname == "prelude_fuel_defaults":
+                continue
+            stabilized.append((qname, action.value, ei.query_path))
+        stabilized = DataFrame(stabilized, columns=["qname", "action", "edit_path"])
+        return stabilized
+
+    def get_report(self, clear=False) -> Report:
+        assert self.status == DebuggerStatus.FINISHED
+
+        def _build_report():
+            r = Report()
+            r.tested, r.skipped = self.get_tested()
+            r.stabilized = self.get_stabilized()
+            r.freq = self.dbg.editor.get_inst_report()
+            return r
+
+        return load_cache_or(self._report_cache, _build_report, clear)

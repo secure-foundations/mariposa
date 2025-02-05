@@ -66,6 +66,7 @@ class SingletonAnalyzer(ExperAnalyzer):
 
             if os.path.exists(dest):
                 continue
+
             if use_caution:
                 log_warn(f"filtered dir is not empty, skipping {dest}")
                 continue 
