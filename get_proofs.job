@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -N 1
-#SBATCH -t 8:00:00
+#SBATCH -t 24:00:00
 #SBATCH --ntasks-per-node=128
 
 # type 'man sbatch' for more information and options

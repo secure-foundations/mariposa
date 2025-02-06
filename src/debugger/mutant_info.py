@@ -11,9 +11,9 @@ from utils.query_utils import Mutation, emit_mutant_query, get_trace_stats_axiom
 from utils.system_utils import log_check, log_debug, log_info, log_warn, subprocess_run
 
 
-TRACE_TIME_LIMIT_SEC = 150
-CORE_TIME_LIMIT_SEC = 150
-PROOF_TIME_LIMIT_SEC = 150
+TRACE_TIME_LIMIT_SEC = 1200
+CORE_TIME_LIMIT_SEC = 1200
+PROOF_TIME_LIMIT_SEC = 1200
 
 TRACE_GOAL_COUNT = 1
 CORE_GOAL_COUNT = 1

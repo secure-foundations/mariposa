@@ -30,7 +30,7 @@ def categorize_proof_folders(base_path, delete_empty_files=False, delete_empty_f
             if os.path.isfile(file_path):
                 if os.path.getsize(file_path) > 0:
                     if all_empty:
-                        proof_folders.append(proofs_path)
+                        proof_folders.append(sub)
                     all_empty = False
                     # break  # No need to check further
                 elif delete_empty_files:
@@ -43,12 +43,18 @@ def categorize_proof_folders(base_path, delete_empty_files=False, delete_empty_f
 
     print("Empty Folders:")
     print("\n".join(empty_folders) if empty_folders else "None")
+    print(f"Size of Empty Folders: {len(empty_folders)}")
+
 
     print("\nFolders with only empty files:")
     print("\n".join(empty_file_folders) if empty_file_folders else "None")
+    print(f"Size of Empty File Folders: {len(empty_file_folders)}")
 
     print("\nProof Folders (at least one non-empty file):")
     print("\n".join(proof_folders) if proof_folders else "None")
+    print(f"Size of Proof Folders: {len(proof_folders)}")
+    print(proof_folders)
+
 
 if __name__ == "__main__":
-    categorize_proof_folders("dbg", delete_empty_files=False, delete_empty_folders=True)
+    categorize_proof_folders("dbg", delete_empty_files=False, delete_empty_folders=False)
