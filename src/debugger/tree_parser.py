@@ -38,6 +38,22 @@ class ProofParser:
         with open(file_path) as f:
             data = parse_s_expression(f.read())
 
+        # getting rid of skolem functions in z3 terminal proof format
+        while (data[0][0] == "declare-fun"):
+            skolem_fun_declaration = data[0]
+            assert (len(skolem_fun_declaration) == 4)
+            assert isinstance(skolem_fun_declaration[1], str)
+            assert isinstance(skolem_fun_declaration[2], list)
+            assert isinstance(skolem_fun_declaration[1], str)
+            data = data[1:]
+
+        assert (len(data) > 0)
+
+        # getting rid of 
+        if data[0][0] == "proof":
+            assert len(data[0]) == 2
+            data = data[0][1]
+
         cb = partial(cb_add_app_child, temp)
         self.tasks = [(data, cb)]
 
@@ -54,7 +70,7 @@ class ProofParser:
 
         if isinstance(data, int):
             return LeafIntNode(data)
-
+        
         assert isinstance(data, list)
         assert len(data) > 0
 
@@ -67,7 +83,7 @@ class ProofParser:
         name = _try_get_symbol(data[0])
 
         if name is None:
-            print(data)
+            print(data[0])
             assert False
 
         if node := self.__parse_let(name, data):
@@ -112,7 +128,17 @@ class ProofParser:
         ):
             return None
 
+        if _name[1] == "quant-inst":
+            # _name[2] is the actual term to be instantiated -> we don't actually need this
+            # print(_name[2])
+            # _ = int(_name[2])
+            assert len(data) == 2
+            node = ProofNode("quant-inst", [])
+            self.tasks.append((data[1], partial(cb_add_app_child, node)))
+            return node
+
         name = []
+
         for i in _name:
             if isinstance(i, int):
                 name.append(str(i))
@@ -173,6 +199,7 @@ class ProofParser:
 
 
 def _get_symbol(data):
+    assert (data != "quant-inst")
     assert isinstance(data, str)
     return data
 

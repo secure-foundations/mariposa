@@ -9,7 +9,6 @@ from debugger.z3_utils import dump_z3_proof
 from debugger.quant_graph import *
 from utils.query_utils import Mutation, emit_mutant_query, get_trace_stats_axiom_profiler
 from utils.system_utils import log_check, log_debug, log_info, log_warn, subprocess_run
-from utils.cache_utils import *
 
 
 TRACE_TIME_LIMIT_SEC = 150
