@@ -463,20 +463,27 @@ impl QidAdder {
                 self.add_qids_rec(&mut *term, true)
             }
             concrete::Term::Attributes { term, attributes } => {
+                if ! enable {
+                    self.add_qids_rec(term, false);
+                    return;
+                }
+
                 let mut should_allocate = self.reassign;
                 // use a placeholder qid for now
                 if let Some(qid) = get_attr_qid(attributes) {
                     if self.duped_first.contains_key(qid) {
                         let first = self.duped_first[qid];
                         if !first {
-                            should_allocate |= true;
+                            should_allocate = true;
                         } else {
-                            // *first = false;
                             self.duped_first.insert(qid.clone(), false);
                         }
                     }
+                } else {
+                    should_allocate = true;
                 }
-                if enable && should_allocate {
+
+                if should_allocate {
                     // always remove the qid and skolemid
                     remove_attr_qid_skolemid(attributes);
 
