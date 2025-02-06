@@ -83,8 +83,8 @@ class QueryLoader(Z3AstVisitor):
                 continue
 
             if sk := match_sk_decl_used(exp):
-                (qname, decl) = sk
-                self.existing_sk_decls[qname] = decl
+                (qname, full_name, _) = sk
+                self.existing_sk_decls[qname] = full_name
 
             if is_quantifier(exp):
                 quant = Z3QuantWrapper(exp, parent, origin)

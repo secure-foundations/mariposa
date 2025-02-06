@@ -8,6 +8,7 @@ from debugger.pool_utils import run_with_pool
 from typing import Dict, List
 from utils.query_utils import (
     Mutation,
+    add_qids_to_query,
     find_verus_procedure_name,
 )
 from utils.system_utils import (
@@ -151,17 +152,7 @@ class FileBuilder:
             if ids_available:
                 subprocess_run(["cp", query_path, self.orig_path])
             else:
-                subprocess_run(
-                    [
-                        MARIPOSA,
-                        "--action=add-qids",
-                        "-i",
-                        query_path,
-                        "-o",
-                        self.orig_path,
-                    ],
-                    check=True,
-                )
+                add_qids_to_query(query_path, self.orig_path)
                 log_check(
                     os.path.exists(self.orig_path), f"failed to create {self.orig_path}"
                 )
@@ -234,7 +225,7 @@ class FileBuilder:
 
         log_info(f"[init] currently {count} traces")
 
-        for f in [_build_any_trace, _build_fail_trace]:
+        for f in [_build_fail_trace]:
             args = self.__create_tasks(
                 [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
             )

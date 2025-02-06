@@ -203,6 +203,7 @@ class ProofAnalyzer(TermTable):
             log_error(f"quant-inst node is not an or: {ref}")
             self.pprint_node(node, 5)
             assert False
+
         children = self.resolve_children(node)
         l = children[0]
         inst = node.children[1:]

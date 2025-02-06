@@ -6,7 +6,7 @@ use std::{collections::HashSet, fs::File};
 
 use crate::term_match::{self, get_attr_cid, get_attr_qid, remove_attr_qid_skolemid};
 
-const QID_PREFIX: &str = "mariposa_qid";
+const QID_PREFIX: &str = "mariposa_qid_";
 const CID_PREFIX: &str = "mariposa_cid_";
 
 fn should_remove_command(command: &concrete::Command, keep_core: bool) -> bool {
@@ -21,8 +21,8 @@ fn should_remove_command(command: &concrete::Command, keep_core: bool) -> bool {
         | concrete::Command::DefineFun { .. }
         | concrete::Command::Push { .. }
         | concrete::Command::Pop { .. } => false,
-        | concrete::Command::GetUnsatCore => !keep_core,
-        | concrete::Command::GetModel
+        concrete::Command::GetUnsatCore => !keep_core,
+        concrete::Command::GetModel
         | concrete::Command::Echo { .. }
         | concrete::Command::Exit
         | concrete::Command::GetInfo { .. }
@@ -347,47 +347,89 @@ pub fn split_commands(
 }
 
 struct QidAdder {
-    prefix_count: HashMap<String, usize>,
-    used: HashSet<String>,
+    qname_counts: HashMap<String, usize>,
+    duped_first: HashMap<String, bool>,
+    max_mariposa_qid: usize,
     reassign: bool,
 }
 
 impl QidAdder {
     fn new(reassign: bool) -> QidAdder {
-        let mut prefix_count = HashMap::new();
-        prefix_count.insert(QID_PREFIX.to_string(), 0);
-
         QidAdder {
-            prefix_count: prefix_count,
-            used: HashSet::new(),
+            qname_counts:  HashMap::new(),
+            duped_first: HashMap::new(),
+            max_mariposa_qid: 0,
             reassign,
         }
     }
 
-    fn allocate_new_id(&mut self, qid: &String) -> String {
-        // always reset Mariposa qids to the prefix
-        let qid = if qid.starts_with(QID_PREFIX) {
-            String::from(QID_PREFIX)
-        } else {
-            qid.clone()
-        };
-        let mut new_id = if let Some(count) = self.prefix_count.get_mut(&qid) {
-            *count += 1;
-            format!("{}_{}", qid, count)
-        } else {
-            self.prefix_count.insert(qid.clone(), 0);
-            format!("{}", qid)
-        };
-        while self.used.contains(&new_id) {
-            if let Some(count) = self.prefix_count.get_mut(&qid) {
-                *count += 1;
-                new_id = format!("{}_{}", qid, count);
-            } else {
-                assert!(false);
+    fn process_commands(&mut self, commands: &mut Vec<concrete::Command>) {
+        for command in commands.iter() {
+            match command {
+                concrete::Command::Assert { term } => {
+                    self.visit_qids_rec(term);
+                }
+                concrete::Command::MariposaArbitrary(_) => panic!("unexpected mariposa-arbitrary"),
+                _ => {}
             }
         }
-        self.used.insert(new_id.clone());
-        new_id
+        for (qid, count) in self.qname_counts.iter() {
+            if *count > 1 {
+                println!("[add-qid] duplicated {}: {}", qid, self.qname_counts[qid]);
+                self.duped_first.insert(qid.clone(), true);
+            }
+            if qid.starts_with(QID_PREFIX) {
+                print!("qid: {}\n", qid);
+                let num: usize = qid[QID_PREFIX.len()..].parse::<usize>().unwrap();
+                self.max_mariposa_qid = std::cmp::max(self.max_mariposa_qid, num);
+            }
+        }
+        for command in commands.iter_mut() {
+            match command {
+                concrete::Command::Assert { term } => {
+                    self.add_qids_rec(term, false);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    fn visit_qids_rec(&mut self, cur_term: &concrete::Term) {
+        match cur_term {
+            concrete::Term::Application {
+                qual_identifier: _,
+                arguments,
+            } => {
+                for argument in arguments.iter() {
+                    self.visit_qids_rec(argument)
+                }
+            }
+            concrete::Term::Let { var_bindings, term } => {
+                for var_binding in var_bindings {
+                    self.visit_qids_rec(&var_binding.1)
+                }
+                self.visit_qids_rec(&*term)
+            }
+            concrete::Term::Forall { vars: _, term } | concrete::Term::Exists { vars: _, term } => {
+                self.visit_qids_rec(&*term)
+            }
+            concrete::Term::Attributes { term, attributes } => {
+                if let Some(qid) = get_attr_qid(attributes) {
+                    *self.qname_counts.entry(qid.clone()).or_insert(0) += 1;
+                }
+                self.visit_qids_rec(term);
+            }
+            concrete::Term::Constant(_) => (),
+            concrete::Term::QualIdentifier(_) => (),
+            concrete::Term::Match { term, cases: _ } => {
+                panic!("unsupported term: {:?}", term)
+            }
+        }
+    }
+
+    fn allocate_new_id(&mut self) -> String {
+        self.max_mariposa_qid += 1;
+        return format!("{}{}", QID_PREFIX, self.max_mariposa_qid);
     }
 
     fn add_qids_rec(&mut self, cur_term: &mut concrete::Term, enable: bool) {
@@ -421,35 +463,37 @@ impl QidAdder {
                 self.add_qids_rec(&mut *term, true)
             }
             concrete::Term::Attributes { term, attributes } => {
-                self.add_qids_rec(term, false);
-                if !enable {
-                    return;
-                }
-
+                let mut should_allocate = self.reassign;
                 // use a placeholder qid for now
-                let mut cur_qid = String::from(QID_PREFIX);
-
-                if self.reassign {
-                    // ignore the current qid in the attributes
-                    // whether it exists or not
-                } else if let Some(qid) = get_attr_qid(attributes) {
-                    cur_qid = qid.clone();
+                if let Some(qid) = get_attr_qid(attributes) {
+                    if self.duped_first.contains_key(qid) {
+                        let first = self.duped_first[qid];
+                        if !first {
+                            should_allocate |= true;
+                        } else {
+                            // *first = false;
+                            self.duped_first.insert(qid.clone(), false);
+                        }
+                    }
                 }
-                // always remove the qid and skolemid
-                remove_attr_qid_skolemid(attributes);
+                if enable && should_allocate {
+                    // always remove the qid and skolemid
+                    remove_attr_qid_skolemid(attributes);
 
-                // always "allocate" a new qid
-                let qid = self.allocate_new_id(&cur_qid);
-                let skolemid = format!("skolem_{}", qid);
+                    // always "allocate" a new qid
+                    let qid = self.allocate_new_id();
+                    let skolemid = format!("skolem_{}", qid);
 
-                attributes.push((
-                    concrete::Keyword("qid".to_owned()),
-                    concrete::AttributeValue::Symbol(concrete::Symbol(qid.clone())),
-                ));
-                attributes.push((
-                    concrete::Keyword("skolemid".to_owned()),
-                    concrete::AttributeValue::Symbol(concrete::Symbol(skolemid)),
-                ));
+                    attributes.push((
+                        concrete::Keyword("qid".to_owned()),
+                        concrete::AttributeValue::Symbol(concrete::Symbol(qid.clone())),
+                    ));
+                    attributes.push((
+                        concrete::Keyword("skolemid".to_owned()),
+                        concrete::AttributeValue::Symbol(concrete::Symbol(skolemid)),
+                    ));
+                }
+                self.add_qids_rec(term, false);
             }
             concrete::Term::Constant(_) => (),
             concrete::Term::QualIdentifier(_) => (),
@@ -462,15 +506,7 @@ impl QidAdder {
 
 pub fn add_qids(commands: &mut Vec<concrete::Command>, reassign: bool) {
     let mut adder = QidAdder::new(reassign);
-    for command in commands.iter_mut() {
-        match command {
-            concrete::Command::Assert { term } => {
-                adder.add_qids_rec(term, false);
-            }
-            concrete::Command::MariposaArbitrary(_) => panic!("unexpected mariposa-arbitrary"),
-            _ => {}
-        }
-    }
+    adder.process_commands(commands);
 }
 
 fn add_cid(command: &mut concrete::Command, ct: usize, reassign: bool) {

@@ -13,6 +13,9 @@ class QueryEditor(QueryLoader):
         super().__init__(in_file_path)
         self.__reset_state()
 
+        self.__skv_count = 0
+        self.__skolem_prefix = "skv_" + os.urandom(8).hex() + "_"
+
     def __reset_state(self):
         self._new_commands = []
         self._modified_commands = dict()
@@ -26,14 +29,17 @@ class QueryEditor(QueryLoader):
             return
         self._ids_to_erase.add(qid)
 
+    def get_new_skolem_name(self):
+        self.__skv_count += 1
+        return self.__skolem_prefix + str(self.__skv_count)
+
     def _skolemize_qid(self, qid):
         # TODO: handle dual quantifiers if needed
         qid = qid[7:] if qid.startswith("skolem_") else qid
         if not self.check_qid(qid):
             return
         if hack_contains_qid(self.query_goal, qid):
-            log_error(f"[skolem] is in the goal!")
-            return
+            log_debug(f"[skolem] is in the goal!")
         if qid in self.existing_sk_decls:
             log_warn(f"[skolem] {qid} has existing skolem function(s)")
             return
@@ -68,9 +74,10 @@ class QueryEditor(QueryLoader):
         for line in self._new_commands:
             out_file.write(line + "\n")
 
-        if len(self.in_cmds) in self._modified_commands:
+        goal_index = len(self.in_cmds)
+        if goal_index in self._modified_commands:
             log_info(f"[edit] goal was modified!")
-            out_file.write(self._modified_commands[len(self.in_cmds)])
+            out_file.write(self._modified_commands[goal_index])
         else:
             out_file.write(self.query_goal)
         out_file.write("(check-sat)\n")
@@ -111,13 +118,21 @@ class QueryEditor(QueryLoader):
 
         assert len(res) == 1
         asserts, decls = [], []
+        new_names = dict()
 
         for r in res[0]:
-            for name, decl in find_sk_decls_used(r):
-                if name in self.existing_sk_decls:
+            for qname, full_name, decl in find_sk_decls_used(r):
+                if qname in self.existing_sk_decls:
                     continue
+                new_name = self.get_new_skolem_name()
+                new_names[full_name] = new_name
+                decl = decl.replace(full_name, new_name)
+                log_debug(f"[skolem] {full_name} -> {new_name}")
                 decls.append(decl)
-            asserts.append("(assert " + collapse_sexpr(r.sexpr()) + ")")
+            r = collapse_sexpr(r.sexpr())
+            for old, new in new_names.items():
+                r = r.replace(old, new)
+            asserts.append("(assert " + r + ")")
 
         comment = f"[skolem] {qid} creates {len(decls)} skolem funs, {len(asserts)} asserts"
         self.__add_new_commands(comment, decls + asserts)
@@ -145,7 +160,7 @@ class QueryEditor(QueryLoader):
             for qid in self._ids_to_banish:
                 if not hack_contains_qid(line, qid):
                     continue
-                self._modified_commands[i] = ""
+                self._modified_commands[i] = "(assert true)"
                 removed.add(qid)
                 comment = f"[banish] {qid}"
                 print(line, end="")

@@ -205,6 +205,7 @@ def emit_mutant_query(query_path, output_path, mutation, seed, keep_core=False):
         return
 
     command = f"{MARIPOSA} -i '{query_path}' -a {mutation} -o '{output_path}' -s {seed}"
+    print(command)
 
     if keep_core:
         command += " --keep-core"
@@ -328,13 +329,15 @@ def get_trace_stats_axiom_profiler(trace_path):
         processed.add(qidx)
     return counts
 
-def add_qids_to_query(query_path):
+def add_qids_to_query(query_path, dest=None):
+    if dest is None:
+        dest = query_path
     args = [
         MARIPOSA,
         "-i",
         query_path,
         "--action=add-qids",
         "-o",
-        query_path,
+        dest,
     ]
     subprocess_run(args, check=True, debug=False)

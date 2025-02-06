@@ -215,8 +215,9 @@ class Z3AstVisitor:
 
 def match_sk_decl_used(e):
     if is_app(e):
-        if name := get_skolem_qname(e.decl().name()):
-            return (name, e.decl().sexpr())
+        full_name = e.decl().name()
+        if qname := get_skolem_qname(full_name):
+            return (qname, full_name, e.decl().sexpr())
     return None
 
 def find_sk_decls_used(e):
@@ -251,9 +252,12 @@ def dump_z3_proof(query_path, proof_path, timeout=60000) -> bool:
         log_warn(f"failure [proof] {query_path} result {res}")
         return False
 
-    log_debug(f"[proof] finished in {proof_time}(s) {proof_path}")
+    try:
+        p = solver.proof()
+    except Z3Exception as e:
+        return False
 
-    p = solver.proof()
+    log_debug(f"[proof] finished in {proof_time}(s) {proof_path}")
 
     with open(proof_path, "w+") as f:
         f.write(p.sexpr())

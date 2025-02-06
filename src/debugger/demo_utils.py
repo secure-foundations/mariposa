@@ -34,7 +34,7 @@ def shorten_qname(qname: str):
 
 
 def get_params(dbg: Debugger3):
-    if "/bench_unstable/" in dbg.given_query_path:
+    if "/bench_unstable" in dbg.given_query_path:
         qa = QA_60
         cfg = CFG_60
     else:
@@ -145,7 +145,7 @@ class Report:
 class Reviewer2(Debugger3):
     def __init__(self, query_path: str):
         super().__init__(query_path)
-        status = get_debugger_status(self.dbg)
+        status = get_debugger_status(self)
 
         if isinstance(status, DebuggerStatus):
             self.status = status
@@ -153,33 +153,33 @@ class Reviewer2(Debugger3):
 
         self.status = DebuggerStatus.FINISHED
         self._ba, self._fa = status
-        self._report_cache = self.dbg.name_hash + ".report"
+        self._report_cache = self.name_hash + ".report"
 
     def get_command_to_run(self):
         if self.status == DebuggerStatus.SINGLETON_NOT_CREATED:
-            return "./src/debugger3 --create-singleton -i " + self.dbg.given_query_path
+            return "./src/debugger3 --create-singleton -i " + self.given_query_path
         if self.status == DebuggerStatus.SINGLETON_NOT_RAN:
             return (
                 "./src/exper_wizard.py manager -e verify --total-parts 12 -i "
-                + self.dbg.singleton_dir
+                + self.singleton_dir
             )
         if self.status == DebuggerStatus.SINGLETON_NOT_FILTERED:
             return (
                 "./src/analysis_wizard.py singleton -e verify -s z3_4_13_0 -i "
-                + self.dbg.singleton_dir
+                + self.singleton_dir
             )
         if self.status == DebuggerStatus.FILTERED_NOT_RAN:
-            return "python3 src/carve_and_rerun.py " + self.dbg.singleton_filtered_dir
+            return "python3 src/carve_and_rerun.py " + self.singleton_filtered_dir
 
         assert False
 
     def get_tested(self):
         tested = []
-        root_quants = self.dbg.editor.get_singleton_actions(skip_infeasible=False)
+        root_quants = self.editor.get_singleton_actions(skip_infeasible=False)
         tested_qnames = set()
 
         for eid in self._ba.qids:
-            ei = self.dbg.look_up_edit_with_id(eid)
+            ei = self.look_up_edit_with_id(eid)
             qname, action = ei.get_singleton_edit()
             rc, et = self._ba.get_query_result(eid)
             tested.append((qname, action.value, str(rc), et / 1000, ei.query_path))
@@ -194,7 +194,7 @@ class Reviewer2(Debugger3):
     def get_stabilized(self):
         stabilized = []
         for eid in self._fa.get_stable_edit_ids():
-            ei = self.dbg.look_up_edit_with_id(eid)
+            ei = self.look_up_edit_with_id(eid)
             qname, action = ei.get_singleton_edit()
             if qname == "prelude_fuel_defaults":
                 continue
@@ -209,7 +209,7 @@ class Reviewer2(Debugger3):
             r = Report()
             r.tested, r.skipped = self.get_tested()
             r.stabilized = self.get_stabilized()
-            r.freq = self.dbg.editor.get_inst_report()
+            r.freq = self.editor.get_inst_report()
             return r
 
         return load_cache_or(self._report_cache, _build_report, clear)

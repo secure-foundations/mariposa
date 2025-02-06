@@ -208,10 +208,8 @@ class Debugger3:
 
     def create_singleton_project(self, overwrite=False):
         singleton_dir = f"data/projs/{self.singleton_project}/base.z3"
-        filter_dir = f"data/projs/{self.singleton_project}.filtered/base.z3"
 
         create_dir(singleton_dir)
-        create_dir(filter_dir)
         existing = list_smt2_files(singleton_dir)
 
         if existing == [] or overwrite:
@@ -234,6 +232,7 @@ class Debugger3:
 
         query_count = len(list_smt2_files(singleton_dir))
         log_info(f"[edit] [proj] {self.singleton_project} has {query_count} queries")
+        return singleton_dir
 
     def test_edit(self, edit):
         ei = self.register_edit_info(edit)
