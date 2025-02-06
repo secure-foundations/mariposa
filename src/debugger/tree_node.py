@@ -146,46 +146,19 @@ class QuantNode(TreeNode):
                 self.qid = f"lambda_{QuantNode.lambda_id}"
                 QuantNode.lambda_id += 1
             else:
+                # unknown quantifier, we drop the body
                 self.qid = f"unknown_{QuantNode.unknown_id}"
                 QuantNode.unknown_id += 1
         self.skolemid = attrs.get(":skolemid", None)
 
     def __str__(self):
         args = " ".join([f"({var} {sort})" for var, sort in self.args])
-        return f"({self.quant_type.value} ({args}) {self.body})"
 
-    # def remove_let(self):
-    #     self.body = self.__remove_let(self.body)
-    #     assert self.__local_binds == dict()
+        if self.body is None:
+            return f"({self.quant_type.value} ({args}) true)"
 
-    # def __remove_let(self, node) -> TreeNode:
-    #     if isinstance(node, LeafNode):
-    #         if node.maybe_temp():
-    #             assert node.value in self.__local_binds
-    #             return node
-    #         return node
-
-    #     if isinstance(node, QuantNode):
-    #         assert node.body is not None
-    #         return node
-
-    #     if isinstance(node, LetNode):
-    #         for var, val in node.bindings:
-    #             assert var not in self.__local_binds
-    #             assert var not in self.local_defs
-    #             val = self.__remove_let(val)
-    #             self.local_defs[var] = val
-    #             self.__local_binds[var] = val
-    #         result = self.__remove_let(node.body)
-    #         for var, _ in node.bindings:
-    #             # we don't pop the local defs
-    #             del self.__local_binds[var]
-    #         return result
-
-    #     assert isinstance(node, AppNode)
-    #     node.children = [self.__remove_let(c) for c in node.children]
-    #     return node
-
+        attrs = " ".join([f"{k} {v}" for k, v in self.attrs.items()])
+        return f"({self.quant_type.value} ({args}) (!{self.body} {attrs}))"
 
 class LetNode(TreeNode):
     def __init__(self, bindings, body):

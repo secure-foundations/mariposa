@@ -36,7 +36,7 @@ class BenchViewer:
     def __getitem__(self, key):
         return self.reviewers[key]
 
-    def analyze_min_ranks(self):
+    def get_min_ranks(self):
         min_ranks = []
         for q in self.fixable:
             r = self.reviewers[q]

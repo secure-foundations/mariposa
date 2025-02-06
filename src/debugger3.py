@@ -207,18 +207,16 @@ class Debugger3:
         log_info("[edit] cleared")
 
     def create_singleton_project(self, overwrite=False):
-        singleton_dir = f"data/projs/{self.singleton_project}/base.z3"
-
-        create_dir(singleton_dir)
-        existing = list_smt2_files(singleton_dir)
+        create_dir(self.singleton_dir)
+        existing = list_smt2_files(self.singleton_dir)
 
         if existing == [] or overwrite:
             feasible_edits = self.editor.get_singleton_actions()
             for qid, action in tqdm(feasible_edits.items()):
-                self.register_edit_info({qid: action}, singleton_dir)
+                self.register_edit_info({qid: action}, self.singleton_dir)
                 if action == EditAction.INST_REPLACE:
                     # this is also feasible
-                    self.register_edit_info({qid: EditAction.INST_KEEP}, singleton_dir)
+                    self.register_edit_info({qid: EditAction.INST_KEEP}, self.singleton_dir)
             self.save_edits_meta()
             log_info(f"[edit] {self.singleton_project} created")
         else:
@@ -230,9 +228,9 @@ class Debugger3:
                     continue
             log_warn(f"[proj] {self.singleton_project} already exists")
 
-        query_count = len(list_smt2_files(singleton_dir))
+        query_count = len(list_smt2_files(self.singleton_dir))
         log_info(f"[edit] [proj] {self.singleton_project} has {query_count} queries")
-        return singleton_dir
+        return self.singleton_dir
 
     def test_edit(self, edit):
         ei = self.register_edit_info(edit)

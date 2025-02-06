@@ -154,6 +154,7 @@ class Reviewer2(Debugger3):
         self.status = DebuggerStatus.FINISHED
         self._ba, self._fa = status
         self._report_cache = self.name_hash + ".report"
+        self.report = self.build_report()
 
     def get_command_to_run(self):
         if self.status == DebuggerStatus.SINGLETON_NOT_CREATED:
@@ -202,8 +203,9 @@ class Reviewer2(Debugger3):
         stabilized = DataFrame(stabilized, columns=["qname", "action", "edit_path"])
         return stabilized
 
-    def get_report(self, clear=False) -> Report:
-        assert self.status == DebuggerStatus.FINISHED
+    def build_report(self, clear=False) -> Report:
+        if self.status != DebuggerStatus.FINISHED:
+            return None
 
         def _build_report():
             r = Report()
@@ -212,4 +214,6 @@ class Reviewer2(Debugger3):
             r.freq = self.editor.get_inst_report()
             return r
 
-        return load_cache_or(self._report_cache, _build_report, clear)
+        r = load_cache_or(self._report_cache, _build_report, clear)
+        self._report = r
+        return r

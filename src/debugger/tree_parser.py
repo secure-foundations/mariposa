@@ -192,7 +192,10 @@ class ProofParser:
             _body = _body[1]
         node = QuantNode(q_type, bindings, attrs)
 
-        self.tasks.append((_body, partial(cb_set_quant_body, node)))
+        # keep the body if not lambda
+
+        if q_type != "lambda":
+            self.tasks.append((_body, partial(cb_set_quant_body, node)))
         self.quant_nodes.add(node)
 
         return node

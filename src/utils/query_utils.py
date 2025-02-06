@@ -187,8 +187,6 @@ class Mutation(str, Enum):
 
 def emit_mutant_query(query_path, output_path, mutation, seed, keep_core=False):
     log_check(query_path != output_path, "query and output should not be the same")
-    # log_check(mutation in {Mutation.SHUFFLE, Mutation.RENAME, Mutation.COMPOSE},
-    #           f"{mutation} is not a valid mutation here")
 
     if mutation == Mutation.RESEED:
         ot_file = open(output_path, "w")
@@ -205,7 +203,6 @@ def emit_mutant_query(query_path, output_path, mutation, seed, keep_core=False):
         return
 
     command = f"{MARIPOSA} -i '{query_path}' -a {mutation} -o '{output_path}' -s {seed}"
-    print(command)
 
     if keep_core:
         command += " --keep-core"
