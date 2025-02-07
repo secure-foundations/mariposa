@@ -27,6 +27,7 @@ class BenchViewer:
     def __analyze_finished(self):
         for q in self.status[DebuggerStatus.FINISHED]:
             r = self.reviewers[q]
+            print(q)
             num_fixes = len(r.get_stabilized())
             if num_fixes > 0:
                 self.fixable.add(q)

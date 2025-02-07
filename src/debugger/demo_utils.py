@@ -154,7 +154,7 @@ class Reviewer2(Debugger3):
         self.status = DebuggerStatus.FINISHED
         self._ba, self._fa = status
         self._report_cache = self.name_hash + ".report"
-        self.report = self.build_report()
+        self.report = None 
 
     def get_command_to_run(self):
         if self.status == DebuggerStatus.SINGLETON_NOT_CREATED:

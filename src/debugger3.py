@@ -210,7 +210,7 @@ class Debugger3:
         create_dir(self.singleton_dir)
         existing = list_smt2_files(self.singleton_dir)
 
-        if existing == [] or overwrite:
+        if existing == [] or True:
             feasible_edits = self.editor.get_singleton_actions()
             for qid, action in tqdm(feasible_edits.items()):
                 self.register_edit_info({qid: action}, self.singleton_dir)
@@ -271,12 +271,11 @@ class Debugger3:
 
         ei = EditInfo(output_dir, actions)
         eid = ei.get_id()
-
+        
         if not ei.query_exists():
             self.editor.edit_by_info(ei)
         else:
             log_debug(f"[edit] {eid} already exists")
-            self.editor.edit_by_info(ei)
 
         if eid in self.__edit_infos:
             return self.__edit_infos[eid]
