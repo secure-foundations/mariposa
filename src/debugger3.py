@@ -23,6 +23,18 @@ def _run_edit(ei: EditInfo):
     ei.run_query()
     return ei
 
+def resolve_input_path(input_path):
+    if not os.path.exists(input_path):
+        log_warn(f"[init] query path {input_path} not found")
+        sys.exit(1)    
+    if input_path.startswith("dbg/"):
+        assert not input_path.endswith(".smt2") 
+        meta = json.load(open(f"{input_path}/meta.json", "r"))
+        input_path = meta["given_query"]
+        log_info(f"[init] resolved to {input_path}")
+    else:
+        log_info(f"[init] query path: {input_path}")
+    return input_path
 
 class Debugger3:
     def __init__(
@@ -36,19 +48,14 @@ class Debugger3:
         clear_cores=False,
         clear_proofs=False,
         skip_core=False,
-        overwrite_reports=False,
     ):
-        if not os.path.exists(query_path):
-            log_warn(f"[init] query path {query_path} not found")
-            sys.exit(1)
-
+        query_path = resolve_input_path(query_path)
         self.given_query_path = query_path
         self.name_hash = get_name_hash(query_path)
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
 
-        log_info(f"[init] query path: {query_path}")
-        log_info(f"[init] dbg root: {self.sub_root}")
+        log_info(f"[init] dbg root: {self.sub_root}/")
 
         self.orig_path = f"{self.sub_root}/orig.smt2"
         self.query_meta = f"{self.sub_root}/meta.json"
@@ -210,13 +217,17 @@ class Debugger3:
         create_dir(self.singleton_dir)
         existing = list_smt2_files(self.singleton_dir)
 
-        if existing == [] or True:
-            feasible_edits = self.editor.get_singleton_actions()
-            for qid, action in tqdm(feasible_edits.items()):
-                self.register_edit_info({qid: action}, self.singleton_dir)
-                if action == EditAction.INST_REPLACE:
-                    # this is also feasible
-                    self.register_edit_info({qid: EditAction.INST_KEEP}, self.singleton_dir)
+        feasible_edits = self.editor.get_singleton_actions()
+        extended_edits = []
+
+        for qid, action in feasible_edits.items():
+            if action == EditAction.INST_REPLACE:
+                extended_edits.append({qid: EditAction.INST_KEEP})
+            extended_edits.append({qid: action})
+
+        if existing == []:
+            for edit in extended_edits:
+                self.register_edit_info(edit, self.singleton_dir)
             self.save_edits_meta()
             log_info(f"[edit] {self.singleton_project} created")
         else:
@@ -224,12 +235,15 @@ class Debugger3:
                 basename = os.path.basename(query)
                 eid = basename.split(".smt2")[0]
                 if eid not in self.__edit_infos:
-                    log_error(f"[edit] {eid} not found in edit infos!")
+                    log_error(f"[edit] {self.singleton_dir}/{eid}.smt2 is not registered!")
                     continue
-            log_warn(f"[proj] {self.singleton_project} already exists")
 
-        query_count = len(list_smt2_files(self.singleton_dir))
-        log_info(f"[edit] [proj] {self.singleton_project} has {query_count} queries")
+            for edit in extended_edits:
+                ei = self.register_edit_info(edit, self.singleton_dir, create_query=False)
+                if not ei.query_exists():
+                    log_warn(f"[edit] {eid.query_path} file is missing!")
+
+        log_info(f"[edit] [proj] {self.singleton_project} has {len(existing)} queries")
         return self.singleton_dir
 
     def test_edit(self, edit):
@@ -258,7 +272,15 @@ class Debugger3:
             res |= self.__edit_infos[eid].actions.keys()
         return res
 
-    def register_edit_info(self, actions, output_dir=None):
+    def __register_edit(self, actions, output_dir):
+        ei = EditInfo(output_dir, actions)
+        eid = ei.get_id()
+        if eid in self.__edit_infos:
+            return self.__edit_infos[eid]
+        self.__edit_infos[eid] = ei
+        return ei
+
+    def register_edit_info(self, actions, output_dir=None, create_query=True):
         if isinstance(actions, set):
             actions = {qid: self.editor.get_quant_action(qid) for qid in actions}
         else:
@@ -267,21 +289,17 @@ class Debugger3:
         if not output_dir:
             output_dir = self.edit_dir
 
+        ei = self.__register_edit(actions, output_dir)
+
         create_dir(output_dir)
 
-        ei = EditInfo(output_dir, actions)
-        eid = ei.get_id()
-        
+        if not create_query:
+            return ei
+
         if not ei.query_exists():
             self.editor.edit_by_info(ei)
         else:
-            log_debug(f"[edit] {eid} already exists")
-
-        if eid in self.__edit_infos:
-            return self.__edit_infos[eid]
-
-        self.__edit_infos[eid] = ei
-
+            log_debug(f"[edit] {ei.get_id()} already exists")
         return ei
 
     def look_up_edit(self, edit):
@@ -383,12 +401,12 @@ def main():
         action="store_true",
         help="clear existing proofs",
     )
-    parser.add_argument(
-        "--overwrite-reports",
-        default=False,
-        action="store_true",
-        help="overwrite the existing report(s)",
-    )
+    # parser.add_argument(
+    #     "--overwrite-reports",
+    #     default=False,
+    #     action="store_true",
+    #     help="overwrite the existing report(s)",
+    # )
     parser.add_argument(
         "--create-singleton",
         default=False,
@@ -442,7 +460,6 @@ def main():
         clear_cores=args.clear_cores,
         clear_proofs=args.clear_proofs,
         skip_core=args.skip_core,
-        overwrite_reports=args.overwrite_reports,
     )
 
     if args.print_status:
