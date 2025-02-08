@@ -6,7 +6,7 @@ from debugger.informed_editor import InformedEditor
 from debugger.mutant_info import MutantInfo
 from debugger3 import Debugger3
 from utils.cache_utils import load_cache_or
-from utils.system_utils import log_info
+from utils.system_utils import log_info, log_warn
 from benchmark_consts import *
 from debugger.file_builder import FileBuilder
 from utils.analysis_utils import Categorizer, fmt_percent
@@ -63,7 +63,7 @@ def try_get_singleton_analyzer(dbg: Debugger3):
     except:
         return DebuggerStatus.SINGLETON_NOT_CREATED
 
-    if len(p_singleton.qids) == 0:
+    if len(dbg.edits_meta) == 0:
         return DebuggerStatus.SINGLETON_NOT_CREATED
 
     e_singleton = FACT.try_get_exper(p_singleton, VERI_CFG, SOLVER)
@@ -217,3 +217,24 @@ class Reviewer2(Debugger3):
         r = load_cache_or(self._report_cache, _build_report, clear)
         self._report = r
         return r
+
+    def collect_garbage(self):
+        super().collect_garbage()
+
+        if self.status != DebuggerStatus.FINISHED:
+            log_warn(f"skipped GC on unfinished project {self.status} {self.given_query_path}")
+            return
+
+        report = self.build_report()
+
+        seps = report.stabilized.edit_path.values
+
+        for row in report.tested.itertuples():
+            edit_path = row.edit_path
+            if edit_path in seps:
+                continue
+            if row.result == "error":
+                continue
+            if os.path.exists(edit_path):
+                log_info(f"removing {edit_path}")
+                os.remove(edit_path)

@@ -67,7 +67,7 @@ class ExperAnalyzer:
                         f"there are {len(missing)} queries with files, but no experiments done")
 
         if group_qids is None:
-            group_qids = path_exists_qids
+            group_qids = set(qers.keys())
         else:
             group_qids = set(group_qids)
 

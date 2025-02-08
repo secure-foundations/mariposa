@@ -96,9 +96,7 @@ class Solver:
         if poll_result:
             outputs = []
             while QUAKE_MESSAGE not in std_out:
-                # try:
                 std_out = self.proc.stdout.readline()
-                # except 
                 std_out = std_out.decode("utf-8").strip()
                 outputs.append(std_out)
 

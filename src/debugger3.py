@@ -98,8 +98,6 @@ class Debugger3:
         if self.chosen_proof_path is None:
             self.set_proof()
 
-        # print(self.chosen_proof_path)
-        # print(self.chosen_trace_path)
         self._editor = None
 
     def set_proof(self):
@@ -213,10 +211,7 @@ class Debugger3:
         self.save_edits_meta()
         log_info("[edit] cleared")
 
-    def create_singleton_project(self, overwrite=False):
-        create_dir(self.singleton_dir)
-        existing = list_smt2_files(self.singleton_dir)
-
+    def get_singleton_edits(self):
         feasible_edits = self.editor.get_singleton_actions()
         extended_edits = []
 
@@ -224,26 +219,51 @@ class Debugger3:
             if action == EditAction.INST_REPLACE:
                 extended_edits.append({qid: EditAction.INST_KEEP})
             extended_edits.append({qid: action})
+        return extended_edits
 
-        if existing == []:
-            for edit in extended_edits:
-                self.register_edit_info(edit, self.singleton_dir)
-            self.save_edits_meta()
-            log_info(f"[edit] {self.singleton_project} created")
-        else:
-            for query in existing:
-                basename = os.path.basename(query)
-                eid = basename.split(".smt2")[0]
-                if eid not in self.__edit_infos:
-                    log_error(f"[edit] {self.singleton_dir}/{eid}.smt2 is not registered!")
-                    continue
+    def __register_singleton_edits(self):
+        create_dir(self.singleton_dir)
+        extended_edits = self.get_singleton_edits()
 
-            for edit in extended_edits:
-                ei = self.register_edit_info(edit, self.singleton_dir, create_query=False)
-                if not ei.query_exists():
-                    log_warn(f"[edit] {eid.query_path} file is missing!")
+        for edit in extended_edits:
+            self.register_edit(edit, self.singleton_dir)
 
-        log_info(f"[edit] [proj] {self.singleton_project} has {len(existing)} queries")
+        self.save_edits_meta()
+        return extended_edits
+
+    def create_singleton(self, fix_missing=True):
+        existing = list_smt2_files(self.singleton_dir)
+        if existing is None:
+            existing = []
+        extended_edits = self.__register_singleton_edits()
+        attempted = len(existing) != 0
+
+        for query in existing:
+            basename = os.path.basename(query)
+            eid = basename.split(".smt2")[0]
+            if eid in self.__edit_infos:
+                continue
+            log_error(f"[edit] {self.singleton_dir}/{eid}.smt2 is not registered!")
+
+        file_size = os.path.getsize(self.orig_path) / 1024
+        total_size = file_size * len(extended_edits) / 1024 / 1024            
+
+        if total_size > 10:
+            log_error(f"[edit] {self.singleton_dir} aborted, {total_size:.2f}G may be used!")
+            return
+
+        log_info(f"[edit] estimated size: {total_size:.2f}G")
+
+        for edit in tqdm(extended_edits):
+            ei = self.register_edit(edit, self.singleton_dir)
+            if ei.query_exists():
+                continue
+            if attempted:
+                log_warn(f"[edit] {ei.query_path} file is missing!")
+            if fix_missing or not attempted:
+                self.create_edit_query(ei)
+
+        log_info(f"[edit] [proj] {self.singleton_project} has {len(list_smt2_files(self.singleton_dir))} queries")
         return self.singleton_dir
 
     def test_edit(self, edit):
@@ -272,15 +292,7 @@ class Debugger3:
             res |= self.__edit_infos[eid].actions.keys()
         return res
 
-    def __register_edit(self, actions, output_dir):
-        ei = EditInfo(output_dir, actions)
-        eid = ei.get_id()
-        if eid in self.__edit_infos:
-            return self.__edit_infos[eid]
-        self.__edit_infos[eid] = ei
-        return ei
-
-    def register_edit_info(self, actions, output_dir=None, create_query=True):
+    def register_edit(self, actions, output_dir=None) -> EditInfo:
         if isinstance(actions, set):
             actions = {qid: self.editor.get_quant_action(qid) for qid in actions}
         else:
@@ -289,17 +301,14 @@ class Debugger3:
         if not output_dir:
             output_dir = self.edit_dir
 
-        ei = self.__register_edit(actions, output_dir)
+        ei = EditInfo(output_dir, actions)
+        eid = ei.get_id()
 
-        create_dir(output_dir)
+        if eid in self.__edit_infos:
+            return self.__edit_infos[eid]
 
-        if not create_query:
-            return ei
+        self.__edit_infos[eid] = ei
 
-        if not ei.query_exists():
-            self.editor.edit_by_info(ei)
-        else:
-            log_debug(f"[edit] {ei.get_id()} already exists")
         return ei
 
     def look_up_edit(self, edit):
@@ -311,24 +320,35 @@ class Debugger3:
 
         return res
 
-    def _try_edits(self, targets, run_query):
-        args = []
+    def create_edit_query(self, ei: EditInfo):
+        eid = ei.get_id()
+        assert eid in self.__edit_infos
 
-        for edit in tqdm(targets):
-            ei = self.register_edit_info(edit)
-            if ei.has_data():
-                continue
-            args.append(ei)
+        create_dir(ei.edit_dir)
 
-        if not run_query:
-            log_info(f"[edit] skipped running, queries saved in {self.edit_dir}")
-            return
+        if not ei.query_exists():
+            self.editor.edit_by_info(ei)
+        else:
+            log_debug(f"[edit] {ei.get_id()} already exists")
 
-        run_res = run_with_pool(_run_edit, args)
+    # def _try_edits(self, targets, run_query):
+    #     args = []
 
-        for ei in run_res:
-            assert ei.has_data()
-            self.__edit_infos[ei.get_id()] = ei
+    #     for edit in tqdm(targets):
+    #         ei = self.register_edit_info(edit)
+    #         if ei.has_data():
+    #             continue
+    #         args.append(ei)
+
+    #     if not run_query:
+    #         log_info(f"[edit] skipped running, queries saved in {self.edit_dir}")
+    #         return
+
+    #     run_res = run_with_pool(_run_edit, args)
+
+    #     for ei in run_res:
+    #         assert ei.has_data()
+    #         self.__edit_infos[ei.get_id()] = ei
 
     def get_status(self):
         return {
@@ -401,12 +421,6 @@ def main():
         action="store_true",
         help="clear existing proofs",
     )
-    # parser.add_argument(
-    #     "--overwrite-reports",
-    #     default=False,
-    #     action="store_true",
-    #     help="overwrite the existing report(s)",
-    # )
     parser.add_argument(
         "--create-singleton",
         default=False,
@@ -419,12 +433,12 @@ def main():
         action="store_true",
         help="analyze singleton edit project",
     )
-    # parser.add_argument(
-    #     "--eval-rankings",
-    #     default=False,
-    #     action="store_true",
-    #     help="evaluate different rankings",
-    # )
+    parser.add_argument(
+        "--fix-missing-edits",
+        default=False,
+        action="store_true",
+        help="fix missing queries in singleton project",
+    )
     parser.add_argument(
         "--print-status",
         default=False,
@@ -467,11 +481,7 @@ def main():
         return
 
     if args.create_singleton:
-        dbg.create_singleton_project()
-        return
-
-    if args.analyze_singleton:
-        dbg.analyze_singleton_project()
+        dbg.create_singleton(args.fix_missing_edits)
         return
 
     if args.reroll:

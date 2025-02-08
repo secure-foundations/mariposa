@@ -221,20 +221,23 @@ def match_sk_decl_used(e):
     return None
 
 def find_sk_decls_used(e):
-    res = []
     v = Z3AstVisitor()
-    __find_sk_decl_rec(v, e, res)
-    return res
+    return __find_sk_decl(v, e)
 
-def __find_sk_decl_rec(v, e, res):
-    if v.visit(e):
-        return
-    if is_quantifier(e):
-        return __find_sk_decl_rec(v, e.body(), res)
-    if r := match_sk_decl_used(e):
-        res.append(r)
-    for c in e.children():
-        __find_sk_decl_rec(v, c, res)
+def __find_sk_decl(v, e):
+    tasks, res = [e], []
+    while tasks:
+        e = tasks.pop()
+        if v.visit(e):
+            continue
+        if is_quantifier(e):
+            tasks.append(e.body())
+            continue
+        if r := match_sk_decl_used(e):
+            res.append(r)
+        for c in e.children():
+            tasks.append(c)
+    return res
 
 def dump_z3_proof(query_path, proof_path, timeout=60000) -> bool:
     set_param(proof=True)
