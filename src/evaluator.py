@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+
 import os
+import shutil
 from tabulate import tabulate
 from base.exper_analyzer import ExperAnalyzer
 from debugger.debugger import Debugger3
 from debugger.demo_utils import Report
 from utils.cache_utils import load_cache_or
-from utils.system_utils import log_info, log_warn
+from utils.system_utils import log_check, log_info, log_warn
 from typing import Dict
 from benchmark_consts import *
 from utils.analysis_utils import fmt_percent
@@ -15,6 +18,7 @@ from enum import Enum
 from pandas import DataFrame
 from utils.analysis_utils import Categorizer
 import multiprocessing
+import argparse
 
 SOLVER = FACT.get_solver("z3_4_13_0")
 VERI_CFG = FACT.get_config("verify")
@@ -44,8 +48,11 @@ def get_params(dbg: Debugger3):
 
 class DebuggerStatus(Enum):
     NO_PROOF = "no proof built"
-    SINGLETON_NOT_CREATED = "singleton not created"
+    SINGLETON_CREATION_UNATTEMPTED = "singleton creation unattempted"
+    SINGLETON_CREATION_FAILED = "singleton creation failed"
+
     SINGLETON_NOT_RAN = "singleton not ran"
+    
     SINGLETON_NOT_FILTERED = "singleton not filtered"
     FILTERED_NOT_RAN = "filtered but not ran"
     SPLITTER_NOT_CREATED = "splitter not created"
@@ -60,15 +67,27 @@ def try_get_singleton_analyzer(dbg: Debugger3):
     try:
         p_singleton = FACT.get_project_by_path(dbg.singleton_dir)
     except:
-        return DebuggerStatus.SINGLETON_NOT_CREATED
+        return DebuggerStatus.SINGLETON_CREATION_UNATTEMPTED
 
-    if len(dbg.edits_meta) == 0:
-        return DebuggerStatus.SINGLETON_NOT_CREATED
+    registered, existing = dbg.get_singleton_status()
+
+    if registered == 0:
+        return DebuggerStatus.SINGLETON_CREATION_UNATTEMPTED
 
     e_singleton = FACT.try_get_exper(p_singleton, VERI_CFG, SOLVER)
 
     if e_singleton is None:
+        if existing == 0:
+            return DebuggerStatus.SINGLETON_CREATION_FAILED
         return DebuggerStatus.SINGLETON_NOT_RAN
+
+    tested_count = e_singleton.get_sum_count()
+    log_check(tested_count != 0, "[eval] tested empty: " + dbg.given_query_path)
+
+    if tested_count < registered:
+        log_warn(f"[eval] {dbg.name_hash} tested count {tested_count} < registered {registered}")
+
+    log_check(tested_count <= registered, "[eval] tested count > registered!")
 
     qa, _ = get_params(dbg)
 
@@ -76,7 +95,7 @@ def try_get_singleton_analyzer(dbg: Debugger3):
         ba = SingletonAnalyzer(e_singleton, qa)
     except:
         return DebuggerStatus.SINGLETON_NOT_RAN
-
+    
     return ba
 
 
@@ -148,8 +167,8 @@ class Evaluator(Debugger3):
         self.report = None
 
     def get_command_to_run(self):
-        if self.status == DebuggerStatus.SINGLETON_NOT_CREATED:
-            return "./src/debugger3 --create-singleton -i " + self.given_query_path
+        if self.status == DebuggerStatus.SINGLETON_CREATION_UNATTEMPTED:
+            return "./src/debugger3.py --create-singleton -i " + self.given_query_path
         if self.status == DebuggerStatus.SINGLETON_NOT_RAN:
             return (
                 "./src/exper_wizard.py manager -e verify --total-parts 12 -i "
@@ -201,8 +220,10 @@ class Evaluator(Debugger3):
         def _build_report():
             r = Report()
             r.tested, r.skipped = self.get_tested()
+            assert len(r.tested) > 0
             r.stabilized = self.get_stabilized()
             r.freq = self.editor.get_inst_report()
+            assert len(r.freq) > 0
             return r
 
         r = load_cache_or(self._report_cache, _build_report, clear)
@@ -210,13 +231,13 @@ class Evaluator(Debugger3):
         return r
 
     def collect_garbage(self):
-        super().collect_garbage()
-
         if self.status != DebuggerStatus.FINISHED:
             log_warn(
-                f"skipped GC on unfinished project {self.status} {self.given_query_path}"
+                f"[eval] skipped GC on unfinished project {self.status} {self.given_query_path}"
             )
             return
+
+        super().collect_garbage()
 
         report = self.build_report()
 
@@ -296,3 +317,25 @@ class BenchViewer:
 # print("\t-", "No Fixes", len(no_fixes), fmt(len(no_fixes), total))
 # print("No Analyzable", total - analyzable, fmt(total - analyzable, total))
 # print("\t-", "No Proofs", len(sts[DebuggerStatus.NO_PROOF]), fmt(len(sts[DebuggerStatus.NO_PROOF]), total))
+
+def main():
+    parser = argparse.ArgumentParser(description="Mariposa Evaluator. ")
+    parser.add_argument(
+        "-i", "--input-query-path", required=True, help="the input query path"
+    )
+    parser.add_argument(
+        "--collect-garbage",
+        default=False,
+        action="store_true",
+    )
+    args = parser.parse_args()
+    eva = Evaluator(args.input_query_path)
+    print(eva.status)
+
+    if args.collect_garbage:
+        eva.collect_garbage()
+        return
+
+if __name__ == "__main__":
+    main()
+

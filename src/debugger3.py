@@ -57,13 +57,19 @@ def main():
         "--create-singleton",
         default=False,
         action="store_true",
-        help="create singleton edit project",
+        help="create the singleton project",
     )
     parser.add_argument(
-        "--analyze-singleton",
+        "--register-singleton",
         default=False,
         action="store_true",
-        help="analyze singleton edit project",
+        help="register the singleton project",
+    )
+    parser.add_argument(
+        "--check-singleton",
+        default=False,
+        action="store_true",
+        help="check the singleton project",
     )
     parser.add_argument(
         "--fix-missing-edits",
@@ -113,7 +119,11 @@ def main():
         return
 
     if args.create_singleton:
-        dbg.create_singleton(args.fix_missing_edits)
+        dbg.create_singleton()
+        return
+
+    if args.register_singleton:
+        dbg.register_singleton()
         return
 
     if args.reroll:

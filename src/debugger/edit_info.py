@@ -25,7 +25,6 @@ class EditAction(Enum):
 
 class EditInfo:
     def __init__(self, dir, actions):
-        assert os.path.isdir(dir)
         self.edit_dir = dir
         self._actions = actions
         self.__hash_id = EditInfo.hash_actions(actions)

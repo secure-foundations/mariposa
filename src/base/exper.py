@@ -364,6 +364,15 @@ class Experiment(ExpConfig):
         con.close()
         return res
 
+    def get_sum_count(self):
+        if not self.is_done():
+            return 0
+        con, cur = get_cursor(self.db_path)
+        res = cur.execute(f"""SELECT COUNT(*) FROM {self.sum_table_name}""")
+        count = res.fetchone()[0]
+        con.close()
+        return count
+
     def load_sum_table(self) -> Dict[str, QueryExpResult]:
         con, cur = get_cursor(self.db_path)
         sum_name = self.sum_table_name

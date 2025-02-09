@@ -176,6 +176,8 @@ class Debugger3:
     def editor(self) -> InformedEditor:
         if self._editor is not None:
             return self._editor
+        assert len(self._builder.proofs) != 0
+        assert self.chosen_proof_path is not None
         log_debug(f"[edit] proof path: {self.chosen_proof_path}")
         log_debug(f"[edit] trace path: {self.chosen_trace_path}")
         proof = ProofAnalyzer.from_proof_file(
@@ -214,10 +216,10 @@ class Debugger3:
             if action == EditAction.INST_REPLACE:
                 extended_edits.append({qid: EditAction.INST_KEEP})
             extended_edits.append({qid: action})
+
         return extended_edits
 
-    def __register_singleton_edits(self):
-        create_dir(self.singleton_dir)
+    def register_singleton(self):
         extended_edits = self.get_singleton_edits()
 
         for edit in extended_edits:
@@ -226,20 +228,11 @@ class Debugger3:
         self.save_edits_meta()
         return extended_edits
 
-    def create_singleton(self, fix_missing=True):
-        existing = list_smt2_files(self.singleton_dir)
-        if existing is None:
-            existing = []
-        extended_edits = self.__register_singleton_edits()
-        attempted = len(existing) != 0
+    def create_singleton(self):
+        if len(self.__edit_infos) == 0:
+            self.register_singleton()
 
-        for query in existing:
-            basename = os.path.basename(query)
-            eid = basename.split(".smt2")[0]
-            if eid in self.__edit_infos:
-                continue
-            log_error(f"[edit] {self.singleton_dir}/{eid}.smt2 is not registered!")
-
+        extended_edits = self.get_singleton_edits()
         file_size = os.path.getsize(self.orig_path) / 1024
         total_size = file_size * len(extended_edits) / 1024 / 1024            
 
@@ -249,17 +242,34 @@ class Debugger3:
 
         log_info(f"[edit] estimated size: {total_size:.2f}G")
 
-        for edit in tqdm(extended_edits):
-            ei = self.register_edit(edit, self.singleton_dir)
+        if not os.path.exists(self.singleton_dir):
+            os.makedirs(self.singleton_dir)
+
+        for action in tqdm(extended_edits):
+            ei = EditInfo(self.singleton_dir, action)
+            assert ei.get_id() in self.__edit_infos
             if ei.query_exists():
+                log_info(f"[edit] {ei.get_id()} already exists")
                 continue
-            if attempted:
-                log_warn(f"[edit] {ei.query_path} file is missing!")
-            if fix_missing or not attempted:
-                self.create_edit_query(ei)
+            self.create_edit_query(ei)
 
         log_info(f"[edit] [proj] {self.singleton_project} has {len(list_smt2_files(self.singleton_dir))} queries")
         return self.singleton_dir
+
+    def get_singleton_status(self):
+        existing = list_smt2_files(self.singleton_dir)
+        if existing is None:
+            existing = []
+        return len(self.__edit_infos), len(existing)
+
+    def check_singleton(self):
+        existing = list_smt2_files(self.singleton_dir)
+        # for query in existing:
+        #     basename = os.path.basename(query)
+        #     eid = basename.split(".smt2")[0]
+        #     if eid in self.__edit_infos:
+        #         continue
+        #     log_error(f"[edit] {self.singleton_dir}/{eid}.smt2 is not registered!")
 
     def test_edit(self, edit):
         ei = self.register_edit_info(edit)
@@ -318,8 +328,6 @@ class Debugger3:
     def create_edit_query(self, ei: EditInfo):
         eid = ei.get_id()
         assert eid in self.__edit_infos
-
-        create_dir(ei.edit_dir)
 
         if not ei.query_exists():
             self.editor.edit_by_info(ei)

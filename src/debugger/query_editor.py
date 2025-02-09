@@ -61,31 +61,36 @@ class QueryEditor(QueryLoader):
         return True
 
     def save(self, out_file_path):
-        self.__skolemize_assertions()
-        self.__erase_quantifiers()
-        self.__banish_assertions()
+        try:
+            self.__skolemize_assertions()
+            self.__erase_quantifiers()
+            self.__banish_assertions()
 
-        out_file = open(out_file_path, "w+")
-        for i, line in enumerate(self.in_cmds):
-            if i in self._modified_commands:
-                out_file.write(self._modified_commands[i])
+            out_file = open(out_file_path, "w+")
+            for i, line in enumerate(self.in_cmds):
+                if i in self._modified_commands:
+                    out_file.write(self._modified_commands[i])
+                else:
+                    out_file.write(line)
+            for line in self._new_commands:
+                out_file.write(line + "\n")
+
+            goal_index = len(self.in_cmds)
+            if goal_index in self._modified_commands:
+                log_info(f"[edit] goal was modified!")
+                out_file.write(self._modified_commands[goal_index])
             else:
-                out_file.write(line)
-        for line in self._new_commands:
-            out_file.write(line + "\n")
-
-        goal_index = len(self.in_cmds)
-        if goal_index in self._modified_commands:
-            log_info(f"[edit] goal was modified!")
-            out_file.write(self._modified_commands[goal_index])
-        else:
-            out_file.write(self.query_goal)
-        out_file.write("(check-sat)\n")
-        out_file.close()
-
-        self.__reset_state()
-        log_info(f"[edit] written to {out_file_path}")
-        add_qids_to_query(out_file_path)
+                out_file.write(self.query_goal)
+            out_file.write("(check-sat)\n")
+            out_file.close()
+            self.__reset_state()
+            add_qids_to_query(out_file_path, check=False)
+            log_info(f"[edit] written to {out_file_path}")
+        except Exception as e:
+            self.__reset_state()
+            if os.path.exists(out_file_path):
+                os.remove(out_file_path)
+            log_error(f"[edit] failed on {out_file_path}: {e}")
 
     def __add_new_commands(self, comment, commands):
         log_info("[edit] " + comment)

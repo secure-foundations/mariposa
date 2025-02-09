@@ -326,7 +326,7 @@ def get_trace_stats_axiom_profiler(trace_path):
         processed.add(qidx)
     return counts
 
-def add_qids_to_query(query_path, dest=None):
+def add_qids_to_query(query_path, dest=None, check=True):
     if dest is None:
         dest = query_path
     args = [
@@ -337,4 +337,4 @@ def add_qids_to_query(query_path, dest=None):
         "-o",
         dest,
     ]
-    subprocess_run(args, check=True, debug=False)
+    subprocess_run(args, check, debug=False)
