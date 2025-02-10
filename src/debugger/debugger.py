@@ -232,15 +232,16 @@ class Debugger3:
         if len(self.__edit_infos) == 0:
             self.register_singleton()
 
-        extended_edits = self.get_singleton_edits()
         file_size = os.path.getsize(self.orig_path) / 1024
-        total_size = file_size * len(extended_edits) / 1024 / 1024            
+        total_size = file_size * len(self.__edit_infos) / 1024 / 1024            
 
         if total_size > 10:
             log_error(f"[edit] {self.singleton_dir} aborted, {total_size:.2f}G may be used!")
             return
 
         log_info(f"[edit] estimated size: {total_size:.2f}G")
+
+        extended_edits = self.get_singleton_edits()
 
         if not os.path.exists(self.singleton_dir):
             os.makedirs(self.singleton_dir)

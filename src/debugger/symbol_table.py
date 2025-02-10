@@ -240,7 +240,7 @@ class TermTable(nx.DiGraph):
         if isinstance(node, LeafNode):
             return f"{node.value}"
         if isinstance(node, QuantNode):
-            return str(node)
+            return node.debug_format_quant()
         children = []
         for child in node.children:
             child = self.lookup_node(child)

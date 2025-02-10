@@ -52,6 +52,7 @@ class DebuggerStatus(Enum):
     SINGLETON_CREATION_FAILED = "singleton creation failed"
 
     SINGLETON_NOT_RAN = "singleton not ran"
+    SINGLETON_TESTED_EMPTY = "singleton tested empty"
     
     SINGLETON_NOT_FILTERED = "singleton not filtered"
     FILTERED_NOT_RAN = "filtered but not ran"
@@ -82,7 +83,9 @@ def try_get_singleton_analyzer(dbg: Debugger3):
         return DebuggerStatus.SINGLETON_NOT_RAN
 
     tested_count = e_singleton.get_sum_count()
-    log_check(tested_count != 0, "[eval] tested empty: " + dbg.given_query_path)
+
+    if tested_count == 0:
+        return DebuggerStatus.SINGLETON_TESTED_EMPTY
 
     if tested_count < registered:
         log_warn(f"[eval] {dbg.name_hash} tested count {tested_count} < registered {registered}")
@@ -253,6 +256,14 @@ class Evaluator(Debugger3):
                 log_info(f"removing {edit_path}")
                 os.remove(edit_path)
 
+    def get_dirs_to_sync(self):
+        items = []
+        items.append(self.sub_root)
+        items.append(self.singleton_dir)
+        items.append(self.singleton_filtered_dir)
+        items.append("data/dbs/" + self.singleton_dir)
+        items.append("data/dbs/" + self.singleton_filtered_dir)
+        return items
 
 class BenchViewer:
     def __init__(self, queries):

@@ -15,8 +15,8 @@ for q in tqdm(UNSTABLE_MARIPOSA):
     #     continue
     # # cmds.append(f"./src/debuggers.py -i {q} --register-singleton")
     # dbg.check_singleton()
-    d = Debugger3(q)
-    # rev = Evaluator(q)
+    # d = Debugger3(q)
+    rev = Evaluator(q)
     # rev.collect_garbage()
 
 # print("\n".join(cmds))
