@@ -106,7 +106,7 @@ def try_get_filter_analyzer(dbg: Debugger3):
     qa, filter_cfg = get_params(dbg)
 
     try:
-        p_filter = FACT.get_project_by_path(dbg.singleton_filtered_dir)
+        p_filter = FACT.get_project_by_path(dbg.filtered_dir)
     except:
         return DebuggerStatus.SINGLETON_NOT_FILTERED
 
@@ -183,7 +183,7 @@ class Evaluator(Debugger3):
                 + self.singleton_dir
             )
         if self.status == DebuggerStatus.FILTERED_NOT_RAN:
-            return "python3 src/carve_and_rerun.py " + self.singleton_filtered_dir
+            return "python3 src/carve_and_rerun.py " + self.filtered_dir
 
         assert False
 
@@ -260,9 +260,9 @@ class Evaluator(Debugger3):
         items = []
         items.append(self.sub_root)
         items.append(self.singleton_dir)
-        items.append(self.singleton_filtered_dir)
-        items.append("data/dbs/" + self.singleton_dir)
-        items.append("data/dbs/" + self.singleton_filtered_dir)
+        items.append(self.filtered_dir)
+        items.append(self.singleton_db_dir)
+        items.append(self.filtered_db_dir)
         return items
 
 class BenchViewer:
