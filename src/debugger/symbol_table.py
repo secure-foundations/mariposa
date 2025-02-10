@@ -16,7 +16,6 @@ class TermTable(nx.DiGraph):
         self.quant_names: Dict[str, Set[NodeRef]] = dict()
 
         self.__redirected_quant_nodes = dict()
-        self.__collect_quants(parser.quant_nodes)
         self.root_ref = self.__flatten_tree_nodes(parser.root_node)
 
         self.__build_term_graph()
@@ -33,97 +32,31 @@ class TermTable(nx.DiGraph):
             print(ref, node.qid, end=" ")
             self.pprint_node(ref)
 
-    def __collect_quants(self, quant_nodes):
-        def __collect_quants_rec(node):
-            if isinstance(node, QuantNode):
-                if node in self.__redirected_quant_nodes:
-                    return self.__redirected_quant_nodes[node]
-                node.body = __collect_quants_rec(node.body)
-                ref = self.__add_tree_node(node)
-                self.__redirected_quant_nodes[node] = ref
-                return ref
-
-            if isinstance(node, AppNode):
-                for i, child in enumerate(node.children):
-                    node.children[i] = __collect_quants_rec(child)
-
-            elif isinstance(node, LetNode):
-                for i, (k, v) in enumerate(node.bindings):
-                    node.bindings[i] = (k, __collect_quants_rec(v))
-                node.body = __collect_quants_rec(node.body)
-
-            return node
-
-        for node in quant_nodes:
-            __collect_quants_rec(node)
-
-    # def __collect_quants(self, root: TreeNode):
-    #     temp = AppNode("temp", [])
-    #     cb = partial(cb_add_app_child, temp)
-    #     tasks = [(root, cb)]
-
-    #     while tasks:
-    #         node, callback = tasks.pop()
-
-    #         if isinstance(node, LeafNode):
-    #             callback(node)
-    #             continue
-
-    #         if isinstance(node, QuantNode):
-    #             if node in self.__redirected_quant_nodes:
-    #                 callback(self.__redirected_quant_nodes[node])
-    #                 continue
-    #             cb = partial(cb_set_quant_body, node)
-    #             if node.body is not None:
-    #                 tasks.append((node.body, cb))
-    #             ref = self.__add_tree_node(node)
-    #             self.__redirected_quant_nodes[node] = ref
-    #             callback(ref)
-    #             continue
-
-    #         if isinstance(node, LetNode):
-    #             bindings, node.bindings = node.bindings, []
-    #             for k, v in reversed(bindings):
-    #                 cb = partial(cb_add_let_binding, node, k)
-    #                 tasks.append((v, cb))
-
-    #             cb = partial(cb_set_let_body, node)
-    #             tasks.append((node.body, cb))
-    #             callback(node)
-    #             continue
-
-    #         assert isinstance(node, AppNode)
-    #         cb = partial(cb_add_app_child, node)
-    #         children = node.children
-    #         node.children = []
-
-    #         for child in reversed(children):
-    #             tasks.append((child, cb))
-
-    #         callback(node)
-
-    #     assert temp.children[0] == root
-
     def add_tree_node(self, node: TreeNode) -> NodeRef:
-        assert not isinstance(node, QuantNode)
         assert isinstance(node, TreeNode)
+        assert not isinstance(node, QuantNode)
         return self.__add_tree_node(node)
 
     def __add_tree_node(self, node: TreeNode) -> NodeRef:
         ref = self.__make_ref(node)
+
         if ref in self.__storage:
-            if str(self.__storage[ref]) != str(node):
-                print(node)
-                print(self.__storage[ref])
+            lhs = debug_format_node(self.__storage[ref])
+            rhs = debug_format_node(node)
+            if lhs != rhs:
+                print(lhs)
+                print(rhs)
                 log_error("hash collision!")
                 assert False
             return ref
+
         if isinstance(node, QuantNode):
             if node.quant_type != QuantType.LAMBDA:
                 if node.qid not in self.quant_names:
                     self.quant_names[node.qid] = set()
                 self.quant_names[node.qid].add(ref)
             self.quant_refs.add(ref)
+
         self.__storage[ref] = node
         return ref
 
@@ -133,7 +66,8 @@ class TermTable(nx.DiGraph):
             assert all(
                 (isinstance(c, NodeRef) and c in self.__storage) for c in node.children
             )
-        digest = hashlib.sha1(str(node).encode("utf-8")).hexdigest()
+        st = debug_format_node(node)
+        digest = hashlib.sha1(st.encode("utf-8")).hexdigest()
         if isinstance(node, QuantNode):
             return QuantRef(digest[:16], node.quant_type)
         return NodeRef(digest[:16])
@@ -143,7 +77,7 @@ class TermTable(nx.DiGraph):
         # get rid of let bindings
         # store them in global_defs (temporarily)
         root = self.__rebind_let(root)
-        
+
         self.__redirected_globals = dict()
         # TODO: this is assuming that global_defs are in topological order
         for name, node in self.__global_defs.items():
@@ -176,7 +110,11 @@ class TermTable(nx.DiGraph):
                 continue
 
             if isinstance(node, QuantNode):
-                assert False
+                # DO NOTHING!
+                # ref = self.__add_tree_node(node)
+                # assert isinstance(ref, QuantRef)
+                # callback(ref)
+                continue
 
             assert isinstance(node, AppNode)
             cb = partial(cb_add_app_child, node)
@@ -217,7 +155,6 @@ class TermTable(nx.DiGraph):
             node.children = children
         else:
             assert isinstance(node, QuantNode)
-            return self.__redirected_quant_nodes[node]
         return self.__add_tree_node(node)
 
     def __build_term_graph(self):

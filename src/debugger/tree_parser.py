@@ -26,10 +26,29 @@ def parse_s_expression(s):
         return current[0]  # Return the single parsed element instead of a list
     return current
 
+# this is just stupid
+def unparse_s_expression(data):
+    stack = [data] 
+    result = []
+
+    while stack:
+        data = stack.pop()
+
+        if isinstance(data, list):
+            stack.append(")")
+            for child in reversed(data):
+                stack.append(child)
+            stack.append("(")
+        else:
+            assert isinstance(data, str)
+            result.append(data)  
+
+    result = " ".join(result)
+    result.replace(" )", ")").replace("( ", "(")
+    return result
 
 class ProofParser:
     def __init__(self, file_path):
-        self.quant_nodes = set()
         self.root_node = self.__parse_file(file_path)
 
     def __parse_file(self, file_path):
@@ -185,19 +204,15 @@ class ProofParser:
 
         # parse attributes
         if q_type == "lambda":
-            attrs = dict()
+            attrs = []
         else:
             assert _get_symbol(_body[0]) == "!"
             attrs = _parse_attributes(_body[2:])
             _body = _body[1]
         node = QuantNode(q_type, bindings, attrs)
-
-        # keep the body if not lambda
-
-        if q_type != "lambda":
-            self.tasks.append((_body, partial(cb_set_quant_body, node)))
-        self.quant_nodes.add(node)
-
+        # yizhou7: you won, I have given up
+        node.body = unparse_s_expression(_body)
+        # self.tasks.append((_body, partial(cb_set_quant_body, node)))
         return node
 
 
@@ -239,18 +254,17 @@ def _parse_quant_vars(_bindings):
 
 def _parse_attributes(_attrs):
     index = 0
-    attrs = dict()
+    attrs = []
     while index < len(_attrs):
         attr_name = _get_symbol(_attrs[index])
         if attr_name in {":pattern", ":weight", ":no-pattern"}:
-            # TODO: parse pattern if needed
-            # attrs[attr_name] = _attrs[index + 1]
-            pass
+            v = unparse_s_expression(_attrs[index + 1])
         elif attr_name in {":qid", ":skolemid"}:
-            attrs[attr_name] = _get_symbol(_attrs[index + 1])
+            v = _get_symbol(_attrs[index + 1])
         else:
             print(attr_name)
             assert False
+        attrs += [(attr_name, v)]
         index += 2
     return attrs
 

@@ -323,5 +323,5 @@ class ProofAnalyzer(TermTable):
         m = hashlib.md5()
         m.update(str(proof_path).encode())
         pickle_name = m.hexdigest() + ".pickle"
-        # print(pickle_name)
+        print(pickle_name)
         return load_cache_or(pickle_name, lambda: ProofAnalyzer(proof_path), clear)

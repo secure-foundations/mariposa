@@ -137,9 +137,17 @@ class QuantNode(TreeNode):
         self.args = args
         self.body = None
         self.attrs = attrs
-        self.qid = attrs.get(":qid", None)
+        self.qid = None
+        self.skolemid = None
 
-        # let bindings within the quantifier body
+        for (k, v) in attrs:
+            if k == ":qid":
+                self.qid = v
+            elif k == ":skolemid":
+                self.skolemid = v
+
+            assert isinstance(k, str)
+            assert isinstance(v, str)
 
         if self.qid is None:
             if quant_type == QuantType.LAMBDA:
@@ -149,30 +157,31 @@ class QuantNode(TreeNode):
                 # unknown quantifier, we drop the body
                 self.qid = f"unknown_{QuantNode.unknown_id}"
                 QuantNode.unknown_id += 1
-        self.skolemid = attrs.get(":skolemid", None)
 
-    def __str__(self):
+    def debug_format_attrs(self):
+        res = []
+        for (k, v) in self.attrs:
+            res += [k + " " + v]
+        return " ".join(res)
+    
+    def debug_format_args(self):
         args = " ".join([f"({var} {sort})" for var, sort in self.args])
+        return args
 
-        if self.body is None:
-            return f"({self.quant_type.value} ({args}) true)"
+    def debug_format_quant(self):
+        attrs = self.debug_format_attrs()
+        args = self.debug_format_args()
+        body = self.body
+        if attrs != "":
+            body = f"(! {body} {attrs})"
+        return f"({self.quant_type.value} ({args}) {body})"
 
-        attrs = " ".join([f"{k} {v}" for k, v in self.attrs.items()])
-        return f"({self.quant_type.value} ({args}) (!{self.body} {attrs}))"
 
 class LetNode(TreeNode):
     def __init__(self, bindings, body):
         super().__init__()
         self.bindings = bindings
         self.body = body
-
-    def __str__(self):
-        items = ["(let ("]
-        for var, val in self.bindings:
-            items.append(f"({var} {val})")
-        items.append(")" + str(self.body) + ")")
-        return " ".join(items)
-
 
 class AppNode(TreeNode):
     def __init__(self, name, children):
@@ -181,10 +190,7 @@ class AppNode(TreeNode):
         self.children = children
 
     def __str__(self):
-        items = [f"({self.name}"]
-        for child in self.children:
-            items.append(str(child))
-        return " ".join(items) + ")"
+        return debug_print_node(self)
 
     def maybe_skolemized(self):
         return get_skolem_qname(self.name)
@@ -199,3 +205,57 @@ class DatatypeAppNode(AppNode):
 class ProofNode(AppNode):
     def __init__(self, name, children):
         super().__init__(name, children)
+
+
+def debug_print_node(root: TreeNode, attrs=False):
+    print(debug_format_node(root, attrs))
+
+
+def debug_format_node(root: TreeNode, attrs=False) -> str:
+    stack = [root] 
+    result = []
+
+    while stack:
+        node = stack.pop()
+        if isinstance(node, LeafNode):
+            result.append(str(node))
+            continue
+
+        if isinstance(node, str):
+            result.append(node)
+            continue
+
+        if isinstance(node, LetNode):
+            stack.append(")")
+            stack.append(node.body)
+            for var, val in node.bindings:
+                stack.append(")")
+                stack.append(val)
+                stack.append(var)
+                stack.append("(")
+            stack.append("(let (")
+            continue
+
+        if isinstance(node, QuantNode):
+            stack.append(node.debug_format_quant())
+            continue
+
+        if isinstance(node, AppNode):
+            stack.append(")")
+            for child in reversed(node.children):
+                stack.append(child)
+            stack.append("(" + node.name)
+            continue
+
+        if isinstance(node, NodeRef):
+            result.append(str(node))
+            continue
+
+        if isinstance(node, QuantRef):
+            result.append(str(node))
+            continue
+
+        assert False, f"Unknown node type: {type(node)}"
+    result = " ".join(result)
+    result = result.replace(" )", ")").replace("( ", "(")
+    return result
