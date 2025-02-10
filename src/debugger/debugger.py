@@ -18,18 +18,18 @@ def _run_edit(ei: EditInfo):
     ei.run_query()
     return ei
 
+
 def resolve_input_path(input_path):
     if not os.path.exists(input_path):
         log_warn(f"[init] query path {input_path} not found")
-        sys.exit(1)    
+        sys.exit(1)
     if input_path.startswith("dbg/"):
-        assert not input_path.endswith(".smt2") 
+        assert not input_path.endswith(".smt2")
         meta = json.load(open(f"{input_path}/meta.json", "r"))
         input_path = meta["given_query"]
         log_info(f"[init] resolved to {input_path}")
-    else:
-        log_info(f"[init] query path: {input_path}")
     return input_path
+
 
 class Debugger3:
     def __init__(
@@ -67,13 +67,15 @@ class Debugger3:
         self.edits_meta = f"{self.sub_root}/edits.json"
         self.edit_dir = f"{self.sub_root}/edits/"
 
-        self.singleton_project = "singleton_" + self.name_hash
-        self.singleton_dir = f"data/projs/{self.singleton_project}/base.z3"
-        self.singleton_filtered_dir = self.singleton_dir.replace(
-            "/base.z3", ".filtered/base.z3"
-        )
-        self.splitter_project = "splitter_" + self.name_hash
-        self.splitter_dir = f"data/projs/{self.splitter_project}/base.z3"
+        self.singleton_name = "singleton_" + self.name_hash
+
+        self.singleton_dir = f"data/projs/{self.singleton_name}/base.z3"
+        self.filtered_dir = f"data/projs/{self.singleton_name}.filtered/base.z3"
+        self.singleton_db_dir = f"data/dbs/{self.singleton_name}/base.z3"
+        self.filtered_db_dir = f"data/dbs/{self.singleton_name}.filtered/base.z3"
+
+        self.splitter_name = "splitter_" + self.name_hash
+        self.splitter_dir = f"data/projs/{self.splitter_name}/base.z3"
 
         self.__init_dirs(clear_all)
         self.__init_edits(clear_edits)
@@ -112,11 +114,16 @@ class Debugger3:
         if not reset:
             return
 
-        log_info(f"[init] removing singleton project {self.singleton_project}")
-        remove_dir("data/projs/" + self.singleton_project)
-        remove_dir("data/projs/" + self.singleton_project + ".filtered")
-        remove_dir("data/dbs/" + self.singleton_project)
-        remove_dir("data/dbs/" + self.singleton_project + ".filtered")
+        log_info(f"[init] removing singleton project {self.singleton_name}")
+
+        for d in [
+            self.singleton_dir,
+            self.filtered_dir,
+            self.singleton_db_dir,
+            self.filtered_db_dir,
+        ]:
+            if os.path.exists(d):
+                os.system(f"rm -rf {d}")
 
     def __init_edits(self, clear_edits):
         self.__edit_infos = dict()
@@ -233,10 +240,12 @@ class Debugger3:
             self.register_singleton()
 
         file_size = os.path.getsize(self.orig_path) / 1024
-        total_size = file_size * len(self.__edit_infos) / 1024 / 1024            
+        total_size = file_size * len(self.__edit_infos) / 1024 / 1024
 
         if total_size > 10:
-            log_error(f"[edit] {self.singleton_dir} aborted, {total_size:.2f}G may be used!")
+            log_error(
+                f"[edit] {self.singleton_dir} aborted, {total_size:.2f}G may be used!"
+            )
             return
 
         log_info(f"[edit] estimated size: {total_size:.2f}G")
@@ -254,7 +263,9 @@ class Debugger3:
                 continue
             self.create_edit_query(ei)
 
-        log_info(f"[edit] [proj] {self.singleton_project} has {len(list_smt2_files(self.singleton_dir))} queries")
+        log_info(
+            f"[edit] [proj] {self.singleton_name} has {len(list_smt2_files(self.singleton_dir))} queries"
+        )
         return self.singleton_dir
 
     def get_singleton_status(self):
