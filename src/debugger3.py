@@ -114,6 +114,12 @@ def main():
         skip_core=args.skip_core,
     )
 
+    if args.reset_proof_cache:
+        dbg.reset_proof_cache()
+
+    if args.collect_garbage:
+        dbg.collect_garbage()
+
     if args.print_status:
         dbg.print_status()
         return
@@ -129,16 +135,6 @@ def main():
     if args.reroll:
         dbg.set_proof()
         return
-
-    if args.collect_garbage:
-        dbg.collect_garbage()
-        return
-
-    if args.reset_proof_cache:
-        dbg.reset_proof_cache()
-        return
-
-    dbg.print_status()
 
 if __name__ == "__main__":
     main()

@@ -137,6 +137,7 @@ class QuantNode(TreeNode):
         self.args = args
         self.body = None
         self.attrs = attrs
+        assert isinstance(self.attrs, list)
         self.qid = None
         self.skolemid = None
 
@@ -145,7 +146,6 @@ class QuantNode(TreeNode):
                 self.qid = v
             elif k == ":skolemid":
                 self.skolemid = v
-
             assert isinstance(k, str)
             assert isinstance(v, str)
 
@@ -207,11 +207,11 @@ class ProofNode(AppNode):
         super().__init__(name, children)
 
 
-def debug_print_node(root: TreeNode, attrs=False):
-    print(debug_format_node(root, attrs))
+def debug_print_node(root: TreeNode):
+    print(debug_format_node(root))
 
 
-def debug_format_node(root: TreeNode, attrs=False) -> str:
+def debug_format_node(root: TreeNode) -> str:
     stack = [root] 
     result = []
 

@@ -187,6 +187,8 @@ class Debugger3:
         assert self.chosen_proof_path is not None
         log_debug(f"[edit] proof path: {self.chosen_proof_path}")
         log_debug(f"[edit] trace path: {self.chosen_trace_path}")
+        if self.__clear_proof_cache:
+            log_info("[edit] clearing proof cache")
         proof = ProofAnalyzer.from_proof_file(
             self.chosen_proof_path, clear=self.__clear_proof_cache
         )
@@ -242,7 +244,7 @@ class Debugger3:
         file_size = os.path.getsize(self.orig_path) / 1024
         total_size = file_size * len(self.__edit_infos) / 1024 / 1024
 
-        if total_size > 10:
+        if total_size > 15:
             log_error(
                 f"[edit] {self.singleton_dir} aborted, {total_size:.2f}G may be used!"
             )
