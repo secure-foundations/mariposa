@@ -17,8 +17,6 @@ import traceback
 import subprocess
 import multiprocessing
 
-import pyparsing as pp
-
 class Exp: ...
 
 @dataclass(frozen=True)
@@ -65,36 +63,92 @@ class Atom(Exp):
     def normalize(self) -> Atom:
         return self
 
-def smtlib2_parser():
-    pp.ParserElement.setDefaultWhitespaceChars(" \t\r\n")
+def tokenize_smtlib2(s: str) -> list[tuple[int, str]]:
+    """
+    A simple tokenizer for SMT-LIB 2
+    Return a list of tokens (with comments ignored)
+    """
 
-    comment = pp.Regex(r";[^\n]*").suppress()
+    tokens = [] # (position, token)
+    i = 0
 
-    exp = pp.Forward()
+    in_string = False
+    string_start = 0
+    string_buffer: str = ""
 
-    # String literal
-    string_literal = pp.QuotedString('"', escChar='\\', unquoteResults=False)
-    string_literal.setParseAction(lambda tokens: Atom(tokens[0]))
+    while i < len(s):
+        c = s[i]
 
-    # Symbol
-    symbol = pp.Word(pp.alphanums + "+-*/_=<>!?:|.%$&@#'")
-    symbol.setParseAction(lambda tokens: Atom(tokens[0]))
+        if in_string:
+            # In a string literal
+            if c == '"':
+                in_string = False
+                tokens.append((string_start, string_buffer + c))
+                string_buffer = ""
+                i += 1
+            elif c == "\\":
+                assert i + 1 < len(s), "unexpected end of string"
+                string_buffer += c + s[i + 1]
+                i += 2
+            else:
+                string_buffer += c
+                i += 1
+        else:
+            if c == ";":
+                # Skip comments
+                i += len(s[i:].partition("\n")[0])
+            elif c == "(" or c == ")":
+                tokens.append((i, c))
+                i += 1
+            elif c.isspace():
+                # Skip all whitespaces
+                i += len(s[i:]) - len(s[i:].lstrip())
+            elif c == '"':
+                in_string = True
+                string_start = i
+                string_buffer = c
+                i += 1
+            else:
+                # Take characters until space or ( or )
+                old_i = i
+                while i < len(s) and s[i] != "(" and s[i] != ")" and not s[i].isspace():
+                    i += 1
+                tokens.append((old_i, s[old_i:i]))
 
-    # Application
-    app = pp.Group(pp.Suppress("(") + pp.ZeroOrMore(exp) + pp.Suppress(")"))
-    app.setParseAction(lambda tokens: Application(tuple(tokens[0])))
-    exp <<= string_literal | symbol | app
-    exp.ignore(comment)
-
-    exps = pp.OneOrMore(exp)
-
-    return exps
-
-SMTLIB2_PARSER = smtlib2_parser()
-del smtlib2_parser
+    return tokens
 
 def parse_smtlib2(file_path: str) -> list[Exp]:
-    return SMTLIB2_PARSER.parseFile(file_path, parseAll=True)
+    """
+    Parse an SMT-LIB 2 query
+    """
+
+    top_level = []
+
+    # Stack record a nested list of unclosed applications
+    stack = []
+
+    with open(file_path) as f:
+        # TODO: assuming string literals do not include newlines
+
+        for line_num, line in enumerate(f):
+            for pos, token in tokenize_smtlib2(line):
+                if token == "(":
+                    stack.append([])
+
+                elif token == ")":
+                    assert len(stack) != 0, f"{file_path}:{line_num}:{pos}: unexpected ')'"
+
+                    exp = Application(tuple(stack.pop()))
+                    if len(stack) == 0:
+                        top_level.append(exp)
+                    else:
+                        stack[-1].append(exp)
+
+                else:
+                    assert len(stack) != 0, f"{file_path}:{line_num}:{pos}: atoms can not be at the top level"
+                    stack[-1].append(Atom(token))
+
+    return top_level
 
 def supports_color():
     """
@@ -133,31 +187,30 @@ def validate_edits(
         original = [ cmd.normalize() for cmd in original ]
         edited = [ cmd.normalize() for cmd in edited ]
 
-        # If no_goal is set, remove the last assertion in both queries
-        # (assuming they are equal)
+        # Remove the last assertion (goal assertion) in both queries
+        # Later we also check that edited_goal => original_goal if they are different
         original_goal = None
         edited_goal = None
-        if args.no_goal:
-            for i in range(len(original) - 1, -1, -1):
-                if original[i].is_app("assert"):
-                    original_goal = original.pop(i)
-                    break
 
-            for i in range(len(edited) - 1, -1, -1):
-                if edited[i].is_app("assert"):
-                    edited_goal = edited.pop(i)
-                    break
+        for i in range(len(original) - 1, -1, -1):
+            if original[i].is_app("assert"):
+                original_goal = original.pop(i)
+                break
 
-            assert original_goal is not None, "no goal assertion found in the original query"
-            assert edited_goal is not None, "no goal assertion found in the edited query"
-            assert original_goal == edited_goal, "goal assertions are not equal"
+        for i in range(len(edited) - 1, -1, -1):
+            if edited[i].is_app("assert"):
+                edited_goal = edited.pop(i)
+                break
+
+        assert original_goal is not None, "no goal assertion found in the original query"
+        assert edited_goal is not None, "no goal assertion found in the edited query"
 
         original_cmd_set = set(original)
         original_assert_set = { cmd.args[1] for cmd in original if cmd.is_app("assert") }
 
         with (
             tempfile.NamedTemporaryFile(mode="w", suffix=".smt2")
-            if args.log_smt is None else open(args.log_smt, "w")
+            if not hasattr(args, "log_smt") or args.log_smt is None else open(args.log_smt, "w")
         ) as new_query:
             eprint_status("generating new query...")
 
@@ -232,18 +285,35 @@ def validate_edits(
                 for cmd in edited
                 if cmd.is_app("assert") and len(cmd.args) == 2 and (
                     # If pruning is enabled, we don't consider common assertions in both files
-                    not args.prune or cmd.args[1] not in original_assert_set
+                    args.no_prune or cmd.args[1] not in original_assert_set
                 )
             )
+
+            if original_goal != edited_goal:
+                eprint(f"[warning] goal is edited ({original_path} => {edited_path})")
+
             print(Application((
                 Atom("assert"),
                 Application((
                     Atom("not"),
                     Application((
                         Atom("and"),
-                        # To make sure all the trigger terms are still present,
-                        # if no_goal is set, we still put in the original goal
-                        Application((Atom("not"), original_goal.args[1])),
+
+                        # If the goal itself is edited, we need to prove that the edited goal => original goal
+                        # NOTE: adding another negation here since the goals are already negated
+                        Atom("true") if original_goal == edited_goal else
+                        Application((
+                            Atom("=>"),
+                            Application((Atom("not"), edited_goal.args[1])),
+                            Application((Atom("not"), original_goal.args[1])),
+                        )),
+
+                        # (Optional) to make sure all the trigger terms are still present,
+                        # if no_goal is set, we still put in the original goal.
+                        # However, this makes the obligation harder to prove.
+                        # NOTE: adding another negation here since the goal is already negated
+                        Atom("true") if not args.prove_edited_goal else
+                        Application((Atom("not"), edited_goal.args[1])),
 
                         *additional_asserts,
                     )),
@@ -284,8 +354,8 @@ def validate_edits(
         return False
 
 def set_common_arguments(parser: argparse.ArgumentParser):
-    parser.add_argument("--prune", action="store_true", default=False, help="Prune common assertions")
-    parser.add_argument("--no-goal", action="store_true", default=False, help="Do not include the last assertion")
+    parser.add_argument("--no-prune", action="store_true", default=False, help="Do not prune common assertions")
+    parser.add_argument("--prove-edited-goal", action="store_true", default=False, help="Also prove edited goal in the resulting query")
     parser.add_argument("--z3", default="z3", help="Path to Z3")
     parser.add_argument("--timeout", type=float, default=5.0, help="Timeout for Z3")
 
