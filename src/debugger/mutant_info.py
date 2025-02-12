@@ -263,4 +263,3 @@ class MutantInfo:
     def get_qi_counts(self):
         assert self.has_trace()
         return get_trace_stats_axiom_profiler(self.trace_path)
-

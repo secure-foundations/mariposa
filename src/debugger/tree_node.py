@@ -71,13 +71,17 @@ class NodeRef:
         return hash(self._index)
 
     def __eq__(self, other):
-        return self._index == other._index
+        return hash(self) == hash(other)
 
     def export_symbol(self):
         return f"h!{str(self._index)}"
 
     def __str__(self):
         return f"@[{self.export_symbol()}]"
+
+    @property
+    def index(self):
+        return self._index
 
 class QuantRef(NodeRef):
     def __init__(self, index, quant_type: QuantType):

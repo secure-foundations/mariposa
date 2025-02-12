@@ -7,6 +7,7 @@ from tabulate import tabulate
 from base.defs import DEBUG_ROOT, MARIPOSA
 from debugger.edit_info import EditAction, EditInfo
 from debugger.file_builder import FileBuilder
+from debugger.mutant_info import MutantInfo
 from debugger.pool_utils import run_with_pool
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.informed_editor import InformedEditor
@@ -20,14 +21,14 @@ def _run_edit(ei: EditInfo):
 
 
 def resolve_input_path(input_path):
-    if not os.path.exists(input_path):
-        log_warn(f"[init] query path {input_path} not found")
-        sys.exit(1)
-    if input_path.startswith("dbg/"):
+    if input_path.startswith("dbg/") or input_path.startswith("./dbg/"):
         assert not input_path.endswith(".smt2")
         meta = json.load(open(f"{input_path}/meta.json", "r"))
         input_path = meta["given_query"]
         log_info(f"[init] resolved to {input_path}")
+    if not os.path.exists(input_path):
+        log_warn(f"[init] query path {input_path} not found")
+        sys.exit(1)
     return input_path
 
 
@@ -389,7 +390,10 @@ class Debugger3:
             print("chosen proof:", self.chosen_proof_path)
             print("chosen trace:", self.chosen_trace_path)
 
-    def build_trace_graph(self, clear=True):
+    def get_trace_info(self) -> MutantInfo:
         assert self.chosen_trace_path is not None
-        mi = self._builder.get_trace_mutant_info(self.chosen_trace_path)
+        return self._builder.get_trace_mutant_info(self.chosen_trace_path)
+
+    def build_trace_graph(self, clear=True):
+        mi = self.get_trace_info()
         return mi.build_inst_graph(clear)
