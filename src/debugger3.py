@@ -107,6 +107,12 @@ def main():
         action="store_true",
         help="build trace graph",
     )
+    parser.add_argument(
+        "--build-ratios",
+        default=False,
+        action="store_true",
+        help="build sub ratios",
+    )
     args = parser.parse_args()
 
     dbg = Debugger3(
@@ -140,6 +146,9 @@ def main():
     
     if args.print_status:
         dbg.print_status()
+
+    if args.build_ratios:
+        dbg.build_trace_graph_ratios()
 
 if __name__ == "__main__":
     main()

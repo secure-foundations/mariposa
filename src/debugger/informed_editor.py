@@ -261,3 +261,11 @@ class InformedEditor(QueryEditor):
                 ]
             )
         return DataFrame(table, columns=["qname", "trace_count", "proof_count", "skolem"])
+    
+    def get_sub_ratios(self):
+        ratios = dict()
+        graph = self.trace.build_inst_graph()
+        for root_name in self.list_qnames(root_only=True):
+            t_group = self.trace_stats.get_group_stat(root_name)
+            ratios[root_name] = graph.compute_sub_ratios(t_group.keys())
+        return ratios

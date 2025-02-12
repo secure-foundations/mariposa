@@ -11,6 +11,7 @@ from debugger.mutant_info import MutantInfo
 from debugger.pool_utils import run_with_pool
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.informed_editor import InformedEditor
+from utils.cache_utils import load_cache_or
 from utils.query_utils import find_verus_procedure_name
 from utils.system_utils import *
 
@@ -397,3 +398,8 @@ class Debugger3:
     def build_trace_graph(self, clear=True):
         mi = self.get_trace_info()
         return mi.build_inst_graph(clear)
+
+    def build_trace_graph_ratios(self, clear=True):
+        def _cache_ratios():
+            return self.editor.get_sub_ratios()
+        load_cache_or(self.name_hash + ".ratios", _cache_ratios, clear)
