@@ -145,7 +145,7 @@ class Debugger3:
             ei = EditInfo.from_dict(ei)
             self.__edit_infos[ei.get_id()] = ei
 
-        self.save_edits_meta()
+        # self.save_edits_meta()
 
     def __init_meta(self):
         if not os.path.exists(self.query_meta):
@@ -399,7 +399,8 @@ class Debugger3:
         mi = self.get_trace_info()
         return mi.build_inst_graph(clear)
 
-    def build_trace_graph_ratios(self, clear=True):
+    def build_trace_graph_ratios(self, clear=False):
         def _cache_ratios():
             return self.editor.get_sub_ratios()
-        load_cache_or(self.name_hash + ".ratios", _cache_ratios, clear)
+        name = self.name_hash + ".ratios"
+        return load_cache_or(name, _cache_ratios, clear)
