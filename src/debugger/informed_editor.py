@@ -2,7 +2,7 @@ from typing import Dict, Set
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.mutant_info import MutantInfo
 from debugger.edit_info import EditAction, EditInfo
-from debugger.quant_graph import TheirAnalysis, TheirParser
+from debugger.inst_graph import TraceInstGraph, TheirParser
 from debugger.query_editor import QueryEditor
 from debugger.query_loader import QueryLoader, Z3QuantWrapper
 from utils.system_utils import log_debug, log_warn
@@ -228,22 +228,19 @@ class InformedEditor(QueryEditor):
         if qname in self.ignored:
             log_warn(f"[debug] qid {qname} is ignored")
             return
+
         qii = self.proof.get_inst_info_under_qname(qname)
 
         for inst in qii.get_all_insts():
             print(self.proof.dump_node(inst))
 
-        print(qii.get_all_skolem_deps())
-        print("")
+        deps = qii.get_all_skolem_deps()
 
-    def get_rankings(self):
-        self.trace.build_graph_log()
-        self.trace.build_stats_log()
-        ta = TheirAnalysis(TheirParser(self.trace.graph_path, self.trace.stats_path))
-        for qname, action in self.get_singleton_actions().items():
-            t_group = self.trace_stats.get_group_stat(qname)
-            ta.compute_sub_ratios(t_group.keys(), debug=True)
-            break
+        if len(deps) == 0:
+            return
+
+        for dep in deps:
+            print(dep)
 
     def get_inst_report(self, skip_ignored=True):
         table = []

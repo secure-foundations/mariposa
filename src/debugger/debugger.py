@@ -388,3 +388,8 @@ class Debugger3:
         if self.chosen_proof_path:
             print("chosen proof:", self.chosen_proof_path)
             print("chosen trace:", self.chosen_trace_path)
+
+    def build_trace_graph(self, clear=True):
+        assert self.chosen_trace_path is not None
+        mi = self._builder.get_trace_mutant_info(self.chosen_trace_path)
+        return mi.build_inst_graph(clear)

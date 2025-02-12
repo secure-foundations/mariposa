@@ -22,11 +22,26 @@ class InstBlame:
         self.reasons[reason_qidx] += count
         self.blamed_count += count
 
+    def merge(self, other):
+        assert self.qidx == other.qidx
+        self.cost += other.cost
+        for reason_qidx, count in other.reasons.items():
+            self.add_reason(reason_qidx, count)
+
+
 def read_file_into_list(file_name):
     lines = open(file_name, "r").read().split("\n")
     if lines[-1] == "":
         lines = lines[:-1]
     return lines
+
+
+def parse_qidx(item):
+    _qidx = item
+    assert _qidx[0] == "q"
+    qidx = int(_qidx[1:])
+    return qidx
+
 
 class TheirParser:
     def __init__(self, graph_path, stats_path):
@@ -42,19 +57,21 @@ class TheirParser:
         line_no += 1
 
         cur = None
-        
+
         blames = []
 
         while line_no < len(lines):
             line = lines[line_no]
             if line[0] == "\t":
                 items = line[1:].split(" ")
-                name, qidx, count = items[0], int(items[1]), int(items[2])
+                qidx = parse_qidx(items[1])
+                name, count = items[0], int(items[2])
                 self.__register_name(qidx, name)
                 cur.add_reason(qidx, count)
             else:
                 items = line.split(" ")
-                name, qidx, cost = items[0], int(items[1]), float(items[2])
+                qidx = parse_qidx(items[1])
+                name, cost = items[0], float(items[2])
                 self.__register_name(qidx, name)
                 cur = InstBlame(qidx, cost)
                 blames.append(cur)
@@ -79,9 +96,11 @@ class TheirParser:
 
         for qidx, group in grouped.items():
             non_zero_items = [b for b in group if b.cost != 0]
-            assert len(non_zero_items) <= 1
-            if len(non_zero_items) == 1:
-                kept[qidx] = non_zero_items[0]
+            if len(non_zero_items) >= 1:
+                k = non_zero_items[0]
+                for b in non_zero_items[1:]:
+                    k.merge(b)
+                kept[qidx] = k
 
         self.blames = kept
         kept = set(kept.keys())
@@ -100,14 +119,17 @@ class TheirParser:
             if not start:
                 continue
             items = line.split(" ")
-            name, qidx, count = items[0], int(items[1]), int(items[2])
+            name, qidx, count = items[0], parse_qidx(items[1]), int(items[2])
             if qidx not in self.blames:
-                assert count == 0
+                if count != 0:
+                    print(f"qidx {qidx} not found in blames", name, count)
                 continue
             self.blames[qidx].stat_count = count
 
-class TheirAnalysis:
-    def __init__(self, parser: TheirParser):
+
+class TraceInstGraph:
+    def __init__(self, graph_path, stats_path):
+        parser = TheirParser(graph_path, stats_path)
         self.qidx_to_name = parser.qidx_to_name
         self.name_to_qidxs = dict()
 
@@ -124,13 +146,13 @@ class TheirAnalysis:
 
             for reason_qidx, count in blame.reasons.items():
                 # assert blame.stat_count != 0 and blame.blamed_count >= count
-                self.graph.add_edge(reason_qidx, qidx, ratio=count/blame.blamed_count)
+                self.graph.add_edge(reason_qidx, qidx, ratio=count / blame.blamed_count)
 
     def get_qidx_checked(self, name):
         qidxs = self.name_to_qidxs[name]
         assert len(qidxs) == 1
         return list(qidxs)[0]
-    
+
     def debug_name(self, name):
         qidx = self.get_qidx_checked(name)
         print(f"{name} [{qidx}]:")
@@ -142,7 +164,7 @@ class TheirAnalysis:
             print(f"\t{self.qidx_to_name[reason_qidx]}: {count}")
         print("successors:")
         for child in self.graph.successors(qidx):
-            print(f"\t{self.qidx_to_name[child]}: {self.graph[qidx][child]['weight']}")
+            print(f"\t{self.qidx_to_name[child]}: {self.graph[qidx][child]['ratio']}")
 
     def get_inst_count(self, name):
         count = 0
@@ -163,12 +185,9 @@ class TheirAnalysis:
                 reached |= nx.dfs_tree(self.graph, qidx).nodes
                 sub_ratios[qidx] = 1
                 converged.add(qidx)
-    
+
         iterations = 0
         last = dict()
-
-        print(converged)
-        print(reached)
 
         while len(converged) < len(reached):
             for qid in reached:
@@ -248,7 +267,7 @@ class TheirAnalysis:
 
         total = 0
 
-        for (qid, ratio) in self.compute_sub_root_ratios(start).items():
+        for qid, ratio in self.compute_sub_root_ratios(start).items():
             if ratio > 1:
                 assert np.isclose(ratio, 1)
                 ratio = 1
@@ -259,11 +278,3 @@ class TheirAnalysis:
             total += ratio * self.blames[qid].cost
 
         return total
-
-    # def estimate_all_costs(self, cost_func):
-    #     costs = dict()
-    #     for qid in tqdm(self.blames):
-    #         # print(qid)
-    #         costs[qid] = cost_func(qid)
-    #     # ranked = sorted(costs.items(), key=lambda x: x[1], reverse=True)
-    #     return costs

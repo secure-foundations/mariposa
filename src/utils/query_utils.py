@@ -299,7 +299,7 @@ def get_trace_stats_axiom_profiler(trace_path):
     # log_info(f"parsing trace: {trace_path}")
     lines = subprocess_run(
         [
-            "/home/yizhou7/axiom-profiler-2.ours/target/release/smt-log-parser",
+            "/home/yizhou7/axiom-profiler-2/target/release/smt-scope",
             "stats",
             trace_path,
         ], 
