@@ -253,7 +253,7 @@ class MutantInfo:
         assert os.path.exists(self.stats_path)
         return True
 
-    def build_inst_graph(self, clear=True) -> TraceInstGraph:
+    def build_inst_graph(self, clear=False) -> TraceInstGraph:
         assert self.has_trace()
         self.build_graph_log(clear)
         self.build_stats_log(clear)
