@@ -22,6 +22,8 @@ def _run_edit(ei: EditInfo):
 
 
 def resolve_input_path(input_path):
+    if len(input_path) == 10:
+        input_path = f"dbg/{input_path}"
     if input_path.startswith("dbg/") or input_path.startswith("./dbg/"):
         assert not input_path.endswith(".smt2")
         meta = json.load(open(f"{input_path}/meta.json", "r"))
@@ -395,12 +397,12 @@ class Debugger3:
         assert self.chosen_trace_path is not None
         return self._builder.get_trace_mutant_info(self.chosen_trace_path)
 
-    def build_trace_graph(self, clear=True):
+    def get_trace_graph(self, clear=False):
         mi = self.get_trace_info()
-        return mi.build_inst_graph(clear)
+        return mi.get_trace_graph(clear)
 
-    def build_trace_graph_ratios(self, clear=False):
-        def _cache_ratios():
-            return self.editor.get_sub_ratios()
+    def get_trace_graph_ratios(self, clear=False):
+        def _compute_ratios():
+            return self.editor.get_sub_ratios(True)
         name = self.name_hash + ".ratios"
-        return load_cache_or(name, _cache_ratios, clear)
+        return load_cache_or(name, _compute_ratios, clear)

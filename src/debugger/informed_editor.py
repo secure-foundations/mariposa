@@ -261,11 +261,11 @@ class InformedEditor(QueryEditor):
                 ]
             )
         return DataFrame(table, columns=["qname", "trace_count", "proof_count", "skolem"])
-    
-    def get_sub_ratios(self):
+
+    def get_sub_ratios(self, clear):
         from tqdm import tqdm
         sub_ratios = dict()
-        graph = self.trace.build_inst_graph()
+        graph = self.trace.get_trace_graph(clear)
         for root_name in tqdm(self.list_qnames(root_only=True)):
             if root_name in self.ignored:
                 continue

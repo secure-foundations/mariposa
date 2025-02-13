@@ -127,7 +127,7 @@ def main():
     )
 
     if args.build_trace_graph:
-        dbg.build_trace_graph()
+        dbg.get_trace_graph()
 
     if args.reset_proof_cache:
         dbg.reset_proof_cache()
@@ -148,7 +148,7 @@ def main():
         dbg.print_status()
 
     if args.build_ratios:
-        dbg.build_trace_graph_ratios()
+        dbg.get_trace_graph_ratios(True)
 
 if __name__ == "__main__":
     main()

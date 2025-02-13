@@ -266,7 +266,10 @@ class TraceInstGraph(nx.DiGraph):
         return ratios
 
     def aggregate_scores(self, sub_ratios):
-        score = 0
+        if len(sub_ratios) == 0:
+            return 0
+        scores = []
         for qidx, ratio in sub_ratios.items():
-            score += ratio * self.blames[qidx].stat_count
-        return score
+            scores.append((ratio, self.blames[qidx].stat_count))
+        scores = np.array(scores)
+        return np.sum(scores[:, 0] * scores[:, 1])

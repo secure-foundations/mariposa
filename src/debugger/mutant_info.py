@@ -54,6 +54,7 @@ class MutantInfo:
         self.proof_time = -1
 
         self.discard = False
+        self._graph = None
 
     @staticmethod
     def from_dict(d):
@@ -253,12 +254,14 @@ class MutantInfo:
         assert os.path.exists(self.stats_path)
         return True
 
-    def build_inst_graph(self, clear=False) -> TraceInstGraph:
+    def get_trace_graph(self, clear=False) -> TraceInstGraph:
         assert self.has_trace()
+        if self._graph is not None and not clear:
+            return self._graph
         self.build_graph_log(clear)
         self.build_stats_log(clear)
-        ta = TraceInstGraph(self.graph_path, self.stats_path)
-        return ta
+        self._graph = TraceInstGraph(self.graph_path, self.stats_path)
+        return self._graph
 
     def get_qi_counts(self):
         assert self.has_trace()

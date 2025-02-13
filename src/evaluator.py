@@ -53,7 +53,7 @@ class DebuggerStatus(Enum):
 
     SINGLETON_NOT_RAN = "singleton not ran"
     SINGLETON_TESTED_EMPTY = "singleton tested empty"
-    
+
     SINGLETON_NOT_FILTERED = "singleton not filtered"
     FILTERED_NOT_RAN = "filtered but not ran"
     SPLITTER_NOT_CREATED = "splitter not created"
@@ -88,7 +88,9 @@ def try_get_singleton_analyzer(dbg: Debugger3):
         return DebuggerStatus.SINGLETON_TESTED_EMPTY
 
     if tested_count < registered:
-        log_warn(f"[eval] {dbg.name_hash} tested count {tested_count} < registered {registered}")
+        log_warn(
+            f"[eval] {dbg.name_hash} tested count {tested_count} < registered {registered}"
+        )
 
     log_check(tested_count <= registered, "[eval] tested count > registered!")
 
@@ -98,7 +100,7 @@ def try_get_singleton_analyzer(dbg: Debugger3):
         ba = SingletonAnalyzer(e_singleton, qa)
     except:
         return DebuggerStatus.SINGLETON_NOT_RAN
-    
+
     return ba
 
 
@@ -271,29 +273,30 @@ class Evaluator(Debugger3):
         items.append(self.filtered_db_dir)
         return items
 
+
 class BenchViewer:
     def __init__(self, queries):
-        sts = Categorizer()
-        self.reviewers: Dict[str, Evaluator] = dict()
-        pool = multiprocessing.Pool(4)
+        status = Categorizer()
+
+        self.__name_hashes = dict()
+        self.__reviewers: Dict[str, Evaluator] = dict()
+        pool = multiprocessing.Pool(8)
 
         reviewers = pool.map(Evaluator, queries)
 
         for r in reviewers:
-            self.reviewers[r.given_query_path] = r
-            sts.add_item(r.status, r.given_query_path)
+            self.__reviewers[r.given_query_path] = r
+            self.__name_hashes[r.name_hash] = r.given_query_path
+            status.add_item(r.status, r.given_query_path)
 
-        sts.finalize()
-        self.status = sts
+        status.finalize()
+        self.status = status
 
         self.fixable = set()
         self.unfixable = set()
 
-        self.__analyze_finished()
-
-    def __analyze_finished(self):
         for q in self.status[DebuggerStatus.FINISHED]:
-            r = self.reviewers[q]
+            r = self.__reviewers[q]
             num_fixes = len(r.get_stabilized())
             if num_fixes > 0:
                 self.fixable.add(q)
@@ -301,7 +304,18 @@ class BenchViewer:
                 self.unfixable.add(q)
 
     def __getitem__(self, key):
-        return self.reviewers[key]
+        if key in self.__name_hashes:
+            key = self.__name_hashes[key]
+        return self.__reviewers[key]
+
+    def __iter__(self):
+        return iter(self.__reviewers)
+
+    def items(self):
+        return self.__reviewers.items()
+    
+    def keys(self):
+        return self.__reviewers.keys()
 
 
 def main():
@@ -322,6 +336,6 @@ def main():
         eva.collect_garbage()
         return
 
+
 if __name__ == "__main__":
     main()
-
