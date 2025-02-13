@@ -7,9 +7,11 @@ from tabulate import tabulate
 from base.defs import DEBUG_ROOT, MARIPOSA
 from debugger.edit_info import EditAction, EditInfo
 from debugger.file_builder import FileBuilder
+from debugger.mutant_info import MutantInfo
 from debugger.pool_utils import run_with_pool
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.informed_editor import InformedEditor
+from utils.cache_utils import load_cache_or
 from utils.query_utils import find_verus_procedure_name
 from utils.system_utils import *
 
@@ -20,14 +22,16 @@ def _run_edit(ei: EditInfo):
 
 
 def resolve_input_path(input_path):
-    if not os.path.exists(input_path):
-        log_warn(f"[init] query path {input_path} not found")
-        sys.exit(1)
-    if input_path.startswith("dbg/"):
+    if len(input_path) == 10:
+        input_path = f"dbg/{input_path}"
+    if input_path.startswith("dbg/") or input_path.startswith("./dbg/"):
         assert not input_path.endswith(".smt2")
         meta = json.load(open(f"{input_path}/meta.json", "r"))
         input_path = meta["given_query"]
         log_info(f"[init] resolved to {input_path}")
+    if not os.path.exists(input_path):
+        log_warn(f"[init] query path {input_path} not found")
+        sys.exit(1)
     return input_path
 
 
@@ -143,7 +147,7 @@ class Debugger3:
             ei = EditInfo.from_dict(ei)
             self.__edit_infos[ei.get_id()] = ei
 
-        self.save_edits_meta()
+        # self.save_edits_meta()
 
     def __init_meta(self):
         if not os.path.exists(self.query_meta):
@@ -187,6 +191,8 @@ class Debugger3:
         assert self.chosen_proof_path is not None
         log_debug(f"[edit] proof path: {self.chosen_proof_path}")
         log_debug(f"[edit] trace path: {self.chosen_trace_path}")
+        if self.__clear_proof_cache:
+            log_info("[edit] clearing proof cache")
         proof = ProofAnalyzer.from_proof_file(
             self.chosen_proof_path, clear=self.__clear_proof_cache
         )
@@ -242,7 +248,7 @@ class Debugger3:
         file_size = os.path.getsize(self.orig_path) / 1024
         total_size = file_size * len(self.__edit_infos) / 1024 / 1024
 
-        if total_size > 10:
+        if total_size > 15:
             log_error(
                 f"[edit] {self.singleton_dir} aborted, {total_size:.2f}G may be used!"
             )
@@ -386,3 +392,17 @@ class Debugger3:
         if self.chosen_proof_path:
             print("chosen proof:", self.chosen_proof_path)
             print("chosen trace:", self.chosen_trace_path)
+
+    def get_trace_info(self) -> MutantInfo:
+        assert self.chosen_trace_path is not None
+        return self._builder.get_trace_mutant_info(self.chosen_trace_path)
+
+    def get_trace_graph(self, clear=False):
+        mi = self.get_trace_info()
+        return mi.get_trace_graph(clear)
+
+    def get_trace_graph_ratios(self, clear=False):
+        def _compute_ratios():
+            return self.editor.get_sub_ratios(True)
+        name = self.name_hash + ".ratios"
+        return load_cache_or(name, _compute_ratios, clear)

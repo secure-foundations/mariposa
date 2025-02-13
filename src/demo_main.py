@@ -8,15 +8,9 @@ from utils.analysis_utils import Categorizer
 from debugger.proof_analyzer import ProofAnalyzer
 from tqdm import tqdm
 
-cmds = []
+proof = "dbg/d8c62df78c/proofs/reseed.1276847554444104271.proof"
 
-for q in tqdm(UNSTABLE_MARIPOSA):
-    # if dbg.get_status()["proofs"] == 0:
-    #     continue
-    # # cmds.append(f"./src/debuggers.py -i {q} --register-singleton")
-    # dbg.check_singleton()
-    # d = Debugger3(q)
-    rev = Evaluator(q)
-    # rev.collect_garbage()
+tt = TermTable(proof)
 
-# print("\n".join(cmds))
+for qref in tt.quant_refs:
+    tt.pprint_node(qref)

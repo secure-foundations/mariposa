@@ -6,7 +6,7 @@ from base.defs import MARIPOSA
 from base.solver import RCode, output_as_rcode
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.z3_utils import dump_z3_proof
-from debugger.quant_graph import *
+from debugger.inst_graph import *
 from utils.query_utils import Mutation, emit_mutant_query, get_trace_stats_axiom_profiler
 from utils.system_utils import log_check, log_debug, log_info, log_warn, subprocess_run
 
@@ -54,6 +54,7 @@ class MutantInfo:
         self.proof_time = -1
 
         self.discard = False
+        self._graph = None
 
     @staticmethod
     def from_dict(d):
@@ -224,11 +225,12 @@ class MutantInfo:
             log_info(f"[graph] building {self.graph_path}")
             subprocess.run(
                 [
-                    "/home/yizhou7/axiom-profiler-2.ours/target/release/smt-log-parser",
+                    "/home/yizhou7/axiom-profiler-2/target/release/smt-scope",
                     "dependencies",
                     self.trace_path,
                 ],
                 stdout=outfile,
+                check=True,
             )
         assert os.path.exists(self.graph_path)
         return True
@@ -242,16 +244,25 @@ class MutantInfo:
             log_info(f"[stats] building {self.stats_path}")
             subprocess.run(
                 [
-                    "/home/yizhou7/axiom-profiler-2.ours/target/release/smt-log-parser",
+                    "/home/yizhou7/axiom-profiler-2/target/release/smt-scope",
                     "stats",
                     self.trace_path,
                 ],
+                check=True,
                 stdout=outfile,
             )
         assert os.path.exists(self.stats_path)
         return True
 
+    def get_trace_graph(self, clear=False) -> TraceInstGraph:
+        assert self.has_trace()
+        if self._graph is not None and not clear:
+            return self._graph
+        self.build_graph_log(clear)
+        self.build_stats_log(clear)
+        self._graph = TraceInstGraph(self.graph_path, self.stats_path)
+        return self._graph
+
     def get_qi_counts(self):
         assert self.has_trace()
         return get_trace_stats_axiom_profiler(self.trace_path)
-

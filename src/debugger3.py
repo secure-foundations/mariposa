@@ -101,6 +101,18 @@ def main():
         action="store_true",
         help="collect garbage",
     )
+    parser.add_argument(
+        "--build-trace-graph",
+        default=False,
+        action="store_true",
+        help="build trace graph",
+    )
+    parser.add_argument(
+        "--build-ratios",
+        default=False,
+        action="store_true",
+        help="build sub ratios",
+    )
     args = parser.parse_args()
 
     dbg = Debugger3(
@@ -114,31 +126,29 @@ def main():
         skip_core=args.skip_core,
     )
 
-    if args.print_status:
-        dbg.print_status()
-        return
-
-    if args.create_singleton:
-        dbg.create_singleton()
-        return
-
-    if args.register_singleton:
-        dbg.register_singleton()
-        return
-
-    if args.reroll:
-        dbg.set_proof()
-        return
-
-    if args.collect_garbage:
-        dbg.collect_garbage()
-        return
+    if args.build_trace_graph:
+        dbg.get_trace_graph()
 
     if args.reset_proof_cache:
         dbg.reset_proof_cache()
-        return
 
-    dbg.print_status()
+    if args.collect_garbage:
+        dbg.collect_garbage()
+
+    if args.register_singleton:
+        dbg.register_singleton()
+
+    if args.create_singleton:
+        dbg.create_singleton()
+
+    if args.reroll:
+        dbg.set_proof()
+    
+    if args.print_status:
+        dbg.print_status()
+
+    if args.build_ratios:
+        dbg.get_trace_graph_ratios(True)
 
 if __name__ == "__main__":
     main()

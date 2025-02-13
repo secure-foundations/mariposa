@@ -71,13 +71,17 @@ class NodeRef:
         return hash(self._index)
 
     def __eq__(self, other):
-        return self._index == other._index
+        return hash(self) == hash(other)
 
     def export_symbol(self):
         return f"h!{str(self._index)}"
 
     def __str__(self):
         return f"@[{self.export_symbol()}]"
+
+    @property
+    def index(self):
+        return self._index
 
 class QuantRef(NodeRef):
     def __init__(self, index, quant_type: QuantType):
@@ -137,6 +141,7 @@ class QuantNode(TreeNode):
         self.args = args
         self.body = None
         self.attrs = attrs
+        assert isinstance(self.attrs, list)
         self.qid = None
         self.skolemid = None
 
@@ -145,7 +150,6 @@ class QuantNode(TreeNode):
                 self.qid = v
             elif k == ":skolemid":
                 self.skolemid = v
-
             assert isinstance(k, str)
             assert isinstance(v, str)
 
@@ -207,11 +211,11 @@ class ProofNode(AppNode):
         super().__init__(name, children)
 
 
-def debug_print_node(root: TreeNode, attrs=False):
-    print(debug_format_node(root, attrs))
+def debug_print_node(root: TreeNode):
+    print(debug_format_node(root))
 
 
-def debug_format_node(root: TreeNode, attrs=False) -> str:
+def debug_format_node(root: TreeNode) -> str:
     stack = [root] 
     result = []
 

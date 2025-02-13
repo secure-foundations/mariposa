@@ -53,7 +53,7 @@ class DebuggerStatus(Enum):
 
     SINGLETON_NOT_RAN = "singleton not ran"
     SINGLETON_TESTED_EMPTY = "singleton tested empty"
-    
+
     SINGLETON_NOT_FILTERED = "singleton not filtered"
     FILTERED_NOT_RAN = "filtered but not ran"
     SPLITTER_NOT_CREATED = "splitter not created"
@@ -88,7 +88,9 @@ def try_get_singleton_analyzer(dbg: Debugger3):
         return DebuggerStatus.SINGLETON_TESTED_EMPTY
 
     if tested_count < registered:
-        log_warn(f"[eval] {dbg.name_hash} tested count {tested_count} < registered {registered}")
+        log_warn(
+            f"[eval] {dbg.name_hash} tested count {tested_count} < registered {registered}"
+        )
 
     log_check(tested_count <= registered, "[eval] tested count > registered!")
 
@@ -98,7 +100,7 @@ def try_get_singleton_analyzer(dbg: Debugger3):
         ba = SingletonAnalyzer(e_singleton, qa)
     except:
         return DebuggerStatus.SINGLETON_NOT_RAN
-    
+
     return ba
 
 
@@ -167,7 +169,7 @@ class Evaluator(Debugger3):
         self.status = DebuggerStatus.FINISHED
         self._ba, self._fa = status
         self._report_cache = self.name_hash + ".report"
-        self.report = None
+        self.report = self.build_report()
 
     def get_command_to_run(self):
         if self.status == DebuggerStatus.SINGLETON_CREATION_UNATTEMPTED:
@@ -249,6 +251,12 @@ class Evaluator(Debugger3):
         for row in report.tested.itertuples():
             edit_path = row.edit_path
             if edit_path in seps:
+                # if not os.path.exists(edit_path):
+                #     base = os.path.basename(edit_path)
+                #     base = base.replace(".smt2", "")
+                #     ei = self.look_up_edit_with_id(base)
+                #     self.editor.edit_by_info(ei)
+                #     assert os.path.exists(edit_path)
                 continue
             if row.result == "error":
                 continue
@@ -265,29 +273,30 @@ class Evaluator(Debugger3):
         items.append(self.filtered_db_dir)
         return items
 
+
 class BenchViewer:
     def __init__(self, queries):
-        sts = Categorizer()
-        self.reviewers: Dict[str, Evaluator] = dict()
-        pool = multiprocessing.Pool(4)
+        status = Categorizer()
+
+        self.__name_hashes = dict()
+        self.__reviewers: Dict[str, Evaluator] = dict()
+        pool = multiprocessing.Pool(8)
 
         reviewers = pool.map(Evaluator, queries)
 
         for r in reviewers:
-            self.reviewers[r.given_query_path] = r
-            sts.add_item(r.status, r.given_query_path)
+            self.__reviewers[r.given_query_path] = r
+            self.__name_hashes[r.name_hash] = r.given_query_path
+            status.add_item(r.status, r.given_query_path)
 
-        sts.finalize()
-        self.status = sts
+        status.finalize()
+        self.status = status
 
         self.fixable = set()
         self.unfixable = set()
 
-        self.__analyze_finished()
-
-    def __analyze_finished(self):
         for q in self.status[DebuggerStatus.FINISHED]:
-            r = self.reviewers[q]
+            r = self.__reviewers[q]
             num_fixes = len(r.get_stabilized())
             if num_fixes > 0:
                 self.fixable.add(q)
@@ -295,39 +304,19 @@ class BenchViewer:
                 self.unfixable.add(q)
 
     def __getitem__(self, key):
-        return self.reviewers[key]
+        if key in self.__name_hashes:
+            key = self.__name_hashes[key]
+        return self.__reviewers[key]
 
-    def get_min_ranks(self):
-        min_ranks = []
-        for q in self.fixable:
-            r = self.reviewers[q]
-            report = r.get_report()
-            indices = report.freq.loc[
-                report.freq["qname"].isin(report.stabilized["qname"])
-            ].index
-            report.freq["rank"] = report.freq["trace_count"].rank(
-                method="min", ascending=False
-            )
-            min_rank = report.freq.loc[indices]["rank"].min()
-            min_ranks.append(min_rank)
-        min_ranks = np.array(min_ranks)
-        return min_ranks
+    def __iter__(self):
+        return iter(self.__reviewers)
 
+    def items(self):
+        return self.__reviewers.items()
+    
+    def keys(self):
+        return self.__reviewers.keys()
 
-# analyzable = len(fixable) + len(no_fixes)
-# total = len(sts.tally)
-
-# def fmt(x, y):
-#     return f"({round(x / y * 100, 1)}%)"
-
-# print("Analyzable", analyzable)
-# print("\t-", "Fixable", len(fixable), fmt(len(fixable), total))
-# print("\t\t-", "top-1", fmt(len(min_ranks[min_ranks == 1]), total))
-# print("\t\t-", "top-3", fmt(len(min_ranks[min_ranks <= 3]), total))
-# print("\t\t-", "top-10", fmt(len(min_ranks[min_ranks <= 10]), total))
-# print("\t-", "No Fixes", len(no_fixes), fmt(len(no_fixes), total))
-# print("No Analyzable", total - analyzable, fmt(total - analyzable, total))
-# print("\t-", "No Proofs", len(sts[DebuggerStatus.NO_PROOF]), fmt(len(sts[DebuggerStatus.NO_PROOF]), total))
 
 def main():
     parser = argparse.ArgumentParser(description="Mariposa Evaluator. ")
@@ -347,6 +336,6 @@ def main():
         eva.collect_garbage()
         return
 
+
 if __name__ == "__main__":
     main()
-

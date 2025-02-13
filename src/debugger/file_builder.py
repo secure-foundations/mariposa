@@ -337,7 +337,7 @@ class FileBuilder:
         for v in self.proofs:
             print(v.proof_path)
 
-    def get_trace_mutant_info(self, trace_path):
+    def get_trace_mutant_info(self, trace_path) -> MutantInfo:
         for mi in self.traces:
             if mi.trace_path == trace_path:
                 return mi

@@ -4,6 +4,7 @@ import re
 import subprocess
 
 from base.defs import MARIPOSA
+from debugger.inst_graph import parse_qidx
 from utils.system_utils import (
     log_check,
     log_info,
@@ -299,7 +300,7 @@ def get_trace_stats_axiom_profiler(trace_path):
     # log_info(f"parsing trace: {trace_path}")
     lines = subprocess_run(
         [
-            "/home/yizhou7/axiom-profiler-2.ours/target/release/smt-log-parser",
+            "/home/yizhou7/axiom-profiler-2/target/release/smt-scope",
             "stats",
             trace_path,
         ], 
@@ -318,7 +319,8 @@ def get_trace_stats_axiom_profiler(trace_path):
             continue
 
         line = line.strip().split(" ")
-        name, qidx, count = line[0], int(line[1]), int(line[2])
+        qidx = parse_qidx(line[1])
+        name, count = line[0], int(line[2])
         assert qidx not in processed
         if name not in counts:
             counts[name] = 0

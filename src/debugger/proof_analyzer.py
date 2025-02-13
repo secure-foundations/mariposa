@@ -57,6 +57,9 @@ class QuantInstInfo:
             res |= deps
         return res
 
+    def get_quant_refs(self):
+        return self.__insts.keys()
+
 class ProofAnalyzer(TermTable):
     def __init__(self, file_path):
         super().__init__(file_path)
