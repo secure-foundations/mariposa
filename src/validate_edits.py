@@ -3,19 +3,52 @@ A script to validate query edits (e.g., instantiations and erasures of quantifie
 """
 
 from __future__ import annotations
+from typing import Generator
 
 from dataclasses import dataclass
+from contextlib import contextmanager
 
 import os
+import csv
 import sys
-sys.setrecursionlimit(10000) # For parsing SMT queries
-
 import json
+import time
 import argparse
 import tempfile
 import traceback
 import subprocess
 import multiprocessing
+
+sys.setrecursionlimit(10**6)
+
+@contextmanager
+def status(msg: str):
+    """
+    A utility context manager to print a status message
+    throughout the execution of a task.
+    """
+    color = supports_color(sys.stderr)
+    try:
+        if color:
+            print(f"\033[2K\r{msg}...", file=sys.stderr, end="", flush=True)
+        # start = time.time()
+        yield
+    finally:
+        if color:
+            print(f"\033[2K\r", file=sys.stderr, end="", flush=True)
+        # print(f"{msg}: {time.time() - start:.2f}", file=sys.stderr)
+
+def supports_color(file: sys.TextIO):
+    """
+    Returns True if the running system's terminal supports color, and False otherwise.
+    """
+    plat = sys.platform
+    supported_platform = plat != "Pocket PC" and (plat != "win32" or "ANSICON" in os.environ)
+    is_a_tty = hasattr(file, "isatty") and file.isatty()
+    return supported_platform and is_a_tty
+
+def eprint(*args, **kwargs) -> None:
+    print(*args, **kwargs, file=sys.stderr, flush=True)
 
 class Exp: ...
 
@@ -28,27 +61,6 @@ class Application(Exp):
 
     def is_app(self, name: str) -> bool:
         return len(self.args) != 0 and self.args[0] == Atom(name)
-
-    def normalize(self) -> Application:
-        """
-        Apply some custom normalization rules, such as removing :qid and :skolemid, and :name
-        """
-        if self.is_app("!"):
-            new_args = []
-            i = 0
-
-            while i < len(self.args):
-                arg = self.args[i]
-                if arg in (Atom(":named"), Atom(":qid"), Atom(":skolemid"), Atom(":weight")):
-                    i += 2
-                else:
-                    new_args.append(arg.normalize())
-                    i += 1
-
-            return Application(tuple(new_args))
-
-        else:
-            return Application(tuple(arg.normalize() for arg in self.args))
 
 @dataclass(frozen=True)
 class Atom(Exp):
@@ -63,13 +75,12 @@ class Atom(Exp):
     def normalize(self) -> Atom:
         return self
 
-def tokenize_smtlib2(s: str) -> list[tuple[int, str]]:
+def tokenize_smtlib2(s: str) -> Generator[tuple[int, str], None, None]:
     """
     A simple tokenizer for SMT-LIB 2
-    Return a list of tokens (with comments ignored)
+    This is a generator of tokens (position, token)
     """
 
-    tokens = [] # (position, token)
     i = 0
 
     in_string = False
@@ -83,7 +94,7 @@ def tokenize_smtlib2(s: str) -> list[tuple[int, str]]:
             # In a string literal
             if c == '"':
                 in_string = False
-                tokens.append((string_start, string_buffer + c))
+                yield string_start, string_buffer + c
                 string_buffer = ""
                 i += 1
             elif c == "\\":
@@ -98,11 +109,12 @@ def tokenize_smtlib2(s: str) -> list[tuple[int, str]]:
                 # Skip comments
                 i += len(s[i:].partition("\n")[0])
             elif c == "(" or c == ")":
-                tokens.append((i, c))
+                yield i, c
                 i += 1
-            elif c.isspace():
+            elif c in " \t\n\r":
                 # Skip all whitespaces
-                i += len(s[i:]) - len(s[i:].lstrip())
+                while i < len(s) and s[i] in " \t\n\r":
+                    i += 1
             elif c == '"':
                 in_string = True
                 string_start = i
@@ -111,188 +123,175 @@ def tokenize_smtlib2(s: str) -> list[tuple[int, str]]:
             else:
                 # Take characters until space or ( or )
                 old_i = i
-                while i < len(s) and s[i] != "(" and s[i] != ")" and not s[i].isspace():
+                while i < len(s) and s[i] != "(" and s[i] != ")" and not s[i] in " \t\n\r":
                     i += 1
-                tokens.append((old_i, s[old_i:i]))
+                yield old_i, s[old_i:i]
 
-    return tokens
+NORMALIZE_FLAGS = {":qid", ":skolemid", ":named", ":weight", ":cid"}
 
-def parse_smtlib2(file_path: str) -> list[Exp]:
+def parse_smtlib2(file_path: str, normalize: bool = True) -> list[Exp]:
     """
-    Parse an SMT-LIB 2 query
+    Parse an SMT-LIB 2 query with some normalization (e.g. removing :qid flags)
     """
-
-    top_level = []
 
     # Stack record a nested list of unclosed applications
     stack = []
+    top_level = []
 
     with open(file_path) as f:
         # TODO: assuming string literals do not include newlines
-
         for line_num, line in enumerate(f):
             for pos, token in tokenize_smtlib2(line):
                 if token == "(":
                     stack.append([])
-
                 elif token == ")":
                     assert len(stack) != 0, f"{file_path}:{line_num}:{pos}: unexpected ')'"
 
-                    exp = Application(tuple(stack.pop()))
+                    args = stack.pop()
+
+                    # Normalize some flags
+                    if normalize and len(args) != 0 and args[0] == Atom("!"):
+                        new_args = []
+                        i = 0
+                        while i < len(args):
+                            arg = args[i]
+                            if isinstance(arg, Atom) and arg.name in NORMALIZE_FLAGS:
+                                i += 2
+                            else:
+                                new_args.append(arg)
+                                i += 1
+                        args = new_args
+
+                    exp = Application(tuple(args))
                     if len(stack) == 0:
                         top_level.append(exp)
                     else:
                         stack[-1].append(exp)
-
                 else:
                     assert len(stack) != 0, f"{file_path}:{line_num}:{pos}: atoms can not be at the top level"
                     stack[-1].append(Atom(token))
 
     return top_level
 
-def supports_color():
-    """
-    Returns True if the running system's terminal supports color, and False
-    otherwise.
-    """
-    plat = sys.platform
-    supported_platform = plat != "Pocket PC" and (plat != "win32" or
-                                                  "ANSICON" in os.environ)
-    is_a_tty = (
-        hasattr(sys.stdout, "isatty") and sys.stdout.isatty() and
-        hasattr(sys.stderr, "isatty") and sys.stderr.isatty()
-    )
-    return supported_platform and is_a_tty
+def get_query_file(args: argparse.Namespace):
+    if hasattr(args, "log_smt") and args.log_smt is not None:
+        return open(args.log_smt, "w")
+    else:
+        return tempfile.NamedTemporaryFile(mode="w", suffix=".smt2")
 
-def eprint(*args) -> None:
-    print(*args, file=sys.stderr, flush=True)
+def preprocess_query(path: str) -> tuple[list[Exp], Exp]:
+    """
+    Parse an SMT-LIB 2 file and return all commands and the goal assertion
+    Also run some sanity checks (e.g. at most one push/pop, only one check-sat and it's after all assertions)
+    """
+    commands = parse_smtlib2(path)
+    goal = None
+    found_push = False
+    found_pop = False
+    found_check_sat = False
 
-def eprint_status(msg: str) -> None:
-    if supports_color():
-        print(f"\033[2K\r{msg}", file=sys.stderr, end="", flush=True)
+    for i in range(len(commands) - 1, -1, -1):
+        if commands[i].is_app("assert"):
+            assert found_check_sat, f"assertion after check-sat in {path}"
+            if goal is None:
+                goal = commands.pop(i)
+        elif commands[i].is_app("push"):
+            assert not found_push, f"multiple push commands in {path}"
+            found_push = True
+        elif commands[i].is_app("pop"):
+            assert not found_pop, f"multiple pop commands in {path}"
+            found_pop = True
+        elif commands[i].is_app("check-sat"):
+            assert not found_check_sat, f"multiple check-sat commands in {path}"
+            found_check_sat = True
+
+    assert goal is not None, f"no goal assertion found in {path}"
+
+    return commands, goal
+
+def run_z3(args: argparse.Namespace, path: str) -> str:
+    """
+    Run Z3 and return the stdout
+    """
+    try:
+        result = subprocess.run(
+            [args.z3, path],
+            stdout=subprocess.PIPE,
+            stderr=sys.stderr,
+            timeout=args.timeout,
+            text=True,
+        )
+        return result.stdout.strip()
+
+    except subprocess.TimeoutExpired:
+        return "timeout"
 
 def validate_edits(
+    args: argparse.Namespace,
     original_path: str,
     edited_path: str,
-    args: argparse.Namespace,
-) -> None:
-    try:
-        eprint_status(f"parsing original {original_path}...")
-        original = parse_smtlib2(original_path)
+) -> tuple[bool, list[str]]:
+    comments = [] # e.g. warnings
 
-        eprint_status(f"parsing edited {edited_path}...")
-        edited = parse_smtlib2(edited_path)
+    with status(f"parsing original {original_path}"):
+        original, original_goal = preprocess_query(original_path)
 
-        # Normalize all expressions
-        original = [ cmd.normalize() for cmd in original ]
-        edited = [ cmd.normalize() for cmd in edited ]
+    with status(f"parsing edited {edited_path}"):
+        edited, edited_goal = preprocess_query(edited_path)
 
-        # Remove the last assertion (goal assertion) in both queries
-        # Later we also check that edited_goal => original_goal if they are different
-        original_goal = None
-        edited_goal = None
+    original_set = set(original)
 
-        for i in range(len(original) - 1, -1, -1):
-            if original[i].is_app("assert"):
-                original_goal = original.pop(i)
-                break
+    with get_query_file(args) as new_query:
+        write_query = lambda *args: print(*args, file=new_query)
 
-        for i in range(len(edited) - 1, -1, -1):
-            if edited[i].is_app("assert"):
-                edited_goal = edited.pop(i)
-                break
-
-        assert original_goal is not None, "no goal assertion found in the original query"
-        assert edited_goal is not None, "no goal assertion found in the edited query"
-
-        original_cmd_set = set(original)
-        original_assert_set = { cmd.args[1] for cmd in original if cmd.is_app("assert") }
-
-        with (
-            tempfile.NamedTemporaryFile(mode="w", suffix=".smt2")
-            if not hasattr(args, "log_smt") or args.log_smt is None else open(args.log_smt, "w")
-        ) as new_query:
-            eprint_status("generating new query...")
-
+        with status("generating new query"):
             # Override set-option's
-            print("(set-option :auto_config false)", file=new_query)
-            print("(set-option :smt.mbqi false)", file=new_query)
+            write_query("(set-option :auto_config false)")
+            write_query("(set-option :smt.mbqi false)")
 
             # First push all commands in the original query, but skip some commands (e.g. push, pop, set-option)
-            push_count = 0
-            pop_count = 0
-            check_sat_count = 0
             for cmd in original:
-                if cmd.is_app("push"):
-                    push_count += 1
-                    assert push_count <= 1, "multiple push commands found"
-                    continue
+                if (
+                    cmd.is_app("push") or
+                    cmd.is_app("pop") or
+                    cmd.is_app("set-option") or
+                    cmd.is_app("set-info") or
+                    cmd.is_app("check-sat")
+                ): continue
+                write_query(cmd)
 
-                if cmd.is_app("pop"):
-                    pop_count += 1
-                    assert pop_count <= 1, "multiple pop commands found"
-                    continue
-
-                if cmd.is_app("set-option") or cmd.is_app("set-info"):
-                    continue
-
-                if cmd.is_app("check-sat"):
-                    check_sat_count += 1
-                    assert check_sat_count <= 1, "multiple check-sat commands found"
-                    continue
-
-                print(cmd, file=new_query)
-
-            assert check_sat_count != 0, "no check-sat command found in the original query"
-
-            push_count = 0
-            pop_count = 0
-            check_sat_count = 0
             for cmd in edited:
-                if cmd.is_app("push"):
-                    push_count += 1
-                    assert push_count <= 1, "multiple push commands found"
-                    continue
-
-                if cmd.is_app("pop"):
-                    pop_count += 1
-                    assert pop_count <= 1, "multiple pop commands found"
-                    continue
-
-                if cmd.is_app("set-option") or cmd.is_app("set-info"):
-                    continue
-
-                if cmd.is_app("check-sat"):
-                    check_sat_count += 1
-                    assert check_sat_count <= 1, "multiple check-sat commands found"
-                    continue
+                if (
+                    cmd.is_app("push") or
+                    cmd.is_app("pop") or
+                    cmd.is_app("set-option") or
+                    cmd.is_app("set-info") or
+                    cmd.is_app("check-sat")
+                ): continue
 
                 # Check that all declarations are present in the original query
                 # TODO: relax this for skolem constants
                 if isinstance(cmd, Application) and len(cmd.args) != 0 and isinstance(cmd.args[0], Atom):
                     if cmd.args[0].name.startswith("declare") or cmd.args[0].name.startswith("define"):
-                        # assert cmd in original_cmd_set, f"declaration {cmd} not found in the original query"
-                        if cmd not in original_cmd_set:
-                            eprint(f"[warning] declaration {cmd} not found in the original query ({original_path} => {edited_path})")
-                            print(cmd, file=new_query)
-
-            assert check_sat_count != 0, "no check-sat command found in the edited query"
+                        if cmd not in original_set:
+                            comments.append(f"potential skolem variable {cmd}")
+                            write_query(cmd)
 
             # Then push the negation of conjunction of all assertions in the edited query
             # TODO: assuming that all declarations are still shared
             additional_asserts = tuple(
                 cmd.args[1]
                 for cmd in edited
-                if cmd.is_app("assert") and len(cmd.args) == 2 and (
+                if cmd.is_app("assert") and (
                     # If pruning is enabled, we don't consider common assertions in both files
-                    args.no_prune or cmd.args[1] not in original_assert_set
+                    args.no_prune or cmd not in original_set
                 )
             )
 
             if original_goal != edited_goal:
-                eprint(f"[warning] goal is edited ({original_path} => {edited_path})")
+                comments.append("goal edited")
 
-            print(Application((
+            write_query(Application((
                 Atom("assert"),
                 Application((
                     Atom("not"),
@@ -318,46 +317,51 @@ def validate_edits(
                         *additional_asserts,
                     )),
                 ))
-            )), file=new_query)
+            )))
 
-            print(Application((Atom("check-sat"),)), file=new_query)
+            write_query(Application((Atom("check-sat"),)))
             new_query.flush()
 
-            # Call Z3 to check if the new_query is unsat
-            eprint_status(f"validaing {original_path} => {edited_path}...")
+        # Call Z3 to check if the new_query is unsat
+        with status(f"validating {original_path} => {edited_path}"):
+            return run_z3(args, new_query.name), comments
 
-            try:
-                result = subprocess.run(
-                    [args.z3, new_query.name],
-                    stdout=subprocess.PIPE,
-                    stderr=sys.stderr,
-                    timeout=args.timeout,
-                    text=True,
-                )
-                if result.returncode == 0 and result.stdout.strip() == "unsat":
-                    eprint_status("")
-                    eprint(f"{original_path} => {edited_path}: valid")
-                    return True
-                else:
-                    eprint_status("")
-                    eprint(f"{original_path} => {edited_path}: invalid: {result.stdout.strip()}")
-                    return False
+def run_job(
+    args: argparse.Namespace,
+    original_path: str,
+    edited_path: str,
+):
+    with get_output_file(args, "a") as output:
+        output_writer = csv.writer(output)
+        comments = []
+        try:
+            start = time.time()
+            result, comments = validate_edits(args, original_path, edited_path)
+            elapsed = f"{time.time() - start:.2f}"
 
-            except subprocess.TimeoutExpired:
-                eprint_status("")
-                eprint(f"{original_path} => {edited_path}: timeout")
-                return False
-    except Exception as e:
-        eprint_status("")
-        eprint(traceback.format_exc())
-        eprint(f"{original_path} => {edited_path}: exception: {e}")
-        return False
+            output_writer.writerow([
+                original_path,
+                edited_path,
+                "valid" if result == "unsat" else f"invalid: {result}",
+                elapsed,
+                "; ".join(comments),
+            ])
+        except Exception as e:
+            eprint(traceback.format_exc())
+            output_writer.writerow([original_path, edited_path, f"exception: {e}", elapsed, "; ".join(comments)])
+
+def get_output_file(args: argparse.Namespace, mode: str = "w") -> sys.TextIO:
+    if args.output is not None:
+        return open(args.output, mode)
+    else:
+        return sys.stdout
 
 def set_common_arguments(parser: argparse.ArgumentParser):
     parser.add_argument("--no-prune", action="store_true", default=False, help="Do not prune common assertions")
     parser.add_argument("--prove-edited-goal", action="store_true", default=False, help="Also prove edited goal in the resulting query")
     parser.add_argument("--z3", default="z3", help="Path to Z3")
     parser.add_argument("--timeout", type=float, default=5.0, help="Timeout for Z3")
+    parser.add_argument("-o", "--output", help="Output CSV file")
 
 def main():
     parser = argparse.ArgumentParser(description="Take queries A and B, and checks whether B unsat ==> A unsat")
@@ -379,21 +383,30 @@ def main():
 
     args = parser.parse_args()
 
+    # Write headers first
+    if args.output is None:
+        print("original,edited,result,time,comment", flush=True)
+    else:
+        with open(args.output, "w") as file:
+            print("original,edited,result,time,comment", file=file)
+
     if args.subcommand == "single":
-        validate_edits(args.original, args.edited, args)
+        run_job(args, args.original, args.edited)
 
     elif args.subcommand == "batch":
         with multiprocessing.Pool(args.jobs) as pool:
             with open(args.batch) as f:
                 batch = json.load(f)
-
-                jobs = [ (original, edit, args) for original, edits in batch.items() for _, _, edit in edits ]
+                jobs = [
+                    (args, original, edit)
+                    for original, edits in batch.items() for _, _, edit in edits
+                ]
 
                 # Sort the jobs to make it more deterministic
                 jobs.sort(key=lambda x: (x[0], x[1]))
 
                 eprint("total jobs:", len(jobs))
-                pool.starmap(validate_edits, jobs)
+                pool.starmap(run_job, jobs)
 
 if __name__ == "__main__":
     main()
