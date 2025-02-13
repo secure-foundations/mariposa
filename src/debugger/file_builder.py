@@ -113,7 +113,7 @@ class FileBuilder:
             )
             return
 
-        self.__build_traces()
+        self.build_traces()
         self.__build_cores(skip_core)
         self.__build_proofs(skip_core)
 
@@ -217,7 +217,7 @@ class FileBuilder:
         random.shuffle(args)
         return args
 
-    def __build_traces(self):
+    def build_traces(self):
         count = len(self.traces)
 
         if count >= TRACE_GOAL_COUNT:

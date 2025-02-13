@@ -112,6 +112,9 @@ class Debugger3:
         self.chosen_trace_path = self._builder.get_candidate_trace().trace_path
         self.__save_query_meta()
 
+    def reroll_trace(self):
+        self._builder.build_traces()
+
     def __init_dirs(self, reset):
         if reset and os.path.exists(self.sub_root):
             os.system(f"rm -rf {self.sub_root}")
@@ -251,7 +254,7 @@ class Debugger3:
         file_size = os.path.getsize(self.orig_path) / 1024
         total_size = file_size * len(self.__edit_infos) / 1024 / 1024
 
-        if total_size > 15:
+        if total_size > 20:
             log_error(
                 f"[edit] {self.singleton_dir} aborted, {total_size:.2f}G may be used!"
             )
@@ -406,7 +409,7 @@ class Debugger3:
 
     def get_trace_graph_ratios(self, clear=False):
         def _compute_ratios():
-            return self.editor.get_sub_ratios(True)
+            return self.editor.get_sub_ratios(clear)
         name = self.name_hash + ".ratios"
         return load_cache_or(name, _compute_ratios, clear)
 
