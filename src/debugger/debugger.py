@@ -21,16 +21,17 @@ def _run_edit(ei: EditInfo):
     return ei
 
 
-def resolve_input_path(input_path):
+def resolve_input_path(input_path, verbose):
     if len(input_path) == 10:
         input_path = f"dbg/{input_path}"
     if input_path.startswith("dbg/") or input_path.startswith("./dbg/"):
         assert not input_path.endswith(".smt2")
         meta = json.load(open(f"{input_path}/meta.json", "r"))
         input_path = meta["given_query"]
-        log_info(f"[init] resolved to {input_path}")
+        if verbose:
+            log_info(f"[init] resolved to {input_path}")
     if not os.path.exists(input_path):
-        log_warn(f"[init] query path {input_path} not found")
+        log_error(f"[init] query path {input_path} not found")
         sys.exit(1)
     return input_path
 
@@ -47,14 +48,16 @@ class Debugger3:
         clear_cores=False,
         clear_proofs=False,
         skip_core=False,
+        verbose=True,
     ):
-        query_path = resolve_input_path(query_path)
+        query_path = resolve_input_path(query_path, verbose)
         self.given_query_path = query_path
         self.name_hash = get_name_hash(query_path)
         self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
 
-        log_info(f"[init] dbg root: {self.sub_root}/")
+        if verbose:
+            log_info(f"[init] dbg root: {self.sub_root}/")
 
         self.orig_path = f"{self.sub_root}/orig.smt2"
         self.query_meta = f"{self.sub_root}/meta.json"
@@ -406,3 +409,4 @@ class Debugger3:
             return self.editor.get_sub_ratios(True)
         name = self.name_hash + ".ratios"
         return load_cache_or(name, _compute_ratios, clear)
+

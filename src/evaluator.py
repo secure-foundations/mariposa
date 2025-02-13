@@ -158,8 +158,8 @@ def get_debugger_status(dbg: Debugger3):
 
 
 class Evaluator(Debugger3):
-    def __init__(self, query_path: str):
-        super().__init__(query_path)
+    def __init__(self, query_path: str, verbose=False):
+        super().__init__(query_path, verbose=verbose)
         status = get_debugger_status(self)
 
         if isinstance(status, DebuggerStatus):
@@ -169,7 +169,7 @@ class Evaluator(Debugger3):
         self.status = DebuggerStatus.FINISHED
         self._ba, self._fa = status
         self._report_cache = self.name_hash + ".report"
-        self.report = self.build_report()
+        self._report = None
 
     def get_command_to_run(self):
         if self.status == DebuggerStatus.SINGLETON_CREATION_UNATTEMPTED:
@@ -222,6 +222,9 @@ class Evaluator(Debugger3):
         if self.status != DebuggerStatus.FINISHED:
             return None
 
+        if self._report is not None and not clear:
+            return self._report
+
         def _build_report():
             r = Report()
             r.tested, r.skipped = self.get_tested()
@@ -231,9 +234,8 @@ class Evaluator(Debugger3):
             assert len(r.freq) > 0
             return r
 
-        r = load_cache_or(self._report_cache, _build_report, clear)
-        self._report = r
-        return r
+        self._report = load_cache_or(self._report_cache, _build_report, clear)
+        return self._report
 
     def collect_garbage(self):
         if self.status != DebuggerStatus.FINISHED:
@@ -303,7 +305,7 @@ class BenchViewer:
             else:
                 self.unfixable.add(q)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Evaluator:
         if key in self.__name_hashes:
             key = self.__name_hashes[key]
         return self.__reviewers[key]
@@ -313,7 +315,7 @@ class BenchViewer:
 
     def items(self):
         return self.__reviewers.items()
-    
+
     def keys(self):
         return self.__reviewers.keys()
 
@@ -330,7 +332,7 @@ def main():
     )
     args = parser.parse_args()
     eva = Evaluator(args.input_query_path)
-    print(eva.status)
+    # print(eva.status)
 
     if args.collect_garbage:
         eva.collect_garbage()

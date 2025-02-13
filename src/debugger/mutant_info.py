@@ -1,3 +1,4 @@
+from enum import Enum
 import hashlib
 import json
 import os
@@ -22,6 +23,12 @@ PROOF_GOAL_COUNT = 1
 TRACES = "traces"
 MUTANTS = "mutants"
 CORES = "cores"
+
+class TraceFailure(Enum):
+    TIMEOUT = "timeout"
+    SLOW_UNKNOWN = "slow_unknown"
+    FAST_UNKNOWN = "fast_unknown"
+    NOT_FAIL = "did not fail"
 
 
 class MutantInfo:
@@ -266,3 +273,22 @@ class MutantInfo:
     def get_qi_counts(self):
         assert self.has_trace()
         return get_trace_stats_axiom_profiler(self.trace_path)
+
+    def get_failed_reason(self) -> TraceFailure:
+        assert self.has_trace()
+
+        rtime = self.trace_time/1000
+        assert self.trace_rcode != RCode.ERROR
+
+        if self.trace_rcode == RCode.TIMEOUT or rtime >= 10:
+            return TraceFailure.TIMEOUT
+
+        if self.trace_rcode == RCode.UNSAT:
+            return TraceFailure.NOT_FAIL # ???
+
+        assert self.trace_rcode == RCode.UNKNOWN
+
+        if rtime <= 4:
+            return TraceFailure.FAST_UNKNOWN
+
+        return TraceFailure.SLOW_UNKNOWN
