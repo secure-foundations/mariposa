@@ -330,14 +330,27 @@ def main():
         default=False,
         action="store_true",
     )
+    parser.add_argument(
+        "--print-report",
+        default=False,
+        action="store_true",
+    )
     args = parser.parse_args()
     eva = Evaluator(args.input_query_path)
-    # print(eva.status)
+    print(eva.status)
 
     if args.collect_garbage:
         eva.collect_garbage()
-        return
 
+    if args.print_report:
+        r = eva.build_report()
+
+        if r is None:
+            print("No report available.")
+            return
+
+        r.print_tested()
+        r.print_stabilized()
 
 if __name__ == "__main__":
     main()
