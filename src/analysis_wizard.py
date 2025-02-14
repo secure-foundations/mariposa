@@ -30,7 +30,7 @@ def set_up_basic(subparsers):
 
 
 def set_up_singleton(subparsers):
-    p = subparsers.add_parser("singleton", help="analyze verus verification results")
+    p = subparsers.add_parser("filter", help="create filtered project")
     add_input_dir_option(p)
     add_analysis_options(p)
 
@@ -139,7 +139,7 @@ def handle_special():
     pass
 
 
-def handle_singleton(args):
+def handle_filter(args):
     exp: Experiment = args.experiment
 
     if not exp.is_done():
@@ -181,10 +181,9 @@ if __name__ == "__main__":
     p = subparsers.add_parser("special", help="placeholder for special analysis")
     args = parser.parse_args()
 
-    if args.sub_command == "singleton":
+    if args.sub_command == "filter":
         # override the exp_config
         args.exp_config = "verify"
-        assert args.input_dir.startswith("data/projs/singleton_")
 
     args = deep_parse_args(args)
 
@@ -192,8 +191,8 @@ if __name__ == "__main__":
         handle_basic(args)
     elif args.sub_command == "verify":
         handle_verify(args)
-    elif args.sub_command == "singleton":
-        handle_singleton(args)
+    elif args.sub_command == "filter":
+        handle_filter(args)
     elif args.sub_command == "perf":
         PrefAnalyzer(args.input_group, args.analyzer)
     elif args.sub_command == "inst":

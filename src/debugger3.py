@@ -137,10 +137,7 @@ def main():
 
     if args.register_singleton:
         dbg.register_singleton()
-
-    if args.create_singleton:
-        dbg.create_singleton()
-
+    
     if args.reroll:
         dbg.set_proof()
     

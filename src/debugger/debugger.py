@@ -1,3 +1,4 @@
+from enum import Enum
 import json
 import os
 from typing import Dict
@@ -19,7 +20,6 @@ from utils.system_utils import *
 def _run_edit(ei: EditInfo):
     ei.run_query()
     return ei
-
 
 def resolve_input_path(input_path, verbose):
     if len(input_path) == 10:
@@ -70,16 +70,9 @@ class Debugger3:
         if clear_all:
             self.__clear_proof_cache = True
 
-        self.__edit_infos: Dict[int, EditInfo] = dict()
+        self.edit_infos: Dict[int, EditInfo] = dict()
         self.edits_meta = f"{self.sub_root}/edits.json"
         self.edit_dir = f"{self.sub_root}/edits/"
-
-        self.singleton_name = "singleton_" + self.name_hash
-
-        self.singleton_dir = f"data/projs/{self.singleton_name}/base.z3"
-        self.filtered_dir = f"data/projs/{self.singleton_name}.filtered/base.z3"
-        self.singleton_db_dir = f"data/dbs/{self.singleton_name}/base.z3"
-        self.filtered_db_dir = f"data/dbs/{self.singleton_name}.filtered/base.z3"
 
         self.splitter_name = "splitter_" + self.name_hash
         self.splitter_dir = f"data/projs/{self.splitter_name}/base.z3"
@@ -126,17 +119,8 @@ class Debugger3:
 
         log_info(f"[init] removing singleton project {self.singleton_name}")
 
-        for d in [
-            self.singleton_dir,
-            self.filtered_dir,
-            self.singleton_db_dir,
-            self.filtered_db_dir,
-        ]:
-            if os.path.exists(d):
-                os.system(f"rm -rf {d}")
-
     def __init_edits(self, clear_edits):
-        self.__edit_infos = dict()
+        self.edit_infos = dict()
 
         if clear_edits:
             self.clear_edits()
@@ -151,7 +135,7 @@ class Debugger3:
             if not os.path.isdir(ei["edit_dir"]):
                 continue
             ei = EditInfo.from_dict(ei)
-            self.__edit_infos[ei.get_id()] = ei
+            self.edit_infos[ei.get_id()] = ei
 
         # self.save_edits_meta()
 
@@ -212,7 +196,7 @@ class Debugger3:
         return self._editor
 
     def save_edits_meta(self):
-        infos = [ei.to_dict() for ei in self.__edit_infos.values()]
+        infos = [ei.to_dict() for ei in self.edit_infos.values()]
 
         with open(self.edits_meta, "w+") as f:
             json.dump(infos, f)
@@ -223,89 +207,21 @@ class Debugger3:
             if count > 10:
                 confirm_input(f"clear {count} edits?")
             os.system(f"rm {self.edit_dir}*")
-        self.__edit_infos = dict()
+        self.edit_infos = dict()
         self.save_edits_meta()
         log_info("[edit] cleared")
-
-    def get_singleton_edits(self):
-        feasible_edits = self.editor.get_singleton_actions()
-        extended_edits = []
-
-        for qid, action in feasible_edits.items():
-            if action == EditAction.INST_REPLACE:
-                extended_edits.append({qid: EditAction.INST_KEEP})
-            extended_edits.append({qid: action})
-
-        return extended_edits
-
-    def register_singleton(self):
-        extended_edits = self.get_singleton_edits()
-
-        for edit in extended_edits:
-            self.register_edit(edit, self.singleton_dir)
-
-        self.save_edits_meta()
-        return extended_edits
-
-    def create_singleton(self):
-        if len(self.__edit_infos) == 0:
-            self.register_singleton()
-
-        file_size = os.path.getsize(self.orig_path) / 1024
-        total_size = file_size * len(self.__edit_infos) / 1024 / 1024
-
-        if total_size > 20:
-            log_error(
-                f"[edit] {self.singleton_dir} aborted, {total_size:.2f}G may be used!"
-            )
-            return
-
-        log_info(f"[edit] estimated size: {total_size:.2f}G")
-
-        extended_edits = self.get_singleton_edits()
-
-        if not os.path.exists(self.singleton_dir):
-            os.makedirs(self.singleton_dir)
-
-        for action in tqdm(extended_edits):
-            ei = EditInfo(self.singleton_dir, action)
-            assert ei.get_id() in self.__edit_infos
-            if ei.query_exists():
-                log_info(f"[edit] {ei.get_id()} already exists")
-                continue
-            self.create_edit_query(ei)
-
-        log_info(
-            f"[edit] [proj] {self.singleton_name} has {len(list_smt2_files(self.singleton_dir))} queries"
-        )
-        return self.singleton_dir
-
-    def get_singleton_status(self):
-        existing = list_smt2_files(self.singleton_dir)
-        if existing is None:
-            existing = []
-        return len(self.__edit_infos), len(existing)
-
-    def check_singleton(self):
-        existing = list_smt2_files(self.singleton_dir)
-        # for query in existing:
-        #     basename = os.path.basename(query)
-        #     eid = basename.split(".smt2")[0]
-        #     if eid in self.__edit_infos:
-        #         continue
-        #     log_error(f"[edit] {self.singleton_dir}/{eid}.smt2 is not registered!")
 
     def test_edit(self, edit):
         ei = self.register_edit_info(edit)
         if ei.has_data():
             return ei
         ei.run_query()
-        self.__edit_infos[ei.get_id()] = ei
+        self.edit_infos[ei.get_id()] = ei
         return ei
 
     def test_edit_with_id(self, edit_id) -> EditInfo:
-        assert edit_id in self.__edit_infos
-        ei = self.__edit_infos[edit_id]
+        assert edit_id in self.edit_infos
+        ei = self.edit_infos[edit_id]
         if not ei.query_exists():
             self.editor.save_edit(ei)
         if not ei.has_data():
@@ -313,12 +229,15 @@ class Debugger3:
         return ei
 
     def look_up_edit_with_id(self, eid) -> EditInfo:
-        return self.__edit_infos[eid]
+        return self.edit_infos[eid]
+
+    def contains_edit_info(self, ei: EditInfo):
+        return ei.get_id() in self.edit_infos
 
     def get_edited_qnames(self, eids):
         res = set()
         for eid in eids:
-            res |= self.__edit_infos[eid].actions.keys()
+            res |= self.edit_infos[eid].actions.keys()
         return res
 
     def register_edit(self, actions, output_dir=None) -> EditInfo:
@@ -333,17 +252,17 @@ class Debugger3:
         ei = EditInfo(output_dir, actions)
         eid = ei.get_id()
 
-        if eid in self.__edit_infos:
-            return self.__edit_infos[eid]
+        if eid in self.edit_infos:
+            return self.edit_infos[eid]
 
-        self.__edit_infos[eid] = ei
+        self.edit_infos[eid] = ei
 
         return ei
 
     def look_up_edit(self, edit):
         res = []
 
-        for ei in self.__edit_infos:
+        for ei in self.edit_infos:
             if set(ei.edit.keys()) & edit.keys() != set():
                 res.append(ei)
 
@@ -351,7 +270,7 @@ class Debugger3:
 
     def create_edit_query(self, ei: EditInfo):
         eid = ei.get_id()
-        assert eid in self.__edit_infos
+        assert eid in self.edit_infos
 
         if not ei.query_exists():
             self.editor.edit_by_info(ei)

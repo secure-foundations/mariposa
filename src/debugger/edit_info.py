@@ -76,6 +76,9 @@ class EditInfo:
         qid = list(self._actions.keys())[0]
         return (qid, self._actions[qid])
 
+    def is_singleton(self):
+        return len(self._actions) == 1
+
     @staticmethod
     def from_dict(d):
         actions = dict()
