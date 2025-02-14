@@ -15,9 +15,11 @@ class Report:
         print(tabulate(sorted_tested, headers='keys', tablefmt='psql'))
 
     def print_stabilized(self):
+        if len(self.stabilized) == 0:
+            print("No stabilized queries.")
+            return
         print(f"Stabilized ({len(self.stabilized)}):")
-        sorted_stabilized = self.stabilized.sort_values(by=["time"])
-        print(tabulate(sorted_stabilized, headers='keys', tablefmt='psql'))
+        print(tabulate(self.stabilized, headers='keys', tablefmt='psql'))
 
     def print_insted(self, extend=False):
         print(f"Instantiation ({len(self.freq)}):")
