@@ -16,9 +16,9 @@ class Report:
 
     def print_stabilized(self):
         if len(self.stabilized) == 0:
-            print("No stabilized queries.")
+            print(f"tested {len(self.tested)}, no stabilized queries.")
             return
-        print(f"Stabilized ({len(self.stabilized)}):")
+        print(f"tested {len(self.tested)}, stabilized ({len(self.stabilized)}):")
         print(tabulate(self.stabilized, headers='keys', tablefmt='psql'))
 
     def print_insted(self, extend=False):

@@ -117,8 +117,6 @@ class Debugger3:
         if not reset:
             return
 
-        log_info(f"[init] removing singleton project {self.singleton_name}")
-
     def __init_edits(self, clear_edits):
         self.edit_infos = dict()
 

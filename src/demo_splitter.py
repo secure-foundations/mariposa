@@ -11,11 +11,6 @@ QA = FACT.get_analyzer("10sec")
 
 stabilized = []
 
-def get_name_hash(filename):
-    import hashlib
-    # TODO: this should probably do fine?
-    return hashlib.sha256(filename.encode()).hexdigest()[0:10]
-
 
 missed = {
     "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_update_resource_step.smt2",

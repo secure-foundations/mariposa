@@ -14,7 +14,7 @@ from utils.system_utils import log_check, log_debug, log_info, log_warn, subproc
 
 TRACE_TIME_LIMIT_SEC = 10
 CORE_TIME_LIMIT_SEC = 60
-PROOF_TIME_LIMIT_SEC = 100
+PROOF_TIME_LIMIT_SEC = 30
 
 TRACE_GOAL_COUNT = 1
 CORE_GOAL_COUNT = 2

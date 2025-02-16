@@ -71,13 +71,21 @@ class EditInfo:
         _, self.rcode, error, self.time = run_z3(self.query_path)
         assert error == ""
 
+    def is_singleton(self):
+        return len(self._actions) == 1
+
     def get_singleton_edit(self):
         assert len(self._actions) == 1
         qid = list(self._actions.keys())[0]
         return (qid, self._actions[qid])
 
-    def is_singleton(self):
-        return len(self._actions) == 1
+    def is_doubleton(self):
+        return len(self._actions) == 2
+    
+    def get_doubleton_edit(self):
+        assert self.is_doubleton()
+        qids = list(self._actions.keys())
+        return (qids[0], self._actions[qids[0]]), (qids[1], self._actions[qids[1]])
 
     @staticmethod
     def from_dict(d):

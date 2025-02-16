@@ -73,7 +73,7 @@ def handle_manager(args, wargs):
         confirm_input(f"manager is not on master branch, continue?")
 
     log_info(f"running data sync on {args.input_dir}")
-    handle_data_sync(args.input_dir, True, False)
+    handle_data_sync(args.input_dir, True, True)
 
     authkey = hexlify(os.urandom(24)).decode("utf-8")
     # TODO: I forgot why we need to pass wargs
@@ -311,6 +311,8 @@ def handle_code_sync():
 def handle_stop():
     log_info("stopping workers")
     cmd = "ps -aux | grep 'python3 src/exper_wizard.py' | awk  {'print \\$2'} | xargs kill -9"
+    run_on_workers(cmd)
+    cmd = "ps -aux | grep 'z3' | awk  {'print \\$2'} | xargs kill -9"
     run_on_workers(cmd)
 
 

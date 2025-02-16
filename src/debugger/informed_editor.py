@@ -196,11 +196,10 @@ class InformedEditor(QueryEditor):
 
         if action in {EditAction.ERROR, EditAction.NONE}:
             log_warn(f"[edit] qid {qname} has no feasible actions")
-            return
+            return False
 
         if action == EditAction.ERASE:
-            self._erase_qid(qname)
-            return
+            return self._erase_qid(qname)
 
         if action in {EditAction.INST_KEEP, EditAction.INST_REPLACE}:
             qii = self.proof.get_inst_info_under_qname(qname)
@@ -208,18 +207,21 @@ class InformedEditor(QueryEditor):
             for inst in qii.get_feasible_insts():
                 insts.append("(assert " + self.proof.dump_node(inst) + ")")
             erase = EditAction.INST_REPLACE == action
-            self._instantiate_qid(qname, insts, erase=erase)
-            return
+            return self._instantiate_qid(qname, insts, erase=erase)
 
         if action == EditAction.SKOLEMIZE:
-            self._skolemize_qid(qname)
-            return
+            return self._skolemize_qid(qname)
 
         log_warn(f"[edit] unhandled action {action} for qid {qname}")
+        return False
 
     def edit_by_info(self, ei: EditInfo):
+        ok = True
         for qname, action in ei.items():
-            self.edit_by_qname(qname, action)
+            ok &= self.edit_by_qname(qname, action)
+        if not ok:
+            self._reset_state()
+            return
         self.save(ei.query_path)
 
     def debug_qanme(self, qname):
