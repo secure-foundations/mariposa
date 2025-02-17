@@ -162,7 +162,14 @@ def parse_smtlib2(file_path: str, normalize: bool = True) -> list[Exp]:
                                 i += 1
                         args = new_args
 
-                    exp = Application(tuple(args))
+                        # If there are no more flags left, remove the ! call
+                        if len(args) == 2:
+                            exp = args[1]
+                        else:
+                            exp = Application(tuple(args))
+                    else:
+                        exp = Application(tuple(args))
+
                     if len(stack) == 0:
                         top_level.append(exp)
                     else:
@@ -186,7 +193,7 @@ def preprocess_query(path: str) -> tuple[list[Exp], Exp]:
     """
     commands = parse_smtlib2(path)
     goal = None
-    found_push = False
+    found_assert = True
     found_pop = False
     found_check_sat = False
 
@@ -195,11 +202,10 @@ def preprocess_query(path: str) -> tuple[list[Exp], Exp]:
             assert found_check_sat, f"assertion after check-sat in {path}"
             if goal is None:
                 goal = commands.pop(i)
-        elif commands[i].is_app("push"):
-            assert not found_push, f"multiple push commands in {path}"
-            found_push = True
+            found_assert = True
         elif commands[i].is_app("pop"):
             assert not found_pop, f"multiple pop commands in {path}"
+            assert not found_assert, f"assertion after pop in {path}"
             found_pop = True
         elif commands[i].is_app("check-sat"):
             assert not found_check_sat, f"multiple check-sat commands in {path}"
@@ -248,6 +254,7 @@ def validate_edits(
             # Override set-option's
             write_query("(set-option :auto_config false)")
             write_query("(set-option :smt.mbqi false)")
+            write_query(f"(set-option :random-seed {args.seed})")
 
             # First push all commands in the original query, but skip some commands (e.g. push, pop, set-option)
             for cmd in original:
@@ -333,9 +340,10 @@ def run_job(
 ):
     with get_output_file(args, "a") as output:
         output_writer = csv.writer(output)
+        start = time.time()
         comments = []
+
         try:
-            start = time.time()
             result, comments = validate_edits(args, original_path, edited_path)
             elapsed = f"{time.time() - start:.2f}"
 
@@ -347,6 +355,7 @@ def run_job(
                 "; ".join(comments),
             ])
         except Exception as e:
+            elapsed = f"{time.time() - start:.2f}"
             eprint(traceback.format_exc())
             output_writer.writerow([original_path, edited_path, f"exception: {e}", elapsed, "; ".join(comments)])
 
@@ -360,6 +369,7 @@ def set_common_arguments(parser: argparse.ArgumentParser):
     parser.add_argument("--no-prune", action="store_true", default=False, help="Do not prune common assertions")
     parser.add_argument("--prove-edited-goal", action="store_true", default=False, help="Also prove edited goal in the resulting query")
     parser.add_argument("--z3", default="z3", help="Path to Z3")
+    parser.add_argument("--seed", type=int, default=0, help="Random seed for Z3")
     parser.add_argument("--timeout", type=float, default=5.0, help="Timeout for Z3")
     parser.add_argument("-o", "--output", help="Output CSV file")
 
