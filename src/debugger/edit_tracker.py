@@ -229,11 +229,15 @@ class EditTracker:
     def create_edit_query(self, ei: EditInfo):
         eid = ei.get_id()
         assert eid in self.edit_infos
-
+        success = True
         if not ei.query_exists():
-            return self.editor.edit_by_info(ei)
-        log_debug(f"[edit] {ei.get_id()} already exists")
-        return True
+            success = self.editor.edit_by_info(ei)
+        else:
+            log_debug(f"[edit] {ei.get_id()} already exists")
+        if not success:
+            log_debug(f"[edit] {ei.get_id()} failed")
+            self.edit_infos.pop(eid)
+        return success
 
     def get_status(self):
         return {

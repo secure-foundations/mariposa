@@ -40,6 +40,7 @@ class DbgMode(Enum):
     SINGLETON = "singleton"
     DOUBLETON = "doubleton"
     FAST_FAIL = "fast_fail"
+    TIMEOUT = "timeout"
 
 
 class Debugger(EditTracker):
@@ -395,6 +396,65 @@ class FastFailDebugger(Debugger):
                 break
 
             qname = row[1].qname
+            action = choose_action(self.editor.get_quant_actions(qname))
+            ei = self.register_edit({qname: action}, dst_dir)
+            ei.edit_dir = dst_dir
+
+            if self.create_edit_query(ei):
+                emitted_count += 1
+            else:
+                log_warn(f"[edit] failed to emit {ei.get_id()}")
+
+        self.save_edits_meta()
+
+
+class TimeoutDebugger(Debugger):
+    def __init__(
+        self,
+        query_path: str,
+        options=DebugOptions(),
+    ):
+        # this is just dumb
+        query_path = resolve_input_path(query_path, options.verbose)
+        self.name_hash = get_name_hash(query_path)
+
+        self.proj_name = "timeout_" + self.name_hash
+        self._report_cache = self.name_hash + ".to.report"
+
+        super().__init__(query_path, options)
+
+    def rank_edits(self):
+        trace_graph = self.get_trace_graph()
+        ratios = self.get_trace_graph_ratios()
+        scores = dict()
+
+        for qname, ratio in ratios.items():
+            actions = self.editor.get_quant_actions(qname)
+            if actions == {EditAction.NONE}:
+                continue
+            if actions == {EditAction.SKOLEMIZE}:
+                continue
+            if EditAction.ERROR in actions:
+                if len(actions) != 1:
+                    log_warn(f"[edit] {self.name_hash} {qname} has error and other actions? {actions}")
+                continue
+            scores[qname] = trace_graph.aggregate_scores(ratio)
+
+        scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        return scores
+
+    def create_project(self):
+        ranked = self.rank_edits()
+        dst_dir = self.strainer.test_dir
+
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+
+        emitted_count = 0
+        for qname, _ in ranked:
+            if emitted_count >= 10:
+                break
+
             action = choose_action(self.editor.get_quant_actions(qname))
             ei = self.register_edit({qname: action}, dst_dir)
             ei.edit_dir = dst_dir

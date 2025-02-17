@@ -25,6 +25,8 @@ class DebugOptions:
         self.total_proof_time_sec = 120
         self.per_proof_time_sec = 30
 
+        self.edit_count = 10
+
 
 def resolve_input_path(input_path, verbose):
     if len(input_path) == 10:

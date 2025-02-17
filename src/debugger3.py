@@ -3,7 +3,7 @@
 import argparse
 import z3
 from debugger.debugger_options import DebugOptions
-from debugger.debugger import DbgMode, Debugger, DoubletonDebugger, FastFailDebugger
+from debugger.debugger import DbgMode, Debugger, DoubletonDebugger, FastFailDebugger, TimeoutDebugger
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
         "-m",
         "--mode",
         default="singleton",
-        choices=["singleton", "doubleton", "fast_fail"],
+        choices=["singleton", "doubleton", "fast_fail", "timeout"],
         help="the mode to operate on",
     )
     parser.add_argument(
@@ -92,6 +92,11 @@ def main():
             args.input_query_path,
             options,
         )
+    elif mode == DbgMode.TIMEOUT:
+        dbg = TimeoutDebugger(
+            args.input_query_path,
+            options,
+        )
     else:
         assert False
 
@@ -120,7 +125,7 @@ def main():
         dbg.get_trace_graph()
 
     if args.build_ratios:
-        dbg.get_trace_graph_ratios()
+        dbg.get_trace_graph_ratios(True)
 
 
 if __name__ == "__main__":

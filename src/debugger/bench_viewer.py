@@ -1,9 +1,15 @@
 import multiprocessing
 from typing import Dict
 
-from debugger.debugger import DbgMode, Debugger, FastFailDebugger, DoubletonDebugger
+from debugger.debugger import (
+    DbgMode,
+    Debugger,
+    FastFailDebugger,
+    DoubletonDebugger,
+    TimeoutDebugger,
+)
 from debugger.strainer import StrainerStatus
-from utils.analysis_utils import Categorizer
+from utils.analysis_utils import Categorizer, fmt_percent
 
 
 class BenchViewer:
@@ -20,6 +26,8 @@ class BenchViewer:
             reviewers = pool.map(DoubletonDebugger, queries)
         elif mode == DbgMode.FAST_FAIL:
             reviewers = pool.map(FastFailDebugger, queries)
+        elif mode == DbgMode.TIMEOUT:
+            reviewers = pool.map(TimeoutDebugger, queries)
         else:
             assert False
 
@@ -54,3 +62,14 @@ class BenchViewer:
 
     def keys(self):
         return self.__reviewers.keys()
+
+    def print_stats(self):
+        fixable_count = len(self.fixable)
+        finished_count = len(self.status[StrainerStatus.FINISHED])
+        print(
+            "fixable ratio (finished):",
+            fixable_count,
+            "/",
+            finished_count,
+            f"({fmt_percent(fixable_count, finished_count, 1)})",
+        )
