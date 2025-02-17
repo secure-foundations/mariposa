@@ -32,16 +32,16 @@ def _build_fail_trace(mi: MutantInfo):
         log_debug(f"[trace-fail] {mi.trace_path}, {rc}, {et}")
         mi.save()
         return mi
+    mi.clear()
     log_debug(f"[trace-fail] discarded: {mi.trace_path}, {rc}, {et}")
     return None
 
-
-# def _build_any_trace(mi: MutantInfo):
-#     mi.build_trace()
-#     et = round(mi.trace_time / 1000, 2)
-#     log_debug(f"[trace-any] {mi.trace_path}, {mi.trace_rcode}, {et}")
-#     mi.save()
-#     return mi
+def _build_any_trace(mi: MutantInfo):
+    mi.build_trace()
+    et = round(mi.trace_time / 1000, 2)
+    log_debug(f"[trace-any] {mi.trace_path}, {mi.trace_rcode}, {et}")
+    mi.save()
+    return mi
 
 
 def _build_core(mi: MutantInfo):
@@ -200,7 +200,7 @@ class MutantBuilder:
         for m in mutations:
             for _ in range(self.options.mutant_count):
                 s = int(binascii.hexlify(os.urandom(8)), 16)
-                args.append(MutantInfo(self.sub_root, m, s))
+                args.append(MutantInfo(self.sub_root, m, s, self.options))
 
         random.shuffle(args)
         return args
@@ -216,9 +216,13 @@ class MutantBuilder:
         args = self.__create_tasks(
             [Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED]
         )
+
+        # so that we have at least one trace
+        _build_any_trace(args[0])
+
         mis = run_with_pool(
             _build_fail_trace,
-            args,
+            args[1:],
             goal=TRACE_GOAL_COUNT,
             time_bound=self.options.total_trace_time_sec,
         )
@@ -310,6 +314,8 @@ class MutantBuilder:
             return r
 
         random.seed(43)
+        if self.traces == []:
+            return None
         return random.choice(self.traces)
 
     def print_status(self):

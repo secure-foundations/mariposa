@@ -221,8 +221,9 @@ class InformedEditor(QueryEditor):
             ok &= self.edit_by_qname(qname, action)
         if not ok:
             self._reset_state()
-            return
+            return False
         self.save(ei.query_path)
+        return True
 
     def debug_qanme(self, qname):
         if qname not in self:

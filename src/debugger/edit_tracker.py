@@ -23,7 +23,6 @@ class EditTracker:
     ):
         self.given_query_path = query_path
         self.name_hash = get_name_hash(query_path)
-        self.base_name = os.path.basename(query_path)
         self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
 
         if options.verbose:
@@ -42,6 +41,7 @@ class EditTracker:
 
         if not os.path.exists(self.sub_root):
             create_dir(self.edit_dir)
+
         self.__init_edits()
         self.__init_meta()
 
@@ -51,17 +51,30 @@ class EditTracker:
             options,
         )
 
-        if self.chosen_proof_path is None:
-            self.set_proof()
+        self.set_proof()
+        self.set_trace()
 
         self._editor = None
 
     def set_proof(self):
+        if self.chosen_proof_path is not None and os.path.exists(
+            self.chosen_proof_path
+        ):
+            return
         if len(self._builder.proofs) == 0:
             log_warn("[proof] no proof available")
             return
         self.chosen_proof_path = self._builder.proofs[0].proof_path
-        self.chosen_trace_path = self._builder.get_candidate_trace().trace_path
+        self.__save_query_meta()
+
+    def set_trace(self):
+        if self.chosen_trace_path is not None and os.path.exists(
+            self.chosen_trace_path
+        ):
+            return
+        if trace := self._builder.get_candidate_trace():
+            self.chosen_trace_path = trace.trace_path
+            log_info(f"[trace] chosen: {self.chosen_trace_path}")
         self.__save_query_meta()
 
     def reroll_trace(self):
@@ -110,7 +123,7 @@ class EditTracker:
 
     def collect_garbage(self):
         if not self.chosen_trace_path:
-            self.chosen_trace_path = self._builder.get_candidate_trace().trace_path
+            self.set_trace()
         self._builder.collect_garbage(self.chosen_trace_path)
 
     def reset_proof_cache(self):
@@ -219,9 +232,9 @@ class EditTracker:
         assert eid in self.edit_infos
 
         if not ei.query_exists():
-            self.editor.edit_by_info(ei)
-        else:
-            log_debug(f"[edit] {ei.get_id()} already exists")
+            return self.editor.edit_by_info(ei)
+        log_debug(f"[edit] {ei.get_id()} already exists")
+        return True
 
     def get_status(self):
         return {
@@ -246,7 +259,7 @@ class EditTracker:
             print("chosen trace:", self.chosen_trace_path)
 
     def get_trace_info(self) -> MutantInfo:
-        assert self.chosen_trace_path is not None
+        # log_warn(f"[trace] no failed trace available for {self.name_hash}")
         return self._builder.get_trace_mutant_info(self.chosen_trace_path)
 
     def get_trace_graph(self, clear=False):
@@ -256,5 +269,6 @@ class EditTracker:
     def get_trace_graph_ratios(self, clear=False):
         def _compute_ratios():
             return self.editor.get_sub_ratios(clear)
+
         name = self.name_hash + ".ratios"
         return load_cache_or(name, _compute_ratios, clear)

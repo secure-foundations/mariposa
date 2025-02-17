@@ -388,11 +388,19 @@ class FastFailDebugger(Debugger):
         if not os.path.exists(dst_dir):
             os.makedirs(dst_dir)
 
-        for row in rank[:10].iterrows():
+        emitted_count = 0
+        for row in rank.iterrows():
+            if emitted_count >= 10:
+                break
+
             qname = row[1].qname
             action = choose_action(self.editor.get_quant_actions(qname))
             ei = self.register_edit({qname: action}, dst_dir)
             ei.edit_dir = dst_dir
-            self.create_edit_query(ei)
+
+            if self.create_edit_query(ei):
+                emitted_count += 1
+            else:
+                log_warn(f"[edit] failed to emit {ei.get_id()}")
 
         self.save_edits_meta()
