@@ -28,12 +28,15 @@ class EditInfo:
         self.edit_dir = dir
         self._actions = actions
         self.__hash_id = EditInfo.hash_actions(actions)
-        self.query_path = os.path.join(self.edit_dir, self.__hash_id + ".smt2")
 
         self.rcode = None
         self.time = None
         self.error = None
-    
+
+    @property
+    def query_path(self):
+        return os.path.join(self.edit_dir, self.__hash_id + ".smt2")
+
     @staticmethod
     def hash_actions(actions):
         m = hashlib.md5()

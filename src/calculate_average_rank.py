@@ -15,9 +15,8 @@ import glob
 import matplotlib.pyplot as plt
 
 from debugger.proof_analyzer import ProofAnalyzer
-from evaluator import Evaluator
+# from evaluator import Evaluator
 from datetime import datetime
-
 
 
 

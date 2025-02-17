@@ -28,7 +28,7 @@ def get_exp_params(is_verus):
     return qa, cfg
 
 
-class CarverStatus(Enum):
+class StrainerStatus(Enum):
     NO_PROOF = "no proof"
 
     NOT_CREATED = "not created"
@@ -39,7 +39,7 @@ class CarverStatus(Enum):
     ERROR = "some error occurred"
 
 
-class Carver:
+class Strainer:
     def __init__(self, proj_name, is_verus=False):
         self._proj_name = proj_name
         self._is_verus = is_verus
@@ -74,40 +74,46 @@ class Carver:
 
     def __init_status(self):
         if not os.path.exists(self.test_dir):
-            self._status = CarverStatus.NOT_CREATED
+            self._status = StrainerStatus.NOT_CREATED
             return
 
         proj = FACT.get_project_by_path(self.test_dir)
+        self._status = StrainerStatus.NOT_TESTED
+
         exp = FACT.try_get_exper(proj, VERI_CFG, SOLVER)
 
         if exp is None:
-            self._status = CarverStatus.NOT_TESTED
             return
 
         try:
             self._tested = SingletonAnalyzer(exp, QA_60)
         except Exception as e:
-            print(e)
-            self._status = CarverStatus.ERROR
+            print("exception: ", e)
+            self._status = StrainerStatus.ERROR
             return
 
-        self._status = CarverStatus.UNFILTERED
+        self._status = StrainerStatus.UNFILTERED
 
         if not os.path.exists(self.filter_dir):
             return
 
         qa, cfg = get_exp_params(self._is_verus)
-        proj = FACT.get_project_by_path(self.filter_dir)
 
-        try:
-            exp = FACT.try_get_exper(proj, cfg, SOLVER)
-            self._filtered = ExperAnalyzer(exp, qa)
-        except Exception as e:
-            print(e)
-            self._status = CarverStatus.ERROR
+        proj = FACT.get_project_by_path(self.filter_dir)
+        
+        exp = FACT.try_get_exper(proj, cfg, SOLVER)
+
+        if exp is None:
             return
 
-        self._status = CarverStatus.FINISHED
+        try:
+            self._filtered = ExperAnalyzer(exp, qa)
+        except Exception as e:
+            print("exception: ", e)
+            self._status = StrainerStatus.ERROR
+            return
+
+        self._status = StrainerStatus.FINISHED
 
     @property
     def tested(self) -> ExperAnalyzer:
@@ -118,7 +124,7 @@ class Carver:
         return self._filtered
 
     @property
-    def status(self) -> CarverStatus:
+    def status(self) -> StrainerStatus:
         return self._status
 
     def get_dirs(self):

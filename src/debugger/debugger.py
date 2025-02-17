@@ -1,332 +1,398 @@
-from enum import Enum
-import json
+#!/usr/bin/env python3
+
 import os
-from typing import Dict
-from tqdm import tqdm
+from pandas import DataFrame
 from tabulate import tabulate
-
-from base.defs import DEBUG_ROOT, MARIPOSA
+from tqdm import tqdm
+from calculate_average_rank import calculate_rank
+from debugger.debugger_options import DebugOptions, resolve_input_path
+from debugger.edit_tracker import EditTracker
+from debugger.demo_utils import Report
 from debugger.edit_info import EditAction, EditInfo
-from debugger.file_builder import FileBuilder
-from debugger.mutant_info import MutantInfo
-from debugger.pool_utils import run_with_pool
-from debugger.proof_analyzer import ProofAnalyzer
-from debugger.informed_editor import InformedEditor
-from utils.cache_utils import load_cache_or
-from utils.query_utils import find_verus_procedure_name
-from utils.system_utils import *
+from debugger.informed_editor import choose_action
+from utils.cache_utils import (
+    clear_cache,
+    has_cache,
+    load_cache,
+    save_cache,
+)
+from base.factory import FACT
+from utils.system_utils import (
+    get_name_hash,
+    list_smt2_files,
+    log_error,
+    log_info,
+    log_warn,
+)
+from enum import Enum
+import argparse
+from debugger.strainer import Strainer, StrainerStatus
+from debugger.debugger_options import DebugOptions, resolve_input_path
 
 
-def _run_edit(ei: EditInfo):
-    ei.run_query()
-    return ei
-
-def resolve_input_path(input_path, verbose):
-    if len(input_path) == 10:
-        input_path = f"dbg/{input_path}"
-    if input_path.startswith("dbg/") or input_path.startswith("./dbg/"):
-        assert not input_path.endswith(".smt2")
-        meta = json.load(open(f"{input_path}/meta.json", "r"))
-        input_path = meta["given_query"]
-        if verbose:
-            log_info(f"[init] resolved to {input_path}")
-    if not os.path.exists(input_path):
-        log_error(f"[init] query path {input_path} not found")
-        sys.exit(1)
-    return input_path
+def shorten_qname(qname: str):
+    if len(qname) > 80:
+        return qname[:80] + "..."
+    return qname
 
 
-class Debugger3:
+class DbgMode(Enum):
+    SINGLETON = "singleton"
+    DOUBLETON = "doubleton"
+    FAST_FAIL = "fast_fail"
+
+
+class Debugger(EditTracker):
     def __init__(
         self,
-        query_path,
-        ids_available=False,
-        retry_failed=False,
-        clear_all=False,
-        clear_edits=False,
-        clear_traces=False,
-        clear_cores=False,
-        clear_proofs=False,
-        skip_core=False,
-        verbose=True,
+        query_path: str,
+        options=DebugOptions(),
     ):
-        query_path = resolve_input_path(query_path, verbose)
-        self.given_query_path = query_path
-        self.name_hash = get_name_hash(query_path)
-        self.base_name = os.path.basename(query_path)
-        self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
+        query_path = resolve_input_path(query_path, options.verbose)
 
-        if verbose:
-            log_info(f"[init] dbg root: {self.sub_root}/")
-
-        self.orig_path = f"{self.sub_root}/orig.smt2"
-        self.query_meta = f"{self.sub_root}/meta.json"
-
-        self.chosen_proof_path = None
-        self.chosen_trace_path = None
-
-        self.__clear_proof_cache = False
-
-        if clear_all:
-            self.__clear_proof_cache = True
-
-        self.edit_infos: Dict[int, EditInfo] = dict()
-        self.edits_meta = f"{self.sub_root}/edits.json"
-        self.edit_dir = f"{self.sub_root}/edits/"
-
-        self.splitter_name = "splitter_" + self.name_hash
-        self.splitter_dir = f"data/projs/{self.splitter_name}/base.z3"
-
-        self.__init_dirs(clear_all)
-        self.__init_edits(clear_edits)
-        self.__init_meta()
-
-        self._builder = FileBuilder(
+        super().__init__(
             query_path,
-            self.sub_root,
-            ids_available=ids_available,
-            retry_failed=retry_failed,
-            clear_traces=clear_traces,
-            clear_cores=clear_cores,
-            clear_proofs=clear_proofs,
-            skip_core=skip_core,
+            options,
         )
 
-        if self.chosen_proof_path is None:
-            self.set_proof()
+        if not hasattr(self, "proj_name"):
+            self.proj_name = "singleton_" + self.name_hash
+            self._report_cache = self.name_hash + ".report"
 
-        self._editor = None
+        self._strainer = None
+        self._report = None
 
-    def set_proof(self):
-        if len(self._builder.proofs) == 0:
-            log_warn("[proof] no proof available")
-            return
-        self.chosen_proof_path = self._builder.proofs[0].proof_path
-        self.chosen_trace_path = self._builder.get_candidate_trace().trace_path
-        self.__save_query_meta()
-
-    def reroll_trace(self):
-        self._builder.build_traces()
-
-    def __init_dirs(self, reset):
-        if reset and os.path.exists(self.sub_root):
-            os.system(f"rm -rf {self.sub_root}")
-
-        create_dir(self.edit_dir)
-
-        if not reset:
+        if self.get_status()["proofs"] == 0:
+            self.status = StrainerStatus.NO_PROOF
             return
 
-    def __init_edits(self, clear_edits):
-        self.edit_infos = dict()
-
-        if clear_edits:
-            self.clear_edits()
+        if has_cache(self._report_cache):
+            self.status = StrainerStatus.FINISHED
+            self._report = load_cache(self._report_cache)
             return
 
-        if not os.path.exists(self.edits_meta):
-            return
+        self._strainer = Strainer(self.proj_name)
+        self.status = self._strainer.status
 
-        infos = json.load(open(self.edits_meta, "r"))
+    def _build_tested(self):
+        tested = []
+        root_quants = self.editor.list_root_qnames(skip_ignored=False)
+        tested_qnames = set()
 
-        for ei in infos:
-            if not os.path.isdir(ei["edit_dir"]):
+        for eid in self.strainer.tested.qids:
+            ei = self.look_up_edit_with_id(eid)
+            qname, action = ei.get_singleton_edit()
+            rc, et = self.strainer.tested.get_query_result(eid)
+            tested.append((qname, action.value, str(rc), et / 1000, ei.query_path))
+            tested_qnames.add(qname)
+
+        skipped = set(root_quants) - tested_qnames
+
+        tested = DataFrame(
+            tested, columns=["qname", "action", "result", "time", "edit_path"]
+        )
+        return tested, skipped
+
+    def _build_stabilized(self):
+        stabilized = []
+        for eid in self.strainer.filtered.get_stable_edit_ids():
+            ei = self.look_up_edit_with_id(eid)
+            qname, action = ei.get_singleton_edit()
+            if qname == "prelude_fuel_defaults":
                 continue
-            ei = EditInfo.from_dict(ei)
-            self.edit_infos[ei.get_id()] = ei
-
-        # self.save_edits_meta()
-
-    def __init_meta(self):
-        if not os.path.exists(self.query_meta):
-            self.__save_query_meta()
-            log_info(f"[init] basic meta data written to {self.query_meta}")
-        else:
-            self.meta_data = json.load(open(self.query_meta, "r"))
-            self.chosen_proof_path = self.meta_data["chosen_proof"]
-            self.chosen_trace_path = self.meta_data["chosen_trace"]
-
-    def __save_query_meta(self):
-        verus_proc = find_verus_procedure_name(self.given_query_path)
-        self.meta_data = {
-            "given_query": self.given_query_path,
-            "verus_proc": verus_proc,
-            "sub_root": self.sub_root,
-            "chosen_proof": self.chosen_proof_path,
-            "chosen_trace": self.chosen_trace_path,
-        }
-        json.dump(
-            self.meta_data,
-            open(self.query_meta, "w+"),
-        )
-
-    def collect_garbage(self):
-        if not self.chosen_trace_path:
-            self.chosen_trace_path = self._builder.get_candidate_trace().trace_path
-        self._builder.collect_garbage(self.chosen_trace_path)
-
-    def reset_proof_cache(self):
-        if len(self._builder.proofs) == 0:
-            return
-        self.__clear_proof_cache = True
-        self.editor is not None
+            stabilized.append((qname, action.value, ei.query_path))
+        stabilized = DataFrame(stabilized, columns=["qname", "action", "edit_path"])
+        return stabilized
 
     @property
-    def editor(self) -> InformedEditor:
-        if self._editor is not None:
-            return self._editor
-        assert len(self._builder.proofs) != 0
-        assert self.chosen_proof_path is not None
-        log_debug(f"[edit] proof path: {self.chosen_proof_path}")
-        log_debug(f"[edit] trace path: {self.chosen_trace_path}")
-        if self.__clear_proof_cache:
-            log_info("[edit] clearing proof cache")
-        proof = ProofAnalyzer.from_proof_file(
-            self.chosen_proof_path, clear=self.__clear_proof_cache
-        )
-        trace = self._builder.get_trace_mutant_info(self.chosen_trace_path)
-        assert trace.has_trace()
-        self._editor = InformedEditor(
-            self.orig_path,
-            proof,
-            trace,
-        )
-        return self._editor
+    def strainer(self) -> Strainer:
+        if self._strainer is None:
+            self._strainer = Strainer(self.proj_name)
+        return self._strainer
 
-    def save_edits_meta(self):
-        infos = [ei.to_dict() for ei in self.edit_infos.values()]
+    @property
+    def report(self) -> Report:
+        if self.status != StrainerStatus.FINISHED:
+            return None
 
-        with open(self.edits_meta, "w+") as f:
-            json.dump(infos, f)
+        if self._report is None:
+            r = Report()
+            r.tested, r.skipped = self._build_tested()
+            if len(r.tested) == 0:
+                log_error(f"[eval] {self.proj_name} has no tested report")
+                assert False
+            r.stabilized = self._build_stabilized()
+            r.freq = self.editor.get_inst_report()
+            if len(r.freq) == 0:
+                log_error(f"[eval] {self.proj_name} has no freq report")
+                assert False
+            self._report = r
+            save_cache(self._report_cache, r)
+        return self._report
 
-    def clear_edits(self):
-        if os.path.exists(self.edit_dir):
-            count = len(os.listdir(self.edit_dir))
-            if count > 10:
-                confirm_input(f"clear {count} edits?")
-            os.system(f"rm {self.edit_dir}*")
-        self.edit_infos = dict()
+    def register_singleton(self):
+        singleton_edits = self.editor.get_singleton_actions()
+        dest_dir = self.strainer.test_dir()
+
+        for edit in singleton_edits:
+            self.register_edit(edit, dest_dir)
+
         self.save_edits_meta()
-        log_info("[edit] cleared")
+        return singleton_edits
 
-    def test_edit(self, edit):
-        ei = self.register_edit_info(edit)
-        if ei.has_data():
-            return ei
-        ei.run_query()
-        self.edit_infos[ei.get_id()] = ei
-        return ei
+    def create_project(self):
+        singleton_edits = self.register_singleton()
+        dest_dir = self.strainer.test_dir()
 
-    def test_edit_with_id(self, edit_id) -> EditInfo:
-        assert edit_id in self.edit_infos
-        ei = self.edit_infos[edit_id]
-        if not ei.query_exists():
-            self.editor.save_edit(ei)
-        if not ei.has_data():
-            ei.run_query()
-        return ei
+        file_size = os.path.getsize(self.orig_path) / 1024
+        total_size = file_size * len(singleton_edits) / 1024 / 1024
 
-    def look_up_edit_with_id(self, eid) -> EditInfo:
-        return self.edit_infos[eid]
+        if total_size > 20:
+            log_error(f"[edit] {dest_dir} aborted, {total_size:.2f}G may be used!")
+            return
 
-    def contains_edit_info(self, ei: EditInfo):
-        return ei.get_id() in self.edit_infos
+        log_info(f"[edit] estimated size: {total_size:.2f}G")
 
-    def get_edited_qnames(self, eids):
-        res = set()
-        for eid in eids:
-            res |= self.edit_infos[eid].actions.keys()
-        return res
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
 
-    def register_edit(self, actions, output_dir=None) -> EditInfo:
-        if isinstance(actions, set):
-            actions = {qid: self.editor.get_quant_action(qid) for qid in actions}
-        else:
-            assert isinstance(actions, dict)
+        for action in tqdm(singleton_edits):
+            ei = EditInfo(dest_dir, action)
+            assert self.contains_edit_info(ei)
+            if ei.query_exists():
+                log_info(f"[edit] {ei.get_id()} already exists")
+                continue
+            self.create_edit_query(ei)
 
-        if not output_dir:
-            output_dir = self.edit_dir
+        log_info(
+            f"[edit] [proj] {self.proj_name} has {len(list_smt2_files(dest_dir))} queries"
+        )
+        return dest_dir
 
-        ei = EditInfo(output_dir, actions)
-        eid = ei.get_id()
+    def collect_garbage(self):
+        super().collect_garbage()
 
-        if eid in self.edit_infos:
-            return self.edit_infos[eid]
+        if self.status != StrainerStatus.FINISHED:
+            log_warn(
+                f"[eval] skipped GC on unfinished project {self.status} {self.given_query_path}"
+            )
+            return
 
-        self.edit_infos[eid] = ei
+        seps = self.report.stabilized.edit_path.values
 
-        return ei
+        for row in self.report.tested.itertuples():
+            edit_path = row.edit_path
+            if edit_path in seps:
+                # if not os.path.exists(edit_path):
+                #     base = os.path.basename(edit_path)
+                #     base = base.replace(".smt2", "")
+                #     ei = self.look_up_edit_with_id(base)
+                #     self.editor.edit_by_info(ei)
+                #     assert os.path.exists(edit_path)
+                continue
+            if row.result == "error":
+                continue
+            if os.path.exists(edit_path):
+                log_info(f"removing {edit_path}")
+                os.remove(edit_path)
 
-    def look_up_edit(self, edit):
-        res = []
+    def is_registered_edit(self, ei: EditInfo):
+        return ei.is_singleton()
 
-        for ei in self.edit_infos:
-            if set(ei.edit.keys()) & edit.keys() != set():
-                res.append(ei)
+    def get_edit_counts(self):
+        existing = list_smt2_files(self.strainer.test_dir())
 
-        return res
+        if existing is None:
+            existing = []
 
-    def create_edit_query(self, ei: EditInfo):
-        eid = ei.get_id()
-        assert eid in self.edit_infos
+        registered_count = 0
 
-        if not ei.query_exists():
-            self.editor.edit_by_info(ei)
-        else:
-            log_debug(f"[edit] {ei.get_id()} already exists")
+        for ei in self.edit_infos.values():
+            if not self.is_registered_edit(ei):
+                continue
+            registered_count += 1
 
-    # def _try_edits(self, targets, run_query):
-    #     args = []
+        return registered_count, len(existing)
 
-    #     for edit in tqdm(targets):
-    #         ei = self.register_edit_info(edit)
-    #         if ei.has_data():
-    #             continue
-    #         args.append(ei)
+    def get_dirs_to_sync(self):
+        return [
+            self.sub_root,
+        ] + self.strainer.get_dirs()
 
-    #     if not run_query:
-    #         log_info(f"[edit] skipped running, queries saved in {self.edit_dir}")
-    #         return
+    def reset_project(self):
+        self.strainer.clear_all()
 
-    #     run_res = run_with_pool(_run_edit, args)
+    def clear_report_cache(self):
+        clear_cache(self._report_cache)
 
-    #     for ei in run_res:
-    #         assert ei.has_data()
-    #         self.__edit_infos[ei.get_id()] = ei
 
-    def get_status(self):
-        return {
-            "verus_proc": self.meta_data["verus_proc"],
-            "sub_root": self.meta_data["sub_root"],
-            "traces": len(self._builder.traces),
-            "cores": len(self._builder.cores),
-            "proofs": len(self._builder.proofs),
-        }
+class DoubletonDebugger(Debugger):
+    def __init__(
+        self,
+        query_path: str,
+        options=DebugOptions(),
+    ):
+        # this is just dumb
+        query_path = resolve_input_path(query_path, options.verbose)
+        self.name_hash = get_name_hash(query_path)
 
-    def print_status(self):
-        status = self.get_status()
+        self.proj_name = "doubleton_" + self.name_hash
+        self._report_cache = self.name_hash + ".2.report"
 
-        print("given query:", self.given_query_path)
-        print("verus proc:", status["verus_proc"])
+        super().__init__(
+            query_path,
+            options,
+        )
 
-        for trace in self._builder.traces:
-            print("trace:", trace.trace_path, trace.trace_rcode, trace.trace_time)
+    def is_registered_edit(self, ei: EditInfo):
+        return ei.is_doubleton()
 
-        if self.chosen_proof_path:
-            print("chosen proof:", self.chosen_proof_path)
-            print("chosen trace:", self.chosen_trace_path)
+    def create_project(self):
+        dest_dir = self.strainer.test_dir
+        log_info(f"[doubleton] creating doubleton project {dest_dir}")
 
-    def get_trace_info(self) -> MutantInfo:
-        assert self.chosen_trace_path is not None
-        return self._builder.get_trace_mutant_info(self.chosen_trace_path)
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
 
-    def get_trace_graph(self, clear=False):
+        ratios = self.get_trace_graph_ratios()
         mi = self.get_trace_info()
-        return mi.get_trace_graph(clear)
+        trace_graph = mi.get_trace_graph()
 
-    def get_trace_graph_ratios(self, clear=False):
-        def _compute_ratios():
-            return self.editor.get_sub_ratios(clear)
-        name = self.name_hash + ".ratios"
-        return load_cache_or(name, _compute_ratios, clear)
+        roots = dict()
+        singleton_scores = dict()
+        TOP_N = 100
 
+        for root in list(self.editor.list_qnames(root_only=True)):
+            if root not in ratios:
+                continue
+
+            actions = self.editor.get_quant_actions(root)
+            # print(actions)
+
+            if (
+                actions == {EditAction.SKOLEMIZE}
+                or actions == {EditAction.NONE}
+                or actions == {EditAction.ERROR}
+            ):
+                continue
+
+            roots[root] = set(self.editor.trace_stats.get_group_stat(root).keys())
+            singleton_scores[root] = trace_graph.aggregate_scores(ratios[root])
+
+        singleton_ranked = [
+            (k, v)
+            for k, v in sorted(
+                singleton_scores.items(), key=lambda item: item[1], reverse=True
+            )
+        ]
+        ranked = [x[0] for x in singleton_ranked]
+
+        scores = dict()
+
+        for i, root1 in enumerate(tqdm(ranked[:TOP_N])):
+            ratio1 = ratios[root1]
+            group1 = roots[root1]
+
+            for root2 in ranked[i + 1 : i + 1 + TOP_N]:
+                ratio2 = ratios[root2]
+                group2 = roots[root2]
+                merged = {}
+                for k in ratio1.keys():
+                    merged[k] = max(ratio1[k], ratio2.get(k, 0))
+                for k in ratio2.keys():
+                    merged[k] = max(ratio2[k], ratio1.get(k, 0))
+                for k in list(merged.keys()):
+                    if merged[k] == 0:
+                        merged.pop(k)
+                starts = group1 | group2
+                res = trace_graph.compute_sub_ratios(starts=starts, bootstrap=merged)
+                score = trace_graph.aggregate_scores(res)
+                # if score > cur_best:
+                #     cur_best = score
+                #     selected = root2
+                scores[(root1, root2)] = score
+
+        scores = [(k, v) for k, v in scores.items() if v > 0]
+        sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
+        sorted_scores = sorted_scores[:TOP_N]
+
+        for (qname1, qname2), score in sorted_scores:
+            action1 = choose_action(self.editor.get_quant_actions(qname1))
+            action2 = choose_action(self.editor.get_quant_actions(qname2))
+            edit = {qname1: action1, qname2: action2}
+            # print(edit)
+            ei = self.register_edit(edit, dest_dir)
+            self.create_edit_query(ei)
+
+        self.save_edits_meta()
+
+    def _build_tested(self):
+        tested = []
+
+        for eid in self.strainer.tested.qids:
+            ei = self.look_up_edit_with_id(eid)
+            (q1, a1), (q2, a2) = ei.get_doubleton_edit()
+            rc, et = self.strainer.tested.get_query_result(eid)
+            tested.append(
+                (q1, a1.value, q2, a2.value, str(rc), et / 1000, ei.query_path)
+            )
+
+        skipped = set()
+
+        tested = DataFrame(
+            tested,
+            columns=[
+                "qname1",
+                "action1",
+                "qname2",
+                "action2",
+                "result",
+                "time",
+                "edit_path",
+            ],
+        )
+        return tested, skipped
+
+    def _build_stabilized(self):
+        stabilized = []
+        for eid in self.strainer.filtered.get_stable_edit_ids():
+            ei = self.look_up_edit_with_id(eid)
+            (q1, a1), (q2, a2) = ei.get_doubleton_edit()
+            stabilized.append((q1, a1.value, q2, a2.value, ei.query_path))
+        stabilized = DataFrame(
+            stabilized, columns=["qname1", "action1", "qname2", "action2", "edit_path"]
+        )
+        return stabilized
+
+
+class FastFailDebugger(Debugger):
+    def __init__(
+        self,
+        query_path: str,
+        options=DebugOptions(),
+    ):
+        # this is just dumb
+        query_path = resolve_input_path(query_path, options.verbose)
+        self.name_hash = get_name_hash(query_path)
+
+        self.proj_name = "fast_fail_" + self.name_hash
+        self._report_cache = self.name_hash + ".ff.report"
+
+        super().__init__(query_path, options)
+
+    def create_project(self):
+        name_hash = "cache/" + self.name_hash + ".report"
+        rank = calculate_rank(name_hash, ranking_heuristic="proof_count")
+        dst_dir = self.strainer.test_dir
+
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+
+        for row in rank[:10].iterrows():
+            qname = row[1].qname
+            action = choose_action(self.editor.get_quant_actions(qname))
+            ei = self.register_edit({qname: action}, dst_dir)
+            ei.edit_dir = dst_dir
+            self.create_edit_query(ei)
+
+        self.save_edits_meta()
