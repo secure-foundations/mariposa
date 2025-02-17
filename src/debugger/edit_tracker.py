@@ -7,7 +7,6 @@ from debugger.debugger_options import DebugOptions
 from debugger.edit_info import EditAction, EditInfo
 from debugger.mutant_builder import MutantBuilder
 from debugger.mutant_info import MutantInfo
-from debugger.pool_utils import run_with_pool
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.informed_editor import InformedEditor
 from utils.cache_utils import load_cache_or

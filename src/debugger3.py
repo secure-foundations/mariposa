@@ -29,6 +29,11 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--build-report",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
         "--clear-report-cache",
         default=False,
         action="store_true",
@@ -93,13 +98,17 @@ def main():
     if args.collect_garbage:
         dbg.collect_garbage()
 
+    if args.build_report:
+        if dbg.report is None:
+            print("no report available...")
+
+    if args.clear_report_cache:
+        dbg.clear_report_cache()
+
     if args.print_report:
         if r := dbg.report:
             r.print_stabilized()
         print("no report available...")
-
-    if args.clear_report_cache:
-        dbg.clear_report_cache()
 
     if args.reset_project:
         dbg.reset_project()

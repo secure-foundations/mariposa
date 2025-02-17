@@ -62,7 +62,7 @@ class Debugger(EditTracker):
         self._strainer = None
         self._report = None
 
-        if self.get_status()["proofs"] == 0:
+        if not self.proof_available():
             self.status = StrainerStatus.NO_PROOF
             return
 
@@ -221,6 +221,7 @@ class Debugger(EditTracker):
 
     def reset_project(self):
         self.strainer.clear_all()
+        self.clear_report_cache()
 
     def clear_report_cache(self):
         clear_cache(self._report_cache)
