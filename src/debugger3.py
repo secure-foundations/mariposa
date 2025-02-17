@@ -3,7 +3,7 @@
 import argparse
 import z3
 from debugger.debugger_options import DebugOptions
-from debugger.debugger import DbgMode, Debugger, DoubletonDebugger, FastFailDebugger, TimeoutDebugger
+from debugger.debugger import DbgMode, get_debugger
 
 
 def main():
@@ -14,8 +14,8 @@ def main():
     parser.add_argument(
         "-m",
         "--mode",
-        default="singleton",
-        choices=["singleton", "doubleton", "fast_fail", "timeout"],
+        default="auto",
+        choices=["auto", "singleton", "doubleton", "fast_fail", "timeout"],
         help="the mode to operate on",
     )
     parser.add_argument(
@@ -77,28 +77,7 @@ def main():
 
     mode = DbgMode(args.mode)
 
-    if mode == DbgMode.SINGLETON:
-        dbg = Debugger(
-            args.input_query_path,
-            options,
-        )
-    elif mode == DbgMode.DOUBLETON:
-        dbg = DoubletonDebugger(
-            args.input_query_path,
-            options,
-        )
-    elif mode == DbgMode.FAST_FAIL:
-        dbg = FastFailDebugger(
-            args.input_query_path,
-            options,
-        )
-    elif mode == DbgMode.TIMEOUT:
-        dbg = TimeoutDebugger(
-            args.input_query_path,
-            options,
-        )
-    else:
-        assert False
+    dbg = get_debugger(args.input_query_path, mode, options)
 
     if args.collect_garbage:
         dbg.collect_garbage()
@@ -113,7 +92,8 @@ def main():
     if args.print_report:
         if r := dbg.report:
             r.print_stabilized()
-        print("no report available...")
+        else:
+            print("no report available...")
 
     if args.reset_project:
         dbg.reset_project()

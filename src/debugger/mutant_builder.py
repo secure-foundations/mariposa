@@ -2,6 +2,7 @@ import json
 import binascii, random
 import pandas as pd
 import os
+from base.defs import DEBUG_ROOT
 from base.solver import RCode
 from debugger.debugger_options import DebugOptions
 from debugger.pool_utils import run_with_pool
@@ -12,6 +13,7 @@ from utils.query_utils import (
 )
 from utils.system_utils import (
     create_dir,
+    get_name_hash,
     list_files,
     list_files_ext,
     list_smt2_files,
@@ -64,10 +66,12 @@ class MutantBuilder:
     def __init__(
         self,
         query_path,
-        sub_root,
         options: DebugOptions,
     ):
-        self.sub_root = sub_root
+        self.given_query_path = query_path
+        self.name_hash = get_name_hash(query_path)
+        self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
+
         self.orig_path = f"{self.sub_root}/orig.smt2"
         self.lbl_path = f"{self.sub_root}/lbl.smt2"
 
@@ -271,7 +275,7 @@ class MutantBuilder:
                 _build_proof,
                 args,
                 goal=goal,
-                time_bound=PROOF_TOTAL_TIME_LIMIT_SEC,
+                time_bound=self.options.proof_total_time_sec,
             )
 
         log_info(f"[proof] from core (!) yields {len(res)} proofs")
@@ -280,7 +284,7 @@ class MutantBuilder:
             log_info(f"[proof] from scratch, currently {len(res)} proofs")
             args = self.__create_tasks([Mutation.SHUFFLE, Mutation.RESEED])
             res += run_with_pool(
-                _build_proof, args, goal=goal, time_bound=PROOF_TOTAL_TIME_LIMIT_SEC
+                _build_proof, args, goal=goal, time_bound=self.options.proof_total_time_sec
             )
 
         log_check(len(res) != 0, "no proof found")

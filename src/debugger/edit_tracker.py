@@ -14,20 +14,17 @@ from utils.query_utils import find_verus_procedure_name
 from utils.system_utils import *
 
 
-class EditTracker:
+class EditTracker(MutantBuilder):
     def __init__(
         self,
         query_path,
         options: DebugOptions,
     ):
-        self.given_query_path = query_path
-        self.name_hash = get_name_hash(query_path)
-        self.sub_root = f"{DEBUG_ROOT}{self.name_hash}"
+        super().__init__(query_path, options)
 
         if options.verbose:
             log_info(f"[init] dbg root: {self.sub_root}/")
 
-        self.orig_path = f"{self.sub_root}/orig.smt2"
         self.query_meta = f"{self.sub_root}/meta.json"
 
         self.chosen_proof_path = None
@@ -35,20 +32,15 @@ class EditTracker:
         self.__clear_proof_cache = False
 
         self.edit_infos: Dict[int, EditInfo] = dict()
+
         self.edits_meta = f"{self.sub_root}/edits.json"
         self.edit_dir = f"{self.sub_root}/edits/"
 
-        if not os.path.exists(self.sub_root):
+        if not os.path.exists(self.edit_dir):
             create_dir(self.edit_dir)
 
         self.__init_edits()
         self.__init_meta()
-
-        self._builder = MutantBuilder(
-            query_path,
-            self.sub_root,
-            options,
-        )
 
         self.set_proof()
         self.set_trace()
@@ -60,10 +52,10 @@ class EditTracker:
             self.chosen_proof_path
         ):
             return
-        if len(self._builder.proofs) == 0:
-            log_warn("[proof] no proof available")
+        if not self.proof_available():
+            log_warn("[proof] no proofs available")
             return
-        self.chosen_proof_path = self._builder.proofs[0].proof_path
+        self.chosen_proof_path = self.proofs[0].proof_path
         self.__save_query_meta()
 
     def set_trace(self):
@@ -71,13 +63,13 @@ class EditTracker:
             self.chosen_trace_path
         ):
             return
-        if trace := self._builder.get_candidate_trace():
+        if trace := self.get_candidate_trace():
             self.chosen_trace_path = trace.trace_path
             log_info(f"[trace] chosen: {self.chosen_trace_path}")
         self.__save_query_meta()
 
     def reroll_trace(self):
-        self._builder.build_traces()
+        self.build_traces()
 
     def reset_all(self):
         if os.path.exists(self.sub_root):
@@ -123,22 +115,22 @@ class EditTracker:
     def collect_garbage(self):
         if not self.chosen_trace_path:
             self.set_trace()
-        self._builder.collect_garbage(self.chosen_trace_path)
+        self.collect_garbage(self.chosen_trace_path)
 
     def reset_proof_cache(self):
-        if len(self._builder.proofs) == 0:
+        if len(self.proofs) == 0:
             return
         self.__clear_proof_cache = True
         self.editor is not None
 
     def proof_available(self):
-        return len(self._builder.proofs) != 0
+        return len(self.proofs) != 0
 
     @property
     def editor(self) -> InformedEditor:
         if self._editor is not None:
             return self._editor
-        assert len(self._builder.proofs) != 0
+        assert len(self.proofs) != 0
         assert self.chosen_proof_path is not None
         log_debug(f"[edit] proof path: {self.chosen_proof_path}")
         log_debug(f"[edit] trace path: {self.chosen_trace_path}")
@@ -147,7 +139,7 @@ class EditTracker:
         proof = ProofAnalyzer.from_proof_file(
             self.chosen_proof_path, clear=self.__clear_proof_cache
         )
-        trace = self._builder.get_trace_mutant_info(self.chosen_trace_path)
+        trace = self.get_trace_mutant_info(self.chosen_trace_path)
         assert trace.has_trace()
         self._editor = InformedEditor(
             self.orig_path,
@@ -243,9 +235,9 @@ class EditTracker:
         return {
             "verus_proc": self.meta_data["verus_proc"],
             "sub_root": self.meta_data["sub_root"],
-            "traces": len(self._builder.traces),
-            "cores": len(self._builder.cores),
-            "proofs": len(self._builder.proofs),
+            "traces": len(self.traces),
+            "cores": len(self.cores),
+            "proofs": len(self.proofs),
         }
 
     def print_status(self):
@@ -254,7 +246,7 @@ class EditTracker:
         print("given query:", self.given_query_path)
         print("verus proc:", status["verus_proc"])
 
-        for trace in self._builder.traces:
+        for trace in self.traces:
             print("trace:", trace.trace_path, trace.trace_rcode, trace.trace_time)
 
         if self.chosen_proof_path:
@@ -263,7 +255,7 @@ class EditTracker:
 
     def get_trace_info(self) -> MutantInfo:
         # log_warn(f"[trace] no failed trace available for {self.name_hash}")
-        return self._builder.get_trace_mutant_info(self.chosen_trace_path)
+        return self.get_trace_mutant_info(self.chosen_trace_path)
 
     def get_trace_graph(self, clear=False):
         mi = self.get_trace_info()

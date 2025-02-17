@@ -3,10 +3,8 @@ from typing import Dict
 
 from debugger.debugger import (
     DbgMode,
-    Debugger,
-    FastFailDebugger,
-    DoubletonDebugger,
-    TimeoutDebugger,
+    SingletonDebugger,
+    get_debugger,
 )
 from debugger.strainer import StrainerStatus
 from utils.analysis_utils import Categorizer, fmt_percent
@@ -17,19 +15,10 @@ class BenchViewer:
         self.status = Categorizer()
 
         self.__name_hashes = dict()
-        self.__reviewers: Dict[str, Debugger] = dict()
+        self.__reviewers: Dict[str, SingletonDebugger] = dict()
+        args = [(q, mode) for q in queries]
         pool = multiprocessing.Pool(8)
-
-        if mode == DbgMode.SINGLETON:
-            reviewers = pool.map(Debugger, queries)
-        elif mode == DbgMode.DOUBLETON:
-            reviewers = pool.map(DoubletonDebugger, queries)
-        elif mode == DbgMode.FAST_FAIL:
-            reviewers = pool.map(FastFailDebugger, queries)
-        elif mode == DbgMode.TIMEOUT:
-            reviewers = pool.map(TimeoutDebugger, queries)
-        else:
-            assert False
+        reviewers = pool.starmap(get_debugger, args)
 
         for r in reviewers:
             self.__reviewers[r.given_query_path] = r
@@ -49,7 +38,7 @@ class BenchViewer:
             else:
                 self.unfixable.add(q)
 
-    def __getitem__(self, key) -> Debugger:
+    def __getitem__(self, key) -> SingletonDebugger:
         if key in self.__name_hashes:
             key = self.__name_hashes[key]
         return self.__reviewers[key]

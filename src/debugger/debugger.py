@@ -9,7 +9,8 @@ from debugger.debugger_options import DebugOptions, resolve_input_path
 from debugger.edit_tracker import EditTracker
 from debugger.demo_utils import Report
 from debugger.edit_info import EditAction, EditInfo
-from debugger.informed_editor import choose_action
+from debugger.informed_editor import InformedEditor, choose_action
+from debugger.mutant_info import TraceFailure
 from utils.cache_utils import (
     clear_cache,
     has_cache,
@@ -37,33 +38,75 @@ def shorten_qname(qname: str):
 
 
 class DbgMode(Enum):
+    AUTO = "auto"
     SINGLETON = "singleton"
     DOUBLETON = "doubleton"
     FAST_FAIL = "fast_fail"
     TIMEOUT = "timeout"
 
+def get_debugger(
+    query_path: str,
+    mode: DbgMode,
+    options=DebugOptions(),
+):
+    query_path = resolve_input_path(query_path, options.verbose)
 
-class Debugger(EditTracker):
+    tracker = EditTracker(
+        query_path,
+        options,
+    )
+
+    if mode == DbgMode.AUTO:
+        trace = tracker.get_candidate_trace()
+        reason = trace.get_failed_reason()
+
+        if reason == TraceFailure.TIMEOUT:
+            mode = DbgMode.TIMEOUT
+        elif reason == TraceFailure.FAST_UNKNOWN:
+            mode = DbgMode.FAST_FAIL
+        elif reason == TraceFailure.NOT_FAIL:
+            log_warn(
+                f"[init] {tracker.name_hash} trace did not fail, fallback to fast_fail"
+            )
+            mode = DbgMode.FAST_FAIL
+        elif reason == TraceFailure.SLOW_UNKNOWN:
+            log_warn(
+                f"[init] {tracker.name_hash} trace slow unknown, fallback to timeout"
+            )
+            mode = DbgMode.TIMEOUT
+        else:
+            log_error(f"[init] {tracker.name_hash} unknown trace failure {reason}")
+            assert False
+        log_info(f"[init] {tracker.name_hash} auto selected {mode}")
+
+    if mode == DbgMode.SINGLETON:
+        return SingletonDebugger(tracker)
+    if mode == DbgMode.DOUBLETON:
+        return DoubletonDebugger(tracker)
+    if mode == DbgMode.FAST_FAIL:
+        return FastFailDebugger(tracker)
+    if mode == DbgMode.TIMEOUT:
+        return TimeoutDebugger(tracker)
+
+    log_error(f"[init] unknown debugger mode {mode}")
+    assert False
+
+class SingletonDebugger:
     def __init__(
         self,
-        query_path: str,
-        options=DebugOptions(),
+        tracker: EditTracker,
     ):
-        query_path = resolve_input_path(query_path, options.verbose)
-
-        super().__init__(
-            query_path,
-            options,
-        )
+        self.name_hash = tracker.name_hash
 
         if not hasattr(self, "proj_name"):
             self.proj_name = "singleton_" + self.name_hash
             self._report_cache = self.name_hash + ".report"
 
+        self._tracker = tracker
         self._strainer = None
         self._report = None
 
-        if not self.proof_available():
+        if not self._tracker.proof_available():
             self.status = StrainerStatus.NO_PROOF
             return
 
@@ -74,6 +117,10 @@ class Debugger(EditTracker):
 
         self._strainer = Strainer(self.proj_name)
         self.status = self._strainer.status
+
+    @property
+    def editor(self) -> InformedEditor:
+        return self.edit_tracker.editor
 
     def _build_tested(self):
         tested = []
@@ -228,23 +275,14 @@ class Debugger(EditTracker):
         clear_cache(self._report_cache)
 
 
-class DoubletonDebugger(Debugger):
+class DoubletonDebugger(SingletonDebugger):
     def __init__(
         self,
-        query_path: str,
-        options=DebugOptions(),
+        tracker: EditTracker,
     ):
-        # this is just dumb
-        query_path = resolve_input_path(query_path, options.verbose)
-        self.name_hash = get_name_hash(query_path)
-
-        self.proj_name = "doubleton_" + self.name_hash
-        self._report_cache = self.name_hash + ".2.report"
-
-        super().__init__(
-            query_path,
-            options,
-        )
+        self.proj_name = "doubleton_" + tracker.name_hash
+        self._report_cache = tracker.name_hash + ".2.report"
+        super().__init__(tracker)
 
     def is_registered_edit(self, ei: EditInfo):
         return ei.is_doubleton()
@@ -367,20 +405,14 @@ class DoubletonDebugger(Debugger):
         return stabilized
 
 
-class FastFailDebugger(Debugger):
+class FastFailDebugger(SingletonDebugger):
     def __init__(
         self,
-        query_path: str,
-        options=DebugOptions(),
+        tracker: EditTracker,
     ):
-        # this is just dumb
-        query_path = resolve_input_path(query_path, options.verbose)
-        self.name_hash = get_name_hash(query_path)
-
-        self.proj_name = "fast_fail_" + self.name_hash
-        self._report_cache = self.name_hash + ".ff.report"
-
-        super().__init__(query_path, options)
+        self.proj_name = "fast_fail_" + tracker.name_hash
+        self._report_cache = tracker.name_hash + ".ff.report"
+        super().__init__(tracker)
 
     def create_project(self):
         name_hash = "cache/" + self.name_hash + ".report"
@@ -408,20 +440,16 @@ class FastFailDebugger(Debugger):
         self.save_edits_meta()
 
 
-class TimeoutDebugger(Debugger):
+class TimeoutDebugger(SingletonDebugger):
     def __init__(
         self,
-        query_path: str,
-        options=DebugOptions(),
+        tracker: EditTracker,
     ):
         # this is just dumb
-        query_path = resolve_input_path(query_path, options.verbose)
-        self.name_hash = get_name_hash(query_path)
+        self.proj_name = "timeout_" + tracker.name_hash
+        self._report_cache = tracker.name_hash + ".to.report"
 
-        self.proj_name = "timeout_" + self.name_hash
-        self._report_cache = self.name_hash + ".to.report"
-
-        super().__init__(query_path, options)
+        super().__init__(tracker)
 
     def rank_edits(self):
         trace_graph = self.get_trace_graph()
@@ -436,7 +464,9 @@ class TimeoutDebugger(Debugger):
                 continue
             if EditAction.ERROR in actions:
                 if len(actions) != 1:
-                    log_warn(f"[edit] {self.name_hash} {qname} has error and other actions? {actions}")
+                    log_warn(
+                        f"[edit] {self.name_hash} {qname} has error and other actions? {actions}"
+                    )
                 continue
             scores[qname] = trace_graph.aggregate_scores(ratio)
 
