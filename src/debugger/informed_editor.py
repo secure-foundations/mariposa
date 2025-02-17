@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from typing import Dict, List, Set
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.mutant_info import MutantInfo
 from debugger.edit_info import EditAction, EditInfo
@@ -86,6 +86,16 @@ class QueryInstStat:
     def __contains__(self, qname):
         return qname in self.loader
 
+def choose_action(actions):
+    if EditAction.ERASE in actions:
+        return EditAction.ERASE
+    if EditAction.INST_REPLACE in actions:
+        return EditAction.INST_REPLACE
+    if EditAction.INST_KEEP in actions:
+        return EditAction.INST_KEEP
+    if EditAction.SKOLEMIZE in actions:
+        return EditAction.SKOLEMIZE
+    return EditAction.NONE
 
 class InformedEditor(QueryEditor):
     def __init__(self, query_path: str, pa: ProofAnalyzer, ti: MutantInfo):
@@ -111,51 +121,47 @@ class InformedEditor(QueryEditor):
             ):
                 self.ignored.add(root_name)
 
-        self.__root_actions = dict()
+        self.__root_actions: Dict[str, Set[EditAction]] = dict()
 
         for qname in self.list_qnames(root_only=True):
-            self.__root_actions[qname] = self.__get_root_action(qname)
+            self.__root_actions[qname] = self.__get_root_actions(qname)
 
-    def __get_root_action(self, qname):
+    def __get_root_actions(self, qname) -> Set[EditAction]:
         p_stat = self.proof_stats.get_group_stat(qname)
         should_be_skolemized = self.group_should_be_skolemized(qname)
+        allowed = set()
 
-        if not self.proof.has_inst_info(qname):
-            if should_be_skolemized:
-                return EditAction.SKOLEMIZE
-            return EditAction.ERASE
+        if should_be_skolemized:
+            allowed.add(EditAction.SKOLEMIZE)
+
+        if not self.proof.has_inst_info(qname) or p_stat.total_count == 0:
+            if not should_be_skolemized:
+                return {EditAction.ERASE}
+            return allowed
 
         qi_info = self.proof.get_inst_info_under_qname(qname)
         skolem_deps = qi_info.get_all_skolem_deps()
 
-        if p_stat.total_count == 0:
-            if should_be_skolemized:
-                return EditAction.SKOLEMIZE
-            assert len(skolem_deps) == 0
-            return EditAction.ERASE
-
         if len(skolem_deps) == 0:
             # does not depend on any skolem functions
-            return EditAction.INST_REPLACE
+            # we should be able to instantiate it all
+            allowed.add(EditAction.INST_REPLACE)
+            allowed.add(EditAction.INST_KEEP)
+            return allowed
 
         usable_insts = qi_info.get_feasible_insts()
 
         if len(usable_insts) != 0:
+            allowed.add(EditAction.INST_KEEP)
             # cannot remove the quantifier,
             # but can use some instances ...
-            return EditAction.INST_KEEP
+            return allowed
+        
+        if len(allowed) == 0:
+            # print(qname, len(usable_insts), len(skolem_deps), should_be_skolemized)
+            return {EditAction.ERROR}
 
-        if should_be_skolemized:
-            return EditAction.SKOLEMIZE
-
-        # TODO: some sanity check here?
-
-        # print(f"[differ] qid {qname} has skolem deps but no usable insts")
-        # for i in qi_info.get_all_insts():
-        #     print(self.proof.dump_node(i))
-        # print("")
-
-        return EditAction.ERROR
+        return allowed
 
     def group_should_be_skolemized(self, group_qname):
         assert self.is_root(group_qname)
@@ -167,59 +173,57 @@ class InformedEditor(QueryEditor):
             for qname in self[group_qname].group_qnames
         )
 
-    def get_singleton_actions(self, skip_ignored=True, skip_infeasible=True):
-        actions = dict()
-        for qname, action in self.__root_actions.items():
+    def get_singleton_actions(self, skip_ignored=True, skip_infeasible=True) -> List:
+        results = []
+        for qname, actions in self.__root_actions.items():
             if skip_ignored and qname in self.ignored:
                 continue
-            if skip_infeasible and action in {EditAction.NONE, EditAction.ERROR}:
+            if skip_infeasible and EditAction.ERROR in actions:
                 continue
-            actions[qname] = action
-        return actions
+            for action in actions:
+                results.append({qname: action})
+        return results
 
-    def get_quant_action(self, qname):
+    def get_quant_actions(self, qname) -> Set[EditAction]:
         if qname not in self:
             log_warn(f"[differ] qid {qname} not found in {self.query_path}")
-            return EditAction.NONE
+            return {EditAction.NONE}
         return self.__root_actions[qname]
 
-    def edit_by_qname(self, qname, action=None, erase_when_possible=True):
+    def edit_by_qname(self, qname, action=None):
         if action is None:
-            action = self.__get_root_action(qname)
+            action = choose_action(self.__get_root_actions(qname))
 
-        if action == EditAction.NONE:
-            log_warn(f"[edit] qid {qname} has no action")
-            return
-
-        if action == EditAction.ERROR:
-            log_warn(f"[edit] qid {qname} has error")
-            return
-
-        if action == EditAction.SKOLEMIZE:
-            self._skolemize_qid(qname)
-            return
+        if action in {EditAction.ERROR, EditAction.NONE}:
+            log_warn(f"[edit] qid {qname} has no feasible actions")
+            return False
 
         if action == EditAction.ERASE:
-            self._erase_qid(qname)
-            return
+            return self._erase_qid(qname)
 
-        if action == EditAction.INST_REPLACE or action == EditAction.INST_KEEP:
+        if action in {EditAction.INST_KEEP, EditAction.INST_REPLACE}:
             qii = self.proof.get_inst_info_under_qname(qname)
             insts = []
             for inst in qii.get_feasible_insts():
                 insts.append("(assert " + self.proof.dump_node(inst) + ")")
-            erase = action == EditAction.INST_REPLACE
-            if action == EditAction.INST_REPLACE and not erase_when_possible:
-                erase = False
-            self._instantiate_qid(qname, insts, erase)
-            return
+            erase = EditAction.INST_REPLACE == action
+            return self._instantiate_qid(qname, insts, erase=erase)
+
+        if action == EditAction.SKOLEMIZE:
+            return self._skolemize_qid(qname)
 
         log_warn(f"[edit] unhandled action {action} for qid {qname}")
+        return False
 
     def edit_by_info(self, ei: EditInfo):
+        ok = True
         for qname, action in ei.items():
-            self.edit_by_qname(qname, action)
+            ok &= self.edit_by_qname(qname, action)
+        if not ok:
+            self._reset_state()
+            return False
         self.save(ei.query_path)
+        return True
 
     def debug_qanme(self, qname):
         if qname not in self:
@@ -266,10 +270,14 @@ class InformedEditor(QueryEditor):
         from tqdm import tqdm
         sub_ratios = dict()
         graph = self.trace.get_trace_graph(clear)
-        for root_name in tqdm(self.list_qnames(root_only=True)):
-            if root_name in self.ignored:
-                continue
+        for root_name in tqdm(self.list_root_qnames()):
             t_group = self.trace_stats.get_group_stat(root_name)
             res = graph.compute_sub_ratios(t_group.keys())
             sub_ratios[root_name] = res
         return sub_ratios
+
+    def list_root_qnames(self, skip_ignored=True):
+        for root_name in self.list_qnames(root_only=True):
+            if skip_ignored and root_name in self.ignored:
+                continue
+            yield root_name

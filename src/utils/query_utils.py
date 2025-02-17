@@ -339,4 +339,4 @@ def add_qids_to_query(query_path, dest=None, check=True):
         "-o",
         dest,
     ]
-    subprocess_run(args, check, debug=False)
+    subprocess_run(args, check=True)

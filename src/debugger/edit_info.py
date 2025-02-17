@@ -28,12 +28,15 @@ class EditInfo:
         self.edit_dir = dir
         self._actions = actions
         self.__hash_id = EditInfo.hash_actions(actions)
-        self.query_path = os.path.join(self.edit_dir, self.__hash_id + ".smt2")
 
         self.rcode = None
         self.time = None
         self.error = None
-    
+
+    @property
+    def query_path(self):
+        return os.path.join(self.edit_dir, self.__hash_id + ".smt2")
+
     @staticmethod
     def hash_actions(actions):
         m = hashlib.md5()
@@ -71,10 +74,21 @@ class EditInfo:
         _, self.rcode, error, self.time = run_z3(self.query_path)
         assert error == ""
 
+    def is_singleton(self):
+        return len(self._actions) == 1
+
     def get_singleton_edit(self):
         assert len(self._actions) == 1
         qid = list(self._actions.keys())[0]
         return (qid, self._actions[qid])
+
+    def is_doubleton(self):
+        return len(self._actions) == 2
+    
+    def get_doubleton_edit(self):
+        assert self.is_doubleton()
+        qids = list(self._actions.keys())
+        return (qids[0], self._actions[qids[0]]), (qids[1], self._actions[qids[1]])
 
     @staticmethod
     def from_dict(d):

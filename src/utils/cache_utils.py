@@ -21,9 +21,14 @@ def load_cache(name):
     if not has_cache(name):
         return None
     path = get_cache_path(name)
-    with open(path, 'rb') as f:
-        # log_debug(f"loading cache at {name}")
-        return pickle.load(f)
+    try:
+        with open(path, 'rb') as f:
+            # log_debug(f"loading cache at {name}")
+            return pickle.load(f)
+    except Exception as e:
+        log_debug(f"[cache] error loading cache at {name}: {e}")
+        os.remove(path)
+        return None
 
 def load_cache_or(name, func, clear=False):
     if clear:

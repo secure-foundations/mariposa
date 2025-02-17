@@ -64,7 +64,7 @@ class ExperAnalyzer:
                     log_warn(f"query {qid} has no experiment results")
             missing = path_exists_qids - set(qers.keys())
             log_check(missing == set(), 
-                        f"there are {len(missing)} queries with files, but no experiments done")
+                        f"there are {len(missing)} queries with files, but no experiments done in {self.exp.proj.full_name}")
 
         if group_qids is None:
             group_qids = set(qers.keys())
