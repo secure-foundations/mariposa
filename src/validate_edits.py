@@ -214,9 +214,18 @@ def preprocess_query(path: str, edited_qid: Optional[str] = None) -> tuple[list[
                         parent[0] == Atom("assert") or
                         parent[0] == Atom("forall") or
                         parent[0] == Atom("and") or
-                        parent[0] == Atom("!")
+                        parent[0] == Atom("!") or
+                        (len(parent) == 2 and parent[0] == Atom("=>") and parent[1] == Atom("true"))
                     ):
-                        comments.append(f"quantifier {qid} not in a conjunctive context (found {parent[0]})")
+                        # Some custom rule for reporting warnings
+                        if len(parent) == 2 and parent[0] == Atom("=>"):
+                            lhs = str(parent[1])
+                            if len(lhs) > 50:
+                                comments.append(f"quantifier {qid} not in a conjunctive context (found (=> {lhs[:50]}... ...))")
+                            else:
+                                comments.append(f"quantifier {qid} not in a conjunctive context (found (=> {lhs} ...))")
+                        else:
+                            comments.append(f"quantifier {qid} not in a conjunctive context (found {parent[0]})")
                         break
 
             # If there are no more flags left, remove the ! call
@@ -461,18 +470,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# original: context /\ goal
-# edited: context /\ goal' /\ inst
-
-# If goal = goal', context => inst
-# If goal != goal', (context => inst) /\ (goal => goal')
-
-# term => term'
-# forall C. C[term] => C[term']
-
-# (assert A)
-# (assert B) (assert B1)
-# (assert C)
-
-# B => B1
