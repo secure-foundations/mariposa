@@ -120,7 +120,7 @@ class SingletonDebugger:
 
     @property
     def editor(self) -> InformedEditor:
-        return self.edit_tracker.editor
+        return self._tracker.editor
 
     def _build_tested(self):
         tested = []
@@ -128,7 +128,7 @@ class SingletonDebugger:
         tested_qnames = set()
 
         for eid in self.strainer.tested.qids:
-            ei = self.look_up_edit_with_id(eid)
+            ei = self._tracker.look_up_edit_with_id(eid)
             qname, action = ei.get_singleton_edit()
             rc, et = self.strainer.tested.get_query_result(eid)
             tested.append((qname, action.value, str(rc), et / 1000, ei.query_path))
@@ -144,7 +144,7 @@ class SingletonDebugger:
     def _build_stabilized(self):
         stabilized = []
         for eid in self.strainer.filtered.get_stable_edit_ids():
-            ei = self.look_up_edit_with_id(eid)
+            ei = self._tracker.look_up_edit_with_id(eid)
             qname, action = ei.get_singleton_edit()
             if qname == "prelude_fuel_defaults":
                 continue
@@ -157,6 +157,10 @@ class SingletonDebugger:
         if self._strainer is None:
             self._strainer = Strainer(self.proj_name)
         return self._strainer
+
+    @property
+    def given_query_path(self):
+        return self._tracker.given_query_path
 
     @property
     def report(self) -> Report:
@@ -234,7 +238,7 @@ class SingletonDebugger:
                 # if not os.path.exists(edit_path):
                 #     base = os.path.basename(edit_path)
                 #     base = base.replace(".smt2", "")
-                #     ei = self.look_up_edit_with_id(base)
+                #     ei = self._tracker.look_up_edit_with_id(base)
                 #     self.editor.edit_by_info(ei)
                 #     assert os.path.exists(edit_path)
                 continue
@@ -370,7 +374,7 @@ class DoubletonDebugger(SingletonDebugger):
         tested = []
 
         for eid in self.strainer.tested.qids:
-            ei = self.look_up_edit_with_id(eid)
+            ei = self._tracker.look_up_edit_with_id(eid)
             (q1, a1), (q2, a2) = ei.get_doubleton_edit()
             rc, et = self.strainer.tested.get_query_result(eid)
             tested.append(
@@ -396,7 +400,7 @@ class DoubletonDebugger(SingletonDebugger):
     def _build_stabilized(self):
         stabilized = []
         for eid in self.strainer.filtered.get_stable_edit_ids():
-            ei = self.look_up_edit_with_id(eid)
+            ei = self._tracker.look_up_edit_with_id(eid)
             (q1, a1), (q2, a2) = ei.get_doubleton_edit()
             stabilized.append((q1, a1.value, q2, a2.value, ei.query_path))
         stabilized = DataFrame(

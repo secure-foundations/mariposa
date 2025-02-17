@@ -52,13 +52,13 @@ class BenchViewer:
     def keys(self):
         return self.__reviewers.keys()
 
-    def print_stats(self):
+    def print_fixed(self):
         fixable_count = len(self.fixable)
-        finished_count = len(self.status[StrainerStatus.FINISHED])
+        finished_count = len(self.status[StrainerStatus.FINISHED].items)
         print(
             "fixable ratio (finished):",
             fixable_count,
             "/",
             finished_count,
-            f"({fmt_percent(fixable_count, finished_count, 1)})",
+            fmt_percent(fixable_count, finished_count, 1),
         )
