@@ -30,7 +30,7 @@ def _build_fail_trace(mi: MutantInfo):
     mi.build_trace()
     et = round(mi.trace_time / 1000, 2)
     rc = mi.trace_rcode
-    if rc != RCode.UNSAT or et > TRACE_TIME_LIMIT_SEC:
+    if rc != RCode.UNSAT or et > mi.options.per_trace_time_sec:
         log_debug(f"[trace-fail] {mi.trace_path}, {rc}, {et}")
         mi.save()
         return mi
@@ -227,7 +227,7 @@ class MutantBuilder:
         mis = run_with_pool(
             _build_fail_trace,
             args[1:],
-            goal=TRACE_GOAL_COUNT,
+            goal=self.options.trace_target_count - count,
             time_bound=self.options.total_trace_time_sec,
         )
         self.traces += mis
@@ -304,7 +304,7 @@ class MutantBuilder:
 
     def get_slow_trace(self):
         tomis = [
-            tmi for tmi in self.traces if tmi.trace_time >= TRACE_TIME_LIMIT_SEC * 1000
+            tmi for tmi in self.traces if tmi.trace_time >= self.options.per_trace_time_sec * 1000
         ]
         if len(tomis) == 0:
             return None

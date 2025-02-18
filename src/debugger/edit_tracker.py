@@ -148,6 +148,10 @@ class EditTracker(MutantBuilder):
         )
         return self._editor
 
+    # this is so that we use Pool
+    def dispose_editor(self):
+        self._editor = None
+
     def save_edits_meta(self):
         infos = [ei.to_dict() for ei in self.edit_infos.values()]
 

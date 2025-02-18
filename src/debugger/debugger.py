@@ -119,6 +119,10 @@ class SingletonDebugger:
         self._strainer = Strainer(self.proj_name)
         self.status = self._strainer.status
 
+        if self.status == StrainerStatus.FINISHED:
+            # build report if it's finished
+            assert self.report is not None
+
     @property
     def editor(self) -> InformedEditor:
         return self.tracker.editor
@@ -170,6 +174,10 @@ class SingletonDebugger:
 
             r.stabilized = self._build_stabilized_report()
             r.freq = self.editor.get_inst_report()
+
+            # this is a hack so that we can use Pool
+            self.tracker.dispose_editor()
+            self._editor = None
 
             if len(r.freq) == 0:
                 log_error(f"[dbg] {self.proj_name} has no freq report")
