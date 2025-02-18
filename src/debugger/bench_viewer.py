@@ -19,9 +19,11 @@ class BenchViewer:
         args = [(q, mode) for q in queries]
         random.shuffle(args)
         pool = multiprocessing.Pool(8)
-        reviewers = pool.starmap(get_debugger, args)
+        debuggers = pool.starmap(get_debugger, args)
+        pool.map(SingletonDebugger.build_report, debuggers)
+        pool.close()
 
-        for r in reviewers:
+        for r in debuggers:
             self.__debuggers[r.given_query_path] = r
             self.__name_hashes[r.name_hash] = r.given_query_path
             self.status.add_item(r.status, r.given_query_path)

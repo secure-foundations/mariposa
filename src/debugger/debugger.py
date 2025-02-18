@@ -161,25 +161,37 @@ class SingletonDebugger:
     @property
     def given_query_path(self):
         return self.tracker.given_query_path
+    def build_report(self, clear=False):
+        if self.status != StrainerStatus.FINISHED:
+            return None
+
+        if not clear and self._report is not None:
+            return self._report
+
+        r = Report()
+        r.tested, r.skipped = self._build_tested()
+
+        if len(r.tested) == 0:
+            log_error(f"[eval] {self.proj_name} has no tested report")
+            assert False
+
+        r.stabilized = self._build_stabilized()
+        r.freq = self.editor.get_inst_report()
+
+        if len(r.freq) == 0:
+            log_error(f"[eval] {self.proj_name} has no freq report")
+            assert False
+
+        self._report = r
+        save_cache(self._report_cache, r)
+        return r
 
     @property
     def report(self) -> Report:
         if self.status != StrainerStatus.FINISHED:
             return None
-
         if self._report is None:
-            r = Report()
-            r.tested, r.skipped = self._build_tested()
-            if len(r.tested) == 0:
-                log_error(f"[eval] {self.proj_name} has no tested report")
-                assert False
-            r.stabilized = self._build_stabilized()
-            r.freq = self.editor.get_inst_report()
-            if len(r.freq) == 0:
-                log_error(f"[eval] {self.proj_name} has no freq report")
-                assert False
-            self._report = r
-            save_cache(self._report_cache, r)
+            return self.build_report()
         return self._report
 
     def register_singleton(self):
