@@ -15,6 +15,7 @@ from utils.cache_utils import (
     clear_cache,
     has_cache,
     load_cache,
+    load_cache_or,
     save_cache,
 )
 from base.factory import FACT
@@ -112,7 +113,7 @@ class SingletonDebugger:
 
         if has_cache(self._report_cache):
             self.status = StrainerStatus.FINISHED
-            self._report = load_cache(self._report_cache)
+            assert self.report is not None
             return
 
         self._strainer = Strainer(self.proj_name)
@@ -122,7 +123,7 @@ class SingletonDebugger:
     def editor(self) -> InformedEditor:
         return self.tracker.editor
 
-    def _build_tested(self):
+    def _build_tested_report(self):
         tested = []
         root_quants = self.editor.list_root_qnames(skip_ignored=False)
         tested_qnames = set()
@@ -141,7 +142,7 @@ class SingletonDebugger:
         )
         return tested, skipped
 
-    def _build_stabilized(self):
+    def _build_stabilized_report(self):
         stabilized = []
         for eid in self.strainer.filtered.get_stable_edit_ids():
             ei = self.tracker.look_up_edit_with_id(eid)
@@ -152,6 +153,41 @@ class SingletonDebugger:
         stabilized = DataFrame(stabilized, columns=["qname", "action", "edit_path"])
         return stabilized
 
+    def build_report(self, clear=False) -> Report:
+        if self.status != StrainerStatus.FINISHED:
+            return None
+
+        if not clear and self._report is not None:
+            return self._report
+
+        def _build_report():
+            r = Report()
+            r.tested, r.skipped = self._build_tested_report()
+
+            if len(r.tested) == 0:
+                log_error(f"[dbg] {self.proj_name} has no tested report")
+                assert False
+
+            r.stabilized = self._build_stabilized_report()
+            r.freq = self.editor.get_inst_report()
+
+            if len(r.freq) == 0:
+                log_error(f"[dbg] {self.proj_name} has no freq report")
+                assert False
+
+            return r
+
+        r = load_cache_or(self._report_cache, _build_report, clear)
+        self._report = r
+
+        return r
+
+    @property
+    def report(self) -> Report:
+        if self.status != StrainerStatus.FINISHED:
+            return None
+        return self.build_report()
+
     @property
     def strainer(self) -> Strainer:
         if self._strainer is None:
@@ -161,38 +197,6 @@ class SingletonDebugger:
     @property
     def given_query_path(self):
         return self.tracker.given_query_path
-    def build_report(self, clear=False):
-        if self.status != StrainerStatus.FINISHED:
-            return None
-
-        if not clear and self._report is not None:
-            return self._report
-
-        r = Report()
-        r.tested, r.skipped = self._build_tested()
-
-        if len(r.tested) == 0:
-            log_error(f"[eval] {self.proj_name} has no tested report")
-            assert False
-
-        r.stabilized = self._build_stabilized()
-        r.freq = self.editor.get_inst_report()
-
-        if len(r.freq) == 0:
-            log_error(f"[eval] {self.proj_name} has no freq report")
-            assert False
-
-        self._report = r
-        save_cache(self._report_cache, r)
-        return r
-
-    @property
-    def report(self) -> Report:
-        if self.status != StrainerStatus.FINISHED:
-            return None
-        if self._report is None:
-            return self.build_report()
-        return self._report
 
     def register_singleton(self):
         singleton_edits = self.editor.get_singleton_actions()
@@ -226,7 +230,7 @@ class SingletonDebugger:
             if ei.query_exists():
                 log_info(f"[edit] {ei.get_id()} already exists")
                 continue
-            self.tracker.register_edit(ei)
+            self.tracker.create_edit_query(ei)
 
         log_info(
             f"[edit] [proj] {self.proj_name} has {len(list_smt2_files(dest_dir))} queries"
@@ -238,7 +242,7 @@ class SingletonDebugger:
 
         if self.status != StrainerStatus.FINISHED:
             log_warn(
-                f"[eval] skipped GC on unfinished project {self.status} {self.given_query_path}"
+                f"[dbg] skipped GC on unfinished project {self.status} {self.given_query_path}"
             )
             return
 
@@ -378,11 +382,11 @@ class DoubletonDebugger(SingletonDebugger):
             edit = {qname1: action1, qname2: action2}
             # print(edit)
             ei = self.tracker.register_edit(edit, dest_dir)
-            self.tracker.register_edit(ei)
+            self.tracker.create_edit_query(ei)
 
         self.tracker.save_edits_meta()
 
-    def _build_tested(self):
+    def _build_tested_report(self):
         tested = []
 
         for eid in self.strainer.tested.qids:
@@ -409,7 +413,7 @@ class DoubletonDebugger(SingletonDebugger):
         )
         return tested, skipped
 
-    def _build_stabilized(self):
+    def _build_stabilized_report(self):
         stabilized = []
         for eid in self.strainer.filtered.get_stable_edit_ids():
             ei = self.tracker.look_up_edit_with_id(eid)
@@ -439,6 +443,7 @@ class FastFailDebugger(SingletonDebugger):
             os.makedirs(dst_dir)
 
         emitted_count = 0
+
         for row in rank.iterrows():
             if emitted_count >= 10:
                 break
@@ -448,10 +453,8 @@ class FastFailDebugger(SingletonDebugger):
             ei = self.tracker.register_edit({qname: action}, dst_dir)
             ei.edit_dir = dst_dir
 
-            if self.tracker.register_edit(ei):
+            if self.tracker.create_edit_query(ei):
                 emitted_count += 1
-            else:
-                log_warn(f"[edit] failed to emit {ei.get_id()}")
 
         self.tracker.save_edits_meta()
 
@@ -508,7 +511,5 @@ class TimeoutDebugger(SingletonDebugger):
 
             if self.tracker.create_edit_query(ei):
                 emitted_count += 1
-            else:
-                log_warn(f"[edit] failed to emit {ei.get_id()}")
 
         self.tracker.save_edits_meta()

@@ -20,7 +20,6 @@ class BenchViewer:
         random.shuffle(args)
         pool = multiprocessing.Pool(8)
         debuggers = pool.starmap(get_debugger, args)
-        pool.map(SingletonDebugger.build_report, debuggers)
         pool.close()
 
         for r in debuggers:
