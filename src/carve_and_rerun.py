@@ -23,7 +23,7 @@ else:
 
 last_count = -1
 
-for i in range(8):
+for i in range(6):
     query_count = len(list_smt2_files(filter_dir))
 
     if last_count != query_count:

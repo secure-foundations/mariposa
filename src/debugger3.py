@@ -102,10 +102,10 @@ def main():
         dbg.create_project()
 
     if args.build_trace_graph:
-        dbg.get_trace_graph()
+        dbg.tracker.get_trace_graph()
 
     if args.build_ratios:
-        dbg.get_trace_graph_ratios(True)
+        dbg.tracker.get_trace_graph_ratios(True)
 
 
 if __name__ == "__main__":

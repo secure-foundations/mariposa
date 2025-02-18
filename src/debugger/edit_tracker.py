@@ -115,7 +115,7 @@ class EditTracker(MutantBuilder):
     def collect_garbage(self):
         if not self.chosen_trace_path:
             self.set_trace()
-        self.collect_garbage(self.chosen_trace_path)
+        super().collect_garbage(self.chosen_trace_path)
 
     def reset_proof_cache(self):
         if len(self.proofs) == 0:

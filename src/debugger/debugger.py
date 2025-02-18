@@ -102,11 +102,11 @@ class SingletonDebugger:
             self.proj_name = "singleton_" + self.name_hash
             self._report_cache = self.name_hash + ".report"
 
-        self._tracker = tracker
+        self.tracker = tracker
         self._strainer = None
         self._report = None
 
-        if not self._tracker.proof_available():
+        if not self.tracker.proof_available():
             self.status = StrainerStatus.NO_PROOF
             return
 
@@ -120,7 +120,7 @@ class SingletonDebugger:
 
     @property
     def editor(self) -> InformedEditor:
-        return self._tracker.editor
+        return self.tracker.editor
 
     def _build_tested(self):
         tested = []
@@ -128,7 +128,7 @@ class SingletonDebugger:
         tested_qnames = set()
 
         for eid in self.strainer.tested.qids:
-            ei = self._tracker.look_up_edit_with_id(eid)
+            ei = self.tracker.look_up_edit_with_id(eid)
             qname, action = ei.get_singleton_edit()
             rc, et = self.strainer.tested.get_query_result(eid)
             tested.append((qname, action.value, str(rc), et / 1000, ei.query_path))
@@ -144,7 +144,7 @@ class SingletonDebugger:
     def _build_stabilized(self):
         stabilized = []
         for eid in self.strainer.filtered.get_stable_edit_ids():
-            ei = self._tracker.look_up_edit_with_id(eid)
+            ei = self.tracker.look_up_edit_with_id(eid)
             qname, action = ei.get_singleton_edit()
             if qname == "prelude_fuel_defaults":
                 continue
@@ -160,7 +160,7 @@ class SingletonDebugger:
 
     @property
     def given_query_path(self):
-        return self._tracker.given_query_path
+        return self.tracker.given_query_path
 
     @property
     def report(self) -> Report:
@@ -187,9 +187,9 @@ class SingletonDebugger:
         dest_dir = self.strainer.test_dir()
 
         for edit in singleton_edits:
-            self.register_edit(edit, dest_dir)
+            self.tracker.register_edit(edit, dest_dir)
 
-        self.save_edits_meta()
+        self.tracker.save_edits_meta()
         return singleton_edits
 
     def create_project(self):
@@ -214,7 +214,7 @@ class SingletonDebugger:
             if ei.query_exists():
                 log_info(f"[edit] {ei.get_id()} already exists")
                 continue
-            self.create_edit_query(ei)
+            self.tracker.register_edit(ei)
 
         log_info(
             f"[edit] [proj] {self.proj_name} has {len(list_smt2_files(dest_dir))} queries"
@@ -222,7 +222,7 @@ class SingletonDebugger:
         return dest_dir
 
     def collect_garbage(self):
-        super().collect_garbage()
+        self.tracker.collect_garbage()
 
         if self.status != StrainerStatus.FINISHED:
             log_warn(
@@ -266,9 +266,9 @@ class SingletonDebugger:
 
         return registered_count, len(existing)
 
-    def get_dirs_to_sync(self):
+    def get_sync_dirs(self):
         return [
-            self.sub_root,
+            self.tracker.sub_root,
         ] + self.strainer.get_dirs()
 
     def reset_project(self):
@@ -298,7 +298,7 @@ class DoubletonDebugger(SingletonDebugger):
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
 
-        ratios = self.get_trace_graph_ratios()
+        ratios = self.tracker.get_trace_graph_ratios()
         mi = self.get_trace_info()
         trace_graph = mi.get_trace_graph()
 
@@ -365,16 +365,16 @@ class DoubletonDebugger(SingletonDebugger):
             action2 = choose_action(self.editor.get_quant_actions(qname2))
             edit = {qname1: action1, qname2: action2}
             # print(edit)
-            ei = self.register_edit(edit, dest_dir)
-            self.create_edit_query(ei)
+            ei = self.tracker.register_edit(edit, dest_dir)
+            self.tracker.register_edit(ei)
 
-        self.save_edits_meta()
+        self.tracker.save_edits_meta()
 
     def _build_tested(self):
         tested = []
 
         for eid in self.strainer.tested.qids:
-            ei = self._tracker.look_up_edit_with_id(eid)
+            ei = self.tracker.look_up_edit_with_id(eid)
             (q1, a1), (q2, a2) = ei.get_doubleton_edit()
             rc, et = self.strainer.tested.get_query_result(eid)
             tested.append(
@@ -400,7 +400,7 @@ class DoubletonDebugger(SingletonDebugger):
     def _build_stabilized(self):
         stabilized = []
         for eid in self.strainer.filtered.get_stable_edit_ids():
-            ei = self._tracker.look_up_edit_with_id(eid)
+            ei = self.tracker.look_up_edit_with_id(eid)
             (q1, a1), (q2, a2) = ei.get_doubleton_edit()
             stabilized.append((q1, a1.value, q2, a2.value, ei.query_path))
         stabilized = DataFrame(
@@ -433,15 +433,15 @@ class FastFailDebugger(SingletonDebugger):
 
             qname = row[1].qname
             action = choose_action(self.editor.get_quant_actions(qname))
-            ei = self.register_edit({qname: action}, dst_dir)
+            ei = self.tracker.register_edit({qname: action}, dst_dir)
             ei.edit_dir = dst_dir
 
-            if self.create_edit_query(ei):
+            if self.tracker.register_edit(ei):
                 emitted_count += 1
             else:
                 log_warn(f"[edit] failed to emit {ei.get_id()}")
 
-        self.save_edits_meta()
+        self.tracker.save_edits_meta()
 
 
 class TimeoutDebugger(SingletonDebugger):
@@ -456,8 +456,8 @@ class TimeoutDebugger(SingletonDebugger):
         super().__init__(tracker)
 
     def rank_edits(self):
-        trace_graph = self.get_trace_graph()
-        ratios = self.get_trace_graph_ratios()
+        trace_graph = self.tracker.get_trace_graph()
+        ratios = self.tracker.get_trace_graph_ratios()
         scores = dict()
 
         for qname, ratio in ratios.items():
@@ -490,12 +490,13 @@ class TimeoutDebugger(SingletonDebugger):
                 break
 
             action = choose_action(self.editor.get_quant_actions(qname))
-            ei = self.register_edit({qname: action}, dst_dir)
+            actions = {qname: action}
+            ei = self.tracker.register_edit(actions, dst_dir)
             ei.edit_dir = dst_dir
 
-            if self.create_edit_query(ei):
+            if self.tracker.create_edit_query(ei):
                 emitted_count += 1
             else:
                 log_warn(f"[edit] failed to emit {ei.get_id()}")
 
-        self.save_edits_meta()
+        self.tracker.save_edits_meta()

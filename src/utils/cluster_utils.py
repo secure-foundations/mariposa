@@ -326,3 +326,15 @@ def handle_offload_single(args):
     os.system(cmd)
     cmd = f"ssh {server} 'cd mariposa; python3 src/exper_wizard.py single --input-query-path {base_name} -qv 1 -cv 4 -s {args.solver} -e {args.exp_config.exp_name} --clear-existing'"
     os.system(cmd)
+
+def get_sync_commands(target_host, dirs_to_send):
+    assert target_host in S190X_HOSTS or target_host == "g2001"
+    if isinstance(dirs_to_send, str):
+        dirs_to_send = [dirs_to_send]
+    commands = []
+    for i, d in enumerate(dirs_to_send):
+        assert os.path.exists(d)
+        if i % 5 == 0:
+            commands.append(f"echo '{i // 5 + 1}/{len(dirs_to_send) // 5}'")
+        commands.append(f"rsync -avz {d} {target_host}:/home/yizhou7/mariposa/ --inplace --delete --relative")
+    return commands
