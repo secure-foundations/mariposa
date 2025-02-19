@@ -5,7 +5,6 @@ sys.path.append("/home/yizhou7/mariposa/src")
 os.chdir("/home/yizhou7/mariposa/")
 
 from tabulate import tabulate
-from utils.cache_utils import load_cache
 
 import numpy as np
 from statistics import mean, median
@@ -14,6 +13,8 @@ from pathlib import Path
 import glob
 import matplotlib.pyplot as plt
 
+from utils.cache_utils import load_cache
+
 from debugger.proof_analyzer import ProofAnalyzer
 # from evaluator import Evaluator
 from datetime import datetime
@@ -21,6 +22,8 @@ from datetime import datetime
 
 
 pd.set_option("display.max_rows", None)  # Show all rows
+pd.set_option('display.width', 1500)
+pd.set_option('display.max_colwidth', None)
 
 def get_name_hash(filename):
     import hashlib
@@ -60,7 +63,9 @@ def proof_inst_graph_rank(row, pa):
     if row["proof_count"] == 0:
         return 0
     try:
+        # print("before")
         inst_info = pa.get_inst_info_under_qname(quantifier_name)
+        # print("after")
     except:
         print(f"Quantifier {quantifier_name} with proof count {row['proof_count']} did not exist in the instantiations!")
         return 0
@@ -71,9 +76,11 @@ def proof_inst_graph_rank(row, pa):
         if inst_node.name == "or":
             children = inst_node.children
             for child in children:
+                # print("we are in the or case")
                 in_degree = pa.in_degree(child)
                 total_indegree += in_degree
         elif inst_node.name == "app":
+            # print("we are in the app case")
             in_degree = pa.in_degree(inst)
             total_indegree += in_degree
 
@@ -145,6 +152,8 @@ def calculate_rankings(kw_parameters, queries = None):
     queries = [f"cache/{query}.report" for query in queries]
 
     for file in queries:
+        # if file != "cache/568e167040.report":
+        #     continue
         print(file)
         min_rank = calculate_rank(file, **kw_parameters)#, parameter1=1, parameter2=1000)
         min_ranks[file] = min_rank
@@ -154,6 +163,7 @@ def calculate_rankings(kw_parameters, queries = None):
     ranks = np.array(min_rankings)
 
     print(min_rankings)
+    print("Total: ", len(min_rankings), " files")
     print("Mean: ", mean(min_rankings))
     print("Median: ", median(min_rankings))
     print(np.where(ranks == 1)[0].shape[0], "would fix on first try")
@@ -163,38 +173,46 @@ def calculate_rankings(kw_parameters, queries = None):
     return min_rankings
     # return np.where(ranks <= 10)[0].shape[0]
 
-def main():
-    kw_parameters = {"ranking_heuristic": "proof_inst_graph"}
-    calculate_rankings(kw_parameters)
+verus_fast_unknown_files = ['32eaf80bcc', 'ed912ce861', 'c4ec60f8f9', '815f69b161', '492704d0da', 'b689a8d455', '92c260e39d', 'af029e0bc2', '5a940edd1b', '2045867a58', 'c02ff41a27', '025a074d17', '9a3bc13b2d', 'a896b920ca', 'be920877ca', 'e1d2573021', '2078a24298', '09d24c83cd', '7d8c4302ab', '568e167040', '126f0f80f3', 'fa9020870d', 'f6f3f962c0', '89068d3f38', '090a2a7d67', 'e16c5e8c0b', '3c5c22d4a1']
+                        #    ['5a940edd1b', 'fa9020870d', 'e1d2573021', 'af029e0bc2', 'be920877ca', '2078a24298', 'a896b920ca', 'c02ff41a27', '090a2a7d67', '3c5c22d4a1', 'e16c5e8c0b', '126f0f80f3', '92c260e39d', 'b689a8d455', '7d8c4302ab', '89068d3f38', '32eaf80bcc', '2045867a58', '025a074d17', 'c4ec60f8f9', 'f6f3f962c0', '492704d0da', '815f69b161', '568e167040', '09d24c83cd', 'ed912ce861', '9a3bc13b2d']
 
-    return min_rankings
+
+def main():
+    kw_parameters = {"ranking_heuristic": "proof_count"}
+    min_rankings = calculate_rankings(kw_parameters, verus_fast_unknown_files)
+
+
+
+    # return min_rankings
 
     # x = [2 **i for i in range(-10, 15)]
     # y = []
-    # # for k in x:
-    # #     kw_parameters = {"ranking_heuristic": "proof_trace_linear", "parameter1" : k, "parameter2": 1}
-    # #     mean = calculate_rankings(kw_parameters)
-    # #     y.append(mean)
+    # for k in x:
+    #     kw_parameters = {"ranking_heuristic": "proof_trace_linear", "parameter1" : k, "parameter2": 1}
+    #     ranking_result = calculate_rankings(kw_parameters, verus_fast_unknown_files)
+    #     print(ranking_result)
+    #     y.append(ranking_result)
 
-    
+    # print(x)
+    # print(y)
 
-    # # # Create the scatter plot
-    # # plt.scatter(x, y, color='blue', marker='o')
+    # # Create the scatter plot
+    # plt.scatter(x, y, color='blue', marker='o')
 
-    # # # Set log scale
-    # # # plt.yscale("log")  # Log scale for Y-axis
-    # # plt.xscale("log")  # Log scale for X-axis (optional)
+    # # Set log scale
+    # # plt.yscale("log")  # Log scale for Y-axis
+    # plt.xscale("log")  # Log scale for X-axis (optional)
 
-    # # # Add labels and title
-    # # plt.xlabel("k")
-    # # plt.ylabel("Number of times fix is in top 10 ranking")
-    # # plt.title("Frequency of top 10 fixes for ranking k * proof_count + trace_count")
+    # # Add labels and title
+    # plt.xlabel("k")
+    # plt.ylabel("Number of times fix is in top 10 ranking")
+    # plt.title("Frequency of top 10 fixes for ranking k * proof_count + trace_count")
 
-    # # # Save the figure
-    # # plt.savefig("/home/amarshah/mariposa/figures/linear_proof_trace_analysis_log.png", dpi=300, bbox_inches='tight')
+    # # Save the figure
+    # plt.savefig("/home/amarshah/mariposa/figures/linear_proof_trace_analysis_log_verus.png", dpi=300, bbox_inches='tight')
 
-    # # # Show the plot (optional)
-    # # plt.show()
+    # # Show the plot (optional)
+    # plt.show()
 
 
 
