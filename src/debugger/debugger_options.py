@@ -26,6 +26,7 @@ class DebugOptions:
         self.per_proof_time_sec = 30
 
         self.edit_count = 10
+        self.is_verus = False
 
 
 def resolve_input_path(input_path, verbose):

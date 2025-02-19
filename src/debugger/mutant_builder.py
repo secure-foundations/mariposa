@@ -249,7 +249,7 @@ class MutantBuilder:
         args = self.__create_tasks([Mutation.SHUFFLE, Mutation.RENAME, Mutation.RESEED])
 
         res = run_with_pool(
-            _build_core, args, goal=goal, time_bound=self.options.core_total_time_sec
+            _build_core, args, goal=goal, time_bound=self.options.total_core_time_sec
         )
 
         self.cores += res
@@ -275,7 +275,7 @@ class MutantBuilder:
                 _build_proof,
                 args,
                 goal=goal,
-                time_bound=self.options.proof_total_time_sec,
+                time_bound=self.options.total_proof_time_sec,
             )
 
         log_info(f"[proof] from core (!) yields {len(res)} proofs")
@@ -284,7 +284,7 @@ class MutantBuilder:
             log_info(f"[proof] from scratch, currently {len(res)} proofs")
             args = self.__create_tasks([Mutation.SHUFFLE, Mutation.RESEED])
             res += run_with_pool(
-                _build_proof, args, goal=goal, time_bound=self.options.proof_total_time_sec
+                _build_proof, args, goal=goal, time_bound=self.options.total_proof_time_sec
             )
 
         log_check(len(res) != 0, "no proof found")

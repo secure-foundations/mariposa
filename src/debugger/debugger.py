@@ -4,6 +4,7 @@ import os
 from pandas import DataFrame
 from tabulate import tabulate
 from tqdm import tqdm
+from z3 import set_param
 from calculate_average_rank import calculate_rank
 from debugger.debugger_options import DebugOptions, resolve_input_path
 from debugger.edit_tracker import EditTracker
@@ -14,9 +15,7 @@ from debugger.mutant_info import TraceFailure
 from utils.cache_utils import (
     clear_cache,
     has_cache,
-    load_cache,
     load_cache_or,
-    save_cache,
 )
 from base.factory import FACT
 from utils.system_utils import (
@@ -31,6 +30,7 @@ import argparse
 from debugger.strainer import Strainer, StrainerStatus
 from debugger.debugger_options import DebugOptions, resolve_input_path
 
+set_param("proof", True)
 
 def shorten_qname(qname: str):
     if len(qname) > 80:
@@ -116,7 +116,7 @@ class SingletonDebugger:
             assert self.report is not None
             return
 
-        self._strainer = Strainer(self.proj_name)
+        self._strainer = Strainer(self.proj_name, is_verus=tracker.options.is_verus)
         self.status = self._strainer.status
 
         if self.status == StrainerStatus.FINISHED:
@@ -208,7 +208,7 @@ class SingletonDebugger:
 
     def register_singleton(self):
         singleton_edits = self.editor.get_singleton_actions()
-        dest_dir = self.strainer.test_dir()
+        dest_dir = self.strainer.test_dir
 
         for edit in singleton_edits:
             self.tracker.register_edit(edit, dest_dir)
@@ -218,9 +218,9 @@ class SingletonDebugger:
 
     def create_project(self):
         singleton_edits = self.register_singleton()
-        dest_dir = self.strainer.test_dir()
+        dest_dir = self.strainer.test_dir
 
-        file_size = os.path.getsize(self.orig_path) / 1024
+        file_size = os.path.getsize(self.tracker.orig_path) / 1024
         total_size = file_size * len(singleton_edits) / 1024 / 1024
 
         if total_size > 20:
@@ -234,7 +234,7 @@ class SingletonDebugger:
 
         for action in tqdm(singleton_edits):
             ei = EditInfo(dest_dir, action)
-            assert self.contains_edit_info(ei)
+            assert self.tracker.contains_edit_info(ei)
             if ei.query_exists():
                 log_info(f"[edit] {ei.get_id()} already exists")
                 continue
@@ -276,7 +276,7 @@ class SingletonDebugger:
         return ei.is_singleton()
 
     def get_edit_counts(self):
-        existing = list_smt2_files(self.strainer.test_dir())
+        existing = list_smt2_files(self.strainer.test_dir)
 
         if existing is None:
             existing = []
