@@ -5,24 +5,21 @@ import os
 import subprocess
 from base.defs import MARIPOSA
 from base.solver import RCode, output_as_rcode
-from debugger.proof_analyzer import ProofAnalyzer
 from debugger.z3_utils import dump_z3_proof
 from debugger.inst_graph import *
-from utils.query_utils import Mutation, emit_mutant_query, get_trace_stats_axiom_profiler
+from debugger.debugger_options import DebugOptions
+from utils.query_utils import (
+    Mutation,
+    emit_mutant_query,
+    get_trace_stats_axiom_profiler,
+)
 from utils.system_utils import log_check, log_debug, log_info, log_warn, subprocess_run
 
-
-TRACE_TIME_LIMIT_SEC = 10
-CORE_TIME_LIMIT_SEC = 60
-PROOF_TIME_LIMIT_SEC = 100
-
-TRACE_GOAL_COUNT = 1
-CORE_GOAL_COUNT = 2
-PROOF_GOAL_COUNT = 1
 
 TRACES = "traces"
 MUTANTS = "mutants"
 CORES = "cores"
+
 
 class TraceFailure(Enum):
     TIMEOUT = "timeout"
@@ -32,7 +29,7 @@ class TraceFailure(Enum):
 
 
 class MutantInfo:
-    def __init__(self, sub_root, mutation, seed):
+    def __init__(self, sub_root, mutation, seed, options):
         self.seed = seed
         self.sub_root = sub_root
 
@@ -60,12 +57,14 @@ class MutantInfo:
         self.trace_time = -1
         self.proof_time = -1
 
+        self.options: DebugOptions = options
+
         self.discard = False
         self._graph = None
 
     @staticmethod
-    def from_dict(d):
-        mi = MutantInfo(d["sub_root"], Mutation(d["mutation"]), d["seed"])
+    def from_dict(d, options):
+        mi = MutantInfo(d["sub_root"], Mutation(d["mutation"]), d["seed"], options)
         mi.trace_rcode = RCode(d["trace_rcode"])
         mi.trace_time = d["trace_time"]
         return mi
@@ -81,24 +80,26 @@ class MutantInfo:
 
     def save(self):
         if self.discard:
-            for path in [
-                self.mut_path,
-                self.trace_path,
-                self.proof_path,
-                self.core_path,
-                self.core_log,
-                self.graph_path,
-                self.stats_path,
-                self.meta_path,
-            ]:
-                if os.path.exists(path):
-                    os.remove(path)
-            return
+            return self.clear()
 
         self.__should_build(self.meta_path, clear=True)
 
         with open(self.meta_path, "w+") as f:
             json.dump(self.to_dict(), f)
+
+    def clear(self):
+        for path in [
+            self.mut_path,
+            self.trace_path,
+            self.proof_path,
+            self.core_path,
+            self.core_log,
+            self.graph_path,
+            self.stats_path,
+            self.meta_path,
+        ]:
+            if os.path.exists(path):
+                os.remove(path)
 
     def __should_build(self, output_path, clear=False) -> bool:
         log_check(
@@ -146,7 +147,7 @@ class MutantInfo:
         # soft timeout (-t) is used, otherwise the log might be malformed
         solver_args = [
             "./bin/z3-4.13.0",
-            f"-t:{TRACE_TIME_LIMIT_SEC*1000}",
+            f"-t:{self.options.per_trace_time_sec *1000}",
             self.mut_path,
             "trace=true",
             f"trace_file_name={self.trace_path}",
@@ -173,7 +174,7 @@ class MutantInfo:
             [
                 "./bin/z3-4.13.0",
                 self.mut_lbl_path,
-                f"-t:{CORE_TIME_LIMIT_SEC*1000}",
+                f"-t:{self.options.per_core_time_sec*1000}",
             ],
             stdout=cf,
         )
@@ -221,7 +222,9 @@ class MutantInfo:
             self.build_mutant_query()
             log_info(f"[proof] attempt from mutant {self.mut_path}")
 
-        return dump_z3_proof(query_path, self.proof_path, timeout=PROOF_TIME_LIMIT_SEC*1000)
+        return dump_z3_proof(
+            query_path, self.proof_path, timeout=self.options.per_proof_time_sec * 1000
+        )
 
     def build_graph_log(self, clear=False) -> bool:
         if not self.__should_build(self.graph_path, clear):
@@ -277,14 +280,14 @@ class MutantInfo:
     def get_failed_reason(self) -> TraceFailure:
         assert self.has_trace()
 
-        rtime = self.trace_time/1000
+        rtime = self.trace_time / 1000
         assert self.trace_rcode != RCode.ERROR
 
         if self.trace_rcode == RCode.TIMEOUT or rtime >= 10:
             return TraceFailure.TIMEOUT
 
         if self.trace_rcode == RCode.UNSAT:
-            return TraceFailure.NOT_FAIL # ???
+            return TraceFailure.NOT_FAIL  # ???
 
         assert self.trace_rcode == RCode.UNKNOWN
 

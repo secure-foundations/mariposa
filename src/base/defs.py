@@ -1,3 +1,6 @@
+import random
+
+
 PROJ_ROOT = "data/projs/"
 DB_ROOT = "data/dbs/"
 LOG_ROOT = "data/logs/"
@@ -26,6 +29,8 @@ S190X_HOSTS = [
 ]
 
 def get_worker_hosts():
+    random.seed()
+    random.shuffle(S190X_HOSTS)
     return " ".join(S190X_HOSTS)
 
 CTRL_HOST = "s1904"

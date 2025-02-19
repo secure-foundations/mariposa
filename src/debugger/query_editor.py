@@ -11,12 +11,12 @@ import z3
 class QueryEditor(QueryLoader):
     def __init__(self, in_file_path):
         super().__init__(in_file_path)
-        self.__reset_state()
+        self._reset_state()
 
         self.__skv_count = 0
         self.__skolem_prefix = "skv_" + os.urandom(8).hex() + "_"
 
-    def __reset_state(self):
+    def _reset_state(self):
         self._new_commands = []
         self._modified_commands = dict()
 
@@ -26,8 +26,9 @@ class QueryEditor(QueryLoader):
 
     def _erase_qid(self, qid):
         if not self.check_qid(qid):
-            return
+            return False
         self._ids_to_erase.add(qid)
+        return True
 
     def get_new_skolem_name(self):
         self.__skv_count += 1
@@ -37,22 +38,24 @@ class QueryEditor(QueryLoader):
         # TODO: handle dual quantifiers if needed
         qid = qid[7:] if qid.startswith("skolem_") else qid
         if not self.check_qid(qid):
-            return
+            return False
         if hack_contains_qid(self.query_goal, qid):
             log_debug(f"[skolem] is in the goal!")
         if qid in self.existing_sk_decls:
             log_warn(f"[skolem] {qid} has existing skolem function(s)")
-            return
+            return False
         self._ids_to_skolemize.add(qid)
+        return True
 
     def _instantiate_qid(self, qid, insts: List[str], erase=True):
         if not self.check_qid(qid):
-            return
+            return False
         if erase:
             self._ids_to_erase.add(qid)
 
         comment = f"[inst] {qid} {len(insts)} instances"
         self.__add_new_commands(comment, insts)
+        return True
 
     def check_qid(self, qid):
         if qid not in self:
@@ -83,11 +86,11 @@ class QueryEditor(QueryLoader):
                 out_file.write(self.query_goal)
             out_file.write("(check-sat)\n")
             out_file.close()
-            self.__reset_state()
+            self._reset_state()
             add_qids_to_query(out_file_path, check=False)
             log_info(f"[edit] written to {out_file_path}")
         except Exception as e:
-            self.__reset_state()
+            self._reset_state()
             if os.path.exists(out_file_path):
                 os.remove(out_file_path)
             log_error(f"[edit] failed on {out_file_path}: {e}")
@@ -139,6 +142,10 @@ class QueryEditor(QueryLoader):
                 r = r.replace(old, new)
             asserts.append("(assert " + r + ")")
 
+        if len(decls) == 0:
+            log_warn(f"[skolem] {qid} creates no skolem funs")
+            assert False
+            return
         comment = f"[skolem] {qid} creates {len(decls)} skolem funs, {len(asserts)} asserts"
         self.__add_new_commands(comment, decls + asserts)
 

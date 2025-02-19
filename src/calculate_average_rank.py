@@ -16,9 +16,8 @@ import matplotlib.pyplot as plt
 from utils.cache_utils import load_cache
 
 from debugger.proof_analyzer import ProofAnalyzer
-from evaluator import Evaluator
+# from evaluator import Evaluator
 from datetime import datetime
-
 
 
 
@@ -129,16 +128,11 @@ def calculate_rank(file_name, ranking_heuristic = "naive", parameter1 = None, pa
     # print(ranked_report)
     # print(report.stabilized)
     ranked_report['position'] = ranked_report['rank'].rank(method='min', ascending=False).astype(int)
-    indices = ranked_report.loc[ranked_report["qname"].isin(report.stabilized["qname"])].index
-    min_rank =  ranked_report.loc[indices]["position"].min()
-    if min_rank <= 10:
-        print("Printing stuff because min_rank == 1")
-        print(ranked_report)
-        print(f"The min rank is {min_rank}")
-        print(report.stabilized)
-        print(report.tested.to_string())
+    # indices = ranked_report.loc[ranked_report["qname"].isin(report.stabilized["qname"])].index
+    # min_rank =  ranked_report.loc[indices]["position"].min()
+    # print(min_rank)
 
-    return min_rank
+    return ranked_report
 
 
 def calculate_rankings(kw_parameters, queries = None):

@@ -172,7 +172,7 @@ class TraceInstGraph(nx.DiGraph):
             count += self.blames[qidx].stat_count
         return count
 
-    def compute_sub_ratios(self, starts, debug=False):
+    def compute_sub_ratios(self, starts, debug=False, bootstrap=dict()):
         class Inter:
             def __init__(self, graph, starts, debug):
                 self.ratios = dict()
@@ -192,6 +192,11 @@ class TraceInstGraph(nx.DiGraph):
                         self.converged.add(qidx)
 
                 self.reachable = frozenset(reachable)
+
+                for qidx in bootstrap:
+                    assert qidx in self.reachable
+                    assert 0 <= bootstrap[qidx] <= 1
+                    self.ratios[qidx] = bootstrap[qidx]
 
             def has_converged(self):
                 return len(self.converged) == len(self.reachable)

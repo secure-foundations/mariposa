@@ -3,7 +3,7 @@ A script to validate query edits (e.g., instantiations and erasures of quantifie
 """
 
 from __future__ import annotations
-from typing import Generator
+from typing import Generator, Callable, Optional
 
 from dataclasses import dataclass
 from contextlib import contextmanager
@@ -129,9 +129,13 @@ def tokenize_smtlib2(s: str) -> Generator[tuple[int, str], None, None]:
 
 NORMALIZE_FLAGS = {":qid", ":skolemid", ":named", ":weight", ":cid"}
 
-def parse_smtlib2(file_path: str, normalize: bool = True) -> list[Exp]:
+def parse_smtlib2(file_path: str, process: Optional[Callable[[list[list[Exp]], Application], Exp]] = None) -> list[Exp]:
     """
-    Parse an SMT-LIB 2 query with some normalization (e.g. removing :qid flags)
+    Parse an SMT-LIB 2 query
+
+    It also optionally takes a `process` handler that can be used
+    to do some custom processing on each Application node (e.g. normalization
+    or finding quantifiers).
     """
 
     # Stack record a nested list of unclosed applications
@@ -148,21 +152,11 @@ def parse_smtlib2(file_path: str, normalize: bool = True) -> list[Exp]:
                     assert len(stack) != 0, f"{file_path}:{line_num}:{pos}: unexpected ')'"
 
                     args = stack.pop()
-
-                    # Normalize some flags
-                    if normalize and len(args) != 0 and args[0] == Atom("!"):
-                        new_args = []
-                        i = 0
-                        while i < len(args):
-                            arg = args[i]
-                            if isinstance(arg, Atom) and arg.name in NORMALIZE_FLAGS:
-                                i += 2
-                            else:
-                                new_args.append(arg)
-                                i += 1
-                        args = new_args
-
                     exp = Application(tuple(args))
+
+                    if process is not None:
+                        exp = process(stack, exp)
+
                     if len(stack) == 0:
                         top_level.append(exp)
                     else:
@@ -179,14 +173,72 @@ def get_query_file(args: argparse.Namespace):
     else:
         return tempfile.NamedTemporaryFile(mode="w", suffix=".smt2")
 
-def preprocess_query(path: str) -> tuple[list[Exp], Exp]:
+def preprocess_query(path: str, edited_qid: Optional[str] = None) -> tuple[list[Exp], Exp, list[str]]:
     """
     Parse an SMT-LIB 2 file and return all commands and the goal assertion
     Also run some sanity checks (e.g. at most one push/pop, only one check-sat and it's after all assertions)
     """
-    commands = parse_smtlib2(path)
+
+    comments = []
+
+    def process(stack: list[list[Exp]], app: Application) -> Exp:
+        """
+        Some custom query processing, e.g., normalization
+        """
+
+        nonlocal comments
+
+        if len(app.args) != 0 and app.args[0] == Atom("!"):
+            new_args = []
+            qid = None
+
+            i = 0
+            while i < len(app.args):
+                arg = app.args[i]
+
+                if isinstance(arg, Atom) and arg.name == ":qid" and i + 1 < len(app.args):
+                    qid = app.args[i + 1].name
+
+                if isinstance(arg, Atom) and arg.name in NORMALIZE_FLAGS:
+                    i += 2
+                else:
+                    new_args.append(arg)
+                    i += 1
+
+            # If an edited quantifier is specified
+            # Check if it's in a suspicious context
+            # If so, throw a warning
+            if edited_qid is not None and qid == edited_qid:
+                for parent in stack[::-1]:
+                    if len(parent) != 0 and not (
+                        parent[0] == Atom("assert") or
+                        parent[0] == Atom("forall") or
+                        parent[0] == Atom("and") or
+                        parent[0] == Atom("!") or
+                        (len(parent) == 2 and parent[0] == Atom("=>") and parent[1] == Atom("true"))
+                    ):
+                        # Some custom rule for reporting warnings
+                        if len(parent) == 2 and parent[0] == Atom("=>"):
+                            lhs = str(parent[1])
+                            if len(lhs) > 50:
+                                comments.append(f"quantifier {qid} not in a conjunctive context (found (=> {lhs[:50]}... ...))")
+                            else:
+                                comments.append(f"quantifier {qid} not in a conjunctive context (found (=> {lhs} ...))")
+                        else:
+                            comments.append(f"quantifier {qid} not in a conjunctive context (found {parent[0]})")
+                        break
+
+            # If there are no more flags left, remove the ! call
+            if len(new_args) == 2:
+                app = new_args[1]
+            else:
+                app = Application(tuple(new_args))
+
+        return app
+
+    commands = parse_smtlib2(path, process)
     goal = None
-    found_push = False
+    found_assert = True
     found_pop = False
     found_check_sat = False
 
@@ -195,11 +247,10 @@ def preprocess_query(path: str) -> tuple[list[Exp], Exp]:
             assert found_check_sat, f"assertion after check-sat in {path}"
             if goal is None:
                 goal = commands.pop(i)
-        elif commands[i].is_app("push"):
-            assert not found_push, f"multiple push commands in {path}"
-            found_push = True
+            found_assert = True
         elif commands[i].is_app("pop"):
             assert not found_pop, f"multiple pop commands in {path}"
+            assert not found_assert, f"assertion after pop in {path}"
             found_pop = True
         elif commands[i].is_app("check-sat"):
             assert not found_check_sat, f"multiple check-sat commands in {path}"
@@ -207,7 +258,7 @@ def preprocess_query(path: str) -> tuple[list[Exp], Exp]:
 
     assert goal is not None, f"no goal assertion found in {path}"
 
-    return commands, goal
+    return commands, goal, comments
 
 def run_z3(args: argparse.Namespace, path: str) -> str:
     """
@@ -230,14 +281,17 @@ def validate_edits(
     args: argparse.Namespace,
     original_path: str,
     edited_path: str,
+    edited_qid: Optional[str] = None,
 ) -> tuple[bool, list[str]]:
     comments = [] # e.g. warnings
 
     with status(f"parsing original {original_path}"):
-        original, original_goal = preprocess_query(original_path)
+        original, original_goal, parsing_comments = preprocess_query(original_path, edited_qid)
+        comments.extend(parsing_comments)
 
     with status(f"parsing edited {edited_path}"):
-        edited, edited_goal = preprocess_query(edited_path)
+        edited, edited_goal, parsing_comments = preprocess_query(edited_path)
+        comments.extend(parsing_comments)
 
     original_set = set(original)
 
@@ -248,6 +302,7 @@ def validate_edits(
             # Override set-option's
             write_query("(set-option :auto_config false)")
             write_query("(set-option :smt.mbqi false)")
+            write_query(f"(set-option :random-seed {args.seed})")
 
             # First push all commands in the original query, but skip some commands (e.g. push, pop, set-option)
             for cmd in original:
@@ -330,13 +385,15 @@ def run_job(
     args: argparse.Namespace,
     original_path: str,
     edited_path: str,
+    edited_qid: Optional[str] = None,
 ):
     with get_output_file(args, "a") as output:
         output_writer = csv.writer(output)
+        start = time.time()
         comments = []
+
         try:
-            start = time.time()
-            result, comments = validate_edits(args, original_path, edited_path)
+            result, comments = validate_edits(args, original_path, edited_path, edited_qid)
             elapsed = f"{time.time() - start:.2f}"
 
             output_writer.writerow([
@@ -347,6 +404,7 @@ def run_job(
                 "; ".join(comments),
             ])
         except Exception as e:
+            elapsed = f"{time.time() - start:.2f}"
             eprint(traceback.format_exc())
             output_writer.writerow([original_path, edited_path, f"exception: {e}", elapsed, "; ".join(comments)])
 
@@ -354,12 +412,13 @@ def get_output_file(args: argparse.Namespace, mode: str = "w") -> sys.TextIO:
     if args.output is not None:
         return open(args.output, mode)
     else:
-        return sys.stdout
+        return os.fdopen(os.dup(sys.stdout.fileno()), "w")
 
 def set_common_arguments(parser: argparse.ArgumentParser):
     parser.add_argument("--no-prune", action="store_true", default=False, help="Do not prune common assertions")
     parser.add_argument("--prove-edited-goal", action="store_true", default=False, help="Also prove edited goal in the resulting query")
     parser.add_argument("--z3", default="z3", help="Path to Z3")
+    parser.add_argument("--seed", type=int, default=0, help="Random seed for Z3")
     parser.add_argument("--timeout", type=float, default=5.0, help="Timeout for Z3")
     parser.add_argument("-o", "--output", help="Output CSV file")
 
@@ -374,6 +433,7 @@ def main():
     parser_single.add_argument("original", help="The original SMT-LIB 2 file")
     parser_single.add_argument("edited", help="The edited SMT-LIB 2 file")
     parser_single.add_argument("--log-smt", help="Log the generated SMT query to a file")
+    parser_single.add_argument("--edited-qid", help="Optionally specify the quantifier that was edited for additional warnings")
     set_common_arguments(parser_single)
 
     # Batch mode arguments
@@ -391,15 +451,15 @@ def main():
             print("original,edited,result,time,comment", file=file)
 
     if args.subcommand == "single":
-        run_job(args, args.original, args.edited)
+        run_job(args, args.original, args.edited, args.edited_qid)
 
     elif args.subcommand == "batch":
         with multiprocessing.Pool(args.jobs) as pool:
             with open(args.batch) as f:
                 batch = json.load(f)
                 jobs = [
-                    (args, original, edit)
-                    for original, edits in batch.items() for _, _, edit in edits
+                    (args, original, edit, qid)
+                    for original, edits in batch.items() for qid, _, edit in edits
                 ]
 
                 # Sort the jobs to make it more deterministic
