@@ -33,7 +33,9 @@ class BenchViewer:
 
         if auto_then_keep != DbgMode.AUTO:
             debuggers = [r for r in debuggers if r.mode == auto_then_keep]
-            log_info(f"filtered by mode: {auto_then_keep} {len(debuggers)}")
+            log_info(
+                f"filtered by mode: {auto_then_keep}, debuggers left: {len(debuggers)}/{len(queries)}"
+            )
 
         for r in debuggers:
             self.__debuggers[r.given_query_path] = r

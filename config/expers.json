@@ -13,6 +13,10 @@
     "filter": {
         "num_mutants": 3
     },
+    "filter_quick": {
+        "num_mutants": 3,
+        "exp_timeout": 10
+    },
     "quake": {
         "mutations": [
             "shuffle",
