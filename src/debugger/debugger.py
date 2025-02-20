@@ -2,11 +2,10 @@
 
 import os
 from pandas import DataFrame
-from tabulate import tabulate
 from tqdm import tqdm
 from z3 import set_param
 from calculate_average_rank import calculate_rank
-from debugger.debugger_options import DebugOptions, resolve_input_path
+from debugger.debugger_options import DbgMode, DebugOptions, resolve_input_path
 from debugger.edit_tracker import EditTracker
 from debugger.demo_utils import Report
 from debugger.edit_info import EditAction, EditInfo
@@ -17,20 +16,16 @@ from utils.cache_utils import (
     has_cache,
     load_cache_or,
 )
-from base.factory import FACT
 from utils.system_utils import (
-    get_name_hash,
     list_smt2_files,
     log_error,
     log_info,
     log_warn,
 )
-from enum import Enum
-import argparse
 from debugger.strainer import Strainer, StrainerStatus
-from debugger.debugger_options import DebugOptions, resolve_input_path
 
 set_param("proof", True)
+
 
 def shorten_qname(qname: str):
     if len(qname) > 80:
@@ -38,16 +33,8 @@ def shorten_qname(qname: str):
     return qname
 
 
-class DbgMode(Enum):
-    AUTO = "auto"
-    SINGLETON = "singleton"
-    DOUBLETON = "doubleton"
-    FAST_FAIL = "fast_fail"
-    TIMEOUT = "timeout"
-
 def get_debugger(
     query_path: str,
-    mode: DbgMode,
     options=DebugOptions(),
 ):
     query_path = resolve_input_path(query_path, options.verbose)
@@ -56,6 +43,8 @@ def get_debugger(
         query_path,
         options,
     )
+
+    mode = options.mode
 
     if mode == DbgMode.AUTO:
         trace = tracker.get_candidate_trace()
@@ -93,6 +82,7 @@ def get_debugger(
 
     log_error(f"[init] unknown debugger mode {mode}")
     assert False
+
 
 class SingletonDebugger:
     def __init__(

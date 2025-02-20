@@ -1,8 +1,16 @@
+from enum import Enum
 import json
 import os
 
 from utils.system_utils import log_check, log_info
 
+
+class DbgMode(Enum):
+    AUTO = "auto"
+    SINGLETON = "singleton"
+    DOUBLETON = "doubleton"
+    FAST_FAIL = "fast_fail"
+    TIMEOUT = "timeout"
 
 class DebugOptions:
     def __init__(self):
@@ -28,6 +36,7 @@ class DebugOptions:
         self.edit_count = 10
         self.is_verus = False
 
+        self.mode = DbgMode.AUTO
 
 def resolve_input_path(input_path, verbose):
     if len(input_path) == 10:

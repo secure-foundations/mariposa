@@ -11,7 +11,10 @@ def main():
         "-i", "--input-project-path", required=True, help="the input project path"
     )
     parser.add_argument(
-        "--is-verus", default=False, action="store_true", help="is verus"
+        "--verus", dest="is_verus", action="store_true", help="this is a verus query"
+    )
+    parser.add_argument(
+        "--not-verus", dest="is_verus", action="store_false", help="this is not a verus query"
     )
     parser.add_argument(
         "--max-iter",
@@ -20,6 +23,9 @@ def main():
         help="max iterations before full stability test",
     )
     args = parser.parse_args()
+
+    if not isinstance(args.is_verus, bool):
+        parser.error("must specify if this is a verus query or not")
 
     if args.is_verus:
         filter_cfg = "filter_quick"
