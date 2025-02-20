@@ -102,7 +102,7 @@ class ProofParser:
         name = _try_get_symbol(data[0])
 
         if name is None:
-            print(data[0])
+            print(data[0][0])
             assert False
 
         if node := self.__parse_let(name, data):

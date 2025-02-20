@@ -78,7 +78,9 @@ def get_debugger(
         else:
             log_error(f"[init] {tracker.name_hash} unknown trace failure {reason}")
             assert False
-        log_info(f"[init] {tracker.name_hash} auto selected {mode}")
+
+        if options.verbose:
+            log_info(f"[init] {tracker.name_hash} auto selected {mode}")
 
     if mode == DbgMode.SINGLETON:
         return SingletonDebugger(tracker)
@@ -98,6 +100,7 @@ class SingletonDebugger:
         tracker: EditTracker,
     ):
         self.name_hash = tracker.name_hash
+        self.mode = DbgMode.SINGLETON
 
         if not hasattr(self, "proj_name"):
             self.proj_name = "singleton_" + self.name_hash
@@ -311,6 +314,7 @@ class DoubletonDebugger(SingletonDebugger):
         self.proj_name = "doubleton_" + tracker.name_hash
         self._report_cache = tracker.name_hash + ".2.report"
         super().__init__(tracker)
+        self.mode = DbgMode.DOUBLETON
 
     def is_registered_edit(self, ei: EditInfo):
         return ei.is_doubleton()
@@ -441,6 +445,7 @@ class FastFailDebugger(SingletonDebugger):
         self.proj_name = "fast_fail_" + tracker.name_hash
         self._report_cache = tracker.name_hash + ".ff.report"
         super().__init__(tracker)
+        self.mode = DbgMode.FAST_FAIL
 
     def create_project(self):
         name_hash = "cache/" + self.name_hash + ".report"
@@ -475,8 +480,8 @@ class TimeoutDebugger(SingletonDebugger):
         # this is just dumb
         self.proj_name = "timeout_" + tracker.name_hash
         self._report_cache = tracker.name_hash + ".to.report"
-
         super().__init__(tracker)
+        self.mode = DbgMode.TIMEOUT
 
     def rank_edits(self):
         trace_graph = self.tracker.get_trace_graph()

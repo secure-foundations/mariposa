@@ -11,8 +11,8 @@ def is_percentile(x):
 def percent(a, b):
     return a * 100 / b
 
-def fmt_percent(a, b, round=2):
-    return f"{round(percent(a, b), round)}%"
+def fmt_percent(a, b, rd=2):
+    return f"{round(percent(a, b), rd)}%"
 
 def rd_percent(a, b):
     return round(a * 100 / b, 2)

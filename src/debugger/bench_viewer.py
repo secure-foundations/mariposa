@@ -9,9 +9,17 @@ from debugger.debugger import (
 )
 from debugger.strainer import StrainerStatus
 from utils.analysis_utils import Categorizer, fmt_percent
+from utils.system_utils import log_check, log_info
+
 
 class BenchViewer:
-    def __init__(self, queries, mode: DbgMode):
+    def __init__(self, queries, mode: DbgMode, auto_then_keep=DbgMode.AUTO):
+        if auto_then_keep != DbgMode.AUTO:
+            log_check(
+                mode == DbgMode.AUTO,
+                "auto_then_keep should only be given with auto mode first!",
+            )
+
         self.status = Categorizer()
 
         self.__name_hashes = dict()
@@ -21,13 +29,20 @@ class BenchViewer:
         pool = multiprocessing.Pool(8)
         debuggers = pool.starmap(get_debugger, args)
         pool.close()
+        self.modes = Categorizer()
+
+        if auto_then_keep != DbgMode.AUTO:
+            debuggers = [r for r in debuggers if r.mode == auto_then_keep]
+            log_info(f"filtered by mode: {auto_then_keep} {len(debuggers)}")
 
         for r in debuggers:
             self.__debuggers[r.given_query_path] = r
             self.__name_hashes[r.name_hash] = r.given_query_path
+            self.modes.add_item(r.mode, r.given_query_path)
             self.status.add_item(r.status, r.given_query_path)
 
         self.status.finalize()
+        self.modes.finalize()
 
         self.fixable = set()
         self.unfixable = set()
