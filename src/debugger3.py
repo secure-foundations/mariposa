@@ -75,7 +75,7 @@ def main():
     options.verbose = True
     options.skip_core = args.skip_core
 
-    mode = DbgMode(args.mode)
+    options.mode = DbgMode(args.mode)
 
     dbg = get_debugger(args.input_query_path, options)
 
