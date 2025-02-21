@@ -159,6 +159,26 @@ class MutantInfo:
         self.trace_time = elapsed
         return True
 
+    def trace_passed(self):
+        rc = self.trace_rcode
+
+        assert self.has_trace()
+        assert rc != RCode.ERROR
+
+        if (
+            rc == RCode.UNSAT
+            and self.trace_time / 1000 < self.options.per_trace_time_sec
+        ):
+            return True
+
+        return False
+
+    def fmt_trace_info(self):
+        rc = self.trace_rcode
+        assert self.has_trace()
+        assert rc != RCode.ERROR
+        return f"{self.trace_path} {rc} {self.trace_time/1000}"
+
     def has_core(self):
         return os.path.exists(self.core_path)
 

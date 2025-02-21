@@ -16,9 +16,10 @@ def main():
     parser.add_argument(
         "--not-verus", dest="is_verus", action="store_false", help="this is not a verus query"
     )
+    parser.set_defaults(is_verus=None)
     parser.add_argument(
         "--max-iter",
-        default=6,
+        default=8,
         type=int,
         help="max iterations before full stability test",
     )
@@ -60,7 +61,7 @@ def main():
 
         if last_count != query_count:
             last_count = query_count
-        elif (query_count <= 12 and i > 4) or query_count == 0:
+        elif (query_count <= 12 and i >= 6) or query_count == 0:
             break
 
         exp_command = f"./src/exper_wizard.py manager -e {filter_cfg} --total-parts 12 -s z3_4_13_0 -i {filter_dir} --clear"

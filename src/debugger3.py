@@ -77,7 +77,7 @@ def main():
 
     mode = DbgMode(args.mode)
 
-    dbg = get_debugger(args.input_query_path, mode, options)
+    dbg = get_debugger(args.input_query_path, options)
 
     if args.collect_garbage:
         dbg.collect_garbage()

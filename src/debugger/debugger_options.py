@@ -11,6 +11,8 @@ class DbgMode(Enum):
     DOUBLETON = "doubleton"
     FAST_FAIL = "fast_fail"
     TIMEOUT = "timeout"
+    FAST2 = "fast2"
+
 
 class DebugOptions:
     def __init__(self):
@@ -37,6 +39,7 @@ class DebugOptions:
         self.is_verus = False
 
         self.mode = DbgMode.AUTO
+
 
 def resolve_input_path(input_path, verbose):
     if len(input_path) == 10:

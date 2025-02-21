@@ -237,9 +237,6 @@ class ExperAnalyzer:
         remaining = len(self.qids) - len(to_remove)
 
         for qid in to_remove:
-            os.system(f"rm {self.get_path(qid)}")
-
-        if remaining <= 10:
-            log_info("few queries left, run full stability test next?")
+            os.remove(self.get_path(qid))
 
         log_info(f"removed {len(to_remove)} queries, {remaining} remaining")
