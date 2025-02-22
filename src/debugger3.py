@@ -15,7 +15,7 @@ def main():
         "-m",
         "--mode",
         default="auto",
-        choices=["auto", "singleton", "doubleton", "fast_fail", "timeout"],
+        choices=["auto", "singleton", "doubleton", "fast_fail", "timeout", "fast2"],
         help="the mode to operate on",
     )
     parser.add_argument(
@@ -71,10 +71,10 @@ def main():
 
     args = parser.parse_args()
     options = DebugOptions()
+
     # verbose if from commandline
     options.verbose = True
     options.skip_core = args.skip_core
-
     options.mode = DbgMode(args.mode)
 
     dbg = get_debugger(args.input_query_path, options)

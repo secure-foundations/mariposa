@@ -26,6 +26,7 @@ class TraceFailure(Enum):
     SLOW_UNKNOWN = "slow_unknown"
     FAST_UNKNOWN = "fast_unknown"
     NOT_FAIL = "did not fail"
+    FAST2 = "fast2"
 
 
 class MutantInfo:

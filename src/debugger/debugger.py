@@ -79,9 +79,222 @@ def get_debugger(
         return FastFailDebugger(tracker)
     if mode == DbgMode.TIMEOUT:
         return TimeoutDebugger(tracker)
+    if mode == DbgMode.FAST2:
+        return Fast2Debugger(tracker)
 
     log_error(f"[init] unknown debugger mode {mode}")
     assert False
+
+# class BaseDebugger:
+#     def __init__(
+#         self,
+#         tracker: EditTracker,
+#     ):
+#         self.name_hash = tracker.name_hash
+#         self.mode = DbgMode.SINGLETON
+
+#         if not hasattr(self, "proj_name"):
+#             self.proj_name = "singleton_" + self.name_hash
+#             self._report_cache = self.name_hash + ".report"
+
+#         self.tracker = tracker
+#         self._strainer = None
+#         self._report = None
+
+#         if not self.tracker.proof_available():
+#             self.status = StrainerStatus.NO_PROOF
+#             return
+
+#         if has_cache(self._report_cache):
+#             self.status = StrainerStatus.FINISHED
+#             assert self.report is not None
+#             return
+
+#         self._strainer = Strainer(self.proj_name, is_verus=tracker.options.is_verus)
+#         self.status = self._strainer.status
+
+#         if self.status == StrainerStatus.FINISHED:
+#             # build report if it's finished
+#             assert self.report is not None
+
+#     @property
+#     def editor(self) -> InformedEditor:
+#         return self.tracker.editor
+
+#     def _build_tested_report(self):
+#         tested = []
+#         root_quants = self.editor.list_root_qnames(skip_ignored=False)
+#         tested_qnames = set()
+
+#         for eid in self.strainer.tested.qids:
+#             ei = self.tracker.look_up_edit_with_id(eid)
+#             qname, action = ei.get_singleton_edit()
+#             rc, et = self.strainer.tested.get_query_result(eid)
+#             tested.append((qname, action.value, str(rc), et / 1000, ei.query_path))
+#             tested_qnames.add(qname)
+
+#         skipped = set(root_quants) - tested_qnames
+
+#         tested = DataFrame(
+#             tested, columns=["qname", "action", "result", "time", "edit_path"]
+#         )
+#         return tested, skipped
+
+#     def _build_stabilized_report(self):
+#         stabilized = []
+#         for eid in self.strainer.filtered.get_stable_edit_ids():
+#             ei = self.tracker.look_up_edit_with_id(eid)
+#             qname, action = ei.get_singleton_edit()
+#             if qname == "prelude_fuel_defaults":
+#                 continue
+#             stabilized.append((qname, action.value, ei.query_path))
+#         stabilized = DataFrame(stabilized, columns=["qname", "action", "edit_path"])
+#         return stabilized
+
+#     def build_report(self, clear=False) -> Report:
+#         if self.status != StrainerStatus.FINISHED:
+#             return None
+
+#         if not clear and self._report is not None:
+#             return self._report
+
+#         def _build_report():
+#             r = Report()
+#             r.tested, r.skipped = self._build_tested_report()
+
+#             if len(r.tested) == 0:
+#                 log_error(f"[dbg] {self.proj_name} has no tested report")
+#                 assert False
+
+#             r.stabilized = self._build_stabilized_report()
+#             r.freq = self.editor.get_inst_report()
+
+#             # this is a hack so that we can use Pool
+#             self.tracker.dispose_editor()
+#             self._editor = None
+
+#             if len(r.freq) == 0:
+#                 log_error(f"[dbg] {self.proj_name} has no freq report")
+#                 assert False
+
+#             return r
+
+#         r = load_cache_or(self._report_cache, _build_report, clear)
+#         self._report = r
+
+#         return r
+
+#     @property
+#     def report(self) -> Report:
+#         if self.status != StrainerStatus.FINISHED:
+#             return None
+#         return self.build_report()
+
+#     @property
+#     def strainer(self) -> Strainer:
+#         if self._strainer is None:
+#             self._strainer = Strainer(self.proj_name)
+#         return self._strainer
+
+#     @property
+#     def given_query_path(self):
+#         return self.tracker.given_query_path
+
+#     def register_singleton(self):
+#         singleton_edits = self.editor.get_singleton_actions()
+#         dest_dir = self.strainer.test_dir
+
+#         for edit in singleton_edits:
+#             self.tracker.register_edit(edit, dest_dir)
+
+#         self.tracker.save_edits_meta()
+#         return singleton_edits
+
+#     def create_project(self):
+#         singleton_edits = self.register_singleton()
+#         dest_dir = self.strainer.test_dir
+
+#         file_size = os.path.getsize(self.tracker.orig_path) / 1024
+#         total_size = file_size * len(singleton_edits) / 1024 / 1024
+
+#         if total_size > 20:
+#             log_error(f"[edit] {dest_dir} aborted, {total_size:.2f}G may be used!")
+#             return
+
+#         log_info(f"[edit] estimated size: {total_size:.2f}G")
+
+#         if not os.path.exists(dest_dir):
+#             os.makedirs(dest_dir)
+
+#         for action in tqdm(singleton_edits):
+#             ei = EditInfo(dest_dir, action)
+#             assert self.tracker.contains_edit_info(ei)
+#             if ei.query_exists():
+#                 log_info(f"[edit] {ei.get_id()} already exists")
+#                 continue
+#             self.tracker.create_edit_query(ei)
+
+#         log_info(
+#             f"[edit] [proj] {self.proj_name} has {len(list_smt2_files(dest_dir))} queries"
+#         )
+#         return dest_dir
+
+#     def collect_garbage(self):
+#         self.tracker.collect_garbage()
+
+#         if self.status != StrainerStatus.FINISHED:
+#             log_warn(
+#                 f"[dbg] skipped GC on unfinished project {self.status} {self.given_query_path}"
+#             )
+#             return
+
+#         seps = self.report.stabilized.edit_path.values
+
+#         for row in self.report.tested.itertuples():
+#             edit_path = row.edit_path
+#             if edit_path in seps:
+#                 # if not os.path.exists(edit_path):
+#                 #     base = os.path.basename(edit_path)
+#                 #     base = base.replace(".smt2", "")
+#                 #     ei = self._tracker.look_up_edit_with_id(base)
+#                 #     self.editor.edit_by_info(ei)
+#                 #     assert os.path.exists(edit_path)
+#                 continue
+#             if row.result == "error":
+#                 continue
+#             if os.path.exists(edit_path):
+#                 log_info(f"removing {edit_path}")
+#                 os.remove(edit_path)
+
+#     def is_registered_edit(self, ei: EditInfo):
+#         return ei.is_singleton()
+
+#     def get_edit_counts(self):
+#         existing = list_smt2_files(self.strainer.test_dir)
+
+#         if existing is None:
+#             existing = []
+
+#         registered_count = 0
+
+#         for ei in self.edit_infos.values():
+#             if not self.is_registered_edit(ei):
+#                 continue
+#             registered_count += 1
+
+#         return registered_count, len(existing)
+
+#     def get_sync_dirs(self):
+#         return [
+#             self.tracker.sub_root,
+#         ] + self.strainer.get_dirs()
+
+#     def reset_project(self):
+#         self.strainer.clear_all()
+#         self.clear_report_cache()
+
+#     def clear_report_cache(self):
+#         clear_cache(self._report_cache)
 
 
 class SingletonDebugger:
@@ -509,6 +722,68 @@ class TimeoutDebugger(SingletonDebugger):
 
             action = choose_action(self.editor.get_quant_actions(qname))
             actions = {qname: action}
+            ei = self.tracker.register_edit(actions, dst_dir)
+            ei.edit_dir = dst_dir
+
+            if self.tracker.create_edit_query(ei):
+                emitted_count += 1
+
+        self.tracker.save_edits_meta()
+
+
+class Fast2Debugger(SingletonDebugger):
+    def __init__(
+        self,
+        tracker: EditTracker,
+    ):
+        self._report_cache = tracker.name_hash + ".ff2.report"
+
+        super().__init__(tracker)
+        self.mode = DbgMode.FAST2
+
+    @property
+    def proj_name(self):
+        return "ff2_" + self.name_hash
+
+    def rank_edits(self):
+        trace_graph = self.tracker.get_trace_graph()
+        ratios = self.tracker.get_trace_graph_ratios()
+        scores = dict()
+
+        for qname, ratio in ratios.items():
+            actions = self.editor.get_quant_actions(qname)
+
+            if EditAction.ERROR in actions:
+                if len(actions) != 1:
+                    log_warn(
+                        f"[edit] {self.name_hash} {qname} has error and other actions? {actions}"
+                    )
+                continue
+
+            if (
+                EditAction.INST_REPLACE not in actions
+                and EditAction.INST_KEEP not in actions
+            ):
+                continue
+            scores[qname] = trace_graph.aggregate_scores(ratio)
+
+        scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        return scores
+
+    def create_project(self):
+        ranked = self.rank_edits()
+        dst_dir = self.strainer.test_dir
+
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+
+        emitted_count = 0
+
+        for qname, _ in ranked:
+            if emitted_count >= 10:
+                break
+
+            actions = {qname: EditAction.INST_KEEP}
             ei = self.tracker.register_edit(actions, dst_dir)
             ei.edit_dir = dst_dir
 

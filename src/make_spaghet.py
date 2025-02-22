@@ -14,7 +14,10 @@ def main():
         "--verus", dest="is_verus", action="store_true", help="this is a verus query"
     )
     parser.add_argument(
-        "--not-verus", dest="is_verus", action="store_false", help="this is not a verus query"
+        "--not-verus",
+        dest="is_verus",
+        action="store_false",
+        help="this is not a verus query",
     )
     parser.set_defaults(is_verus=None)
     parser.add_argument(
@@ -26,7 +29,7 @@ def main():
     args = parser.parse_args()
 
     if not isinstance(args.is_verus, bool):
-        parser.error("must specify if this is a verus query or not")
+        parser.error("must specify if this is a verus project or not")
 
     if args.is_verus:
         filter_cfg = "filter_quick"
