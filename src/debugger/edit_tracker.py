@@ -186,6 +186,8 @@ class EditTracker(MutantBuilder):
         return ei
 
     def look_up_edit_with_id(self, eid) -> EditInfo:
+        if eid not in self.edit_infos:
+            return None
         return self.edit_infos[eid]
 
     def contains_edit_info(self, ei: EditInfo):

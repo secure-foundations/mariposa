@@ -85,6 +85,7 @@ def get_debugger(
     log_error(f"[init] unknown debugger mode {mode}")
     assert False
 
+
 # class BaseDebugger:
 #     def __init__(
 #         self,
@@ -340,6 +341,11 @@ class SingletonDebugger:
 
         for eid in self.strainer.tested.qids:
             ei = self.tracker.look_up_edit_with_id(eid)
+
+            if ei is None:
+                log_warn(f"[reprot] tested {self.name_hash} eid {eid} not found")
+                continue
+
             qname, action = ei.get_singleton_edit()
             rc, et = self.strainer.tested.get_query_result(eid)
             tested.append((qname, action.value, str(rc), et / 1000, ei.query_path))
@@ -356,9 +362,16 @@ class SingletonDebugger:
         stabilized = []
         for eid in self.strainer.filtered.get_stable_edit_ids():
             ei = self.tracker.look_up_edit_with_id(eid)
+
+            if ei is None:
+                log_error(f"[edit] stabilized {self.name_hash} eid {eid} not found")
+                assert False
+
             qname, action = ei.get_singleton_edit()
+
             if qname == "prelude_fuel_defaults":
                 continue
+
             stabilized.append((qname, action.value, ei.query_path))
         stabilized = DataFrame(stabilized, columns=["qname", "action", "edit_path"])
         return stabilized
