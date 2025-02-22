@@ -238,3 +238,6 @@ class Categorizer:
     #     table.append(["total", self.total, "100.00 %", other.total, "100.00 %"])
     #     print(tabulate(table, headers="firstrow", 
     #                    tablefmt="latex_raw", floatfmt=".2f"))
+
+def sort_by_values(d, reverse=True):
+    return [(k, v) for k, v in sorted(d.items(), key=lambda item: item[1], reverse=reverse)]

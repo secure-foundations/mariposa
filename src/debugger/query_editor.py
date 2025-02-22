@@ -89,11 +89,13 @@ class QueryEditor(QueryLoader):
             self._reset_state()
             add_qids_to_query(out_file_path, check=False)
             log_info(f"[edit] written to {out_file_path}")
+            return True
         except Exception as e:
             self._reset_state()
             if os.path.exists(out_file_path):
                 os.remove(out_file_path)
             log_error(f"[edit] failed on {out_file_path}: {e}")
+            return False
 
     def __add_new_commands(self, comment, commands):
         log_info("[edit] " + comment)

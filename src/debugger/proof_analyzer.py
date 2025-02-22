@@ -64,7 +64,7 @@ class ProofAnalyzer(TermTable):
     def __init__(self, file_path):
         super().__init__(file_path)
 
-        self.rewrites = dict()
+        self.rewrites: Dict[NodeRef, RewriteTerm] = dict()
         self.trivial_rewrites = set()
         self.lemmas = dict()
         self.th_lemmas = dict()

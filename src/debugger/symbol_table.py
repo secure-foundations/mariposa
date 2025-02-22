@@ -1,7 +1,7 @@
 import pickle
 import networkx as nx
 import hashlib
-from typing import Dict, Set
+from typing import Dict, Set, Tuple
 from debugger.tree_parser import *
 from utils.system_utils import log_debug, log_error
 
@@ -71,6 +71,11 @@ class TermTable(nx.DiGraph):
         if isinstance(node, QuantNode):
             return QuantRef(digest[:16], node.quant_type)
         return NodeRef(digest[:16])
+
+    def get_ref_of(self, node: TreeNode) -> Tuple[NodeRef, bool]:
+        ref = self.__make_ref(node)
+        # assert ref in self.__storage
+        return (ref, ref in self.__storage)
 
     def __flatten_tree_nodes(self, root: TreeNode):
         self.__global_defs = dict()
