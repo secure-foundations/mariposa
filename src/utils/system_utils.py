@@ -214,4 +214,5 @@ def write_misc_script(name, commands):
         f.write("#!/bin/bash\n")
         for cmd in commands:
             f.write(f"{cmd}\n")
+    log_info(f"created misc script: {name} with {len(commands)} commands")
     os.chmod(f"misc/{name}", 0o755)

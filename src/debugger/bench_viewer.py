@@ -82,6 +82,6 @@ class BenchViewer:
 
     def get_sync_dirs(self):
         targets = []
-        for q in self.fixable:
+        for q in self.status[StrainerStatus.FINISHED]:
             targets += self[q].get_sync_dirs()
         return targets

@@ -309,6 +309,8 @@ class ProofAnalyzer(TermTable):
         return res
 
     def get_inst_info_under_qname(self, qname) -> QuantInstInfo:
+        if qname not in self.__insts_under_qname:
+            return None
         return self.__insts_under_qname[qname]
 
     def has_inst_info(self, qname):
@@ -327,3 +329,35 @@ class ProofAnalyzer(TermTable):
         pickle_name = m.hexdigest() + ".pickle"
         print(pickle_name)
         return load_cache_or(pickle_name, lambda: ProofAnalyzer(proof_path), clear)
+
+    def debug_inst_under_qname(self, qname):
+        if qname not in self.__insts_under_qname:
+            log_warn(f"[proof] no inst info under qname: {qname}")
+            return
+
+        qi_info = self.__insts_under_qname[qname]
+        insts = qi_info.get_all_insts()
+        qrefs = qi_info.get_quant_refs()
+
+        print(f"qname:", qname)
+
+        if len(qrefs) != 1:
+            print(f"quant-refs (!): {len(qrefs)}")
+
+        if self.has_skolemized_qname(qname):
+            print(f"skolemized consequences:")
+            for skv, count in self.__skolemization_consequences[qname].items():
+                print(f"\t{skv}: {count}")
+
+        skv_deps = qi_info.get_all_skolem_deps()
+
+        if len(skv_deps) != 0:
+            for dep in skv_deps:
+                print(f"depends on other skolem: {dep}")
+
+        print(f"quant-inst {len(insts)}")
+
+        for ref in insts:
+            print("\t", self.dump_node(ref))
+
+

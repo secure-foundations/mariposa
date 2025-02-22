@@ -61,9 +61,9 @@ def get_debugger(
             mode = DbgMode.FAST_FAIL
         elif reason == TraceFailure.SLOW_UNKNOWN:
             log_warn(
-                f"[init] {tracker.name_hash} trace slow unknown, fallback to timeout"
+                f"[init] {tracker.name_hash} trace slow unknown, fallback to fast_fail"
             )
-            mode = DbgMode.TIMEOUT
+            mode = DbgMode.FAST_FAIL
         else:
             log_error(f"[init] {tracker.name_hash} unknown trace failure {reason}")
             assert False
@@ -527,8 +527,8 @@ class DoubletonDebugger(SingletonDebugger):
         self,
         tracker: EditTracker,
     ):
-        self.proj_name = "doubleton_" + tracker.name_hash
-        self._report_cache = tracker.name_hash + ".2.report"
+        self.proj_name = "doubleton2_" + tracker.name_hash
+        self._report_cache = tracker.name_hash + ".22.report"
         super().__init__(tracker)
         self.mode = DbgMode.DOUBLETON
 
@@ -543,7 +543,7 @@ class DoubletonDebugger(SingletonDebugger):
             os.makedirs(dest_dir)
 
         ratios = self.tracker.get_trace_graph_ratios()
-        mi = self.get_trace_info()
+        mi = self.tracker.get_trace_info()
         trace_graph = mi.get_trace_graph()
 
         roots = dict()
@@ -574,7 +574,6 @@ class DoubletonDebugger(SingletonDebugger):
             )
         ]
         ranked = [x[0] for x in singleton_ranked]
-
         scores = dict()
 
         for i, root1 in enumerate(tqdm(ranked[:TOP_N])):
@@ -602,15 +601,22 @@ class DoubletonDebugger(SingletonDebugger):
 
         scores = [(k, v) for k, v in scores.items() if v > 0]
         sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
-        sorted_scores = sorted_scores[:TOP_N]
+        # sorted_scores = sorted_scores[:10]
+
+        emitted_count = 0
 
         for (qname1, qname2), score in sorted_scores:
+            if emitted_count >= 10:
+                break
+
             action1 = choose_action(self.editor.get_quant_actions(qname1))
             action2 = choose_action(self.editor.get_quant_actions(qname2))
             edit = {qname1: action1, qname2: action2}
             # print(edit)
             ei = self.tracker.register_edit(edit, dest_dir)
-            self.tracker.create_edit_query(ei)
+            ei.edit_dir = dest_dir
+            if self.tracker.create_edit_query(ei):
+                emitted_count += 1
 
         self.tracker.save_edits_meta()
 
@@ -660,12 +666,10 @@ class FastFailDebugger(SingletonDebugger):
     ):
         self.proj_name = "fast_fail_" + tracker.name_hash
         self._report_cache = tracker.name_hash + ".ff.report"
-        super().__init__(tracker)
+        SingletonDebugger.__init__(self, tracker)
         self.mode = DbgMode.FAST_FAIL
 
     def create_project(self):
-        name_hash = "cache/" + self.name_hash + ".report"
-        rank = calculate_rank(name_hash, ranking_heuristic="proof_count")
         dst_dir = self.strainer.test_dir
 
         if not os.path.exists(dst_dir):
@@ -673,17 +677,19 @@ class FastFailDebugger(SingletonDebugger):
 
         emitted_count = 0
 
-        for row in rank.iterrows():
+        inst_report = self.editor.get_inst_report()
+    
+        for qname in inst_report.sort_values(by="proof_count", ascending=False).qname:
             if emitted_count >= 10:
                 break
 
-            qname = row[1].qname
-            action = choose_action(self.editor.get_quant_actions(qname))
-            ei = self.tracker.register_edit({qname: action}, dst_dir)
-            ei.edit_dir = dst_dir
+            actions = self.editor.get_quant_actions(qname)
+            if EditAction.INST_KEEP in actions or EditAction.INST_REPLACE in actions:
+                ei = self.tracker.register_edit({qname: EditAction.INST_KEEP}, dst_dir)
+                ei.edit_dir = dst_dir
 
-            if self.tracker.create_edit_query(ei):
-                emitted_count += 1
+                if self.tracker.create_edit_query(ei):
+                    emitted_count += 1
 
         self.tracker.save_edits_meta()
 

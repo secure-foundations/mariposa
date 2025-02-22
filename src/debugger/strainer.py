@@ -5,7 +5,7 @@ from analysis.singleton_analyzer import SingletonAnalyzer
 from base.exper_analyzer import ExperAnalyzer
 from base.exper import Experiment
 from base.factory import FACT
-from utils.system_utils import log_debug
+from utils.system_utils import list_smt2_files, log_debug
 
 
 SOLVER = FACT.get_solver("z3_4_13_0")
@@ -78,6 +78,11 @@ class Strainer:
             return
 
         proj = FACT.get_project_by_path(self.test_dir)
+
+        if list_smt2_files(self.test_dir) == []:
+            self._status = StrainerStatus.NOT_CREATED
+            return
+        
         self._status = StrainerStatus.NOT_TESTED
 
         exp = FACT.try_get_exper(proj, VERI_CFG, SOLVER)
