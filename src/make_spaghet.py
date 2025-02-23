@@ -41,11 +41,11 @@ def main():
     )
     parser.add_argument(
         "--cluster",
-        dest="local_only",
+        dest="is_local",
         action="store_false",
         help="use the cluster",
     )
-    parser.set_defaults(local_only=True)
+    parser.set_defaults(is_local=None)
 
     args = parser.parse_args()
 
@@ -70,7 +70,7 @@ def main():
     if not project_dir.endswith(".filtered/base.z3"):
         assert project_dir.endswith("/base.z3")
 
-        exp_command = get_exp_command(project_dir, "verify", args.local_only)
+        exp_command = get_exp_command(project_dir, "verify", args.is_local)
         os.system(exp_command)
 
         filter_command = (
@@ -91,7 +91,7 @@ def main():
         elif (query_count <= 12 and i >= 6) or query_count == 0:
             break
 
-        exp_command = get_exp_command(filter_dir, filter_cfg, args.local_only)
+        exp_command = get_exp_command(filter_dir, filter_cfg, args.is_local)
         log_info(f"iteration {i}, current query count: {query_count}, experimenting...")
         os.system(exp_command)
 
@@ -105,7 +105,7 @@ def main():
         log_warn("no queries left!")
 
     log_info(f"carving done, running full stability test... on {query_count} queries")
-    exp_command = get_exp_command(filter_dir, full_cfg, args.local_only)
+    exp_command = get_exp_command(filter_dir, full_cfg, args.is_local)
     os.system(exp_command)
 
 

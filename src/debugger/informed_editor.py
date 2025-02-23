@@ -86,6 +86,7 @@ class QueryInstStat:
     def __contains__(self, qname):
         return qname in self.loader
 
+
 def choose_action(actions):
     if EditAction.ERASE in actions:
         return EditAction.ERASE
@@ -96,6 +97,7 @@ def choose_action(actions):
     if EditAction.SKOLEMIZE in actions:
         return EditAction.SKOLEMIZE
     return EditAction.NONE
+
 
 class InformedEditor(QueryEditor):
     def __init__(self, query_path: str, pa: ProofAnalyzer, ti: MutantInfo):
@@ -156,7 +158,7 @@ class InformedEditor(QueryEditor):
             # cannot remove the quantifier,
             # but can use some instances ...
             return allowed
-        
+
         if len(allowed) == 0:
             # print(qname, len(usable_insts), len(skolem_deps), should_be_skolemized)
             return {EditAction.ERROR}
@@ -264,10 +266,13 @@ class InformedEditor(QueryEditor):
                     skolem,
                 ]
             )
-        return DataFrame(table, columns=["qname", "trace_count", "proof_count", "skolem"])
+        return DataFrame(
+            table, columns=["qname", "trace_count", "proof_count", "skolem"]
+        )
 
     def get_sub_ratios(self, clear):
         from tqdm import tqdm
+
         sub_ratios = dict()
         graph = self.trace.get_trace_graph(clear)
         for root_name in tqdm(self.list_root_qnames()):
@@ -281,3 +286,23 @@ class InformedEditor(QueryEditor):
             if skip_ignored and root_name in self.ignored:
                 continue
             yield root_name
+
+    def choose_qanme_to_skolemize(self) -> str:
+        consequences = self.proof.get_skolem_consequences()
+
+        if len(consequences) == 0:
+            return None
+        # assert len(consequences) > 0
+
+        creating_insts = dict()
+        # impacting_quants = dict()
+        chosen = None
+        max_insts = 0
+
+        for skv in consequences:
+            creating_insts[skv] = sum(consequences[skv].values())
+            if creating_insts[skv] > max_insts:
+                chosen = skv
+                max_insts = creating_insts[skv]
+
+        return chosen

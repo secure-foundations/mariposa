@@ -436,21 +436,21 @@ class SkolemDebugger(SingletonDebugger):
             impacting_quants[skv] = len(consequences[skv])
 
         chosen = sort_by_values(creating_insts)[0][0]
-        current_socres = dict()
+        current_scores = dict()
 
         for qname in consequences[chosen]:
             if cqii := curr_proof.get_inst_info_under_qname(qname):
                 # print(len(cqii.get_feasible_insts()), "/", len(cqii.get_all_insts()))
-                current_socres[qname] = len(cqii.get_feasible_insts())
+                current_scores[qname] = len(cqii.get_feasible_insts())
             else:
-                current_socres[qname] = 0
+                current_scores[qname] = 0
                 # print("no inst info in the current proof")
             # if pqii := prev_proof.get_inst_info_under_qname(qname):
             #     print(len(pqii.get_feasible_insts()), "/", len(pqii.get_all_insts()))
             # else:
             #     print("no inst info in the previous proof")
 
-        current_socres = sort_by_values(current_socres)
+        current_scores = sort_by_values(current_scores)
 
         dest_dir = self.strainer.test_dir
 
@@ -459,7 +459,7 @@ class SkolemDebugger(SingletonDebugger):
 
         emitted_count = 0
         
-        for qname, score in current_socres:
+        for qname, score in current_scores:
             if emitted_count >= 10:
                 break
 
