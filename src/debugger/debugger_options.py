@@ -12,8 +12,29 @@ class DbgMode(Enum):
     FAST_FAIL = "fast_fail"
     TIMEOUT = "timeout"
     FAST2 = "fast2"
+    SKOLEM = "skolem"
 
+    def get_report_suffix(self):
+        return {
+            DbgMode.SINGLETON: ".report",
+            DbgMode.DOUBLETON: ".2.report",
+            DbgMode.FAST_FAIL: ".ff.report",
+            DbgMode.TIMEOUT: ".to.report",
+            DbgMode.FAST2: ".ff2.report",
+            DbgMode.SKOLEM: ".sk.report",
+        }[self]
 
+    def project_prefix(self):
+        return {
+            DbgMode.SINGLETON: "singleton_",
+            DbgMode.DOUBLETON: "doubleton",
+            DbgMode.FAST_FAIL: "fast_fail_",
+            DbgMode.TIMEOUT: "timeout_",
+            DbgMode.FAST2: "fast2_",
+            DbgMode.SKOLEM: "skolem_",
+        }[self]
+
+ 
 class DebugOptions:
     def __init__(self):
         self.ids_available = False

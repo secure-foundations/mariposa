@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import z3
 from debugger.debugger_options import DebugOptions
 from debugger.debugger import DbgMode, get_debugger
 
@@ -15,7 +14,7 @@ def main():
         "-m",
         "--mode",
         default="auto",
-        choices=["auto", "singleton", "doubleton", "fast_fail", "timeout", "fast2"],
+        choices=[m.lower() for m in DbgMode.__members__.keys()],
         help="the mode to operate on",
     )
     parser.add_argument(
@@ -68,9 +67,16 @@ def main():
         action="store_true",
         help="skip core",
     )
+    parser.add_argument(
+        "--retry",
+        default=False,
+        action="store_true",
+        help="retry",
+    )
 
     args = parser.parse_args()
     options = DebugOptions()
+    options.retry_failed = args.retry
 
     # verbose if from commandline
     options.verbose = True
