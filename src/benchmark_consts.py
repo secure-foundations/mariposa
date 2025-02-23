@@ -1727,3 +1727,7 @@ TIMEOUT_TARGETS = [
     "c7dd9386ea",
     "b920f021f6",
 ]
+
+VERUS_SKOLEM_DIR = "data/projs/verus.skolem/base.z3"
+
+MARIPOSA_SKOLEM_DIR = "data/projs/bench_unstable.skolem/base.z3"

@@ -28,15 +28,26 @@ def get_exp_params(is_verus):
     return qa, cfg
 
 
-class StrainerStatus(Enum):
+class DebugStatus(Enum):
     NO_PROOF = "no proof"
 
     NOT_CREATED = "not created"
     NOT_TESTED = "not yet tested"
 
     UNFILTERED = "not yet filtered"
-    FINISHED = "filtered finished"
+
+    FINISHED_RAW = "filtered finished but not analyzed"
+    FIX_FOUND = "fix found"
+    FIX_NOT_FOUND = "fix not found"
+
     ERROR = "some error occurred"
+
+    def is_finished(self):
+        return self in {
+            DebugStatus.FINISHED_RAW,
+            DebugStatus.FIX_FOUND,
+            DebugStatus.FIX_NOT_FOUND,
+        }
 
 
 class Strainer:
@@ -75,12 +86,12 @@ class Strainer:
     def __init_status(self):
         if not os.path.exists(self.test_dir):
             log_debug(f"[strainer] dir not found: {self.test_dir}")
-            self._status = StrainerStatus.NOT_CREATED
+            self._status = DebugStatus.NOT_CREATED
             return
 
         proj = FACT.get_project_by_path(self.test_dir)
 
-        self._status = StrainerStatus.NOT_TESTED
+        self._status = DebugStatus.NOT_TESTED
 
         exp = FACT.try_get_exper(proj, VERI_CFG, SOLVER)
 
@@ -90,17 +101,17 @@ class Strainer:
         if list_smt2_files(self.test_dir) == [] and exp.get_sum_count() == 0:
             # print("????", self.test_dir)
             log_debug(f"[strainer] file not found in {self.test_dir}")
-            self._status = StrainerStatus.NOT_CREATED
+            self._status = DebugStatus.NOT_CREATED
             return
 
         try:
             self._tested = SingletonAnalyzer(exp, QA_60)
         except Exception as e:
             print("exception: ", e)
-            self._status = StrainerStatus.ERROR
+            self._status = DebugStatus.ERROR
             return
 
-        self._status = StrainerStatus.UNFILTERED
+        self._status = DebugStatus.UNFILTERED
 
         if not os.path.exists(self.filter_dir):
             return
@@ -118,10 +129,10 @@ class Strainer:
             self._filtered = ExperAnalyzer(exp, qa)
         except Exception as e:
             print("exception: ", e)
-            self._status = StrainerStatus.ERROR
+            self._status = DebugStatus.ERROR
             return
 
-        self._status = StrainerStatus.FINISHED
+        self._status = DebugStatus.FINISHED_RAW
 
     @property
     def tested(self) -> ExperAnalyzer:
@@ -132,7 +143,7 @@ class Strainer:
         return self._filtered
 
     @property
-    def status(self) -> StrainerStatus:
+    def status(self) -> DebugStatus:
         return self._status
 
     def get_dirs(self):

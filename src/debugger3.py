@@ -74,20 +74,24 @@ def main():
         help="retry",
     )
     parser.add_argument(
-        "--is-verus",
+        "--verus",
         default=False,
         action="store_true",
-        help="is verus",
+        dest="is_verus",
+        help="set if this is a verus query",
     )
+
     args = parser.parse_args()
     options = DebugOptions()
     options.retry_failed = args.retry
-
-    # verbose if from commandline
-    options.verbose = True
     options.skip_core = args.skip_core
     options.mode = DbgMode(args.mode)
     options.is_verus = args.is_verus
+
+    # verbose if from commandline
+    options.verbose = True
+    # build proof if from commandline
+    options.build_proof = True
 
     dbg = get_debugger(args.input_query_path, options)
 

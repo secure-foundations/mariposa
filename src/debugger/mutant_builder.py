@@ -90,7 +90,7 @@ class MutantBuilder:
         self.__init_query_files(query_path)
         self.__init_mutant_infos()
 
-        if not options.try_build:
+        if not options.build_proof:
             return
 
         if (

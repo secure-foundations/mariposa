@@ -15,7 +15,7 @@ from utils.system_utils import (
     log_info,
     log_warn,
 )
-from debugger.strainer import Strainer, StrainerStatus
+from debugger.strainer import Strainer, DebugStatus
 from utils.analysis_utils import sort_by_values
 
 set_param("proof", True)
@@ -55,9 +55,9 @@ def get_debugger(
             mode = DbgMode.FAST_FAIL
         elif reason == TraceFailure.SLOW_UNKNOWN:
             log_warn(
-                f"[init] {tracker.name_hash} trace slow unknown, fallback to timeout"
+                f"[init] {tracker.name_hash} trace slow unknown, fallback to fast_fail"
             )
-            mode = DbgMode.TIMEOUT
+            mode = DbgMode.FAST_FAIL
         else:
             log_error(f"[init] {tracker.name_hash} unknown trace failure {reason}")
             assert False

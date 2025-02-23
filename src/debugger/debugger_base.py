@@ -17,7 +17,7 @@ from utils.system_utils import (
     log_info,
     log_warn,
 )
-from debugger.strainer import Strainer, StrainerStatus
+from debugger.strainer import Strainer, DebugStatus
 
 
 class BaseDebugger:
@@ -37,18 +37,21 @@ class BaseDebugger:
         self._report = None
 
         if not self.tracker.proof_available():
-            self.status = StrainerStatus.NO_PROOF
+            self.status = DebugStatus.NO_PROOF
             return
 
         if has_cache(self._report_cache):
-            self.status = StrainerStatus.FINISHED
+            self.status = DebugStatus.FINISHED_RAW
+            # load report if it's cached
             assert self.report is not None
             return
 
-        self._strainer = Strainer(self.proj_name, is_verus=tracker.options.is_verus)
+        self._strainer: Strainer = Strainer(
+            self.proj_name, is_verus=tracker.options.is_verus
+        )
         self.status = self._strainer.status
 
-        if self.status == StrainerStatus.FINISHED:
+        if self.status.is_finished():
             # build report if it's finished
             assert self.report is not None
 
@@ -99,7 +102,7 @@ class BaseDebugger:
         return stabilized
 
     def build_report(self, clear=False) -> Report:
-        if self.status != StrainerStatus.FINISHED:
+        if not self.status.is_finished():
             return None
 
         if not clear and self._report is not None:
@@ -129,12 +132,15 @@ class BaseDebugger:
         r = load_cache_or(self._report_cache, _build_report, clear)
         self._report = r
 
+        if len(r.stabilized) == 0:
+            self.status = DebugStatus.FIX_NOT_FOUND
+        else:
+            self.status = DebugStatus.FIX_FOUND
+
         return r
 
     @property
     def report(self) -> Report:
-        if self.status != StrainerStatus.FINISHED:
-            return None
         return self.build_report()
 
     @property
@@ -153,7 +159,7 @@ class BaseDebugger:
     def collect_garbage(self):
         self.tracker.collect_garbage()
 
-        if self.status != StrainerStatus.FINISHED:
+        if not self.status.is_finished():
             log_warn(
                 f"[dbg] skipped GC on unfinished project {self.status} {self.given_query_path}"
             )

@@ -43,7 +43,7 @@ class DebugOptions:
         self.skip_core = False
         self.retry_failed = False
         self.verbose = False
-        self.try_build = True
+        self.build_proof = True
 
         self.mutant_count = 30
 
@@ -74,8 +74,8 @@ def resolve_input_path(input_path, options):
         input_path = meta["given_query"]
         is_verus = meta["verus_proc"] != "no procedure found"
         if is_verus != options.is_verus:
-            msg = " " if is_verus else " not "
-            log_warn(f"[init] {input_path} detected is{msg}Verus, differ from the given option")
+            msg = " " if is_verus else " NOT "
+            log_warn(f"[init] {input_path} detected IS{msg}Verus, differ from the given option")
             options.is_verus = is_verus
         if options.verbose:
             log_info(f"[init] resolved to {input_path}")

@@ -8,7 +8,7 @@ from debugger.debugger import (
     get_debugger,
 )
 from debugger.debugger_options import DebugOptions
-from debugger.strainer import StrainerStatus
+from debugger.strainer import DebugStatus
 from utils.analysis_utils import Categorizer, fmt_percent
 from utils.system_utils import log_check, log_info
 from copy import deepcopy
@@ -23,7 +23,7 @@ class BenchViewer:
             )
 
         # we cannot build with Pool anyways ...
-        options.try_build = False
+        options.build_proof = False
 
         self.status = Categorizer()
         self.__name_hashes = dict()
@@ -50,17 +50,6 @@ class BenchViewer:
         self.status.finalize()
         self.modes.finalize()
 
-        self.fixable = set()
-        self.unfixable = set()
-
-        for q in self.status[StrainerStatus.FINISHED]:
-            r = self.__debuggers[q]
-            num_fixes = len(r.report.stabilized)
-            if num_fixes > 0:
-                self.fixable.add(q)
-            else:
-                self.unfixable.add(q)
-
     def collect_garbage(self):
         pool = multiprocessing.Pool(8)
         pool.map(SingletonDebugger.collect_garbage, self.__debuggers.values())
@@ -79,13 +68,19 @@ class BenchViewer:
     def keys(self):
         return self.__debuggers.keys()
 
-    def print_fixed(self):
-        fixable_count = len(self.fixable)
-        finished_count = len(self.status[StrainerStatus.FINISHED].items)
-        print("fixable ratio (finished):", fixable_count, "/", finished_count)
+    def get_finished(self):
+        assert self.status[DebugStatus.FINISHED_RAW].items == set()
+        return (
+            self.status[DebugStatus.FIX_FOUND].items
+            | self.status[DebugStatus.FIX_NOT_FOUND].items
+        )
 
     def get_sync_dirs(self):
         targets = []
-        for q in self.status[StrainerStatus.FINISHED]:
+        for q in (
+            self.status[DebugStatus.FINISHED_RAW].items
+            | self.status[DebugStatus.FIX_FOUND].items
+            | self.status[DebugStatus.FIX_NOT_FOUND].items
+        ):
             targets += self[q].get_sync_dirs()
         return targets
