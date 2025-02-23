@@ -11,6 +11,7 @@ from debugger.debugger_options import DebugOptions
 from debugger.strainer import StrainerStatus
 from utils.analysis_utils import Categorizer, fmt_percent
 from utils.system_utils import log_check, log_info
+from copy import deepcopy
 
 
 class BenchViewer:
@@ -24,7 +25,7 @@ class BenchViewer:
         self.status = Categorizer()
         self.__name_hashes = dict()
         self.__debuggers: Dict[str, SingletonDebugger] = dict()
-        args = [(q, options) for q in queries]
+        args = [(q, deepcopy(options)) for q in queries]
         random.shuffle(args)
         pool = multiprocessing.Pool(8)
         debuggers = pool.starmap(get_debugger, args)

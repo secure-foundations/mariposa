@@ -74,20 +74,23 @@ class Strainer:
 
     def __init_status(self):
         if not os.path.exists(self.test_dir):
+            log_debug(f"[strainer] dir not found: {self.test_dir}")
             self._status = StrainerStatus.NOT_CREATED
             return
 
         proj = FACT.get_project_by_path(self.test_dir)
 
-        if list_smt2_files(self.test_dir) == []:
-            self._status = StrainerStatus.NOT_CREATED
-            return
-        
         self._status = StrainerStatus.NOT_TESTED
 
         exp = FACT.try_get_exper(proj, VERI_CFG, SOLVER)
 
         if exp is None:
+            return
+
+        if list_smt2_files(self.test_dir) == [] and exp.get_sum_count() == 0:
+            # print("????", self.test_dir)
+            log_debug(f"[strainer] file not found in {self.test_dir}")
+            self._status = StrainerStatus.NOT_CREATED
             return
 
         try:

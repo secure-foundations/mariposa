@@ -31,7 +31,7 @@ def get_debugger(
     query_path: str,
     options=DebugOptions(),
 ):
-    query_path = resolve_input_path(query_path, options.verbose)
+    query_path = resolve_input_path(query_path, options)
 
     tracker = EditTracker(
         query_path,

@@ -2,7 +2,7 @@ from enum import Enum
 import json
 import os
 
-from utils.system_utils import log_check, log_info
+from utils.system_utils import log_check, log_info, log_warn
 
 
 class DbgMode(Enum):
@@ -17,7 +17,8 @@ class DbgMode(Enum):
     def get_report_suffix(self):
         return {
             DbgMode.SINGLETON: ".report",
-            DbgMode.DOUBLETON: ".2.report",
+            DbgMode.DOUBLETON: ".22.report",
+            # DbgMode.DOUBLETON: ".2.report",
             DbgMode.FAST_FAIL: ".ff.report",
             DbgMode.TIMEOUT: ".to.report",
             DbgMode.FAST2: ".ff2.report",
@@ -27,7 +28,8 @@ class DbgMode(Enum):
     def project_prefix(self):
         return {
             DbgMode.SINGLETON: "singleton_",
-            DbgMode.DOUBLETON: "doubleton",
+            DbgMode.DOUBLETON: "doubleton2_",
+            # DbgMode.DOUBLETON: "doubleton_",
             DbgMode.FAST_FAIL: "fast_fail_",
             DbgMode.TIMEOUT: "timeout_",
             DbgMode.FAST2: "fast2_",
@@ -62,14 +64,19 @@ class DebugOptions:
         self.mode = DbgMode.AUTO
 
 
-def resolve_input_path(input_path, verbose):
+def resolve_input_path(input_path, options):
     if len(input_path) == 10:
         input_path = f"dbg/{input_path}"
     if input_path.startswith("dbg/") or input_path.startswith("./dbg/"):
         assert not input_path.endswith(".smt2")
         meta = json.load(open(f"{input_path}/meta.json", "r"))
         input_path = meta["given_query"]
-        if verbose:
+        is_verus = meta["verus_proc"] != "no procedure found"
+        if is_verus != options.is_verus:
+            msg = " " if is_verus else " not "
+            log_warn(f"[init] {input_path} detected is{msg}Verus, differ from the given option")
+            options.is_verus = is_verus
+        if options.verbose:
             log_info(f"[init] resolved to {input_path}")
     log_check(os.path.exists(input_path), f"[init] query path {input_path} not found")
     return input_path
