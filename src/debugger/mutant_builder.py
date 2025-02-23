@@ -90,6 +90,9 @@ class MutantBuilder:
         self.__init_query_files(query_path)
         self.__init_mutant_infos()
 
+        if not options.try_build:
+            return
+
         if (
             (len(self.traces) != 0 or len(self.cores) != 0)
             and len(self.proofs) == 0

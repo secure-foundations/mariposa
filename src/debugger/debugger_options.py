@@ -43,6 +43,7 @@ class DebugOptions:
         self.skip_core = False
         self.retry_failed = False
         self.verbose = False
+        self.try_build = True
 
         self.mutant_count = 30
 

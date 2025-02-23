@@ -22,6 +22,9 @@ class BenchViewer:
                 "auto_then_keep should only be given with auto mode first!",
             )
 
+        # we cannot build with Pool anyways ...
+        options.try_build = False
+
         self.status = Categorizer()
         self.__name_hashes = dict()
         self.__debuggers: Dict[str, SingletonDebugger] = dict()
