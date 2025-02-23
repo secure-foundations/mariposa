@@ -328,7 +328,7 @@ def handle_offload_single(args):
     os.system(cmd)
 
 def get_sync_commands(target_host, dirs_to_send):
-    assert target_host in S190X_HOSTS or target_host == "g2001"
+    assert target_host in S190X_HOSTS or target_host == CTRL_HOST or target_host == "g2001"
     if isinstance(dirs_to_send, str):
         dirs_to_send = [dirs_to_send]
     commands = []

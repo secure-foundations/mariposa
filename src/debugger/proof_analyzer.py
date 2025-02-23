@@ -57,6 +57,9 @@ class QuantInstInfo:
             res |= deps
         return res
 
+    def get_skolem_deps(self, inst):
+        return self.__skolem_deps[inst]
+
     def get_quant_refs(self):
         return self.__insts.keys()
 
@@ -349,15 +352,12 @@ class ProofAnalyzer(TermTable):
             for skv, count in self.__skolemization_consequences[qname].items():
                 print(f"\t{skv}: {count}")
 
-        skv_deps = qi_info.get_all_skolem_deps()
-
-        if len(skv_deps) != 0:
-            for dep in skv_deps:
-                print(f"depends on other skolem: {dep}")
-
         print(f"quant-inst {len(insts)}")
 
         for ref in insts:
             print("\t", self.dump_node(ref))
+            sk_deps = qi_info.get_skolem_deps(ref)
+            if len(sk_deps) != 0:
+                print("\t\t", sk_deps)
 
 

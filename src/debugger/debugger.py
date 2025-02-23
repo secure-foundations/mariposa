@@ -419,29 +419,61 @@ class SkolemDebugger(SingletonDebugger):
         assert items[-1] == "smt2"
         self.pre_skolem_name_hash = items[0]
 
-        pre_skolem_dbg = get_debugger(self.pre_skolem_name_hash)
-        proof = pre_skolem_dbg.editor.proof
+    def create_project(self):
+        prev_skolem_dbg = get_debugger(self.pre_skolem_name_hash)
+        prev_proof = prev_skolem_dbg.editor.proof
+        curr_proof = self.editor.proof
 
-        consequences = proof.get_skolem_consequences()
+        consequences = prev_proof.get_skolem_consequences()
 
         assert len(consequences) > 0
 
         creating_insts = dict()
         impacting_quants = dict()
         
-        # print(consequences)
-
         for skv in consequences:
             creating_insts[skv] = sum(consequences[skv].values())
             impacting_quants[skv] = len(consequences[skv])
 
         chosen = sort_by_values(creating_insts)[0][0]
-        
-        for qname in impacting_quants[chosen]:
-            print(qname)
+        current_socres = dict()
 
-        # editor = dbg.editor
-        # ei = EditInfo(SKOLEM_DIR, {chosen: EditAction.SKOLEMIZE})
-        # edit_hash = ei.get_id()
-        # editor.edit_by_qname(chosen, EditAction.SKOLEMIZE)
-        # success = editor.save(SKOLEM_DIR + f"/{dbg.name_hash}.{edit_hash}.smt2")
+        for qname in consequences[chosen]:
+            if cqii := curr_proof.get_inst_info_under_qname(qname):
+                # print(len(cqii.get_feasible_insts()), "/", len(cqii.get_all_insts()))
+                current_socres[qname] = len(cqii.get_feasible_insts())
+            else:
+                current_socres[qname] = 0
+                # print("no inst info in the current proof")
+            # if pqii := prev_proof.get_inst_info_under_qname(qname):
+            #     print(len(pqii.get_feasible_insts()), "/", len(pqii.get_all_insts()))
+            # else:
+            #     print("no inst info in the previous proof")
+
+        current_socres = sort_by_values(current_socres)
+
+        dest_dir = self.strainer.test_dir
+
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+
+        emitted_count = 0
+        
+        for qname, score in current_socres:
+            if emitted_count >= 10:
+                break
+
+            if score == 0:
+                action = EditAction.ERASE
+            else:
+                action = EditAction.INST_KEEP
+
+            actions = {qname: action}
+            ei = self.tracker.register_edit(actions, dest_dir)
+            ei.edit_dir = dest_dir
+
+            if self.tracker.create_edit_query(ei):
+                emitted_count += 1
+
+        self.tracker.save_edits_meta()
+        

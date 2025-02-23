@@ -5,6 +5,13 @@ import os
 from utils.system_utils import list_smt2_files, log_info, log_warn
 
 
+def get_exp_command(project_dir, cfg, local):
+    if local:
+        return f"./src/exper_wizard.py multiple -e {cfg} -s z3_4_13_0 -i {project_dir} --clear"
+
+    return f"./src/exper_wizard.py manager -e {cfg} --total-parts 12 -s z3_4_13_0 -i {project_dir} --clear"
+
+
 def main():
     parser = argparse.ArgumentParser(description="NO TOUCHE, SPAGHET!!")
     parser.add_argument(
@@ -26,10 +33,27 @@ def main():
         type=int,
         help="max iterations before full stability test",
     )
+    parser.add_argument(
+        "--local",
+        action="store_true",
+        dest="is_local",
+        help="only use the local machine",
+    )
+    parser.add_argument(
+        "--cluster",
+        dest="local_only",
+        action="store_false",
+        help="use the cluster",
+    )
+    parser.set_defaults(local_only=True)
+
     args = parser.parse_args()
 
     if not isinstance(args.is_verus, bool):
         parser.error("must specify if this is a verus project or not")
+
+    if not isinstance(args.is_local, bool):
+        parser.error("must specify to run it locally or on the cluster")
 
     if args.is_verus:
         filter_cfg = "filter_quick"
@@ -46,7 +70,7 @@ def main():
     if not project_dir.endswith(".filtered/base.z3"):
         assert project_dir.endswith("/base.z3")
 
-        exp_command = f"./src/exper_wizard.py manager -e verify --total-parts 12 -s z3_4_13_0 -i {project_dir} --clear"
+        exp_command = get_exp_command(project_dir, "verify", args.local_only)
         os.system(exp_command)
 
         filter_command = (
@@ -67,7 +91,7 @@ def main():
         elif (query_count <= 12 and i >= 6) or query_count == 0:
             break
 
-        exp_command = f"./src/exper_wizard.py manager -e {filter_cfg} --total-parts 12 -s z3_4_13_0 -i {filter_dir} --clear"
+        exp_command = get_exp_command(filter_dir, filter_cfg, args.local_only)
         log_info(f"iteration {i}, current query count: {query_count}, experimenting...")
         os.system(exp_command)
 
@@ -81,7 +105,7 @@ def main():
         log_warn("no queries left!")
 
     log_info(f"carving done, running full stability test... on {query_count} queries")
-    exp_command = f"./src/exper_wizard.py manager -e {full_cfg} --total-parts 12 -s z3_4_13_0 -i {filter_dir} --clear"
+    exp_command = get_exp_command(filter_dir, full_cfg, args.local_only)
     os.system(exp_command)
 
 
