@@ -154,7 +154,7 @@ class DoubletonDebugger(BaseDebugger):
             os.makedirs(dest_dir)
 
         ratios = self.tracker.get_trace_graph_ratios()
-        mi = self.get_trace_info()
+        mi = self.tracker.get_trace_info()
         trace_graph = mi.get_trace_graph()
 
         roots = dict()
@@ -213,7 +213,7 @@ class DoubletonDebugger(BaseDebugger):
 
         scores = [(k, v) for k, v in scores.items() if v > 0]
         sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
-        sorted_scores = sorted_scores[:TOP_N]
+        sorted_scores = sorted_scores[:10]
 
         for (qname1, qname2), score in sorted_scores:
             action1 = choose_action(self.editor.get_quant_actions(qname1))

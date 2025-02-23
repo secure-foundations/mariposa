@@ -73,7 +73,12 @@ def main():
         action="store_true",
         help="retry",
     )
-
+    parser.add_argument(
+        "--is-verus",
+        default=False,
+        action="store_true",
+        help="is verus",
+    )
     args = parser.parse_args()
     options = DebugOptions()
     options.retry_failed = args.retry
@@ -82,6 +87,7 @@ def main():
     options.verbose = True
     options.skip_core = args.skip_core
     options.mode = DbgMode(args.mode)
+    options.is_verus = args.is_verus
 
     dbg = get_debugger(args.input_query_path, options)
 
@@ -96,6 +102,7 @@ def main():
         dbg.clear_report_cache()
 
     if args.print_report:
+        print("status", dbg.status)
         if r := dbg.report:
             r.print_stabilized()
         else:
