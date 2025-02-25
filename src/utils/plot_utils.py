@@ -3,7 +3,7 @@ import matplotlib
 
 plt.rcParams['text.usetex'] = True
 
-font = {'family' : 'Raleway',
+font = {'family' : 'Computer Modern',
         # 'weight' : 'bold',
         'size'   : 12}
 
