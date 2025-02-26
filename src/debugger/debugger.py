@@ -272,9 +272,15 @@ class FastFailDebugger(SingletonDebugger):
         assert tracker.options.mode == DbgMode.FAST_FAIL
         super().__init__(tracker)
 
-    def create_project(self):
+    def rank_edits(self):
         name_hash = "cache/" + self.name_hash + ".report"
-        rank = calculate_rank(name_hash, ranking_heuristic="proof_count")
+        edits = []
+        for qname in calculate_rank(name_hash, ranking_heuristic="proof_count").qname.values:        
+            action = choose_action(self.editor.get_quant_actions(qname))
+            edits.append((qname, action))
+        return edits
+
+    def create_project(self):
         dst_dir = self.strainer.test_dir
 
         if not os.path.exists(dst_dir):
@@ -282,12 +288,10 @@ class FastFailDebugger(SingletonDebugger):
 
         emitted_count = 0
 
-        for row in rank.iterrows():
+        for (qname, action) in self.rank_edits():
             if emitted_count >= 10:
                 break
 
-            qname = row[1].qname
-            action = choose_action(self.editor.get_quant_actions(qname))
             ei = self.tracker.register_edit({qname: action}, dst_dir)
             ei.edit_dir = dst_dir
 
@@ -444,11 +448,6 @@ class SkolemDebugger(SingletonDebugger):
                 current_scores[qname] = len(cqii.get_feasible_insts())
             else:
                 current_scores[qname] = 0
-                # print("no inst info in the current proof")
-            # if pqii := prev_proof.get_inst_info_under_qname(qname):
-            #     print(len(pqii.get_feasible_insts()), "/", len(pqii.get_all_insts()))
-            # else:
-            #     print("no inst info in the previous proof")
 
         current_scores = sort_by_values(current_scores)
 
