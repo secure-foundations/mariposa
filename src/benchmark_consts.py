@@ -3621,6 +3621,2626 @@ mariposa_rd1_ranks = {
     },
 }
 
-mariposa_rd2_ranks = {'data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView_Refines_TSJMap.i.dfy.Impl__CompositeView__Refines__TSJMap.__default.StatesInternalRefines.smt2': {'data/projs/doubleton2_3ed37733c3/base.z3/4d8ffc87.smt2': 3, 'data/projs/doubleton2_3ed37733c3/base.z3/5bf32c4c.smt2': 2, 'data/projs/doubleton2_3ed37733c3/base.z3/70d12380.smt2': 4, 'data/projs/doubleton2_3ed37733c3/base.z3/91d98c4c.smt2': 10, 'data/projs/doubleton2_3ed37733c3/base.z3/c85ca669.smt2': 7, 'data/projs/doubleton2_3ed37733c3/base.z3/d81fd2c5.smt2': 8, 'data/projs/doubleton2_3ed37733c3/base.z3/da2e721f.smt2': 5, 'data/projs/doubleton2_3ed37733c3/base.z3/e7735fe1.smt2': 1, 'data/projs/doubleton2_3ed37733c3/base.z3/f8c5a47c.smt2': 6}, 'data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.SplitRight.smt2': {'data/projs/doubleton2_b8ed14e0c5/base.z3/005f04e6.smt2': 3, 'data/projs/doubleton2_b8ed14e0c5/base.z3/051ac3d3.smt2': 4, 'data/projs/doubleton2_b8ed14e0c5/base.z3/16042c5b.smt2': 2, 'data/projs/doubleton2_b8ed14e0c5/base.z3/226e363f.smt2': 1, 'data/projs/doubleton2_b8ed14e0c5/base.z3/394d7996.smt2': 9, 'data/projs/doubleton2_b8ed14e0c5/base.z3/8f7d4eeb.smt2': 10, 'data/projs/doubleton2_b8ed14e0c5/base.z3/af9c7b78.smt2': 7}, 'data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.smt2': {'data/projs/doubleton2_a650f4205b/base.z3/0a80fc98.smt2': 4, 'data/projs/doubleton2_a650f4205b/base.z3/f49a1521.smt2': 3}, 'data/projs/bench_unstable/base.z3/d_lvbkv--Impl-MainHandlers.i.dfy.Impl__MainHandlers.__default.SystemRefinesCrashSafeMapInit.smt2': {'data/projs/doubleton2_50e9564b05/base.z3/43f4cc4f.smt2': 4, 'data/projs/doubleton2_50e9564b05/base.z3/d4ec0d5e.smt2': 5, 'data/projs/doubleton2_50e9564b05/base.z3/debc1d69.smt2': 1, 'data/projs/doubleton2_50e9564b05/base.z3/fa828f23.smt2': 7}, 'data/projs/bench_unstable/base.z3/d_komodo--verified-finalise.gen.dfyImpl___module.__default.va__lemma__kom__smc__finalise.smt2': {'data/projs/doubleton2_81f604e545/base.z3/706389c1.smt2': 3}, 'data/projs/bench_unstable/base.z3/d_fvbkv--Impl-HandleReadResponseImpl.i.dfy.Impl__HandleReadResponseImpl.__default.readResponse.smt2': {'data/projs/doubleton2_1dbfa93b6f/base.z3/e4bc591b.smt2': 5}, 'data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-LKMBPKVOps.i.dfy.Impl__LKMBPKVOps.__default.IsKeyMessageTreeInheritance.smt2': {'data/projs/doubleton2_bacb951c70/base.z3/b9c5cce4.smt2': 10}, 'data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.ISeq__replace1with2.smt2': {'data/projs/doubleton2_f5fa3eaaf7/base.z3/44cf86cc.smt2': 6, 'data/projs/doubleton2_f5fa3eaaf7/base.z3/5ff008f3.smt2': 1, 'data/projs/doubleton2_f5fa3eaaf7/base.z3/c4b24cd7.smt2': 3, 'data/projs/doubleton2_f5fa3eaaf7/base.z3/ee361c63.smt2': 4}, 'data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeOfByteSeqGetI.smt2': {'data/projs/doubleton2_a854e6c8ad/base.z3/4ec19600.smt2': 9, 'data/projs/doubleton2_a854e6c8ad/base.z3/5d079f98.smt2': 2, 'data/projs/doubleton2_a854e6c8ad/base.z3/f211eb01.smt2': 5}, 'data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableMapModel.i.dfy.Impl__MutableMapModel.__default.LemmaReallocIterateResult.smt2': {'data/projs/doubleton2_243ec915e0/base.z3/057d0e88.smt2': 6, 'data/projs/doubleton2_243ec915e0/base.z3/92227d73.smt2': 9, 'data/projs/doubleton2_243ec915e0/base.z3/bcf26d0d.smt2': 2}, 'data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI-18.smt2': {'data/projs/doubleton2_0cfa69df01/base.z3/c739779e.smt2': 10}, 'data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.RefinesValidMerge.smt2': {'data/projs/doubleton2_3a37e843fb/base.z3/4c0730ab.smt2': 3}, 'data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.parseEntriesFromHasEntriesI.smt2': {'data/projs/doubleton2_72a2c42fee/base.z3/ef4d145c.smt2': 6}, 'data/projs/bench_unstable/base.z3/d_komodo--verified-map_common.gen.dfyImpl___module.__default.va__lemma__init__secure__page.smt2': {'data/projs/doubleton2_862cb1068a/base.z3/12977b85.smt2': 1, 'data/projs/doubleton2_862cb1068a/base.z3/1cd01c09.smt2': 4, 'data/projs/doubleton2_862cb1068a/base.z3/2e0437e0.smt2': 2}, 'data/projs/bench_unstable/base.z3/d_komodo--verified-attest.gen.dfyImpl___module.__default.va__lemma__compute__hmac_split0.smt2': {'data/projs/doubleton2_443cdbaf14/base.z3/0ba3bb95.smt2': 5, 'data/projs/doubleton2_443cdbaf14/base.z3/13fc3cf8.smt2': 3, 'data/projs/doubleton2_443cdbaf14/base.z3/357f2e49.smt2': 1, 'data/projs/doubleton2_443cdbaf14/base.z3/3e07e59a.smt2': 10, 'data/projs/doubleton2_443cdbaf14/base.z3/7abe9cbe.smt2': 6, 'data/projs/doubleton2_443cdbaf14/base.z3/b26a487b.smt2': 7, 'data/projs/doubleton2_443cdbaf14/base.z3/ea4162f6.smt2': 2}, 'data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.WFpsaSubSeq.smt2': {'data/projs/doubleton2_422a6c0817/base.z3/9aa29661.smt2': 10, 'data/projs/doubleton2_422a6c0817/base.z3/a5ed47ae.smt2': 6}, 'data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyImpl___module.__default.va__lemma__svc__map__data__success.smt2': {'data/projs/doubleton2_09f0c73516/base.z3/4254f067.smt2': 2, 'data/projs/doubleton2_09f0c73516/base.z3/6454e4c9.smt2': 1, 'data/projs/doubleton2_09f0c73516/base.z3/6fb6540c.smt2': 5}, 'data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.InsertLeafIsCorrect.smt2': {'data/projs/doubleton2_7f39d29669/base.z3/388dd570.smt2': 3, 'data/projs/doubleton2_7f39d29669/base.z3/bc3a1f5c.smt2': 7}, 'data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetree.i.dfy.Impl__PivotBetree.__default.GCStepRefines.smt2': {'data/projs/doubleton2_38d93c5774/base.z3/0c0a8f0c.smt2': 2}, 'data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI.Subject-4.smt2': {'data/projs/doubleton2_926dcc2129/base.z3/aa9af4aa.smt2': 2, 'data/projs/doubleton2_926dcc2129/base.z3/dc9606ab.smt2': 1}, 'data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.fillInChecksumsHasChecksums.smt2': {'data/projs/doubleton2_65f41ba519/base.z3/c0676c09.smt2': 3, 'data/projs/doubleton2_65f41ba519/base.z3/f7266ff5.smt2': 8}, 'data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetree.i.dfy.Impl__PivotBetree.__default.BetreeStepRefines.smt2': {}, 'data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-conf_ni.i.dfyImpl___module.__default.lemma__initL2PTable__loweq__pdb.smt2': {'data/projs/doubleton2_1c986e634b/base.z3/1ea369b1.smt2': 6, 'data/projs/doubleton2_1c986e634b/base.z3/1ffac932.smt2': 7, 'data/projs/doubleton2_1c986e634b/base.z3/2bd8c087.smt2': 5, 'data/projs/doubleton2_1c986e634b/base.z3/a08c07d6.smt2': 1}, 'data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-Sequences.i.dfy.Impl__Sequences.__default.FlattenAdditive.smt2': {'data/projs/doubleton2_7fd5899ce2/base.z3/5035d8eb.smt2': 5, 'data/projs/doubleton2_7fd5899ce2/base.z3/979b16e4.smt2': 2}, 'data/projs/bench_unstable/base.z3/d_lvbkv--Impl-IOModel.i.dfy.Impl__IOModel.__default.lemmaOutstandingLocIndexValid.smt2': {}, 'data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.Move2to3StepPreservesInv.smt2': {'data/projs/doubleton2_84faa1a2fa/base.z3/1ec547a6.smt2': 10, 'data/projs/doubleton2_84faa1a2fa/base.z3/297e3f5e.smt2': 7, 'data/projs/doubleton2_84faa1a2fa/base.z3/acb7c8e7.smt2': 6, 'data/projs/doubleton2_84faa1a2fa/base.z3/afff7350.smt2': 2, 'data/projs/doubleton2_84faa1a2fa/base.z3/f80c3ead.smt2': 3}, 'data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Subject-4.smt2': {'data/projs/doubleton2_6200b46f8f/base.z3/12370ab9.smt2': 2, 'data/projs/doubleton2_6200b46f8f/base.z3/452d59c1.smt2': 3, 'data/projs/doubleton2_6200b46f8f/base.z3/dc9606ab.smt2': 5, 'data/projs/doubleton2_6200b46f8f/base.z3/f0c2df8f.smt2': 9}, 'data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.smt2': {'data/projs/doubleton2_9c17013417/base.z3/bf9db526.smt2': 4}, 'data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Issuer-7.smt2': {}, 'data/projs/bench_unstable/base.z3/d_lvbkv--Impl-FlushModel.i.dfy.Impl__FlushModel.__default.flushCorrect.smt2': {'data/projs/doubleton2_676f102c30/base.z3/16eff8c9.smt2': 2, 'data/projs/doubleton2_676f102c30/base.z3/50a82192.smt2': 9, 'data/projs/doubleton2_676f102c30/base.z3/c3200ad5.smt2': 1}, 'data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.BInternalPreWFWellMarshalled.smt2': {'data/projs/doubleton2_a0a67d231a/base.z3/086fc5f8.smt2': 4, 'data/projs/doubleton2_a0a67d231a/base.z3/84e98223.smt2': 8, 'data/projs/doubleton2_a0a67d231a/base.z3/989e1728.smt2': 2}, 'data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeOfByteSeqGetI.smt2': {'data/projs/doubleton2_061f1d0514/base.z3/a40689a3.smt2': 4, 'data/projs/doubleton2_061f1d0514/base.z3/bd7a5a86.smt2': 1}, 'data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-F2_X_Lemmas.i.dfy.Impl__F2__X__Lemmas.__default.reverse__mul.smt2': {'data/projs/doubleton2_49665b0459/base.z3/11990dd0.smt2': 4, 'data/projs/doubleton2_49665b0459/base.z3/74ad9f05.smt2': 8, 'data/projs/doubleton2_49665b0459/base.z3/ae5cddd4.smt2': 5, 'data/projs/doubleton2_49665b0459/base.z3/af3db15a.smt2': 1, 'data/projs/doubleton2_49665b0459/base.z3/d92721b2.smt2': 6, 'data/projs/doubleton2_49665b0459/base.z3/f986334e.smt2': 9}, 'data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.DynamicPkv.Append.smt2': {'data/projs/doubleton2_1ecf533970/base.z3/38a2dbb4.smt2': 7, 'data/projs/doubleton2_1ecf533970/base.z3/f03a0dd4.smt2': 6}, 'data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__unstack__banked__regs3.smt2': {'data/projs/doubleton2_1f96205287/base.z3/35f67a60.smt2': 9, 'data/projs/doubleton2_1f96205287/base.z3/7fd27103.smt2': 3, 'data/projs/doubleton2_1f96205287/base.z3/deee4fd6.smt2': 4}, 'data/projs/bench_unstable.skolem/base.z3/416446ca74.d55e2370.smt2': {'data/projs/skolem_36c28b8414/base.z3/60576403.smt2': 2}, 'data/projs/bench_unstable.skolem/base.z3/8852397c03.771e7cfe.smt2': {'data/projs/skolem_863ad76a2b/base.z3/413a2ca4.smt2': 3, 'data/projs/skolem_863ad76a2b/base.z3/59897640.smt2': 5, 'data/projs/skolem_863ad76a2b/base.z3/d6d300a4.smt2': 2, 'data/projs/skolem_863ad76a2b/base.z3/e52cf610.smt2': 8}, 'data/projs/bench_unstable.skolem/base.z3/4bb10dc4e9.5e9a258d.smt2': {'data/projs/skolem_e882143551/base.z3/87994bfe.smt2': 1}, 'data/projs/bench_unstable.skolem/base.z3/b5cc583f2d.881aa85e.smt2': {'data/projs/skolem_9d291df761/base.z3/dcd46ea7.smt2': 9}, 'data/projs/bench_unstable.skolem/base.z3/6fe848cd76.9a6efb35.smt2': {'data/projs/skolem_f7a6011e2b/base.z3/3be86c1d.smt2': 9, 'data/projs/skolem_f7a6011e2b/base.z3/60576403.smt2': 4}, 'data/projs/bench_unstable.skolem/base.z3/e466521a27.1bae5e87.smt2': {'data/projs/skolem_8beb658289/base.z3/24e63214.smt2': 4, 'data/projs/skolem_8beb658289/base.z3/c182cfb6.smt2': 1}, 'data/projs/bench_unstable.skolem/base.z3/72ad929f41.f2316cc1.smt2': {'data/projs/skolem_88f2045dc8/base.z3/87b4f23a.smt2': 9}, 'data/projs/bench_unstable.skolem/base.z3/462c420128.5e9a258d.smt2': {'data/projs/skolem_50c6ba5d02/base.z3/2a5e4670.smt2': 1}, 'data/projs/bench_unstable.skolem/base.z3/d3b07a4fd8.f2316cc1.smt2': {'data/projs/skolem_40bbb06b26/base.z3/2a5e4670.smt2': 2}, 'data/projs/bench_unstable.skolem/base.z3/48976525b7.42bd45a4.smt2': {'data/projs/skolem_f922e95c4d/base.z3/73ffc3c3.smt2': 6, 'data/projs/skolem_f922e95c4d/base.z3/9284ec66.smt2': 1}, 'data/projs/bench_unstable.skolem/base.z3/05b5b92f32.d55e2370.smt2': {'data/projs/skolem_1415de2d3b/base.z3/60576403.smt2': 1}, 'data/projs/bench_unstable.skolem/base.z3/2f7324b043.d55e2370.smt2': {'data/projs/skolem_1744efe664/base.z3/93ff8cb5.smt2': 7}, 'data/projs/bench_unstable.skolem/base.z3/ae3b449b81.17a64bef.smt2': {'data/projs/skolem_7cd0dcfef3/base.z3/537623c7.smt2': 4, 'data/projs/skolem_7cd0dcfef3/base.z3/e20aa25f.smt2': 2}, 'data/projs/bench_unstable.skolem/base.z3/17b0b45c82.a2c20f14.smt2': {'data/projs/skolem_56b16e1ae7/base.z3/2915158e.smt2': 7, 'data/projs/skolem_56b16e1ae7/base.z3/60576403.smt2': 4}}
+mariposa_rd2_ranks = {
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView_Refines_TSJMap.i.dfy.Impl__CompositeView__Refines__TSJMap.__default.StatesInternalRefines.smt2": {
+        "data/projs/doubleton2_3ed37733c3/base.z3/4d8ffc87.smt2": 3,
+        "data/projs/doubleton2_3ed37733c3/base.z3/5bf32c4c.smt2": 2,
+        "data/projs/doubleton2_3ed37733c3/base.z3/70d12380.smt2": 4,
+        "data/projs/doubleton2_3ed37733c3/base.z3/91d98c4c.smt2": 10,
+        "data/projs/doubleton2_3ed37733c3/base.z3/c85ca669.smt2": 7,
+        "data/projs/doubleton2_3ed37733c3/base.z3/d81fd2c5.smt2": 8,
+        "data/projs/doubleton2_3ed37733c3/base.z3/da2e721f.smt2": 5,
+        "data/projs/doubleton2_3ed37733c3/base.z3/e7735fe1.smt2": 1,
+        "data/projs/doubleton2_3ed37733c3/base.z3/f8c5a47c.smt2": 6,
+    },
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.SplitRight.smt2": {
+        "data/projs/doubleton2_b8ed14e0c5/base.z3/005f04e6.smt2": 3,
+        "data/projs/doubleton2_b8ed14e0c5/base.z3/051ac3d3.smt2": 4,
+        "data/projs/doubleton2_b8ed14e0c5/base.z3/16042c5b.smt2": 2,
+        "data/projs/doubleton2_b8ed14e0c5/base.z3/226e363f.smt2": 1,
+        "data/projs/doubleton2_b8ed14e0c5/base.z3/394d7996.smt2": 9,
+        "data/projs/doubleton2_b8ed14e0c5/base.z3/8f7d4eeb.smt2": 10,
+        "data/projs/doubleton2_b8ed14e0c5/base.z3/af9c7b78.smt2": 7,
+    },
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.smt2": {
+        "data/projs/doubleton2_a650f4205b/base.z3/0a80fc98.smt2": 4,
+        "data/projs/doubleton2_a650f4205b/base.z3/f49a1521.smt2": 3,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-MainHandlers.i.dfy.Impl__MainHandlers.__default.SystemRefinesCrashSafeMapInit.smt2": {
+        "data/projs/doubleton2_50e9564b05/base.z3/43f4cc4f.smt2": 4,
+        "data/projs/doubleton2_50e9564b05/base.z3/d4ec0d5e.smt2": 5,
+        "data/projs/doubleton2_50e9564b05/base.z3/debc1d69.smt2": 1,
+        "data/projs/doubleton2_50e9564b05/base.z3/fa828f23.smt2": 7,
+    },
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-finalise.gen.dfyImpl___module.__default.va__lemma__kom__smc__finalise.smt2": {
+        "data/projs/doubleton2_81f604e545/base.z3/706389c1.smt2": 3
+    },
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-HandleReadResponseImpl.i.dfy.Impl__HandleReadResponseImpl.__default.readResponse.smt2": {
+        "data/projs/doubleton2_1dbfa93b6f/base.z3/e4bc591b.smt2": 5
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-LKMBPKVOps.i.dfy.Impl__LKMBPKVOps.__default.IsKeyMessageTreeInheritance.smt2": {
+        "data/projs/doubleton2_bacb951c70/base.z3/b9c5cce4.smt2": 10
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.ISeq__replace1with2.smt2": {
+        "data/projs/doubleton2_f5fa3eaaf7/base.z3/44cf86cc.smt2": 6,
+        "data/projs/doubleton2_f5fa3eaaf7/base.z3/5ff008f3.smt2": 1,
+        "data/projs/doubleton2_f5fa3eaaf7/base.z3/c4b24cd7.smt2": 3,
+        "data/projs/doubleton2_f5fa3eaaf7/base.z3/ee361c63.smt2": 4,
+    },
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeOfByteSeqGetI.smt2": {
+        "data/projs/doubleton2_a854e6c8ad/base.z3/4ec19600.smt2": 9,
+        "data/projs/doubleton2_a854e6c8ad/base.z3/5d079f98.smt2": 2,
+        "data/projs/doubleton2_a854e6c8ad/base.z3/f211eb01.smt2": 5,
+    },
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableMapModel.i.dfy.Impl__MutableMapModel.__default.LemmaReallocIterateResult.smt2": {
+        "data/projs/doubleton2_243ec915e0/base.z3/057d0e88.smt2": 6,
+        "data/projs/doubleton2_243ec915e0/base.z3/92227d73.smt2": 9,
+        "data/projs/doubleton2_243ec915e0/base.z3/bcf26d0d.smt2": 2,
+    },
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI-18.smt2": {
+        "data/projs/doubleton2_0cfa69df01/base.z3/c739779e.smt2": 10
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.RefinesValidMerge.smt2": {
+        "data/projs/doubleton2_3a37e843fb/base.z3/4c0730ab.smt2": 3
+    },
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.parseEntriesFromHasEntriesI.smt2": {
+        "data/projs/doubleton2_72a2c42fee/base.z3/ef4d145c.smt2": 6
+    },
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-map_common.gen.dfyImpl___module.__default.va__lemma__init__secure__page.smt2": {
+        "data/projs/doubleton2_862cb1068a/base.z3/12977b85.smt2": 1,
+        "data/projs/doubleton2_862cb1068a/base.z3/1cd01c09.smt2": 4,
+        "data/projs/doubleton2_862cb1068a/base.z3/2e0437e0.smt2": 2,
+    },
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-attest.gen.dfyImpl___module.__default.va__lemma__compute__hmac_split0.smt2": {
+        "data/projs/doubleton2_443cdbaf14/base.z3/0ba3bb95.smt2": 5,
+        "data/projs/doubleton2_443cdbaf14/base.z3/13fc3cf8.smt2": 3,
+        "data/projs/doubleton2_443cdbaf14/base.z3/357f2e49.smt2": 1,
+        "data/projs/doubleton2_443cdbaf14/base.z3/3e07e59a.smt2": 10,
+        "data/projs/doubleton2_443cdbaf14/base.z3/7abe9cbe.smt2": 6,
+        "data/projs/doubleton2_443cdbaf14/base.z3/b26a487b.smt2": 7,
+        "data/projs/doubleton2_443cdbaf14/base.z3/ea4162f6.smt2": 2,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.WFpsaSubSeq.smt2": {
+        "data/projs/doubleton2_422a6c0817/base.z3/9aa29661.smt2": 10,
+        "data/projs/doubleton2_422a6c0817/base.z3/a5ed47ae.smt2": 6,
+    },
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyImpl___module.__default.va__lemma__svc__map__data__success.smt2": {
+        "data/projs/doubleton2_09f0c73516/base.z3/4254f067.smt2": 2,
+        "data/projs/doubleton2_09f0c73516/base.z3/6454e4c9.smt2": 1,
+        "data/projs/doubleton2_09f0c73516/base.z3/6fb6540c.smt2": 5,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.InsertLeafIsCorrect.smt2": {
+        "data/projs/doubleton2_7f39d29669/base.z3/388dd570.smt2": 3,
+        "data/projs/doubleton2_7f39d29669/base.z3/bc3a1f5c.smt2": 7,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetree.i.dfy.Impl__PivotBetree.__default.GCStepRefines.smt2": {
+        "data/projs/doubleton2_38d93c5774/base.z3/0c0a8f0c.smt2": 2
+    },
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI.Subject-4.smt2": {
+        "data/projs/doubleton2_926dcc2129/base.z3/aa9af4aa.smt2": 2,
+        "data/projs/doubleton2_926dcc2129/base.z3/dc9606ab.smt2": 1,
+    },
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.fillInChecksumsHasChecksums.smt2": {
+        "data/projs/doubleton2_65f41ba519/base.z3/c0676c09.smt2": 3,
+        "data/projs/doubleton2_65f41ba519/base.z3/f7266ff5.smt2": 8,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetree.i.dfy.Impl__PivotBetree.__default.BetreeStepRefines.smt2": {},
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-conf_ni.i.dfyImpl___module.__default.lemma__initL2PTable__loweq__pdb.smt2": {
+        "data/projs/doubleton2_1c986e634b/base.z3/1ea369b1.smt2": 6,
+        "data/projs/doubleton2_1c986e634b/base.z3/1ffac932.smt2": 7,
+        "data/projs/doubleton2_1c986e634b/base.z3/2bd8c087.smt2": 5,
+        "data/projs/doubleton2_1c986e634b/base.z3/a08c07d6.smt2": 1,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-Sequences.i.dfy.Impl__Sequences.__default.FlattenAdditive.smt2": {
+        "data/projs/doubleton2_7fd5899ce2/base.z3/5035d8eb.smt2": 5,
+        "data/projs/doubleton2_7fd5899ce2/base.z3/979b16e4.smt2": 2,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-IOModel.i.dfy.Impl__IOModel.__default.lemmaOutstandingLocIndexValid.smt2": {},
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.Move2to3StepPreservesInv.smt2": {
+        "data/projs/doubleton2_84faa1a2fa/base.z3/1ec547a6.smt2": 10,
+        "data/projs/doubleton2_84faa1a2fa/base.z3/297e3f5e.smt2": 7,
+        "data/projs/doubleton2_84faa1a2fa/base.z3/acb7c8e7.smt2": 6,
+        "data/projs/doubleton2_84faa1a2fa/base.z3/afff7350.smt2": 2,
+        "data/projs/doubleton2_84faa1a2fa/base.z3/f80c3ead.smt2": 3,
+    },
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Subject-4.smt2": {
+        "data/projs/doubleton2_6200b46f8f/base.z3/12370ab9.smt2": 2,
+        "data/projs/doubleton2_6200b46f8f/base.z3/452d59c1.smt2": 3,
+        "data/projs/doubleton2_6200b46f8f/base.z3/dc9606ab.smt2": 5,
+        "data/projs/doubleton2_6200b46f8f/base.z3/f0c2df8f.smt2": 9,
+    },
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.smt2": {
+        "data/projs/doubleton2_9c17013417/base.z3/bf9db526.smt2": 4
+    },
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Issuer-7.smt2": {},
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-FlushModel.i.dfy.Impl__FlushModel.__default.flushCorrect.smt2": {
+        "data/projs/doubleton2_676f102c30/base.z3/16eff8c9.smt2": 2,
+        "data/projs/doubleton2_676f102c30/base.z3/50a82192.smt2": 9,
+        "data/projs/doubleton2_676f102c30/base.z3/c3200ad5.smt2": 1,
+    },
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.BInternalPreWFWellMarshalled.smt2": {
+        "data/projs/doubleton2_a0a67d231a/base.z3/086fc5f8.smt2": 4,
+        "data/projs/doubleton2_a0a67d231a/base.z3/84e98223.smt2": 8,
+        "data/projs/doubleton2_a0a67d231a/base.z3/989e1728.smt2": 2,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeOfByteSeqGetI.smt2": {
+        "data/projs/doubleton2_061f1d0514/base.z3/a40689a3.smt2": 4,
+        "data/projs/doubleton2_061f1d0514/base.z3/bd7a5a86.smt2": 1,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-F2_X_Lemmas.i.dfy.Impl__F2__X__Lemmas.__default.reverse__mul.smt2": {
+        "data/projs/doubleton2_49665b0459/base.z3/11990dd0.smt2": 4,
+        "data/projs/doubleton2_49665b0459/base.z3/74ad9f05.smt2": 8,
+        "data/projs/doubleton2_49665b0459/base.z3/ae5cddd4.smt2": 5,
+        "data/projs/doubleton2_49665b0459/base.z3/af3db15a.smt2": 1,
+        "data/projs/doubleton2_49665b0459/base.z3/d92721b2.smt2": 6,
+        "data/projs/doubleton2_49665b0459/base.z3/f986334e.smt2": 9,
+    },
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.DynamicPkv.Append.smt2": {
+        "data/projs/doubleton2_1ecf533970/base.z3/38a2dbb4.smt2": 7,
+        "data/projs/doubleton2_1ecf533970/base.z3/f03a0dd4.smt2": 6,
+    },
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__unstack__banked__regs3.smt2": {
+        "data/projs/doubleton2_1f96205287/base.z3/35f67a60.smt2": 9,
+        "data/projs/doubleton2_1f96205287/base.z3/7fd27103.smt2": 3,
+        "data/projs/doubleton2_1f96205287/base.z3/deee4fd6.smt2": 4,
+    },
+    "data/projs/bench_unstable.skolem/base.z3/416446ca74.d55e2370.smt2": {
+        "data/projs/skolem_36c28b8414/base.z3/60576403.smt2": 2
+    },
+    "data/projs/bench_unstable.skolem/base.z3/8852397c03.771e7cfe.smt2": {
+        "data/projs/skolem_863ad76a2b/base.z3/413a2ca4.smt2": 3,
+        "data/projs/skolem_863ad76a2b/base.z3/59897640.smt2": 5,
+        "data/projs/skolem_863ad76a2b/base.z3/d6d300a4.smt2": 2,
+        "data/projs/skolem_863ad76a2b/base.z3/e52cf610.smt2": 8,
+    },
+    "data/projs/bench_unstable.skolem/base.z3/4bb10dc4e9.5e9a258d.smt2": {
+        "data/projs/skolem_e882143551/base.z3/87994bfe.smt2": 1
+    },
+    "data/projs/bench_unstable.skolem/base.z3/b5cc583f2d.881aa85e.smt2": {
+        "data/projs/skolem_9d291df761/base.z3/dcd46ea7.smt2": 9
+    },
+    "data/projs/bench_unstable.skolem/base.z3/6fe848cd76.9a6efb35.smt2": {
+        "data/projs/skolem_f7a6011e2b/base.z3/3be86c1d.smt2": 9,
+        "data/projs/skolem_f7a6011e2b/base.z3/60576403.smt2": 4,
+    },
+    "data/projs/bench_unstable.skolem/base.z3/e466521a27.1bae5e87.smt2": {
+        "data/projs/skolem_8beb658289/base.z3/24e63214.smt2": 4,
+        "data/projs/skolem_8beb658289/base.z3/c182cfb6.smt2": 1,
+    },
+    "data/projs/bench_unstable.skolem/base.z3/72ad929f41.f2316cc1.smt2": {
+        "data/projs/skolem_88f2045dc8/base.z3/87b4f23a.smt2": 9
+    },
+    "data/projs/bench_unstable.skolem/base.z3/462c420128.5e9a258d.smt2": {
+        "data/projs/skolem_50c6ba5d02/base.z3/2a5e4670.smt2": 1
+    },
+    "data/projs/bench_unstable.skolem/base.z3/d3b07a4fd8.f2316cc1.smt2": {
+        "data/projs/skolem_40bbb06b26/base.z3/2a5e4670.smt2": 2
+    },
+    "data/projs/bench_unstable.skolem/base.z3/48976525b7.42bd45a4.smt2": {
+        "data/projs/skolem_f922e95c4d/base.z3/73ffc3c3.smt2": 6,
+        "data/projs/skolem_f922e95c4d/base.z3/9284ec66.smt2": 1,
+    },
+    "data/projs/bench_unstable.skolem/base.z3/05b5b92f32.d55e2370.smt2": {
+        "data/projs/skolem_1415de2d3b/base.z3/60576403.smt2": 1
+    },
+    "data/projs/bench_unstable.skolem/base.z3/2f7324b043.d55e2370.smt2": {
+        "data/projs/skolem_1744efe664/base.z3/93ff8cb5.smt2": 7
+    },
+    "data/projs/bench_unstable.skolem/base.z3/ae3b449b81.17a64bef.smt2": {
+        "data/projs/skolem_7cd0dcfef3/base.z3/537623c7.smt2": 4,
+        "data/projs/skolem_7cd0dcfef3/base.z3/e20aa25f.smt2": 2,
+    },
+    "data/projs/bench_unstable.skolem/base.z3/17b0b45c82.a2c20f14.smt2": {
+        "data/projs/skolem_56b16e1ae7/base.z3/2915158e.smt2": 7,
+        "data/projs/skolem_56b16e1ae7/base.z3/60576403.smt2": 4,
+    },
+}
 
 BENCH_COLORS = {"mariposa": "blue", "verus": "orange"}
+
+
+VERUS_QUNAT_COUNT = {
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__helper_invariants__proof.9.smt2": (
+        2636,
+        1842,
+    ),
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__helper_invariants__validation.3.smt2": (
+        2433,
+        1560,
+    ),
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__liveness__daemon_set_match__lemma_from_after_get_daemon_set_step_to_after_update_daemon_set_step.smt2": (
+        2431,
+        1188,
+    ),
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_update_resource_step.smt2": (
+        2395,
+        1229,
+    ),
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit_config__proof__liveness__resource_match.5.smt2": (
+        2276,
+        1314,
+    ),
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit_config__proof__liveness__resource_match.6.smt2": (
+        2280,
+        1262,
+    ),
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit_config__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_create_resource_step.smt2": (
+        2142,
+        1192,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_every_resource_create_request_implies_at_after_create_resource_step.smt2": (
+        2568,
+        1171,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_object_in_response_at_after_create_resource_step_is_same_as_etcd.smt2": (
+        2575,
+        1184,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__helper_invariants__validation__lemma_always_stateful_set_in_create_request_msg_satisfies_unchangeable.smt2": (
+        2572,
+        1089,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__liveness__resource_match.1.smt2": (
+        2763,
+        1477,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_update_resource_step.smt2": (
+        2588,
+        1307,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__liveness__stateful_set_match__lemma_from_after_get_stateful_set_step_to_after_update_stateful_set_step.smt2": (
+        2647,
+        1138,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__liveness__stateful_set_match__lemma_stateful_set_state_matches_at_after_update_stateful_set_step.smt2": (
+        2644,
+        1124,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__proof.2.smt2": (
+        2786,
+        2020,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__proof__lemma_always_no_update_status_request_msg_in_flight_of_except_stateful_set.smt2": (
+        2435,
+        1093,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__proof__lemma_eventually_always_no_delete_resource_request_msg_in_flight.smt2": (
+        2514,
+        1102,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__validation.3.smt2": (
+        2584,
+        1686,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__zookeeper_api__lemma_zk_request_implies_step_helper.smt2": (
+        2409,
+        1146,
+    ),
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__liveness__stateful_set_match.2.smt2": (
+        2670,
+        1333,
+    ),
+    "data/projs/atmosphere/base.z3/kernel__create_and_share_pages.5.smt2": (1309, 774),
+    "data/projs/flowcert/base.z3/permission.14.smt2": (576, 360),
+    "data/projs/splinterdb/base.z3/allocation_layer__LikesBetree_v.18.smt2": (459, 270),
+    "data/projs/splinterdb/base.z3/allocation_layer__LikesBetree_v__LikesBetree.3.smt2": (
+        1348,
+        994,
+    ),
+    "data/projs/verismo.dedup/base.z3/allocator__linkedlist.10.smt2": (1827, 1481),
+    "data/projs/verismo.dedup/base.z3/arch__ptram__ptram_p2.smt2": (0, 0),
+    "data/projs/verismo.dedup/base.z3/boot__init__e820_init.2.smt2": (2998, 2640),
+    "data/projs/verismo.dedup/base.z3/boot__init__e820_init.4.smt2": (3004, 2433),
+    "data/projs/verismo.dedup/base.z3/boot__init__e820_init_alloc.1.smt2": (3017, 2445),
+    "data/projs/verismo.dedup/base.z3/bsp__ap.3.smt2": (3106, 2624),
+    "data/projs/verismo.dedup/base.z3/pgtable_e__pte.18.smt2": (3110, 2371),
+    "data/projs/verismo.dedup/base.z3/pgtable_e__pte.20.smt2": (3125, 2640),
+    "data/projs/verismo.dedup/base.z3/security__monitor.21.smt2": (4781, 3992),
+    "data/projs/verismo.dedup/base.z3/snp__cpuid.17.smt2": (2982, 2388),
+    "data/projs/verismo.dedup/base.z3/snp__ghcb__proto_page.141.smt2": (5014, 4391),
+    "data/projs/verismo.dedup/base.z3/vbox__vbox.4.smt2": (4512, 4024),
+    "data/projs/verismo.dedup/base.z3/vbox__vbox.5.smt2": (4514, 3998),
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-commit_segment.1.smt2": (1355, 1213),
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-config.35.smt2": (538, 520),
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-page_organization__PageOrg.69.smt2": (
+        861,
+        574,
+    ),
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-page_organization__PageOrg__impl_%4__merge_with_before_ll_inv_valid_unused.smt2": (
+        0,
+        0,
+    ),
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-segment__segment_os_alloc.smt2": (
+        1235,
+        758,
+    ),
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-segment__segment_span_free_coalesce_before.smt2": (
+        1253,
+        533,
+    ),
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-segment__span_queue_delete.smt2": (
+        1217,
+        513,
+    ),
+    "data/projs/vsystemsnew/base.z3/noderep-smt-spec__cyclicbuffer.3.smt2": (394, 353),
+    "data/projs/vsystemsnew/base.z3/noderep-smt-spec__cyclicbuffer.5.smt2": (401, 368),
+    "data/projs/vsystemsnew/base.z3/page-table-smt-impl_u__l2_refinement.3.smt2": (
+        670,
+        327,
+    ),
+    "data/projs/vsystemsnew/base.z3/page-table-smt-impl_u__l2_refinement.4.smt2": (
+        0,
+        0,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.10.smt2": (
+        414,
+        304,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.12.smt2": (
+        418,
+        218,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.13.smt2": (
+        420,
+        208,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.14.smt2": (
+        422,
+        213,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.17.smt2": (
+        429,
+        279,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.2.smt2": (
+        393,
+        222,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.4.smt2": (
+        400,
+        202,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.5.smt2": (
+        406,
+        251,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__layout_v.30.smt2": (
+        382,
+        224,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__logimpl_v.6.smt2": (
+        702,
+        398,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.11.smt2": (
+        481,
+        265,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.13.smt2": (
+        483,
+        259,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.14.smt2": (
+        485,
+        251,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.15.smt2": (
+        488,
+        255,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.16.smt2": (
+        496,
+        303,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.17.smt2": (
+        497,
+        314,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.2.smt2": (
+        453,
+        258,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.7.smt2": (
+        470,
+        302,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.9.smt2": (
+        475,
+        335,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__setup_v.5.smt2": (
+        657,
+        466,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__setup_v.6.smt2": (
+        660,
+        473,
+    ),
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__start_v.2.smt2": (
+        714,
+        466,
+    ),
+}
+
+MARIPOSA_QUNAT_COUNT = {
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-InterpretationDisk.i.dfy.Impl__InterpretationDisk.__default.RefinesProcessWrite.smt2": (
+        10563,
+        8072,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-kom_utils.gen.dfyImpl___module.__default.va__abstract__load__32__bit__const.smt2": (
+        5311,
+        4395,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-init_dispatcher.gen.dfyImpl___module.__default.va__lemma__init__dispatcher__page__zero.smt2": (
+        9827,
+        7391,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.MergeToChildrenIter.smt2": (
+        6203,
+        4655,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-KMBtree.i.dfy.Impl__KMBtree.__default.SplitChildOfIndex.smt2": (
+        3235,
+        2229,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitLeafInterpretation.smt2": (
+        3424,
+        2726,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistImpl.i.dfy.Impl__JournalistImpl.Journalist.freeze.smt2": (
+        3885,
+        3366,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-conf_ni_entry.i.dfyImpl___module.__default.lemma__validEnclaveStepPrime__conf__not__atkr__retnondet.smt2": (
+        5610,
+        4053,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.GetJoinBucketListEq.smt2": (
+        3961,
+        2991,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.DynamicPsa.appendSeq.smt2": (
+        2766,
+        2023,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.parseEntriesFromHasEntriesI.smt2": (
+        3199,
+        2638,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-FlushPolicyImpl.i.dfy.Impl__FlushPolicyImpl.__default.getActionToFlush.smt2": (
+        15426,
+        11852,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-memset.gen.dfyImpl___module.__default.va__lemma__memcpy__bare.smt2": (
+        5095,
+        3909,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableBtree.i.dfy.Impl__MutableBtree.__default.SplitChildOfIndex.smt2": (
+        3226,
+        2271,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-NodeImpl.i.dfy.Impl__NodeImpl.Node.BucketsWellMarshalled.smt2": (
+        9653,
+        7512,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.NextStepPreservesInv.smt2": (
+        3002,
+        2495,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.MergeToOneChild.smt2": (
+        6238,
+        4714,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-verify.gen.dfyImpl___module.__default.va__lemma__svc__returning__verify.smt2": (
+        9772,
+        7079,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistModel.i.dfy.CheckWellformed__JournalistModel.__default.freeze.smt2": (
+        3480,
+        2863,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.i.dfyImpl___module.__default.lemma__userExecutionPreservesPrivState.smt2": (
+        5279,
+        3834,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-ptebits.i.dfyImpl___module.__default.lemma__nonexec__mapping.smt2": (
+        4239,
+        3311,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Betree-BetreeInv.i.dfy.Impl__BetreeInv.__default.InitImpliesInv.smt2": (
+        4470,
+        3197,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.smt2": (
+        2846,
+        2086,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-smc_handler.gen.dfyImpl___module.__default.va__lemma__smc__handler__inner.smt2": (
+        10806,
+        8116,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.smt2": (
+        5535,
+        4144,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-total_order_impl.i.dfy.Impl__Total__Order__Impl.__default.ArrayLargestLtPlus1.smt2": (
+        2391,
+        1971,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BetreeSystem_Refines_StatesViewPivotBetree.i.dfy.Impl__BetreeSystem__Refines__StatesViewPivotBetree.__default.BetreeMoveStepRefines.smt2": (
+        9226,
+        6739,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.psaTotalLengthBound.smt2": (
+        4724,
+        3495,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-FlushPolicyImpl.i.dfy.Impl__FlushPolicyImpl.__default.runFlushPolicy.smt2": (
+        16591,
+        13131,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.CheckWellformed__PackedKV.__default.psaSeq__Messages.smt2": (
+        5318,
+        4226,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketModel.i.dfy.Impl__BucketModel.__default.BucketListItemFlush__eq.smt2": (
+        4235,
+        3233,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView.i.dfy.Impl__CompositeView.__default.Move3PreservesInv.smt2": (
+        3703,
+        2925,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-init_dispatcher.gen.dfyImpl___module.__default.va__lemma__init__dispatcher__page__zeros.smt2": (
+        9865,
+        7181,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-NodeImpl.i.dfy.Impl__NodeImpl.Node.BoundedBucket.smt2": (
+        9663,
+        7505,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.WriteBackIndirectionTableReqStepPreservesGraphs.smt2": (
+        6464,
+        4958,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-pagedb.i.dfyImpl___module.__default.extractPageDbToAbstract.smt2": (
+        4274,
+        3348,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32C_Lemmas.i.dfy.Impl__CRC32C__Lemmas.__default.bits__of__bytes__additive4.smt2": (
+        1525,
+        1276,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-pagedb.i.dfyImpl___module.__default.extractPageDbToAbstractOne.smt2": (
+        4273,
+        3345,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.Impl.Certificate-14.smt2": (
+        38541,
+        24678,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.CloneSeq.smt2": (
+        6429,
+        4625,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.ISeq__replace1with2.smt2": (
+        6983,
+        5470,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.smt2": (
+        3541,
+        2891,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.computePivotIndexes.smt2": (
+        6069,
+        4718,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableMapModel.i.dfy.Impl__MutableMapModel.__default.LemmaReallocIterateResult.smt2": (
+        2889,
+        2182,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-exhandler_state.i.dfyImpl___module.__default.lemma__evalHandler.smt2": (
+        10857,
+        8114,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesMove3.smt2": (
+        3231,
+        2599,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--BlockCacheSystem-JournalInterval.i.dfy.Impl__JournalIntervals.__default.Disk__Journal__append.smt2": (
+        2056,
+        1614,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_vwasm--compiler-linearizer-queries-Compiler.Linearizer-15.smt2": (
+        0,
+        0,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BetreeSystem.i.dfy.Impl__BetreeSystem.__default.BetreeMoveStepPreservesInv.smt2": (
+        9106,
+        6581,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.EvictStepPreservesGraphs.smt2": (
+        6453,
+        4915,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.WFProperSplitBucketListRight.smt2": (
+        4421,
+        3487,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView.i.dfy.Impl__CompositeView.__default.ReplayPreservesInv.smt2": (
+        3703,
+        2946,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__pre__entry__resume.smt2": (
+        6549,
+        4815,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-finalise.gen.dfyImpl___module.__default.va__lemma__kom__smc__finalise.smt2": (
+        9839,
+        7026,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-smcapi.i.dfyImpl___module.__default.allocatePagePreservesPageDBValidity.smt2": (
+        5349,
+        3878,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-SyncImpl.i.dfy.Impl__SyncImpl.__default.sync.smt2": (
+        16060,
+        12246,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__stack__banked__regs2.smt2": (
+        6541,
+        4912,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Issuer-10.smt2": (
+        30495,
+        19222,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.AllocStepPreservesInv.smt2": (
+        6588,
+        5041,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyImpl___module.__default.lemma__svc__returning__verify__step1__helper.smt2": (
+        10389,
+        7870,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableBtree.i.dfy.Impl__MutableBtree.__default.IndexPrefix.smt2": (
+        3089,
+        2154,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-attest_input.gen.dfyImpl___module.__default.va__lemma__arrange__user__regs__in__memory.smt2": (
+        9073,
+        6830,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-FlushPolicyImpl.i.dfy.Impl__FlushPolicyImpl.__default.getActionToFlush.smt2": (
+        16578,
+        13107,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecWFNodes.i.dfy.Impl__PivotBetreeSpecWFNodes.__default.SplitMaps.smt2": (
+        5646,
+        4544,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-Graph.i.dfy.Impl__Graph.__default.LocalEditPreservesAcyclic.smt2": (
+        0,
+        0,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.SplitChildrenConsistent.smt2": (
+        7014,
+        5358,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-ASN1.Spec.Tag-2.smt2": (
+        26027,
+        17678,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_vwasm--compiler-common-queries-Compiler.Common.Dataflow-40.smt2": (
+        24042,
+        16088,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.__default.pkvList2BucketList.smt2": (
+        6438,
+        4619,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-ByteSystem.i.dfy.Impl__ByteSystem.__default.RespReadStepPreservesInv.smt2": (
+        14368,
+        9578,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-NodeImpl.i.dfy.Impl__NodeImpl.Node.CutoffNodeAndKeepRight.smt2": (
+        9692,
+        7461,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-InterpretationDisk.i.dfy.Impl__InterpretationDisk.__default.RefinesProcessRead__Node__1.smt2": (
+        10781,
+        8754,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.i.dfyImpl___module.__default.lemma__evalMOVSPCLRUC__inner.smt2": (
+        5473,
+        3813,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketModel.i.dfy.Impl__BucketModel.__default.mergeToOneOneChild__eq__BucketList.smt2": (
+        4276,
+        3139,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__kom__smc__enterresume.smt2": (
+        6498,
+        4793,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockCache.i.dfy.Impl__BlockCache.__default.WriteBackNodeRespStepPreservesInv.smt2": (
+        5965,
+        4671,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-QueryModel.i.dfy.Impl__QueryModel.__default.AugmentLookup.smt2": (
+        13027,
+        10370,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.RefinesValidMerge.smt2": (
+        7324,
+        5610,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyImpl___module.__default.va__lemma__svc__map__data__zeropage.smt2": (
+        10514,
+        7896,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyImpl___module.__default.va__lemma__get__cur__addrspace.smt2": (
+        10443,
+        7909,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallArray.smt2": (
+        2198,
+        1729,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_vwasm--compiler-sandbox-queries-Compiler.Sandbox-264.smt2": (
+        631,
+        280,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-MarshallingModel.i.dfy.Impl__MarshallingModel.__default.WeightBucketListLteSize.smt2": (
+        13788,
+        10953,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.CrashStepPreservesInv.smt2": (
+        2951,
+        2462,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-Sequences.i.dfy.Impl__Sequences.__default.FlattenAdditive.smt2": (
+        1648,
+        1384,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetree.i.dfy.Impl__PivotBetree.__default.TransactionRefines.smt2": (
+        7508,
+        5761,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.IndexOfFirstKeyGt.smt2": (
+        2790,
+        2138,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.WeightKeyListFlatten.smt2": (
+        4028,
+        3075,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGt.smt2": (
+        2765,
+        2131,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.SeqSubAdd.smt2": (
+        2947,
+        2569,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableBtree.i.dfy.Impl__TestBtreeModel.__default.SplitIndexInterpretation1.smt2": (
+        2801,
+        2003,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.InsertLeafIsCorrect.smt2": (
+        3414,
+        2709,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-ByteSystem.i.dfy.Impl__ByteSystem.__default.ReqReadStepPreservesInv.smt2": (
+        14409,
+        9501,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.UniqueRepr.smt2": (
+        2760,
+        2122,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-FlushPolicyModel.i.dfy.CheckWellformed__FlushPolicyModel.__default.getActionToFlush.smt2": (
+        16145,
+        13062,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-attest.gen.dfyImpl___module.__default.va__lemma__compute__hmac_split0.smt2": (
+        9687,
+        7205,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.FreezeStepPreservesGraphs.smt2": (
+        6547,
+        5012,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-conf_ni_entry.i.dfyImpl___module.__default.lemma__updateUserPages__conf__not__atkr.smt2": (
+        5576,
+        4080,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-integ_ni_entry.i.dfyImpl___module.__default.lemma__enter__enc__obs__enter.smt2": (
+        5628,
+        4023,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView_Refines_TSJMap.i.dfy.Impl__CompositeView__Refines__TSJMap.__default.SendPersistentLocRefines.smt2": (
+        3701,
+        2913,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistModel.i.dfy.CheckWellformed__JournalistModel.__default.append.smt2": (
+        3492,
+        2864,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeOfByteSeqGetI.smt2": (
+        2813,
+        2304,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-ByteSystem.i.dfy.Impl__ByteSystem.__default.RespWriteStepPreservesInv.smt2": (
+        14368,
+        9256,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-KMBPKVOps.i.dfy.Impl__KMBPKVOps.__default.IndexFillDpkv.smt2": (
+        6387,
+        4546,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.ToSeqChildrenAdditive.smt2": (
+        2822,
+        2062,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.DirtyStepPreservesInv.smt2": (
+        6588,
+        5026,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-remove.gen.dfyImpl___module.__default.va__lemma__kom__smc__remove__non__addr__success.smt2": (
+        0,
+        0,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallTupleContents.smt2": (
+        2226,
+        1757,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.SplitBucketOnPivotsAt.smt2": (
+        3947,
+        2981,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-sha256-api.gen.dfyImpl___module.__default.va__abstract__sha256__one__shot.smt2": (
+        9090,
+        6993,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BetreeSystem_Refines_StatesViewPivotBetree.i.dfy.Impl__BetreeSystem__Refines__StatesViewPivotBetree.__default.BlockCacheMoveStepRefines.smt2": (
+        9235,
+        6595,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-total_order.i.dfy.Impl__Total__Preorder.__default.ExistsBiggestInSet.smt2": (
+        1502,
+        1263,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-DeallocImpl.i.dfy.Impl__DeallocImpl.__default.Dealloc.smt2": (
+        14737,
+        11312,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.RefinesReadOps.smt2": (
+        6838,
+        4920,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeOfByteSeqAdditive.smt2": (
+        2980,
+        2597,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableBtree.i.dfy.Impl__MutableBtree.__default.SplitIndex.smt2": (
+        3208,
+        2257,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.WeightBucketListItemFlush.smt2": (
+        4039,
+        3081,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.CleanUpStepPreservesGraphs.smt2": (
+        6495,
+        4964,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalBlockOfJournalRange.smt2": (
+        2966,
+        2584,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-total_order_impl.i.dfy.Impl__Total__Order__Impl.__default.ArrayLargestLtPlus1.smt2": (
+        1881,
+        1432,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.fillInChecksumsHasChecksums.smt2": (
+        3214,
+        2674,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.set__bit__to__0__other__uint64.smt2": (
+        1016,
+        862,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockCache.i.dfy.Impl__BlockCache.__default.AllocStepPreservesInv.smt2": (
+        5965,
+        4687,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI.Subject-12.smt2": (
+        30510,
+        19266,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.MergeToChildrenIter.smt2": (
+        5670,
+        4024,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.CheckWellformed__PackedKV.__default.subPkv.smt2": (
+        4742,
+        3535,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-ByteSystem.i.dfy.Impl__ByteSystem.__default.ReqWriteStepPreservesInv.smt2": (
+        14464,
+        9808,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalBlockOfJournalRange.smt2": (
+        2815,
+        2326,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-sequences.i.dfy.Impl__Sequences.__default.lemma__concatSeqLen__le__mul.smt2": (
+        1580,
+        1304,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-ByteSystem_Refines_BetreeJournalSystem.i.dfy.Impl__ByteSystem__Refines__BetreeJournalSystem.__default.RefinesNext.smt2": (
+        14166,
+        10682,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-Betree_Refines_Map.i.dfy.Impl__Betree__Refines__Map.__default.SuccQueryStepRefinesMap.smt2": (
+        4808,
+        3534,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-BucketGeneratorModel.i.dfy.Impl__BucketGeneratorModel.__default.GenComposeIsCompose.smt2": (
+        4509,
+        3461,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.CheckStringLengths.smt2": (
+        5602,
+        4436,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-attest.gen.dfyImpl___module.__default.va__lemma__compute__hmac.smt2": (
+        9622,
+        7088,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-SuccImpl.i.dfy.Impl__SuccImpl.__default.getPath.smt2": (
+        15279,
+        11625,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.__default.PartialFlush.smt2": (
+        7129,
+        5513,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallUint32Array.smt2": (
+        2196,
+        1756,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistImpl.i.dfy.Impl__JournalistImpl.Journalist.packageInMemoryJournal.smt2": (
+        3874,
+        3312,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-Betree_Refines_Map.i.dfy.Impl__Betree__Refines__Map.__default.GCStepRefinesMap.smt2": (
+        4793,
+        3616,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.Impl.Certificate-16.smt2": (
+        38572,
+        24537,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistParsingImpl.i.dfy.Impl__JournalistParsingImpl.__default.ParseJournalRangeOfBytes.smt2": (
+        2828,
+        2282,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-GrowModel.i.dfy.Impl__GrowModel.__default.growCorrect.smt2": (
+        15736,
+        12517,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-ByteSystem.i.dfy.Impl__ByteSystem.__default.NextStepPreservesInv.smt2": (
+        14214,
+        10770,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.WFProperMergeBucketsInList.smt2": (
+        3980,
+        3017,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.set__bit__to__0__other__uint64.smt2": (
+        1045,
+        919,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecWFNodes.i.dfy.Impl__PivotBetreeSpecWFNodes.__default.BucketListWellMarshalledCutoffNodeAndKeepRight.smt2": (
+        5635,
+        4529,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageSubset.smt2": (
+        4019,
+        3120,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-LKMBPKVOps.i.dfy.Impl__LKMBPKVOps.__default.IsKeyMessageTreeInheritance.smt2": (
+        6685,
+        5148,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-LKMBPKVOps.i.dfy.Impl__LKMBPKVOps.__default.FromPkv.smt2": (
+        6746,
+        5177,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallUint64.smt2": (
+        2180,
+        1744,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.DynamicPkv.Append.smt2": (
+        5535,
+        4024,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeight.smt2": (
+        5531,
+        4125,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.lemma__writeJournalEntries.smt2": (
+        3286,
+        2667,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.Move1to2StepPreservesInv.smt2": (
+        2951,
+        2477,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-map_secure.gen.dfyImpl___module.__default.va__lemma__map__secure__update.smt2": (
+        10055,
+        7252,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.CutoffNodeAndKeepRightAgree.smt2": (
+        6846,
+        5366,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketMap.i.dfy.Impl__BucketMaps.__default.SortedSeqOfKeyValueHasKey.smt2": (
+        3862,
+        3061,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-IOModel.i.dfy.Impl__IOModel.__default.FindIndirectionTableLocationAndRequestWriteCorrect.smt2": (
+        12720,
+        9555,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-finalise.gen.dfyImpl___module.__default.lemma__kom__smc__finalise__success__helper1.smt2": (
+        9757,
+        7223,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-SuccModel.i.dfy.Impl__SuccModel.__default.lemmaGetPathResult.smt2": (
+        16006,
+        12482,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32C_Lut.i.dfy.Impl__CRC32C__Lut.__default.pow0.smt2": (
+        2077,
+        1789,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.ComputeIsSorted.smt2": (
+        5322,
+        4178,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesReplay.smt2": (
+        3235,
+        2593,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-Sequences.i.dfy.Impl__Sequences.__default.UnflattenIndexIsCorrect.smt2": (
+        1644,
+        1372,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketModel.i.dfy.Impl__BucketModel.__default.mergeToOneOneChild__eq__topBotAccMerge.smt2": (
+        4396,
+        3185,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-Arrays.i.dfy.Impl__Arrays.__default.replace1with2.smt2": (
+        1332,
+        1021,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.SplitMergeBuffersChildrenEq.smt2": (
+        6897,
+        5395,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI.Subject-10.smt2": (
+        30495,
+        19249,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.BinarySearchQuery.smt2": (
+        4728,
+        3476,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-FlushModel.i.dfy.Impl__FlushModel.__default.flushCorrect.smt2": (
+        15827,
+        12519,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.UnallocStepPreservesInv.smt2": (
+        6588,
+        5013,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView_Refines_ThreeStateVersionedMap.i.dfy.Impl__CompositeView__Refines__ThreeStateVersionedMap.__default.RefinesInit.smt2": (
+        3818,
+        3045,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-Betree_Refines_Map.i.dfy.Impl__Betree__Refines__Map.__default.FlushStepRefinesMap.smt2": (
+        4791,
+        3561,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistModel.i.dfy.CheckWellformed__JournalistModel.__default.packageFrozenJournal.smt2": (
+        3480,
+        2790,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-NodeImpl.i.dfy.Impl__NodeImpl.Node.UpdateSlot.smt2": (
+        9643,
+        7491,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketModel.i.dfy.Impl__BucketModel.__default.mergeToChildrenIterSlack_split0.smt2": (
+        4314,
+        3186,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistImpl.i.dfy.Impl__JournalistImpl.Journalist.reallocJournalEntries.smt2": (
+        3878,
+        3384,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-map_common.gen.dfyImpl___module.__default.va__lemma__is__valid__mapping__target_k.smt2": (
+        10085,
+        7311,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-sha256-one-block.gen.dfyImpl___module.__default.va__abstract__update__Hs.smt2": (
+        7567,
+        5950,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallByteArrayInterior.smt2": (
+        2188,
+        1678,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistImpl.i.dfy.Impl__JournalistImpl.Journalist.parseJournals.smt2": (
+        3519,
+        2752,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap.i.dfy.Impl__TSJMap.__default.Move3StepPreservesInv.smt2": (
+        3071,
+        2487,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-LinearLru.i.dfy.Impl__LinearLru.LinearLru.Use.smt2": (
+        3060,
+        2465,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableMapModel.i.dfy.Impl__MutableMapModel.__default.LemmaProbeResult.smt2": (
+        2782,
+        2130,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-LinearDList.i.dfy.Impl__DList.DList.Remove.smt2": (
+        1851,
+        1455,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketModel.i.dfy.Impl__BucketModel.__default.mergeToChildrenIterCorrect.smt2": (
+        4409,
+        3180,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-map_common.gen.dfyImpl___module.__default.va__lemma__insecure__phys__to__virt.smt2": (
+        9960,
+        7235,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-SplitModel.i.dfy.Impl__SplitModel.__default.doSplitCorrect.smt2": (
+        16243,
+        12800,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.WeightMergeBucketsInListLe.smt2": (
+        4036,
+        3072,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.BinarySearchQuery.smt2": (
+        5324,
+        4141,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.NewRequestReadIndirectionTableDoesntOverlap.smt2": (
+        6445,
+        4849,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-Graph.i.dfy.CheckWellformed__Graph.__default.UndoLocalEdit.smt2": (
+        1626,
+        1249,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-ByteSystem_Refines_ThreeStateVersionedMap.i.dfy.Impl__ByteSystem__Refines__ThreeStateVersionedMap.__default.RefinesInit.smt2": (
+        14353,
+        10728,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistImpl.i.dfy.Impl__JournalistImpl.Journalist.packageFrozenJournal.smt2": (
+        3519,
+        2732,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-MarshallingImpl.i.dfy.Impl__MarshallingImpl.__default.ValToBuckets.smt2": (
+        14680,
+        11630,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-psrbits.i.dfyImpl___module.__default.lemma__update__psr__f.smt2": (
+        2934,
+        2400,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.writeOntoPreservesSlice.smt2": (
+        3346,
+        2931,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI.Subject-4.smt2": (
+        30483,
+        19243,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesStutter.smt2": (
+        3231,
+        2569,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-exception_handlers.gen.dfyCheckWellformed___module.__default.va__lemma__save__disp__context__helper.smt2": (
+        10383,
+        7964,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Lang-LinearSequence.i.dfy.Impl__LinearSequence__i.__default.AllocAndMoveLseq.smt2": (
+        1673,
+        1388,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGte.smt2": (
+        2765,
+        2132,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallByteArrayInterior.smt2": (
+        2195,
+        1763,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-InterpretationDisk.i.dfy.Impl__InterpretationDisk.__default.RefinesProcessRead__Superblock__1.smt2": (
+        10781,
+        8752,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.Imaps.smt2": (
+        4732,
+        3496,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView.i.dfy.Impl__CompositeView.__default.CrashPreservesInv.smt2": (
+        3704,
+        2925,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-LruImpl.i.dfy.Impl__LruImpl.LruImplQueue.Use.smt2": (
+        2600,
+        1897,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.ComputeIsSorted.smt2": (
+        4726,
+        3537,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-NodeImpl.i.dfy.Impl__NodeImpl.Node.__ctor.smt2": (
+        14057,
+        11148,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-BetreeInv.i.dfy.Impl__BetreeInv.__default.InitImpliesInv.smt2": (
+        4781,
+        3684,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-KMBPKVOps.i.dfy.Impl__KMBPKVOps.__default.ToPkv.smt2": (
+        6112,
+        4352,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesMove1to2.smt2": (
+        3231,
+        2591,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-Marshalling.i.dfy.Impl__Marshalling.__default.pivotTableWeightUpperBound.smt2": (
+        8616,
+        6772,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalBytesSplit.smt2": (
+        2825,
+        2344,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-init_l2ptable.gen.dfyImpl___module.__default.va__lemma__install__l1ptes.smt2": (
+        9991,
+        7400,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-Sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.smt2": (
+        1643,
+        1437,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.all__in__set__implies__all1s__uint64.smt2": (
+        0,
+        0,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.NewRequestReadNodeDoesntOverlap.smt2": (
+        6447,
+        4926,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-Multisets.i.dfy.Impl__Multisets.__default.ApplyAdditive.smt2": (
+        1686,
+        1329,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-BookkeepingImpl.i.dfy.Impl__BookkeepingImpl.__default.writeBookkeeping.smt2": (
+        14723,
+        11514,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesPushSync.smt2": (
+        3231,
+        2585,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.psaAppendIAppend.smt2": (
+        3535,
+        2898,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-LeafModel.i.dfy.Impl__LeafModel.__default.repivotLeafCorrect.smt2": (
+        15749,
+        12509,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-ptables.i.dfyImpl___module.__default.lemma__ptablesmatch_split11.smt2": (
+        5032,
+        3748,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-Util.i.dfy.Impl__Common____Util__i.__default.lemma__BEByteSeqToInt__invertability.smt2": (
+        873,
+        667,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-map_common.gen.dfyImpl___module.__default.va__lemma__init__secure__page.smt2": (
+        10008,
+        7216,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.PageInIndirectionTableRespStepPreservesGraphs.smt2": (
+        6451,
+        4958,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-IOModel.i.dfy.Impl__IOModel.__default.PageInIndirectionTableRespCorrect.smt2": (
+        12759,
+        9662,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.fillInChecksumsPreserves.smt2": (
+        3205,
+        2670,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32C_Lemmas.i.dfy.Impl__CRC32C__Lemmas.__default.bits__of__bytes__additive.smt2": (
+        1521,
+        1266,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-IOImpl.i.dfy.Impl__IOImpl.__default.writeNodeResponse.smt2": (
+        15960,
+        12617,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI-18.smt2": (
+        36663,
+        23976,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.Move2to3StepPreservesInv.smt2": (
+        2966,
+        2470,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.ComputeRefCounts.smt2": (
+        10719,
+        8166,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetree.i.dfy.Impl__PivotBetree.__default.GCStepRefines.smt2": (
+        7429,
+        5588,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistImpl.i.dfy.Impl__JournalistImpl.Journalist.packageInMemoryJournal.smt2": (
+        3519,
+        2725,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.ReplayStepPreservesInv.smt2": (
+        2955,
+        2457,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-KMBPKVOps.i.dfy.Impl__KMBPKVOps.__default.FromPkv.smt2": (
+        6232,
+        4442,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Issuer-12.smt2": (
+        30510,
+        19289,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.WriteFusedChildInTermsOfLeftAndRight.smt2": (
+        6825,
+        5431,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-allocate_page.gen.dfyImpl___module.__default.va__lemma__addrspace__incref.smt2": (
+        6238,
+        4636,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-SplitImpl.i.dfy.Impl__SplitImpl.__default.splitBookkeeping.smt2": (
+        15089,
+        11694,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-stop.gen.dfyImpl___module.__default.va__lemma__kom__smc__stop.smt2": (
+        6200,
+        4492,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-conf_ni_entry.i.dfyImpl___module.__default.lemma__AllPages.smt2": (
+        5596,
+        4105,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BetreeJournalSystem.i.dfy.Impl__BetreeJournalSystem.__default.OkaySendPersistentLocStep.smt2": (
+        11316,
+        8792,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.set__bit__to__1__other__uint64.smt2": (
+        1045,
+        922,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-map_common.gen.dfyImpl___module.__default.va__lemma__is__valid__mapping__target.smt2": (
+        9979,
+        7403,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-Math.i.dfy.Impl__Math.__default.lemma__div__denominator.smt2": (
+        820,
+        680,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallArray.smt2": (
+        2283,
+        1650,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entrybits.i.dfyImpl___module.__default.lemma__sp__bit__helper.smt2": (
+        5099,
+        3968,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.DynamicPsa.AppendSeq.smt2": (
+        3554,
+        2801,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-JournalInterval.i.dfy.Impl__JournalIntervals.__default.Disk__Journal__append.smt2": (
+        2567,
+        2166,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetree.i.dfy.Impl__PivotBetree.__default.StutterStepRefines.smt2": (
+        7414,
+        5652,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.set__bit__to__1__other__uint64.smt2": (
+        1016,
+        862,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-QueryImpl.i.dfy.Impl__QueryImpl.__default.queryIterate.smt2": (
+        15060,
+        11463,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-Seqs.i.dfy.Impl__Collections____Seqs__i.__default.lemma__SeqCat__adds.smt2": (
+        961,
+        786,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Betree-BetreeInv.i.dfy.Impl__BetreeInv.__default.FlushPreservesLookups.smt2": (
+        4513,
+        3120,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistImpl.i.dfy.Impl__JournalistImpl.Journalist.packageFrozenJournal.smt2": (
+        3874,
+        3315,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-IndirectionTableModel.i.dfy.CheckWellformed__IndirectionTableModel.__default.RemoveRef.smt2": (
+        10542,
+        8043,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-IOImpl.i.dfy.Impl__IOImpl.__default.FindIndirectionTableLocationAndRequestWrite.smt2": (
+        15931,
+        12393,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap.i.dfy.Impl__TSJMap.__default.NextStepPreservesInv.smt2": (
+        3111,
+        2523,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-attest.gen.dfyImpl___module.__default.va__lemma__svc__returning__attest__inner.smt2": (
+        9696,
+        7116,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.CheckWellformed__PackedKV.__default.subPkv.smt2": (
+        5321,
+        4188,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-BucketSuccessorLoopModel.i.dfy.Impl__BucketSuccessorLoopModel.__default.GetSuccessorInBucketStackResult.smt2": (
+        3889,
+        2758,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalBytesSplit.smt2": (
+        2976,
+        2603,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-BetreeInv.i.dfy.Impl__BetreeInv.__default.GrowStepPreservesInvariant.smt2": (
+        4796,
+        3655,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.CheckWellformed__PackedStringArray.__default.psaSeq.smt2": (
+        3538,
+        2917,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.ToSeqChildrenAdditive.smt2": (
+        3400,
+        2680,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeEqJournalBlocks.smt2": (
+        2976,
+        2583,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistParsingImpl.i.dfy.Impl__JournalistParsingImpl.__default.ParseJournalRangeOfBytes.smt2": (
+        3272,
+        2809,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-MarshallingImpl.i.dfy.Impl__MarshallingImpl.__default.KeyValSeqToPivots.smt2": (
+        14552,
+        11709,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.set__bit__to__1__self__uint64.smt2": (
+        1016,
+        862,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-sha256-body-00-15.gen.dfyImpl___module.__default.va__abstract__Body__00__15.smt2": (
+        5889,
+        4503,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BetreeJournalSystem_Refines_CompositeView.i.dfy.Impl__BetreeJournalSystem__Refines__CompositeView.__default.RefinesInit.smt2": (
+        11313,
+        8581,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.fillInChecksumsPreserves.smt2": (
+        3352,
+        2922,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-conf_ni_entry.i.dfyImpl___module.__default.lemma__svcHandled__loweq__pdb.smt2": (
+        5610,
+        3819,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-F2_X_Lemmas.i.dfy.Impl__F2__X__Lemmas.__default.reverse__mul.smt2": (
+        1508,
+        1251,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.SplitRight.smt2": (
+        5339,
+        4167,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallArrayContents.smt2": (
+        2338,
+        1670,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView_Refines_TSJMap.i.dfy.Impl__CompositeView__Refines__TSJMap.__default.FreezeRefines.smt2": (
+        3701,
+        2914,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--BlockCacheSystem-BlockJournalCache.i.dfy.Impl__BlockJournalCache.__default.NextPreservesInv.smt2": (
+        7572,
+        5051,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-BucketSuccessorLoopModel.i.dfy.Impl__BucketSuccessorLoopModel.__default.ProcessGeneratorResult.smt2": (
+        4626,
+        3476,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Subject-12.smt2": (
+        30510,
+        19215,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-BetreeInv.i.dfy.Impl__BetreeInv.__default.FlushPreservesLookups.smt2": (
+        4817,
+        3583,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetree.i.dfy.Impl__PivotBetree.__default.BetreeStepRefines.smt2": (
+        7534,
+        5581,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32C_Lut.i.dfy.Impl__CRC32C__Lut.__default.reverse__p.smt2": (
+        2077,
+        1798,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.WeightMessageListFlatten.smt2": (
+        4487,
+        3553,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase_split0.smt2": (
+        2205,
+        1623,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-smcapi.i.dfyImpl___module.__default.lemma__sha256__concat.smt2": (
+        5333,
+        4108,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.lemma__writeJournalEntries.smt2": (
+        3433,
+        2948,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.PageInNodeReqStepPreservesInv.smt2": (
+        6740,
+        5149,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.parseEntriesFromHasEntriesI.smt2": (
+        3346,
+        2901,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-integ_ni_entry.i.dfyImpl___module.__default.lemma__enter__loweq__pdb__not__obs.smt2": (
+        5593,
+        3992,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.WeightSplitBucketInListLe.smt2": (
+        4044,
+        3100,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-CommitterCommitImpl.i.dfy.Impl__CommitterCommitImpl.__default.WriteOutJournal.smt2": (
+        14915,
+        11430,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.BInternalPreWFWellMarshalled.smt2": (
+        3943,
+        3012,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-conf_ni_entry.i.dfyImpl___module.__default.lemma__userspaceExec__atkr.smt2": (
+        5657,
+        3862,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-MarshallingImpl.i.dfy.Impl__MarshallingImpl.__default.strictlySortedPivotsToVal.smt2": (
+        14591,
+        11645,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.ToSeq.smt2": (
+        3536,
+        2861,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-map_secure.gen.dfyImpl___module.__default.va__lemma__kom__smc__map__secure.smt2": (
+        10054,
+        7274,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyImpl___module.__default.va__lemma__existing__va__ok.smt2": (
+        10572,
+        7768,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.insert.smt2": (
+        16341,
+        12362,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS-6.smt2": (
+        37246,
+        23676,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-sha256-body-16-xx.gen.dfyImpl___module.__default.va__refined__Body__16__XX.smt2": (
+        6911,
+        5227,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-InsertModel.i.dfy.Impl__InsertModel.__default.InsertKeyValueCorrect.smt2": (
+        16185,
+        12768,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.psaAppendIAppend.smt2": (
+        2758,
+        2128,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.smt2": (
+        5070,
+        3674,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.BInternalWFBucket.smt2": (
+        3941,
+        3003,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-F2_X_Lemmas.i.dfy.Impl__F2__X__Lemmas.__default.mod__xor.smt2": (
+        1501,
+        1255,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-IndirectionTableModel.i.dfy.CheckWellformed__IndirectionTableModel.__default.UpdateAndRemoveLoc.smt2": (
+        10547,
+        8131,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView.i.dfy.Impl__CompositeView.__default.FreezePreservesInv.smt2": (
+        3703,
+        2933,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallByteArray.smt2": (
+        2195,
+        1741,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-Util.i.dfy.Impl__Common____Util__i.__default.lemma__BEByteSeqToInt__invertability.smt2": (
+        870,
+        696,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-init_addrspace.gen.dfyImpl___module.__default.va__lemma__kom__smc__init__addrspace.smt2": (
+        9955,
+        7289,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesNextStep.smt2": (
+        3301,
+        2684,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.psaCanAppendI.smt2": (
+        2768,
+        2094,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.WriteBackNodeRespStepPreservesInv.smt2": (
+        6734,
+        5136,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.WeightWellMarshalledListPointwiseLe.smt2": (
+        4036,
+        3092,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-InterpretationDisk.i.dfy.Impl__InterpretationDisk.__default.RefinesCrash.smt2": (
+        10868,
+        8576,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-sha256.i.dfyImpl___module.__default.lemma__SHA256FinalHelper1.smt2": (
+        3543,
+        2750,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-HandleReadResponseImpl.i.dfy.Impl__HandleReadResponseImpl.__default.readResponse.smt2": (
+        14873,
+        11247,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__unstack__banked__regs.smt2": (
+        6444,
+        4991,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketModel.i.dfy.Impl__BucketModel.__default.flushedMapPopFront.smt2": (
+        4243,
+        3223,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesPopSync.smt2": (
+        3231,
+        2554,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__unstack__banked__regs2.smt2": (
+        6545,
+        4915,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-Marshalling.i.dfy.Impl__Marshalling.__default.pivotTableWeightUpperBound.smt2": (
+        8990,
+        7342,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.DynamicPsa.AppendSeq.smt2": (
+        2778,
+        2029,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.CleanUpStepPreservesInv.smt2": (
+        6786,
+        5201,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.Move3StepPreservesInv.smt2": (
+        2955,
+        2463,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-attest_helpers.gen.dfyImpl___module.__default.va__lemma__zero__pad__memory.smt2": (
+        9104,
+        6886,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyImpl___module.__default.va__lemma__svc__unmap__data__success.smt2": (
+        10493,
+        7683,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-alloc_spare.gen.dfyImpl___module.__default.va__lemma__kom__smc__alloc__spare.smt2": (
+        6228,
+        4479,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-LinearContentMutableMap.i.dfy.Impl__LinearContentMutableMap.__default.Realloc.smt2": (
+        2906,
+        2215,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageIntersect.smt2": (
+        4019,
+        3097,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.DynamicPsa.appendSeq.smt2": (
+        3542,
+        2805,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__unstack__banked__regs1.smt2": (
+        6545,
+        4925,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGt.smt2": (
+        3541,
+        2892,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.FindRefWithNoLoc.smt2": (
+        10625,
+        8053,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-exception_handlers.gen.dfyImpl___module.__default.va__lemma__abort__handler.smt2": (
+        10534,
+        7867,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.InUpperBoundAndNot.smt2": (
+        6823,
+        5497,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-InsertImpl.i.dfy.Impl__InsertImpl.__default.insert.smt2": (
+        16562,
+        12910,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-Math.i.dfy.Impl__Math.__default.lemma__2toX.smt2": (
+        814,
+        670,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableBtree.i.dfy.Impl__TestMutableBtree.__default.SplitChildOfIndex.smt2": (
+        3115,
+        2153,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-Multisets.i.dfy.Impl__Multisets.__default.ApplySeq.smt2": (
+        1637,
+        1282,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.WFWellMarshalledBucketMap.smt2": (
+        3947,
+        3002,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView.i.dfy.Impl__CompositeView.__default.AdvancePreservesInv.smt2": (
+        3701,
+        2939,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.RefinesValidSplit.smt2": (
+        7176,
+        5494,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistModel.i.dfy.CheckWellformed__JournalistModel.__default.parseJournals.smt2": (
+        3482,
+        2818,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableBtreeBulkOperations.i.dfy.Impl__MutableBtreeBulkOperations.__default.ToSeqSubtree.smt2": (
+        3215,
+        2156,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.lemma__parse__Val__view__ByteArray.smt2": (
+        2181,
+        1679,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-exception_handlers.gen.dfyImpl___module.__default.va__lemma__save__disp__context.smt2": (
+        10529,
+        7720,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-EvictImpl.i.dfy.Impl__EvictImpl.__default.EvictOrDealloc.smt2": (
+        16082,
+        12581,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.psaCanAppendI.smt2": (
+        3544,
+        2864,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.WriteBackIndirectionTableRespStepPreservesInv.smt2": (
+        6786,
+        5191,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-LruModel.i.dfy.Impl__LruModel.__default.LruRemove_k.smt2": (
+        1463,
+        1188,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-MutableBtree.i.dfy.Impl__MutableBtree.__default.SubReprsDisjoint.smt2": (
+        3040,
+        2236,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Betree-BetreeInv.i.dfy.Impl__BetreeInv.__default.RedirectPreservesLookups.smt2": (
+        4562,
+        3135,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32C_Lemmas.i.dfy.Impl__CRC32C__Lemmas.__default.advances__bytes__combine3.smt2": (
+        1533,
+        1245,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.WeightBucketPkv__eq__WeightPkv.smt2": (
+        6108,
+        4781,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Subject-10.smt2": (
+        30495,
+        19292,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView_Refines_TSJMap.i.dfy.Impl__CompositeView__Refines__TSJMap.__default.AdvanceRefines.smt2": (
+        3701,
+        2903,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.ExtendLog2StepPreservesInv.smt2": (
+        2948,
+        2443,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-Seqs.i.dfy.Impl__Collections____Seqs__i.__default.lemma__SeqCatRev__adds.smt2": (
+        961,
+        780,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketsLib.i.dfy.Impl__BucketsLib.__default.SortedSeqOfKeyValueHasKey.smt2": (
+        3945,
+        3014,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-allocate_page.gen.dfyImpl___module.__default.va__lemma__allocate__page__success.smt2": (
+        6306,
+        4647,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Issuer-7.smt2": (
+        30490,
+        19238,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeEqJournalBlocks.smt2": (
+        2825,
+        2324,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-IndirectionTable.i.dfy.Impl__IndirectionTable.IndirectionTable.IndirectionTableToVal.smt2": (
+        11166,
+        8842,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-LinearMutableMap.i.dfy.Impl__LinearMutableMap.__default.Probe.smt2": (
+        2984,
+        2363,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesExtendLog1.smt2": (
+        3237,
+        2591,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyImpl___module.__default.va__lemma__svc__map__data__success.smt2": (
+        10539,
+        7764,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.DynamicPkv.Append.smt2": (
+        6070,
+        4647,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockCache.i.dfy.Impl__BlockCache.__default.DirtyStepPreservesInv.smt2": (
+        5965,
+        4679,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.paths__compose.smt2": (
+        2964,
+        2515,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-ptebits.i.dfyImpl___module.__default.lemma__ARM__L2PTE__helper_split1.smt2": (
+        4222,
+        3338,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32C_Lut.i.dfy.Impl__CRC32C__Lut.__default.shift1__pow.smt2": (
+        2122,
+        1778,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-HandleWriteResponseImpl.i.dfy.Impl__HandleWriteResponseImpl.__default.writeResponse.smt2": (
+        14923,
+        11048,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-IndirectionTableImpl.i.dfy.Impl__IndirectionTableImpl.IndirectionTable.RemoveRef.smt2": (
+        10617,
+        7975,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.WFpsaSubSeq.smt2": (
+        2762,
+        2113,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.WFpsaSubSeq.smt2": (
+        3539,
+        2888,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-IOImpl.i.dfy.Impl__IOImpl.__default.PageInIndirectionTableResp.smt2": (
+        14658,
+        11304,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.SplitOneInList.smt2": (
+        7015,
+        5423,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-verify.gen.dfyImpl___module.__default.va__lemma__svc__returning__verify__inner_k.smt2": (
+        9816,
+        7375,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-F2_X_Lemmas.i.dfy.Impl__F2__X__Lemmas.__default.mod__reverse__mul__reverse.smt2": (
+        1505,
+        1247,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeOfByteSeqGetI.smt2": (
+        2964,
+        2562,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Lang-LinearSequence.i.dfy.Impl__LinearSequence__i.__default.SeqCopy.smt2": (
+        1645,
+        1436,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-sha256.i.dfyImpl___module.__default.lemma__InputHelper.smt2": (
+        3551,
+        2809,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.psaAppendSeqAdditive.smt2": (
+        3539,
+        2885,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-MarshallingImpl.i.dfy.Impl__MarshallingImpl.__default.ValToBuckets.smt2": (
+        14662,
+        11481,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-map_common.gen.dfyImpl___module.__default.va__lemma__update__l2pte.smt2": (
+        10030,
+        7352,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.WeightBucketListItemFlushInner.smt2": (
+        4092,
+        3033,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Issuer-4.smt2": (
+        30483,
+        19266,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-LinearDList.i.dfy.Impl__DList.DList.InsertAfter.smt2": (
+        1864,
+        1435,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-SuccImpl.i.dfy.Impl__SuccImpl.__default.getPathInternal.smt2": (
+        16322,
+        12773,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-SuccModel.i.dfy.Impl__SuccModel.__default.lemmaGetPathResult.smt2": (
+        13298,
+        10153,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallCase.smt2": (
+        2183,
+        1613,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32C_Lemmas.i.dfy.Impl__CRC32C__Lemmas.__default.bits__of__int__ffffffff.smt2": (
+        1518,
+        1297,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.WFBucketAt.smt2": (
+        6387,
+        4719,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__switch__addrspace.smt2": (
+        6462,
+        4756,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.WMWeightBucketListFlush.smt2": (
+        4036,
+        3040,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallByteArray.smt2": (
+        2188,
+        1678,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-ByteSystem.i.dfy.CheckWellformed__ByteSystem.__default.DiskInternalStepPreservesInv.smt2": (
+        14205,
+        10738,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketWeights.i.dfy.Impl__BucketWeights.__default.ImageEquiv.smt2": (
+        4021,
+        3120,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.i.dfyImpl___module.__default.lemma__partialEnclaveExecution__append.smt2": (
+        5289,
+        3791,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.ISeqInduction.smt2": (
+        6973,
+        5530,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-BucketSuccessorLoopModel.i.dfy.Impl__BucketSuccessorLoopModel.__default.ProcessGeneratorResult.smt2": (
+        3888,
+        2708,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-Multisets.i.dfy.Impl__Multisets.__default.ApplyAdditive.smt2": (
+        1658,
+        1241,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.CheckWellformed__GenericMarshalling.__default.parse__Val.smt2": (
+        2226,
+        1679,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsKeyListWeight.smt2": (
+        5604,
+        4311,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-LruImpl.i.dfy.Impl__LruImpl.LruImplQueue.Remove.smt2": (
+        2596,
+        1802,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallUint64.smt2": (
+        2187,
+        1825,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketFlushModel.i.dfy.Impl__BucketFlushModel.__default.mergeToOneOneChild__eq__topBotAccMerge.smt2": (
+        4959,
+        3841,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__stack__banked__regs3.smt2": (
+        6541,
+        5119,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-sha256-body-00-15.gen.dfyImpl___module.__default.va__refined__Body__00__15UnrolledRecursive.smt2": (
+        5817,
+        4443,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__smc__enter__err.smt2": (
+        6622,
+        5008,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.__default.PartialFlush.smt2": (
+        6514,
+        4620,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesReplay.smt2": (
+        2938,
+        2217,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistImpl.i.dfy.Impl__JournalistImpl.Journalist.append.smt2": (
+        3901,
+        3346,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-SetBijectivity.i.dfy.Impl__SetBijectivity.__default.CrossProductCardinality.smt2": (
+        780,
+        596,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.journalRangeFromHasChecksums.smt2": (
+        3219,
+        2685,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallUint32.smt2": (
+        2187,
+        1827,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-Multisets.i.dfy.Impl__Multisets.__default.ApplySeq.smt2": (
+        1609,
+        1196,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-ByteSystem.i.dfy.Impl__ByteSystem.__default.ReqWrite2StepPreservesInv.smt2": (
+        14420,
+        9521,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.WeightMessageListIs.smt2": (
+        6987,
+        5534,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-map_insecure.gen.dfyImpl___module.__default.va__lemma__kom__smc__map__insecure.smt2": (
+        10054,
+        7239,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-Util.i.dfy.Impl__Common____Util__i.__default.lemma__BEUintToSeqByte__invertability.smt2": (
+        873,
+        667,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-sha256.i.dfyImpl___module.__default.SHA__padding__words2bytes.smt2": (
+        3553,
+        2788,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.NewRequestWriteNodeDoesntOverlapRead.smt2": (
+        6447,
+        4870,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Subject-4.smt2": (
+        30483,
+        19237,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-Betree_Refines_Map.i.dfy.Impl__Betree__Refines__Map.__default.InsertMessageStepRefinesMap.smt2": (
+        4793,
+        3533,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI.Subject-7.smt2": (
+        30490,
+        19209,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-hmac.gen.dfyImpl___module.__default.va__lemma__hmac__inner.smt2": (
+        9102,
+        6882,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-BookkeepingImpl.i.dfy.Impl__BookkeepingImpl.__default.writeBookkeepingNoSuccsUpdate.smt2": (
+        14721,
+        11503,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.ReceiveLocStepPreservesGraphs.smt2": (
+        6465,
+        5042,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallUint64Array.smt2": (
+        2196,
+        1759,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.EvictStepPreservesInv.smt2": (
+        6734,
+        5158,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-Multisets.i.dfy.Impl__Multisets.__default.FoldSeqRemove.smt2": (
+        1586,
+        1159,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--ByteBlockCacheSystem-JournalBytes.i.dfy.Impl__JournalBytes.__default.JournalRangeOfByteSeqAdditive.smt2": (
+        2829,
+        2338,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecWFNodes.i.dfy.Impl__PivotBetreeSpecWFNodes.__default.WFApplyRepivot.smt2": (
+        5651,
+        4512,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-sha-sha256-body-16-xx.gen.dfyImpl___module.__default.va__refined__Body__16__XXUnroller.smt2": (
+        6909,
+        5270,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallTupleContents.smt2": (
+        2237,
+        1659,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-smcapi.i.dfyImpl___module.__default.kom__smc__map__measure__helper1.smt2": (
+        5381,
+        3904,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.IMessagesSlice.smt2": (
+        5316,
+        4175,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-init_l2ptable.gen.dfyImpl___module.__default.va__lemma__zero__l2__page.smt2": (
+        9881,
+        7362,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.DynamicPkv.AppendPkv.smt2": (
+        5559,
+        4048,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.SplitOneInList.smt2": (
+        6390,
+        4675,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__unstack__banked__regs3.smt2": (
+        6551,
+        4924,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.i.dfyImpl___module.__default.lemma__userExecutionUpdatesPageDb.smt2": (
+        5368,
+        3849,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesMove2to3.smt2": (
+        3231,
+        2604,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-Betree_Refines_Map.i.dfy.Impl__Betree__Refines__Map.__default.RedirectRefinesMap.smt2": (
+        4791,
+        3604,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.InUpperBoundAndNot.smt2": (
+        5919,
+        4537,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32C_Lemmas.i.dfy.Impl__CRC32C__Lemmas.__default.four__slices.smt2": (
+        1518,
+        1293,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.ToSeq.smt2": (
+        2759,
+        2096,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.PageInNodeRespStepPreservesGraphs.smt2": (
+        6453,
+        4918,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-ptebits.i.dfyImpl___module.__default.lemma__l1ptesmatch.smt2": (
+        4261,
+        3304,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-total_order_impl.i.dfy.Impl__Total__Order__Impl.__default.ArrayLargestLtePlus1.smt2": (
+        2388,
+        1970,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.UniqueRepr.smt2": (
+        3536,
+        2891,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32C_Lut.i.dfy.CheckWellformed__CRC32C__Lut.__default.combine.smt2": (
+        2077,
+        1798,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-InterpretationDisk.i.dfy.Impl__InterpretationDisk.__default.RefinesProcessRead__Journal__1.smt2": (
+        10781,
+        8748,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.PageInIndirectionTableReqStepPreservesGraphs.smt2": (
+        6449,
+        4996,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-conf_ni.i.dfyImpl___module.__default.lemma__initL2PTable__loweq__pdb.smt2": (
+        5557,
+        4062,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-entry.gen.dfyImpl___module.__default.va__lemma__stack__banked__regs1.smt2": (
+        6541,
+        4920,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.PageInNodeRespStepPreservesInv.smt2": (
+        6734,
+        5122,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitChildOfIndexPreservesAllKeys.smt2": (
+        2865,
+        2108,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-memset.gen.dfyImpl___module.__default.va__lemma__memset.smt2": (
+        5168,
+        3900,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-total_order_impl.i.dfy.Impl__Total__Order__Impl.__default.ArrayLargestLtePlus1Linear.smt2": (
+        1874,
+        1432,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.PageInNodeReqStepPreservesGraphs.smt2": (
+        6453,
+        4925,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-total_order_impl.i.dfy.Impl__Total__Order__Impl.__default.ArrayLargestLtePlus1Linear.smt2": (
+        2384,
+        1977,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-Math.i.dfy.Impl__Math.__default.lemma__power2__div__is__sub.smt2": (
+        817,
+        670,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-total_order_impl.i.dfy.Impl__Total__Order__Impl.__default.ArrayLargestLtePlus1.smt2": (
+        1878,
+        1431,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-BetreeInv.i.dfy.Impl__BetreeInv.__default.RedirectPreservesRootHasNoPred.smt2": (
+        4839,
+        3651,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.writeIntOntoPreservesSlice.smt2": (
+        3346,
+        2930,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-ByteSystem.i.dfy.Impl__ByteSystem.__default.DiskInternalStepPreservesInv.smt2": (
+        14329,
+        10889,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Lang-System-PackedInts.s.dfy.CheckWellformed__NativePackedInts.__default.unpack__LittleEndian__Uint32__Seq.smt2": (
+        856,
+        694,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-SetBijectivity.i.dfy.Impl__SetBijectivity.__default.CrossProductCardinality.smt2": (
+        789,
+        564,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-Betree_Refines_Map.i.dfy.Impl__Betree__Refines__Map.__default.GrowStepRefinesMap.smt2": (
+        4791,
+        3599,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--BlockCacheSystem-JournalRange.i.dfy.Impl__JournalRanges.__default.parseJournalRangeAdditive.smt2": (
+        1865,
+        1477,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-IOImpl.i.dfy.Impl__IOImpl.__default.PageInNodeResp.smt2": (
+        15986,
+        12177,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-CoordinationImpl.i.dfy.Impl__CoordinationImpl.__default.initialization.smt2": (
+        16364,
+        12224,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallArrayContents.smt2": (
+        2253,
+        1727,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.Impl.Certificate-12.smt2": (
+        38635,
+        24430,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.Impl.Certificate-8.smt2": (
+        38636,
+        24429,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.IndexOfFirstKeyGte.smt2": (
+        2790,
+        2145,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-BitsetLemmas.i.dfy.Impl__BitsetLemmas.__default.set__bit__to__0__self__uint64.smt2": (
+        1016,
+        862,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--MapSpec-TSJ.i.dfy.Impl__TSJ.__default.Move2to3StepPreservesInv.smt2": (
+        2615,
+        2072,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallUint32Array.smt2": (
+        2189,
+        1670,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.CloneSeq.smt2": (
+        7028,
+        5443,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJMap_Refines_ThreeStateVersionedMap.i.dfy.Impl__TSJMap__Refines__ThreeStateVersionedMap.__default.RefinesExtendLog2.smt2": (
+        3237,
+        2606,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-MarshallingImpl.i.dfy.Impl__MarshallingImpl.__default.strictlySortedKeySeqToVal.smt2": (
+        14619,
+        11555,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.SplitRight.smt2": (
+        4763,
+        3489,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedStringArray.i.dfy.Impl__PackedStringArray.__default.BinarySearchIndexOfFirstKeyGtePivot.smt2": (
+        3541,
+        2850,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-CommitterImpl.i.dfy.Impl__CommitterImpl.Committer.WriteOutJournal.smt2": (
+        16424,
+        13070,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.InsertLeafIsCorrect.smt2": (
+        2836,
+        2079,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BetreeSystem.i.dfy.Impl__BetreeSystem.__default.BlockCacheMoveStepPreservesInv.smt2": (
+        9119,
+        6577,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-KMBPKVOps.i.dfy.Impl__KMBPKVOps.__default.canAppendKeysIterate.smt2": (
+        6012,
+        4436,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_vwasm--semantics-temp-queries-Views-18.smt2": (
+        244,
+        145,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-Message.i.dfy.Impl__ValueMessage.__default.bytestringSeq__to__MessageSeq__Additive.smt2": (
+        1484,
+        1163,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.IMessagesSlice.smt2": (
+        5521,
+        4143,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeight.smt2": (
+        6066,
+        4738,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-Arrays.i.dfy.Impl__Arrays.__default.Insert.smt2": (
+        1381,
+        1109,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-MainHandlers.i.dfy.Impl__MainHandlers.__default.SystemRefinesCrashSafeMapInit.smt2": (
+        20030,
+        15507,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.DeviceIDCRI-12.smt2": (
+        36651,
+        24003,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-QueryImpl.i.dfy.Impl__QueryImpl.__default.queryIterate.smt2": (
+        16171,
+        12494,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--PivotBetree-PivotBetreeSpecRefinement.i.dfy.Impl__PivotBetreeSpecRefinement.__default.RefinesOps.smt2": (
+        7222,
+        5057,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-secprop-conf_ni_entry.i.dfyImpl___module.__default.lemma__enter__conf__atkr__enter.smt2": (
+        5713,
+        4137,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-init_l2ptable.gen.dfyImpl___module.__default.va__lemma__init__l2ptable__success.smt2": (
+        9956,
+        7243,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--ByteBlockCacheSystem-InterpretationDisk.i.dfy.Impl__InterpretationDisk.__default.RefinesProcessRead__IndirectionTable__1.smt2": (
+        10781,
+        8725,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-JournalistMarshallingModel.i.dfy.Impl__JournalistMarshallingModel.__default.fillInChecksumsHasChecksums.smt2": (
+        3361,
+        2927,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.ComputeWF.smt2": (
+        5599,
+        4406,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-Message.i.dfy.Impl__ValueMessage.__default.messageSeq__to__bytestringSeq__Additive.smt2": (
+        1482,
+        1137,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32CArrayImpl.i.dfy.Impl__CRC32__C__Array__Impl.__default.advanced__of__iterated__intrinsic.smt2": (
+        1955,
+        1666,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.NoOpStepPreservesInv.smt2": (
+        6738,
+        5091,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-NodeImpl.i.dfy.Impl__NodeImpl.Node.CutoffNodeAndKeepLeft.smt2": (
+        9677,
+        7423,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Base-sequences.i.dfy.Impl__Sequences.__default.DisjointConcatenation.smt2": (
+        1575,
+        1314,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKVMarshalling.i.dfy.Impl__PackedKVMarshalling.__default.SizeOfVPackedStringArrayIsMessageListWeight.smt2": (
+        5609,
+        4290,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.NewRequestWriteNodeDoesntOverlap.smt2": (
+        6447,
+        4911,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-IOImpl.i.dfy.Impl__IOImpl.__default.PageInNodeResp.smt2": (
+        14651,
+        11203,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-psrbits.i.dfyImpl___module.__default.lemma__update__psr__i.smt2": (
+        2934,
+        2396,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyCheckWellformed___module.__default.va__lemma__svc__map__data__success.smt2": (
+        10394,
+        7679,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-PackedKV.i.dfy.Impl__PackedKV.__default.SplitLeft.smt2": (
+        4761,
+        3519,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-verify.gen.dfyImpl___module.__default.va__lemma__svc__returning__verify__inner.smt2": (
+        9817,
+        7279,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-DeallocImpl.i.dfy.Impl__DeallocImpl.__default.Dealloc.smt2": (
+        16044,
+        12528,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Math-Nonlinear.i.dfy.Impl__NonlinearLemmas.__default.div__denom__ge__1.smt2": (
+        790,
+        691,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-F2_X_Lemmas.i.dfy.Impl__F2__X__Lemmas.__default.parity__rev.smt2": (
+        1526,
+        1229,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Betree-BetreeInv.i.dfy.Impl__BetreeInv.__default.RedirectPreservesLookups.smt2": (
+        4882,
+        3656,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-GrowImpl.i.dfy.Impl__GrowImpl.__default.grow.smt2": (
+        14758,
+        11344,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--Impl-LeafImpl.i.dfy.Impl__LeafImpl.__default.repivotLeaf.smt2": (
+        14742,
+        11316,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-svc_handlers.gen.dfyImpl___module.__default.lemma__svc__returning__verify__step0__helper.smt2": (
+        10390,
+        7905,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-smc_handler.gen.dfyImpl___module.__default.va__lemma__maybe__inject__interrupt.smt2": (
+        10326,
+        7517,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-DataStructures-BtreeModel.i.dfy.Impl__BtreeModel.__default.SplitIndexAllKeys.smt2": (
+        3425,
+        2712,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Checksums-CRC32CImpl.i.dfy.Impl__CRC32__C__Impl.__default.advanced__of__iterated__intrinsic.smt2": (
+        1953,
+        1659,
+    ),
+    "data/projs/bench_unstable/base.z3/fs_dice--queries-L0.X509.AliasKeyTBS.Subject-7.smt2": (
+        30490,
+        19198,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Buckets-BucketImpl.i.dfy.Impl__BucketImpl.MutBucket.ISeq__replace1with2.smt2": (
+        6371,
+        4636,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.WriteBackNodeRespStepPreservesGraphs.smt2": (
+        6453,
+        4932,
+    ),
+    "data/projs/bench_unstable/base.z3/d_fvbkv--lib-Marshalling-GenericMarshalling.i.dfy.Impl__GenericMarshalling.__default.MarshallUint64Array.smt2": (
+        2189,
+        1668,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BlockSystem.i.dfy.Impl__BlockSystem.__default.NewRequestWriteIndirectionTableDoesntOverlap.smt2": (
+        6445,
+        4868,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-InsertModel.i.dfy.CheckWellformed__InsertModel.__default.InsertKeyValueCorrect.smt2": (
+        16121,
+        12854,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-IOModel.i.dfy.Impl__IOModel.__default.lemmaOutstandingLocIndexValid.smt2": (
+        15597,
+        12434,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Base-Arrays.i.dfy.Impl__Arrays.__default.replace1with2.smt2": (
+        1368,
+        1105,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Versions-CompositeView_Refines_TSJMap.i.dfy.Impl__CompositeView__Refines__TSJMap.__default.StatesInternalRefines.smt2": (
+        3701,
+        2915,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--BlockCacheSystem-BetreeJournalSystem_Refines_ThreeStateVersionedMap.i.dfy.Impl__BetreeJournalSystem__Refines__ThreeStateVersionedMap.__default.RefinesInit.smt2": (
+        11478,
+        8721,
+    ),
+    "data/projs/bench_unstable/base.z3/d_komodo--verified-exception_handlers.gen.dfyImpl___module.__default.lemma__pageDbEntryCorresponds__helper.smt2": (
+        10382,
+        8048,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--MapSpec-TSJ.i.dfy.CheckWellformed__TSJ.__default.SeqSubAdd.smt2": (
+        2945,
+        2573,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--Impl-MarshallingImpl.i.dfy.Impl__MarshallingImpl.__default.bucketsToVal.smt2": (
+        14588,
+        11601,
+    ),
+    "data/projs/bench_unstable/base.z3/d_lvbkv--lib-Buckets-PackedKV.i.dfy.Impl__DynamicPkv.__default.PSAPopFrontWeightSuffix.smt2": (
+        6070,
+        4788,
+    ),
+}
