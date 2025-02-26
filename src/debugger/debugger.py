@@ -214,16 +214,25 @@ class DoubletonDebugger(BaseDebugger):
         scores = [(k, v) for k, v in scores.items() if v > 0]
         sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
         sorted_scores = sorted_scores[:10]
+        emitted_count = 0
+        actual_ranks = []
 
         for (qname1, qname2), score in sorted_scores:
+            if emitted_count >= 10:
+                break
             action1 = choose_action(self.editor.get_quant_actions(qname1))
             action2 = choose_action(self.editor.get_quant_actions(qname2))
             edit = {qname1: action1, qname2: action2}
-            # print(edit)
+
             ei = self.tracker.register_edit(edit, dest_dir)
-            self.tracker.create_edit_query(ei)
+            ei.edit_dir = dest_dir
+
+            if self.tracker.create_edit_query(ei):
+                emitted_count += 1
+                actual_ranks += [ei.get_id()]
 
         self.tracker.save_edits_meta()
+        return actual_ranks
 
     def _build_tested_report(self):
         tested = []
@@ -281,6 +290,7 @@ class FastFailDebugger(SingletonDebugger):
         return edits
 
     def create_project(self):
+        actual_ranks = []
         dst_dir = self.strainer.test_dir
 
         if not os.path.exists(dst_dir):
@@ -297,8 +307,10 @@ class FastFailDebugger(SingletonDebugger):
 
             if self.tracker.create_edit_query(ei):
                 emitted_count += 1
+                actual_ranks += [ei.get_id()]
 
         self.tracker.save_edits_meta()
+        return actual_ranks
 
 
 class TimeoutDebugger(SingletonDebugger):
@@ -333,6 +345,7 @@ class TimeoutDebugger(SingletonDebugger):
         return scores
 
     def create_project(self):
+        actual_ranks = []
         ranked = self.rank_edits()
         dst_dir = self.strainer.test_dir
 
@@ -340,6 +353,7 @@ class TimeoutDebugger(SingletonDebugger):
             os.makedirs(dst_dir)
 
         emitted_count = 0
+
         for qname, _ in ranked:
             if emitted_count >= 10:
                 break
@@ -351,8 +365,10 @@ class TimeoutDebugger(SingletonDebugger):
 
             if self.tracker.create_edit_query(ei):
                 emitted_count += 1
+                actual_ranks += [ei.get_id()]
 
         self.tracker.save_edits_meta()
+        return actual_ranks
 
 
 class Fast2Debugger(SingletonDebugger):
@@ -424,7 +440,13 @@ class SkolemDebugger(SingletonDebugger):
         self.pre_skolem_name_hash = items[0]
 
     def create_project(self):
-        prev_skolem_dbg = get_debugger(self.pre_skolem_name_hash)
+        actual_ranks = []
+
+        options = DebugOptions()
+        options.mode = DbgMode.FAST_FAIL
+        options.is_verus = self.tracker.options.is_verus
+
+        prev_skolem_dbg = get_debugger(self.pre_skolem_name_hash, options)
         prev_proof = prev_skolem_dbg.editor.proof
         curr_proof = self.editor.proof
 
@@ -473,6 +495,8 @@ class SkolemDebugger(SingletonDebugger):
 
             if self.tracker.create_edit_query(ei):
                 emitted_count += 1
+                actual_ranks += [ei.get_id()]
 
         self.tracker.save_edits_meta()
+        return actual_ranks
         
