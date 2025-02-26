@@ -1731,3 +1731,240 @@ TIMEOUT_TARGETS = [
 VERUS_SKOLEM_DIR = "data/projs/verus.skolem/base.z3"
 
 MARIPOSA_SKOLEM_DIR = "data/projs/bench_unstable.skolem/base.z3"
+
+verus_rd1_ranks = {
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.2.smt2": {
+        "data/projs/fast_fail_2078a24298/base.z3/0bbd00e5.smt2": 3,
+        "data/projs/fast_fail_2078a24298/base.z3/799880e0.smt2": 6,
+    },
+    "data/projs/verismo.dedup/base.z3/boot__init__e820_init.4.smt2": {
+        "data/projs/timeout_6540edb885/base.z3/385b4a2b.smt2": 10,
+        "data/projs/timeout_6540edb885/base.z3/83227247.smt2": 2,
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__proof.2.smt2": {
+        "data/projs/timeout_b475a457a9/base.z3/880151e5.smt2": 6
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__liveness__stateful_set_match__lemma_stateful_set_state_matches_at_after_update_stateful_set_step.smt2": {
+        "data/projs/timeout_eccd7ce2d9/base.z3/2c1e299d.smt2": 5
+    },
+    "data/projs/verismo.dedup/base.z3/boot__init__e820_init_alloc.1.smt2": {
+        "data/projs/timeout_b119384805/base.z3/7b41a3f5.smt2": 7
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.9.smt2": {
+        "data/projs/fast_fail_c02ff41a27/base.z3/0bbd00e5.smt2": 1,
+        "data/projs/fast_fail_c02ff41a27/base.z3/4cdcaea2.smt2": 9,
+    },
+    "data/projs/verismo.dedup/base.z3/vbox__vbox.4.smt2": {
+        "data/projs/timeout_f08610121f/base.z3/245091d4.smt2": 2,
+        "data/projs/timeout_f08610121f/base.z3/28819650.smt2": 5,
+        "data/projs/timeout_f08610121f/base.z3/fc96888c.smt2": 1,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.17.smt2": {
+        "data/projs/fast_fail_025a074d17/base.z3/0bbd00e5.smt2": 6
+    },
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-segment__segment_os_alloc.smt2": {
+        "data/projs/timeout_fef99080cd/base.z3/8fd269eb.smt2": 5,
+        "data/projs/timeout_fef99080cd/base.z3/933164d9.smt2": 2,
+        "data/projs/timeout_fef99080cd/base.z3/c3fbb953.smt2": 1,
+        "data/projs/timeout_fef99080cd/base.z3/e0d5ef38.smt2": 9,
+    },
+    "data/projs/verismo.dedup/base.z3/snp__cpuid.17.smt2": {
+        "data/projs/timeout_2556504d15/base.z3/1a55b4c3.smt2": 7,
+        "data/projs/timeout_2556504d15/base.z3/668cd01f.smt2": 10,
+        "data/projs/timeout_2556504d15/base.z3/b7fe76cc.smt2": 2,
+        "data/projs/timeout_2556504d15/base.z3/bd46a267.smt2": 4,
+        "data/projs/timeout_2556504d15/base.z3/fc96888c.smt2": 1,
+        "data/projs/timeout_2556504d15/base.z3/fdbc75aa.smt2": 6,
+    },
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-page_organization__PageOrg.69.smt2": {
+        "data/projs/timeout_9eaad8947e/base.z3/0f632191.smt2": 3,
+        "data/projs/timeout_9eaad8947e/base.z3/76db54ee.smt2": 5,
+        "data/projs/timeout_9eaad8947e/base.z3/918eb629.smt2": 2,
+        "data/projs/timeout_9eaad8947e/base.z3/a0450705.smt2": 4,
+        "data/projs/timeout_9eaad8947e/base.z3/e15d75bb.smt2": 6,
+        "data/projs/timeout_9eaad8947e/base.z3/e8794a44.smt2": 7,
+    },
+    "data/projs/atmosphere/base.z3/kernel__create_and_share_pages.5.smt2": {
+        "data/projs/fast_fail_9a3bc13b2d/base.z3/75c14846.smt2": 8
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__proof__lemma_always_no_update_status_request_msg_in_flight_of_except_stateful_set.smt2": {
+        "data/projs/timeout_a7f5536a00/base.z3/0297834c.smt2": 3,
+        "data/projs/timeout_a7f5536a00/base.z3/02d50371.smt2": 6,
+        "data/projs/timeout_a7f5536a00/base.z3/097506d9.smt2": 10,
+        "data/projs/timeout_a7f5536a00/base.z3/12748b0b.smt2": 4,
+        "data/projs/timeout_a7f5536a00/base.z3/27e4c4aa.smt2": 1,
+        "data/projs/timeout_a7f5536a00/base.z3/325394f3.smt2": 9,
+        "data/projs/timeout_a7f5536a00/base.z3/6c95f4f1.smt2": 7,
+        "data/projs/timeout_a7f5536a00/base.z3/ba768df0.smt2": 2,
+        "data/projs/timeout_a7f5536a00/base.z3/df4dace3.smt2": 8,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.12.smt2": {
+        "data/projs/fast_fail_92c260e39d/base.z3/0bbd00e5.smt2": 10
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_every_resource_create_request_implies_at_after_create_resource_step.smt2": {
+        "data/projs/timeout_634ab613c3/base.z3/1a0ec528.smt2": 5,
+        "data/projs/timeout_634ab613c3/base.z3/282ec9a1.smt2": 1,
+        "data/projs/timeout_634ab613c3/base.z3/df0f6d49.smt2": 6,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__start_v.2.smt2": {
+        "data/projs/fast_fail_e16c5e8c0b/base.z3/0bbd00e5.smt2": 5
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.10.smt2": {
+        "data/projs/fast_fail_815f69b161/base.z3/0bbd00e5.smt2": 7,
+        "data/projs/fast_fail_815f69b161/base.z3/4cdcaea2.smt2": 4,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.5.smt2": {
+        "data/projs/fast_fail_e1d2573021/base.z3/0bbd00e5.smt2": 9
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__helper_invariants__validation__lemma_always_stateful_set_in_create_request_msg_satisfies_unchangeable.smt2": {
+        "data/projs/timeout_48dbc6d4fa/base.z3/6e73b98f.smt2": 3
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.15.smt2": {
+        "data/projs/fast_fail_89068d3f38/base.z3/0bbd00e5.smt2": 5
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.7.smt2": {
+        "data/projs/fast_fail_ed912ce861/base.z3/0bbd00e5.smt2": 2,
+        "data/projs/fast_fail_ed912ce861/base.z3/4cdcaea2.smt2": 5,
+    },
+    "data/projs/verismo.dedup/base.z3/snp__ghcb__proto_page.141.smt2": {
+        "data/projs/timeout_c726bffe99/base.z3/1bc5bcd9.smt2": 9,
+        "data/projs/timeout_c726bffe99/base.z3/245091d4.smt2": 1,
+        "data/projs/timeout_c726bffe99/base.z3/29d912ab.smt2": 5,
+        "data/projs/timeout_c726bffe99/base.z3/2d168feb.smt2": 3,
+        "data/projs/timeout_c726bffe99/base.z3/4db5fd58.smt2": 10,
+        "data/projs/timeout_c726bffe99/base.z3/6bd810a6.smt2": 7,
+        "data/projs/timeout_c726bffe99/base.z3/8cb454fd.smt2": 6,
+        "data/projs/timeout_c726bffe99/base.z3/94946418.smt2": 4,
+        "data/projs/timeout_c726bffe99/base.z3/fc96888c.smt2": 2,
+        "data/projs/timeout_c726bffe99/base.z3/fdbc75aa.smt2": 8,
+    },
+    "data/projs/verismo.dedup/base.z3/vbox__vbox.5.smt2": {
+        "data/projs/timeout_fdfae1157a/base.z3/245091d4.smt2": 1,
+        "data/projs/timeout_fdfae1157a/base.z3/4db5fd58.smt2": 5,
+        "data/projs/timeout_fdfae1157a/base.z3/6f88729d.smt2": 10,
+        "data/projs/timeout_fdfae1157a/base.z3/aceee0d5.smt2": 6,
+        "data/projs/timeout_fdfae1157a/base.z3/fc96888c.smt2": 2,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__setup_v.5.smt2": {
+        "data/projs/fast_fail_5a940edd1b/base.z3/0bbd00e5.smt2": 7
+    },
+    "data/projs/verismo.dedup/base.z3/bsp__ap.3.smt2": {
+        "data/projs/timeout_0918f4a55d/base.z3/1bc5bcd9.smt2": 7,
+        "data/projs/timeout_0918f4a55d/base.z3/690d03d3.smt2": 2,
+        "data/projs/timeout_0918f4a55d/base.z3/debc4ad7.smt2": 1,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__layout_v.30.smt2": {
+        "data/projs/fast_fail_126f0f80f3/base.z3/0bbd00e5.smt2": 6
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__helper_invariants__proof__lemma_eventually_always_object_in_response_at_after_create_resource_step_is_same_as_etcd.smt2": {
+        "data/projs/timeout_106770d98e/base.z3/1a0ec528.smt2": 2
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__validation.3.smt2": {
+        "data/projs/timeout_4d2d4fbc20/base.z3/12748b0b.smt2": 1,
+        "data/projs/timeout_4d2d4fbc20/base.z3/ba768df0.smt2": 2,
+        "data/projs/timeout_4d2d4fbc20/base.z3/bea80d3f.smt2": 7,
+    },
+    "data/projs/vsystemsnew/base.z3/page-table-smt-impl_u__l2_refinement.3.smt2": {
+        "data/projs/fast_fail_c4ec60f8f9/base.z3/f472d171.smt2": 9
+    },
+    "data/projs/splinterdb/base.z3/allocation_layer__LikesBetree_v__LikesBetree.3.smt2": {
+        "data/projs/fast_fail_09d24c83cd/base.z3/0cf5b7f7.smt2": 6,
+        "data/projs/fast_fail_09d24c83cd/base.z3/294abf80.smt2": 3,
+        "data/projs/fast_fail_09d24c83cd/base.z3/4aa1acb7.smt2": 8,
+        "data/projs/fast_fail_09d24c83cd/base.z3/9689b33d.smt2": 4,
+        "data/projs/fast_fail_09d24c83cd/base.z3/b64ee6ef.smt2": 7,
+        "data/projs/fast_fail_09d24c83cd/base.z3/e0b5b7a3.smt2": 10,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__setup_v.6.smt2": {
+        "data/projs/fast_fail_568e167040/base.z3/0bbd00e5.smt2": 6,
+        "data/projs/fast_fail_568e167040/base.z3/799880e0.smt2": 9,
+    },
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_update_resource_step.smt2": {
+        "data/projs/timeout_0a3bc89db1/base.z3/0a29e9c0.smt2": 7,
+        "data/projs/timeout_0a3bc89db1/base.z3/0d71f536.smt2": 1,
+    },
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__liveness__daemon_set_match__lemma_from_after_get_daemon_set_step_to_after_update_daemon_set_step.smt2": {
+        "data/projs/timeout_7a3bd28b48/base.z3/979a8db3.smt2": 3,
+        "data/projs/timeout_7a3bd28b48/base.z3/f2ff91d8.smt2": 9,
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__proof__lemma_eventually_always_no_delete_resource_request_msg_in_flight.smt2": {
+        "data/projs/timeout_b834736f4d/base.z3/27e4c4aa.smt2": 1,
+        "data/projs/timeout_b834736f4d/base.z3/ba768df0.smt2": 2,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.17.smt2": {
+        "data/projs/fast_fail_af029e0bc2/base.z3/0bbd00e5.smt2": 3
+    },
+    "data/projs/splinterdb/base.z3/allocation_layer__LikesBetree_v.18.smt2": {
+        "data/projs/fast_fail_2045867a58/base.z3/066b011a.smt2": 4,
+        "data/projs/fast_fail_2045867a58/base.z3/4aa1acb7.smt2": 5,
+        "data/projs/fast_fail_2045867a58/base.z3/c272c557.smt2": 6,
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__liveness__stateful_set_match__lemma_from_after_get_stateful_set_step_to_after_update_stateful_set_step.smt2": {
+        "data/projs/timeout_cf8c015bcb/base.z3/a7ebb0a1.smt2": 2
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.11.smt2": {
+        "data/projs/fast_fail_b689a8d455/base.z3/0bbd00e5.smt2": 4
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-zookeeper_controller__proof__helper_invariants__zookeeper_api__lemma_zk_request_implies_step_helper.smt2": {
+        "data/projs/timeout_81b159a977/base.z3/097506d9.smt2": 6,
+        "data/projs/timeout_81b159a977/base.z3/27e4c4aa.smt2": 1,
+        "data/projs/timeout_81b159a977/base.z3/3815cfe1.smt2": 3,
+        "data/projs/timeout_81b159a977/base.z3/6e79a7de.smt2": 7,
+        "data/projs/timeout_81b159a977/base.z3/9c97b481.smt2": 9,
+        "data/projs/timeout_81b159a977/base.z3/c235fd6b.smt2": 5,
+        "data/projs/timeout_81b159a977/base.z3/df4dace3.smt2": 10,
+    },
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit_config__proof__liveness__resource_match.6.smt2": {
+        "data/projs/timeout_2faba7bd1f/base.z3/ba768df0.smt2": 3,
+        "data/projs/timeout_2faba7bd1f/base.z3/bd6a1960.smt2": 5,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.14.smt2": {
+        "data/projs/fast_fail_3c5c22d4a1/base.z3/0bbd00e5.smt2": 10
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.13.smt2": {
+        "data/projs/fast_fail_fa9020870d/base.z3/0bbd00e5.smt2": 7
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-multilog__inv_v.16.smt2": {
+        "data/projs/fast_fail_32eaf80bcc/base.z3/0bbd00e5.smt2": 5
+    },
+    "data/projs/verismo.dedup/base.z3/security__monitor.21.smt2": {
+        "data/projs/timeout_83bd54cd1a/base.z3/0e424555.smt2": 7,
+        "data/projs/timeout_83bd54cd1a/base.z3/5a2618ab.smt2": 8,
+    },
+    "data/projs/vsystemsnew/base.z3/verified-storage-smt-verified-storage-smt-storage-node-log__inv_v.2.smt2": {
+        "data/projs/fast_fail_492704d0da/base.z3/0bbd00e5.smt2": 8
+    },
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-segment__segment_span_free_coalesce_before.smt2": {
+        "data/projs/timeout_08719204aa/base.z3/dddb6361.smt2": 9
+    },
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit_config__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_create_resource_step.smt2": {
+        "data/projs/timeout_68ac429152/base.z3/b30b6065.smt2": 4
+    },
+}
+verus_rd2_ranks = {
+    "data/projs/vsystemsnew/base.z3/mimalloc-smt-commit_segment.1.smt2": {
+        "data/projs/doubleton2_8c0bbf67d0/base.z3/24d237d1.smt2": 3
+    },
+    "data/projs/anvil/base.z3/zookeeper-smt-rabbitmq-smt-rabbitmq_controller__proof__liveness__resource_match__lemma_from_after_get_resource_step_to_after_update_resource_step.smt2": {
+        "data/projs/doubleton2_65d90190b4/base.z3/9404bba6.smt2": 3
+    },
+    "data/projs/verismo.dedup/base.z3/allocator__linkedlist.10.smt2": {
+        "data/projs/doubleton2_6937ca47cd/base.z3/639bfc25.smt2": 1,
+        "data/projs/doubleton2_6937ca47cd/base.z3/c0b21525.smt2": 4,
+        "data/projs/doubleton2_6937ca47cd/base.z3/f330f0a4.smt2": 3,
+    },
+    "data/projs/anvil/base.z3/fluent-smt-fluent_controller__fluentbit__proof__helper_invariants__validation.3.smt2": {
+        "data/projs/doubleton2_a1b4b3fd4a/base.z3/6b6149e5.smt2": 6,
+        "data/projs/doubleton2_a1b4b3fd4a/base.z3/7dadd14c.smt2": 7,
+    },
+    "data/projs/verus.skolem/base.z3/d6181053ff.eb582753.smt2": {
+        "data/projs/skolem_8b2546c986/base.z3/57536093.smt2": 2
+    },
+    "data/projs/verus.skolem/base.z3/8d058577cd.5b7bbb21.smt2": {
+        "data/projs/skolem_5d476c3ee5/base.z3/85625b38.smt2": 3
+    },
+    "data/projs/verus.skolem/base.z3/d057fff3f5.28c9a89c.smt2": {
+        "data/projs/skolem_b3949d9663/base.z3/352b26bb.smt2": 4,
+        "data/projs/skolem_b3949d9663/base.z3/57536093.smt2": 1,
+    },
+}
