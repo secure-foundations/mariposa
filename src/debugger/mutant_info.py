@@ -7,7 +7,7 @@ from base.defs import MARIPOSA
 from base.solver import RCode, output_as_rcode
 from debugger.z3_utils import dump_z3_proof
 from debugger.inst_graph import *
-from debugger.debugger_options import DebugOptions
+from debugger.options import DebugOptions
 from utils.query_utils import (
     Mutation,
     emit_mutant_query,

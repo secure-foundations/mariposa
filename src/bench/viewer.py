@@ -2,15 +2,16 @@ import multiprocessing
 import random
 from typing import Dict
 
-from debugger.debugger import (
+from debugger.debugger_base import BaseDebugger
+from debugger.factory import (
     DbgMode,
-    SingletonDebugger,
     get_debugger,
 )
-from debugger.debugger_options import DebugOptions
+from debugger.options import DebugOptions
 from debugger.strainer import DebugStatus
-from utils.analysis_utils import Categorizer, fmt_percent
+from utils.analysis_utils import Categorizer
 from utils.system_utils import log_check, log_info
+from utils.cache_utils import *
 from copy import deepcopy
 
 
@@ -27,7 +28,7 @@ class BenchViewer:
 
         self.status = Categorizer()
         self.__name_hashes = dict()
-        self.__debuggers: Dict[str, SingletonDebugger] = dict()
+        self.__debuggers: Dict[str, BaseDebugger] = dict()
         args = [(q, deepcopy(options)) for q in queries]
         random.shuffle(args)
         pool = multiprocessing.Pool(8)
@@ -52,9 +53,10 @@ class BenchViewer:
 
     def collect_garbage(self):
         pool = multiprocessing.Pool(8)
-        pool.map(SingletonDebugger.collect_garbage, self.__debuggers.values())
+        pool.map(BaseDebugger.collect_garbage, self.__debuggers.values())
+        pool.close()
 
-    def __getitem__(self, key) -> SingletonDebugger:
+    def __getitem__(self, key) -> BaseDebugger:
         if key in self.__name_hashes:
             key = self.__name_hashes[key]
         return self.__debuggers[key]
@@ -84,3 +86,15 @@ class BenchViewer:
         ):
             targets += self[q].get_sync_dirs()
         return targets
+
+    def break_down_modes(self):
+        return self.modes.analyze_migration(self.status)
+
+    def build_query_stats(self, clear=False):
+        pool = multiprocessing.Pool(8)
+        args = [(dbg, clear) for dbg in self.__debuggers.values()]
+        pool.starmap(BaseDebugger.build_query_stats, args)
+        pool.close()
+
+if __name__ == "__main__":
+    pass

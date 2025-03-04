@@ -1,3 +1,4 @@
+import os
 from typing import Dict, List, Set
 from debugger.proof_analyzer import ProofAnalyzer
 from debugger.mutant_info import MutantInfo
@@ -224,8 +225,7 @@ class InformedEditor(QueryEditor):
         if not ok:
             self._reset_state()
             return False
-        self.save(ei.query_path)
-        return True
+        return self.save(ei.query_path)
 
     def debug_qanme(self, qname):
         if qname not in self:

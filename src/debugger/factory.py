@@ -4,7 +4,7 @@ from tqdm import tqdm
 from debugger.debugger_base import BaseDebugger
 from z3 import set_param
 from calculate_average_rank import calculate_rank
-from debugger.debugger_options import DbgMode, DebugOptions, resolve_input_path
+from debugger.options import DbgMode, DebugOptions
 from debugger.edit_tracker import EditTracker
 from debugger.edit_info import EditAction, EditInfo
 from debugger.informed_editor import InformedEditor, choose_action
@@ -30,8 +30,8 @@ def shorten_qname(qname: str):
 def get_debugger(
     query_path: str,
     options=DebugOptions(),
-):
-    query_path = resolve_input_path(query_path, options)
+) -> BaseDebugger:
+    query_path = options.resolve_input_path(query_path)
 
     tracker = EditTracker(
         query_path,
@@ -284,7 +284,9 @@ class FastFailDebugger(SingletonDebugger):
     def rank_edits(self):
         name_hash = "cache/" + self.name_hash + ".report"
         edits = []
-        for qname in calculate_rank(name_hash, ranking_heuristic="proof_count").qname.values:        
+        for qname in calculate_rank(
+            name_hash, ranking_heuristic="proof_count"
+        ).qname.values:
             action = choose_action(self.editor.get_quant_actions(qname))
             edits.append((qname, action))
         return edits
@@ -298,7 +300,7 @@ class FastFailDebugger(SingletonDebugger):
 
         emitted_count = 0
 
-        for (qname, action) in self.rank_edits():
+        for qname, action in self.rank_edits():
             if emitted_count >= 10:
                 break
 
@@ -311,6 +313,24 @@ class FastFailDebugger(SingletonDebugger):
 
         self.tracker.save_edits_meta()
         return actual_ranks
+
+    def create_skolem_query(self, dest_dir) -> str:
+        qname = self.editor.choose_qanme_to_skolemize()
+
+        if qname is None:
+            return None
+
+        ei = EditInfo(dest_dir, {qname: EditAction.SKOLEMIZE})
+        edit_hash = ei.get_id()
+        # name_hash = dbg.name_hash
+
+        query_path = f"{dest_dir}/{self.name_hash}.{edit_hash}.smt2"
+
+        if self.editor.edit_by_qname(qname, EditAction.SKOLEMIZE) and self.editor.save(
+            query_path
+        ):
+            return query_path
+        return None
 
 
 class TimeoutDebugger(SingletonDebugger):
@@ -456,7 +476,7 @@ class SkolemDebugger(SingletonDebugger):
 
         creating_insts = dict()
         impacting_quants = dict()
-        
+
         for skv in consequences:
             creating_insts[skv] = sum(consequences[skv].values())
             impacting_quants[skv] = len(consequences[skv])
@@ -479,7 +499,7 @@ class SkolemDebugger(SingletonDebugger):
             os.makedirs(dest_dir)
 
         emitted_count = 0
-        
+
         for qname, score in current_scores:
             if emitted_count >= 10:
                 break
@@ -499,4 +519,3 @@ class SkolemDebugger(SingletonDebugger):
 
         self.tracker.save_edits_meta()
         return actual_ranks
-        

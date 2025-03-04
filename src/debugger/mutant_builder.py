@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from base.defs import DEBUG_ROOT
 from base.solver import RCode
-from debugger.debugger_options import DebugOptions
+from debugger.options import DebugOptions
 from debugger.pool_utils import run_with_pool
 from typing import Dict, List
 from utils.query_utils import (

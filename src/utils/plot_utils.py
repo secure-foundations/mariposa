@@ -5,7 +5,7 @@ plt.rcParams['text.usetex'] = True
 
 font = {'family' : 'Computer Modern',
         # 'weight' : 'bold',
-        'size'   : 12}
+        'size'   : 16}
 
 matplotlib.rc('font', **font)
 

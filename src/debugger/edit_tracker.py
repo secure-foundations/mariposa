@@ -3,7 +3,7 @@ import os
 from typing import Dict
 
 from base.defs import DEBUG_ROOT, MARIPOSA
-from debugger.debugger_options import DebugOptions
+from debugger.options import DebugOptions
 from debugger.edit_info import EditAction, EditInfo
 from debugger.mutant_builder import MutantBuilder
 from debugger.mutant_info import MutantInfo
@@ -130,7 +130,7 @@ class EditTracker(MutantBuilder):
     def editor(self) -> InformedEditor:
         if self._editor is not None:
             return self._editor
-        assert len(self.proofs) != 0
+        log_check(self.proof_available(), f"{self.name_hash} has no proofs")
         assert self.chosen_proof_path is not None
         log_debug(f"[edit] proof path: {self.chosen_proof_path}")
         log_debug(f"[edit] trace path: {self.chosen_trace_path}")

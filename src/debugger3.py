@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
-from debugger.debugger_options import DebugOptions
-from debugger.debugger import DbgMode, get_debugger
+from debugger.options import DebugOptions
+from debugger.factory import DbgMode, get_debugger
 
 
 def main():

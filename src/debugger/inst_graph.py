@@ -4,10 +4,6 @@ import numpy as np
 from tqdm import tqdm
 
 
-def sort_by_value(d):
-    return {k: v for k, v in sorted(d.items(), key=lambda item: item[1], reverse=True)}
-
-
 class InstBlame:
     def __init__(self, qidx, cost):
         self.qidx = qidx
