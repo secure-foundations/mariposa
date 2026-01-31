@@ -1,4 +1,8 @@
 {
+    "sundance": {
+        "path": "bin/sundance-smt",
+        "date": "2026/01/23"
+    },
     "z3_4_8_5": {
         "path": "bin/z3-4.8.5",
         "date": "2023/05/12"

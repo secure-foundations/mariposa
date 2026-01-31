@@ -41,7 +41,7 @@ def load_cache_or(name, func, clear=False):
     if clear:
         clear_cache(name)
 
-    if obj := load_cache(name):
+    if obj == load_cache(name):
         return obj
 
     obj = func()

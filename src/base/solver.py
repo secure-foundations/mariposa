@@ -43,6 +43,7 @@ def output_as_rcode(output):
 class SolverType(Enum):
     Z3 = "z3"
     CVC5 = "cvc5"
+    Sundance = "sundance"
 
 class Solver:
     # do not create a solver object directly, use the factory method
@@ -192,3 +193,22 @@ class CVC5Solver(Solver):
             log_warn("solver error: {} {} {}".format(" ".join(args), out, err))
 
         return rcode, elapsed
+        
+class SundanceSolver(Solver):
+    def __init__(self, name, obj):
+        super().__init__(name, obj)
+
+    def get_basic_command(self, query_path, time_limit, seeds=None):
+        # todo: add timeout to sundance
+        command = [self.path, 
+                   query_path]
+        if seeds is not None:
+            assert(false)
+        return command
+
+    def run(self, query_path, time_limit, seeds=None):
+        log_check(time_limit < 1000, "timeout should be in seconds")
+
+        args = self.get_basic_command(query_path, time_limit, seeds)
+        out, err, elapsed = subprocess_run(args, timeout=time_limit)
+        return output_as_rcode(out), elapsed

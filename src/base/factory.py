@@ -5,7 +5,7 @@ from base.defs import *
 from base.exper import ExpConfig, Experiment
 from base.exper_analyzer import ExperAnalyzer
 from base.project import Project, ProjectGroup, ProjectType
-from base.solver import CVC5Solver, Solver, Z3Solver
+from base.solver import CVC5Solver, Solver, Z3Solver, SundanceSolver
 from base.query_analyzer import QueryAnalyzer
 from utils.system_utils import (
     exit_with,
@@ -39,6 +39,8 @@ class Factory:
                 s = Z3Solver(solver_name, solver_obj)
             elif solver_name.startswith("cvc5"):
                 s = CVC5Solver(solver_name, solver_obj)
+            elif solver_name.startswith("sundance"):
+                s = SundanceSolver(solver_name, solver_obj)
             else:
                 assert False
             self.all_solvers[solver_name] = s

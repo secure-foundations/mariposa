@@ -75,6 +75,16 @@
         "exp_timeout": 60,
         "num_procs": 7
     },
+    "sundance": {
+        "mutations": [
+            "shuffle",
+            "rename"
+        ],
+        "keep_mutants": true,
+        "num_mutants": 60,
+        "exp_timeout": 10,
+        "num_procs": 100
+    },
     "trace": {
         "mutations": [
             "shuffle",
